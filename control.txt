@@ -1,0 +1,8 @@
+Lattice Sequencer Output Parameters 
+------------------------------------
+Execution Date: 14-Jan-2014 16:56:17 
+Function Handle: Load_MagTrap_sequence 
+Cycle: 1 
+------------------------------------
+dipole_end_pwr: 2.000000e-001 
+tof: 15 

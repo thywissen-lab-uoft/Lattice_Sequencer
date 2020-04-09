@@ -4,7 +4,8 @@
 %Summary: Loads the MOT into a Magnetic Trap
 %------
 
-
+%RHYS - This code is rather short and self-explanatory. Check timings,
+%remove old code commented at bottom. 
 function timeout = Load_MagTrap_from_MOT(timein)
 
 global seqdata;

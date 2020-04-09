@@ -7,13 +7,15 @@
 %----Input Vars
 %blue_mot: flag to turn on blue mot
 %----------
-
+%RHYS - Tons of parameters in these codes. Allow these to be loaded in
+%through a text file, with everything else. 
 function timeout = Prepare_MOT_for_MagTrap(timein)
 
 global seqdata;
 
 curtime = timein;
 
+%RHYS - Old code. 
 %% Turn off extra Rb probe beam.
 
 % setDigitalChannel(calctime(curtime,-500),'Rb Probe/OP TTL',1);
@@ -37,12 +39,12 @@ curtime = timein;
 setDigitalChannel(calctime(curtime,-500),'UV LED',0);
 setAnalogChannel(calctime(curtime,-500),'UV Lamp 2',0);
 %% Compression
-
+%RHYS - Should be a seqdata flag.
 do_compression = 1;
 
 if do_compression %&& (~(seqdata.flags.image_type==4))
     D1_cMOT = 0;
-    
+    %RHYS - D1 molasses/cMOT not used right now, unless Vijin revives it.
     if D1_cMOT
         
         ScopeTriggerPulse(calctime(curtime,0),'cMOT',1);
@@ -102,7 +104,8 @@ if do_compression %&& (~(seqdata.flags.image_type==4))
        setAnalogChannel(curtime,'K Repump FM',0,2);
         
     else
-    
+        %RHYS - This is actually the current cMOT - only 1ms of Rb?? That
+        %probably does not even work with 25ms of K?
         ScopeTriggerPulse(calctime(curtime,0),'cMOT',1);
         %Set cMOT time
         cmot_time_list = [1];50 %40
@@ -175,6 +178,8 @@ if do_compression %&& (~(seqdata.flags.image_type==4))
             setAnalogChannel(calctime(curtime,cMOT_time - rb_cMOT_time),'Rb Beat Note FF',-0.025,1); %0.1
                                
             %turn repump down
+            %RHYS - Not sure we can trust the passive stability of the repump power
+            %when the values requested are so small.
             rb_CMOT_repump_power_list = [0.0275];[0.0275];[0.025]; %0.025
             rb_cmot_repump_power = getScanParameter(rb_CMOT_repump_power_list,seqdata.scancycle,seqdata.randcyclelist,'cmot_rb_repump_power');;
 
@@ -210,7 +215,8 @@ end
 %% Molasses 
 
 %To fix: the quadrupole field is not turning off *completely* here
-
+%RHYS - Compression, molasses, and OP could all be separate
+%functions/methods.
 do_molasses = 1;
 
 molasses_time_list = 15;[15];[5];7;
@@ -218,7 +224,7 @@ molasses_time = getScanParameter(molasses_time_list,seqdata.scancycle,seqdata.ra
 % molasses_time = 7.5; %(10 for Rb evap ) %10 (overwritten below if K is selected)
 
 if do_molasses
-    
+    %RHYS - Still not sure K D2 molasses does much of anything.
     k_molasses_detuning_list =[7.5];[7.5];5.5; %%20 Oct 30, 2015
     k_molasses_detuning = getScanParameter(k_molasses_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'k_molasses_detuning');
     k_molasses_repump_detuning = -50;-20;%-50 seems better than -20 somehow...
@@ -295,7 +301,7 @@ end
 % been renamed and are being used somewhere else
 % % % % % % % % curtime = calctime(curtime,-molasses_time);
  K_gray_molasses_time = 3;
- 
+ %RHYS - This code is unlikely to ever be used again.
  if seqdata.flags.K_D2_gray_molasses == 1
      %set shim coil values:
 %         gray_molasses_x_shim_list=[0:0.02:0.26];%0.25
@@ -360,7 +366,8 @@ end
      
 
 %% Turn the trap light off
-
+%RHYS - Never used, unless Vijin revives, but probably would need to
+%rewrite anyway.
 do_D1_molasses = 0;
 
 if ( seqdata.flags.image_type ~= 4 && do_D1_molasses == 0)
@@ -431,7 +438,8 @@ if do_D1_molasses
     
 end
 %% Optical Pumping
-
+%RHYS - Always used. Already has a separate script that could be called
+%from main.
 do_optical_pumping = 1;
 if do_optical_pumping == 1;
     %digital trigger
@@ -445,6 +453,8 @@ end
 
 %% Turn off the repump
 if ( seqdata.flags.image_type ~= 4 )
+%RHYS - These turn on/turn off/turn on-off beam functions are confusing and
+%could be rewritten.
 curtime = turn_off_beam(calctime(curtime,0.5),2); %a little delayed w.r.t trap
 end
 

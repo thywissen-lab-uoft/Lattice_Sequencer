@@ -4,6 +4,12 @@
 %Summary: Ramp the QP before QP transfer. Outputs are the currents/voltages
 %after the ramp
 %------
+%RHYS - This code, probably originally intended to just load the dipole
+%trap, now includes everything anyone would ever want to do in a dipole
+%trap, including spin-flips/spectroscopy, evaporation, and a number of
+%specialized or obsolete sequences. I would trim it back extensively, move
+%hardcoded parameters out, and keep specialized sequences as optional
+%xdt-specific flags to call.
 function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, V_QP)
 
 
@@ -26,6 +32,8 @@ global seqdata;
     %@(t,tt,y2,y1)(y1-(y2-y1)/1.2/(5-1.2)+(y2-y1)/(5-1.2)./(1-t/tt+0.2));
 %After Loading the XDT
 %--------------------
+    %RHYS - Move all of these flags out of this function, and declare them
+    %in the seqdata structure to be passed in.
     seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1; %transfer Rb atoms from F=2 to F=1 at the begining of XDT
     get_rid_of_Rb_init = 0;%get rid of Rb with resonant light pulse
     init_Rb_RF_sweep = 0;%Sweep 87Rb to |1,-1> (or |2,-2>) before evaporation
@@ -35,6 +43,7 @@ global seqdata;
 %--------------------
     tilt_evaporation = 0;
     dipole_holdtime_before_evap = 0;
+    %RHYS - A very important parameter. Pass these from elsewhere.
     Evap_End_Power_List =[0.22];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
     exp_end_pwr = getScanParameter(Evap_End_Power_List,seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power');
     Second_Evaporation_Stage = 0;
@@ -75,8 +84,10 @@ global seqdata;
         error('QP ramp must happen after time zero');
     end
     %Calibrate to match horizontal trap frequencies.
+    %RHYS - Might only be desirable for the isotropic conductivity work. 
     XDT2_power_func = @(P_XDT1)((sqrt(81966+1136.6*(21.6611-(-119.75576*P_XDT1^2+159.16306*P_XDT1+13.0019)))-286.29766)/2/(-284.1555));
     %XDT2_power_func = @(P_XDT1)(P_XDT1/2);
+    %RHYS - More parameters.
     %Initial powers.
     P1 = 1.5;1.50;1;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
     P2 = 1.5;1.50;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
@@ -91,6 +102,7 @@ global seqdata;
     %xdt2_end_power =(sqrt(81966+1136.6*(21.6611-(-119.75576*xdt1_end_power^2+159.16306*xdt1_end_power+13.0019)))-286.29766)/2/(-284.1555);
     
     Time_List =  [15000];[15000]; %[500] for fast evap, for sparse image, [15000] for normal experiment
+    %RHYS - Crazy amount of renaming the same variable.
     Evap_time = getScanParameter(Time_List,seqdata.scancycle,seqdata.randcyclelist,'evap_time');
     CDT_Evap_Time = Evap_time; %15000
     CDT_Evap_Total_Time = Evap_time; %should be same at Evap_time
@@ -129,6 +141,7 @@ end
     dipole_ramp_start_time = -250;%-3000; 
     dipole_ramp_up_time = 250; %1500
 
+    %RHYS - Actually unused. 
     CDT_power = 3.8;%3.5; %4.5   7.0 Jan 22nd
 
     dipole1_power = CDT_power*1; %1
@@ -144,9 +157,14 @@ end
     ScopeTriggerPulse(curtime,'Rampup ODT');
 
 
+%RHYS - This section should be cleaned up and put into its own function/method. 
+%RHYS - Would check for consistency since this is where we are having
+%problems with atom loading.
 %% Ramp the QP Down
     
     %Close the Shim Supply Relay Now that Plugged QP Evaporation is done
+    %RHYS - Definitely do not do this: actually this relay is set to allow
+    %current to flow here, so maybe the comment is just out of date. 
     setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);
 
     QP_curval = QP_value;
@@ -158,7 +176,10 @@ end
     %value to ramp down to second
     QP_ramp_end2 = 0*1.78; %0*1.78 // doubled Dec-2013 (tighter hybrid trap)
     qp_ramp_down_time2 = 250; %250
+    %RHYS - I think this is now 0*500 because curtime is updated between
+    %the two ramps. 
     qp_rampdown_starttime2 = 0*500; %500
+    %RHYS - This used to be the larger value of 5.25.
     mean_fesh_current = 2;5.25392;%before 2017-1-6   22.6/4; %Calculated resonant fesh current. Feb 6th. %Rb: 21, K: 21
     fesh_current = mean_fesh_current;
     
@@ -168,6 +189,7 @@ end
         
     vSet_ramp = 1.07*vSet; %24
    
+    %RHYS - if (0)... lol
     if (0)
         %original configuration
         do_qp_ramp_down2 = 0;
@@ -196,6 +218,9 @@ end
 %         yshim_end = 0.0;% + getScanParameter(shim_list,seqdata.scancycle,seqdata.randcyclelist,'shim');  %0.0 (Shimmer Control)  
 %         xshim_end = 0.185;%0.185; %0.185 0.10
         
+        %RHYS - This shows how the shims can be ramped down linearly to
+        %keep the QP position fixed as the gradient ramps down
+        %simultaneously.
         zshim_end = (seqdata.params. plug_shims(3) - seqdata.params. shim_zero(3)) * QP_ramp_end1 / QP_value + seqdata.params. shim_zero(3); %0.28  (0.05)
         yshim_end = (seqdata.params. plug_shims(2) - seqdata.params. shim_zero(2)) * QP_ramp_end1 / QP_value + seqdata.params. shim_zero(2);% + getScanParameter(shim_list,seqdata.scancycle,seqdata.randcyclelist,'shim');  %0.0 (Shimmer Control)  
         xshim_end = (seqdata.params. plug_shims(1) - seqdata.params. shim_zero(1)) * QP_ramp_end1 / QP_value + seqdata.params. shim_zero(1);
@@ -382,7 +407,16 @@ ScopeTriggerPulse(calctime(curtime,0),'Transport Supply Off');
 curtime = calctime(curtime,dipole_holdtime_before_evap);
 
 
-   %% Rb uWave transfer
+%% Rb uWave transfer
+
+%RHYS - Next follows a long set of possible types of RF or microwave
+%transfer. These could in theory be combined into one general function. The
+%things to specify would be: the atom, the field, field ramp up/down times, 
+%whether to ramp the field or the function generator frequency, the sweep 
+%time, the sweep range, the power as a function of max, and whether to do
+%some kind of round trip there and back. General functions have been
+%attempted (see rf_uwave_spectroscopy) but are themselves messy, and so
+%many of these historical messy codes still exist. 
 
 %Pre-ramp the field to 20G for transfer
 if ( seqdata.flags.do_Rb_uwave_transfer_in_ODT )
@@ -545,7 +579,7 @@ end
 
 
 %% Get rid of Rb before uWave manipulation of K
-    
+%RHYS - Kind of unneccessary (could just kill it in the mag trap if desired).    
 if get_rid_of_Rb_init
 
         kill_pulse_time = 5; %5
@@ -587,6 +621,12 @@ end
     
 %% 40K RF Sweep Init
 %Sweep 40K to |9/2,-9/2> before evaporation
+%RHYS - This one is useful. Again, would love to see it tidied up though.
+%Why declare the file ramp with a bunch of local parameters, then declare
+%the RF sweep with more local parameters, then do some special stuff to
+%make a mixture with local parameters, then ramp fields again, with more
+%local parameters? Seems it could all be contained in one generalized
+%spectroscopy function. 
 if seqdata.flags. init_K_RF_sweep
    
     %Ramp FB Field
@@ -685,7 +725,8 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 end
 
 %% Sweep Rb to |1,-1>
-
+%RHYS - Could keep the parameters around for use in a generalized function,
+%but this is never itself used.
 if init_Rb_RF_sweep
    
     %Ramp FB Field
@@ -751,7 +792,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 end
 
 %% K uWave Transfer
-
+%RHYS - Pretty sure this is deprecated, would use K_uwave_spectroscopy.
 if seqdata.flags.do_K_uwave_transfer_in_ODT
  
     
@@ -897,7 +938,8 @@ else
 end
 
 %% Heat Cloud with Dipole Oscillation
-
+%RHYS - Useful benchmarking tool, but similar idea also repeated elsewhere
+%in this code.
 if dipole_oscillation_heating
     
     %
@@ -934,7 +976,7 @@ end
 %% Turn on Gradient for CDT Evap (to adjust Rb vs. K trapping)
 
 gradient_evap = 0;
-
+%RHYS - This never took off.
 if gradient_evap
 
             y_shim_list = [-0.2,0.1,-0.05,0.05,0.1];
@@ -984,17 +1026,11 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); %
 end
 
 %% CDT evap
-
+%RHYS - Imporant code, definitely should be kept and cleaned up.
 if ( seqdata.flags.CDT_evap == 1 )
     
+    %RHYS - These are both always used.
     expevap = 1; %1
-    
-   
-      %ramp on Q shim to quantize atoms
-%     CDT_yshim = 0.75; 
-%     curtime = AnalogFunc(calctime(curtime,0),19,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),100,100,CDT_yshim,0.4); %1.1875
-%   
-
     do_pre_ramp = 1;
 
     if do_pre_ramp
@@ -1048,7 +1084,8 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_li
             setDigitalChannel(calctime(curtime,exp_evap_time*Dimple_On_Time_Scale),'Dimple TTL',0);%0
             AnalogFuncTo(calctime(curtime,exp_evap_time*Dimple_On_Time_Scale),'Dimple Pwr',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Dimple_Ramp_Time, Dimple_Ramp_Time, Dimple_Power); 
         end
-        
+    
+    %RHYS - Tried this, not helpful for final temp.
     if Lattice_in_XDT_Evap
         Lattice_On_Time = 0.05*exp_evap_time;
         
@@ -1095,7 +1132,7 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_li
         % exponential evaporation ramps (ramping down XDT beams)
         AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),exp_evap_time,CDT_Evap_Total_Time,exp_tau,DT1_power(4));
 curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),exp_evap_time,CDT_Evap_Total_Time,exp_tau,seqdata.params.XDT_area_ratio*DT2_power(4));
-
+        %RHYS - Don't think this was ever helpful.
         if(Second_Evaporation_Stage)
             
             Second_Evap_Power = 0.16;
@@ -1115,7 +1152,7 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,tau,y2)(eva
         CDT_rampdown_trapbottom =0;
         
         dipole_oscillation = 0;
-                
+        %RHYS - Never used.      
         if CDT_rampup
          
             CDT_rampup_pwr = 0.7;
@@ -1133,7 +1170,7 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,tau,y2)(eva
         else
                 
         end
-         
+        %RHYS - Never used.
         if CDT_rampdown_trapbottom
 
             CDT_rampdown_pwr = 0.25;
@@ -1149,6 +1186,8 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,tau,y2)(eva
                 
         end
         
+        %RHYS - Another opportunity to check trap frequency. Just keep one,
+        %delete the others.
         if dipole_oscillation
             
             dip_osc = @(t,freq,y2,y1)(y1 +y2*sin(2*3.14*freq*t/1000));
@@ -1177,6 +1216,7 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,tau,y2)(eva
         
     else
     % What is this supposed to do?
+    %RHYS - What indeed? Delete.
            
         end_CDT_pwrs = 1;
 
@@ -1203,6 +1243,7 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,tau,y2)(eva
        
     end
 
+%RHYS - Never used this, could be useful?
 elseif ( seqdata.flags.CDT_evap == 2 ) % fast linear rampdown to test depth
     
     linramp_time = 5000;
@@ -1217,7 +1258,7 @@ elseif ( seqdata.flags.CDT_evap == 2 ) % fast linear rampdown to test depth
         
         dip_holdtime=25000 - linramp_time;
 
-        
+%RHYS - 'Piecewise linear evaporation' - I've never used it, delete.        
 elseif ( seqdata.flags.CDT_evap == 3 )
     
     linramp_time = [10000 14000]*0.4;
@@ -1267,6 +1308,7 @@ end
 
 %% Turn off Gradient after CDT Evap
 
+%RHYS - Unused, delete.
 if gradient_evap
 
             % FB coil settings for gradient evap
@@ -1300,7 +1342,7 @@ end
 
 
 %% Ramp Dipole Back Up Before Spectroscopy
-
+%RHYS - Hmmm, sure. 
 if ramp_dipole_for_spect
         dip_1 = .1; %1.5
         dip_2 = .1; %1.5
@@ -1315,7 +1357,8 @@ if ramp_dipole_for_spect
 end
 
 %% Rf sweep
-
+%RHYS - Another example of an RF sweep code that may do what it promises,
+%but is never used.
 if Rb_RF_sweep
 
     
@@ -1358,7 +1401,8 @@ end
 
 %% Get rid of Rb by doing repump and probe pulse
     %Only do this if evaporation has happened
-    
+ 
+%RHYS - This is commonly used. 
 if (get_rid_of_Rb && seqdata.flags. CDT_evap == 1)
 
         %repump atoms from F=1 to F=2, and blow away these F=2 atoms with
@@ -1399,7 +1443,7 @@ end
 
 
 %% Repump atoms back into F=2 with repump light
-
+%RHYS - Why?
 if Rb_repump 
 
     setAnalogChannel(curtime,2,0.7,1);
@@ -1409,7 +1453,7 @@ curtime = setAnalogChannel(curtime,2,0,1);
 end
 
 %% Do uWave transfer back to F=2
-
+%RHYS - Why? Delete.
 if do_end_uwave_transfer
     
     AnalogFunc(calctime(curtime,50),37,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),uWave_sweep_time,uWave_sweep_time, fesh_current,fesh_uWave_current);
@@ -1439,7 +1483,7 @@ end
     
 
 %% Get rid of F = 7/2 atoms using D1 Beam
-
+%RHYS - Why? Delete.
 if D1_repump_pulse
     
     curtime = calctime(curtime,10);
@@ -1469,7 +1513,8 @@ end
 
 %% Do Sweep before uWave
 
-
+%RHYS - Should sweep K state from one side of manifold to the other. I
+%think we have other ways of doing this, so delete.
 if do_RF_sweep_before_uWave
    
     %Ramp FB Field
@@ -1495,7 +1540,9 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
 end
 
 %% 40K RF Sweep %create spin mixture in XDT
-
+%RHYS - The 'old' sweep to |9/2,-9/2> code done after XDT evaporation. But,
+%why are these separate codes if they do the same thing, but only the order
+%is different? It should be the requested sequence that changes. 
 if seqdata.flags.K_RF_sweep
     
 Atoms_In_7Half = 0;
@@ -1708,7 +1755,9 @@ end
 
 
 
-
+%RHYS - All the various types of spectroscopy share a common field ramp
+%code, which bring the FB field to some value. Again, I think the field
+%ramp should just be part of a general spectroscopy function, however.
 if ( do_K_uwave_spectroscopy || do_K_uwave_multi_sweeps || do_Rb_uwave_spectroscopy || do_RF_spectroscopy || do_singleshot_spectroscopy || do_field_ramps )
     
     ramp_fields = 1; % do a field ramp for spectroscopy

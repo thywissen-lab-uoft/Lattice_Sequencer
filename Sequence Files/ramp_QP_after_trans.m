@@ -4,6 +4,11 @@
 %Summary: Ramp the QP after transport. Outputs are the currents/voltages
 %after the ramp
 %------
+%RHYS - Never played with this much. Combination of QP value and kitten
+%value (and shim values) sets the trap depth and position. Could experiment
+%with this for RF1A. Probably the trap cannot be much deeper, but also,
+%because it is so deep (high current) and because RF1A lasts so long, the
+%coils heat considerably.
 function [timeout I_QP I_kitt V_QP I_fesh] = ramp_QP_after_trans(timein, do_ramp_qp)
 
 

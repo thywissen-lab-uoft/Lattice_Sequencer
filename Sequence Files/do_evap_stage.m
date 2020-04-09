@@ -11,6 +11,9 @@ global seqdata;
 
 %Channel 19 is the RF switch
 %Channel 13 is RF enable, but we're not really sure what that does
+%RHYS - If referring to digital channel 13, seems to be associated with
+%triggering an old Rb uwave DDS to sweep, which is now used for the 4-pass.
+%So, possibly unused. 
 
 
 %Make sure that RF/uWave switch is set to allow RF through:
@@ -37,10 +40,16 @@ else
     %sweep 1 
     for i = 1:length(sweep_times)
         setAnalogChannel(calctime(curtime,0), 39, rf_gains(i),1);
+        %RHYS - The '1' here means DDSID = 1, which indicates the RF evap
+        %DDS in DDS_sweep. This uses digital channel 18 as its trigger for
+        %the sweep.
         curtime = DDS_sweep(calctime(curtime,10),1,freqs(i),freqs(i+1),sweep_times(i));
     end
 
     %turn DDS (Rf) off:
+    %RHYS - this is a little janky. Turns off the RF completely only if we
+    %are at the last stage of rf, which of course depends on the sequence
+    %called.
     if last_rf_stage
         setAnalogChannel(curtime, 39, -10, 1);% rf gain
     end

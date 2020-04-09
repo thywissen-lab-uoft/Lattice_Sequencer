@@ -3,6 +3,22 @@
 %Created: March 2011
 %Summary: Transports the cloud
 %------
+%RHYS - This is an incredibly confusing old code that is nonetheless very
+%important, and transports the cloud to the science chamber. As far as I
+%can tell, the important things this specifies are a list of points in
+%space, and a list of times at which the atoms should be at those points in
+%space. But, where does the transport actually happen?? In totally
+%non-obvious fashion, calls are made to AnalogFunc with channel '0'. But,
+%there is no channel 0! See AnalogFunc. Calls to channel 0 actually call
+%the function 'transport_coil_currents_kitten_troubleshoot_raise_topQP.m'.
+%This function determines the current values through each coil at a regular
+%set of times to give the desired positions. It does this by spline
+%interpolation of a theoretical set of positions-current maps read in from
+%text files, given the geometry of the transport system. Note that I've
+%recently discovered that this spline interpolation can be dangerous...
+%cubic splines can overshoot, and the number of theoretical positions
+%specified seems small. I can comment more on what is important here if
+%requested. 
 function timeout = Transport_Cloud(timein,hor_transport_type,ver_transport_type, image_loc)
 
 
@@ -142,7 +158,7 @@ curtime =       AnalogFunc(calctime(curtime,hor_wait_time),0,@(t,tt,dt)(-minimum
           end
     end
     
-    
+%RHYS - For horizontal transport, we use this.    
 elseif hor_transport_type  == 1
     
     %---------------
@@ -286,7 +302,7 @@ elseif hor_transport_type  == 1
     cube_shim_pulse_length = 20;
     
      
-    
+%RHYS - Here is the call to analog func that determines horizontal transport currents.     
 curtime = AnalogFunc(calctime(curtime,0),0,@(t,d1,t1,dm,tm,d2,t2)(for_hor_minimum_jerk(t,d1,t1,dm,tm,d2,t2)),T1+Tm+T2,D1,T1,Dm,Tm,D2,T2);
     
     if (ver_transport_distance~=0 && ver_transport_type==0) || ...
@@ -339,7 +355,8 @@ curtime =         AnalogFunc(calctime(curtime,0),0,@(t,tt,dt)(minimum_jerk(t,tt,
      
               %digital trigger @ 8400
             DigitalPulse(calctime(curtime,0),12,10,1);
-              
+          
+          %RHYS - We typically use this.
           elseif ver_transport_type==3
           
               vert_lin_total_time = zeros(size(vert_lin_trans_distances));
@@ -356,6 +373,8 @@ curtime =         AnalogFunc(calctime(curtime,0),0,@(t,tt,dt)(minimum_jerk(t,tt,
 %                 curtime = AnalogFunc(calctime(curtime,0),0,@(t,tt,t1,t2)((t2-t1)/tt.*t+t1+horiz_length),vert_lin_trans_times(ii-1),vert_lin_trans_times(ii-1),vert_lin_trans_distances(ii-1),vert_lin_trans_distances(ii));
 %               end
               DigitalPulse(curtime,12,100,1);
+              %RHYS - I think this is where the vertical transport currents
+              %are set.
               curtime = AnalogFunc(calctime(curtime,0),0,@(t,tt,aa)(ppval(aa,t)),vert_lin_total_time(end),vert_lin_total_time(end),vert_pp);
               
           

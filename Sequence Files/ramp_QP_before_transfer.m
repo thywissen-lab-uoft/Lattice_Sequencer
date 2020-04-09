@@ -10,6 +10,8 @@ function [timeout I_QP I_kitt V_QP I_fesh] = ramp_QP_before_transfer(timein, ram
 curtime = timein;
 global seqdata;
 
+%RHYS - why the heck is there an if statement with the same title as the
+%function here?
 if ramp_down_QP_before_transfer
 
 
@@ -21,6 +23,12 @@ vSet = V_QP;
 %Feshval = 0;
 Feshval = I_fesh ;
     
+    %RHYS - A parameter that can be modulated to control trap compression
+    %at RF1B. Note that changing will move trap if shims not also scaled in
+    %the known way (linear interpolation between plug shim and shim zero
+    %values). Recently raised, although one would think smaller would be
+    %better here. Could try the JILA trick of decompressing further during
+    %RF1B evaporation also.
     ramp_factor = 0.8; %0.7 DCM added 0.6 Aug 18
     
     QP_ramp_time = 500; %500
@@ -48,6 +56,8 @@ Feshval = I_fesh ;
      kitten_time = 0;
      
     %ramp Kitten
+    %RHYS - I think the kitten ramps to 0 here, as one might expect, but
+    %please check.
      curtime = AnalogFunc(calctime(curtime,kitten_time),3,@(t,tt,dt)(minimum_jerk(t,tt,dt)+Kitten_curval),QP_ramp_time,QP_ramp_time,Kitten_value-Kitten_curval);
     
          

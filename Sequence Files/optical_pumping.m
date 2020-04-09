@@ -7,7 +7,7 @@
 %-----Update List-------
 %Aug 12, 2010: Put code from Load_MagTrap_sequence into here (DCM)
 %-----------------------
-
+%RHYS - Again, parameters should be declared elsewhere.
 function timeout = optical_pumping(timein)
 
 global seqdata;
@@ -53,6 +53,7 @@ setAnalogChannel(calctime(curtime,0.0),'Z Shim',0); %0.0
 %K
 if (seqdata.atomtype==1 || seqdata.atomtype==4)
     K_repump_power_for_OP = 0.7;%0.3
+    %RHYS - delete, never will be used.
      if seqdata.flags.K_D2_gray_molasses == 1
         K_repump_power_for_OP_list = [0.4];
         K_repump_power_for_OP = getScanParameter(K_repump_power_for_OP_list,seqdata.scancycle,seqdata.randcyclelist,'K_repump_power_for_OP');

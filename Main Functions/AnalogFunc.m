@@ -61,6 +61,8 @@ else
     if channel==0 %for the transport only update every 10 cycles
         %keep fixed to 0.5ms updates * if we change deltat *
         t = 0:(10*10):endtime;
+        %RHYS - really? Update only every 500ms for transport?? That can't be correct,
+        %can it? What does it mean "* if we change deltat *"?
     
     elseif (channel==43 || channel==44 || channel==45 || channel==47) %lattices
         % ramp lattice channels with smaller steps to avoid heating (put 30kHz
@@ -94,6 +96,8 @@ else
         %funcarray = transport_coil_currents_kitten_troubleshoot(funcarray(:,1),funcarray(:,3));
 
         %this is the transport with the coil raised
+        %RHYS - This function determines the coil currents during the
+        %transport sequence.
         funcarray = transport_coil_currents_kitten_troubleshoot_raise_topQP(funcarray(:,1),funcarray(:,3),0,seqdata.coil_enable);
 
     else

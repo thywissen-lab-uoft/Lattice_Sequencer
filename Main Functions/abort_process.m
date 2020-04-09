@@ -6,7 +6,6 @@
 %------
 
 %%testtest
-%%test2
 
 %NOT TESTED
 function abort_process()

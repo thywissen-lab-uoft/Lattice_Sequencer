@@ -1816,7 +1816,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 end
 
 %% Do field measurement
-
+%RHYS - Why is this here?
 measure_field = 0;
 
 if measure_field
@@ -1824,6 +1824,8 @@ if measure_field
 end
 
 %% uWave spectroscopy (K or Rb)
+%RHYS - More spectroscopy code to clean. These ones actually get used on
+%occasion for checking field calibration.
     if do_K_uwave_spectroscopy
         
         clear('spect_pars');
@@ -1999,7 +2001,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
 
       curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars); % check rf_uwave_spectroscopy to see what struct spect_pars may contain
 
-      
+%RHYS - Not sure what this commented code is for. It is probably not important.      
 %       %-----------------------ramp down Feshbach field for imaging
 % curtime=calctime(curtime,200);
 %     ramp_fields_down = 0; % do a field ramp for spectroscopy    
@@ -2025,6 +2027,8 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
       
       
     end
+    
+%RHYS - Not sure what this commented code is for either. It is probably not important.     
 %% RF spectroscopy test
 
 % if (do_RF_spectroscopy_test == 1)
@@ -2056,7 +2060,8 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
 
 
 %% RF Spectroscopy
-
+%RHYS - Tests RF transfer for a specific set of states: there is a lot of
+%baggage and commented-out codes here which could be deleted.
 if ( do_RF_spectroscopy ) % does an rf pulse or sweep for spectroscopy
     check_effi = 0;
     
@@ -2098,7 +2103,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
 total_pulse_length = sweep_pars.pulse_length+50;
 
 kill_one_spin = 0;
-
+%RHYS - Seems unnecessary to have this.
  if  (kill_one_spin==1)
  %Resonant light pulse to remove  atoms in 9/2 state
  
@@ -2130,7 +2135,7 @@ kill_one_spin = 0;
 total_pulse_length=total_pulse_length+kill_time;
     end
  
-
+%RHYS - Remove all of the following.
 % sweep_pars.freq = 41.2989;
 % sweep_pars.delta_freq = -1*delta_freq;        
 % curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
@@ -2219,7 +2224,6 @@ total_pulse_length=total_pulse_length+kill_time;
 % curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
 % total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
 
-
             do_ACync_plane_selection = 1;
             if do_ACync_plane_selection
                 ACync_start_time = calctime(acync_time_start,-80);
@@ -2252,7 +2256,7 @@ curtime=calctime(curtime,41);
       %-----------------------ramp down Feshbach field for imaging
  
 
-
+%RHYS - Why do this here? Remove.
         Make_Spin_Mixture = 0;
         if (Make_Spin_Mixture)
 %         %Multiple sweeps to drive the mixture towards 50/50
@@ -2271,7 +2275,8 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,10),3,sweep_pars);
 %         
 %         addOutputParam('RF_Pulse_Length',sweep_pars.pulse_length);
 % curtime = rf_uwave_spectroscopy(calctime(curtime,10),3,sweep_pars);%3: sweeps, 4: pulse
-
+%RHYS - I think this was code for testing molecule formation near the FB
+%resonance. Could be included as a separate module.
         do_feshbach_resonance_physics = 0;
         if (do_feshbach_resonance_physics)
             clear('ramp')
@@ -2341,7 +2346,9 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 end
 
 %% Tilt Evaporation
-
+%RHYS - An attempt to evaporate in the dipole trap by keeping a larger trap
+%depth (for higher density) and tilting atoms out with a gradient. Was
+%never better than the current evaporation method.
 if tilt_evaporation
 
             % FB coil settings for spectroscopy
@@ -2392,6 +2399,8 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); %
 end
 
 %% uWave single shot spectroscopy
+%RHYS - Stefan's single-shot spectroscopy module. Cool, but never really
+%used.
 if ( do_singleshot_spectroscopy ) % does an rf pulse or sweep for spectroscopy
 
 curtime = uwave_singleshot_spectroscopy(calctime(curtime,0)); 
@@ -2399,7 +2408,7 @@ curtime = uwave_singleshot_spectroscopy(calctime(curtime,0));
 end   
 
 %% Get rid of F = 7/2 K using a repump pulse
-
+%RHYS - Could be useful
 if K_repump_pulse
     
     curtime = calctime(curtime,10);
@@ -2420,7 +2429,7 @@ else
 end
 
 %% Get rid of F = 9/2 K using a probe pulse
-
+%RHYS - Could be useful.
 if K_probe_pulse
     
     clear('ramp');
@@ -2510,7 +2519,7 @@ end
 
 
 %% Ramp FB field up to 20G before loading lattice
-
+%RHYS - Useful for tuning interaction strength when loading lattice.
 if ramp_up_FB_for_lattice
 
  % Turn the FB up to 20G before loading the lattice, so that large field
@@ -2530,7 +2539,7 @@ if ramp_up_FB_for_lattice
  curtime = ramp_bias_fields(calctime(curtime,0), ramp);
  
 end
-
+%RHYS - Can be deleted.
 %% ramp up compensation beam
 % %     Comp_Ramptime = 50;
 % %     Comp_Power = 2;%unit is mW
@@ -2550,6 +2559,10 @@ end
 % %     end  %compensation_in_modulation == 1
 
 %% ramp up Feshbach field for crossed dipole trap evaporative cooling
+%RHYS - Tried ramping up interactions near end of XDT evap. This needs to
+%be done carefully, as the FB coils can heat while large currents are being
+%driven through them, and also, there is a gradient formed that can easily
+%rip atoms out of a weak XDT.
 if (ramp_Feshbach_B_in_CDT_evap == 1)
 ramp_start_time=calctime(curtime,-6000);
     ramp_up_time = 500;
@@ -2578,6 +2591,9 @@ ramp_time = ramp_bias_fields(calctime(ramp_time,0), ramp);
 end
 
 %% Ramp XDT Up for Lattice Alignment
+%RHYS - This usually gets used. Can clean. Also contains options for
+%assessing XDT trap frequency, which should be separated back out into one
+%of the other two modules that already do this.
 
     %Ramp dipole on before pulsing the lattice beam. This should allow for
     %better alignment of lattice to the potassium cloud, avoiding issue of
@@ -2603,7 +2619,7 @@ end
         dip_rampstart_list = [0];
         dip_rampstart = getScanParameter(dip_rampstart_list,seqdata.scancycle,seqdata.randcyclelist,'dip_on_time');
         dip_waittime = 10;10;
-        
+        %RHYS - This kind of modulation stuff already exists elsewhere.
         A_mod = 0;
         f_mod_list = 0;0.65;[350:10:490]/1000; %Frequency is in kHz.
         f_mod = getScanParameter(f_mod_list,seqdata.scancycle,seqdata.randcyclelist,'dip_mod_freq');%
@@ -2645,7 +2661,8 @@ curtime = calctime(curtime,dip_waittime)
 %         
     end
 
-    %% DMD in XDT 
+%% DMD in XDT 
+%RHYS - Is this desirable?
 if DMD_in_XDT
     DMD_power_val_list =[3]; %Do not exceed 3.5 here
     DMD_power_val = getScanParameter(DMD_power_val_list,seqdata.scancycle,seqdata.randcyclelist,'DMD_power_val');
@@ -2664,7 +2681,7 @@ if DMD_in_XDT
     setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',0); %1 on 0 off
 end 
 %% Remix at end: Ensure a 50/50 mixture after spin-mixture evaporation
-
+%RHYS - Useful.
 if (remix_at_end)
 
     %Do RF Sweep
@@ -2694,6 +2711,8 @@ end
 
 
 %% ramp up Feshbach field after crossed dipole trap evaporative cooling
+%RHYS - Another opportunity to ramp up the FB field before lattice loading.
+%This exists a bit higher up in the code too, so maybe only keep one.
 if (ramp_Feshbach_B_after_CDT_evap == 1)
     ramp_up_time = 50;
     ramp_down_time=50;
@@ -2720,7 +2739,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
     
 end
 %% ramp up and ramp down lattice beams
-
+%RHYS - Potentially useful option. 
 if (load_lat_in_xdt_loading == 1)
     %set intital value and set digital channel value
     setAnalogChannel(calctime(curtime,-60),'xLattice',-10,1);
@@ -2766,7 +2785,7 @@ end
     
     %% Get Rid of Rb at the Very Very End
 get_rid_of_Rb_at_the_end = 0;
-
+%RHYS - Not sure why this would be useful.
 if (get_rid_of_Rb_at_the_end && seqdata.flags. CDT_evap == 1)
 
     %repump atoms from F=1 to F=2, and blow away these F=2 atoms with
@@ -2805,6 +2824,8 @@ if (get_rid_of_Rb_at_the_end && seqdata.flags. CDT_evap == 1)
 end
 
 %% Kick the dipole trap (or punch, if so inclined).
+%RHYS - An alterative way to measure trap frequency using a piezo mirror to
+%give the atoms a kick. 
 if do_dipole_trap_kick
     
     %How Long to Wait After Kick
@@ -2840,7 +2861,8 @@ end
 
 
 %% Pulse Raman beams in XDT.
-
+%RHYS - Probably deprecated. Was used to check alignment of Raman beams
+%through diffraction if beams are the same frequency (make a lattice).
 if Raman_in_XDT
 curtime = calctime(curtime, 0.3);
     time_list = [0.25]; 
@@ -2852,7 +2874,7 @@ end
 
 
 %% Pulse kill beam for alignment
-
+%RHYS - Can be useful. Pretty sure it exists in lattice too though.
 if Kill_Beam_Alignment
     
 %     kill_probe_pwr = 1;
@@ -2898,7 +2920,10 @@ curtime=calctime(curtime,kill_time);
 end
 
 %% Keep XDT On for Some Time
-
+%RHYS - Either hold for some time after using dipole trap kick, or just
+%holds a bit in general. The one second hold time seems useful for loading
+%the lattice as it gives the rotating waveplate time to turn before the
+%lattice turns on.
 if do_dipole_trap_kick
     
     curtime = calctime(curtime,kick_wait_time);
@@ -2911,7 +2936,7 @@ else
     curtime=calctime(curtime,exxdthold + 0*14500);%for sparse image
     
 end
-
+%RHYS - High field imaging stuff. What to keep, what to delete?
 %Record the current of the Feshbach coil
 % seqdata.params. feshbach_val = fesh_current_val;
 
@@ -3023,7 +3048,7 @@ end
 % curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
         
 HF_ramp_temp_measurement = 0;
-
+%RHYS - More high field stuff. 
 if HF_ramp_temp_measurement
 time_in_HF_imaging = curtime;
 
@@ -3440,20 +3465,11 @@ time_out_HF_imaging = curtime;
 
 end
 
+%RHYS - Here ends the high-field imaging section. Everything before this
+%could be moved out into functions, and perhaps much could be deleted. 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+%RHYS - What follows is more high-field stuff, presumably old code that we
+%don't want anymore...
 
 %ADD XDT HOLD AGAIN!!!!
 
@@ -3810,7 +3826,7 @@ end
 % %         
 %     end
 
-
+%RHYS - End of dipole transfer code. Keep this.
 timeout = curtime;
 
 end

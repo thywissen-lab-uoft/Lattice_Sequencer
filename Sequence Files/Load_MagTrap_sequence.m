@@ -14,6 +14,16 @@
 %file that loads parameters. It could then call various class methods for
 %different parts of the sequence (i.e. Mag_Trap.Load(x,y,z),
 %XDT.Evaporate(p,q,r), etc...)
+%
+% CORA - Some rambling thoughts: I'm not quite sure if object oriented 
+% programming is the ideal coding framework for this system. (this is not
+% in direct opposition to your comment rhys, but on the benefits of OOO for
+% us
+% 1) MATLAB is not inherently object
+% oriented, though you can define classes.  While structure object (which
+% is what seqdata is), may resemble classes, they don't really have the
+% same inherent architecture (ie. constructors, inheretence, etc).
+% 2) we don't really make multiple instances of 'class objects'.   
 
 function timeout = Load_MagTrap_sequence(timein)
 

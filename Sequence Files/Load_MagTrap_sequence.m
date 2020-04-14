@@ -24,6 +24,12 @@
 % is what seqdata is), may resemble classes, they don't really have the
 % same inherent architecture (ie. constructors, inheretence, etc).
 % 2) we don't really make multiple instances of 'class objects'.   
+% 3) Global variables are powerful and very dangerous tools in my experience.
+% Perhaps another solution would be to remove the globalness of this
+% variable. For example, seqdata could be a locally passed structure that
+% is operated on : (not a real example below)
+%   seqdata = magtrap(seqdata) % adds the magtrap to the sequence
+
 
 function timeout = Load_MagTrap_sequence(timein)
 

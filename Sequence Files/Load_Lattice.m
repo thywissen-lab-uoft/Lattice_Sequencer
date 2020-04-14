@@ -19,20 +19,13 @@ global seqdata;
 % timein is the time at which the lattice starts to be ramped up
 curtime = timein;
 lattices = {'xLattice','yLattice','zLattice'};
-seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
+seqdata.params. XDT_area_ratio = 1;
 % This extra time only for when Load_Lattice is run alone, in order to "not go back in time".  
 %      seqdata.flags. load_lattice = 1;
 %       curtime = calctime(curtime,1500);
  
 %% Sequence parameters    
 %Special Flags 
-
-    %RHYS - This is a bit better organized than the dipole_transfer code,
-    %in that most flags are actually set up here. Still, should be put in
-    %an external flags structure (e.g.
-    %seqdata.flags.lattice.do_plane_selection = True). Also, many can
-    %probably be deleted.
-    
     ramp_fields_after_lattice_loading = 0; % do a field ramp for spectroscopy
     QP_on = 0;
     lattice_QP_hybrid = 0;
@@ -65,7 +58,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     conductivity_without_dimple = 0; % use this one
     
     
-    %NOT THIS ONE %RHYS - Let's delete it.
+    %NOT THIS ONE
     conductivity_modulation_no_dimple = 0; % previous
    
     Dimple_Mod = 0;
@@ -83,8 +76,6 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     repump_pulse = 0; %Pulse on the D1 Beam to act as a repump
     seqdata.flags. plane_selection_after_D1 = 0;
 
-    %RHYS - Some confusing parameters defined here. Consolidate.
-    
     lattice_holdtime_for_lifetimeM_list = [50]; %150 sept28
     lattice_holdtime_desired = getScanParameter(lattice_holdtime_for_lifetimeM_list,seqdata.scancycle,seqdata.randcyclelist,'lthdt');%maximum is 4
     
@@ -110,8 +101,6 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     ZLD = getScanParameter(Depth_List,seqdata.scancycle,seqdata.randcyclelist,'zld');
 % ZLD = getmultiScanParameter(Depth_List,seqdata.scancycle,'ylattice_depth',1,2);
 
-%RHYS - Is there a better way to switch between lattice ramp sequences? Or,
-%again, perhaps store in an external file a load in.
 
 %%%LOADING SEQ BELOW CAN BE USED FOR SIMPLE LATTICE LOADING
     lat_rampup_depth = 1*[1*[ZLD    ZLD];
@@ -169,8 +158,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 % % % % %%%%%%%%%%%%%     
 
 
-%RHYS - DMD stuff above and below. Write a module rather than commenting
-%out.
+
 
 %%%%%%%%DENSITY PROPAGATION
 % % First, ramp up box
@@ -278,8 +266,6 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     addOutputParam('Lattice_Time',lattice_holdtime)
     
     %Additional parameters and flags for this sequence    
-    %RHYS - Parameter determining how dipole trap behaves should be with
-    %the rest of the lattice ramp parameters.
     dipole_trap_off_after_lattice_on = 2; 
     % 0 - use ramp parameters below; 
     % 1 - snap off after 1st lattice ramp;
@@ -304,8 +290,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     addOutputParam('lattice_depth',lat_rampup_depth(1,end)*atomscale);
     
 %% Turn Rotating Waveplate to Shift Power to Lattice Beams
-%RHYS - This is used. Code is short an straightforward, probably does not
-%need to be changed. 
+
 if rotate_waveplate_after_ramp
     %Start with a little power towards lattice beams, and increase power to
     %max only after ramping on the lattice
@@ -334,7 +319,7 @@ else
 end
 
 %% Ramp up lattice
-%RHYS - Basically the main functionality of this bit of code (ramp up the lattices).     
+    
     seqdata.times.lattice_start_time = curtime;
     ScopeTriggerPulse(curtime,'Load lattices');
     
@@ -349,7 +334,7 @@ end
     
         
     % ODT1&2 ramps
-%RHYS - What is this? Delete.    
+    
 %     if (~dipole_trap_off_after_lattice_on) % '__'=0 : use ramp parameters defined above;
 %         AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_endpower);
 %         AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,seqdata.params. XDT_area_ratio*dip_endpower);
@@ -361,8 +346,6 @@ end
 curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_time(1), lat_rampup_time(1), lat_rampup_depth(3,1));
 
     %Ramp up feshbach field after 1st lattice ramp. 
-    %RHYS - Can ramp the FB field up high here during lattice loading to
-    %try to make a Mott-insulator or some such.
     if (ramp_fields_after_lattice_loading==1) % if a coil value is not set, this coil will not be changed from its current value
         % shim settings for spectroscopy
         clear('ramp');
@@ -388,8 +371,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk
 %        ScopeTriggerPulse(curtime,'b_ramp_for_calibration');
     
     end
-    
-    %RHYS - This could be better handled using 'case' for the six cases.
+
     %turn off ODTs if demanded
     if (dipole_trap_off_after_lattice_on == 1) % '__' = 1: snap off after 1st lattice ramp;
         setAnalogChannel(calctime(curtime,0),'dipoleTrap1',0,1);
@@ -405,7 +387,6 @@ curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk
 curtime = setDigitalChannel(calctime(curtime,xdt_ramp_time1),'XDT TTL',1);
     end
     
-    %RHYS - Why do this? Delete.
     if modulate_XDT_after_loading
         
         curtime = calctime(curtime,500);
@@ -427,7 +408,6 @@ curtime = applyLatticeModulation(calctime(curtime,0), mod_freq, mod_amp, mod_off
 
     end
     
-    %RHYS - The actual lattice ramps.
     % further lattice rampup segments
     if length(lat_rampup_time) > 1
         for j = 2:length(lat_rampup_time) 
@@ -482,7 +462,6 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,tau,y2)(evap_
         curtime = ramp_bias_fields(calctime(curtime,0), ramp); 
     end
 %% Turn off compensation beams if used.
-%RHYS - Obsolete. Delete.
 %     if(seqdata.flags.turn_on_compensation)
 %         Comp_Ramptime = 10;
 %         curtime = AnalogFuncTo(calctime(curtime,0),'Compensation Power',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),Comp_Ramptime,Comp_Ramptime,0);
@@ -501,7 +480,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,tau,y2)(evap_
     
 %% Get rid of Rb by doing repump and probe pulse
     %Only do this if evaporation has happened
-%RHYS - If attempting to evaporate in lattice with Rb as well. Never been useful, could delete.    
+    
 if (get_rid_of_Rb_in_lattice && seqdata.flags. CDT_evap == 1)
 
         %repump atoms from F=1 to F=2, and blow away these F=2 atoms with
@@ -540,8 +519,6 @@ if (get_rid_of_Rb_in_lattice && seqdata.flags. CDT_evap == 1)
 end
 
 %% Load X/Y lattices after evaporation.
-    %RHYS - If you want to evaporate in just a z-lattice. Test code, this
-    %sort of evaporation did not work well.
     if(load_XY_after_evap)
         
 %         lat_rampup_depth = 1*[[0.00 0.00 0.00 0.00 0.02 0.02 0.10 0.10 ZLD  ZLD]*100;
@@ -574,9 +551,7 @@ curtime =       calctime(curtime,lat_rampup_time(j));
     
     
 %% Ramp up/down Gradient
-%RHYS - Can make a hybrid of the lattices and a QP trap. Not sure why we
-%would ever use this again. The QP can be used to tilt atoms out of just a
-%z-lattice for evaporation. I would just delete this.
+
 if lattice_QP_hybrid
         FB_init = getChannelValue(seqdata,37,1,0);
             clear('ramp');
@@ -604,8 +579,7 @@ if lattice_QP_hybrid
         
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
 end
-%RHYS - If the lattice is loaded right from the QP, can call this to turn
-%the QP trap off, otherwise it will be on until the sequence ends.
+
 if QP_off_after_load
             FB_init = getChannelValue(seqdata,37,1,0);
             clear('ramp');
@@ -641,8 +615,7 @@ end
        
 %% Do Physics Things in Lattice (holding, further ramps, modulation, physics ...)
 
-    %RHYS - Not sure why we would want to set it to 0. Could imagine
-    %ramping it down if high, but that might happen later regardless.
+
     turn_off_feshbach = 0;
 
     if turn_off_feshbach      
@@ -662,7 +635,7 @@ end
     end
     
     collapse_revival = 0;
-    %RHYS - Don't know what this is. Delete.
+    
     if ( collapse_revival )    
     %Collapse and revival parameters  (ramp up)  
         collapse_revival_rampuptime = 0.05;
@@ -674,7 +647,7 @@ end
         AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),collapse_revival_rampuptime,collapse_revival_rampuptime,collapse_revival_ydepth);
 curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),collapse_revival_rampuptime,collapse_revival_rampuptime,collapse_revival_zdepth);
     end
-    %RHYS - Likely deprecated. Delete.    
+        
     if do_K_uwave_transfer
         
         %Set SRS for Transfer at 21G
@@ -797,7 +770,6 @@ curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk
     else
     end
     
-    %RHYS - D1 repump stuff? Deprecated, delete.
     if repump_pulse
         curtime = calctime(curtime,10);
         
@@ -825,8 +797,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk
         setDigitalChannel(calctime(curtime,10),35,1);
     else
     end
-    %RHYS - Another way to turn QP up and down in the lattice, maybe for
-    %evaporation. Delete.
+    
     if QP_on
         
         QP_holdtime = 100;
@@ -859,8 +830,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
     
     %Get rid of any leftover Rb atoms
     kill_Rb_in_lattice = 0;
-    %RHYS - Kill leftover Rb if some was kept around for evaporating in a
-    %lattice perhaps. Unlikely to find use. Delete.
+    
     if kill_Rb_in_lattice
         
         kill_pulse_time = 5; %5
@@ -901,9 +871,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 
     %Second set of lattice ramps
     lattice_ramp_II = 0;
-    %RHYS - Is this useful for ramping lattices after FB/DMD manipulations?
-    %Not sure. Either delete, or at least move the flag up to the top so
-    %someone knows this is a possibility.
+    
     if lattice_ramp_II
         %Define ramp parameters
         xLatDepth = 15; %380
@@ -937,9 +905,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
     
 
 %% RF Sweep to |9/2,-9/2>, Sweep 40K to |9/2,-9/2> before plane selection
-%RHYS - Usually atoms are already in this state. Could keep this option
-%around in case in |9/2,9/2>. Comments elsewhere about generalizing the
-%field-ramp/RF/uwave transfer codes apply.
+
 if initial_RF_sweep
     
 curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 8*33/atomscale);
@@ -987,8 +953,6 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 end  
 
 %% Make a -9/2,-7/2 spin mixture.
-%RHYS - Should do what it promises. Usually the mixture already exists, so
-%this option could be stripped out of here.
 if spin_mixture_in_lattice_before_plane_selection
     %Ramp FB Field
     clear('ramp');
@@ -1034,8 +998,6 @@ end
 
 %% Conductivity with no dimple.
 Lattices_to_Pin=0;
-%RHYS - This became deprecated even during the conductivity studies.
-%Definitely delete it.
     if conductivity_modulation_no_dimple
         Lattices_to_Pin = 1;
         freq_list = [0.001];       
@@ -1119,8 +1081,6 @@ curtime = calctime(curtime,post_mod_wait_time);
     end
 
 %% Dimple before plane selecting
-%RHYS - Code for turning on the dimple (850nm beam). Never really worked
-%for making things colder. Could keep the option.
 if (Dimple_Trap_Before_Plane_Selection)
     
     
@@ -1153,7 +1113,6 @@ end
 
 %% Ramp up QP to evaporatively cool
 %do_evaporation_before_plane_selection
-%RHYS - QP evaporation by tilting out of the lattice. Never worked, delete. 
 if do_evaporation_before_plane_selection
     
     XDT1_Power_QP = 0.2;
@@ -1257,10 +1216,7 @@ curtime = ramp_bias_fields(calctime(curtime,50), ramp); %
 end
 
  %% Dimple Trap Off
-%RHYS - Old code for turning off the dimple that was previously on and
-%doing conductivity modulation with the remaining smaller cloud. This was
-%superceded when we started doing conductivity measurements without the
-%dimple. Delete.
+
 if (Dimple_Trap_Before_Plane_Selection)
     %Lattices to some set depth and XDT to some power for modulating.
     Lattices_to_Pin = 1;
@@ -1626,9 +1582,6 @@ curtime = calctime(curtime,post_mod_wait_time);
     
 end
 %% conductivity modulation without dimple
-%RHYS - This is the code for the conductivity experiment. Should probably
-%keep for now, just clean up. A very long code: make its own module, delete
-%all the commented crap.
 if (conductivity_without_dimple == 1 )
     time_in_cond = curtime;
     Post_Mod_Lat_Ramp = 0;
@@ -2287,9 +2240,7 @@ curtime = AnalogFuncTo(calctime(curtime,-0.1),'zLattice',@(t,tt,y1,y2)(ramp_minj
 end
 
 %% Do Plane Selection
-%RHYS - Graham started to condense some of the plane selection code here.
-%Not sure if it works. Probably a good starting point for making a
-%more-organized plane-selection module.
+
 if fast_plane_selection
     
     plane_select_params.Fake_Pulse = 0;
@@ -2305,8 +2256,6 @@ curtime = do_fast_plane_selection(curtime, plane_select_params);
 end
 
 %% Use Raman/EIT beams to optically pump the atoms.
-%RHYS - This should work, but is kind of pointless. Normal D1 optical
-%pumping works. Delete?
 if do_raman_optical_pumping
     
      %Define ramp parameters
@@ -2388,7 +2337,6 @@ end
 
 %% Optically pump atoms
 % flag is "do_optical_pumping"
-%RHYS - This code works and is useful.
 if ( do_optical_pumping == 1)
     
     
@@ -2424,8 +2372,6 @@ curtime= AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(
     newramp = struct('ShimValues',seqdata.params.shim_zero + [X_Shim_Value+X_Shim_Offset, Y_Shim_Value+Y_Shim_Offset, Z_Shim_Offset],...
             'FeshValue',0.01,'QPValue',0,'SettlingTime',100);
 
-%RHYS - rampMagneticFields used here. This module was designed to replace
-%ramp_bias_fields, as it has a more friendly structural syntax.
 curtime = rampMagneticFields(calctime(curtime,0), newramp);
     
 
@@ -2469,7 +2415,7 @@ curtime =  setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);
 end
 
 %% Ramp lattices back down for plane selection after optical pumping.
-%RHYS - Kind of pointless. Delete.
+
 if(do_raman_optical_pumping || do_optical_pumping)
 
      %Define ramp parameters BUG WITH ANALOGFUNCTO? CANNOT BE THE SAME
@@ -2509,12 +2455,6 @@ if(do_raman_optical_pumping || do_optical_pumping)
 end
 
 %% Remove |9/2,-9/2> atoms from the lattice prior to selecting a plane.
-%RHYS - An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2>
-%so that plane selection could work. Always removed more atoms than
-%expected. Later, optical pumping was just done instead. This code might be
-%okay to keep for now, since there were open questions about this. It is
-%also very similar to plane selection code, so could perhaps be an option
-%for a more general selection code.
 if remove_one_spin_state
     
     %Set magnetic field and field gradient strengths.
@@ -2935,9 +2875,6 @@ end
 
 %% Plane selection
 %%Remove atoms in undesired vertical planes from the lattice.
-%RHYS - This code is a doozy of a mess. See Graham's
-%do_fast_plane_selection for ideals of modularizing. Should definitely be a
-%separate module at the least. 
 if do_plane_selection%Ramp up gradient and Feshbach field
     
 %     AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 40/atomscale); 
@@ -3426,8 +3363,7 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
         end
         
 %% Plane select a second time
-        %RHYS - This is a crazy copy of basically just everything above.
-        %Why this needs to be a module.
+        
         if (second_plane_selection == 1)
             %Select the desired plane again in order to increase the
             %efficiency of the optical kill pulse
@@ -3604,7 +3540,7 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
 
         end
         
-        %RHYS - QP vacuum cleaner. Will never be used again.
+        
         if (eliminate_planes_with_QP)
             
             %Reduce QP before relaxing from 3D confinement
@@ -3741,10 +3677,6 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
         
 end
 
-%RHYS - Possibly useful but probably not unless making a larger spacing
-%z-lattice. Mixture always exists before the lattice these days. But, the
-%idea of this is that it enables a mixture to be created after isolating a
-%plane, for 2D physics. 
 if spin_mixture_in_lattice_after_plane_selection
     %Ramp FB Field
     clear('ramp');
@@ -3787,12 +3719,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,10),3,sweep_pars);
 
 end
 %% Horizontal Selection
-%RHYS - Can make a stripe of atoms using this code. The DMD kind of makes
-%the patterning irrelevant. However, this code would enable spin
-%patterning, so worht keeping around for that potential purpose. Also,
-%'do_horizontal_plane_selection' was generalized to also give Raman/EIT
-%cooling, because they both use horizontal fields. Not exactly an
-%appropriate generalization. 
+
 if do_plane_selection_horizontally == 1
     
     clear('horizontal_plane_select_params')
@@ -3800,8 +3727,6 @@ if do_plane_selection_horizontally == 1
     horizontal_plane_select_params.Offset_Field = 3.9;
     horizontal_plane_select_params.Selection__Frequency = 1285.8+11.25 ; %10.55 for -90deg, 11.25 for 66.5deg (FIX THIS)
     horizontal_plane_select_params.Microwave_Or_Raman = 2;
-    %RHYS - Oh yeah, this was tried with Raman beams for the
-    %horizontal-plane dependent spin flips. Kind of worked.
     
     Raman_power_list = 1.7;%[0.3:0.2:1.7];
     horizontal_plane_select_params.Raman_Power = getScanParameter(Raman_power_list,seqdata.scancycle,seqdata.randcyclelist,'Raman_power1');
@@ -3859,7 +3784,7 @@ elseif do_plane_selection_horizontally == 3
     curtime = do_horizontal_plane_selection(curtime, horizontal_plane_select_params);
     
     
-%RHYS - Not sure what the use of this is. Delete?
+    
 elseif do_plane_selection_horizontally == 2
     
     eliminate_horizontal_with_QP = 1;   %Kill unselected planes with gradient + 2D lattice of tubes
@@ -3901,10 +3826,7 @@ curtime = rampMagneticFields(calctime(curtime,0), fieldramp);
             % some wait time        
             curtime = calctime(curtime,100);
         end
-      
-%RHYS - Oh, this looks like a neater version of the microwave part of the
-%rf_uwave_spectroscopy function! This would be a great place to start for a
-%better fully general version. 
+        
 curtime = applyMicrowave(curtime,sweep_freq,-20,sweep_duration,...
                         'Type','SWEEP','Device',28,'FrequencyRange',sweep_range,...
                         'ScopeTrigger','Horizontal Selection',...
@@ -4136,8 +4058,6 @@ end
 %          z_Bzero = -0.145;% Z BIPOLAR PARAM, -0.075 minimizes the field
 %          (May 20th, 2013)
 
-%RHYS - Spectroscopy sections for calibration. Comments about lack of code
-%generality from dipole_transfer apply here too: clean and generalize!
 if ( do_K_uwave_spectroscopy || do_Rb_uwave_spectroscopy || do_RF_spectroscopy || do_singleshot_spectroscopy )
     
     ramp_fields = 1; % do a field ramp for spectroscopy
@@ -4457,7 +4377,6 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 end
 %% Ramp down the dipole trap if it is on at higher intensity.
     dipole_rampdown = 0;
-    %RHYS - Useless, delete. 
      if (dipole_rampdown)
         dip_1 = 0.18; %1.5
         dip_2 = 0.18; %1.5
@@ -4473,8 +4392,7 @@ end
     
 
 %% Turn off Gradient
-%RHYS - Turns off the QP. Still don't like the structure here, seems it
-%should just be contained to each spectroscopy module.
+
 if ( QP_on  || do_K_uwave_spectroscopy || do_Rb_uwave_spectroscopy || do_RF_spectroscopy || do_singleshot_spectroscopy )
         if isfield(ramp,'QP_final')
             if ramp.QP_final ~=0
@@ -4495,7 +4413,7 @@ if ( QP_on  || do_K_uwave_spectroscopy || do_Rb_uwave_spectroscopy || do_RF_spec
 end
     
 %% Kill atoms left in F=9/2
-%RHYS - Deprecated, delete. 
+
 if eliminate_planes
     
     clear('ramp');
@@ -4648,7 +4566,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 end
 
 %% Dimple on later
-%RHYS - More dimple stuff that will never be used. Delete.
+
 if (Dimple_Trap_After_Plane_Selection)
       
     Dimple_Power_List = [1.5];
@@ -4678,8 +4596,7 @@ end
 
 
 %% Ramp up QP to evaporatively cool
-%RHYS - QP gradient evaporation in lattice after plane selection. Did not
-%work, delete.
+
 if do_evaporation_after_plane_selection
     
     ramp.xshim_final = seqdata.params. shim_zero(1)+1;% - 0.015
@@ -4779,8 +4696,7 @@ curtime = ramp_bias_fields(calctime(curtime,50), ramp); %
 end
 
 %% Modulate Dimple Trap
-%RHYS - Used to calibrate dimple trap depth. Make into a module, stick
-%somewhere. 
+
 if (Dimple_Mod)
     A_mod = 0.5;
     Frequency_List = [100:100:2000];
@@ -4801,8 +4717,7 @@ curtime = AnalogFuncTo(calctime(curtime,Dimple_Sweeptime),'zLattice',@(t,tt,y1,y
 
 end
  %% Dimple Trap Off
-%RHYS - The second part of that dimple after plane select code, where the
-%dimple turns off. Probably delete.
+
 if (Dimple_Trap_After_Plane_Selection)
     %Lattices to some set depth and XDT to some power for modulating.
     Lattices_to_Pin = 1;
@@ -5135,7 +5050,6 @@ curtime = calctime(curtime,post_mod_wait_time);
 
 end
 %% Lattice Modulation; use bandstructure calculation for conversion into
-%RHYS - Use to calibrate the lattice depths.
 if do_lattice_mod
     
     raman_coupling = 0;
@@ -5193,7 +5107,7 @@ curtime = calctime(curtime,50);
 end
 
 %% Rotate power distribution waveplate again (if loading lattice from a strong dipole trap)
-%RHYS - Remove comments, keep.
+
     if rotate_waveplate_after_ramp
         %Rotate waveplate again to divert the rest of the power to lattice beams
         curtime = AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),rotation_time_II,rotation_time_II,P_RotWave_I,P_RotWave_II); 
@@ -5213,7 +5127,6 @@ end
 
 
 %% Ramp lattice after spectroscopy/plane selection
-%RHYS - Important, keep and clean.
 if do_lattice_ramp_after_spectroscopy
 
     %Define ramp parameters
@@ -5272,7 +5185,7 @@ curtime=calctime(curtime,50);
 end
 
 %% Try to excite band excitations with shear mode AOM modulation of XDT 1.
-%RHYS - Not sure what this is, doesn't seem useful.
+
 if do_shear_mode_mod
     freq_list = [17]*1e3; %560
     mod_freq = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'XDT_Shaking_Freq');
@@ -5295,8 +5208,6 @@ curtime = applyLatticeModulation(calctime(curtime,0), mod_freq, mod_amp, mod_off
 end
 %% Horizontal magnetic field Raman transfers, flag = Raman_Transfers
 %turn on raman beams for side band cooling
-%RHYS - Important code for Raman/EIT cooling. Probably should not be a
-%branch off horizontal plane selection though.
 if (Raman_Transfers == 1)
     
     %During imaging, generate about a 4.4G horizontal field. Both shims get
@@ -5362,7 +5273,7 @@ end
 
 %% Transfer Excitation Using Raman Coupling
 
-%RHYS - Delete.
+
 
 % if raman_coupling
 %     
@@ -5381,7 +5292,7 @@ end
 % end
 
 %% Some sweeps of the Z-lattice for Rayleigh coupling.
-%RHYS - Delete.
+
 if (do_lattice_sweeps)
     
     Initial_Depth = 950;
@@ -5399,7 +5310,6 @@ curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_linear(
 end
 
 %% Raman beams in lattice. 
-%RHYS - For initial alignment, delete.
 if ( seqdata.flags.pulse_raman_beams ~= 0)
 
     Raman_On_Time = 50;
@@ -5412,11 +5322,10 @@ end
 
 %% Moving on
     
-%RHYS - Which hold time is this?
+   
 %Hold time in lattices
 curtime = calctime(curtime,lattice_holdtime);
 
-%RHYS - Definitely deprecated code, delete.
 %call molasses
 if ( seqdata.flags.lattice_img_molasses )
     
@@ -5428,7 +5337,7 @@ else
 end
 
 %% Plane Selection after Molasses
-%RHYS - Deprecated for sure, delete.
+
 if seqdata.flags. plane_selection_after_D1
 
     %Ramp up fields  
@@ -5457,7 +5366,6 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
     
 end
 
-%RHYS - This commented stuff can go.
 
 %% load atoms back into XDT, ramp down lattice % flag = Drop_From_XDT
 % ScopeTriggerPulse(curtime,'dropXDT',0.1);
@@ -5504,8 +5412,6 @@ end
 %         
 % end
 %% lattice_depth_calibration by amplitude modulation
-%RHYS - Another lattice depth calibration code. Might work, not sure if it
-%is metter than do_lattice_mod.
 if lattice_depth_calibration == 1        
         freq_list = [87.5:1:93];freq_list=freq_list*1000;        
         mod_freq = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'lat_mod_freq');
@@ -5548,9 +5454,6 @@ end
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %         setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);  %0: ON / 1: OFF,yLatticeOFF
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %         setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1); % Added 2014-03-06 in order to avoid integrator wind-up
 %%%%%%%%%=============================================================
-%RHYS - Definitely change this. Fudong's addition here was useful
-%(pre_lat_off_code = 0 just turns off all traps immediately), but, the name
-%of this flag is not good, nor should it be set all the way down here.
 pre_lat_off_code = 1; % a method to disable previous lattice off code
 if (pre_lat_off_code == 0)
     %Lattice Power
@@ -5573,8 +5476,6 @@ lattice_off_delay = 10;
 %'__' = 1: load lattice
 %'__' = 2: ramp to deep lattice at the end
  
-%RHYS - Lattice turn off code (snap or bandmap). Could perhaps be more
-%intuitive.
  if ( seqdata.flags.load_lattice == 1 ); %shut off lattice, keep dipole trap on
     
     % Parameters for ramping down the lattice (after things have been done)
@@ -5674,7 +5575,6 @@ curtime = setDigitalChannel(calctime(curtime,XDT_Holding_time),'XDT TTL',1);
     P_Ylattice = 0;
     P_Zlattice = 0;
 
-%RHYS - Not sure what these other options are good for.
 elseif ( seqdata.flags.load_lattice == 2 ); %leave lattice and dipole trap on and pass powers out of function
     
         %Optical powers to pass out of function

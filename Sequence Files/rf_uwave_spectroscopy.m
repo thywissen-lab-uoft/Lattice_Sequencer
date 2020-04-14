@@ -6,15 +6,6 @@ function  timeout = rf_uwave_spectroscopy(timein, type, pars)
 %   only). 
 %------
 
-
-%RHYS - Options 7 - 8 are obsolete and should be deleted. Any references to
-%a linesync pulse are also no longer relevant and can be deleted - replaced
-%by acync. 
-
-%RHYS - Options 5 and 6 are Rb uwave sweeps and Rb uwave pulses
-%respectively. Require the sextupler to be connected after an SRS to allow
-%an SRS to achieve Rb microwave frequencies. Otherwise, other code exists
-%to sweep field when using the Aniritsu Rb uwave source. 
 global seqdata
 
 curtime = timein;
@@ -304,7 +295,7 @@ curtime =   AnalogFunc(calctime(curtime,uwave_delay),46,@(t,tt,y1,y2)(ramp_linea
         addOutputParam('uwave_power',pars.power);
         
 % --------------------------------------
-
+    %PROBABLY OBSOLETE DUE TO ACYNC
     elseif ( type == 5 ) % Rb-uwave sweep using the sextupled SRS (GPIB controlled)
         
         rf_on = 1;

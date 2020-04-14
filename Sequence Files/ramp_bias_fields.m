@@ -31,7 +31,6 @@ function  timeout = ramp_bias_fields(timein, pars)
 % time.
 %------
 
-%RHYS - In theory, replaced by rampMagneticFields.m. Compare functionality.
 global seqdata;
 curtime = timein;
 

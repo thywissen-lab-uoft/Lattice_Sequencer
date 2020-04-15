@@ -108,7 +108,7 @@ initialize_channels();
     %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
     %3 = make sure shim are off for D1 molasses (should be removed)
     seqdata.flags.K_D2_gray_molasses = 0;
-    seqdata.params.tof =  0.15;  % 45 for rough alignment, 20 for K-D diffraction
+    seqdata.params.tof =  5;  % 45 for rough alignment, 20 for K-D diffraction
     seqdata.params.UV_on_time = 10000; %UV on time + savingtime + wait time = real wait time between cycles%
     % usually 15s for non XDT
     
@@ -139,14 +139,14 @@ initialize_channels();
     seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get clean TOF signal
 
     % Dipole trap
-    seqdata.flags.do_dipole_trap = 1; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
-    seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
+    seqdata.flags.do_dipole_trap = 0; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
+    seqdata.flags.CDT_evap = 0;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
     seqdata.flags.K_RF_sweep = 0;    %sweep 40K into |9/2,-9/2>; %create mixture in XDT, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1    
-    seqdata.flags.init_K_RF_sweep = 1; %sweep 40K into |9/2,-9/2>; %create mixture in XDT before evap, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1  
+    seqdata.flags.init_K_RF_sweep = 0; %sweep 40K into |9/2,-9/2>; %create mixture in XDT before evap, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1  
     seqdata.flags.compensation_in_modulation = 0; %turn on a compensation beam
 
     % Optical lattice
-    seqdata.flags.load_lattice = 1; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
+    seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
     seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
     seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 

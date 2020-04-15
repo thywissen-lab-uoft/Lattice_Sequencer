@@ -1,0 +1,18 @@
+#Files to ignore. 
+#Other files. Many .txts used for transport curves.
+#*.txt
+#*.mat
+#*.png
+#*.dat
+#*.eps
+#*.ps
+#*.db
+#Associated with backups and Mercurial server
+*.asv
+*.swp
+*.hg*
+#Associated with adbasic
+#*.BAK
+#*.bat
+#*.bas
+#*.TB1

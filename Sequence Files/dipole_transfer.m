@@ -46,7 +46,7 @@ global seqdata;
     do_end_uwave_transfer = 0;      %transfer Rb atoms from F=1 to F=2, then blow them away with probe pulse
     Rb_RF_sweep = 0;                %sweep atoms from |2,2> into |2,-2>
     Rb_repump = 0;                  %repump atoms back into F = 2
-    get_rid_of_Rb = 1;           %Get rid of Rb at end of evap (only happens when CDT_evap = 1
+    get_rid_of_Rb = 0;           %Get rid of Rb at end of evap (only happens when CDT_evap = 1
     do_RF_sweep_before_uWave = 0;   %Do an mF sweep before uWave spectroscopy
     do_K_uwave_spectroscopy = 0;    %do uWave Spectroscopy of 40K
     do_K_uwave_multi_sweeps = 0;    %do multiple uWave sweeps of 40K

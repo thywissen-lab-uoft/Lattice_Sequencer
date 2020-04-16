@@ -7,6 +7,8 @@
 #*.eps
 #*.ps
 #*.db
+# Ignore windows thumbnail files (they are not helpful)
+thumbs.db 
 #Associated with backups and Mercurial server
 *.asv
 *.swp

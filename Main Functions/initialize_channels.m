@@ -172,7 +172,7 @@ end
     seqdata.analogchannels(5).maxvoltage = 10;
     %Make the conversion function detuning
     seqdata.analogchannels(5).defaultvoltagefunc = 4; %CHANGED FOR AOM TEST
-    K_trap_freq_offset =-2000/1000;
+    K_trap_freq_offset =-2800/1000;
     K_repump_freq_offset = 00/1000;
     %40MHz detuning is 105MHz, higher frequency is less detuned
     %seqdata.analogchannels(5).voltagefunc{2} = @(a)((-19.17+0.22514*(134-a/2)-2.48788E-4*(134-a/2)^2)); %for Stefan's homemoade VCO

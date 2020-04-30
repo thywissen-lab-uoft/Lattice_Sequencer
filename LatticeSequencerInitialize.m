@@ -16,6 +16,11 @@ addpath(fullfile(curpath,'Sequence Files','Main Sequence'));
 addpath(fullfile(curpath,'Sequence Files','Optional Sequences'));
 addpath(fullfile(curpath,'Sequence Files','Physics Helpers'));
 addpath(fullfile(curpath,'Main Functions'));
+addpath(fullfile(curpath,'Main Functions','Adwin Commands'));
+addpath(fullfile(curpath,'Main Functions','Device Functions'));
+addpath(fullfile(curpath,'Main Functions','Math Functions'));
+addpath(fullfile(curpath,'Main Functions','Physics Functions'));
+addpath(fullfile(curpath,'Main Functions','User Interfacing'));
 addpath(fullfile(curpath,'GUI Functions'));
 
 

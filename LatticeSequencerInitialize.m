@@ -12,6 +12,9 @@ curpath = fileparts(mfilename('fullpath'));
 % 
 addpath(curpath);
 addpath(fullfile(curpath,'Sequence Files'));
+addpath(fullfile(curpath,'Sequence Files','Main Sequence'));
+addpath(fullfile(curpath,'Sequence Files','Optional Sequences'));
+addpath(fullfile(curpath,'Sequence Files','Physics Helpers'));
 addpath(fullfile(curpath,'Main Functions'));
 addpath(fullfile(curpath,'GUI Functions'));
 

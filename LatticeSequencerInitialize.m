@@ -19,7 +19,7 @@ addpath(fullfile(curpath,'Main Functions'));
 addpath(fullfile(curpath,'Main Functions','Adwin Commands'));
 addpath(fullfile(curpath,'Main Functions','Device Functions'));
 addpath(fullfile(curpath,'Main Functions','Math Functions'));
-addpath(fullfile(curpath,'Main Functions','Physics Functions'));
+addpath(fullfile(curpath,'Main Functions','AMO Functions'));
 addpath(fullfile(curpath,'Main Functions','User Interfacing'));
 addpath(fullfile(curpath,'GUI Functions'));
 

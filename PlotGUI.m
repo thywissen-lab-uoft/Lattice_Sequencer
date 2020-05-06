@@ -1,4 +1,10 @@
 function PlotGUI(hFigure)
+% CJF - This function is poolry defined. If it is a child function of
+% sequener GUI, then it should be defined in the code of SequencerGUI.m,
+% or, one of it's input arguments should be the additional info on
+% channels.
+% It shouldn't be using the same callback function as another GUI; that's
+% just silly and makes dependencies complicated.
 
     %Need to know about channels existing in seqdata in order to create the
     %GUI.
@@ -64,7 +70,7 @@ function PlotGUI(hFigure)
 
         end   
 
-        set(Push_Handle, 'Callback', @(src, evnt)pushbutton_callback(Push_Handle, hFigure, Check_Handles));
+        set(Push_Handle, 'Callback', @(src, evnt) pushbutton_callback(Push_Handle, hFigure, Check_Handles));
         
     else
         

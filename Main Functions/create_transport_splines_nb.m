@@ -10,7 +10,7 @@ y2 = [];
 horizontal_scale = 1.0;
 vertical_scale = 1.0;
 
-transportfolder = 'C:\Lattice Sequencer\transportsplines\';
+transportfolder = 'C:\Lattice Sequencer\Current Transport Splines\';
 
 %vertical currents revision number (remember to change in transport_coil_currents)
 %rev45 -> raised QP

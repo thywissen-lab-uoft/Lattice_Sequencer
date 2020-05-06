@@ -108,3 +108,34 @@ uicontrol(fh,'Style','pushbutton','String','Plot GUI','Position',...
 
 
 end
+
+function dirbutton_callback(hobject,eventdata)
+
+newpath = uigetdir(get(hobject,'string'));
+
+if (newpath~=0)
+    ui_dirtext = findobj(gcbf,'tag','outfilepath');
+    set(ui_dirtext,'string',newpath);
+end
+
+end
+
+function editbox_callback(Source, EventData)
+
+    %get the handles to all currently open windows
+    windowhnds = get(0,'Children');
+
+    for i = 1:length(windowhnds)
+        if get(windowhnds(i),'UserData')==159 %code for a plot window
+            Sub_Plot_Handles = get(windowhnds(i), 'Children');
+            for Counter = 1 : length(Sub_Plot_Handles)
+                Limits = eval(get(Source, 'String'));
+                set(Sub_Plot_Handles(Counter), 'XLim', [Limits(1)  Limits(end)] / 1000);
+            end
+        end
+    end
+    
+end
+
+
+

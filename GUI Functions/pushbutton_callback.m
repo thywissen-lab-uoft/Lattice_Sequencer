@@ -85,7 +85,7 @@ function pushbutton_callback(varargin)
             PlotGUI(hFigure);
 
         case 'Plot'
-
+            
             CheckBoxHandles = varargin{3:end};
             uiobj1 = findobj(gcbf,'tag','Times');
             eval(['plot_times = ' get(uiobj1,'string') ';']);
@@ -96,7 +96,7 @@ function pushbutton_callback(varargin)
                 end
             end
             PlotSequenceVersion2(sequencefunc,startcycle,plotchannels,plot_times);
-
+            
     end
 
 end

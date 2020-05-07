@@ -32,6 +32,9 @@ function timeout = rampMagneticFields(timein, varargin)
 
 %% constants and defaults
 
+%RHYS - Cleaner field sweep code. Check for consistency with
+%ramp_bias_fields. 
+
 % know who you are.
 [mename, mename] = fileparts(mfilename('fullpath'));
 

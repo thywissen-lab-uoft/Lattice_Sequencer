@@ -22,7 +22,8 @@ curtime = timein;
 seqdata.times.tof_start = curtime;
 
     ScopeTriggerPulse(curtime,'Start TOF',0.2);
-
+    %RHYS - As usual, a number of flags are here. Move to structure in
+    %main.
     quant_handover_time = 3; % time to ramp shims for imaging ... this may be changed below depending on the selected option
     perp_quant_field = 0; %set to nonzero integer (1) to use a quantization field perpendicular to img_direction
     
@@ -75,7 +76,10 @@ seqdata.times.tof_start = curtime;
     addOutputParam('tof',tof); 
   
 %% Special Flags
-    
+    %RHYS - Some parameters are changed based on special flags being set.
+    %Perhaps somewhat confusing to overwrite previously set parameters
+    %locally here (e.g. tof set to -2 for in_trap_image even if set to
+    %something else previously).
     if in_trap_img %%1: take an image in the magnetic trap
         tof = -2;
     end
@@ -102,7 +106,10 @@ seqdata.times.tof_start = curtime;
     end  
 
 %% Values for the detunings for all the possible imaging configurations.
-
+    %RHYS - The long set of detunings/probe powers that follow here based
+    %on nested if statements is a complete mess. Recommend making this a
+    %list in an external text file and just loading the relevant numbers in
+    %based on conditions in one line of code.
     if in_trap_img %%1 : take an image in the magnetic trap
 
         %K
@@ -353,7 +360,9 @@ addOutputParam('rb_probe_pwr',rb_probe_pwr);
 %% ABSORPTION IMAGING
   
 %% Pulse QP to do SG imaging (uses up 1st 2ms of ToF)
-
+%RHYS - Do a special set of magnetic field maninpulations if doing
+%Stern-Gerlach imaging. Basically pulse the QP field in the presence of a
+%vertical bias. Could be its own method or module.
 if (seqdata.flags.do_stern_gerlach)
 
     % Pulse parameters (ramp delays and SG_wait_TOF with respect to tof_start)
@@ -444,7 +453,8 @@ end
 %% Turn on quantizing field for imaging (ST 2014-03-18: made some changes here using AnalogFuncTo)
 %     %Make sure that bipolar shim relay is open
 %     setDigitalChannel(calctime(curtime,-10),'Bipolar Shim Relay',1);
-    
+%RHYS - The set of conditions that determine how to handle field quantization
+%is confusing. Can this be simplified?
     if (seqdata.flags.image_loc == 1) && (~in_trap_img) && (~in_situ_D1) && (seqdata.flags. do_imaging_molasses==2 || seqdata.flags. do_imaging_molasses==0 || (seqdata.flags. do_imaging_molasses==1 && seqdata.flags.do_stern_gerlach))% for an absorption image in science cell     
         
         if (seqdata.flags.QP_imaging == 0) % image out of optical trap
@@ -646,6 +656,9 @@ end
     
     %Before the actual imaging pulse, perform repump and/or optical
     %pumping.
+    %RHYS - This section of the code is reasonable, except for again the
+    %nexted if statements and local parameters. Add to external file for
+    %read in.
 if (~seqdata.flags.High_Field_Imaging)
     if use_K_repump
         %Repump pulse: off slightly after optical pumping pulse
@@ -719,6 +732,8 @@ if(~seqdata.flags.High_Field_Imaging)
           setAnalogChannel(calctime(curtime,tof-rb_detuning_shift_time),'Rb Beat Note FM',rb_detuning);%27 %26 in trap %time is 1.9 %29.6 MHz is resonance (no Q field), 33.4MHz is resonance (with 4G field), 32.4 MHz (with 3G field), found had to change to 27MHz (Aug10)
     end
   
+    %RHYS - Blue image and D1 image are never going to be taken again.
+    %Delete all references to these.
     %K - Set power, make sure probe is TTL'd off before image.  
     if ~(blue_image || D1_image)
         if (seqdata.atomtype==1  || seqdata.atomtype==4)
@@ -772,6 +787,7 @@ end
 
     %K - Open shutter for probe. This seems to happen a long long time
     %before the image.
+    %RHYS - This is ok, just get rid of blue_image/D1_image and simplify.
     if ~(blue_image || D1_image || seqdata.flags.High_Field_Imaging)
         if (seqdata.atomtype==1  || seqdata.atomtype==4)
             %RHYSCHANGE - Try to change timing from -10 to something more reasonable.
@@ -839,6 +855,7 @@ end
     % 1st imaging pulse
 curtime = calctime(curtime,tof);
 
+    %RHYS - img_direction == 5???
     if seqdata.flags.img_direction ==5
     else
          do_abs_pulse(curtime,pulse_length,k_probe_pwr);
@@ -875,6 +892,8 @@ timeout=curtime;
 
 
 %% Absorption pulse function -- triggers cameras and pulses probe/repump
+%RHYS - Not bad, again, remove extraneous conditions, maybe call as a
+%method of an absorption image class.
 function do_abs_pulse(curtime,pulse_length,k_probe_pwr)
     
     %This is where the cameras are triggered.
@@ -923,6 +942,8 @@ function do_abs_pulse(curtime,pulse_length,k_probe_pwr)
             %Repump on during the image pulse
             DigitalPulse(curtime,7,pulse_length,0);
         end
+        
+%RHYS - Remove the comments below.        
         
         %Is it strange that this is here? Could just happen before first
         %image. Everything here is happening back in time. 

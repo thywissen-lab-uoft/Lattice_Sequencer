@@ -595,36 +595,6 @@ curtime = Transport_Cloud(curtime, seqdata.flags.hor_transport_type, seqdata.fla
     AnalogFuncTo(calctime(curtime,0),'Y Shim',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,y_shim_val,4); 
     AnalogFuncTo(calctime(curtime,0),'X Shim',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,x_shim_val,3); 
 curtime = AnalogFuncTo(calctime(curtime,0),'Z Shim',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,z_shim_val,3); 
-  
-%% RF Evaporation Knife (for benchmarking power)
-    %RHYS - never used this. Is it useful?
-    if RF_benchmark_evap
-
-        max_knife_time = 5000;
-
-        %turn RF on:
-        setDigitalChannel(calctime(curtime,0),19,1);
-        setAnalogChannel(curtime, 39, -2, 1);
-
-        %list
-        rf_knife_list= 0:100:1250;
-
-        %Create Randomized list
-        index=seqdata.randcyclelist(seqdata.cycle);
-
-        knife_time = rf_knife_list(index);
-        addOutputParam('knife_time',knife_time);
-
-        if ~(knife_time == 0)
-curtime = DDS_sweep(calctime(curtime,10),1,20*1E6,20*1E6,knife_time);
-        end
-
-        %turn RF on:
-        setDigitalChannel(calctime(curtime,0),19,0); 
-
-curtime = calctime(curtime,max_knife_time-knife_time);
-
-    end
 
 %% Evaporate in Tight QP Trap
 

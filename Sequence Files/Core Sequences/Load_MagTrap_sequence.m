@@ -568,10 +568,6 @@ curtime = calctime(curtime,pre_hold_time);
 curtime = do_evap_stage(curtime, fake_sweep, freqs_1, sweep_times_1, ...
         RF_gain_1, hold_time, (seqdata.flags.RF_evap_stages(3) == 0));
 
-    elseif ~(mag_trap_MOT || MOT_abs_image)
-curtime = calctime(curtime,0); %changed from 100ms to 0ms   
-    end
-
     %This does a fast evaporation to benchmark the transport
     if ( seqdata.flags.RF_evap_stages(1) == 2 )
 

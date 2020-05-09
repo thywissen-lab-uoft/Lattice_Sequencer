@@ -288,11 +288,6 @@ curtime = timein;
 
     end
 
-    if seqdata.flags.image_type==4
-        seqdata.flags.hor_transport_type = 2;
-        seqdata.flags.ver_transport_type = 2;
-    end
-
 %% Consistency checks
     %Implement special flags
     if (mag_trap_MOT + MOT_abs_image + transfer_recap_curve + after_sci_cell_load)>1

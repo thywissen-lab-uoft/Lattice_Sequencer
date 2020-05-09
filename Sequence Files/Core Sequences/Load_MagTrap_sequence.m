@@ -553,8 +553,6 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Z Shim',@(t,tt,y1,y2)(ramp_minjerk(t
          hold_time = 100;
          pre_hold_time =  100;
 
-         %BEC March 14
-         cut_freq = 100;
          start_freq = 42;42;%42  
 
         %this worked well with 0.6 kitten

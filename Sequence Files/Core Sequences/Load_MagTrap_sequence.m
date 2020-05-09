@@ -274,17 +274,6 @@ curtime = timein;
         seqdata.flags.ver_transport_type = 3;
     end
 
-    if after_sci_cell_load
-        seqdata.flags.hor_transport_type = 1;
-        seqdata.flags.ver_transport_type = 3;
-        seqdata.flags.image_type = 0;
-        seqdata.flags.image_loc = 1;
-        seqdata.flags.compress_QP = 1;
-        seqdata.flags.do_plug = 0;
-        seqdata.flags.RF_evap_stages = [0 0 0];%[0 0 1] July 25, 2013
-        seqdata.flags.do_dipole_trap = 0;
-    end
-
     if bench_transport || bench_rf
         seqdata.flags.hor_transport_type = 1;
         seqdata.flags.ver_transport_type = 3;

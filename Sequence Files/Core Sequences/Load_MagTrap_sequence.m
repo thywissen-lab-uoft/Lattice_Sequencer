@@ -268,26 +268,6 @@ curtime = timein;
         seqdata.flags.pulse_lattice_for_alignment = 0;
     end
 
-    if bench_transport || bench_rf
-        seqdata.flags.hor_transport_type = 1;
-        seqdata.flags.ver_transport_type = 3;
-        seqdata.flags.image_type = 0;
-        seqdata.flags.image_loc = 1;
-        seqdata.flags.compress_QP = 1;
-        seqdata.flags.do_plug = 0;
-        seqdata.flags.do_dipole_trap = 0;
-        seqdata.flags.load_lattice = 0;
-
-        if bench_transport
-            seqdata.flags.RF_evap_stages = [2 1 0];
-            RF_benchmark_evap = 0;
-        else
-            seqdata.flags.RF_evap_stages = [0 0 0];
-            RF_benchmark_evap = 1;
-        end
-
-    end
-
 %% Consistency checks
     %Implement special flags
     if (mag_trap_MOT + MOT_abs_image + transfer_recap_curve + after_sci_cell_load)>1

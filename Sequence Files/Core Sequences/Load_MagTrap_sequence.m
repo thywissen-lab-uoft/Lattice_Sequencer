@@ -674,14 +674,6 @@ curtime=calctime(curtime,5);
     RF_gain_1b = [-5.5 -5.5 rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 -6.3 -6.3];[4 4 1 1];[-6.74 -6.74 -7.26 -7.26];   % 8 8 5 5
     sweep_times_1b = [3000 2000 10]*rf_evap_time_scale(2); [3000 2000 10];%[3000 2500 10]*rf_evap_speed(2);
 
-    if seqdata.flags. evap_away_Rb_in_QP == 1
-        
-        %Evaporate lower to clear out the Rb, leaving only K in the XDT
-        freqs_1b = [freqs_1(end)/MHz*0.8 4 0.35 1]*MHz;
-        RF_gain_1b = [4 4 1 1]; %-4
-        sweep_times_1b = [3000 2500 10]*rf_evap_speed(2); %1500
-    end
-
 curtime = do_evap_stage(curtime, fake_sweep, freqs_1b, sweep_times_1b, RF_gain_1b, 0, 1);
 
     %Get rid of Rb afterwards (used for loading dilute 40K into lattice)

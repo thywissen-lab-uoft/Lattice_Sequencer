@@ -268,12 +268,6 @@ curtime = timein;
         seqdata.flags.pulse_lattice_for_alignment = 0;
     end
 
-    if transfer_recap_curve
-        seqdata.flags.image_type = 6;
-        seqdata.flags.hor_transport_type = 1;
-        seqdata.flags.ver_transport_type = 3;
-    end
-
     if bench_transport || bench_rf
         seqdata.flags.hor_transport_type = 1;
         seqdata.flags.ver_transport_type = 3;

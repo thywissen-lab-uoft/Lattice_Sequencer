@@ -259,7 +259,7 @@ curtime = timein;
         seqdata.flags.pulse_lattice_for_alignment = 0;
     end
 
-    if seqdata.flags.image_loc == 0
+    if seqdata.flags.image_loc == 0 %MOT cell imaging
         seqdata.flags.do_plug = 0;
         seqdata.flags.compress_QP = 0;
         seqdata.flags.RF_evap_stages = [0 0 0];

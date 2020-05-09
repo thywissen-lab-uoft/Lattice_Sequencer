@@ -119,7 +119,6 @@ curtime = timein;
     after_sci_cell_load = 0; %Abs image after loading into science cell
     bench_transport = 0; %special stage for benchmarking the transport
     bench_rf = 0; %special stage for benchmarking RF power making it to the atoms
-    RF_benchmark_evap = 0; % for benchmarking rf
     seqdata.flags.rb_vert_insitu_image = 0; 
     %take a vertical in-situ image of BEC in XDT to centre the microscope objective
     
@@ -246,19 +245,6 @@ curtime = timein;
     %RHYS - the predefined scenarios described before. These have not been
     %used in years, so cannot verify whether they do or do not work. Useful
     %idea though. 
-
-    if seqdata.flags.rb_vert_insitu_image
-        %Necessary flags to switch from K fluorescence images to Rb abs
-        %with iXon
-        seqdata.flags. image_atomtype = 0;
-        seqdata.flags. image_type = 0;
-        seqdata.flags. iXon = 1;
-        seqdata.params. tof = 0.2;
-        
-        seqdata.flags. CDT_evap = 1;
-        seqdata.flags. load_lattice = 0;
-        seqdata.flags. do_imaging_molasses = 0;
-    end
 
     if mag_trap_MOT || MOT_abs_image || transfer_recap_curve
         seqdata.flags.hor_transport_type = 2;

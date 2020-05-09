@@ -246,19 +246,6 @@ curtime = timein;
     %used in years, so cannot verify whether they do or do not work. Useful
     %idea though. 
 
-    if seqdata.flags.rb_vert_insitu_image
-        %Necessary flags to switch from K fluorescence images to Rb abs
-        %with iXon
-        seqdata.flags. image_atomtype = 0;
-        seqdata.flags. image_type = 0;
-        seqdata.flags. iXon = 1;
-        seqdata.params. tof = 0.2;
-        
-        seqdata.flags. CDT_evap = 1;
-        seqdata.flags. load_lattice = 0;
-        seqdata.flags. do_imaging_molasses = 0;
-    end
-
     if mag_trap_MOT || MOT_abs_image || transfer_recap_curve
         seqdata.flags.hor_transport_type = 2;
         seqdata.flags.ver_transport_type = 2;

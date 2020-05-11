@@ -10,8 +10,6 @@
 function [timeout P_dip P_Xlattice P_Ylattice P_Zlattice P_RotWave] = Load_Lattice(varargin)
 
 timein = varargin{1};
-lattice_flags(timein)
-
 if nargin > 1
     Imaging_Time = varargin{2};
 else
@@ -22,10 +20,9 @@ global seqdata;
 curtime = timein;
 lattices = {'xLattice','yLattice','zLattice'};
 seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
-
 % This extra time only for when Load_Lattice is run alone, in order to "not go back in time".  
 %      seqdata.flags. load_lattice = 1;
-% curtime = calctime(curtime,1500);
+%       curtime = calctime(curtime,1500);
  
 %% Sequence parameters    
 %Special Flags 
@@ -36,28 +33,24 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     %seqdata.flags.lattice.do_plane_selection = True). Also, many can
     %probably be deleted.
     
-    ramp_fields_after_lattice_loading = 0; %keep %do a field ramp for spectroscopy %Ramp up feshbach field after 1st lattice ramp. Can ramp the FB field up high here during lattice loading to try to make a Mott-insulator or some such.
-    QP_on = 0; % delete
-    lattice_QP_hybrid = 0; % delete: from QP rampup/down section
-    QP_off_after_load = 0; % keep: used for turning off QP if loaded from QP directly
-    modulate_XDT_after_loading = 0; %delete: from lattice rampup section
-    get_rid_of_Rb_in_lattice = 0; %keep: never seem to be useful tho, for evaporation in lattice
-    load_XY_after_evap = 0; %keep: could be used to evaporate in just z-lattice
-    initial_RF_sweep = 0; %keep: Sweep 40K to |9/2,-9/2> before plane selection
-    spin_mixture_in_lattice_before_plane_selection = 0; % keep: Make a -9/2,-7/2 spin mixture.
-    Dimple_Trap_Before_Plane_Selection = 0; % keep: turn on the dimple, leave this option
-    do_evaporation_before_plane_selection = 0;   %delete: QP evaporation by tilting out of the lattice. Never worked, delete. %Move -7/2 atoms to -9/2 for plane selection if spin mixture existed
-    
-    do_raman_optical_pumping = 000; %keep: for an option, normal D1 OP should be fine 
-    do_optical_pumping = 0; %keep: useful
-    
-    remove_one_spin_state = 0;% keep: An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
-    do_plane_selection = 0;     kill_pulses = 0;  %Kill Pulses only active if do_plane_selection=1
-    second_plane_selection = 0; % copy 
-    fast_plane_selection = 0;% keep: could be the future of plane selection code for cleaner control
-    eliminate_planes_with_QP = 0; %keep: QP vacuum cleaner. In 2nd time plane selection section
+    ramp_fields_after_lattice_loading = 0; % do a field ramp for spectroscopy
+    QP_on = 0;
+    lattice_QP_hybrid = 0;
+    QP_off_after_load = 0;
+    modulate_XDT_after_loading = 0;
+    get_rid_of_Rb_in_lattice = 0;
+    load_XY_after_evap = 0;
+    initial_RF_sweep = 0; %Sweep 40K to |9/2,-9/2> before plane selection
+    spin_mixture_in_lattice_before_plane_selection = 0; % Make a -9/2,-7/2 spin mixture.
+    Dimple_Trap_Before_Plane_Selection = 0;
+    do_evaporation_before_plane_selection = 0;   %Move -7/2 atoms to -9/2 for plane selection if spin mixture existed
+    do_raman_optical_pumping = 000; %DONT USE THIS 
+    do_optical_pumping = 0;
+    remove_one_spin_state = 0;
+    do_plane_selection = 0;     kill_pulses = 0;  second_plane_selection = 0;%Kill Pulses only active if do_plane_selection=1
+    fast_plane_selection = 0;
+    eliminate_planes_with_QP = 0;
     do_plane_selection_horizontally = 0;  %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION!
-    
     do_K_uwave_transfer =  0; %not used very often
     do_K_uwave_spectroscopy = 0;
     do_Rb_uwave_spectroscopy = 0;
@@ -410,7 +403,27 @@ curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk
 curtime = setDigitalChannel(calctime(curtime,xdt_ramp_time1),'XDT TTL',1);
     end
     
+    %RHYS - Why do this? Delete.
+    if modulate_XDT_after_loading
+        
+curtime = calctime(curtime,500);
+    
+        freq_list = [2]; %560
+        mod_freq = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'lat_mod_freq');
 
+        time_list = [4000:100:5000];
+        mod_time = getScanParameter(time_list,seqdata.scancycle,seqdata.randcyclelist,'lat_mod_time');
+        mod_amp = 10;
+        addOutputParam('mod_amp',mod_amp);
+        mod_wait_time = 0;
+        
+        mod_offset = mod_amp/2;
+
+    % Apply the lattice modulation   
+curtime = applyLatticeModulation(calctime(curtime,0), mod_freq, mod_amp, mod_offset, mod_time, ...
+        'Lattice', 'zlattice', 'RampLatticeDelta', 0, 'ScopeTrigger', 'Lattice_Mod');
+
+    end
     
     %RHYS - The actual lattice ramps.
     % further lattice rampup segments
@@ -543,6 +556,36 @@ curtime = calctime(curtime,lat_rampup_time(j));
     
     
 %% Ramp up/down Gradient
+%RHYS - Can make a hybrid of the lattices and a QP trap. Not sure why we
+%would ever use this again. The QP can be used to tilt atoms out of just a
+%z-lattice for evaporation. I would just delete this.
+if lattice_QP_hybrid
+        FB_init = getChannelValue(seqdata,37,1,0);
+            clear('ramp');
+            
+            ramp.xshim_final = seqdata.params. shim_zero(1) - 0.10;% - 0.144; %-0.144
+            ramp.yshim_final = seqdata.params. shim_zero(2) + 0.05;% + 0.34; %0.14
+            ramp.zshim_final = seqdata.params. shim_zero(3) + 0;
+            ramp.shim_ramptime = 50;
+            ramp.shim_ramp_delay = -10; % ramp earlier than FB field if FB field is ramped to zero
+            addOutputParam('PSelect_xShim',ramp.xshim_final)
+            addOutputParam('PSelect_yShim',ramp.yshim_final)
+
+            % FB coil settings for spectroscopy
+            ramp.fesh_ramptime = 50;
+            ramp.fesh_ramp_delay = -0;
+            ramp.fesh_final = 0.0208;%before 2017-1-6 0.01*22.6; %22.6
+            addOutputParam('PSelect_FB',ramp.fesh_final)
+
+            % QP coil settings for spectroscopy
+            ramp.QP_ramptime = 50;
+            ramp.QP_ramp_delay = 60;
+            ramp.QP_final =  3*1.78; %7
+
+            ramp.settling_time = 50; %200
+        
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
+end
 %RHYS - If the lattice is loaded right from the QP, can call this to turn
 %the QP trap off, otherwise it will be on until the sequence ends.
 if QP_off_after_load
@@ -764,7 +807,37 @@ curtime = DigitalPulse(calctime(curtime,0),35,pulse_length,1);
         setDigitalChannel(calctime(curtime,10),35,1);
     else
     end
-   
+    %RHYS - Another way to turn QP up and down in the lattice, maybe for
+    %evaporation. Delete.
+    if QP_on
+        
+        QP_holdtime = 100;
+        
+        ramp_fields = 1;
+        %Ramp up QP gradient to create a hybrid trap
+        clear('ramp');
+        
+        % QP coil settings for spectroscopy
+        ramp.QP_ramptime = 100;
+        ramp.QP_ramp_delay = -0;
+        ramp.QP_final = 4*1.78; %7
+        
+        ramp.settling_time = 50;
+        
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
+    
+curtime = calctime(curtime,QP_holdtime);
+    
+        %Ramp up QP gradient to create a hybrid trap
+        clear('ramp');
+        
+        % QP coil settings for spectroscopy
+        ramp.QP_final = 0*1.78; %7
+        
+curtime = ramp_bias_fields(calctime(curtime,0), ramp);
+    
+    
+    end
     
     %Get rid of any leftover Rb atoms
     kill_Rb_in_lattice = 0;
@@ -868,7 +941,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk
     ramp.QP_ramp_delay = 0;
     ramp.QP_final =  0*1.78; %7
     
-curtime = ramp_bias_fields(calctime(curtime,0), ramp);
+ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
     
     %Do RF Sweep
     clear('sweep');
@@ -975,6 +1048,110 @@ curtime = calctime(curtime, Dimple_Wait_Time);
 end
 
 
+%% Ramp up QP to evaporatively cool
+%do_evaporation_before_plane_selection
+%RHYS - QP evaporation by tilting out of the lattice. Never worked, delete. 
+if do_evaporation_before_plane_selection
+    
+    XDT1_Power_QP = 0.2;
+    XDT2_Power_QP = (((sqrt(XDT1_Power_QP)*83.07717-0.8481)+3.54799)/159.3128)^2;%0.062
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, XDT1_Power_QP);
+curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, XDT2_Power_QP);
+
+    ramp.xshim_final = seqdata.params. shim_zero(1);% - 0.015
+    ramp.yshim_final = seqdata.params. shim_zero(2)+2;% - 0.00
+    ramp.zshim_final = seqdata.params. shim_zero(3);% - 0.25
+    ramp.shim_ramptime = 50;
+    ramp.shim_ramp_delay = -10; % ramp earlier than FB field if FB field is ramped to zero
+    addOutputParam('PSelect_xShim',ramp.xshim_final)
+    addOutputParam('PSelect_yShim',ramp.yshim_final)
+    
+    ramp_up_FB_for_evaporation_after_plane_selection = 0;%%%%%%%%%%%%%%%%
+    % FB coil settings for spectroscopy
+    ramp.fesh_ramptime = 50;
+    ramp.fesh_ramp_delay = -0;
+    ramp.fesh_final = 0.0;%before 2017-1-6 0.0*22.6; %22.6
+    if ramp_up_FB_for_evaporation_after_plane_selection
+        ramp.fesh_final = 201.214;%before 2017-1-6 200*1.08962; %22.6
+    end
+    addOutputParam('PSelect_FB',ramp.fesh_final)
+
+    % QP coil settings for spectroscopy
+    ramp_time_list = [500];
+    ramp.QP_ramptime = getScanParameter(ramp_time_list,seqdata.scancycle,seqdata.randcyclelist,'QP_ramp_time')*1; %6000
+    ramp.QP_ramptotaltime = 500;% QP ramp up time
+    ramp.QP_ramp_delay = 60;
+    QP_ramp_final_list = [0.30];%[0.33];%[1.5];QP_ramp_final_list = [0.12];   
+    ramp.QP_final =  getScanParameter(QP_ramp_final_list,seqdata.scancycle,seqdata.randcyclelist,'QP_Val')*1.78; %7
+    %ramp.QP_fianl = 0.5*1.78; %1.78 is some calibration number, if it is
+    %1.78, 1V make a 15 G/cm.
+    ramp.QP_ramp_tau = ramp.QP_ramptotaltime/0.5;
+    ramp.QP_ramp_type = 'Exponential';
+ 
+    ramp.settling_time = 0; %200
+            
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); %
+
+%ramp lattice down in evap in evaporation
+    ramp_lattice_down_evaporation = 0; %case 1: ramp down lattice for evaporative cooling
+    if ramp_lattice_down_evaporation
+        %Z Lattices ramp down for evaporative cooling.    
+        %AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0.0*111/atomscale); 
+        %AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0.0*80/atomscale)
+curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0.2*20/atomscale);
+        
+        ramp_lattice_rampdown_time = 500;        
+        curtime = calctime(curtime,ramp_lattice_rampdown_time);
+        
+        %ramp Z lattice back
+curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0.6*20/atomscale);
+        
+    end
+
+%end of ramp lattice down in evaporation
+
+
+    Ramp_Dimple = 0;
+    if Ramp_Dimple
+        %Ramp down dimple trap.
+        Dimple_Ramp_Time = 100;%50
+        Dimple_Final_Power = 0.2;
+curtime = AnalogFuncTo(calctime(curtime,0),'Dimple Pwr',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Dimple_Ramp_Time, Dimple_Ramp_Time, Dimple_Final_Power); %0
+curtime = AnalogFuncTo(calctime(curtime,0),'Dimple Pwr',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Dimple_Ramp_Time, Dimple_Ramp_Time, Dimple_Power); %0
+
+    end
+
+    clear('ramp')
+          
+    conductivityfb=20;
+%     ramp_up_FB_after_evap=1;
+%     if ramp_up_FB_after_evap
+%         conductivityfb_list = [200];       
+%         conductivityfb = getScanParameter(conductivityfb_list,seqdata.scancycle,seqdata.randcyclelist,'conductivity_fb');
+%     end
+    %ramp off ramptime
+    QP_ramp_off_time = 200;
+    % QP coil settings for spectroscopy
+    ramp.QP_ramptime = QP_ramp_off_time; %50
+    ramp.QP_ramp_delay = 0; % 0
+    ramp.QP_final = 0 * 1.78; %0*1.78; %7
+    ramp.settling_time = 100; %200
+
+                % FB coil settings for spectroscopy
+    ramp.fesh_ramptime = QP_ramp_off_time; %50;
+    ramp.fesh_ramp_delay = 0;
+    ramp.fesh_final = conductivityfb; %22.6
+    addOutputParam('PSelect_FB',ramp.fesh_final)
+
+    ramp.xshim_final = seqdata.params. shim_zero(1);% - 0.015
+    ramp.yshim_final = seqdata.params. shim_zero(2);% - 0.00
+    ramp.zshim_final = seqdata.params. shim_zero(3);% - 0.25
+    ramp.shim_ramptime = QP_ramp_off_time;%50;
+    ramp.shim_ramp_delay = 0; % ramp earlier than FB field if FB field is ramped to zero
+
+curtime = ramp_bias_fields(calctime(curtime,50), ramp); %
+     
+end
 
  %% Dimple Trap Off
 %RHYS - Old code for turning off the dimple that was previously on and
@@ -5017,7 +5194,7 @@ end
 %turn on raman beams for side band cooling
 %RHYS - Important code for Raman/EIT cooling. Probably should not be a
 %branch off horizontal plane selection though.
-if (seqdata.flags.lattice.Raman_transfers == 1)
+if (Raman_Transfers == 1)
     
     %During imaging, generate about a 4.4G horizontal field. Both shims get
     %positive control voltages, but draw from the 'negative' shim supply. 
@@ -5028,7 +5205,7 @@ if (seqdata.flags.lattice.Raman_transfers == 1)
     horizontal_plane_select_params.Raman_Power1 = getScanParameter(Raman_Power_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Power'); 
     horizontal_plane_select_params.Raman_Power2 = horizontal_plane_select_params.Raman_Power1;
     horizontal_plane_select_params.Fake_Pulse = 0;
-    horizontal_plane_select_params.Use_EIT_Beams = 1;
+    horizontal_plane_select_params.Use_EIT_Beams = 0;
     horizontal_plane_select_params.Selection__Frequency = 1285.8 + 11.025; %11.550
     Raman_List = [0];[-50];0;   %-30% : in kHz;
     horizontal_plane_select_params.Raman_AOM_Frequency = 110 + getScanParameter(Raman_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Freq')/1000;
@@ -5038,7 +5215,7 @@ if (seqdata.flags.lattice.Raman_transfers == 1)
     horizontal_plane_select_params.Rigol_Mode = 'Sweep';  %'Sweep', 'Pulse', 'Modulate'
     Range_List = [50];%in kHz
     horizontal_plane_select_params.Selection_Range = getScanParameter(Range_List,seqdata.scancycle,seqdata.randcyclelist,'Sweep_Range')/1000; 
-    Raman_On_Time_List = [2000];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
+    Raman_On_Time_List = [1];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
     horizontal_plane_select_params.Microwave_Pulse_Length = getScanParameter(Raman_On_Time_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Time'); 
     horizontal_plane_select_params.Fluorescence_Image = 1;
     horizontal_plane_select_params.Num_Frames = 1; % 2 for 2 images
@@ -5064,7 +5241,7 @@ if (seqdata.flags.lattice.Raman_transfers == 1)
         
     ScopeTriggerPulse(curtime,'Raman Beams On');
         
-    curtime = do_horizontal_plane_selection(curtime, horizontal_plane_select_params);
+curtime = do_horizontal_plane_selection(curtime, horizontal_plane_select_params);
 
     %turn on optical pumping beam AOM for thermal stabilization
     setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);

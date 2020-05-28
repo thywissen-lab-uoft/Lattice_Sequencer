@@ -17,7 +17,7 @@ function PlotGUI(hFigure)
 
     %Create the figure.
     Figure_Outer_Width = 500;
-    Figure_Outer_Height = 1000;
+    Figure_Outer_Height = 750;
     Child_Vector = get(0, 'children');
     if(~strcmp(get(Child_Vector, 'name'), 'Plot GUI'))
         fh = figure('MenuBar','None','Toolbar','none','name','Plot GUI','OuterPosition',[(screensize(3) - Figure_Outer_Width - 25) (screensize(4) - Figure_Outer_Height - 25) Figure_Outer_Width Figure_Outer_Height]);

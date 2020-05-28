@@ -3,11 +3,9 @@ fid2 = fopen('C:\Users\User\Desktop\Rhys\Lab Related\Programs\Lattice_Sequencer\
 %%Using textscan function to read all the lines in the file to a cell array
 Absorption_Flags_Array = textscan(fid1, '%30s %u', 'delimiter', ':');
 Absorption_Parameters_Array = textscan(fid2, '%30s %d', 'delimiter', ':');
-%%Using struct function to save the data read in to structure.
-Absorption_Flags_Struct = cell2struct(num2cell(Absorption_Flags_Array{2}), Absorption_Flags_Array{1}, 1);
-Absorption_Parameters_Struct = cell2struct(num2cell(Absorption_Parameters_Array{2}), Absorption_Parameters_Array{1}, 1);
 %%Closing the files
 fclose(fid1);
 fclose(fid2);
 %%Add to a seqdata structure
-seqdata.flags.
+seqdata.flags.absorption_imaging_flags = cell2struct(num2cell(Absorption_Flags_Array{2}), Absorption_Flags_Array{1}, 1);
+seqdata.parameters.absorption_imaging_parameters = cell2struct(num2cell(Absorption_Parameters_Array{2}), Absorption_Parameters_Array{1}, 1);

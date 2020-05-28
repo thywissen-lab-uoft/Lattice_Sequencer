@@ -1,11 +1,25 @@
-fid1 = fopen('C:\Users\User\Desktop\Rhys\Lab Related\Programs\Lattice_Sequencer\Sequence Files\Load Magtrap Sequence Files\Sequence Parameters\Absorption_Imaging_Flags.txt');
-fid2 = fopen('C:\Users\User\Desktop\Rhys\Lab Related\Programs\Lattice_Sequencer\Sequence Files\Load Magtrap Sequence Files\Sequence Parameters\Absorption_Imaging_Parameters.txt');
-%%Using textscan function to read all the lines in the file to a cell array
-Absorption_Flags_Array = textscan(fid1, '%30s %u', 'delimiter', ':');
-Absorption_Parameters_Array = textscan(fid2, '%30s %d', 'delimiter', ':');
-%%Closing the files
-fclose(fid1);
-fclose(fid2);
-%%Add to a seqdata structure
-seqdata.flags.absorption_imaging_flags = cell2struct(num2cell(Absorption_Flags_Array{2}), Absorption_Flags_Array{1}, 1);
-seqdata.parameters.absorption_imaging_parameters = cell2struct(num2cell(Absorption_Parameters_Array{2}), Absorption_Parameters_Array{1}, 1);
+detuning.in_trap.K = 44;
+detuning.in_trap.Rb = 6590 - 239.5;
+detuning.in_trap.Rb.X = 6590 - 246;
+detuning.in_trap.Rb.Y = 6590 - 243;
+
+detuning.MOT.K = 41;
+detuning.MOT.K.short_tof = 54.5;
+detuning.MOT.Rb = 6590 - 240;
+
+detuning.sci.K.X = 42;
+detuning.sci.K.X.QP_imaging = 42;
+detuning.sci.K.X.SG = 45;
+detuning.sci.K.X.negative = 51;
+detuning.sci.K.X.negative.SG = 50;
+
+detuning.sci.K.Y = 42;
+detuning.sci.K.Y.negative = 52;
+detuning.sci.K.short_tof = 54.5;
+
+detuning.sci.Rb.X = 6590 - 238;
+detuning.sci.Rb.X.QP_imaging = 6590 - 238.5;
+detuning.sci.Rb.X.SG = 6590 - 241.8;
+detuning.sci.Rb.X.negative = 6590 - 232;
+
+detuning.sci.Rb.Y = 6590 - 230.7;

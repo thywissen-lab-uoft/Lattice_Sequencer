@@ -23,9 +23,12 @@ function timeout = absorption_image(timein, image_loc)
     else
         seqdata.flags.absorption_image.image_loc = seqdata.flags.image_loc; %Location of the image: 0 = MOT, 1 = science chamber
     end
-    seqdata.flags.absorption_image.image_atomtype = seqdata.flags.image_atomtype; %Atom species being imaged: 0 = Rb, 1 = K, 2 = Both
+    seqdata.flags.absorption_image.image_atomtype = 'K';%seqdata.flags.image_atomtype; %Atom species being imaged: 0 = Rb, 1 = K, 2 = Both
     %Delete the others? %1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direc tion (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
-    seqdata.flags.absorption_image.img_direction = seqdata.flags.img_direction; %Which lattice direction the atoms are imaged in: 1 = x-cam, 2 = y-cam
+    seqdata.flags.absorption_image.img_direction = 'X';%seqdata.flags.img_direction; %Which lattice direction the atoms are imaged in: 1 = x-cam, 2 = y-cam
+    seqdata.flags.absorption_image.condition = 'SG';
+    seqdata.flags.absorption_image.negative_imaging_shim = 'positive'; %0 = positive states 1 = negative states %Automatically set by K_RF_Sweep flag
+
     seqdata.flags.absorption_image.do_stern_gerlach = seqdata.flags.do_stern_gerlach; %Whether to pulse the QP coil to split spins during ToF (takes some time,setting minimum ToF): 0 = No SG, 1 = SG
     seqdata.flags.absorption_image.iXon = seqdata.flags.iXon; %Use iXon camera to take an absorption image (only vertical)
     seqdata.flags.absorption_image.do_F1_pulse = seqdata.flags.do_F1_pulse; %Repump Rb F = 1 to F = 2 before/during imaging
@@ -38,7 +41,6 @@ function timeout = absorption_image(timein, image_loc)
     seqdata.flags.absorption_image.use_K_OP = 1; %Usually useful. Must enable repump as well.
     seqdata.flags.absorption_image.use_K_repump = 1; % 1:turn on K repump beam for imaging F=7/2
     seqdata.flags.absorption_image.K_repump_during_image = 0; %Not sure this is useful.
-    seqdata.flags.absorption_image.negative_imaging_shim = 0; %0 = positive states 1 = negative states %Automatically set by K_RF_Sweep flag
     seqdata.flags.absorption_image.perp_quant_field = 0; %set to nonzero integer (1) to use a quantization field perpendicular to img_direction    quant_handover_time = 3; % time to ramp shims for imaging ... this may be changed below depending on the selected option
     if seqdata.flags.absorption_image.High_Field_Imaging==0 %disable the optical pumping during HF imaging
         seqdata.flags.absorption_image.use_K_OP = 0;
@@ -52,6 +54,7 @@ function timeout = absorption_image(timein, image_loc)
     K_OP_time = 0.3;
     k_detuning_shift_time = 0.5;
     rb_detuning_shift_time = 4;%4
+    RB_FF = 1.2;
     if seqdata.flags.absorption_image.image_loc==1
         rb_detuning_shift_time = 50;%100 %7
     end
@@ -60,18 +63,19 @@ function timeout = absorption_image(timein, image_loc)
     %detuning.K.X.Positive.SG = 52
     %seqdata.params.absorption_image.detuning = 
     
+    %What is the point?
     %Set AM Scales
-    if seqdata.flags.absorption_image.image_atomtype == 0
-        k_probe_scale = 0;
-        rb_probe_scale = 1;
-    elseif seqdata.flags.absorption_image.image_atomtype == 1
-        k_probe_scale = 1;
-        rb_probe_scale = 0;
-    elseif seqdata.flags.absorption_image.image_atomtype == 2
-        k_probe_scale = 1;
-        rb_probe_scale = 1;
-    end
-    
+%     if seqdata.flags.absorption_image.image_atomtype == 0
+%         k_probe_scale = 0;
+%         rb_probe_scale = 1;
+%     elseif seqdata.flags.absorption_image.image_atomtype == 1
+%         k_probe_scale = 1;
+%         rb_probe_scale = 0;
+%     elseif seqdata.flags.absorption_image.image_atomtype == 2
+%         k_probe_scale = 1;
+%         rb_probe_scale = 1;
+%     end
+%     
     addOutputParam('tof',tof);
     
     %% Special Flags
@@ -88,185 +92,224 @@ function timeout = absorption_image(timein, image_loc)
         seqdata.flags.absorption_image.use_K_OP = 0;
     end
     
-    if ((seqdata.flags.K_RF_sweep == 1 || seqdata.flags.init_K_RF_sweep == 1) && seqdata.flags.absorption_image.image_atomtype == 1)
+    if ((seqdata.flags.K_RF_sweep == 1 || seqdata.flags.init_K_RF_sweep == 1) && ...
+            strcmp(seqdata.flags.absorption_image.image_atomtype,'K'))
         %40K is in a negative mF state, so flip the quantizing shim
-        seqdata.flags.absorption_image.negative_imaging_shim = 1; %%% 1: image mF = -9/2 atoms
+        seqdata.flags.absorption_image.negative_imaging_shim = 'negative'; %%% 1: image mF = -9/2 atoms
     end
     
-    %% Values for the detunings for all the possible imaging configurations.
-    %RHYS - The long set of detunings/probe powers that follow here based
-    %on nested if statements is a complete mess. Recommend making this a
-    %list in an external text file and just loading the relevant numbers in
-    %based on conditions in one line of code.
-    if seqdata.flags.absorption_image.In_Trap_imaging %%1 : take an image in the magnetic trap
-        
-        %K
-        if (seqdata.atomtype==1  || seqdata.atomtype==4)
-            k_detuning = 44; %54.5
-            k_probe_pwr = k_probe_scale*0.07; %0.15
-        end
-        
-        %Rb
-        if (seqdata.atomtype==3  || seqdata.atomtype==4)
-            rb_detuning = 6590-239.5;   %239.5; %238 %233 %230 %resonance @ 6590-227 %223 %239 %259 %230
-            RB_FF = 1.2; %Added on May 5, 2015 by Rhys for in_trap imaging to work. Is this necessary?
-            if seqdata.flags.absorption_image.img_direction == 1
-                %Image along long direction (MOT)
-                rb_detuning = 6590-246; %238.5 (from plugged QP)  before up %234 %feshbach 246 right after load %238 April 13 %240 dylan opt %236 10ms after long evap %241 10ms %238 for short tof %243 for long tof %resonance @ 6590-227
-                rb_probe_pwr = 0.5*rb_probe_scale; %0.04 %0.2
-            elseif seqdata.flags.absorption_image.img_direction == 2
-                %Image along y direction
-                rb_detuning = 6590-243; %237
-                rb_probe_pwr = 0.25*rb_probe_scale;
-            end
-        end
-        
-        
-    elseif seqdata.flags.absorption_image.image_loc == 0 %MOT Cell  %seqdata.flags.absorption_image.In_Trap_imaging = 0: do not take an image in the magnetic trap
-        
-        %K
-        if (seqdata.atomtype==1  || seqdata.atomtype==4)
-            
-            k_detuning_list = [41]; %45
-            if seqdata.flags.absorption_image.short_tof
-                %detuning = probe_list(ceil(seqdata.cycle/2));
-                k_detuning = 54.5;
-            end
-            k_detuning=getScanParameter(k_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'k_mot_det');
-            k_probe_pwr = k_probe_scale*0.8; %0.08 %0.3 June 22
-        end
-        
-        %Rb
-        if (seqdata.atomtype==3  || seqdata.atomtype==4)
-            
-            rb_detuning = 6590-240; %resonance @ 6590-220 %236 for resonance
-            rb_probe_pwr = 0.25*rb_probe_scale; %0.07   %0.4  June 22
-        end
-        
-        
-        
-    elseif seqdata.flags.absorption_image.image_loc == 1 %Science Cell
-        
-        %K
-        if (seqdata.atomtype==1  || seqdata.atomtype==4)
-            
-            if seqdata.flags.absorption_image.img_direction == 1
-                %Image along the x direction
-                k_detuning_list = [42];[42];%42;  %41.5 good for K after XDT evap (12/08/14) %QP=40.5, XDT=42  40   41
-                k_detuning=getScanParameter(k_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'kdet');
-                k_prob_power_list = [0.09];0.3;
-                k_prob_power_parameter = getScanParameter(k_prob_power_list,seqdata.scancycle,seqdata.randcyclelist,'kpwr');
-                k_probe_pwr = k_probe_scale * k_prob_power_parameter; %0.15 on 21/05/15 %0.2  0.22
-                
-                if (seqdata.flags.absorption_image.QP_imaging)
-                    %Detune slightly for QP imaging (due to eddy currents)
-                    k_detuning = 42;40;
-                end
-                
-                if seqdata.flags.absorption_image.do_stern_gerlach
-                    %Need to detune a bit for good images after SG pulse
-                    k_detuning = 45;45;40;
-                end
-                
-                if seqdata.flags.absorption_image.negative_imaging_shim
-                    %Smaller frequency because -ve mF states are less
-                    %separate in a field
-                    detuning_list = [51];
-                    %52.2 for negative imaging = 1 and quantizationfield= [0 -1 0]
-                    %50 for negative imaging = 1 and quantizationfield= [0 -0.5 0]
-                    k_detuning = getScanParameter(detuning_list,seqdata.scancycle,seqdata.randcyclelist,'k2_probe_detuning');
-                    %                     k_detuning = 52;%51;% 2016-10-21
-                    k_probe_pwr = k_probe_scale*k_prob_power_parameter; 0.25; %changed on 08/03/2016 from previous value of 0.15 to reduce noise
-                    
-                    if seqdata.flags.absorption_image.do_stern_gerlach
-                        %Need a different detuning to image |9/2,-9/2> after SG?
-                        %Strong eddy currents may still be present for ToF
-                        %< 12ms.
-                        k_detuning_list =[50];[55];%54.5
-                        %54.5 for negative imaging = 1 and quantizationfield= [0 -1 0]
-                        %46 for negative imaging = 1 and quantizationfield= [0 -0.5 0]
-                        k_detuning = getScanParameter(k_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'SG_k_det');
-                        k_prob_power_parameter = 0.09;
-                        k_probe_pwr = k_probe_scale * k_prob_power_parameter;
-                    end
-                end
-                
-            elseif seqdata.flags.absorption_image.img_direction == 2
-                %Image along the y direction
-                k_detuning = 42;   %51 if the half-waveplate is left at 5deg (making sigma-minus light?)
-                k_probe_pwr = k_probe_scale*0.05; %0.40
-                
-                if seqdata.flags.absorption_image.negative_imaging_shim
-                    %Smaller frequency because -ve mF states are less
-                    %seperated in a field
-                    k_detuning = 52;
-                    k_probe_pwr = k_probe_scale*0.1;
-                end
-            end
-            if seqdata.flags.absorption_image.short_tof
-                %detuning = probe_list(ceil(seqdata.cycle/2));
-                k_detuning = 54.5;
-            end
-            
-        end
-        
-        %Rb
-        if (seqdata.atomtype==3  || seqdata.atomtype==4)
-            if seqdata.flags.absorption_image.img_direction == 1
-                %Image along long direction (MOT) (currently also: X)
-                %                 rb_detuning_set(1) = 6590-237.5;  %When Rb Probe AOM is set to -ve order, shift up to F=2->F'=3 transition
-                %                 rb_detuning_set(2) = 6590+21;    %When Rb Probe AOM is set to +ve order, already close to F=2->F'=3 transition
-                %
-                %                 RB_FF_set(1) = 1.2;
-                %                 RB_FF_set(2) = 0;
-                %
-                %                 rb_detuning = rb_detuning_set(seqdata.flags.Rb_Probe_Order);
-                %                 RB_FF = RB_FF_set(seqdata.flags.Rb_Probe_Order);
-                
-                rb_detuning = 6590-238;244;238; 6590-240.5; %238.5
-                RB_FF = 1.2; %%%%%%%%%%%%%Rb probe detuning here 2017dec
-                
-                if (seqdata.flags.absorption_image.QP_imaging)
-                    %Detune slightly for QP imaging (due to eddy current)
-                    rb_detuning = 6590-245+6.5;245;
-                end
-                
-                
-                if seqdata.flags.absorption_image.do_stern_gerlach
-                    %Need a different detuning to image |9/2,-9/2> after SG?
-                    %Strong eddy currents may still be present for ToF
-                    %< 12ms.
-                    rb_detuning =6590-241.8;
-                    addOutputParam('SG_rb_det',6590-rb_detuning);
-                end
-                
-                
-                addOutputParam('rb_detuning',6590-rb_detuning);
-                
-                if seqdata.flags.absorption_image.negative_imaging_shim % if init_K_RF_sweep==1, seqdata.flags.absorption_image.negative_imaging_shim == 1
-                    %imaging on the |2,-2> -> |3,-3> transition, adjust the
-                    %probe detuning
-                    rb_detuning = 6590-232;232;
-                end
-                
-                rb_probe_pwr = 0.30*rb_probe_scale; %%%%%%%%%%%%%%%%%%%%%%%%%%probe power for Rb abs regular image
-            elseif seqdata.flags.absorption_image.img_direction == 2
-                %Image along y direction
-                rb_detuning = 6590-230.7; %237
-                RB_FF = 1.2;
-                rb_probe_pwr = 0.25*rb_probe_scale;
-            end            
-        end
-    end
+    %What about this:
+    detuning.K.X.positive.normal = 42;
+    detuning.K.X.positive.in_trap = 44;
+    detuning.K.X.positive.QP_imaging = 42;
+    detuning.K.X.positive.SG = 45;
+    detuning.K.X.positive.short_tof = 45;
+    detuning.K.X.negative.normal = 51;
+    detuning.K.X.negative.SG = 50;
+
+    detuning.K.Y.positive.normal = 42;
+    detuning.K.Y.negative.normal = 52;
+
+    detuning.K.MOT.positive.normal = 41;
+    detuning.K.MOT.positive.short_tof = 54.5;
+
+    detuning.Rb.X.positive.normal = 6590 - 238;
+    detuning.Rb.X.positive.in_trap = 6590 - 246;
+    detuning.Rb.X.positive.QP_imaging = 6590 - 238.5;
+    detuning.Rb.X.positive.SG = 6590 - 241.8;
+
+    detuning.Rb.X.negative = 6590 - 232;
+
+    detuning.Rb.Y.positive.normal = 6590 - 230.7;
+    detuning.Rb.Y.positive.in_trap = 6590 - 243;
+
+    detuning.Rb.MOT.positive.normal = 6590 - 240;
+
+    detuning = detuning.(seqdata.flags.absorption_image.image_atomtype) ... 
+        .(seqdata.flags.absorption_image.img_direction) ... 
+        .(seqdata.flags.absorption_image.negative_imaging_shim) ...
+        .(seqdata.flags.absorption_image.condition);
     
-    if ( seqdata.flags.absorption_image.iXon )
-        rb_probe_pwr = 0.7;
-        pulse_length = 0.6;
-        k_probe_pwr = 0.7;
-    else
-    end
+    power.K.X = 0.09;
+    power.K.Y = 0.05;
+    power.K.MOT = 0.8;
+    power.Rb.X = 0.3;
+    power.Rb.Y = 0.25;
+    power.Rb.MOT = 0.25;
     
-    addOutputParam('rb_probe_pwr',rb_probe_pwr);
+    power = power.(seqdata.flags.absorption_image.image_atomtype) ... 
+        .(seqdata.flags.absorption_image.img_direction);
+    
+%     %% Values for the detunings for all the possible imaging configurations.
+%     %RHYS - The long set of detunings/probe powers that follow here based
+%     %on nested if statements is a complete mess. Recommend making this a
+%     %list in an external text file and just loading the relevant numbers in
+%     %based on conditions in one line of code.
+%     if seqdata.flags.absorption_image.In_Trap_imaging %%1 : take an image in the magnetic trap
+%         
+%         %K
+%         if (seqdata.atomtype==1  || seqdata.atomtype==4)
+%             k_detuning = 44; %54.5
+%             k_probe_pwr = k_probe_scale*0.07; %0.15
+%         end
+%         
+%         %Rb
+%         if (seqdata.atomtype==3  || seqdata.atomtype==4)
+%             rb_detuning = 6590-239.5;   %239.5; %238 %233 %230 %resonance @ 6590-227 %223 %239 %259 %230
+%             RB_FF = 1.2; %Added on May 5, 2015 by Rhys for in_trap imaging to work. Is this necessary?
+%             if seqdata.flags.absorption_image.img_direction == 1
+%                 %Image along long direction (MOT)
+%                 rb_detuning = 6590-246; %238.5 (from plugged QP)  before up %234 %feshbach 246 right after load %238 April 13 %240 dylan opt %236 10ms after long evap %241 10ms %238 for short tof %243 for long tof %resonance @ 6590-227
+%                 rb_probe_pwr = 0.5*rb_probe_scale; %0.04 %0.2
+%             elseif seqdata.flags.absorption_image.img_direction == 2
+%                 %Image along y direction
+%                 rb_detuning = 6590-243; %237
+%                 rb_probe_pwr = 0.25*rb_probe_scale;
+%             end
+%         end
+%         
+%         
+%     elseif seqdata.flags.absorption_image.image_loc == 0 %MOT Cell  %seqdata.flags.absorption_image.In_Trap_imaging = 0: do not take an image in the magnetic trap
+%         
+%         %K
+%         if (seqdata.atomtype==1  || seqdata.atomtype==4)
+%             
+%             k_detuning_list = [41]; %45
+%             if seqdata.flags.absorption_image.short_tof
+%                 %detuning = probe_list(ceil(seqdata.cycle/2));
+%                 k_detuning = 54.5;
+%             end
+%             k_detuning=getScanParameter(k_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'k_mot_det');
+%             k_probe_pwr = k_probe_scale*0.8; %0.08 %0.3 June 22
+%         end
+%         
+%         %Rb
+%         if (seqdata.atomtype==3  || seqdata.atomtype==4)
+%             
+%             rb_detuning = 6590-240; %resonance @ 6590-220 %236 for resonance
+%             rb_probe_pwr = 0.25*rb_probe_scale; %0.07   %0.4  June 22
+%         end
+%         
+%         
+%         
+%     elseif seqdata.flags.absorption_image.image_loc == 1 %Science Cell
+%         
+%         %K
+%         if (seqdata.atomtype==1  || seqdata.atomtype==4)
+%             
+%             if seqdata.flags.absorption_image.img_direction == 1
+%                 %Image along the x direction
+%                 k_detuning_list = [42];[42];%42;  %41.5 good for K after XDT evap (12/08/14) %QP=40.5, XDT=42  40   41
+%                 k_detuning=getScanParameter(k_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'kdet');
+%                 k_prob_power_list = [0.09];0.3;
+%                 k_prob_power_parameter = getScanParameter(k_prob_power_list,seqdata.scancycle,seqdata.randcyclelist,'kpwr');
+%                 k_probe_pwr = k_probe_scale * k_prob_power_parameter; %0.15 on 21/05/15 %0.2  0.22
+%                 
+%                 if (seqdata.flags.absorption_image.QP_imaging)
+%                     %Detune slightly for QP imaging (due to eddy currents)
+%                     k_detuning = 42;40;
+%                 end
+%                 
+%                 if seqdata.flags.absorption_image.do_stern_gerlach
+%                     %Need to detune a bit for good images after SG pulse
+%                     k_detuning = 45;45;40;
+%                 end
+%                 
+%                 if seqdata.flags.absorption_image.negative_imaging_shim
+%                     %Smaller frequency because -ve mF states are less
+%                     %separate in a field
+%                     detuning_list = [51];
+%                     %52.2 for negative imaging = 1 and quantizationfield= [0 -1 0]
+%                     %50 for negative imaging = 1 and quantizationfield= [0 -0.5 0]
+%                     k_detuning = getScanParameter(detuning_list,seqdata.scancycle,seqdata.randcyclelist,'k2_probe_detuning');
+%                     %                     k_detuning = 52;%51;% 2016-10-21
+%                     k_probe_pwr = k_probe_scale*k_prob_power_parameter; 0.25; %changed on 08/03/2016 from previous value of 0.15 to reduce noise
+%                     
+%                     if seqdata.flags.absorption_image.do_stern_gerlach
+%                         %Need a different detuning to image |9/2,-9/2> after SG?
+%                         %Strong eddy currents may still be present for ToF
+%                         %< 12ms.
+%                         k_detuning_list =[50];[55];%54.5
+%                         %54.5 for negative imaging = 1 and quantizationfield= [0 -1 0]
+%                         %46 for negative imaging = 1 and quantizationfield= [0 -0.5 0]
+%                         k_detuning = getScanParameter(k_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'SG_k_det');
+%                         k_prob_power_parameter = 0.09;
+%                         k_probe_pwr = k_probe_scale * k_prob_power_parameter;
+%                     end
+%                 end
+%                 
+%             elseif seqdata.flags.absorption_image.img_direction == 2
+%                 %Image along the y direction
+%                 k_detuning = 42;   %51 if the half-waveplate is left at 5deg (making sigma-minus light?)
+%                 k_probe_pwr = k_probe_scale*0.05; %0.40
+%                 
+%                 if seqdata.flags.absorption_image.negative_imaging_shim
+%                     %Smaller frequency because -ve mF states are less
+%                     %seperated in a field
+%                     k_detuning = 52;
+%                     k_probe_pwr = k_probe_scale*0.1;
+%                 end
+%             end
+%             
+%         end
+%         
+%         %Rb
+%         if (seqdata.atomtype==3  || seqdata.atomtype==4)
+%             if seqdata.flags.absorption_image.img_direction == 1
+%                 %Image along long direction (MOT) (currently also: X)
+%                 %                 rb_detuning_set(1) = 6590-237.5;  %When Rb Probe AOM is set to -ve order, shift up to F=2->F'=3 transition
+%                 %                 rb_detuning_set(2) = 6590+21;    %When Rb Probe AOM is set to +ve order, already close to F=2->F'=3 transition
+%                 %
+%                 %                 RB_FF_set(1) = 1.2;
+%                 %                 RB_FF_set(2) = 0;
+%                 %
+%                 %                 rb_detuning = rb_detuning_set(seqdata.flags.Rb_Probe_Order);
+%                 %                 RB_FF = RB_FF_set(seqdata.flags.Rb_Probe_Order);
+%                 
+%                 rb_detuning = 6590-238;244;238; 6590-240.5; %238.5
+%                 RB_FF = 1.2; %%%%%%%%%%%%%Rb probe detuning here 2017dec
+%                 
+%                 if (seqdata.flags.absorption_image.QP_imaging)
+%                     %Detune slightly for QP imaging (due to eddy current)
+%                     rb_detuning = 6590-245+6.5;245;
+%                 end
+%                 
+%                 
+%                 if seqdata.flags.absorption_image.do_stern_gerlach
+%                     %Need a different detuning to image |9/2,-9/2> after SG?
+%                     %Strong eddy currents may still be present for ToF
+%                     %< 12ms.
+%                     rb_detuning =6590-241.8;
+%                     addOutputParam('SG_rb_det',6590-rb_detuning);
+%                 end
+%                 
+%                 
+%                 addOutputParam('rb_detuning',6590-rb_detuning);
+%                 
+%                 if seqdata.flags.absorption_image.negative_imaging_shim % if init_K_RF_sweep==1, seqdata.flags.absorption_image.negative_imaging_shim == 1
+%                     %imaging on the |2,-2> -> |3,-3> transition, adjust the
+%                     %probe detuning
+%                     rb_detuning = 6590-232;232;
+%                 end
+%                 
+%                 rb_probe_pwr = 0.30*rb_probe_scale; %%%%%%%%%%%%%%%%%%%%%%%%%%probe power for Rb abs regular image
+%             elseif seqdata.flags.absorption_image.img_direction == 2
+%                 %Image along y direction
+%                 rb_detuning = 6590-230.7; %237
+%                 RB_FF = 1.2;
+%                 rb_probe_pwr = 0.25*rb_probe_scale;
+%             end            
+%         end
+%     end
+%     
+%     if ( seqdata.flags.absorption_image.iXon )
+%         rb_probe_pwr = 0.7;
+%         pulse_length = 0.6;
+%         k_probe_pwr = 0.7;
+%     else
+%     end
+%     
+%     addOutputParam('rb_probe_pwr',rb_probe_pwr);
     %% ABSORPTION IMAGING
     
     %% Pulse QP to do SG imaging (uses up 1st 2ms of ToF)
@@ -517,7 +560,7 @@ function timeout = absorption_image(timein, image_loc)
             %SET trap AOM detuning to change probe
             setAnalogChannel(calctime(curtime,tof - k_detuning_shift_time - K_OP_time),'K Trap FM',k_OP_detuning); %40 for 2G shim
             %Set AM for Optical Pumping
-            setAnalogChannel(calctime(curtime,tof - k_detuning_shift_time - K_OP_time),'K Probe/OP AM',k_probe_pwr);%0.65
+            setAnalogChannel(calctime(curtime,tof - k_detuning_shift_time - K_OP_time),'K Probe/OP AM',power);%0.65
             %TTL
             DigitalPulse(calctime(curtime,tof - k_detuning_shift_time - K_OP_time),'K Probe/OP TTL',K_OP_time,1); %0.3
             %Turn off AM
@@ -531,21 +574,21 @@ function timeout = absorption_image(timein, image_loc)
     
     
     %% Prepare detuning, repump, and probe for the actual image
-    addOutputParam('kdet',k_detuning);
-    addOutputParam('rbdet',6590-rb_detuning);
+    addOutputParam('kdet',detuning);
+    addOutputParam('rbdet',6590-detuning);
     
     if(~seqdata.flags.absorption_image.High_Field_Imaging)
         %K - Set frequency for imaging just before actual image.
-        if (seqdata.atomtype==1  || seqdata.atomtype==4)
+        if strcmp(seqdata.flags.absorption_image.image_atomtype,'K')
             %set probe detuning
             setAnalogChannel(calctime(curtime,tof-k_detuning_shift_time),'K Probe/OP FM',180); %195
             %SET trap AOM detuning to change probe
-            setAnalogChannel(calctime(curtime,tof-k_detuning_shift_time),'K Trap FM',k_detuning-20.5);%54.5
+            setAnalogChannel(calctime(curtime,tof-k_detuning_shift_time),'K Trap FM',detuning-20.5);%54.5
         end
         
         %Rb - Set frequency for imaging just before actual image. Need more
         %time to set Rb detuning with offset lock.
-        if (seqdata.atomtype==3  || seqdata.atomtype==4)
+        if strcmp(seqdata.flags.absorption_image.image_atomtype,'Rb')
             %offset FF
             if exist('Rb_FF','var')
                 setAnalogChannel(calctime(curtime,tof-rb_detuning_shift_time),'Rb Beat Note FF',RB_FF,1); %1.05 %1.15
@@ -553,28 +596,27 @@ function timeout = absorption_image(timein, image_loc)
                 setAnalogChannel(calctime(curtime,tof-rb_detuning_shift_time),'Rb Beat Note FF',1.2,1); %1.05 %1.15
             end
             setAnalogChannel(calctime(curtime,tof-rb_detuning_shift_time+2200),'Rb Beat Note FF',0.0,1);
-            setAnalogChannel(calctime(curtime,tof-rb_detuning_shift_time),'Rb Beat Note FM',rb_detuning);%27 %26 in trap %time is 1.9 %29.6 MHz is resonance (no Q field), 33.4MHz is resonance (with 4G field), 32.4 MHz (with 3G field), found had to change to 27MHz (Aug10)
+            setAnalogChannel(calctime(curtime,tof-rb_detuning_shift_time),'Rb Beat Note FM',detuning);%27 %26 in trap %time is 1.9 %29.6 MHz is resonance (no Q field), 33.4MHz is resonance (with 4G field), 32.4 MHz (with 3G field), found had to change to 27MHz (Aug10)
         end
         
-        %RHYS - Blue image and D1 image are never going to be taken again.
-        %Delete all references to these.
+        %RHYS - Why is the TTL commented?
         %K - Set power, make sure probe is TTL'd off before image.
-        if (seqdata.atomtype==1  || seqdata.atomtype==4)
+        if strcmp(seqdata.flags.absorption_image.image_atomtype, 'K')
             %             setAnalogChannel(calctime(curtime,-1+tof),'K Probe/OP AM',k_probe_pwr); %1
         end
 
         
         %Rb - Set power, make sure probe is TTL'd off before image.
-        if (seqdata.atomtype==3  || seqdata.atomtype==4)
+        if strcmp(seqdata.flags.absorption_image.image_atomtype, 'Rb')
             %analog
-            setAnalogChannel(calctime(curtime,-5+tof),'Rb Probe/OP AM',rb_probe_pwr); %.1
+            setAnalogChannel(calctime(curtime,-5+tof),'Rb Probe/OP AM',power); %.1
         end
         
         %K High Field Imaging
     else
-        if (seqdata.atomtype==1  || seqdata.atomtype==4)
+        if strcmp(seqdata.flags.absorption_image.image_atomtype, 'K')
             %set trap detuning
-            setAnalogChannel(calctime(curtime,tof-k_detuning_shift_time),'K Trap FM',k_detuning-20.5);%54.5
+            setAnalogChannel(calctime(curtime,tof-k_detuning_shift_time),'K Trap FM',detuning-20.5);%54.5
             
             
             HF_prob_freq_list = [3.6];%3.75
@@ -599,7 +641,7 @@ function timeout = absorption_image(timein, image_loc)
     %before the image.
     %RHYS - This is ok, just get rid of blue_image/D1_image and simplify.
     if ~(seqdata.flags.absorption_image.High_Field_Imaging)
-        if (seqdata.atomtype==1  || seqdata.atomtype==4)
+        if strcmp(seqdata.flags.absorption_image.image_atomtype, 'K')
             %RHYSCHANGE - Try to change timing from -10 to something more reasonable.
             setDigitalChannel(calctime(curtime, -5+tof),'K Probe/OP shutter',1); %-10
             if seqdata.flags.absorption_image.use_K_repump || seqdata.flags.absorption_image.K_repump_during_image
@@ -628,7 +670,7 @@ function timeout = absorption_image(timein, image_loc)
     end
     
     %Rb (Open the shutters just before the imaging pulse)
-    if (seqdata.atomtype==3  || seqdata.atomtype==4)
+    if strcmp(seqdata.flags.absorption_image.image_atomtype, 'Rb')
         setDigitalChannel(calctime(curtime,-5+tof),'Rb Probe/OP shutter',1); %-10
         %Rb F1->F2 pulse
         if ( seqdata.flags.absorption_image.do_F1_pulse == 1 )
@@ -648,7 +690,7 @@ function timeout = absorption_image(timein, image_loc)
     %RHYS - absorption_image.img_direction == 5???
     if seqdata.flags.absorption_image.img_direction ==5
     else
-        do_abs_pulse(curtime,pulse_length,k_probe_pwr);
+        do_abs_pulse(curtime,pulse_length,power);
     end
     
     %% Take 2nd probe picture after 1st readout
@@ -661,7 +703,7 @@ function timeout = absorption_image(timein, image_loc)
     %         setAnalogChannel(calctime(curtime,-9),'K Probe/OP FM',190); %202.5
     %     end
     
-    do_abs_pulse(curtime,pulse_length,k_probe_pwr);
+    do_abs_pulse(curtime,pulse_length,power);
     
     %% Background Image
     
@@ -684,7 +726,7 @@ function timeout = absorption_image(timein, image_loc)
     %% Absorption pulse function -- triggers cameras and pulses probe/repump
     %RHYS - Not bad, again, remove extraneous conditions, maybe call as a
     %method of an absorption image class.
-    function do_abs_pulse(curtime,pulse_length,k_probe_pwr)
+    function do_abs_pulse(curtime,pulse_length,power)
         
         %This is where the cameras are triggered.
         ScopeTriggerPulse(curtime,'Camera triggers',pulse_length);
@@ -695,7 +737,7 @@ function timeout = absorption_image(timein, image_loc)
         end
         
         %Rb - Triggers the probe pulses for the actual image.
-        if (seqdata.flags.absorption_image.image_atomtype==0  || seqdata.flags.absorption_image.image_atomtype==2)
+        if strcmp(seqdata.flags.absorption_image.image_atomtype, 'Rb')
             DigitalPulse(curtime,'Rb Probe/OP TTL',pulse_length,0);
             %Rb F1->F2 pulse
             if seqdata.flags.absorption_image.do_F1_pulse == 1
@@ -711,12 +753,12 @@ function timeout = absorption_image(timein, image_loc)
         end
         
         %K - Triggers the probe pulses for the actual image.
-        if (seqdata.flags.absorption_image.image_atomtype==1  || seqdata.flags.absorption_image.image_atomtype==2)
+        if strcmp(seqdata.flags.absorption_image.image_atomtype, 'K')
             
             if ~(seqdata.flags.absorption_image.High_Field_Imaging)
                 DigitalPulse(calctime(curtime,0),'K Probe/OP TTL',pulse_length,1);
                 %Set AM for Optical Pumping
-                setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',k_probe_pwr);%0.65
+                setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',power);%0.65
                 setAnalogChannel(calctime(curtime,pulse_length),'K Probe/OP AM',0,1);%0.65
 
             elseif seqdata.flags.absorption_image.High_Field_Imaging

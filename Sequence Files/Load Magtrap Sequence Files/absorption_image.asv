@@ -21,26 +21,36 @@ curtime = timein; %Declare the current time reference
     seqdata.flags.absorption_image = Load_Absorption_Image_Flags();
     seqdata.params.absorption_image = Load_Absorption_Image_Parameters();
     
-    %% Override default values for parameters
+    %Shorthand for convenience
+    flags = seqdata.flags.absorption_image;
+    params = seqdata.params.absorption_image;
     
+    %Rhys collect most of the non-nested parameters here for now.
+    tof = seqdata.params.tof;
+    addOutputParam('tof',tof);
+
+    RB_FF = 1.2;
+    if seqdata.flags.absorption_image.image_loc==1
+        rb_detuning_shift_time = 50;%100 %7
+    end
+     
+
+    
+    %% Special Flags
     %RHYS - Some parameters are changed based on special flags being set.
     %Perhaps somewhat confusing to overwrite previously set parameters
     %locally here (e.g. tof set to -2 for in_trap_image even if set to
     %something else previously).
-    if seqdata.flags.absorption_image.image_loc==1
-        seqdata.params.absorption_image.rb_detuning_shift_time = 50;
-    end
-    
     if (nargin == 2)
         seqdata.flags.absorption_image.image_loc = image_loc;
     end
     
     if seqdata.flags.absorption_image.High_Field_Imaging==1 %disable the optical pumping during HF imaging
-        seqdata.flags.absorption_image.use_K_OP = 0;
+        use_K_OP = 0;
     end
     
     if seqdata.flags.absorption_image.In_Trap_imaging %%1: take an image in the magnetic trap
-        seqdata.params.absorption_image.tof = -2;
+        tof = -2;
     end
     
     if seqdata.flags.absorption_image.rb_vert_insitu_image
@@ -53,16 +63,6 @@ curtime = timein; %Declare the current time reference
         %40K is in a negative mF state, so flip the quantizing shim
         seqdata.flags.absorption_image.negative_imaging_shim = 'negative'; %%% 1: image mF = -9/2 atoms
     end
-    
-    %% Shorthand for certain parameters and flags
-    
-    %Shorthand for convenience
-    flags = seqdata.flags.absorption_image;
-    params = seqdata.params.absorption_image;
-    
-    %Rhys collect most of the non-nested parameters here for now.
-    tof = seqdata.params.tof;
-    addOutputParam('tof',tof);
     
     %Get the relevant probe beam power and detuning
     detuning = params.detunings.(flags.image_atomtype).(flags.img_direction) ... 

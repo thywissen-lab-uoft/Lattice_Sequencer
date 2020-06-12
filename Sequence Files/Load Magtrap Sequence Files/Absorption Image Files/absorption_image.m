@@ -22,7 +22,7 @@ ScopeTriggerPulse(curtime,'Start TOF',0.2); %Trigger the scope right at the star
 seqdata.times.tof_start = curtime; %Forms a list of useful time references.
 seqdata.flags.absorption_image = Load_Absorption_Image_Flags(); %Load in the flags.
 seqdata.params.absorption_image = Load_Absorption_Image_Parameters(); %Load in the parameters.
-seqdata.times.tof_end = calctime(curtime,seqdata.params.absorption_image.tof); %Also append the time that the image is actually taken to the time list
+seqdata.times.tof_end = calctime(curtime,seqdata.params.absorption_image.timings.tof); %Also append the time that the image is actually taken to the time list
 
 %% Override default values for parameters based on conditions
 %RHYS - Perhaps these should trigger warning messages that can be overridden rather than a

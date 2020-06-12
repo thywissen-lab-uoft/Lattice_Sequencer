@@ -51,7 +51,7 @@ function params = Load_Absorption_Image_Parameters()
     params.SG.SG_QP_val = 6*1.78;
     params.SG.SG_QP_pulsetime = 5;
     params.SG.SG_QP_ramptime = 2;
-    params.SG.SG_QP_FF = 23*(SG_QP_val/30); % voltage FF on delta supply
+    params.SG.SG_QP_FF = 23*(params.SG.SG_QP_val/30); % voltage FF on delta supply
     params.SG.SG_wait_TOF = 1; %4.5 must be longer than FF_rampdelay + FF_ramptime and shim_ramptime + shim_rampdelay
 
     

@@ -1,2 +1,0 @@
-k_detuning: 52
-k_probe_pwr: 0.25

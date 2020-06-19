@@ -139,7 +139,7 @@ scope_trigger =  'lattice control test';'Rampup ODT';
     setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1);
 % %     
     curtime = calctime(curtime,5000);
-    P_End = 1.0;
+    P_End = 0.0;
     AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),200,200,P_lattice,P_End); 
     curtime = calctime(curtime,500);
 

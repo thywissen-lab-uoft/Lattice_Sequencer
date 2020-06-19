@@ -31,9 +31,9 @@ if fake_sweep
 else
 
     
-    if (freqs(1)>1E6 && min(sweep_times)>100)
-        DDS_sweep(calctime(curtime,-200),1,min([freqs(1)*1.5 80*1E6]),min([freqs(1)*1.5 80*1E6]),100);
-    end
+%     if (freqs(1)>1E6 && min(sweep_times)>100)
+%         DDS_sweep(calctime(curtime,-200),1,min([freqs(1)*1.5 80*1E6]),min([freqs(1)*1.5 80*1E6]),100);
+%     end
     %turn RF on:
     setDigitalChannel(calctime(curtime,0),19,1);
 

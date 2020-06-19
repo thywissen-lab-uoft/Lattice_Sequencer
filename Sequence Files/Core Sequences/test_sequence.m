@@ -2210,18 +2210,32 @@ curtime = timein;
 
 %% Test OP/Probe AOM
 % curtime = calctime(curtime,1000);
-% k_detuning = 6;
+% k_detuning = 3;
 %         setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',0);
 % % set probe detuning
 %         setAnalogChannel(calctime(curtime,0),'K Probe/OP FM',190); %195
 % %         SET trap AOM detuning to change probe
 %         setAnalogChannel(calctime(curtime,0),'K Trap FM',k_detuning); %54.5
 % 
-%         setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
+%         setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.9);
 %         setAnalogChannel(calctime(curtime,0),'K Trap AM',0.8);
-        
-%         setDigitalChannel(calctime(curtime,0),'K Probe/OP shutter',0);
 %         
+%         setDigitalChannel(calctime(curtime,0),'K Probe/OP shutter',0);
+        
+
+% curtime = calctime(curtime,1000);
+%         setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',1);
+%         % set probe detunings
+%         rb_op_detuning = 5;
+% 
+%         setAnalogChannel(calctime(curtime,0.0),'Rb Beat Note FF',0.047-0.1254/32.71*(rb_op_detuning-23),1); %0.05-0.1254/32.71*(rb_op_detuning-23)
+%         %offset detuning ... should be close to the MOT detuning
+%         setAnalogChannel(calctime(curtime,0.0),'Rb Beat Note FM',6590+rb_op_detuning);
+% 
+%         setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',0.9);
+%         
+%         setDigitalChannel(calctime(curtime,0),'Rb Probe/OP shutter',0);
+        
 %         
 % %         %set probe detuning
 % %          setAnalogChannel(curtime,'K Probe/OP FM',202.5); %202.5
@@ -2230,7 +2244,7 @@ curtime = timein;
 % %         %AM
 % %         setAnalogChannel(curtime,'K Probe/OP AM',0.0,1);%0.65
 %         
-        curtime = calctime(curtime,1000);
+%         curtime = calctime(curtime,1000);
 
 %% Recalibrate Transport Coil Current
 % 
@@ -3654,11 +3668,48 @@ setAnalogChannel(calctime(curtime,1),'DMD Power',-1);
 
 %% dipole trap test
 
-% setDigitalChannel(calctime(curtime,0),'XDT TTL',1);%0 on
+curtime = calctime(curtime,10);
+setDigitalChannel(calctime(curtime,0),'XDT TTL',0);
 % setDigitalChannel(calctime(curtime,0),'XDT Direct Control',1);%1 on direct
-% setAnalogChannel(calctime(curtime,0),'dipoleTrap1',0.0);% dipole trap 1 power
-% setAnalogChannel(calctime(curtime,0),'dipoleTrap2',0.0); % dipole trap 2 power
+setAnalogChannel(calctime(curtime,0),'dipoleTrap1',1);% dipole trap 1 power
+setAnalogChannel(calctime(curtime,0),'dipoleTrap2',1.0);% dipole trap 1 power
+% setAnalogChannel(calctime(curtime,0),'dipoleTrap2',0); % dipole trap 2 power
+curtime = calctime(curtime,5000);
+setAnalogChannel(calctime(curtime,0),'dipoleTrap1',0);% dipole trap 1 power
+setAnalogChannel(calctime(curtime,0),'dipoleTrap2',0);% dipole trap 1 power
 
+setDigitalChannel(calctime(curtime,0),'XDT TTL',1);%0 on
+
+
+%% dipole 1 evap ramp test
+%     P1 = 1.5;1.50;1;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
+%     P1e = 1.5;0.5;1.0; %0.5
+%     xdt1_end_power = 0.25;
+%     %Power    Load ODT1  Load ODT2  Begin Evap      Finish Evap
+%     DT1_power = 1*[P1         P1        P1e          xdt1_end_power];
+%     DT2_power = 1*[P1         P1        P1e          xdt1_end_power];
+%  
+%  
+% %     channal = 'dipoleTrap1';
+%     dipole_ramp_start_time = -250;%-3000; 
+%     dipole_ramp_up_time = 250; %1500
+% 
+%     setDigitalChannel(calctime(curtime,dipole_ramp_start_time),'XDT Direct Control',0);
+%     setDigitalChannel(calctime(curtime,dipole_ramp_start_time),'XDT TTL',1); %%%%%%%%%%%%%%%%%0
+%     
+%     %ramp dipole 1 trap on
+%     AnalogFunc(calctime(curtime,dipole_ramp_start_time),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_ramp_up_time,dipole_ramp_up_time,0,DT1_power(1));
+%     %ramp dipole 2 trap on
+%     AnalogFunc(calctime(curtime,dipole_ramp_start_time),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_ramp_up_time,dipole_ramp_up_time,0,DT2_power(1));
+%     curtime = calctime(curtime,5000);
+%     
+%     
+%     setAnalogChannel(calctime(curtime,0),'dipoleTrap1',0);% dipole trap 1 power
+%     setAnalogChannel(calctime(curtime,0),'dipoleTrap2',0);% dipole trap 1 power
+%     setDigitalChannel(calctime(curtime,10),'XDT TTL',1);%0 on
+%     setDigitalChannel(calctime(curtime,10),'XDT Direct Control',1);
+
+    
 %% Test High Field Imaging
 % % curtime = calctime(curtime,1000);
 % setDigitalChannel(calctime(curtime,0),'High Field Shutter',0);
@@ -3857,6 +3908,13 @@ setAnalogChannel(calctime(curtime,1),'DMD Power',-1);
 % SelectScopeTrigger(scope_trigger);
 % setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',0);
 % setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',5,1);
+
+    % %Set the frequency of the first DP AOM 
+% D1_FM_List = [222.5];
+% D1_FM = getScanParameter(D1_FM_List, seqdata.scancycle, seqdata.randcyclelist);%5
+% setAnalogChannel(calctime(curtime,0),'D1 FM',3.80,1);
+% addOutputParam('D1_DP_FM',D1_FM);
+
 timeout = curtime;
 
         

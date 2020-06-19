@@ -18,14 +18,14 @@ curtime = timein;
 optime_list = [4];4;
 optime = getScanParameter(optime_list,seqdata.scancycle,seqdata.randcyclelist,'optime');
 % K
-k_op_am_list = [0.9];[0.9];[0.6];%0.5 before 2019-01-09  %0.4: before 2018-02-15;0.7
+k_op_am_list = [1];[0.9];[0.6];%0.5 before 2019-01-09  %0.4: before 2018-02-15;0.7
 k_op_am = getScanParameter(k_op_am_list,seqdata.scancycle,seqdata.randcyclelist,'k_op_am');
 k_op_offset = 0.0;
 k_op_time = optime; %0.5
-k_op_detuning_list = [3];5;[31];  32;29; %23 (2014-04-10) %24 %23 %18 12.5 13 30(before re-aligning OP beam) 30  26 March 18th 2014
+k_op_detuning_list = [3];3;[31];  32;29; %23 (2014-04-10) %24 %23 %18 12.5 13 30(before re-aligning OP beam) 30  26 March 18th 2014
 k_op_detuning = getScanParameter(k_op_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'k_op_det');
 % Rb
-rb_op_am_list = [0.9];[0.9];       %before 2016-11-25: 0.7;%0.7 (2013-06-01)
+rb_op_am_list = [0.5];[0.9];       %before 2016-11-25: 0.7;%0.7 (2013-06-01)
 rb_op_am = getScanParameter(rb_op_am_list,seqdata.scancycle,seqdata.randcyclelist,'rb_op_am');
 rb_op_offset = 0.0;
 rb_op_time = optime;%1.0
@@ -34,7 +34,6 @@ rb_op_detuning_set(1) = 5; % for 2->2     2 (2014-04-29) %12 (2014-04-10)
 rb_op_detuning_set(2) = -3; % for 2->3
 
 rb_op_detuning = rb_op_detuning_set(seqdata.flags.Rb_Probe_Order);
-
 
 %% Prepare OP
 
@@ -47,7 +46,7 @@ setAnalogChannel(calctime(curtime,0.0),'Y Shim',3.5); %3.5 setAnalogChannel(calc
 %turn on the X (left/right) shim 
 setAnalogChannel(calctime(curtime,0.0),'X Shim',0.1); % 0.1
 %turn on the Z (top/bottom) shim 
-setAnalogChannel(calctime(curtime,0.0),'Z Shim',0); %0.0
+setAnalogChannel(calctime(curtime,0.0),'Z Shim',0.0); %0.0
 
 %Turn repump back up
 %K

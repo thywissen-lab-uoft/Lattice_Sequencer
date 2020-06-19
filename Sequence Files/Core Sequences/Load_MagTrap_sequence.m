@@ -119,7 +119,6 @@ curtime = timein;
     after_sci_cell_load = 0; %Abs image after loading into science cell
     bench_transport = 0; %special stage for benchmarking the transport
     bench_rf = 0; %special stage for benchmarking RF power making it to the atoms
-    RF_benchmark_evap = 0; % for benchmarking rf
     seqdata.flags.rb_vert_insitu_image = 0; 
     %take a vertical in-situ image of BEC in XDT to centre the microscope objective
     
@@ -247,19 +246,6 @@ curtime = timein;
     %used in years, so cannot verify whether they do or do not work. Useful
     %idea though. 
 
-    if seqdata.flags.rb_vert_insitu_image
-        %Necessary flags to switch from K fluorescence images to Rb abs
-        %with iXon
-        seqdata.flags. image_atomtype = 0;
-        seqdata.flags. image_type = 0;
-        seqdata.flags. iXon = 1;
-        seqdata.params. tof = 0.2;
-        
-        seqdata.flags. CDT_evap = 1;
-        seqdata.flags. load_lattice = 0;
-        seqdata.flags. do_imaging_molasses = 0;
-    end
-
     if mag_trap_MOT || MOT_abs_image || transfer_recap_curve
         seqdata.flags.hor_transport_type = 2;
         seqdata.flags.ver_transport_type = 2;
@@ -273,55 +259,13 @@ curtime = timein;
         seqdata.flags.pulse_lattice_for_alignment = 0;
     end
 
-    if seqdata.flags.image_loc == 0
+    if seqdata.flags.image_loc == 0 %MOT cell imaging
         seqdata.flags.do_plug = 0;
         seqdata.flags.compress_QP = 0;
         seqdata.flags.RF_evap_stages = [0 0 0];
         seqdata.flags.do_dipole_trap = 0;
         seqdata.flags.load_lattice = 0;  
         seqdata.flags.pulse_lattice_for_alignment = 0;
-    end
-
-    if transfer_recap_curve
-        seqdata.flags.image_type = 6;
-        seqdata.flags.hor_transport_type = 1;
-        seqdata.flags.ver_transport_type = 3;
-    end
-
-    if after_sci_cell_load
-        seqdata.flags.hor_transport_type = 1;
-        seqdata.flags.ver_transport_type = 3;
-        seqdata.flags.image_type = 0;
-        seqdata.flags.image_loc = 1;
-        seqdata.flags.compress_QP = 1;
-        seqdata.flags.do_plug = 0;
-        seqdata.flags.RF_evap_stages = [0 0 0];%[0 0 1] July 25, 2013
-        seqdata.flags.do_dipole_trap = 0;
-    end
-
-    if bench_transport || bench_rf
-        seqdata.flags.hor_transport_type = 1;
-        seqdata.flags.ver_transport_type = 3;
-        seqdata.flags.image_type = 0;
-        seqdata.flags.image_loc = 1;
-        seqdata.flags.compress_QP = 1;
-        seqdata.flags.do_plug = 0;
-        seqdata.flags.do_dipole_trap = 0;
-        seqdata.flags.load_lattice = 0;
-
-        if bench_transport
-            seqdata.flags.RF_evap_stages = [2 1 0];
-            RF_benchmark_evap = 0;
-        else
-            seqdata.flags.RF_evap_stages = [0 0 0];
-            RF_benchmark_evap = 1;
-        end
-
-    end
-
-    if seqdata.flags.image_type==4
-        seqdata.flags.hor_transport_type = 2;
-        seqdata.flags.ver_transport_type = 2;
     end
 
 %% Consistency checks
@@ -596,36 +540,6 @@ curtime = Transport_Cloud(curtime, seqdata.flags.hor_transport_type, seqdata.fla
     AnalogFuncTo(calctime(curtime,0),'Y Shim',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,y_shim_val,4); 
     AnalogFuncTo(calctime(curtime,0),'X Shim',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,x_shim_val,3); 
 curtime = AnalogFuncTo(calctime(curtime,0),'Z Shim',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,z_shim_val,3); 
-  
-%% RF Evaporation Knife (for benchmarking power)
-    %RHYS - never used this. Is it useful?
-    if RF_benchmark_evap
-
-        max_knife_time = 5000;
-
-        %turn RF on:
-        setDigitalChannel(calctime(curtime,0),19,1);
-        setAnalogChannel(curtime, 39, -2, 1);
-
-        %list
-        rf_knife_list= 0:100:1250;
-
-        %Create Randomized list
-        index=seqdata.randcyclelist(seqdata.cycle);
-
-        knife_time = rf_knife_list(index);
-        addOutputParam('knife_time',knife_time);
-
-        if ~(knife_time == 0)
-curtime = DDS_sweep(calctime(curtime,10),1,20*1E6,20*1E6,knife_time);
-        end
-
-        %turn RF on:
-        setDigitalChannel(calctime(curtime,0),19,0); 
-
-curtime = calctime(curtime,max_knife_time-knife_time);
-
-    end
 
 %% Evaporate in Tight QP Trap
 
@@ -640,8 +554,6 @@ curtime = calctime(curtime,max_knife_time-knife_time);
          hold_time = 100;
          pre_hold_time =  100;
 
-         %BEC March 14
-         cut_freq = 100;
          start_freq = 42;42;%42  
 
         %this worked well with 0.6 kitten
@@ -656,10 +568,6 @@ curtime = calctime(curtime,pre_hold_time);
 
 curtime = do_evap_stage(curtime, fake_sweep, freqs_1, sweep_times_1, ...
         RF_gain_1, hold_time, (seqdata.flags.RF_evap_stages(3) == 0));
-
-    elseif ~(mag_trap_MOT || MOT_abs_image)
-curtime = calctime(curtime,0); %changed from 100ms to 0ms   
-    end
 
     %This does a fast evaporation to benchmark the transport
     if ( seqdata.flags.RF_evap_stages(1) == 2 )
@@ -775,14 +683,6 @@ curtime=calctime(curtime,5);
     freqs_1b = [freqs_1(end)/MHz*1 7 RF_1B_Final_Frequency 2]*MHz;
     RF_gain_1b = [-5.5 -5.5 rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 -6.3 -6.3];[4 4 1 1];[-6.74 -6.74 -7.26 -7.26];   % 8 8 5 5
     sweep_times_1b = [6000 2000 10]*rf_evap_time_scale(2); [3000 2000 10];%[3000 2500 10]*rf_evap_speed(2);
-
-    if seqdata.flags. evap_away_Rb_in_QP == 1
-        
-        %Evaporate lower to clear out the Rb, leaving only K in the XDT
-        freqs_1b = [freqs_1(end)/MHz*0.8 4 0.35 1]*MHz;
-        RF_gain_1b = [4 4 1 1]; %-4
-        sweep_times_1b = [3000 2500 10]*rf_evap_speed(2); %1500
-    end
 
 curtime = do_evap_stage(curtime, fake_sweep, freqs_1b, sweep_times_1b, RF_gain_1b, 0, 1);
 

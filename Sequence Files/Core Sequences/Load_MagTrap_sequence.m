@@ -172,12 +172,12 @@ initialize_channels();
     iXon_movie = 1; %Take a multiple frame movie?
     seqdata.flags.image_atomtype = 1;%  0= Rb, 1 = K, 2 = Rb+K
     seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
-    seqdata.flags.img_direction = 1; 
+    seqdata.flags.img_direction = 0; 
     %1 = x direction (Sci) / MOT, 2 = y direction (Sci), 
     %3 = vertical direction, 4 = x direc tion (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
     seqdata.flags.do_stern_gerlach = 0; %1: Do a gradient pulse at the beginning of ToF
     seqdata.flags.iXon = 0; % use iXon camera to take an absorption image (only vertical)
-    seqdata.flags.do_F1_pulse = 1; % repump Rb F=1 before/during imaging
+    seqdata.flags.do_F1_pulse = 0; % repump Rb F=1 before/during imaging
    
     %RHYS - thse two should be fixed by the circumstance of the sequence,
     %not separately defined. 
@@ -232,10 +232,10 @@ initialize_channels();
     %RHYS - a bunch of unused options here. 
     
     % Dipole trap
-    seqdata.flags.do_dipole_trap = 1; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
-    seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
+    seqdata.flags.do_dipole_trap = 0; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
+    seqdata.flags.CDT_evap = 0;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
     seqdata.flags.K_RF_sweep = 0;    %sweep 40K into |9/2,-9/2>; %create mixture in XDT, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1    
-    seqdata.flags.init_K_RF_sweep = 1; %sweep 40K into |9/2,-9/2>; %create mixture in XDT before evap, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1  
+    seqdata.flags.init_K_RF_sweep = 0; %sweep 40K into |9/2,-9/2>; %create mixture in XDT before evap, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1  
     seqdata.flags.compensation_in_modulation = 0; %turn on a compensation beam
 
     % Optical lattice

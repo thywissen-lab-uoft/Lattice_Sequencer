@@ -18,9 +18,9 @@ function flags = Load_Absorption_Image_Flags()
     
     switch seqdata.flags.img_direction
       case 1
-        flags.image_direction = 'X';
+        flags.img_direction = 'X';
       case 2
-        flags.image_direction = 'Y';
+        flags.img_direction = 'Y';
     end
     
     if seqdata.flags.QP_imaging == 1

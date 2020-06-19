@@ -20,7 +20,7 @@ function params = Load_Absorption_Image_Parameters()
     params.detunings.Rb.X.positive.in_trap = 6590 - 246;
     params.detunings.Rb.X.positive.QP_imaging = 6590 - 238.5;
     params.detunings.Rb.X.positive.SG = 6590 - 241.8;
-    params.detunings.Rb.X.negative = 6590 - 232;
+    params.detunings.Rb.X.negative.normal = 6590 - 232;
     % Rubidium - Y-cam
     params.detunings.Rb.Y.positive.normal = 6590 - 230.7;
     params.detunings.Rb.Y.positive.in_trap = 6590 - 243;
@@ -29,7 +29,7 @@ function params = Load_Absorption_Image_Parameters()
     
     %% Other detunings
     
-    params.k_OP_detuning.postive = 24;
+    params.k_OP_detuning.positive = 24;
     params.k_OP_detuning.negative = 33;
     params.k_repump_shift.positive = 28;
     params.k_repump_shift.negative = 21;

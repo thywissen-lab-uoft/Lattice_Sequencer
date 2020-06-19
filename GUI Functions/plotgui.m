@@ -1,7 +1,7 @@
 function hFGUI=plotgui
 %PLOTGUI Summary of this function goes here
-%   Detailed explanation goes here
 
+%   Detailed explanation goes here
 % Version control string
 version='0.1';
 str=['PlotGUI_v' version];
@@ -10,6 +10,29 @@ str=['PlotGUI_v' version];
 global seqdata;
 start_new_sequence();
 initialize_channels();
+
+%%%%%%%%%%%%%%%%%%% TERRIBLE
+% fetch seuqnece function
+% THIS IS NOT GOOD CODE! NEVER USE EVAL IF YOU AVOID IT
+    
+% fh = findobj('Type','Figure','Name','Lattice Sequencer');
+% uiobj1 = findobj(fh,'tag','sequence');
+% eval(['sequencefunc = ' get(uiobj1,'string') ';']); 
+% 
+% uiobj1 = findobj(hFigure,'tag','startcycle');
+% startcycle = str2double(get(uiobj1,'string'));
+
+% manual override    
+sequencefunc=@Load_MagTrap_sequence;
+startcyle=1;
+
+seqdata.scancycle = 1;
+seqdata.doscan = 0;
+seqdata.randcyclelist = 1:100;
+
+
+%%%%%%%%%%%%%%%%%%%% END TERRIBLE
+
 
 % initialize structure of analog channels to show
 aCHshow=seqdata.analogchannels(1);
@@ -160,6 +183,17 @@ hbut_plot.Position(2)=hpPlot.Position(4)-hbut_plot.Position(4)-40;
 hbut_plot.Callback=@plotCB;
     function plotCB(~,~)
        disp('i should plot something'); 
+       
+       plottimes=htbl_time.Data;
+       
+       plotchannels=[aCHshow.channel];
+       tt=[dCHshow.channel]+length(seqdata.analogchannels);
+       plotchannels=[plotchannels tt];
+       
+       
+       
+       
+       PlotSequenceVersion2(sequencefunc,startcyle,plotchannels,plottimes);
     end
 
 
@@ -227,6 +261,8 @@ htbl_SeldCH.Position(1)=htbl_SelaCH.Position(1)+htbl_SelaCH.Position(3)+5;
         htbl_SeldCH.Data{end+1,1}=num2str(dCHshow(k).channel,'%02.f');
         htbl_SeldCH.Data{end,2}=dCHshow(k).name;
         end             
+        
+        
     end
  
 end

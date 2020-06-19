@@ -162,7 +162,7 @@ curtime = timein;
     %RHYS - thse two should be fixed by the circumstance of the sequence,
     %not separately defined. 
     
-    seqdata.flags.In_Trap_imaging = 1;
+    seqdata.flags.In_Trap_imaging = 0;
     seqdata.flags.High_Field_Imaging = 0;
     %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
     %3 = make sure shim are off for D1 molasses (should be removed)
@@ -200,19 +200,19 @@ curtime = timein;
     % Use stage1  = 2 to evaporate fast for transport benchmarking 
     % Use stage1b = 2 to do microwave evaporation in the plugged QP trap
     seqdata.flags.compress_QP = 1; % compress QP after transport
-    seqdata.flags.RF_evap_stages = [1, 1, 0]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
+    seqdata.flags.RF_evap_stages = [1, 1, 1]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
     
     %RHYS - Here be parameters. 
     
     rf_evap_time_scale = [1.1 1.5];[1.0 1.2];[0.8 1.2];[1.0 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
     RF_1B_Final_Frequency = 0.85;
-    seqdata.flags.do_plug = 0;   % ramp on plug after transfer to window
+    seqdata.flags.do_plug = 1;   % ramp on plug after transfer to window
     seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get clean TOF signal
 
     %RHYS - a bunch of unused options here. 
     
     % Dipole trap
-    seqdata.flags.do_dipole_trap = 0; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
+    seqdata.flags.do_dipole_trap = 1; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
     seqdata.flags.CDT_evap = 0;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
     seqdata.flags.K_RF_sweep = 0;    %sweep 40K into |9/2,-9/2>; %create mixture in XDT, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1    
     seqdata.flags.init_K_RF_sweep = 0; %sweep 40K into |9/2,-9/2>; %create mixture in XDT before evap, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1  

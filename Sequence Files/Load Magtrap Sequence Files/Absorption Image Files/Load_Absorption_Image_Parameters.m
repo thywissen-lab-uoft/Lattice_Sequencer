@@ -1,5 +1,5 @@
 function params = Load_Absorption_Image_Parameters()
-    
+    global seqdata;
     %% Set imaging detunings
     % Potassium - X-cam
     params.detunings.K.X.positive.normal = 21.5;
@@ -59,7 +59,7 @@ function params = Load_Absorption_Image_Parameters()
     params.others.RB_FF = 1.2;
     
     %% Timing parameters
-    params.timings.tof = 15;
+    params.timings.tof = seqdata.params.tof;
     params.timings.pulse_length = 0.3;
     params.timings.K_OP_time = 0.3;
     params.timings.k_detuning_shift_time = 0.5;

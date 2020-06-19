@@ -41,7 +41,7 @@ num_analog_channels = 21;
 num_dig_channels = 2;
 
 overallscale = 1.0; %scales all the transport currents
-verticalscale = 1.0*1; %scales the vertical currents
+verticalscale = 1*1; %scales the vertical currents
 
 coil_scale_factors = ones(1,num_channels);%scaling of the max current in each coil
 
@@ -495,13 +495,13 @@ y = currentarray;
                  
                  %ramp 2
                  vert_voltage(1,2) = vert_voltage(2,1);
-                 vert_voltage(2,2) = 10.5; %10.5
+                 vert_voltage(2,2) =10.5; %10.5
                  vert_volt_pos(1,2) = vert_volt_pos(2,1);
                  vert_volt_pos(2,2) = 365 + 50;
                  
                  %ramp 3
                  vert_voltage(1,3) = vert_voltage(2,2);
-                 vert_voltage(2,3) = 10;%12.25; %10.5 %11
+                 vert_voltage(2,3) = 11.25;%10%12.25; %10.5 %11
                  vert_volt_pos(1,3) = vert_volt_pos(2,2);
                  vert_volt_pos(2,3) = 365 + 65; %65
                  
@@ -523,7 +523,7 @@ y = currentarray;
                  
                  %ramp 6
                  vert_voltage(1,6) = vert_voltage(2,5);
-                 vert_voltage(2,6) = 12.25;12.25; %10.0 12.25
+                 vert_voltage(2,6) = 12.25; %10.0 12.25
                  vert_volt_pos(1,6) = 365+166; %166 %365+160
                  vert_volt_pos(2,6) = 365+174; %365+174
                  

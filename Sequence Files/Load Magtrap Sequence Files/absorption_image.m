@@ -124,7 +124,7 @@ seqdata.times.tof_start = curtime;
             RB_FF = 1.2; %Added on May 5, 2015 by Rhys for in_trap imaging to work. Is this necessary?
             if seqdata.flags.img_direction == 1
                 %Image along long direction (MOT)
-                rb_detuning = 6590-246; %238.5 (from plugged QP)  before up %234 %feshbach 246 right after load %238 April 13 %240 dylan opt %236 10ms after long evap %241 10ms %238 for short tof %243 for long tof %resonance @ 6590-227
+                rb_detuning = 6590-246-8; %238.5 (from plugged QP)  before up %234 %feshbach 246 right after load %238 April 13 %240 dylan opt %236 10ms after long evap %241 10ms %238 for short tof %243 for long tof %resonance @ 6590-227
                 rb_probe_pwr = 0.5*rb_probe_scale; %0.04 %0.2
             elseif seqdata.flags.img_direction == 2
                 %Image along y direction
@@ -172,15 +172,15 @@ seqdata.times.tof_start = curtime;
 
             if seqdata.flags.img_direction == 1
                 %Image along the x direction
-                k_detuning_list = [42];[42];%42;  %41.5 good for K after XDT evap (12/08/14) %QP=40.5, XDT=42  40   41
+                k_detuning_list = [39.5];[42];%42;  %41.5 good for K after XDT evap (12/08/14) %QP=40.5, XDT=42  40   41
                 k_detuning=getScanParameter(k_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'kdet');
-                k_prob_power_list = [0.09];0.3;
+                k_prob_power_list = [0.07];0.3;
                 k_prob_power_parameter = getScanParameter(k_prob_power_list,seqdata.scancycle,seqdata.randcyclelist,'kpwr');
                 k_probe_pwr = k_probe_scale * k_prob_power_parameter; %0.15 on 21/05/15 %0.2  0.22 
                 
                 if (seqdata.flags.QP_imaging)
                     %Detune slightly for QP imaging (due to eddy currents)
-                    k_detuning = 42;40;
+                    k_detuning = 40;40;
                 end
                 
                 if seqdata.flags. do_stern_gerlach
@@ -215,7 +215,7 @@ seqdata.times.tof_start = curtime;
                         %Need a different detuning to image |9/2,-9/2> after SG?
                         %Strong eddy currents may still be present for ToF
                         %< 12ms.
-                        k_detuning_list =[50];[55];%54.5
+                        k_detuning_list =[55];[55];%54.5
                     %54.5 for negative imaging = 1 and quantizationfield= [0 -1 0]
                     %46 for negative imaging = 1 and quantizationfield= [0 -0.5 0]
                         k_detuning = getScanParameter(k_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'SG_k_det');
@@ -275,12 +275,12 @@ seqdata.times.tof_start = curtime;
 %                 rb_detuning = rb_detuning_set(seqdata.flags.Rb_Probe_Order);
 %                 RB_FF = RB_FF_set(seqdata.flags.Rb_Probe_Order);
 
-                rb_detuning = 6590-238;244;238; 6590-240.5; %238.5
+                rb_detuning = 6590-238;238;244;238; 6590-240.5; %238.5
                 RB_FF = 1.2; %%%%%%%%%%%%%Rb probe detuning here 2017dec
                 
                 if (seqdata.flags.QP_imaging)
                     %Detune slightly for QP imaging (due to eddy current)
-                    rb_detuning = 6590-245+6.5;245;
+                    rb_detuning = 6590-245+6;6.5;245;
                 end
                 
                 if in_situ_D1

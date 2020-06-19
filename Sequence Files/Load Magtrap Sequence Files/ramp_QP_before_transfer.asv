@@ -10,6 +10,27 @@ function [timeout I_QP I_kitt V_QP I_fesh] = ramp_QP_before_transfer(timein, ram
 curtime = timein;
 global seqdata;
 
+
+
+
+%% Added to do RF in decompression stage
+setDigitalChannel(calctime(curtime,600),64,0);
+
+
+freqs_1 = [16 16 16]*1e6;
+
+RF_gain_1 = [0.5 0.5 0.5]*[-4.1];
+sweep_times_1 = [450 100];
+
+
+%  do_evap_stage(curtime, 0, freqs_1, sweep_times_1, ...
+%         RF_gain_1, hold_time, (seqdata.flags.RF_evap_stages(3) == 0));
+    
+do_evap_stage(curtime,0, freqs_1, sweep_times_1, ...
+        RF_gain_1, 0, (seqdata.flags.RF_evap_stages(3) == 0));
+
+
+% curtime = calctime(curtime,-1000)
 %RHYS - why the heck is there an if statement with the same title as the
 %function here?
 

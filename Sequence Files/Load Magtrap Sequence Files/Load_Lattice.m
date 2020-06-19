@@ -73,7 +73,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     rotate_waveplate_after_ramp = 1;
     do_lattice_ramp_after_spectroscopy = 1; %Ramp lattices on or off after doing spectroscopy, must be on for fluorescence image
     do_shear_mode_mod = 0; 
-    Raman_Transfers = 0;                    % for fluorescence image
+    Raman_Transfers = 1;                    % for fluorescence image
     do_lattice_sweeps = 0;
     short_holdtime = 0;
     lattice_depth_calibration = 0;
@@ -105,7 +105,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
    
 % Parameters for lattice loading, section used for lattice alignment
 %     lat_rampup_common_depths = [200 200]/atomscale;
-    Depth_List = [100];
+    Depth_List = [20];
 %     ZLD = getmultiScanParameter(Depth_List,seqdata.scancycle,'x_lattice_depth',1,2);
     ZLD = getScanParameter(Depth_List,seqdata.scancycle,seqdata.randcyclelist,'zld');
 % ZLD = getmultiScanParameter(Depth_List,seqdata.scancycle,'ylattice_depth',1,2);
@@ -280,7 +280,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     %Additional parameters and flags for this sequence    
     %RHYS - Parameter determining how dipole trap behaves should be with
     %the rest of the lattice ramp parameters.
-    dipole_trap_off_after_lattice_on = 2; 
+    dipole_trap_off_after_lattice_on = 0; 
     % 0 - use ramp parameters below; 
     % 1 - snap off after 1st lattice ramp;
     % 2 - ramp off after 1st lattice ramp;
@@ -5302,23 +5302,23 @@ if (Raman_Transfers == 1)
     %During imaging, generate about a 4.4G horizontal field. Both shims get
     %positive control voltages, but draw from the 'negative' shim supply. 
     clear('horizontal_plane_select_params')
-    F_Pump_List = [0.6];[0.80];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
+    F_Pump_List = [1];[0.60];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power'); %1.4;
-    Raman_Power_List =[1.2]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
+    Raman_Power_List =[0.5]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
     horizontal_plane_select_params.Raman_Power1 = getScanParameter(Raman_Power_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Power'); 
     horizontal_plane_select_params.Raman_Power2 = horizontal_plane_select_params.Raman_Power1;
     horizontal_plane_select_params.Fake_Pulse = 0;
-    horizontal_plane_select_params.Use_EIT_Beams = 0;
+    horizontal_plane_select_params.Use_EIT_Beams = 1;
     horizontal_plane_select_params.Selection__Frequency = 1285.8 + 11.025; %11.550
     Raman_List = [0];[-50];0;   %-30% : in kHz;
     horizontal_plane_select_params.Raman_AOM_Frequency = 110 + getScanParameter(Raman_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Freq')/1000;
     
     %CHECK PERFORMANCE OF SWEEP IN BURST MODE. CURRENTLY USING BURST MODE
     %SINCE REMOVING ZASWA SWITCHES.
-    horizontal_plane_select_params.Rigol_Mode = 'Sweep';  %'Sweep', 'Pulse', 'Modulate'
-    Range_List = [50];%in kHz
+    horizontal_plane_select_params.Rigol_Mode = 'Pulse';  %'Sweep', 'Pulse', 'Modulate'
+    Range_List = [0];%in kHz
     horizontal_plane_select_params.Selection_Range = getScanParameter(Range_List,seqdata.scancycle,seqdata.randcyclelist,'Sweep_Range')/1000; 
-    Raman_On_Time_List = [1];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
+    Raman_On_Time_List = [2000];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
     horizontal_plane_select_params.Microwave_Pulse_Length = getScanParameter(Raman_On_Time_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Time'); 
     horizontal_plane_select_params.Fluorescence_Image = 1;
     horizontal_plane_select_params.Num_Frames = 1; % 2 for 2 images

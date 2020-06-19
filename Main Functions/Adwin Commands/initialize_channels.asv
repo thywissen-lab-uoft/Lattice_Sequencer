@@ -105,7 +105,6 @@ seqdata.digchannels(58).name = 'Raman Shutter'; %0: off, 1: on
 seqdata.digchannels(59).name = 'Kill TTL'; %0:off, 1: on. 
 seqdata.digchannels(60).name = 'Raman TTL'; %0: off, 1: on
 seqdata.digchannels(61).name = 'XDT TTL'; %0: on, 1: off
-seqdata.digchannels(61).resetvalue = 1;
 seqdata.digchannels(62).name = 'DMD TTL'; %0: on, 1:off
 seqdata.digchannels(62).resetvalue = 1;
 seqdata.digchannels(63).name = 'XDT Direct Control'; %0: off, 1:on
@@ -173,7 +172,7 @@ end
     seqdata.analogchannels(5).maxvoltage = 10;
     %Make the conversion function detuning
     seqdata.analogchannels(5).defaultvoltagefunc = 4; %CHANGED FOR AOM TEST
-    K_trap_freq_offset =-2000/1000;-1700;
+    K_trap_freq_offset =-1000/1000;-1700;
     K_repump_freq_offset = 00/1000;
     %40MHz detuning is 105MHz, higher frequency is less detuned
     %seqdata.analogchannels(5).voltagefunc{2} = @(a)((-19.17+0.22514*(134-a/2)-2.48788E-4*(134-a/2)^2)); %for Stefan's homemoade VCO
@@ -483,7 +482,7 @@ seqdata.analogchannels(34).name = 'Rb Beat Note FM';
 seqdata.analogchannels(34).minvoltage = 0;
 seqdata.analogchannels(34).maxvoltage = 10;
 seqdata.analogchannels(34).defaultvoltagefunc = 2;
-Rb_Trap_Frequency_Offset = 4.0;3.0;-2.5; %Frequency offset for all Rb trap/probe beams in MHz.
+Rb_Trap_Frequency_Offset = 3.0; 2.5;0;4.5;-2.5; %Frequency offset for all Rb trap/probe beams in MHz.
 seqdata.analogchannels(34).voltagefunc{2} = @(a)((a*1-4418.47 + Rb_Trap_Frequency_Offset)/541.355);
 
 %channel 35 (Rb Offset FF)
@@ -525,10 +524,13 @@ seqdata.analogchannels(38).maxvoltage = 10;
 seqdata.analogchannels(38).resetvalue = [-0.0,1];
 seqdata.analogchannels(38).defaultvoltagefunc = 4;
 %seqdata.analogchannels(38).voltagefunc{2} = @(a)(a*0.2831-0.0);
-% seqdata.analogchannels(38).voltagefunc{3} = @(a)((a-0.001)/2.845);  % calibrated: 2013-11-28 ; Power in Watts
-% seqdata.analogchannels(38).voltagefunc{2} = @(a)(a./2.98 + 0.0191);  % calibrated: 2014-04-16; P in W (after telescope); Monitor PD: P/mW = 2.356 V/mV + 0.1
-seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.2043)/2.2396); %2020-06-8
-% seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.22626)/2.86651); %2020-01-28 1V/W
+seqdata.analogchannels(38).voltagefunc{3} = @(a)((a-0.001)/2.845);  % calibrated: 2013-11-28 ; Power in Watts
+seqdata.analogchannels(38).voltagefunc{2} = @(a)(a./2.98 + 0.0191);  % calibrated: 2014-04-16; P in W (after telescope); Monitor PD: P/mW = 2.356 V/mV + 0.1
+% seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.03)/0.5674); %2017-06-19 P in W.
+% seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.0551642)/0.5763587); %2018-07-11
+% seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.04749)/0.79528); %2019-02-27
+% seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.17373)/2.33592); %2019-11-18
+seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.22626)/2.86651); %2020-01-28 1V/W
 % seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.038098)/0.65312); %2017-04-06 P in W.
 % seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.025229)/0.63677);%@(a)((a+0.03789111)/0.6599042); % calibrated 2017-02-23
 % seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.03174855)/0.5196055); % calibrated 2017-02-17
@@ -551,8 +553,9 @@ seqdata.analogchannels(40).maxvoltage = 10;
 seqdata.analogchannels(40).resetvalue = [-0.0,1];
 seqdata.analogchannels(40).defaultvoltagefunc = 4;
 % seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.00226)/0.60811); %calibrated 2019-07-27
-% seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.08475)/0.54452); %calibrated 2020-01-28 2V/W
-seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.0813)/0.5425); %calibrated 2020-06-8
+seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.08475)/0.54452); %calibrated 2020-01-28 2V/W
+% seqdata.analogchannels(40).voltagefunc{3} = @(a)((0.0485 + 0.9625*a)/0.88); % calibrated: 2013-11-28 ; Power in Watts
+% seqdata.analogchannels(40).voltagefunc{2} = @(a)(a./1.060 + 0.0482); % calibrated 2014-04-16; P in W (after telescope); Monitor PD: P/mW = 1.127 V/mV - 1.2
 % % seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.0275821)./0.325018); %2017-06-19 P in W.
 % seqdata.analogchannels(40).voltagefunc{4} = @(a)((0.05955 + a)/0.61664);%calibrated 2019-02-27
 % % seqdata.analogchannels(40).voltagefunc{4} = @(a)((0.02489614 + a)/0.2892920);%calibrated 2018-07-11

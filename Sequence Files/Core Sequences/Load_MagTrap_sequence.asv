@@ -171,7 +171,7 @@ curtime = timein;
     
     %RHYS - params should be defined in a separate location from flags. 
     
-    seqdata.params.tof =  15;  % 45 for rough alignment, 20 for K-D diffraction
+    seqdata.params.tof =  10;  % 45 for rough alignment, 20 for K-D diffraction
     seqdata.params.UV_on_time = 10000; %UV on time + savingtime + wait time = real wait time between cycles%
     % usually 15s for non XDT
     
@@ -207,7 +207,7 @@ curtime = timein;
     
     rf_evap_time_scale = [1.1 1.5];[1.0 1.2];[0.8 1.2];[1.0 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
     RF_1B_Final_Frequency = 0.85;
-    seqdata.flags.do_plug = 0;   % ramp on plug after transfer to window
+    seqdata.flags.do_plug = 1;   % ramp on plug after transfer to window
     seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get clean TOF signal
 
     %RHYS - a bunch of unused options here. 
@@ -719,17 +719,8 @@ curtime = setDigitalChannel(calctime(curtime,0),25,0); %0=closed, 1=open
 curtime=calctime(curtime,5);
     end
     
-%% Evaporation during compression
-    do_evap_during_compression =0;
-    if (do_evap_during_compression && seqdata.flags.RF_evap_stages(2)==1)
-        
-        freqs_1 = [16 16]*MHz;
-        RF_gain_1 = [0.5 0.5]*[-4.1];
-        sweep_times_1 = [560];
-        do_evap_stage(curtime,0, freqs_1, sweep_times_1, ...
-                RF_gain_1, 0, (seqdata.flags.RF_evap_stages(3) == 0));
 
-    end
+
 %% Ramp down QP and transfer to the window
 
     %RHYS - Decompress the trap and bring atoms closer to the window. Trap

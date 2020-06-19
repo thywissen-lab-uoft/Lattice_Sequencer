@@ -44,7 +44,7 @@ global seqdata;
     tilt_evaporation = 0;
     dipole_holdtime_before_evap = 0;
     %RHYS - A very important parameter. Pass these from elsewhere.
-    Evap_End_Power_List =[0.28];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
+    Evap_End_Power_List =[0.22];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
     exp_end_pwr = getScanParameter(Evap_End_Power_List,seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power');
     Second_Evaporation_Stage = 0;
 %     exp_end_pwr =  0.3; %0.36              
@@ -89,8 +89,8 @@ global seqdata;
     %XDT2_power_func = @(P_XDT1)(P_XDT1/2);
     %RHYS - More parameters.
     %Initial powers.
-    P1 = 1.3;1.50;1;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
-    P2 = 1.3;1.50;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
+    P1 = 1.2;1.50;1;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
+    P2 = 1.2 ;1.50;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
     %P2 = XDT2_power_func(P1);
     %Power at start of evaporation.
     P1e = 1.0;0.5;1.0; %0.5
@@ -98,7 +98,7 @@ global seqdata;
     %P2e = XDT2_power_func(P1e);
     %Final powers.
     xdt1_end_power = exp_end_pwr;
-    xdt2_end_power = XDT2_power_func(exp_end_pwr);
+    xdt2_end_power = 0.1;XDT2_power_func(exp_end_pwr);
     %xdt2_end_power =(sqrt(81966+1136.6*(21.6611-(-119.75576*xdt1_end_power^2+159.16306*xdt1_end_power+13.0019)))-286.29766)/2/(-284.1555);
     
     Time_List =  [15000];[15000]; %[500] for fast evap, for sparse image, [15000] for normal experiment
@@ -148,7 +148,7 @@ end
     dipole2_power = CDT_power*0; %Voltage = 0.328 + 0.2375*dipole_power...about 4.2Watts/V when dipole 1 is off
 
     setDigitalChannel(calctime(curtime,dipole_ramp_start_time),'XDT Direct Control',0);
-    setDigitalChannel(calctime(curtime,dipole_ramp_start_time),'XDT TTL',0); %%%%%%%%%%%%%%%%%0
+    setDigitalChannel(calctime(curtime,dipole_ramp_start_time),'XDT TTL',1); %%%%%%%%%%%%%%%%%0
     %ramp dipole 1 trap on
     AnalogFunc(calctime(curtime,dipole_ramp_start_time),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_ramp_up_time,dipole_ramp_up_time,0,DT1_power(1));
     %ramp dipole 2 trap on
@@ -2608,7 +2608,7 @@ end
     
     if (ramp_XDT_after_evap && seqdata.flags. CDT_evap == 1)
         
-        power_list = [0.30];%0.2 sep28
+        power_list = [0.22];%0.2 sep28
         power_val = getScanParameter(power_list,seqdata.scancycle,seqdata.randcyclelist,'power_val');
         
         dip_1 = power_val; %1.5
@@ -3404,7 +3404,7 @@ curtime = rampMagneticFields(calctime(curtime,0), ramp);
 % %   turn off dipole trap  
     setAnalogChannel(calctime(curtime,0),'dipoleTrap1',0,1);
     setAnalogChannel(calctime(curtime,0),'dipoleTrap2',0,1);
-    setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
+    setDigitalChannel(calctime(curtime,0),'XDT TTL',0);
     setDigitalChannel(calctime(curtime,0),'XDT Direct Control',1);
     
     clear('ramp');

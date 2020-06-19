@@ -108,7 +108,7 @@ if do_compression %&& (~(seqdata.flags.image_type==4))
         %probably does not even work with 25ms of K?
         ScopeTriggerPulse(calctime(curtime,0),'cMOT',1);
         %Set cMOT time
-        cmot_time_list = [1];50 %40
+        cmot_time_list = [50];50 %40
         
 
         rb_cMOT_time = getScanParameter(cmot_time_list,seqdata.scancycle,seqdata.randcyclelist,'rb_cMOT_time'); %100 June 25 30
@@ -219,19 +219,19 @@ end
 %functions/methods.
 do_molasses = 1;
 
-molasses_time_list = 15;[15];[5];7;
+molasses_time_list = 10;[15];[5];7;
 molasses_time = getScanParameter(molasses_time_list,seqdata.scancycle,seqdata.randcyclelist,'molasses_time');
 % molasses_time = 7.5; %(10 for Rb evap ) %10 (overwritten below if K is selected)
 
 if do_molasses
     %RHYS - Still not sure K D2 molasses does much of anything.
-    k_molasses_detuning_list =[7.5];[7.5];5.5; %%20 Oct 30, 2015
+    k_molasses_detuning_list =[7.5];[7.5];[7.5];5.5; %%20 Oct 30, 2015
     k_molasses_detuning = getScanParameter(k_molasses_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'k_molasses_detuning');
     k_molasses_repump_detuning = -50;-20;%-50 seems better than -20 somehow...
     
     %While true that this 'works' out to large detunings, optimizing for a
     %'long' (e.g. 200ms) molasses time shows a sharp max.
-    rbmolasses_List = [55]; %60
+    rbmolasses_List = [77];[65]; %75 60
     rbmolasses_det=getScanParameter(rbmolasses_List,seqdata.scancycle,seqdata.randcyclelist,'rb_molasses_det');
     rb_molasses_detuning = rbmolasses_det;50; %53;%before 2016-11-25:50  %48 %46.5 (2014-04-25)
     

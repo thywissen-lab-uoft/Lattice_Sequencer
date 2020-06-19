@@ -15,16 +15,21 @@ initialize_channels();
 % fetch seuqnece function
 % THIS IS NOT GOOD CODE! NEVER USE EVAL IF YOU AVOID IT
     
-% fh = findobj('Type','Figure','Name','Lattice Sequencer');
-% uiobj1 = findobj(fh,'tag','sequence');
-% eval(['sequencefunc = ' get(uiobj1,'string') ';']); 
-% 
-% uiobj1 = findobj(hFigure,'tag','startcycle');
-% startcycle = str2double(get(uiobj1,'string'));
+    fh = findobj('Type','Figure','Name','Lattice Sequencer');
+    if ~isempty(fh)
+        uiobj1 = findobj(fh,'tag','sequence');
+        eval(['sequencefunc = ' get(uiobj1,'string') ';']); 
 
-% manual override    
-sequencefunc=@Load_MagTrap_sequence;
-startcyle=1;
+        uiobj1 = findobj(hFigure,'tag','startcycle');
+        startcycle = str2double(get(uiobj1,'string'));
+    else
+        warning('no lattice sequencer gui, manual override in loadmagtrap');
+            % manual override    
+        sequencefunc=@Load_MagTrap_sequence;
+        startcyle=1;
+    end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 seqdata.scancycle = 1;
 seqdata.doscan = 0;
@@ -48,7 +53,7 @@ dCHshow(:)=[];
 hFGUI=figure(99);
 clf
 set(hFGUI,'color','w','Name',str,'Toolbar','none','menubar','none',...
-    'NumberTitle','off');
+    'NumberTitle','off','Resize','off');
 hFGUI.Position(3:4)=[500 600];
 hFGUI.Position(2)=50;
 
@@ -182,17 +187,11 @@ hbut_plot.Position(1)=5;
 hbut_plot.Position(2)=hpPlot.Position(4)-hbut_plot.Position(4)-40;
 hbut_plot.Callback=@plotCB;
     function plotCB(~,~)
-       disp('i should plot something'); 
-       
-       plottimes=htbl_time.Data;
-       
+       disp('i should plot something');        
+       plottimes=htbl_time.Data;       
        plotchannels=[aCHshow.channel];
        tt=[dCHshow.channel]+length(seqdata.analogchannels);
-       plotchannels=[plotchannels tt];
-       
-       
-       
-       
+       plotchannels=[plotchannels tt];           
        PlotSequenceVersion2(sequencefunc,startcyle,plotchannels,plottimes);
     end
 

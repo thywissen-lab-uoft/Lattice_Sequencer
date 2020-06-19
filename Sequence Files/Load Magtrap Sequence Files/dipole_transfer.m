@@ -47,7 +47,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     tilt_evaporation = 0;
     dipole_holdtime_before_evap = 0;
     %RHYS - A very important parameter. Pass these from elsewhere.
-    Evap_End_Power_List =[0.22];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
+    Evap_End_Power_List =[0.28];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
     exp_end_pwr = getScanParameter(Evap_End_Power_List,seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power');
     Second_Evaporation_Stage = 0;
     %exp_end_pwr =  0.3; %0.36  
@@ -75,7 +75,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     Lattice_in_XDT_Evap = 0;
     ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
     Kill_Beam_Alignment = 0;        %Pulse Kill beam on for whatever needs to be aligned.    
-    ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
+    ramp_XDT_after_evap = 1;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
     Raman_in_XDT = 0;
     remix_at_end = 0;
     
@@ -93,12 +93,12 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     %XDT2_power_func = @(P_XDT1)(P_XDT1/2);
     %RHYS - More parameters.
     %Initial powers.
-    P1 = 1.5;1.50;1;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
-    P2 = 1.5;1.50;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
+    P1 = 1.3;1.50;1;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
+    P2 = 1.3;1.50;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
     %P2 = XDT2_power_func(P1);
     %Power at start of evaporation.
-    P1e = 1;0.5;1.0; %0.5
-    P2e = 1;0.5; %0.5
+    P1e = 1.0;0.5;1.0; %0.5
+    P2e = 1.0;0.5; %0.5
     %P2e = XDT2_power_func(P1e);
     %Final powers.
     xdt1_end_power = exp_end_pwr;
@@ -142,8 +142,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
    
     %% Ramp Dipoletrap up from zero
 
-    dipole_ramp_start_time = -250;%-3000; 
-    dipole_ramp_up_time = 250; %1500
+    dipole_ramp_start_time = -250;-250;%-3000; 
+    dipole_ramp_up_time = 250;250; %1500
 
     %RHYS - Actually unused. 
     CDT_power = 3.8;%3.5; %4.5   7.0 Jan 22nd
@@ -156,7 +156,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     %ramp dipole 1 trap on
     AnalogFunc(calctime(curtime,dipole_ramp_start_time),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_ramp_up_time,dipole_ramp_up_time,0,DT1_power(1));
     %ramp dipole 2 trap on
-    AnalogFunc(calctime(curtime,dipole_ramp_start_time),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_ramp_up_time,dipole_ramp_up_time,0,DT2_power(1));
+    AnalogFunc(calctime(curtime,dipole_ramp_start_time),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_ramp_up_time,dipole_ramp_up_time,-1,DT2_power(1));
 
     ScopeTriggerPulse(curtime,'Rampup ODT');
 
@@ -192,6 +192,12 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     add_fesh_time = 0;
         
     vSet_ramp = 1.07*vSet; %24
+    
+    
+    extra_hold_time_list =0;[0,50,100,200,500,750,1000]; %PX added for measuring lifetime hoding in high power XDT
+    extra_hold_time = getScanParameter(extra_hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'extra_hold_time');
+    
+    
    
     %RHYS - if (0)... lol
     if (0)
@@ -322,7 +328,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,y2)(ramp_line
               
         seqdata.params. yshim_val = yshim_end2;
         
-curtime = calctime(curtime,shim_ramp_offset+qp_rampdown_starttime2+qp_ramp_down_time2);   
+curtime = calctime(curtime,shim_ramp_offset+qp_rampdown_starttime2+qp_ramp_down_time2+extra_hold_time);   
          
         I_QP  = QP_ramp_end2;
         
@@ -2568,8 +2574,9 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
     %lattice pulse. 
 
     if (ramp_XDT_after_evap && seqdata.flags. CDT_evap == 1)
+       
+        power_list = [0.30];%0.2 sep28
 
-        power_list = [0.22];%0.2 sep28
         power_val = getScanParameter(power_list,seqdata.scancycle,seqdata.randcyclelist,'power_val');
 
         dip_1 = power_val; %1.5

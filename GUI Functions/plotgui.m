@@ -191,8 +191,13 @@ hbut_plot.Callback=@plotCB;
        plottimes=htbl_time.Data;       
        plotchannels=[aCHshow.channel];
        tt=[dCHshow.channel]+length(seqdata.analogchannels);
-       plotchannels=[plotchannels tt];           
+       plotchannels=[plotchannels tt];
+       
+%        [aTraces, dTraces]=generateTraces(seqdata);
+       
+       
        PlotSequenceVersion2(sequencefunc,startcycle,plotchannels,plottimes);
+    
     end
 
 
@@ -259,9 +264,7 @@ htbl_SeldCH.Position(1)=htbl_SelaCH.Position(1)+htbl_SelaCH.Position(3)+5;
         for k=1:length(dCHshow)
         htbl_SeldCH.Data{end+1,1}=num2str(dCHshow(k).channel,'%02.f');
         htbl_SeldCH.Data{end,2}=dCHshow(k).name;
-        end             
-        
-        
+        end         
     end
  
 end

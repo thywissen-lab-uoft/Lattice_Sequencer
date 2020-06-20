@@ -20,13 +20,13 @@ initialize_channels();
         uiobj1 = findobj(fh,'tag','sequence');
         eval(['sequencefunc = ' get(uiobj1,'string') ';']); 
 
-        uiobj1 = findobj(hFigure,'tag','startcycle');
+        uiobj1 = findobj(fh,'tag','startcycle');
         startcycle = str2double(get(uiobj1,'string'));
     else
         warning('no lattice sequencer gui, manual override in loadmagtrap');
             % manual override    
         sequencefunc=@Load_MagTrap_sequence;
-        startcyle=1;
+        startcycle=1;
     end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -192,7 +192,7 @@ hbut_plot.Callback=@plotCB;
        plotchannels=[aCHshow.channel];
        tt=[dCHshow.channel]+length(seqdata.analogchannels);
        plotchannels=[plotchannels tt];           
-       PlotSequenceVersion2(sequencefunc,startcyle,plotchannels,plottimes);
+       PlotSequenceVersion2(sequencefunc,startcycle,plotchannels,plottimes);
     end
 
 

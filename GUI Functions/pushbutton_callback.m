@@ -82,7 +82,11 @@ function pushbutton_callback(varargin)
 
         case 'plotgui'
 
-            PlotGUI(hFigure);
+            % old plot GUI, after further bug testing, we should delete
+            % this call and eventyually the old plotgui function itself.
+            % For now, we'll leave this in?
+%             PlotGUI(hFigure);
+            plotgui;
 
         case 'Plot'
             

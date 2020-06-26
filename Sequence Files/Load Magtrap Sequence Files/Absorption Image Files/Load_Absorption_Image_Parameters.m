@@ -2,13 +2,13 @@ function params = Load_Absorption_Image_Parameters()
     global seqdata;
     %% Set imaging detunings
     % Potassium - X-cam
-    params.detunings.K.X.positive.normal = 21.5;
+    params.detunings.K.X.positive.normal = 19;21.5;
     params.detunings.K.X.positive.in_trap = 23.5;
-    params.detunings.K.X.positive.QP_imaging = 21.5;
+    params.detunings.K.X.positive.QP_imaging = 19.5;21.5;
     params.detunings.K.X.positive.SG = 24.5;
     params.detunings.K.X.positive.short_tof = 24.5;
     params.detunings.K.X.negative.normal = 30.5;
-    params.detunings.K.X.negative.SG = 29.5;
+    params.detunings.K.X.negative.SG = 34.5;29.5;
     % Potassium - Y-cam
     params.detunings.K.Y.positive.normal = 21.5;
     params.detunings.K.Y.negative.normal = 31.5;

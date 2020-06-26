@@ -31,6 +31,9 @@ function flags = Load_Absorption_Image_Flags()
       flags.condition = 'SG';
     end
     
+    if seqdata.flags.In_Trap_imaging == 1
+        flags.condition = 'in_trap';
+    end
     %% Other flags
     
     %OP/repump flags.

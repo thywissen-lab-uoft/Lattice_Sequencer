@@ -32,7 +32,8 @@ end
 
 
 %create a timer that wakes up once the cycle is over
-adwin_process_timer = timer('TimerFcn',fhandle,'StartDelay',round(seqdata.sequencetime*1000)/1000);
+adwin_process_timer = timer('TimerFcn',fhandle,'StartDelay',round(seqdata.sequencetime*1000)/1000,...
+    'Name','adwin_proces_timerCB');
 
 %run the process; keep this block up high in this function, in order not to
 %delay the start of the process.

@@ -142,6 +142,7 @@ end
     seqdata.analogchannels(1).minvoltage = -1;
     seqdata.analogchannels(1).maxvoltage = 10;
     seqdata.analogchannels(1).defaultvoltagefunc = 2;
+%     seqdata.analogchannels(1).resetvalue = [0,1];
     %seqdata.analogchannels(1).voltagefunc{2} = @(a)(a*0.10455+0.08714);
     %seqdata.analogchannels(1).voltagefunc{2} = @(a)(a*0.1+0.1); %old sensor
     seqdata.analogchannels(1).voltagefunc{2} = @(a)(a*0.125+0.1125); %with FW Bell sensor %0.1125 instead of 0.1 July 06, 2018
@@ -483,7 +484,7 @@ seqdata.analogchannels(34).name = 'Rb Beat Note FM';
 seqdata.analogchannels(34).minvoltage = 0;
 seqdata.analogchannels(34).maxvoltage = 10;
 seqdata.analogchannels(34).defaultvoltagefunc = 2;
-Rb_Trap_Frequency_Offset = 4.0;3.0;-2.5; %Frequency offset for all Rb trap/probe beams in MHz.
+Rb_Trap_Frequency_Offset = 3.5;3.0;-2.5; %Frequency offset for all Rb trap/probe beams in MHz.
 seqdata.analogchannels(34).voltagefunc{2} = @(a)((a*1-4418.47 + Rb_Trap_Frequency_Offset)/541.355);
 
 %channel 35 (Rb Offset FF)

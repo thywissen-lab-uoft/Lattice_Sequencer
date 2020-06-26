@@ -59,7 +59,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     do_end_uwave_transfer = 0;      %transfer Rb atoms from F=1 to F=2, then blow them away with probe pulse
     Rb_RF_sweep = 0;                %sweep atoms from |2,2> into |2,-2>
     Rb_repump = 0;                  %repump atoms back into F = 2
-    get_rid_of_Rb = 1;           %Get rid of Rb at end of evap (only happens when CDT_evap = 1
+    get_rid_of_Rb = 0;           %Get rid of Rb at end of evap (only happens when CDT_evap = 1
     do_RF_sweep_before_uWave = 0;   %Do an mF sweep before uWave spectroscopy
     do_K_uwave_spectroscopy = 0;    %do uWave Spectroscopy of 40K
     do_K_uwave_multi_sweeps = 0;    %do multiple uWave sweeps of 40K
@@ -93,8 +93,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     %XDT2_power_func = @(P_XDT1)(P_XDT1/2);
     %RHYS - More parameters.
     %Initial powers.
-    P1 = 1.3;1.50;1;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
-    P2 = 1.3;1.50;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
+    P1 = 1.0;1.50;1;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
+    P2 = 1.0;1.50;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
     %P2 = XDT2_power_func(P1);
     %Power at start of evaporation.
     P1e = 1.0;0.5;1.0; %0.5

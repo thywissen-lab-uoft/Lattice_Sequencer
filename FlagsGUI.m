@@ -46,6 +46,9 @@ figcolor = get(fh,'Color');
 % header
 uicontrol(fh,'Style','text','String','Sequence Flags','Position',[20 height-30 250 a],'FontSize',10,'BackgroundColor',figcolor);
 
+%DELETE THIS< THIS JUST PREVENTS ERRORS FROM THROWING
+try
+
 % add flag entries
 for j = 1:length(flagnames)
     val = flags.(flagnames{j});
@@ -67,5 +70,5 @@ if ~isempty(strings)
     end
 end
 
-
+end
 end

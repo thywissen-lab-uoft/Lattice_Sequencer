@@ -12,7 +12,16 @@ curpath = fileparts(mfilename('fullpath'));
 % 
 addpath(curpath);
 addpath(fullfile(curpath,'Sequence Files'));
+addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files'));
+addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','Absorption Image Files'));
+addpath(fullfile(curpath,'Sequence Files','Core Sequences'));
+addpath(fullfile(curpath,'Sequence Files','Action Files'));
 addpath(fullfile(curpath,'Main Functions'));
+addpath(fullfile(curpath,'Main Functions','Adwin Commands'));
+addpath(fullfile(curpath,'Main Functions','Device Functions'));
+addpath(fullfile(curpath,'Main Functions','Math Functions'));
+addpath(fullfile(curpath,'Main Functions','AMO Functions'));
+addpath(fullfile(curpath,'Main Functions','User Interfacing'));
 addpath(fullfile(curpath,'GUI Functions'));
 
 

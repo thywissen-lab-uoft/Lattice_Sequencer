@@ -11,7 +11,6 @@ horizontal_scale = 1.0;
 vertical_scale = 1.0;
 
 transportfolder = 'C:\Lattice Sequencer\Current Transport Splines\';
-transportfolder= 'C:\Users\coraf\Documents\GitHub\Lattice_Sequencer\Current Transport Splines\';
 
 %vertical currents revision number (remember to change in transport_coil_currents)
 %rev45 -> raised QP

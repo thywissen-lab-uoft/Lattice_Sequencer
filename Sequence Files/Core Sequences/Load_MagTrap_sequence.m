@@ -69,7 +69,7 @@ curtime = timein;
     %centre of the imaging window is different from the natural QP centre)
     seqdata.params. plug_shims = [(seqdata.params. shim_zero(1)-1-0.04-0.3),...
     (seqdata.params. shim_zero(2)+0.125), ...
-    (seqdata.params. shim_zero(3)+ 0.35 + 0.35 + 0.20)];%0.35 + 0.55)];
+    (seqdata.params. shim_zero(3)+ 0.35 + 0.35 + 0.20 -0.7)];%0.35 + 0.55)];
 
 
     seqdata.params. shim_val = [0 0 0]; %Current shim values (x,y,z)- reset to zero
@@ -204,15 +204,15 @@ curtime = timein;
     
     %RHYS - Here be parameters. 
     
-    rf_evap_time_scale = [1.1 1.5];[1.0 1.2];[0.8 1.2];[1.0 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
-    RF_1B_Final_Frequency = 0.85;
+    rf_evap_time_scale = [1.0 1.5];[1.0 1.2];[0.8 1.2];[1.0 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
+    RF_1B_Final_Frequency = 0.55;
     seqdata.flags.do_plug = 1;   % ramp on plug after transfer to window
     seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get clean TOF signal
 
     %RHYS - a bunch of unused options here. 
     
     % Dipole trap
-    seqdata.flags.do_dipole_trap = 1; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
+    seqdata.flags.do_dipole_trap = 0; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
     seqdata.flags.CDT_evap = 0;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
     seqdata.flags.K_RF_sweep = 0;    %sweep 40K into |9/2,-9/2>; %create mixture in XDT, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1    
     seqdata.flags.init_K_RF_sweep = 0; %sweep 40K into |9/2,-9/2>; %create mixture in XDT before evap, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1  
@@ -557,7 +557,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Z Shim',@(t,tt,y1,y2)(ramp_minjerk(t
          start_freq = 42;42;%42  
 
         %this worked well with 0.6 kitten
-        freqs_1 = [ start_freq 28 20 16]*MHz; %7.5 %[ start_freq 28 20 12]*MHz before 2018-03-06 12MHz
+        freqs_1 = [ start_freq 28 20 16]*MHz;[ start_freq 28 20 16]*MHz; %7.5 %[ start_freq 28 20 12]*MHz before 2018-03-06 12MHz
 
         RF_gain_1 = 0.5*[-4.1 -4.1 -4.1 -4.1]*(9)/9*1;1*[-4.1 -4.1 -4.1 -4.1]*(9)/9*1;%1*[ 9 9 9 9]*(9)/9*1;1*[-5.93 -5.93 -5.93 -5.93];  %9 9 9 (5)/9*0.75
         sweep_times_1 = [ 14000 8000 1000].*rf_evap_time_scale(1);%[ 14000 6000 2000].*rf_evap_speed(1);%[ 14000 6000 2000].*rf_evap_speed(1); before 2017-05-02
@@ -628,12 +628,12 @@ curtime=calctime(curtime,5);
     end
     
 %% Evaporation during compression
-    do_evap_during_compression =0;
+    do_evap_during_compression = 0;
     if (do_evap_during_compression && seqdata.flags.RF_evap_stages(2)==1)
         
-        freqs_1 = [16 16]*MHz;
+        freqs_1 = [freqs_1(end)/MHz*1 25]*MHz;
         RF_gain_1 = [0.5 0.5]*[-4.1];
-        sweep_times_1 = [560];
+        sweep_times_1 = 560; %560 is maximum
         do_evap_stage(curtime,0, freqs_1, sweep_times_1, ...
                 RF_gain_1, 0, (seqdata.flags.RF_evap_stages(3) == 0));
 
@@ -676,12 +676,12 @@ curtime=calctime(curtime,5);
     if ( seqdata.flags.RF_evap_stages(3) == 1 )
 %% RF 1b
     fake_sweep = 0;
-    rf_gain_1b_list= -4;[-6.3];[-4]; %-6.3;
+    rf_gain_1b_list= .5*(-4.1);[-6.3];[-4]; %-6.3;
     rf_1b_gain=getScanParameter(rf_gain_1b_list,seqdata.scancycle,seqdata.randcyclelist,'rf_1b_gain');
     %USUAL SETTINGS    
     %Evaporate to 0.7MHz to load into ODT (0.8MHz to look at Rb)
     freqs_1b = [freqs_1(end)/MHz*1 7 RF_1B_Final_Frequency 2]*MHz;
-    RF_gain_1b = [-5.5 -5.5 rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 -6.3 -6.3];[4 4 1 1];[-6.74 -6.74 -7.26 -7.26];   % 8 8 5 5
+    RF_gain_1b = [.5*(-4.1) .5*(-4.1) rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 -6.3 -6.3];[4 4 1 1];[-6.74 -6.74 -7.26 -7.26];   % 8 8 5 5
     sweep_times_1b = [6000 2000 10]*rf_evap_time_scale(2); [3000 2000 10];%[3000 2500 10]*rf_evap_speed(2);
 
 curtime = do_evap_stage(curtime, fake_sweep, freqs_1b, sweep_times_1b, RF_gain_1b, 0, 1);
@@ -863,7 +863,6 @@ curtime = AnalogFunc(curtime,1,@(t,tt,dt)(dt*t/tt+I_QP),lower_transfer_time,lowe
     setAnalogChannel(calctime(curtime,0),21,0,1); %15
 curtime = setAnalogChannel(calctime(curtime,0),1,0,1); %16
 curtime = setAnalogChannel(curtime,3,0,1); %kitten
- 
     
     %MOT
     if ( seqdata.flags.image_type ~= 4 )

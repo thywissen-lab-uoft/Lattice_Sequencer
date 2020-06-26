@@ -280,7 +280,7 @@ seqdata.times.tof_start = curtime;
                 
                 if (seqdata.flags.QP_imaging)
                     %Detune slightly for QP imaging (due to eddy current)
-                    rb_detuning = 6590-245+6;6.5;245;
+                    rb_detuning = 6590-245+7.0;6.5;245;
                 end
                 
                 if in_situ_D1

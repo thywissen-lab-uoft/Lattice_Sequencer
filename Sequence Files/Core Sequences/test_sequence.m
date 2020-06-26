@@ -454,8 +454,8 @@ curtime = timein;
 % setAnalogChannel(calctime(curtime,0),24,0,1);
 
 %% Transport test
-% % % 
-% setDigitalChannel(curtime,'Kitten Relay',1); %0: OFF, 1: ON
+% % 
+% setDigitalChannel(curtime,'Kitten Relay',0); %0: OFF, 1: ON
 % setDigitalChannel(curtime,'15/16 Switch',0); %0: OFF, 1: ON
 % setDigitalChannel(curtime,'Coil 16 TTL',1); %1: turns coil off; 0: coil can be on
 % 
@@ -469,8 +469,8 @@ curtime = timein;
 %  
 % curtime = calctime(curtime,500);
 % 
-% current = 25;
-% channel = 21;
+% current = 39;
+% channel = 22;
 % 
 % is_bipolar = 0;
 % 
@@ -478,15 +478,15 @@ curtime = timein;
 % ramp_cosine = @(t,tt,y0) y0/2*(1-cos(2*pi*t/tt));
 % 
 % %set FF
-% % setAnalogChannel(calctime(curtime,-200),18,25*(abs(current)/30)/3 + 0.5);
+% setAnalogChannel(calctime(curtime,-200),18,25*(abs(current)/30)/3 + 0.5);
 % % %use the following for QT coil
-% AnalogFunc(calctime(curtime,-200),18,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,0.5,25*(abs(current)/30)/1 + 0.5);
+% % AnalogFunc(calctime(curtime,-200),18,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,0.5,25*(abs(current)/30)/1 + 0.5);
 % 
 % % use the following for other transfer coils
 % % AnalogFunc(calctime(curtime,-200),18,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,0.5,8*(abs(current)/30)/1 + 0.5);
 % 
 % %Kitten to max current for the ramp if using coil 15 or 16 alone.
-% setAnalogChannel(calctime(curtime,-175),3,5,1); % current set to 5 for fully on   
+% setAnalogChannel(calctime(curtime,-175),3,0,1); % current set to 5 for fully on   
 % 
 % %"Turn on" coil to 0
 % setAnalogChannel(calctime(curtime,-50),channel,0,1); %Start at zero for AnalogFuncTo

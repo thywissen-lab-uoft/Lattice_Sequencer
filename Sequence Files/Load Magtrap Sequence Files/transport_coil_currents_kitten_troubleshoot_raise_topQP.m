@@ -25,7 +25,7 @@ end
 %import currents for spline
 vertical_scale = 1.0;
 
-transportfolder = 'C:\Lattice Sequencer\Current Transport Splines\';
+transportfolder = 'C:\Users\User\Desktop\Rhys\Lab Related\Programs\Lattice_Sequencer\Current Transport Splines\';
 coilone = dlmread([transportfolder 'rev48coilone.txt'],',',0,1)*vertical_scale;
 coiltwo = dlmread([transportfolder 'rev48coiltwo.txt'],',',0,1)*vertical_scale;
 

@@ -152,12 +152,12 @@ curtime = timein;
     iXon_movie = 1; %Take a multiple frame movie?
     seqdata.flags.image_atomtype = 0;%  0= Rb, 1 = K, 2 = Rb+K
     seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
-    seqdata.flags.img_direction = 1; 
+    seqdata.flags.img_direction = 0; 
     %1 = x direction (Sci) / MOT, 2 = y direction (Sci), 
     %3 = vertical direction, 4 = x direc tion (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
     seqdata.flags.do_stern_gerlach = 0; %1: Do a gradient pulse at the beginning of ToF
     seqdata.flags.iXon = 0; % use iXon camera to take an absorption image (only vertical)
-    seqdata.flags.do_F1_pulse = 1; % repump Rb F=1 before/during imaging
+    seqdata.flags.do_F1_pulse = 0; % repump Rb F=1 before/during imaging
    
     %RHYS - thse two should be fixed by the circumstance of the sequence,
     %not separately defined. 

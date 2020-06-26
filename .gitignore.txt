@@ -1,4 +1,0 @@
-*.asv
-*.hg*
-*.swp
-*thumbs.db

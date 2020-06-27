@@ -230,7 +230,7 @@ hF_Plot=[];
     end
 
     function tblCB(tbl,data)
-        
+
         if isnan(data.NewData) & isnumeric(data.NewData)
             disp([datestr(now,13) ' You inputted a non-numerical input' ...
                 ' to the limits of the plot. Shameful']);
@@ -244,8 +244,23 @@ hF_Plot=[];
             return;
         end
         
+        if ~isvalid(hF_Plot)
+            disp([datestr(now,13) ' I can''t plot because the figure ' ...
+                'was deleted! (Shameful)']);
+            return;
+        end
+        
+        
         if ~isequal(data.NewData,data.PreviousData)
             disp([datestr(now,13) ' Changing the plot limits.']);  
+            
+            if tbl.Data(2)<tbl.Data(1)
+               disp([datestr(now,13) ' Wow, you colossal buffoon,' ...
+                   ' plot limits must in increasing order. Shameful']);
+               tbl.Data(data.Indices(2))=data.PreviousData;
+               return
+            end
+            
             
             chldrn=get(hF_Plot,'Children');
             for n=1:length(chldrn)

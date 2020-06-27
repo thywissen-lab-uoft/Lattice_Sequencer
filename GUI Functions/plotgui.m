@@ -216,17 +216,44 @@ hbut_plot.Position(1)=5;
 hbut_plot.Position(2)=hpPlot.Position(4)-hbut_plot.Position(4)-40;
 hbut_plot.Callback=@plotCB;
 
+
+hF_Plot=[];
     function plotCB(~,~)
        disp('i should plot something');        
        plottimes=htbl_time.Data;       
        plotchannels=[aCHshow.channel];
        tt=[dCHshow.channel]+length(seqdata.analogchannels);
-       plotchannels=[plotchannels tt];
-       
-       set(Sub_Plot_Handles(Counter), 'XLim', [Limits(1)  Limits(end)] / 1000);
+       plotchannels=[plotchannels tt];      
        
 %        [aTraces, dTraces]=generateTraces(seqdata);      
-       PlotSequenceVersion2(sequencefunc,startcycle,plotchannels,plottimes);    
+        hF_Plot=PlotSequenceVersion2(sequencefunc,startcycle,plotchannels,plottimes);    
+    end
+
+    function tblCB(tbl,data)
+        
+        if isnan(data.NewData) & isnumeric(data.NewData)
+            disp([datestr(now,13) ' You inputted a non-numerical input' ...
+                ' to the limits of the plot. Shameful']);
+            tbl.Data(data.Indices(2))=data.PreviousData;
+            return;
+        end
+        
+        if isempty(hF_Plot)
+            disp([datestr(now,13) ' You haven''t initialize the plot ' ...
+                '. Shameful']);
+            return;
+        end
+        
+        if ~isequal(data.NewData,data.PreviousData)
+            disp([datestr(now,13) ' Changing the plot limits.']);  
+            
+            chldrn=get(hF_Plot,'Children');
+            for n=1:length(chldrn)
+               try
+                   chldrn(n).XLim=tbl.Data/1E3;             
+               end
+            end               
+        end  
     end
 
 
@@ -241,7 +268,7 @@ htbl_time.ColumnWidth={80 80};
 htbl_time.Position(3:4)=htbl_time.Extent(3:4);
 htbl_time.Position(1)=hbut_plot.Position(1)+hbut_plot.Position(3)+5;
 htbl_time.Position(2)=hbut_plot.Position(2);
-htbl_time.CellEditCallback=@plotCB;
+htbl_time.CellEditCallback=@tblCB;
 
 
 % selected analog channels table

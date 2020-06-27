@@ -24,6 +24,9 @@ global seqdata;
 % Acquire the figure handle for the plottter in case you already opened it.
 windowhnds = get(0,'Children');
 
+% Close any figure with the same name.  Only one instance of the plotter is
+% allowed.  (Maybe want to chage this in the future if we want to compare
+% sequences?)
 for i = 1:length(windowhnds)
     if isequal(windowhnds(i).Name,fName)
        close(fName); 
@@ -65,6 +68,8 @@ end
 
 
 %% Make the figure
+
+% Initialize the GUI figure
 hF=figure;
 set(hF,'color','w','Name',fName);
 hF.Position(1:4)=[100 100 500 800];
@@ -78,24 +83,63 @@ hF.SizeChangedFcn=@chFigSize;
         H=hF.Position(4);
         
         
+        % Position of the analog panel
         hpA.Position(3:4)=[W (H-h)*.70];
         hpA.Position(1:2)=[0 H-hpA.Position(4)];
         
+        % Position of the digial panel
         hpD.Position(3:4)=[W (H-h)*.30];
         hpD.Position(1:2)=[0 h];   
-       
-        for nn=1:length(axs)
-            axs{nn}.Position=getAxPos(axs{nn},nn);
-            ts{nn}.Position(1:2)=axs{nn}.Position(3:4)-[5 0];
-        end
         
+        % Position of the scrollbar
         hScroll.OuterPosition(3:4)=[20 hpA.Position(4)-10];
         hScroll.Position(1:2)=[hpA.Position(3)-hScroll.Position(3) 0];
         
-        hScroll.Value=0;        
-        hScroll.Min=-(axs{1}.Position(2)-axs{end}.Position(2)-hpA.Position(4)+200);
+        % Position of the scrollbar
+        hScrollD.OuterPosition(3:4)=[20 hpD.Position(4)-10];
+        hScrollD.Position(1:2)=[hpD.Position(3)-hScrollD.Position(3) 0];
        
+       
+        % Update analog channel axis limits
+        for nn=1:length(axs)
+            axs{nn}.Position=getAxPos(axs{nn},nn);
+            ts{nn}.Position(1:2)=axs{nn}.Position(3:4)-[5 0];
+        end        
+
         
+        % Rescale the value of the analog scrollbar
+        hScroll.Value=0;        
+        minVal=-(axs{1}.Position(2)-axs{end}.Position(2)-hpA.Position(4)+200);        
+        if minVal>=0
+           hScroll.Visible='off'; 
+        else
+            hScroll.Min=minVal;
+        end
+       
+        % Update digital axis limits
+        axD.Position(1)=axs{1}.Position(1);
+        axD.Position(3)=axs{1}.Position(3);
+        axD.Position(2)=50;
+        axD.Position(4)=hpD.Position(4)-axD.Position(2)-50;
+        
+        axDL.Position(1)=5;
+        axDL.Position(3)=axD.Position(1)-axDL.Position(1);
+        axDL.Position(2)=axD.Position(2);
+        axDL.Position(4)=axD.Position(4);
+        axDL.YLim=[-axDL.Position(4) 0];
+        
+        axD.YLim=axDL.YLim;
+                
+%         % Rescale the value of the digital scrollbar
+%         hScrollD.Value=0;        
+
+%         if minVal>=0
+%            hScroll.Visible='off'; 
+%         else
+%             hScroll.Min=minVal;
+%         end
+       
+
         drawnow;
     end
 
@@ -104,7 +148,7 @@ hF.SizeChangedFcn=@chFigSize;
         
         
         % [left, right, bottom, top] boundaries between figure
-        B=[50 75 50 50];
+        B=[150 40 50 50];
 
         % vertical separation between axes
         dY=30;
@@ -162,6 +206,7 @@ htbl_time.CellEditCallback=@tblCB;
            
         for n=1:length(axs)
            axs{n}.XLim=tbl.Data(1:2)*1E-3;
+           axD.XLim=tbl.Data(1:2)*1E-3;
         end              
         
     end  
@@ -198,15 +243,12 @@ for kk=1:length(aTracesSHOW)
             aTracesSHOW(kk).name ' has no data! Cant''t plot it.'];
         warning(wStr);
     end
-    
-
-
-
 
     % Plot the data.  The stairs function interpolates the write as a
     % square wave which is indicative of the physical voltages that are
     % currently outputed at that time.
     stairs(X*1E-3,Y,'color','k','linewidth',2);
+    
     
     % Change the limits
     axs{kk}.XLim=times*1E-3;
@@ -229,16 +271,14 @@ hScroll.Max=0;
 hScroll.Value=0;
 hScroll.Callback=@scrollCB;
 hScroll.SliderStep=[0.05 .1];
-set(gcf,'WindowScrollWheelFcn',@wheelScroll)      
+% set(gcf,'WindowScrollWheelFcn',@wheelScroll)      
 
     function scrollCB(a,~)        
         for nn=1:length(axs)
             pos=getAxPos(axs{nn},nn);
             axs{nn}.Position(2)=pos(2)-a.Value;
-        end
-        
+        end        
     end
-% set(gcf,'WindowScrollWheelFcn',@wheelScroll) 
 
 
     function wheelScroll(~,~)
@@ -246,12 +286,89 @@ set(gcf,'WindowScrollWheelFcn',@wheelScroll)
     end
 
 %% Digital channels
-
-
+hText=20;
 
 % digital channels window pane
 hpD=uipanel('parent',hF,'units','pixels','Title','Digital',...
     'backgroundcolor','w');
+
+axD=axes('parent',hpD,'units','pixels','box','on','linewidth',1,...
+    'YTick',hText*(-length(dTracesSHOW):0),'YGrid','On','YTickLabel',{},...
+    'GridAlpha',1);
+xlabel('time (ms)');
+co=get(gca,'colororder');
+for i=1:length(dTracesSHOW)
+    X=dTracesSHOW(i).data(:,1);
+    X=X*seqdata.deltat/seqdata.timeunit;
+    Y=dTracesSHOW(i).data(:,2);
+    
+    [~,inds]=sort(X);
+    X=X(inds);
+    Y=Y(inds);
+    
+    % add starting and ending values to curve. Do this because the list of
+    % values are the WRITE commands (the values are held constant until
+    % the next write command
+    if ~isempty(X)
+        X=[0; X; 1E6];
+        Y=[Y(end); Y; Y(end)]; 
+    else
+        wStr=['Channel ' num2str(dTracesSHOW(i).channel) ' : ' ...
+            dTracesSHOW(i).name ' has no data! Cant''t plot it.'];
+        warning(wStr);
+    end
+
+    % Plot the data.  The stairs function interpolates the write as a
+    % square wave which is indicative of the physical voltages that are
+    % currently outputed at that time.
+ 
+    for np=2:length(X)
+        p=[1E-3*X(np) -i*hText 1E-3*(X(np)-X(np-1)) hText];
+        rectangle('Position',p,...
+            'facecolor',co(mod(i-1,7)+1,:),'linestyle','none');
+    end
+    
+    hold on
+    xlim(times*1E-3);
+
+end
+
+
+axDL=axes('parent',hpD,'units','pixels','box','on','linewidth',1,...
+    'fontname','monospaced','XTick',[],'YTick',[]);
+xlim([0 1]);
+
+co=get(gca,'colororder');
+
+for i=1:length(dTracesSHOW)
+    rectangle('Position',[0 -i*hText 1 1*hText],'facecolor',co(mod(i-1,7)+1,:))
+    text(.5,-(i-.5)*hText,dTracesSHOW(i).name,...
+        'HorizontalAlignment','center','fontsize',10,'clipping','on',...
+        'units','data','verticalalignment','middle');
+end
+% ylim([1 10]);
+
+
+
+% set up the scrollbar
+hScrollD = uicontrol('parent',hpD,'Units','pixels','Style','Slider',...
+    'visible','on','Tag','scroll');
+hScrollD.Max=0;
+hScrollD.Value=0;
+hScrollD.Callback=@scrollCBD;
+hScrollD.SliderStep=[0.05 .1];
+
+    function scrollCBD(~,~)        
+        axDL.YLim=[-axDL.Position(4) 0]+hScrollD.Value;        
+        axD.YLim=axDL.YLim;
+    end
+
+
+hScrollD.Min=-length(dTracesSHOW);
+hScrollD.Max=0;
+
+%% Finish
+
 chFigSize;
 
 end

@@ -223,6 +223,8 @@ hbut_plot.Callback=@plotCB;
        tt=[dCHshow.channel]+length(seqdata.analogchannels);
        plotchannels=[plotchannels tt];
        
+       set(Sub_Plot_Handles(Counter), 'XLim', [Limits(1)  Limits(end)] / 1000);
+       
 %        [aTraces, dTraces]=generateTraces(seqdata);      
        PlotSequenceVersion2(sequencefunc,startcycle,plotchannels,plottimes);    
     end

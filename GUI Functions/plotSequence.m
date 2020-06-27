@@ -302,9 +302,7 @@ for i=1:length(dTracesSHOW)
     X=X*seqdata.deltat/seqdata.timeunit;
     Y=dTracesSHOW(i).data(:,2);
     
-    [~,inds]=sort(X);
-    X=X(inds);
-    Y=Y(inds);
+
     
     % add starting and ending values to curve. Do this because the list of
     % values are the WRITE commands (the values are held constant until
@@ -317,15 +315,23 @@ for i=1:length(dTracesSHOW)
             dTracesSHOW(i).name ' has no data! Cant''t plot it.'];
         warning(wStr);
     end
+    
+    [~,inds]=sort(X);
+    X=X(inds);
+    Y=Y(inds);
 
     % Plot the data.  The stairs function interpolates the write as a
     % square wave which is indicative of the physical voltages that are
     % currently outputed at that time.
  
-    for np=2:length(X)
-        p=[1E-3*X(np) -i*hText 1E-3*(X(np)-X(np-1)) hText];
+    for np=1:(length(X)-1)
+        p=[1E-3*X(np) -i*hText 1E-3*(X(np+1)-X(np)) hText];
+        
+        if Y(np)
         rectangle('Position',p,...
             'facecolor',co(mod(i-1,7)+1,:),'linestyle','none');
+        end
+        
     end
     
     hold on

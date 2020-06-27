@@ -92,9 +92,9 @@ hF.SizeChangedFcn=@chFigSize;
         hScroll.OuterPosition(3:4)=[20 hpA.Position(4)-10];
         hScroll.Position(1:2)=[hpA.Position(3)-hScroll.Position(3) 0];
         
-        hScroll.Value=0;
+        hScroll.Value=0;        
         hScroll.Min=-(axs{1}.Position(2)-axs{end}.Position(2)-hpA.Position(4)+200);
-
+       
         
         drawnow;
     end
@@ -161,8 +161,18 @@ for kk=1:length(aTracesSHOW)
     % add starting and ending values to curve. Do this because the list of
     % values are the WRITE commands (the values are held constant until
     % the next write command
-    X=[0; X; 1E6];
-    Y=[Y(end); Y; Y(end)];
+    if ~isempty(X)
+        X=[0; X; 1E6];
+        Y=[Y(end); Y; Y(end)]; 
+    else
+        wStr=['Channel ' num2str(aTracesSHOW(kk).channel) ' : ' ...
+            aTracesSHOW(kk).name ' has no data! Cant''t plot it.'];
+        warning(wStr);
+    end
+    
+
+
+
 
     % Plot the data.  The stairs function interpolates the write as a
     % square wave which is indicative of the physical voltages that are
@@ -202,7 +212,7 @@ set(gcf,'WindowScrollWheelFcn',@wheelScroll)
 % set(gcf,'WindowScrollWheelFcn',@wheelScroll) 
 
 
-    function wheelScroll
+    function wheelScroll(~,~)
        disp('whoooooooooooah this is going to be fucking complicated'); 
     end
 

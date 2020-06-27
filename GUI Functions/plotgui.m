@@ -227,6 +227,10 @@ hF_Plot=[];
        
 %        [aTraces, dTraces]=generateTraces(seqdata);      
         hF_Plot=PlotSequenceVersion2(sequencefunc,startcycle,plotchannels,plottimes);    
+% 
+        hF_Plot=plotSequence(sequencefunc,startcycle,...
+            [aCHshow.channel],[dCHshow.channel],plottimes);    
+
     end
 
     function tblCB(tbl,data)

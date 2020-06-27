@@ -114,6 +114,7 @@ hF.SizeChangedFcn=@chFigSize;
         w=ax.Parent.Position(3)-B(1)-B(2);
         h=(ax.Parent.Position(4)-B(3)-B(4)-dY*(nR-1))/nR;
         
+        % manually set the height of each axis
         h=100;
 
 
@@ -126,17 +127,45 @@ hF.SizeChangedFcn=@chFigSize;
 
 % time limits table
 htbl_time=uitable('parent',hF);
-htbl_time.ColumnName={'start (ms)','end (ms)','span (ms)'};
+htbl_time.ColumnName={'start (ms)','end (ms)'};
 htbl_time.RowName={};
 htbl_time.ColumnEditable=[true true];
 htbl_time.ColumnFormat={'numeric','numeric'};
 htbl_time.Data=[0 100000];
 htbl_time.ColumnWidth={120 120 120};
 htbl_time.Position(3:4)=htbl_time.Extent(3:4);
-
 htbl_time.Position(1:2)=[0 0];
-
 htbl_time.CellEditCallback=@tblCB;
+
+
+    function tblCB(tbl,data)
+
+        if isnan(data.NewData) & isnumeric(data.NewData)
+            disp([datestr(now,13) ' You inputted a non-numerical input' ...
+                ' to the limits of the plot. Shameful']);
+            tbl.Data(data.Indices(2))=data.PreviousData;
+            return;
+        end      
+        
+        if tbl.Data(2)<tbl.Data(1) 
+            disp([datestr(now,13) ' Wow, you colossal buffoon,' ...
+                ' plot limits must in increasing order. Shameful']);
+           tbl.Data(data.Indices(2))=data.PreviousData;
+            return;
+        end
+        
+        if isequal(data.NewData,data.PreviousData)
+            return;
+        end          
+
+        disp([datestr(now,13) ' Changing the plot limits.']);               
+           
+        for n=1:length(axs)
+           axs{n}.XLim=tbl.Data(1:2)*1E-3;
+        end              
+        
+    end  
+    
 
 
 

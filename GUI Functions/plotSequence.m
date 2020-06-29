@@ -33,7 +33,6 @@ for i = 1:length(windowhnds)
     end
 end
 
-
 %% Calculate the sequence
 start_new_sequence();
 seqdata.cycle = cycle;
@@ -49,7 +48,7 @@ fhandle(0);
 % Sort the analog and digital data by traces
 [aTraces, dTraces]=generateTraces(seqdata);
 
-% Initialize structure of channels to show
+% Initialize structure of analog and digital channels to show
 aTracesSHOW=aTraces;aTracesSHOW(:)=[];
 dTracesSHOW=dTraces;dTracesSHOW(:)=[];
 
@@ -67,7 +66,6 @@ for kk=1:length(dTraces)
    end  
 end
 
-
 %% Make the figure
 
 % Initialize the GUI figure
@@ -76,21 +74,23 @@ set(hF,'color','w','Name',fName);
 hF.Position(1:4)=[100 100 500 800];
 hF.SizeChangedFcn=@chFigSize;
 hZ=zoom(hF);
-% % 
-% % 
-% % hZ.ActionPreCallback=@chZoomPre;
+
+% Assign callbacks to zoom function.  This only works if you had clicked on
+% the zoom function and there doesn't work very well at this moment
+hZ.ActionPreCallback=@chZoomPre;
 hZ.ActionPostCallback=@chZoomPost;
-% % hZ.Enable='on';
-% % 
-% %     function chZoomPre(~,obj)
-% %         
-% %     end
-% % 
+
+    function chZoomPre(~,obj)
+        ax=obj.Axes;            
+        disp('hipre');
+        htbl_time.Data=ax.XLim;
+    end
     function chZoomPost(~,obj)
         ax=obj.Axes;            
-%         htbl_time.Data=ax.XLim;
-        disp('hi');
+        htbl_time.Data=ax.XLim;
+        disp('hipost');
     end
+
 % Figure change sizes callback
     function chFigSize(~,~)
         % The time table size; (it doesn't change size)
@@ -105,17 +105,17 @@ hZ.ActionPostCallback=@chZoomPost;
         hpA.Position(1:2)=[0 H-hpA.Position(4)];
         
         % Set the position of the analog scroll bar
-        hScroll.OuterPosition(3:4)=[20 hpA.Position(4)-10];
-        hScroll.Position(1:2)=[hpA.Position(3)-hScroll.Position(3) 0];
+        hAslider.OuterPosition(3:4)=[20 hpA.Position(4)-10];
+        hAslider.Position(1:2)=[hpA.Position(3)-hAslider.Position(3) 0];
         
         % Set the size of the digital panel
         hpD.Position(3:4)=[W (H-h)*.30];
         hpD.Position(1:2)=[0 h];   
         
         % Set the position of the digital scroll bar
-        hScrollD.OuterPosition(3:4)=[20 hpD.Position(4)-10];
-        hScrollD.Position(1:2)=[hpD.Position(3)-hScrollD.Position(3) 0];
-       
+        hDslider.OuterPosition(3:4)=[20 hpD.Position(4)-10];
+        hDslider.Position(1:2)=[hpD.Position(3)-hDslider.Position(3) 0];
+               
         % Reset the location of all the axes to the default
         for nn=1:length(axs)
             axs{nn}.Position=getAxPos(axs{nn},nn);
@@ -125,63 +125,64 @@ hZ.ActionPostCallback=@chZoomPost;
         % Edge case for no analog traces (there is a better way to do this)
         if ~isempty(aTracesSHOW)
             % Rescale the value of the analog scrollbar
-            hScroll.Value=0;        
-            minVal=-(axs{1}.Position(2)-axs{end}.Position(2)-hpA.Position(4)+200);      
+            hAslider.Value=0;        
+            minVal=-(axs{1}.Position(2)-axs{end}.Position(2)-...
+                hpA.Position(4)+200);      
 
             % Rescale the analog scrollbar
             if minVal>=0
-               hScroll.Visible='off'; 
+               hAslider.Visible='off'; 
             else
-                hScroll.Min=minVal;
+                hAslider.Min=minVal;
             end         
         end
        
-        % Update digital axis limits
+        % Update digital axis position
         axD.Position(1)=axs{1}.Position(1);
         axD.Position(3)=axs{1}.Position(3);
         axD.Position(2)=50;
         axD.Position(4)=hpD.Position(4)-axD.Position(2)-17;
         
+        % Update digital label axis position
         axDL.Position(1)=5;
         axDL.Position(3)=axD.Position(1)-axDL.Position(1);
         axDL.Position(2)=axD.Position(2);
         axDL.Position(4)=axD.Position(4);
-        axDL.YLim=[-axDL.Position(4) 0];
         
+        % Reset the digital axis limits
+        axDL.YLim=[-axDL.Position(4) 0];        
         axD.YLim=axDL.YLim;
                 
-
-
+        % Apply graphical updates
         drawnow;
     end
 
-% Set an axis set
-    function pos=getAxPos(ax,ind)        
-        
-        
+% Calcualte the analog axis position
+    function pos=getAxPos(ax,ind)    
         % [left, right, bottom, top] boundaries between figure
         B=[150 40 50 50];
 
         % vertical separation between axes
         dY=30;
-        nR=4;
+        nR=4; 
 
-        % axes width and height
+        % axes width
         w=ax.Parent.Position(3)-B(1)-B(2);
+        
+        % axis height using the desired number of plots to show
         h=(ax.Parent.Position(4)-B(3)-B(4)-dY*(nR-1))/nR;
         
-        % manually set the height of each axis
+        % manually set the pixel height of each axis
         h=100;
 
-
-        % update the position
+        % assemble the entire calcualted position vector
         pos=[B(1) ax.Parent.Position(4)-B(4)-ind*h-(ind-1)*dY w h];
     end
 
 %% Settings 
 
 
-% time limits table
+% Time limits table
 htbl_time=uitable('parent',hF);
 htbl_time.ColumnName={'start (ms)','end (ms)'};
 htbl_time.RowName={};
@@ -194,6 +195,7 @@ htbl_time.Position(1:2)=[0 0];
 htbl_time.CellEditCallback=@tblCB;
 
 
+% Callback for editing the time table
     function tblCB(tbl,data)
 
         if isnan(data.NewData) & isnumeric(data.NewData)
@@ -221,27 +223,26 @@ htbl_time.CellEditCallback=@tblCB;
            axD.XLim=tbl.Data(1:2)*1E-3;
         end              
         
-    end  
-    
-
-
+    end      
 
 %% Analog Channels panel
 % analog channels window pane
 hpA=uipanel('parent',hF,'units','pixels','Title','Analog',...
     'backgroundcolor','w');
 
-% Create analog channels axes
+% Analog channels axes cell list
 axs={};
+
+% Analog channels labels cell list
 ts={};
 
-
 for kk=1:length(aTracesSHOW)  
+    % Create the axis for this channel
     axs{kk}=axes('parent',hpA,'units','pixels');
     axs{kk}.Position=getAxPos(axs{kk},kk);
-    % Assign an index to the axis for tracking
-    axs{kk}.UserData=kk;
-    
+
+
+    % Collect and format the data
     X=aTracesSHOW(kk).data(:,1);
     X=X*seqdata.deltat/seqdata.timeunit;
     Y=aTracesSHOW(kk).data(:,2);
@@ -263,89 +264,85 @@ for kk=1:length(aTracesSHOW)
     % currently outputed at that time.
     stairs(X*1E-3,Y,'color','k','linewidth',2);
     
-    
     % Change the limits
     axs{kk}.XLim=times*1E-3;
-    drawnow
     
-    % text label
+    % Analog channel text label
     str=['a' num2str(aTracesSHOW(kk).channel) ' ' aTracesSHOW(kk).name];
     ts{kk}=text(0,0,str,'fontsize',10,'horizontalalignment','right',...
         'verticalalignment','cap','units','pixels');
-
-    set(gca,'fontsize',10,'linewidth',1);
-    drawnow;
+    
+    % Some formatting
+    set(gca,'fontsize',10,'linewidth',1);    
 end
 
-% set up the scrollbar
-hScroll = uicontrol('parent',hpA,'Units','pixels','Style','Slider',...
+% Apply graphical updates
+drawnow;
+
+% Analog channel panel slider
+hAslider = uicontrol('parent',hpA,'Units','pixels','Style','Slider',...
     'visible','on','Tag','scroll');
-hScroll.Max=0;
-hScroll.Value=0;
-hScroll.Callback=@scrollCB;
-hScroll.SliderStep=[0.05 .1];
+hAslider.Max=0;
+hAslider.Value=0;
+hAslider.Callback=@AsliderCB;
+hAslider.SliderStep=[0.05 .1];
+
+% Callback for when the slider bar moves
+    function AsliderCB(~,~)        
+        for nn=1:length(axs)
+            pos=getAxPos(axs{nn},nn);
+            axs{nn}.Position(2)=pos(2)-hAslider.Value;
+        end        
+    end
 
 % Add listener to update it before changing the value
-addlistener(hScroll,'Value','PreSet',@scrollCB);
+addlistener(hAslider,'Value','PreSet',@AsliderCB);
 
-% Detect scroll wheels over the slider
-jScroll = findjobj(hScroll);
-jScroll.MouseWheelMovedCallback = @scrollStep;
+% Assign a callback when mouse wheel is scrolled over the slider bar
+jAScroll = findjobj(hAslider);
+jAScroll.MouseWheelMovedCallback = @AscrollStep;
 
-    function scrollStep(~,b)        
+% Callback when the mouse wheel is scrolled over the slider bar
+    function AscrollStep(~,b)   
+        % Scroll wheel information is a string; process it
         c=char(b);
         qStr='wheelRotation=';
         try
         % Get scroll wheel direction
             ind=strfind(c,qStr)+length(qStr);
-
-            N=hScroll.Value;
-            dN=(hScroll.Max-hScroll.Min)/20;
-            
+            N=hAslider.Value;
+            dN=(hAslider.Max-hAslider.Min)/20;            
             if isequal(c(ind),'1') 
                 % Scrolling down
-               hScroll.Value=max([hScroll.Min N-dN]);
+               hAslider.Value=max([hAslider.Min N-dN]);
             else 
-               hScroll.Value=min([hScroll.Max N+dN]);
+               hAslider.Value=min([hAslider.Max N+dN]);
             end
+        catch
+            warning('Bad scroll bar');
         end
     end
 
-
-    function scrollCB(~,~)        
-        for nn=1:length(axs)
-            pos=getAxPos(axs{nn},nn);
-            axs{nn}.Position(2)=pos(2)-hScroll.Value;
-        end        
-    end
-
-
-%     function wheelScroll(~,~)
-% 
-%         a=1;
-%         if a
-%            hF.WindowScrolWheelFcn=
-%         end
-%     end
-
-%% Digital channels
+%% Digital channels panel
 hText=20;
 
 % digital channels window pane
 hpD=uipanel('parent',hF,'units','pixels','Title','Digital',...
     'backgroundcolor','w');
 
+% Axis for digital channel data
 axD=axes('parent',hpD,'units','pixels','box','on','linewidth',1,...
     'YTick',hText*(-length(dTracesSHOW):0),'YGrid','On','YTickLabel',{},...
     'GridAlpha',1);
 xlabel('time (ms)');
 co=get(gca,'colororder');
+
+% Plot digital channel data
 for i=1:length(dTracesSHOW)
+    % Process data for this digital channel
     X=dTracesSHOW(i).data(:,1);
     X=X*seqdata.deltat/seqdata.timeunit;
-    Y=dTracesSHOW(i).data(:,2);
-    
-
+    Y=dTracesSHOW(i).data(:,2);  
     
     % add starting and ending values to curve. Do this because the list of
     % values are the WRITE commands (the values are held constant until
@@ -359,76 +356,103 @@ for i=1:length(dTracesSHOW)
         warning(wStr);
     end
     
+    % Sort the data
     [~,inds]=sort(X);
     X=X(inds);
     Y=Y(inds);
 
-    % Plot the data.  The stairs function interpolates the write as a
-    % square wave which is indicative of the physical voltages that are
-    % currently outputed at that time.
- 
+    % Plot the data as series of rectangles
     for np=1:(length(X)-1)
-        p=[1E-3*X(np) -i*hText 1E-3*(X(np+1)-X(np)) hText];
-        
+        p=[1E-3*X(np) -i*hText 1E-3*(X(np+1)-X(np)) hText];        
         if Y(np)
-        rectangle('Position',p,...
-            'facecolor',co(mod(i-1,7)+1,:),'linestyle','none');
-        end
-        
+            rectangle('Position',p,'linestyle','none',...
+                'facecolor',[co(mod(i-1,7)+1,:) .5]);
+        end        
+    end
+    
+    % Plot a gray box to indicate unused
+    if isempty(X)
+        p=[0 -i*hText 1E6 hText];        
+
+        rectangle('Position',p,'linestyle','none',...
+                'facecolor',[.5 .5 .5]);
     end
     
     hold on
     xlim(times*1E-3);
-
 end
 
-
+% Axis for digital channel labels
 axDL=axes('parent',hpD,'units','pixels','box','on','linewidth',1,...
     'fontname','monospaced','XTick',[],'YTick',[]);
 xlim([0 1]);
-
 co=get(gca,'colororder');
 
+% Plot rectangles and text objects
 for i=1:length(dTracesSHOW)
-    rectangle('Position',[0 -i*hText 1 1*hText],'facecolor',co(mod(i-1,7)+1,:))
+    rectangle('Position',[0 -i*hText 1 1*hText],...
+        'facecolor',[co(mod(i-1,7)+1,:) 0.5])
     text(.5,-(i-.5)*hText,dTracesSHOW(i).name,...
         'HorizontalAlignment','center','fontsize',10,'clipping','on',...
         'units','data','verticalalignment','middle');
 end
-% ylim([1 10]);
 
+% Disable interactivity with this axis because it's only a label
+disableDefaultInteractivity(axDL)
+setAxesZoomConstraint(hZ,axD,'x')
 
-
-% set up the scrollbar
-hScrollD = uicontrol('parent',hpD,'Units','pixels','Style','Slider',...
+% Digital channel panel slider
+hDslider = uicontrol('parent',hpD,'Units','pixels','Style','Slider',...
     'visible','on','Tag','scroll');
-hScrollD.Max=0;
-hScrollD.Value=0;
-hScrollD.Callback=@scrollCBD;
-hScrollD.SliderStep=[0.05 .1];
+hDslider.Max=0;
+hDslider.Value=0;
+hDslider.Callback=@DsliderCB;
+hDslider.SliderStep=[0.05 .1];
+hDslider.Min=-length(dTracesSHOW);
+hDslider.Max=0;
 
-    function scrollCBD(~,~)        
-        axDL.YLim=[-axDL.Position(4) 0]+hScrollD.Value;        
-        axD.YLim=axDL.YLim;
+% Callback for when the slider bar moves
+    function DsliderCB(~,~)        
+        axDL.YLim=[-axDL.Position(4) 0]+hDslider.Value;        
+        axD.YLim=axDL.YLim;     
     end
 
+% Add listener to update it before changing the value
+addlistener(hDslider,'Value','PreSet',@DsliderCB);
 
-hScrollD.Min=-length(dTracesSHOW);
-hScrollD.Max=0;
+% Assign a callback when mouse wheel is scrolled over the slider bar
+jDScroll = findjobj(hDslider);
+jDScroll.MouseWheelMovedCallback = @DscrollStep;
 
-
+% Callback when the mouse wheel is scrolled over the slider bar
+    function DscrollStep(~,b)   
+        % Scroll wheel information is a string; process it
+        c=char(b);
+        qStr='wheelRotation=';
+        try
+        % Get scroll wheel direction
+            ind=strfind(c,qStr)+length(qStr);
+            N=hDslider.Value;
+            dN=(hDslider.Max-hDslider.Min)/20;            
+            if isequal(c(ind),'1') 
+                % Scrolling down
+               hDslider.Value=max([hDslider.Min N-dN]);
+            else 
+               hDslider.Value=min([hDslider.Max N+dN]);
+            end
+        catch
+            warning('Bad scroll bar');
+        end
+    end
 
 %% Finish
-% Link the x-axis of all plots
+% Link the x-axis of digital and analog plots
 linkaxes([axs{:} axD],'x');
 
+% Link the y-axis of the digital text labels
+linkaxes([axDL axD],'y');
+
 chFigSize;
-
-% addlistener(axs{1},'XLim','PostSet',@woot);
-
-    function woot(a,b)
-%        keyboard 
-    end
 
 end
 

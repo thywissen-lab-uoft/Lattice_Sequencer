@@ -14,6 +14,14 @@ function hF=plotSequence(fhandle,cycle,Achs,Dchs,times)
 %   Achs - which analog channels to analyze 
 %   Dchs - which digital channels to analyze
 %   times - the time limits on which to plot
+%
+% At the time of writing this GUI, I am only familiar with making GUIs in
+% the figure() environment rather than the uifigure() one.  MATLAB is
+% encouraging everyone to go to uifigure, but I didn't care enough to learn
+% uifigure because I'm lazy.  I think MATLAB should support the figure GUI
+% forever, and there is a migration tool to help move this kind of code in
+% uifigure based version. HOWEVER, aint nobody got time that.  So GLHF
+% future people of the lab.
 
 % Name of the figure
 fName='Plot Sequence';
@@ -70,10 +78,15 @@ end
 
 % Initialize the GUI figure
 hF=figure;
-set(hF,'color','w','Name',fName);
+set(hF,'Name',fName);
+hF.AutoResizeChildren='off';
+% hF.Color='w';
 hF.Position(1:4)=[100 100 500 800];
 hF.SizeChangedFcn=@chFigSize;
 hZ=zoom(hF);
+
+pA=0.7;
+pD=1-0.7;
 
 % Assign callbacks to zoom function.  This only works if you had clicked on
 % the zoom function and there doesn't work very well at this moment
@@ -91,6 +104,19 @@ hZ.ActionPostCallback=@chZoomPost;
         disp('hipost');
     end
 
+jSlider = javax.swing.JSlider;
+[jhSlider, hContainer]=javacomponent(jSlider,[0,60,15,hF.Position(4)-30]);
+set(jSlider, 'Value',pD*100, 'PaintLabels',false, 'PaintTicks',true,...
+    'Orientation',1);  % with ticks, no labels
+set(jSlider, 'StateChangedCallback', @myCallback);  %alternative
+
+    function myCallback(~,~)
+       val=get(jSlider,'Value');
+       pD=val/100;
+       pA=1-pD;       
+       chFigSize;       
+    end
+
 % Figure change sizes callback
     function chFigSize(~,~)
         % The time table size; (it doesn't change size)
@@ -101,16 +127,16 @@ hZ.ActionPostCallback=@chZoomPost;
         H=hF.Position(4);        
         
         % Set the size of the analog panel
-        hpA.Position(3:4)=[W (H-h)*.70];
-        hpA.Position(1:2)=[0 H-hpA.Position(4)];
+        hpA.Position(3:4)=[W-15 (H-h)*pA];
+        hpA.Position(1:2)=[15 H-hpA.Position(4)];
         
         % Set the position of the analog scroll bar
         hAslider.OuterPosition(3:4)=[20 hpA.Position(4)-10];
         hAslider.Position(1:2)=[hpA.Position(3)-hAslider.Position(3) 0];
         
         % Set the size of the digital panel
-        hpD.Position(3:4)=[W (H-h)*.30];
-        hpD.Position(1:2)=[0 h];   
+        hpD.Position(3:4)=[W-15 (H-h)*pD];
+        hpD.Position(1:2)=[15 h];   
         
         % Set the position of the digital scroll bar
         hDslider.OuterPosition(3:4)=[20 hpD.Position(4)-10];
@@ -119,7 +145,6 @@ hZ.ActionPostCallback=@chZoomPost;
         % Reset the location of all the axes to the default
         for nn=1:length(axs)
             axs{nn}.Position=getAxPos(axs{nn},nn);
-            ts{nn}.Position(1:2)=axs{nn}.Position(3:4)-[5 0];
         end        
         
         % Edge case for no analog traces (there is a better way to do this)
@@ -152,7 +177,11 @@ hZ.ActionPostCallback=@chZoomPost;
         % Reset the digital axis limits
         axDL.YLim=[-axDL.Position(4) 0];        
         axD.YLim=axDL.YLim;
-                
+        
+        % Left scroll bar position
+        pp=[0,htbl_time.Extent(4),15,hF.Position(4)-htbl_time.Extent(4)];
+        set(hContainer,'position',pp); %note container size change
+              
         % Apply graphical updates
         drawnow;
     end
@@ -161,9 +190,11 @@ hZ.ActionPostCallback=@chZoomPost;
     function pos=getAxPos(ax,ind)    
         % [left, right, bottom, top] boundaries between figure
         B=[150 40 50 50];
+        
+        B(3)=0;
 
         % vertical separation between axes
-        dY=30;
+        dY=30;dY=15;
         nR=4; 
 
         % axes width
@@ -228,7 +259,7 @@ htbl_time.CellEditCallback=@tblCB;
 %% Analog Channels panel
 % analog channels window pane
 hpA=uipanel('parent',hF,'units','pixels','Title','Analog',...
-    'backgroundcolor','w');
+    'backgroundcolor',hF.Color);
 
 % Analog channels axes cell list
 axs={};
@@ -269,11 +300,16 @@ for kk=1:length(aTracesSHOW)
     
     % Analog channel text label
     str=['a' num2str(aTracesSHOW(kk).channel) ' ' aTracesSHOW(kk).name];
-    ts{kk}=text(0,0,str,'fontsize',10,'horizontalalignment','right',...
-        'verticalalignment','cap','units','pixels');
+    ts{kk}=text(0,0,str,'fontsize',10,'horizontalalignment','left',...
+        'verticalalignment','top','units','pixels',...
+        'fontname','monospaced','fontweight','bold');
+    ts{kk}.Position(1)=20-axs{kk}.Position(1);
+    ts{kk}.Position(2)=axs{kk}.Position(4);
     
     % Some formatting
     set(gca,'fontsize',10,'linewidth',1);    
+    
+    axs{kk}.XTickLabel={};
 end
 
 % Apply graphical updates
@@ -328,12 +364,12 @@ hText=20;
 
 % digital channels window pane
 hpD=uipanel('parent',hF,'units','pixels','Title','Digital',...
-    'backgroundcolor','w');
+    'backgroundcolor',hF.Color);
 
 % Axis for digital channel data
 axD=axes('parent',hpD,'units','pixels','box','on','linewidth',1,...
     'YTick',hText*(-length(dTracesSHOW):0),'YGrid','On','YTickLabel',{},...
-    'GridAlpha',1);
+    'GridAlpha',1,'fontsize',12);
 xlabel('time (ms)');
 co=get(gca,'colororder');
 
@@ -392,9 +428,11 @@ co=get(gca,'colororder');
 for i=1:length(dTracesSHOW)
     rectangle('Position',[0 -i*hText 1 1*hText],...
         'facecolor',[co(mod(i-1,7)+1,:) 0.5])
-    text(.5,-(i-.5)*hText,dTracesSHOW(i).name,...
-        'HorizontalAlignment','center','fontsize',10,'clipping','on',...
-        'units','data','verticalalignment','middle');
+    tstr=[' d' num2str(dTracesSHOW(i).channel,'%02.f') ' ' dTracesSHOW(i).name];
+    text(0,-(i-.5)*hText,tstr,...
+        'HorizontalAlignment','left','fontsize',8,'clipping','on',...
+        'units','data','verticalalignment','middle','fontname','monospaced',...
+        'fontweight','bold');
 end
 
 % Disable interactivity with this axis because it's only a label
@@ -453,6 +491,8 @@ linkaxes([axs{:} axD],'x');
 linkaxes([axDL axD],'y');
 
 chFigSize;
+
+
 
 end
 

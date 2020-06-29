@@ -219,7 +219,6 @@ hbut_plot.Callback=@plotCB;
 
 hF_Plot=[];
     function plotCB(~,~)
-       disp('i should plot something');        
        plottimes=htbl_time.Data;       
        plotchannels=[aCHshow.channel];
        tt=[dCHshow.channel]+length(seqdata.analogchannels);

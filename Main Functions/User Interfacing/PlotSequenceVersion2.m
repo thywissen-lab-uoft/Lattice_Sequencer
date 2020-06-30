@@ -4,7 +4,7 @@
 %Summary: Run this to plot a sequence
 %------
 
-function PlotSequenceVersion2(fhandle,cycle,channels,times)
+function plothnd=PlotSequenceVersion2(fhandle,cycle,channels,times)
 
 %---INPUTS---
 %fhandle: function handle for the sequence

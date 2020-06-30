@@ -249,6 +249,12 @@ htbl_time.Position(3:4)=htbl_time.Extent(3:4);
 htbl_time.Position(1:2)=[0 0];
 htbl_time.CellEditCallback=@tblCB;
 
+% Add listener to update it before changing the value
+
+    function beep(~,~)
+       htbl_time.Data=1E3*axD.XLim; 
+    end
+
 
 % Callback for editing the time table
     function tblCB(tbl,data)
@@ -392,7 +398,7 @@ hpD=uipanel('parent',hF,'units','pixels','Title','Digital',...
 axD=axes('parent',hpD,'units','pixels','box','on','linewidth',1,...
     'YTick',hText*(-length(dTracesSHOW):0),'YGrid','On','YTickLabel',{},...
     'GridAlpha',1,'fontsize',12);
-xlabel('time (ms)');
+xlabel('time (s)');
 co=get(gca,'colororder');
 
 % Plot digital channel data
@@ -507,6 +513,9 @@ linkaxes([axs{:} axD],'x');
 
 % Link the y-axis of the digital text labels
 linkaxes([axDL axD],'y');
+
+% Link the time limits to a table
+addlistener(axD,'XLim','PostSet',@beep);
 
 adjustSize;
 end

@@ -206,7 +206,7 @@ curtime = timein;
     
     rf_evap_time_scale = [1.0 1.5];[1.0 1.2];[0.8 1.2];[1.0 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
     RF_1B_Final_Frequency = 0.85;
-    seqdata.flags.do_plug = 1;   % ramp on plug after transfer to window
+    seqdata.flags.do_plug = 0;   % ramp on plug after transfer to window
     seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get clean TOF signal
 
     %RHYS - a bunch of unused options here. 

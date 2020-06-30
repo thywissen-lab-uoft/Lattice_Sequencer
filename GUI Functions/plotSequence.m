@@ -82,7 +82,7 @@ set(hF,'Name',fName);
 hF.AutoResizeChildren='off';
 % hF.Color='w';
 hF.Position(1:4)=[100 100 500 800];
-hF.SizeChangedFcn=@chFigSize;
+hF.SizeChangedFcn=@adjustSize;
 hZ=zoom(hF);
 
 % Assign callbacks to zoom function.  This only works if you had clicked on
@@ -107,10 +107,10 @@ jSlider = javax.swing.JSlider;
 [jhSlider, hContainer]=javacomponent(jSlider,[0,60,15,hF.Position(4)-30]);
 set(jSlider, 'Value',30, 'PaintLabels',false, 'PaintTicks',true,...
     'Orientation',1);  % with ticks, no labels
-set(jSlider, 'StateChangedCallback', @chFigSize);  %alternative
+set(jSlider, 'StateChangedCallback', @adjustSize);  %alternative
 
-% Figure change sizes callback
-    function chFigSize(~,~)
+% Figure change sizes callback; this is the main callback function
+    function adjustSize(~,~)
         % The time table size; (it doesn't change size)
         h=htbl_time.Extent(4);
         
@@ -122,37 +122,51 @@ set(jSlider, 'StateChangedCallback', @chFigSize);  %alternative
         
         % Get the main GUI figure size modulo settings size
         W=hF.Position(3)-pS(3);
-        H=hF.Position(4)-h;           
+        H=hF.Position(4)-h;    
+        
+        if W <200 || H < 100
+           warning(['Your making the figure too small to ' ...
+               'render the graphics! Bad grad student.']); 
+           return
+        end
         
         % Set the size of the analog panel               
         hpA.Position(3:4)=[W H*pA];
         hpA.Position(1:2)=[pS(3) h+H*pD];               
-        
-        % Set the position of the analog scroll bar        
-        hAslider.OuterPosition(3:4)=[20 hpA.Position(4)-10];
-        hAslider.Position(1:2)=[hpA.Position(3)-hAslider.Position(3) 0];
-   
-        % Reset the location of all the axes to the default
-        for nn=1:length(axs)
-            axs{nn}.Position=getAxPos(axs{nn},nn);
-        end    
-        
-        
-        % Edge case for no analog traces (there is a better way to do this)
-        if ~isempty(aTracesSHOW)
-        % Rescale the value of the analog scrollbar
-            hAslider.Value=0;        
+          
+        % Set the position and properties of the scrollbar
+        if pA*H<50 || isempty(axs)
+            % No slider bar to draw
+            hAslider.Visible='off';
+            hAslider.Value=0;
+        else
+            % Set the position of the analog scroll bar                
+            hAslider.OuterPosition(3:4)=[20 hpA.Position(4)-10];
+            hAslider.Position(1:2)=[hpA.Position(3)-hAslider.Position(3) 0];   
+            
+            % Calculate the range of the scroll bar
             minVal=-(axs{1}.Position(2)-axs{end}.Position(2)-...
-                hpA.Position(4)+200);      
-
-        % Rescale the analog scrollbar
+                hpA.Position(4)+200);               
+          
             if minVal>=0
-               hAslider.Visible='off'; 
+                % No scroll bar to plot since the panel is large enough
+                hAslider.Visible='off';
+                hAslider.Value=0;
             else
-                hAslider.Min=minVal;
-            end         
+                % Visible scroll bar; check the limits to be good
+                hAslider.Visible='on';
+                hAslider.Value=max([minVal hAslider.Value]);
+                hAslider.Min=minVal;  
+            end      
         end        
-             
+        
+        % Assign new positions to analog channel traces
+        for nn=1:length(axs)
+            pos=getAxPos(hpA,nn);
+            axs{nn}.Position=pos;
+            axs{nn}.Position(2)=pos(2)-hAslider.Value;
+        end        
+      
         % Set the size of the digital panel
         hpD.Position(3:4)=[W H*pD];
         hpD.Position(1:2)=[pS(3) h];  
@@ -160,11 +174,12 @@ set(jSlider, 'StateChangedCallback', @chFigSize);  %alternative
         if H*pD>75        
             % Set the position of the digital scroll bar            
             hDslider.OuterPosition(3:4)=[20 hpD.Position(4)-10];
-            hDslider.Position(1:2)=[hpD.Position(3)-hDslider.Position(3) 0];                    
-
+            hDslider.Position(1:2)=[hpD.Position(3)-hDslider.Position(3) 0];     
+            
             % Update digital axis position
-            axD.Position(1)=axs{1}.Position(1);
-            axD.Position(3)=axs{1}.Position(3);
+            t=getAxPos(hpD,1);
+            axD.Position(1)=t(1);
+            axD.Position(3)=t(3);
             axD.Position(2)=50;
             axD.Position(4)=hpD.Position(4)-axD.Position(2)-17;
 
@@ -187,8 +202,7 @@ set(jSlider, 'StateChangedCallback', @chFigSize);  %alternative
             hDslider.Visible='off';
             axDL.Visible='off';
             axD.Position(4)=30;           
-        end
-        
+        end        
         
         % Left scroll bar position
         pp=[0,htbl_time.Extent(4),15,hF.Position(4)-htbl_time.Extent(4)];
@@ -198,8 +212,8 @@ set(jSlider, 'StateChangedCallback', @chFigSize);  %alternative
         drawnow;
     end
 
-% Calcualte the analog axis position
-    function pos=getAxPos(ax,ind)    
+% Calculate the analog axis position
+    function pos=getAxPos(prnt,ind)    
         % [left, right, bottom, top] boundaries between figure
         B=[150 40 50 50];        
         B(3)=0; % manually set the bottom boundary
@@ -209,20 +223,19 @@ set(jSlider, 'StateChangedCallback', @chFigSize);  %alternative
         nR=4; 
 
         % axes width
-        w=ax.Parent.Position(3)-B(1)-B(2);
+        w=prnt.Position(3)-B(1)-B(2);
         
         % axis height using the desired number of plots to show
-        h=(ax.Parent.Position(4)-B(3)-B(4)-dY*(nR-1))/nR;
+        h=(prnt.Position(4)-B(3)-B(4)-dY*(nR-1))/nR;
         
         % manually set the pixel height of each axis
         h=100;
 
         % assemble the entire calcualted position vector
-        pos=[B(1) ax.Parent.Position(4)-B(4)-ind*h-(ind-1)*dY w h];
+        pos=[B(1) prnt.Position(4)-B(4)-ind*h-(ind-1)*dY w h];
     end
 
 %% Settings 
-
 
 % Time limits table
 htbl_time=uitable('parent',hF);
@@ -240,6 +253,7 @@ htbl_time.CellEditCallback=@tblCB;
 % Callback for editing the time table
     function tblCB(tbl,data)
 
+        % Check if data is properly formatted
         if isnan(data.NewData) & isnumeric(data.NewData)
             disp([datestr(now,13) ' You inputted a non-numerical input' ...
                 ' to the limits of the plot. Shameful']);
@@ -247,6 +261,7 @@ htbl_time.CellEditCallback=@tblCB;
             return;
         end      
         
+        % Make sure limits are in ascending order
         if tbl.Data(2)<tbl.Data(1) 
             disp([datestr(now,13) ' Wow, you colossal buffoon,' ...
                 ' plot limits must in increasing order. Shameful']);
@@ -254,17 +269,17 @@ htbl_time.CellEditCallback=@tblCB;
             return;
         end
         
+        % Check that data is actually different
         if isequal(data.NewData,data.PreviousData)
             return;
         end          
-
-        disp([datestr(now,13) ' Changing the plot limits.']);               
-           
+        
+        % Change the plot limits
+        disp([datestr(now,13) ' Changing the plot limits.']);  
         for n=1:length(axs)
            axs{n}.XLim=tbl.Data(1:2)*1E-3;
            axD.XLim=tbl.Data(1:2)*1E-3;
-        end              
-        
+        end                      
     end      
 
 %% Analog Channels panel
@@ -272,20 +287,15 @@ htbl_time.CellEditCallback=@tblCB;
 hpA=uipanel('parent',hF,'units','pixels','Title','Analog',...
     'backgroundcolor',hF.Color);
 
-
-
 % Analog channels axes cell list
 axs={};
-
-% Analog channels labels cell list
-ts={};
 
 for kk=1:length(aTracesSHOW)  
     % Create the axis for this channel
     axs{kk}=axes('parent',hpA,'units','pixels');
-    axs{kk}.Position=getAxPos(axs{kk},kk);
-
-
+    axs{kk}.Position=getAxPos(hpA,kk);
+    co=get(gca,'colororder');
+    
     % Collect and format the data
     X=aTracesSHOW(kk).data(:,1);
     X=X*seqdata.deltat/seqdata.timeunit;
@@ -306,23 +316,22 @@ for kk=1:length(aTracesSHOW)
     % Plot the data.  The stairs function interpolates the write as a
     % square wave which is indicative of the physical voltages that are
     % currently outputed at that time.
-    stairs(X*1E-3,Y,'color','k','linewidth',2);
-    
+    p=stairs(X*1E-3,Y,'color','k','linewidth',2);
+    p.Color=[co(mod(kk-1,7)+1,:) .5];
+
     % Change the limits
     axs{kk}.XLim=times*1E-3;
     
     % Analog channel text label
     str=['a' num2str(aTracesSHOW(kk).channel) ' ' aTracesSHOW(kk).name];
-    ts{kk}=text(0,0,str,'fontsize',10,'horizontalalignment','left',...
+    tt=text(0,0,str,'fontsize',10,'horizontalalignment','left',...
         'verticalalignment','top','units','pixels',...
-        'fontname','monospaced','fontweight','bold');
-    ts{kk}.Position(1)=20-axs{kk}.Position(1);
-    ts{kk}.Position(2)=axs{kk}.Position(4);
+        'fontname','monospaced','fontweight','bold','Color',p.Color);
+    tt.Position(1)=20-axs{kk}.Position(1);
+    tt.Position(2)=axs{kk}.Position(4);
     
     % Some formatting
-    set(gca,'fontsize',10,'linewidth',1);    
-    
-    axs{kk}.XTickLabel={};
+    set(gca,'fontsize',10,'linewidth',1,'XTickLabel',{}); 
 end
 
 % Apply graphical updates
@@ -339,10 +348,9 @@ hAslider.SliderStep=[0.05 .1];
 % Callback for when the slider bar moves
     function AsliderCB(~,~)        
         for nn=1:length(axs)
-            pos=getAxPos(axs{nn},nn);
+            pos=getAxPos(hpA,nn);
             axs{nn}.Position(2)=pos(2)-hAslider.Value;
         end
-%     hpA2.Position(2)=-hAslider.Value;
     end
 
 % Add listener to update it before changing the value
@@ -422,12 +430,9 @@ for i=1:length(dTracesSHOW)
     
     % Plot a gray box to indicate unused
     if isempty(X)
-        p=[0 -i*hText 1E6 hText];        
-
-        rectangle('Position',p,'linestyle','none',...
-                'facecolor',[.5 .5 .5]);
-    end
-    
+        p=[0 -i*hText 1E6 hText]; 
+        rectangle('Position',p,'linestyle','none','facecolor',[.5 .5 .5]);
+    end    
     hold on
     xlim(times*1E-3);
 end
@@ -496,7 +501,6 @@ jDScroll.MouseWheelMovedCallback = @DscrollStep;
             warning('Bad scroll bar');
         end
     end
-
 %% Finish
 % Link the x-axis of digital and analog plots
 linkaxes([axs{:} axD],'x');
@@ -504,9 +508,6 @@ linkaxes([axs{:} axD],'x');
 % Link the y-axis of the digital text labels
 linkaxes([axDL axD],'y');
 
-chFigSize;
-
-
-
+adjustSize;
 end
 

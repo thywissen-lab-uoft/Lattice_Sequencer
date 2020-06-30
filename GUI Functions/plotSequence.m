@@ -85,9 +85,6 @@ hF.Position(1:4)=[100 100 500 800];
 hF.SizeChangedFcn=@chFigSize;
 hZ=zoom(hF);
 
-pA=0.7;
-pD=1-0.7;
-
 % Assign callbacks to zoom function.  This only works if you had clicked on
 % the zoom function and there doesn't work very well at this moment
 hZ.ActionPreCallback=@chZoomPre;
@@ -104,79 +101,94 @@ hZ.ActionPostCallback=@chZoomPost;
         disp('hipost');
     end
 
+% Add a left hand slider to control the relative size of the analog and
+% digital channels
 jSlider = javax.swing.JSlider;
 [jhSlider, hContainer]=javacomponent(jSlider,[0,60,15,hF.Position(4)-30]);
-set(jSlider, 'Value',pD*100, 'PaintLabels',false, 'PaintTicks',true,...
+set(jSlider, 'Value',30, 'PaintLabels',false, 'PaintTicks',true,...
     'Orientation',1);  % with ticks, no labels
-set(jSlider, 'StateChangedCallback', @myCallback);  %alternative
-
-    function myCallback(~,~)
-       val=get(jSlider,'Value');
-       pD=val/100;
-       pA=1-pD;       
-       chFigSize;       
-    end
+set(jSlider, 'StateChangedCallback', @chFigSize);  %alternative
 
 % Figure change sizes callback
     function chFigSize(~,~)
         % The time table size; (it doesn't change size)
         h=htbl_time.Extent(4);
         
-        % Get the main GUI figure size
-        W=hF.Position(3);
-        H=hF.Position(4);        
+        % Get slider size
+        pS=get(hContainer,'Position');
+        val=get(jSlider,'Value');
+        pD=val/100;
+        pA=1-pD;
         
-        % Set the size of the analog panel
-        hpA.Position(3:4)=[W-15 (H-h)*pA];
-        hpA.Position(1:2)=[15 H-hpA.Position(4)];
+        % Get the main GUI figure size modulo settings size
+        W=hF.Position(3)-pS(3);
+        H=hF.Position(4)-h;           
         
-        % Set the position of the analog scroll bar
+        % Set the size of the analog panel               
+        hpA.Position(3:4)=[W H*pA];
+        hpA.Position(1:2)=[pS(3) h+H*pD];               
+        
+        % Set the position of the analog scroll bar        
         hAslider.OuterPosition(3:4)=[20 hpA.Position(4)-10];
         hAslider.Position(1:2)=[hpA.Position(3)-hAslider.Position(3) 0];
-        
-        % Set the size of the digital panel
-        hpD.Position(3:4)=[W-15 (H-h)*pD];
-        hpD.Position(1:2)=[15 h];   
-        
-        % Set the position of the digital scroll bar
-        hDslider.OuterPosition(3:4)=[20 hpD.Position(4)-10];
-        hDslider.Position(1:2)=[hpD.Position(3)-hDslider.Position(3) 0];
-               
+   
         % Reset the location of all the axes to the default
         for nn=1:length(axs)
             axs{nn}.Position=getAxPos(axs{nn},nn);
-        end        
+        end    
+        
         
         % Edge case for no analog traces (there is a better way to do this)
         if ~isempty(aTracesSHOW)
-            % Rescale the value of the analog scrollbar
+        % Rescale the value of the analog scrollbar
             hAslider.Value=0;        
             minVal=-(axs{1}.Position(2)-axs{end}.Position(2)-...
                 hpA.Position(4)+200);      
 
-            % Rescale the analog scrollbar
+        % Rescale the analog scrollbar
             if minVal>=0
                hAslider.Visible='off'; 
             else
                 hAslider.Min=minVal;
             end         
+        end        
+             
+        % Set the size of the digital panel
+        hpD.Position(3:4)=[W H*pD];
+        hpD.Position(1:2)=[pS(3) h];  
+                
+        if H*pD>75        
+            % Set the position of the digital scroll bar            
+            hDslider.OuterPosition(3:4)=[20 hpD.Position(4)-10];
+            hDslider.Position(1:2)=[hpD.Position(3)-hDslider.Position(3) 0];                    
+
+            % Update digital axis position
+            axD.Position(1)=axs{1}.Position(1);
+            axD.Position(3)=axs{1}.Position(3);
+            axD.Position(2)=50;
+            axD.Position(4)=hpD.Position(4)-axD.Position(2)-17;
+
+            % Update digital label axis position
+            axDL.Position(1)=5;
+            axDL.Position(3)=axD.Position(1)-axDL.Position(1);
+            axDL.Position(2)=axD.Position(2);
+            axDL.Position(4)=axD.Position(4);
+
+            % Reset the digital axis limits
+            axDL.YLim=[-axDL.Position(4) 0];        
+            axD.YLim=axDL.YLim;
+            
+            % Make Visible
+            hDslider.Visible='on';
+            axDL.Visible='on';
+        else
+            axD.Position(1)=axs{1}.Position(1);
+            axD.Position(3)=axs{1}.Position(3);
+            hDslider.Visible='off';
+            axDL.Visible='off';
+            axD.Position(4)=30;           
         end
-       
-        % Update digital axis position
-        axD.Position(1)=axs{1}.Position(1);
-        axD.Position(3)=axs{1}.Position(3);
-        axD.Position(2)=50;
-        axD.Position(4)=hpD.Position(4)-axD.Position(2)-17;
         
-        % Update digital label axis position
-        axDL.Position(1)=5;
-        axDL.Position(3)=axD.Position(1)-axDL.Position(1);
-        axDL.Position(2)=axD.Position(2);
-        axDL.Position(4)=axD.Position(4);
-        
-        % Reset the digital axis limits
-        axDL.YLim=[-axDL.Position(4) 0];        
-        axD.YLim=axDL.YLim;
         
         % Left scroll bar position
         pp=[0,htbl_time.Extent(4),15,hF.Position(4)-htbl_time.Extent(4)];
@@ -189,9 +201,8 @@ set(jSlider, 'StateChangedCallback', @myCallback);  %alternative
 % Calcualte the analog axis position
     function pos=getAxPos(ax,ind)    
         % [left, right, bottom, top] boundaries between figure
-        B=[150 40 50 50];
-        
-        B(3)=0;
+        B=[150 40 50 50];        
+        B(3)=0; % manually set the bottom boundary
 
         % vertical separation between axes
         dY=30;dY=15;
@@ -261,6 +272,8 @@ htbl_time.CellEditCallback=@tblCB;
 hpA=uipanel('parent',hF,'units','pixels','Title','Analog',...
     'backgroundcolor',hF.Color);
 
+
+
 % Analog channels axes cell list
 axs={};
 
@@ -328,7 +341,8 @@ hAslider.SliderStep=[0.05 .1];
         for nn=1:length(axs)
             pos=getAxPos(axs{nn},nn);
             axs{nn}.Position(2)=pos(2)-hAslider.Value;
-        end        
+        end
+%     hpA2.Position(2)=-hAslider.Value;
     end
 
 % Add listener to update it before changing the value

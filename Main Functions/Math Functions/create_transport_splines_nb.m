@@ -10,7 +10,25 @@ y2 = [];
 horizontal_scale = 1.0;
 vertical_scale = 1.0;
 
-transportfolder = 'C:\Lattice Sequencer\Current Transport Splines\';
+% Directory name where the splies are stored
+dirName='Current Transport Splines';
+
+% The directory of this folder
+curpath = fileparts(mfilename('fullpath'));
+
+% The parent directory is two levels up
+upPath=fileparts(fileparts(curpath));
+
+% create the transport folder name
+transportfolder=fullfile(upPath,dirName);
+
+if ~exist(transportfolder,'dir')
+   error('the transport folder is specified incorrectly!');
+end
+transportfolder=[fullfile(upPath,dirName) filesep];
+
+
+% transportfolder = 'C:\Lattice Sequencer\Current Transport Splines\';
 
 %vertical currents revision number (remember to change in transport_coil_currents)
 %rev45 -> raised QP

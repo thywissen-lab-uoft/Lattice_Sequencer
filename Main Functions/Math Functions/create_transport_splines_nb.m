@@ -1,12 +1,9 @@
 function y = create_transport_splines_nb(coil_num)
-
+% This function is super important as it defines the currents for transport
 global seqdata;
-
 %create splines for transport system
-
 x = [];
 y2 = [];
-
 horizontal_scale = 1.0;
 vertical_scale = 1.0;
 
@@ -26,15 +23,13 @@ if ~exist(transportfolder,'dir')
    error('the transport folder is specified incorrectly!');
 end
 transportfolder=[fullfile(upPath,dirName) filesep];
-
-
 % transportfolder = 'C:\Lattice Sequencer\Current Transport Splines\';
-
 %vertical currents revision number (remember to change in transport_coil_currents)
 %rev45 -> raised QP
 %rev47 -> raised QP with relaxed gradient near 15 cross over
 %rev44 -> normal QP
 cur_rev = 'rev45';
+
 
 %horizontal currents to spline
 MPush = dlmread([transportfolder 'Hextra1coilPush.txt'],',',0,1)*horizontal_scale;
@@ -62,6 +57,8 @@ M16 = dlmread([transportfolder cur_rev 'coil6.txt'],',',0,1)*vertical_scale;
 %vertical fill
 M17 = dlmread([transportfolder cur_rev 'coilpushfill.txt'],',',0,2)*vertical_scale;
 M18 = dlmread([transportfolder cur_rev 'coilMOTfill.txt'],',',0,2)*vertical_scale;
+
+
 
 %horizontal fill...for constant current, i think this requires too much
 %current in MOT and push during the end of the horizontal section...don't

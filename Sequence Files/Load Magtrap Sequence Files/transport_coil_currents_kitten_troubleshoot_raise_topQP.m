@@ -654,15 +654,8 @@ y = currentarray;
                     y(ind) = y(ind) + (x>=368).*(x<=467.0).*ppval(pp,x);
                     
                     %%vertical section
-                    %y(ind) = y(ind) + (x>=368).*ppval(pp,x);
-                    
-                          
-                    
-               
-                
-            case 16 %3rd vert transport coil [Coil 13]
-               
-               
+                    %y(ind) = y(ind) + (x>=368).*ppval(pp,x);                
+            case 16 %3rd vert transport coil [Coil 13]                             
                      pp = create_transport_splines_nb(15);
                       %y(ind) = y(ind) + ppval(pp,x);
                      
@@ -688,11 +681,7 @@ y = currentarray;
                     
                     %%vertical section
                     %y(ind) = y(ind) + (x>=370).*ppval(pp,x);
-                    
-                
-                
-            case 17 %4th vert transport coil [coil 14]
-                
+            case 17 %4th vert transport coil [coil 14]                
                  pp = create_transport_splines_nb(16);
                  
                  
@@ -714,38 +703,20 @@ y = currentarray;
                 
                 %ramp to zero over last 0.1mm
 %                  y(ind) = y(ind) + (x>coil14_endpos).*(ppval(pp,coil14_endpos)+(+0.01-ppval(pp,coil14_endpos)).*(x-coil14_endpos)/(539-coil14_endpos));
-                            
-                    
             case 18 %bottom QP coil lower FET [coil 15]
                 
                      %this controls the FET which connects coil 15 to
-                     %ground                
-                  
-                     pp = create_transport_splines_nb(17);
-                     
-                     
-                     
+                     %ground                                  
+                     pp = create_transport_splines_nb(17);                        
                     %Modified Nov 1, 2019: ramp coil up explicitly to
                     %avoid oscillations at begining (previous version below)
-                     y(ind) = y(ind) + (x>=431).*ppval(pp,x);
-                    
-                    
-%                      y(ind) = y(ind) + ppval(pp,x);
-                     
-                                                            
-            case 19 %top qp coil (FET 16)
-               
-                %this is just the current in the top coil
-                            
-                
+                     y(ind) = y(ind) + (x>=431).*ppval(pp,x);   
+%                      y(ind) = y(ind) + ppval(pp,x);  
+            case 19 %top qp coil (FET 16)               
+                %this is just the current in the top coil  
                 pp = create_transport_splines_nb(18);
-
-                y(ind) = y(ind) + ppval(pp,x);
-                    
-                 
-            case 20 %kitten FET
-               
-                   
+                y(ind) = y(ind) + ppval(pp,x); 
+            case 20 %kitten FET    
                  %when 15 is positive this is saturated
                  
                  %when 15 is negative this is 16-15
@@ -771,13 +742,9 @@ y = currentarray;
                     %prevent rippling at the beginning
                     y(ind) = y(ind) + nullval.*(y(ind)==0).*(x<=450);
 
-                    y(ind) = y(ind) + (ppval(pp2,x)+ppval(pp1,x)).*(ppval(pp1,x)<k_turn_on_point).*(x>450);
-                
+                    y(ind) = y(ind) + (ppval(pp2,x)+ppval(pp1,x)).*(ppval(pp1,x)<k_turn_on_point).*(x>450);                
                 end
-            
-            
-            case 21 %Power Dump
-                
+            case 21 %Power Dump                
                 pp_vert12a = create_transport_splines_nb(13);
                 pp_vert12b = create_transport_splines_nb(14);
                 pp_vert13 = create_transport_splines_nb(15);
@@ -796,11 +763,8 @@ y = currentarray;
                 ((Itotal - Ivert)>0);
                 
                 y(ind) = y(ind).*(x<429);
-                
-                
             case 22 %15/16 TTL switch
-           
-                %this is TTL low when the current is less than zero
+                           %this is TTL low when the current is less than zero
                                 
                  pp = create_transport_splines_nb(17);
                  
@@ -823,8 +787,7 @@ y = currentarray;
                      y(ind) = y(ind) + (ppval(pp,x)<turn_on_point) + (ppval(pp,x)>=turn_on_point)*-1.0;
                         
                      
-                 end
-            
+                 end            
             case 23 %new coil relay
                 
                 coil_relay_switch_pt = 210;
@@ -839,5 +802,4 @@ y = currentarray;
         
     end
        
-
 end

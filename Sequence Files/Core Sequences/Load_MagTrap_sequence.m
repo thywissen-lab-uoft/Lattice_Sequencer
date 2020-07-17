@@ -513,6 +513,7 @@ curtime = setDigitalChannel(curtime,'Kitten Relay',1);
     %Furthermore, note the significant calculation time due to spline
     %interpolation - this is likely unneccesary?
     
+    
 curtime = Transport_Cloud(curtime, seqdata.flags.hor_transport_type,...
     seqdata.flags.ver_transport_type, seqdata.flags.image_loc);
     disp('End Calculating Transport')
@@ -1098,7 +1099,6 @@ timeout = curtime;
     if (((timeout - timein)*(seqdata.deltat/seqdata.timeunit))>100000)
     error('Cycle time greater than 100s! Is this correct?')
     end
-
 
 
 end

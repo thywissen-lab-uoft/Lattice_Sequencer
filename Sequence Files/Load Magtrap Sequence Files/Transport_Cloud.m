@@ -305,13 +305,11 @@ curtime = AnalogFunc(calctime(curtime,0),0,@(t,d1,t1,dm,tm,d2,t2)(for_hor_minimu
           
           % dont do typically           
           if ver_transport_type==0
-
               if ver_transport_distance < 0.2
                   error('Vertical transport distance must be greater than 0.2')
               end
               
-              disp(ver_wait_time);
-              
+              disp(ver_wait_time);              
               %travel 0.1mm above cube              
 curtime =     AnalogFunc(calctime(curtime,0),0,@(t,tt,dt)(minimum_jerk(t,tt,dt)+horiz_length),cube_wait_time,cube_wait_time,0.1);
 
@@ -325,13 +323,10 @@ curtime =     AnalogFunc(calctime(curtime,0),0,@(t,tt,dt)(minimum_jerk(t,tt,dt)+
                   %travel final 0.1mm into SC.
 curtime =         AnalogFunc(calctime(curtime,0),0,@(t,tt,dt)(minimum_jerk(t,tt,dt)+538.9),ver_SC_rampdown_time,ver_SC_rampdown_time,0.1);
               end
-
               %for connect_spline_to_fit = 1 only!
-              %curtime = AnalogFunc(calctime(curtime,0),0,@(t,tt,dt)(minimum_jerk(t,tt,dt)+533.9),100,100,0.1);
-         
+              %curtime = AnalogFunc(calctime(curtime,0),0,@(t,tt,dt)(minimum_jerk(t,tt,dt)+533.9),100,100,0.1);       
           
-          elseif ver_transport_type==1
-          
+          elseif ver_transport_type==1          
               curtime = AnalogFunc(calctime(curtime,0),0,@(t,tt,dt)(minimum_jerk(t,tt,dt)+horiz_length),cube_wait_time,cube_wait_time,0.1);   
               curtime = AnalogFunc(calctime(curtime,0),0,@(t,d1,t1,dm,tm,d2,t2)(for_hor_minimum_jerk(t,d1,t1,dm,tm,d2,t2)+horiz_length+0.1),T1Vert+TmVert+T2Vert,D1Vert-0.1,T1Vert,DmVert,TmVert,D2Vert,T2Vert);
      
@@ -339,13 +334,11 @@ curtime =         AnalogFunc(calctime(curtime,0),0,@(t,tt,dt)(minimum_jerk(t,tt,
             DigitalPulse(calctime(curtime,0),12,10,1);
           
           %RHYS - We typically use this.
-          elseif ver_transport_type==3
-          
+          elseif ver_transport_type==3          
               vert_lin_total_time = zeros(size(vert_lin_trans_distances));
               for ii = 2:length(vert_lin_trans_distances)
                 vert_lin_total_time(ii) = vert_lin_total_time(ii-1) + vert_lin_trans_times(ii-1);
-              end
-              
+              end              
               %vert_pp = interp1(vert_lin_total_time,vert_lin_trans_distances+horiz_length,'linear','pp');
               
               vert_pp = pchip(vert_lin_total_time,vert_lin_trans_distances+horiz_length);

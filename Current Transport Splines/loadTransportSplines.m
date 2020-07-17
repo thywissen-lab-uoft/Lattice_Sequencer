@@ -9,6 +9,8 @@ function [splines,data] = loadTransportSplines
 % splines - 1x20 structure array which is a spline fit, evalulate with ppval
 % data    - 539x20 vector of calibration current
 
+% Plot the curves
+doPlot=1;
 
 xH=0:1:365; % position vector for horizontal transport
 xV=366:539; % position vector for vertical transport
@@ -23,7 +25,7 @@ data=zeros(length(xH)+length(xV),20);
 % Get the full directory of this file, it is assumed that the calibrations
 % are in this folder
 str=mfilename('fullpath');
-[str,~,~]=fileparts(str)
+[str,~,~]=fileparts(str);
 str=[str filesep];
 
 
@@ -56,66 +58,80 @@ M17 = dlmread([str 'rev45coilpushfill.txt'],',',0,2);
 M18 = dlmread([str 'rev45coilMOTfill.txt'],',',0,2);
 
 %% Stitch the data together and make splines
+% A loop is not used to leave it open to customize the spline and
+% calibration for each channel.
 
 % Coil 1 : PUSH COIL
 Y=[MPush xV*0];
 data(:,1)=Y;
 splines(1)=spline(x0,Y);
+strs{1}='Push Coil';
 
 % Coil 2 : MOT COIL
 Y=[MMOT xV*0];
 data(:,2)=Y;
 splines(2)=splinefit(x0,Y,250);
+strs{2}='MOT Coil';
 
 % Coil 3
 Y=[M3 xV*0];
 data(:,3)=Y;
 splines(3)=spline(x0,Y);
+strs{3}='Coil 3';
 
 % Coil 4
 Y=[M4 xV*0];
 data(:,4)=Y;
 splines(4)=spline(x0,Y);
+strs{4}='Coil 4';
 
 % Coil 5
 Y=[M5 xV*0];
 data(:,5)=Y;
 splines(5)=spline(x0,Y);
+strs{5}='Coil 5';
 
 % Coil 6
 Y=[M6 xV*0];
 data(:,6)=Y;
 splines(6)=spline(x0,Y);
+strs{6}='Coil 6';
 
 % Coil 7
 Y=[M7 xV*0];
 data(:,7)=Y;
 splines(7)=spline(x0,Y);
+strs{7}='Coil 7';
 
 % Coil 8
 Y=[M8 xV*0];
 data(:,8)=Y;
 splines(8)=spline(x0,Y);
+strs{8}='Coil 8';
 
 % Coil 9
 Y=[M9 xV*0];
 data(:,9)=Y;
 splines(9)=spline(x0,Y);
+strs{9}='Coil 9';
 
 % Coil 10
 Y=[M10 xV*0];
 data(:,10)=Y;
 splines(10)=spline(x0,Y);
+strs{10}='Coil 10';
 
 % Coil 11
 Y=[M11 xV*0];
 data(:,11)=Y;
 splines(11)=spline(x0,Y);
+strs{11}='Coil 11';
 
 % Coil Extra
 Y=[MExtra xV*0];
 data(:,12)=Y;
 splines(12)=spline(x0,Y);
+strs{12}='Coil 12';
 
 % Vertical now
 
@@ -123,40 +139,77 @@ splines(12)=spline(x0,Y);
 Y=[M12 -M12A];
 data(:,13)=Y;
 splines(13)=spline(x0,Y);
+strs{13}='Coil 12A';
 
 % Coil 12B
 Y=[M12 M12B];
 data(:,14)=Y;
 splines(14)=spline(x0,Y);
+strs{14}='Coil 12B';
 
 % Coil 13
 Y=[xH*0 M13];
 data(:,15)=Y;
 splines(15)=spline(x0,Y);
+strs{15}='Coil 13';
 
 % Coil 14
 Y=[xH*0 M14];
 data(:,16)=Y;
 splines(16)=spline(x0,Y);
+strs{16}='Coil 14';
 
 % Coil 15
 Y=[xH*0 M15];
 data(:,17)=Y;
 splines(17)=spline(x0,Y);
+strs{17}='Coil 15';
 
 % Coil 16
 Y=[xH*0 M16];
 data(:,18)=Y;
 splines(18)=spline(x0,Y);
+strs{18}='Coil 16';
+
+% I don't believe the experiment uses these (CF 2020/07);
 
 % Push fill current
 Y=[xH*0 26 1.2*M17];
 data(:,19)=Y;
 splines(19)=spline(x0,Y);
+strs{19}='Push Fill';
 
 % MOT fill current
 Y=[xH*0 18.5 1.2*M18];
 data(:,20)=Y;
 splines(20)=spline(x0,Y);
+strs{20}='MOT Fill';
+
+%% Debug options
+if doPlot
+    cmap=hsv(18);
+    
+    % Close the old calibration figure if you plotted it
+    fname='TransportCalibrationRaw';    
+    fh = findobj( 'Type', 'Figure', 'Name', fname);
+    close(fh)
+
+    hF=figure;
+    hF.Color='w';
+    hF.Position(3:4)=[800 400];
+    hF.Name=fname;
+    ax=axes;
+    set(ax,'box','on','linewidth',1,'fontsize',14,'fontname','times');
+    xlabel('position (mm)');
+    ylabel('current (A)');
+    hold on
+    xlim([min(x0) max(x0)]);
+    for kk=1:18
+       plot(x0,data(:,kk),'linewidth',2,'color',cmap(kk,:));        
+    end    
+    legend(strs(1:18),'location','eastoutside','fontsize',10)
+    title('raw calibrations');
+end
+
 end
 

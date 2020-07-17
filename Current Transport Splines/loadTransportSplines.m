@@ -9,21 +9,26 @@ function [splines,data] = loadTransportSplines
 % splines - 1x20 structure array which is a spline fit, evalulate with ppval
 % data    - 539x20 vector of calibration current
 
-% Plot the curves
+% Plot the curves, this logical is for debugging purposes
 doPlot=1;
 
-xH=0:1:365; % position vector for horizontal transport
-xV=366:539; % position vector for vertical transport
+% position vector for horizontal transport
+xH=0:1:365; 
 
-x0=[xH xV]; % position vector for entirety of transport
+% position vector for vertical transport
+xV=366:539; 
 
+% position vector for entirety of transport
+x0=[xH xV]; 
+
+% data for all the channels
 data=zeros(length(xH)+length(xV),20);
 
 
 %% Load the calirations
 
 % Get the full directory of this file, it is assumed that the calibrations
-% are in this folder
+% are in the local folder of this file
 str=mfilename('fullpath');
 [str,~,~]=fileparts(str);
 str=[str filesep];
@@ -187,6 +192,9 @@ strs{20}='MOT Fill';
 
 %% Debug options
 if doPlot
+    % Don't plot channels 19 and 20 because I dont think we use those
+    
+    % Make a color map
     cmap=hsv(18);
     
     % Close the old calibration figure if you plotted it
@@ -204,9 +212,13 @@ if doPlot
     ylabel('current (A)');
     hold on
     xlim([min(x0) max(x0)]);
+    
+    % Plot the data
     for kk=1:18
        plot(x0,data(:,kk),'linewidth',2,'color',cmap(kk,:));        
     end    
+    
+    % Make a legend
     legend(strs(1:18),'location','eastoutside','fontsize',10)
     title('raw calibrations');
 end

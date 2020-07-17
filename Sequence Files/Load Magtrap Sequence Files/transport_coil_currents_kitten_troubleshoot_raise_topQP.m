@@ -10,6 +10,8 @@
 %------
 function y = transport_coil_currents_kitten_troubleshoot_raise_topQP(time,position,flag,varargin)
 % time - a Nx1 vector of times to where the current need to be written
+% flag - a debugging flag; typically will have a value of 0
+% position - Nx1 vector of position in mm for the transport
 
 global seqdata;
 
@@ -88,7 +90,7 @@ coil_range = ones(2,num_channels); %relevant range of the given coil (2xnumber o
 %channels the coils correspond to on the ADWIN
 %Negative corresponds to a digital channel
 transport_channels = [18 7:17 9 22:24 20:21 1 3 17 -22 -28];
-% corresponding coils : [FF Push MOT 3:11 3 12a-13 14 15 16 kitten 11]
+% corresponding coils : [FF Push MOT 3:11 3 12a-13 14 15 16 kitten 11 D D]
 
 
 % UNTESTED
@@ -305,18 +307,23 @@ currentarray = zeros(length(time)*sum(enable),3);
 j = 0;
 for i = 1:num_channels
 
-    %indices for the current channel
+    % Calculate the indices to be assigned in currentarray for this channel
     N=length(time);
     channel_indices = ((i-1)*N+1):(i*N);
     
+    % Assign the time vector and channel index to the analog channel writes
+    currentarray(channel_indices,1) = time;
+    currentarray(channel_indices,2) = transport_channels(i);
+    
+    % No idea what this if for, doesn't this overwrite coil 11? But also,
+    % why is Coil 11 being written at the end of the transport?
     if i==21
         %for future considerations to keep current constant
         currentarray(channel_indices,3) = nullval;
-        continue;
-    end
-    
-    currentarray(channel_indices,1) = time;
-    currentarray(channel_indices,2) = transport_channels(i);
+        continue;        
+    end    
+
+    % Write the channel current if the channel is enabled
     % implemented July 2016; ST
     if enable(i)
         currentarray(channel_indices,3) = channel_current(i,position,coil_offset(i),coil_widths(i),coil_range(:,i));
@@ -352,34 +359,29 @@ for i = 1:num_channels
         voltages = currentarray(channel_indices,3);
     end
     
-    if (~flag && i<=num_analog_channels)
+    % Verify that the max FET power is not exceeded. (FETs can still fail)
+    if (~flag && i<=num_analog_channels)              
         
-        
-        
-        %check max FET power is not exceeded
-        %NOTE: This should not be viewed as perfect...FET's may still fail
-        if (transport_channels(i)~=18 && transport_channels(i)~=3) %skip the voltage and kitten channels
-            
+        % Don't analyze the voltage and kitten channels
+        if (transport_channels(i)~=18 && transport_channels(i)~=3)   
+            % Some terribly poor formatted calculation of the power
+            % dissapation. Also, this should probably through an error
+            % rather than a warning in the code
             if sum(((abs(currentarray(channel_indices,3)).*voltages-currentarray(channel_indices,3).^2*coil_resistance(i)/1000).*(currentarray(channel_indices,3)~=nullval))>max_fet_power(i))
                 warning(['FET Power exceeded for channel:' num2str(transport_channels(i))]);
-            end
-            
+            end            
         end
         
-        %convert currents to channel voltages
+        % Convert desired currents to channel voltages using calibrations
         currentarray(channel_indices,3) = seqdata.analogchannels(transport_channels(i)).voltagefunc{2}(currentarray(channel_indices,3).*overallscale*coil_scale_factors(i)).*(currentarray(channel_indices,3)~=nullval)+...
             currentarray(channel_indices,3).*(currentarray(channel_indices,3)==nullval);
 
-        %check the voltages are in range
+        % Check the voltages are in range
         if sum((currentarray(channel_indices,3)~=nullval).*(currentarray(channel_indices,3)>seqdata.analogchannels(transport_channels(i)).maxvoltage))||...
                 sum((currentarray(channel_indices,3)~=nullval).*(currentarray(channel_indices,3)<seqdata.analogchannels(transport_channels(i)).minvoltage))
             error(['Voltage out of range when computing transport Channel:' num2str(transport_channels(i))]);
-        end
-        
-        
-        
-    end
-    
+        end     
+    end   
     
     
 end
@@ -408,6 +410,7 @@ y = currentarray;
 
 %sub function that calculates the current values of the different channels
     function y = channel_current(channel,pos,offset,width,coilrange)
+        
        
         y = (pos<coilrange(1))*nullval;
         y = y + (pos>=coilrange(2))*nullval;
@@ -423,7 +426,6 @@ y = currentarray;
         switch channel
             
             case 1  %This is the FF channel
-
                  %FET + coil resistances
                  %MOT: 357mOhm
                  %Push:312.5mOhm
@@ -434,10 +436,7 @@ y = currentarray;
                  %------------------------
                  %feedforward parameters
                  %------------------------
-                 
- 
-                 
-                 
+                                               
                  %voltage when MOT trapping
                  MOTvoltage = 10*overallscale; 
                  
@@ -457,9 +456,7 @@ y = currentarray;
                  starthorizramp = 270; %260
                  peakhorizramp = 310;  %350
                  starthorizrampdown = 340;
-                 endhorizramp = 365; %360
- 
-                 
+                 endhorizramp = 365; %360                
 
                   
                  %steady voltage for beginning of vertical transfer
@@ -599,12 +596,9 @@ y = currentarray;
                  %------------------------
           
                  
-            case {2,3,4,5,6,7,8,9,10,11,12} %push and all horizontal    
-                
-               
+            case {2,3,4,5,6,7,8,9,10,11,12} %push and all horizontal                
                  pp = create_transport_splines_nb(channel-1);
-                 y(ind) = y(ind) + ppval(pp,x);
-                 
+                 y(ind) = y(ind) + ppval(pp,x);                 
             
             case 13 %Extra coil
                 
@@ -615,11 +609,8 @@ y = currentarray;
                 %y(ind) = y(ind) + ppval(create_transport_splines_nb(12-1),x);
                 
                 pp = create_transport_splines_nb(12);
-                 y(ind) = y(ind) + ppval(pp,x);
-                 
-            case 14 %1st vert transport coil [Coil 12A]
-              
-                
+                 y(ind) = y(ind) + ppval(pp,x);                 
+            case 14 %1st vert transport coil [Coil 12A]    
                  pp = create_transport_splines_nb(13);
                  
                  %horizontal section
@@ -635,15 +626,7 @@ y = currentarray;
 
                 %vertical section
                 y(ind) = y(ind) + (x>=368).*ppval(pp,x);
-                   
-                                      
-                
-
-            case 15 %2nd vert transport coil [Coil 12B]
-                
-                
-                
-                
+            case 15 %2nd vert transport coil [Coil 12B]                   
                      pp = create_transport_splines_nb(14);
                       %y(ind) = y(ind) + ppval(pp,x);
                      
@@ -673,7 +656,7 @@ y = currentarray;
                     %%vertical section
                     %y(ind) = y(ind) + (x>=368).*ppval(pp,x);
                     
-                               
+                          
                     
                
                 

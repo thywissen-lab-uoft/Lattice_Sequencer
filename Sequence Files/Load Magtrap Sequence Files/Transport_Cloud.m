@@ -28,9 +28,12 @@ global seqdata;
 horiz_length = 365;
 vert_length = 174;
 
-%0: min jerk curves, 1: slow down in middle section curves, 2: none, 3:
-%linear, 4: triple min jerk
-
+% ifelse on hor_transport_type
+% 0: min jerk curves, 
+% 1: slow down in middle section curves
+% 2: no transport at all
+% 3: piecewise 
+% 4: triple min jerk (undefined?)
 if hor_transport_type == 0
     
     %---------------
@@ -78,31 +81,24 @@ if hor_transport_type == 0
 %     end
         
 
-    if hor_transport_distance<horiz_length;
-        
+    if hor_transport_distance<horiz_length        
         ver_transport_distance = 0; 
         ver_transport_time = 0; 
         ver_wait_time = 0;
-        cube_wait_time = 0;
-    
+        cube_wait_time = 0;    
     end
     
-    if hor_transport_distance==horiz_length && ver_transport_distance>0
-        
-        hor_wait_time = 0;
-        
+    if hor_transport_distance==horiz_length && ver_transport_distance>0        
+        hor_wait_time = 0;        
     end
     
-    if hor_transport_distance>horiz_length;
-        
-        error('Horizontal distance too far')
-        
+    % Check that horizontal transport distance is in bounds
+    if hor_transport_distance>horiz_length        
+        error('Horizontal distance too far')        
     end
-    
-    if ver_transport_distance>vert_length;
-        
-        error('Vertical distance too far')
-        
+    % Check that vertical transport distance is in bounds
+    if ver_transport_distance>vert_length        
+        error('Vertical distance too far')        
     end
     
     %option to ramp down to vertical currents slowly in the cube
@@ -165,74 +161,59 @@ elseif hor_transport_type  == 1
     %In this transport scheme there are several different velocity "zones"
     %so that the atoms slow down before they enter the final cube as gently
     %as possible to reduce heating
-    %--------------
-    
+    %--------------    
      
-    %  %list
-    % T2_time_list=[400:50:800];
-    % % 
-    % % %Create linear list
-    % %index=seqdata.cycle;
-    % % 
-    % % %Create Randomized list
-    % index=seqdata.randcyclelist(seqdata.cycle);
-    % % 
-    % T2_time = T2_time_list(index)
-    % addOutputParam('T2_time', T2_time);
 
     time_scaling = 1.0;   
 
-    %Horizontal transport parameters
-        %Distance to the second zone and time to get there
-        D1 = 300; %300
-        T1 = 1800*time_scaling; %1800
-        %Distance to the third zone and time to get there
-        Dm = 45; %45
-        Tm =1000*time_scaling; %1000
-        %Distance to the fourth zone and time to get there
-        D2 = 20; %15
-        T2 = 500*time_scaling; %600
-
-        %Cube wait time
-        cube_wait_time = 200; %200
-%         
-        
+    % Horizontal transport parameters fpr for_hor_minimum_jerk
+    %Distance to the second zone and time to get there
+    D1 = 300; %300
+    T1 = 1800*time_scaling; %1800
+    %Distance to the third zone and time to get there
+    Dm = 45; %45
+    Tm =1000*time_scaling; %1000
+    %Distance to the fourth zone and time to get there
+    D2 = 20; %15
+    T2 = 500*time_scaling; %600
+    %Cube wait time
+    cube_wait_time = 200; %200        
        
                
-        %Type 0 Vertical transport parameters
-        ver_transport_distance = 174; %174 is all the way
-        ver_transport_time = 3000; %650 %700
-        ver_SC_rampdown_time = 300; %300
-       ver_wait_time = 0; %100  
+    %Type 0 Vertical transport parameters
+    ver_transport_distance = 174; %174 is all the way
+    ver_transport_time = 3000; %650 %700
+    ver_SC_rampdown_time = 300; %300
+    ver_wait_time = 0; %100  
        
-        %ver_transport_distance2 = 40; %174 is all the way
-        %ver_transport_time2 = 2301; %650 %700
+    %ver_transport_distance2 = 40; %174 is all the way
+    %ver_transport_time2 = 2301; %650 %700
      
         
-        %Type 1 Vertical transport parameters
-        %Distance to the second zone and time to get there
-        D1Vert = 60; 
-        T1Vert = 1200; 
-        %Distance to the third zone and time to get there
-        DmVert = 80; 
-        TmVert = 800;
-        %Distance to the fourth zone and time to get there
-        D2Vert = 34; 
-        T2Vert = 500; 
+    %Type 1 Vertical transport parameters
+    %Distance to the second zone and time to get there
+    D1Vert = 60; 
+    T1Vert = 1200; 
+    %Distance to the third zone and time to get there
+    DmVert = 80; 
+    TmVert = 800;
+    %Distance to the fourth zone and time to get there
+    D2Vert = 34; 
+    T2Vert = 500; 
 
                  
-        %Type 3 vert transport
-        %rev 45 master list
-            %MASTER LIST vert_lin_trans_distances = [0 20  40  60  80  100 120 140 151 154 160 173.9 174];
-   %MASTER LIST vert_lin_trans_times = [450 250 450 800 450 250 500 200 200 500 500 300]; %300 100
-                vert_lin_trans_times = [450 250 450 800 450 250 500 200 150 500 500 300];
-            vert_lin_trans_distances = [0 20  40  60  80  100 120 140 151 154 160 173.9 174];
-            %vert_lin_trans_distances = [0 20  40  60  80  100 120 140 156 157 160 173.9 174];
+    %Type 3 vert transport
+    %rev 45 master list
+    %MASTER LIST vert_lin_trans_distances = [0 20  40  60  80  100 120 140 151 154 160 173.9 174];
+    %MASTER LIST vert_lin_trans_times = [450 250 450 800 450 250 500 200 200 500 500 300]; %300 100
+    vert_lin_trans_times = [450 250 450 800 450 250 500 200 150 500 500 300];
+    vert_lin_trans_distances = [0 20  40  60  80  100 120 140 151 154 160 173.9 174];
+    %vert_lin_trans_distances = [0 20  40  60  80  100 120 140 156 157 160 173.9 174];
        
-        %rev 48 master list (May 8, 2012)
-%                 vert_lin_trans_times = [450 250 450 800 450 250 500 200 200 500 500 300];
-%             vert_lin_trans_distances = [0 20  40  60  80  100 120 140 149 152 160 173.9 174];
-            
+    %rev 48 master list (May 8, 2012)
+    %                 vert_lin_trans_times = [450 250 450 800 450 250 500 200 200 500 500 300];
+    %             vert_lin_trans_distances = [0 20  40  60  80  100 120 140 149 152 160 173.9 174];
+
             
             %for old position of top QP
         
@@ -256,8 +237,7 @@ elseif hor_transport_type  == 1
         %vert_lin_trans_times =       [450 250 450 800 450 250 500 15 500 700];
         
                 
-        %Type 4 vert transport
-                
+        %Type 4 vert transport                
          Dtriple1 = 60;
          Ttriple1 = 1200;
          Dtriple2 = 40;
@@ -301,29 +281,31 @@ elseif hor_transport_type  == 1
     x_cube_shim_value = 0;
     cube_shim_pulse_length = 20;
     
+   
      
-%RHYS - Here is the call to analog func that determines horizontal transport currents.     
+% Call AnalogFunc to define ramps for horizontal transport
 curtime = AnalogFunc(calctime(curtime,0),0,@(t,d1,t1,dm,tm,d2,t2)(for_hor_minimum_jerk(t,d1,t1,dm,tm,d2,t2)),T1+Tm+T2,D1,T1,Dm,Tm,D2,T2);
-    
+% This is basically no reason to lump this fucntion call into AnalogFunc,
+% this should be separated into a specific HorizontalTransport analog
+% function
+
+% Process the vertical transport case
     if (ver_transport_distance~=0 && ver_transport_type==0) || ...
             ((D1Vert + DmVert + D2Vert)~=0 && ver_transport_type==1) || ...
             (length(vert_lin_trans_distances)>1 && ver_transport_type==3)||...
-            ((Dtriple1+Dtriple1+Dtriple1)~=0 && ver_transport_type==4)
-          
+            ((Dtriple1+Dtriple1+Dtriple1)~=0 && ver_transport_type==4)          
                               
-          
+          % always off?
           if cube_shim
              AnalogFunc(calctime(curtime,0),29,@(t,tt,dt)(minimum_jerk(t,tt,dt)),y_cube_shim_time,y_cube_shim_time,y_cube_shim_value);
              AnalogFunc(calctime(curtime,0),30,@(t,tt,dt)(minimum_jerk(t,tt,dt)),x_cube_shim_time,x_cube_shim_time,x_cube_shim_value);
              setAnalogChannel(calctime(curtime,cube_shim_pulse_length),29,0);
-             setAnalogChannel(calctime(curtime,cube_shim_pulse_length),30,0);
-          
+             setAnalogChannel(calctime(curtime,cube_shim_pulse_length),30,0);          
           end
           
-          
-           
+          % dont do typically           
           if ver_transport_type==0
-         
+
               if ver_transport_distance < 0.2
                   error('Vertical transport distance must be greater than 0.2')
               end

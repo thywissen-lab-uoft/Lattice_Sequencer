@@ -297,9 +297,8 @@ end
 %array
 nullval = -100;
 
-%preallocate the full array (we are going to output the current in each
-%channel as a function of time); only need to allocate space for those
-%channels that are enabled.
+% Initialize the Nx3 array that will contain all of the analog writes. As
+% usual the format is (time x channel x value)
 currentarray = zeros(length(time)*sum(enable),3);
 
 %go through for each channel
@@ -307,7 +306,8 @@ j = 0;
 for i = 1:num_channels
 
     %indices for the current channel
-    channel_indices = ((i-1)*length(time)+1):(i*length(time));
+    N=length(time);
+    channel_indices = ((i-1)*N+1):(i*N);
     
     if i==21
         %for future considerations to keep current constant

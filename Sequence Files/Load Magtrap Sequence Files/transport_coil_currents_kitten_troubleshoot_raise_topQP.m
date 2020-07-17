@@ -21,6 +21,7 @@ end
 %define the transport parameters
 
 %% Spline Parameters
+% CF : The spline input data is just two numbers.  What is this?
 
 %import currents for spline
 vertical_scale = 1.0;
@@ -65,6 +66,7 @@ coil_scale_factors = ones(1,num_channels);%scaling of the max current in each co
 
 coil_widths = ones(1,num_channels);%widths of each of the coil curves
 
+% Center axis position in mm
 coil_offset = [0 30 41 43 85 116 148 179 212 242 274 338 350 365 365 365 365 365 365 365 365 365 365]; %338
 
 

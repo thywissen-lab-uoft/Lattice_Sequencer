@@ -39,8 +39,12 @@ if docycle
         
         buildtime = now;
         disp('Starting to process matlab code.')
+        
+        %This 'fhandle' is the sequence file that is defined in the text
+        %box of the lattice sequencer GUI. When running the sequence
+        % fhandle(0) = Load_MagTrap_sequence(0)
         fhandle(0); % processes the matlab files for sequence building; could disable a few things (like plotting) for this time
-               
+      
         %process and send to adwin
         calc_sequence(); % now knowing seqdata.seqtime
         load_sequence();

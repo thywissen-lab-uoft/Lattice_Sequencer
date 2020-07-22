@@ -513,7 +513,8 @@ curtime = setDigitalChannel(curtime,'Kitten Relay',1);
     %Furthermore, note the significant calculation time due to spline
     %interpolation - this is likely unneccesary?
     
-curtime = Transport_Cloud(curtime, seqdata.flags.hor_transport_type, seqdata.flags.ver_transport_type, seqdata.flags.image_loc);
+curtime = Transport_Cloud(curtime, seqdata.flags.hor_transport_type,...
+    seqdata.flags.ver_transport_type, seqdata.flags.image_loc);
     disp('End Calculating Transport')
 
 

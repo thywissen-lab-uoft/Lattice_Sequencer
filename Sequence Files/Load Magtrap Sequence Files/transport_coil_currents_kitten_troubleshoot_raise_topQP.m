@@ -9,6 +9,7 @@
 %This version uses spline curves ONLY and is for CATS 2
 %------
 function y = transport_coil_currents_kitten_troubleshoot_raise_topQP(time,position,flag,varargin)
+% time - a Nx1 vector of times to where the current need to be written
 
 global seqdata;
 
@@ -21,6 +22,7 @@ end
 %define the transport parameters
 
 %% Spline Parameters
+% CF : The spline input data is just two numbers.  What is this?
 
 %import currents for spline
 vertical_scale = 1.0;
@@ -65,12 +67,11 @@ coil_scale_factors = ones(1,num_channels);%scaling of the max current in each co
 
 coil_widths = ones(1,num_channels);%widths of each of the coil curves
 
+% Center axis position in mm
 coil_offset = [0 30 41 43 85 116 148 179 212 242 274 338 350 365 365 365 365 365 365 365 365 365 365]; %338
-
-
 coil_offset(1:13) = 0; %coil_offset(12:end) = 0;
 coil_offset(14:end) = 0; %coil_offset(12:end) = 0;
-
+% CF : Why does coil offset get overwritten?
 
 %coil resistances are in mOhms...this is just the coil and wiring (NOT the
 %FET...important because this is used to see if max FET power is exceeded)
@@ -86,7 +87,8 @@ coil_range = ones(2,num_channels); %relevant range of the given coil (2xnumber o
 
 %channels the coils correspond to on the ADWIN
 %Negative corresponds to a digital channel
-transport_channels = [18 7:17 9 22:24 20:21 1 3 17 -22 -28]; %CHANGE TO 7:17;
+transport_channels = [18 7:17 9 22:24 20:21 1 3 17 -22 -28];
+% corresponding coils : [FF Push MOT 3:11 3 12a-13 14 15 16 kitten 11]
 
 
 % UNTESTED
@@ -280,6 +282,7 @@ coil_range(2,23) = 220;
 % coil_range(2,20) = 534;
 
 
+
 %check the bounds on position
 if (sum(position<-0.1)); 
    
@@ -288,6 +291,7 @@ elseif (sum(position>539.1));
     error('position too far')
 end
 
+%% Iterate and assign current values
 
 %This value means that this channel value can be neglected from the update
 %array

@@ -91,7 +91,7 @@ if do_compression %&& (~(seqdata.flags.image_type==4))
             %detuning
             setAnalogChannel(calctime(curtime,cMOT_time - rb_cMOT_time),'Rb Beat Note FM',6590+rb_cMOT_detuning); 
             %FF
-            setAnalogChannel(calctime(curtime,cMOT_time - rb_cMOT_time),'Rb Beat Note FF',-0.025,1); %0.1                             
+%             setAnalogChannel(calctime(curtime,cMOT_time - rb_cMOT_time),'Rb Beat Note FF',-0.025,1); %0.1                             
             %turn repump down
             setAnalogChannel(calctime(curtime,cMOT_time - rb_cMOT_time),'Rb Repump AM',0.2); %0.2 June 25
 
@@ -108,7 +108,7 @@ if do_compression %&& (~(seqdata.flags.image_type==4))
         %probably does not even work with 25ms of K?
         ScopeTriggerPulse(calctime(curtime,0),'cMOT',1);
         %Set cMOT time
-        cmot_time_list = [50];50 %40
+        cmot_time_list = [50];50 ;%40
         
 
         rb_cMOT_time = getScanParameter(cmot_time_list,seqdata.scancycle,seqdata.randcyclelist,'rb_cMOT_time'); %100 June 25 30
@@ -175,7 +175,7 @@ if do_compression %&& (~(seqdata.flags.image_type==4))
             %detuning
             setAnalogChannel(calctime(curtime,cMOT_time - rb_cMOT_time),'Rb Beat Note FM',6590+rb_cMOT_detuning); 
             %FF
-            setAnalogChannel(calctime(curtime,cMOT_time - rb_cMOT_time),'Rb Beat Note FF',-0.025,1); %0.1
+%             setAnalogChannel(calctime(curtime,cMOT_time - rb_cMOT_time),'Rb Beat Note FF',-0.025,1); %0.1
                                
             %turn repump down
             %RHYS - Not sure we can trust the passive stability of the repump power
@@ -219,7 +219,7 @@ end
 %functions/methods.
 do_molasses = 1;
 
-molasses_time_list = 10;[15];[5];7;
+molasses_time_list = 15;[15];[5];7;
 molasses_time = getScanParameter(molasses_time_list,seqdata.scancycle,seqdata.randcyclelist,'molasses_time');
 % molasses_time = 7.5; %(10 for Rb evap ) %10 (overwritten below if K is selected)
 
@@ -231,7 +231,7 @@ if do_molasses
     
     %While true that this 'works' out to large detunings, optimizing for a
     %'long' (e.g. 200ms) molasses time shows a sharp max.
-    rbmolasses_List = [77];[65]; %75 60
+    rbmolasses_List = [77];[77];[65]; %75 60
     rbmolasses_det=getScanParameter(rbmolasses_List,seqdata.scancycle,seqdata.randcyclelist,'rb_molasses_det');
     rb_molasses_detuning = rbmolasses_det;50; %53;%before 2016-11-25:50  %48 %46.5 (2014-04-25)
     
@@ -261,7 +261,7 @@ if do_molasses
         %set molasses detuning 
         setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',6590+rb_molasses_detuning);
         %offset FF
-        setAnalogChannel(calctime(curtime,0),'Rb Beat Note FF',-0.06,1); %0.06, -0.09 April 22/2014
+%         setAnalogChannel(calctime(curtime,0),'Rb Beat Note FF',-0.06,1); %0.06, -0.09 April 22/2014
         %turn trap down for molasses
         rb_mol_trap_power_list = [0.10]; %0.25
         rb_mol_trap_power = getScanParameter(rb_mol_trap_power_list,seqdata.scancycle,seqdata.randcyclelist,'rb_mol_trap_power');

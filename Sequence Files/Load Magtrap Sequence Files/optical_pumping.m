@@ -30,10 +30,11 @@ rb_op_am = getScanParameter(rb_op_am_list,seqdata.scancycle,seqdata.randcyclelis
 rb_op_offset = 0.0;
 rb_op_time = optime;%1.0
 
-rb_op_detuning_set(1) = 5; %5 for 2->2     2 (2014-04-29) %12 (2014-04-10)
+rb_op_detuning_set(1) = -5; %5 for 2->2     2 (2014-04-29) %12 (2014-04-10)
 rb_op_detuning_set(2) = -3; % for 2->3
 
 rb_op_detuning = rb_op_detuning_set(seqdata.flags.Rb_Probe_Order);
+
 
 %% Prepare OP
 
@@ -108,9 +109,13 @@ end
 %Rb
 if (seqdata.atomtype == 3 || seqdata.atomtype == 4)
     %offset piezo FF
-    setAnalogChannel(calctime(curtime,0.0),'Rb Beat Note FF',0.047-0.1254/32.71*(rb_op_detuning-23),1); %0.05-0.1254/32.71*(rb_op_detuning-23)
+%     setAnalogChannel(calctime(curtime,0.0),'Rb Beat Note FF',0.047-0.1254/32.71*(rb_op_detuning-23),1); %0.05-0.1254/32.71*(rb_op_detuning-23)
     %offset detuning ... should be close to the MOT detuning
+%     setAnalogChannel(calctime(curtime,-5),'Rb Beat Note FF',0.18,1);
+%     setDigitalChannel(calctime(curtime,-0.5),50,1);
     setAnalogChannel(calctime(curtime,0.0),'Rb Beat Note FM',6590+rb_op_detuning);
+%     setDigitalChannel(calctime(curtime,0.5),50,0);
+%     setAnalogChannel(calctime(curtime,5),'Rb Beat Note FF',0,1);
 end
 
 

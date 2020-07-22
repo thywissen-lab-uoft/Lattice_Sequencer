@@ -180,7 +180,7 @@ elseif hor_transport_type  == 1
     % T2_time = T2_time_list(index)
     % addOutputParam('T2_time', T2_time);
 
-    time_scaling = 1.0;   
+    time_scaling = 1;   
 
     %Horizontal transport parameters
         %Distance to the second zone and time to get there

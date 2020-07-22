@@ -192,9 +192,11 @@ if(~flags.High_Field_Imaging)
   %time to set Rb detuning with offset lock.
   if strcmp(flags.image_atomtype,'Rb')
     %offset FF
-    setAnalogChannel(calctime(curtime,params.timings.tof - rb_detuning_shift_time),'Rb Beat Note FF',params.others.RB_FF,1);
-    setAnalogChannel(calctime(curtime,params.timings.tof - rb_detuning_shift_time+2200),'Rb Beat Note FF',0.0,1);
-    setAnalogChannel(calctime(curtime,params.timings.tof - rb_detuning_shift_time),'Rb Beat Note FM',detuning);
+%     setAnalogChannel(calctime(curtime,params.timings.tof - rb_detuning_shift_time),'Rb Beat Note FF',params.others.RB_FF,1);
+%     setAnalogChannel(calctime(curtime,params.timings.tof - rb_detuning_shift_time+2200),'Rb Beat Note FF',10,1);
+%     setAnalogChannel(calctime(curtime,params.timings.tof - rb_detuning_shift_time),'Rb Beat Note FM',detuning);
+    AnalogFuncTo(calctime(curtime,params.timings.tof - rb_detuning_shift_time),'Rb Beat Note FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),rb_detuning_shift_time-200,rb_detuning_shift_time-200, detuning);
+    AnalogFuncTo(calctime(curtime,params.timings.tof + 500),'Rb Beat Note FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),1000,1000, 6590+32);
   end
 
   %K - Set power, make sure probe is TTL'd off before image.

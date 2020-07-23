@@ -25,20 +25,16 @@ if nargin<4 && channel~=0
 end
 
 
-if channel==0 %transport
-    seqdata.analogadwinlist = [seqdata.analogadwinlist; transport_coil_currents(timein,setting)];
-else
-    
-    newvalue = seqdata.analogchannels(channel).voltagefunc{voltagefuncindex}(setting);
-    
-    %check this is a valid value
-    if (newvalue<seqdata.analogchannels(channel).minvoltage || newvalue>seqdata.analogchannels(channel).maxvoltage)
-        error('Invalid analog channel voltage');
-    end
+newvalue = seqdata.analogchannels(channel).voltagefunc{voltagefuncindex}(setting);
 
-    seqdata.analogadwinlist(end+1,:) = [timein channel newvalue];
-    seqdata.params.analogch(channel,1:4) = [newvalue setting voltagefuncindex timein];
+%check this is a valid value
+if (newvalue<seqdata.analogchannels(channel).minvoltage || newvalue>seqdata.analogchannels(channel).maxvoltage)
+    error('Invalid analog channel voltage');
 end
+
+seqdata.analogadwinlist(end+1,:) = [timein channel newvalue];
+seqdata.params.analogch(channel,1:4) = [newvalue setting voltagefuncindex timein];
+
 
 timeout = timein;
 

@@ -170,7 +170,7 @@ curtime = timein;
     
     %RHYS - params should be defined in a separate location from flags. 
     
-    seqdata.params.tof =  15;  % 45 for rough alignment, 20 for K-D diffraction
+    seqdata.params.tof =  10;  % 45 for rough alignment, 20 for K-D diffraction
     seqdata.params.UV_on_time = 10000; %UV on time + savingtime + wait time = real wait time between cycles%
     % usually 15s for non XDT
     
@@ -558,10 +558,10 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Z Shim',@(t,tt,y1,y2)(ramp_minjerk(t
          start_freq = 42;42;%42  
 
         %this worked well with 0.6 kitten
-        freqs_1 = [100 100]*MHz;[ start_freq 28 20 16]*MHz;[60 60];[ start_freq 28 20 16]*MHz; %7.5 %[ start_freq 28 20 12]*MHz before 2018-03-06 12MHz
+        freqs_1 = [ start_freq 28 20 16]*MHz;[100 100]*MHz;;[ start_freq 28 20 16]*MHz; %7.5 %[ start_freq 28 20 12]*MHz before 2018-03-06 12MHz
 
         RF_gain_1 = 0.5*[-4.1 -4.1 -4.1 -4.1]*(9)/9*1;1*[-4.1 -4.1 -4.1 -4.1]*(9)/9*1;%1*[ 9 9 9 9]*(9)/9*1;1*[-5.93 -5.93 -5.93 -5.93];  %9 9 9 (5)/9*0.75
-        sweep_times_1 = [100];[ 14000 8000 1000].*rf_evap_time_scale(1);[100];%[ 14000 6000 2000].*rf_evap_speed(1);%[ 14000 6000 2000].*rf_evap_speed(1); before 2017-05-02
+        sweep_times_1 = [ 14000 8000 1000].*rf_evap_time_scale(1);[100];%[ 14000 6000 2000].*rf_evap_speed(1);%[ 14000 6000 2000].*rf_evap_speed(1); before 2017-05-02
 
 
         %hold before evap

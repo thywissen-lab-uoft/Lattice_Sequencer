@@ -3896,26 +3896,26 @@ setDigitalChannel(calctime(curtime,10),'Kill TTL',0);%0= off, 1=on
 
 
 % 
-reset= 1
-if reset ~=1
-    setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',6590 +32);
-    setAnalogChannel(calctime(curtime,0),'Rb Beat Note FF',0.57,1);
-    setDigitalChannel(calctime(curtime,5),50,1);
-%     setAnalogChannel(calctime(curtime,6),'Rb Beat Note FF',0.57,1);0.55;-0.1;
-    setAnalogChannel(calctime(curtime,5.5),'Rb Beat Note FM',6590 -240);
-    setDigitalChannel(calctime(curtime,6),50,0);
-    setAnalogChannel(calctime(curtime,10),'Rb Beat Note FF',0,1);
-else
+% reset= 1
+% if reset ~=1
+%     setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',6590 +32);
+%     setAnalogChannel(calctime(curtime,0),'Rb Beat Note FF',0.57,1);
+%     setDigitalChannel(calctime(curtime,5),50,1);
+% %     setAnalogChannel(calctime(curtime,6),'Rb Beat Note FF',0.57,1);0.55;-0.1;
+%     setAnalogChannel(calctime(curtime,5.5),'Rb Beat Note FM',6590 -240);
+%     setDigitalChannel(calctime(curtime,6),50,0);
+%     setAnalogChannel(calctime(curtime,10),'Rb Beat Note FF',0,1);
+% else
+% %     setAnalogChannel(calctime(curtime,0),'Rb Beat Note FF',0,1);
+% %     setAnalogChannel(calctime(curtime,5),'Rb Beat Note FM',6590 +32);
+% %     setDigitalChannel(calctime(curtime,1),50,0);
 %     setAnalogChannel(calctime(curtime,0),'Rb Beat Note FF',0,1);
-%     setAnalogChannel(calctime(curtime,5),'Rb Beat Note FM',6590 +32);
-%     setDigitalChannel(calctime(curtime,1),50,0);
-    setAnalogChannel(calctime(curtime,0),'Rb Beat Note FF',0,1);
-    setDigitalChannel(calctime(curtime,5),50,1);
-    setAnalogChannel(calctime(curtime,6),'Rb Beat Note FF',0,1);0.55;
-    setAnalogChannel(calctime(curtime,10),'Rb Beat Note FM',6590 +32);
-    setDigitalChannel(calctime(curtime,15),50,0);
-    setAnalogChannel(calctime(curtime,20),'Rb Beat Note FF',0,1);
-end
+%     setDigitalChannel(calctime(curtime,5),50,1);
+%     setAnalogChannel(calctime(curtime,6),'Rb Beat Note FF',0,1);0.55;
+%     setAnalogChannel(calctime(curtime,10),'Rb Beat Note FM',6590 +32);
+%     setDigitalChannel(calctime(curtime,15),50,0);
+%     setAnalogChannel(calctime(curtime,20),'Rb Beat Note FF',0,1);
+% end
 
 
 
@@ -3925,7 +3925,9 @@ end
 % AnalogFuncTo(calctime(curtime,ramptime+50),'Rb Beat Note FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),ramptime,ramptime, 6590+32);
 
 %% End
-% setAnalogChannel(calctime(curtime,1),63,0);
+curtime = calctime(curtime,1000);
+setAnalogChannel(calctime(curtime,0),0,0);
+curtime = calctime(curtime,1000);
 % setDigitalChannel(calctime(curtime,0),23,0);% 0:OFF; 1: ON
 
 %   rotation_time = 1000;   % The time to rotate the waveplate

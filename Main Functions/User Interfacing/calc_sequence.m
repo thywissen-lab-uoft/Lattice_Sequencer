@@ -149,12 +149,12 @@ seqdata.analogadwinlist(:,3) = (seqdata.analogadwinlist(:,3)+10)/20*2^(16);
 %Change the digital update array into an array of update words
 
 if (~isempty(seqdata.digadwinlist))
-
+    
     %pre-allocate, can be no bigger than the current update list
     new_digarray = zeros(length(seqdata.digadwinlist(:,1)),3);
 
     %first sort the digital array by time
-    [tempdigarray sortindices] = sort(seqdata.digadwinlist(:,1));
+    [tempdigarray, sortindices] = sort(seqdata.digadwinlist(:,1));
     sorteddiglist = seqdata.digadwinlist(sortindices(:,1),:);
     curcardindex=zeros(1,length(seqdata.digcardchannels));
     curindex = 0;

@@ -68,7 +68,8 @@ seqdata = struct('analogadwinlist',[],... %adwin list is [time channel value];
     'createoutfile',1,... 
     'numDDSsweeps',0,... %Add these two lines! 
     'DDSsweeps',[],...
-    'atomtype',4); %1 - K-40, 2 - K-41, 3 - Rb-87 , 4 - Rb+K
+    'atomtype',4,...  %1 - K-40, 2 - K-41, 3 - Rb-87 , 4 - Rb+K
+    'params', []); %various parameters, recently defined here by FC 07/23/2020
 
 %ADWIN processor speed
 adwin_processor_speed = 300E6;

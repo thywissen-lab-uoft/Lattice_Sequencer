@@ -167,7 +167,7 @@ elseif hor_transport_type  == 1
     time_scaling = 1.0;   
 
     % Horizontal transport parameters fpr for_hor_minimum_jerk
-    %Distance to the second zone and time to get there
+    % Distance to the second zone and time to get there
     D1 = 300; %300
     T1 = 1800*time_scaling; %1800
     %Distance to the third zone and time to get there

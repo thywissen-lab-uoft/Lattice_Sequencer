@@ -1022,7 +1022,9 @@ curtime = Reset_Channels(calctime(curtime,0));
     %XDT pointing is not done right now, since we removed the QPDs, but is in
     %theory useful (the idea of using QPDs to keep our critical beams aligned
     %is still a good one). 
-    DigitalPulse(calctime(curtime,0),'RaspPi Trig',1000,1) % trigger pulse for pyKraken
+    % trigger pulse for pyKraken
+    DigitalPulse(calctime(curtime,0),'RaspPi Trig',1000,1); 
+    
     measure_XDT_pointing = 0;
     if (measure_XDT_pointing)
         %pulse XDTs on
@@ -1063,7 +1065,7 @@ curtime = Reset_Channels(calctime(curtime,0));
     %call Load_MOT function
 curtime = Load_MOT(calctime(curtime,mot_wait_time),[rb_MOT_detuning k_MOT_detuning]);
         
-    setAnalogChannel(curtime,'K Repump FM',k_repump_shift,2)
+    setAnalogChannel(curtime,'K Repump FM',k_repump_shift,2);
       
     if ( seqdata.flags.do_dipole_trap == 1 )
 curtime = calctime(curtime,dip_holdtime);
@@ -1084,6 +1086,7 @@ curtime = setDigitalChannel(calctime(curtime,10),28,0);
 
     %RHYS - Following is some irrelevant stuff and some quality of life stuff,
     %including an important check on overall cycle time. 
+    
 %% Scope trigger selection
 
     SelectScopeTrigger(scope_trigger);

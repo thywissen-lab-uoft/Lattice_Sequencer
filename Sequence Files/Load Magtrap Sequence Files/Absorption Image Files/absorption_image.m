@@ -49,11 +49,13 @@ end
 %Shorthand for convenience
 flags = seqdata.flags.absorption_image;
 params = seqdata.params.absorption_image;
-flags.image_atomtype
-flags.img_direction
-flags.negative_imaging_shim
-flags.condition
-%Get the relevant probe beam power and detuning... should these be appended back to
+
+str=['Absorption Imaging : ' flags.image_atomtype ' ' flags.img_direction ...
+    ' ' flags.negative_imaging_shim ' ' flags.condition];
+disp(str)
+
+
+%Get the relevantprobe beam power and detuning... should these be appended back to
 %structure?
 detuning = params.detunings.(flags.image_atomtype).(flags.img_direction) ...
   .(flags.negative_imaging_shim).(flags.condition);
@@ -301,5 +303,7 @@ addOutputParam('kdet',detuning);
 addOutputParam('rbdet',6590-detuning);
 
 timeout=curtime;
+
+
 
 end

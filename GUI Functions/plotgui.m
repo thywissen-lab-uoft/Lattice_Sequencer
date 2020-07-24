@@ -225,7 +225,7 @@ hF_Plot=[];
        plotchannels=[plotchannels tt];      
        
 %        [aTraces, dTraces]=generateTraces(seqdata);      
-        hF_Plot=PlotSequenceVersion2(sequencefunc,startcycle,plotchannels,plottimes);    
+%         hF_Plot=PlotSequenceVersion2(sequencefunc,startcycle,plotchannels,plottimes);    
 % 
         hF_Plot=plotSequence(sequencefunc,startcycle,...
             [aCHshow.channel],[dCHshow.channel],plottimes);    

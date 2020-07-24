@@ -103,12 +103,14 @@ hZ.ActionPostCallback=@chZoomPost;
 
 % Add a left hand slider to control the relative size of the analog and
 % digital channels
+warning off % supress the warnings that JAVACOMPONENT is going to be removed
+% I like this slider and matlab has shitty default sliders.
 jSlider = javax.swing.JSlider;
 [jhSlider, hContainer]=javacomponent(jSlider,[0,60,15,hF.Position(4)-30]);
 set(jSlider, 'Value',30, 'PaintLabels',false, 'PaintTicks',true,...
     'Orientation',1);  % with ticks, no labels
 set(jSlider, 'StateChangedCallback', @adjustSize);  %alternative
-
+warning off
 % Figure change sizes callback; this is the main callback function
     function adjustSize(~,~)
         % The time table size; (it doesn't change size)

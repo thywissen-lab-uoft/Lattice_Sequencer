@@ -142,8 +142,13 @@ end
 
 %Used to be in the ADWIN, but moved here so that we can use a long for the
 %ADWIN data array
-seqdata.analogadwinlist(:,3) = (seqdata.analogadwinlist(:,3)+10)/20*2^(16);
-
+%FC - If an analog channel isn't addressed throughout the sequence then this
+%throws an error.
+if (~isempty(seqdata.analogadwinlist))
+    seqdata.analogadwinlist(:,3) = (seqdata.analogadwinlist(:,3)+10)/20*2^(16);
+else
+    error('No analog channel was referenced during sequence.');
+end
 
 %% Reformat Digital Channel Update Array
 %Change the digital update array into an array of update words
@@ -163,7 +168,7 @@ if (~isempty(seqdata.digadwinlist))
 
         %get the elements associated with this card
         ind = logical(sorteddiglist(:,4)==seqdata.digcardchannels(i));
-        curdigarray = sorteddiglist(ind,:);       
+        curdigarray = sorteddiglist(ind,:);  
         for j = 1:length(curdigarray(:,1))
             
             %if the same update time then just change the bit
@@ -176,6 +181,7 @@ if (~isempty(seqdata.digadwinlist))
                     curcardindex(i) = 1;
                     curindex = curindex+1;
                     new_digarray(curindex,:) = [curdigarray(j,1) curdigarray(j,4) seqdata.diglastvalue(i)];
+%                     disp(dec2bin(new_digarray(1,3)));
                 else
                     curindex = curindex + 1;
                     new_digarray(curindex,:) = [curdigarray(j,1) curdigarray(j,4) new_digarray(curindex-1,3)];
@@ -184,14 +190,16 @@ if (~isempty(seqdata.digadwinlist))
             end
         end
     end
-
+%     disp(dec2bin(new_digarray(:,3)));
+    %FC - Not sure if the following does anything, and also unsure why we are
+    %adding 2 to new_digarray(ind,2) as this is the digcard channel #
     %if the 32nd bit is set, then add a sign
     ind = (bitget(new_digarray(1:curindex,3),32)==1);
     new_digarray(ind,3) = new_digarray(ind,3) - 2^(31);
     new_digarray(ind,2) = new_digarray(ind,2)+2;
     
 %     new_digarray
-    
+
     %append the digital array to the current analog array
     adwinlist = [seqdata.analogadwinlist; new_digarray(1:curindex,:)];
 else

@@ -2876,8 +2876,8 @@ curtime = timein;
 
 %% Test Kill BEam
 % % open K probe shutter
-setDigitalChannel(calctime(curtime,0),'Downwards D2 Shutter',0); %0=closed, 1=open
-setDigitalChannel(calctime(curtime,10),'Kill TTL',0);%0= off, 1=on
+% setDigitalChannel(calctime(curtime,0),'Downwards D2 Shutter',0); %0=closed, 1=open
+% setDigitalChannel(calctime(curtime,10),'Kill TTL',0);%0= off, 1=on
 
 %% Test modulation code
 
@@ -2938,8 +2938,8 @@ setDigitalChannel(calctime(curtime,10),'Kill TTL',0);%0= off, 1=on
 %     %shutter
 %     setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP Shutter',0);
 %     %analog
-    setDigitalChannel(calctime(curtime,5),'Rb Probe/OP TTL',1); % inverted logic
-    setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',0); %0.11
+%     setDigitalChannel(calctime(curtime,5),'Rb Probe/OP TTL',1); % inverted logic
+%     setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',0); %0.11
 %     %TTL
 %     setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',1); % inverted logic
 %      
@@ -3926,9 +3926,12 @@ setDigitalChannel(calctime(curtime,10),'Kill TTL',0);%0= off, 1=on
 
 %% End
 curtime = calctime(curtime,1000);
-setAnalogChannel(calctime(curtime,0),0,0);
+setAnalogChannel(calctime(curtime,0),26,0);
 curtime = calctime(curtime,1000);
-% setDigitalChannel(calctime(curtime,0),23,0);% 0:OFF; 1: ON
+setDigitalChannel(calctime(curtime,0),3,1);% 0:OFF; 1: ON
+curtime = calctime(curtime,1000);
+setDigitalChannel(calctime(curtime,0),3,0);% 0:OFF; 1: ON
+% curtime = calctime(curtime,1000);
 
 %   rotation_time = 1000;   % The time to rotate the waveplate
 %       P_lattice = 0.4; %0.5/0.9        % The fraction of power that will be transmitted 

@@ -52,6 +52,8 @@ fhandle(0);
 % therefore would not require another run of the sequence code.
 
 %% Grab the channel data
+% Analog channels axes cell list
+axs={};
 
 % Sort the analog and digital data by traces
 [aTraces, dTraces]=generateTraces(seqdata);
@@ -82,7 +84,6 @@ set(hF,'Name',fName);
 hF.AutoResizeChildren='off';
 % hF.Color='w';
 hF.Position(1:4)=[100 100 500 800];
-hF.SizeChangedFcn=@adjustSize;
 hZ=zoom(hF);
 
 % Assign callbacks to zoom function.  This only works if you had clicked on
@@ -175,7 +176,7 @@ warning off
                 
         if H*pD>75        
             % Set the position of the digital scroll bar            
-            hDslider.OuterPosition(3:4)=[20 hpD.Position(4)-10];
+            hDslider.OuterPosition(3:4)=[20 hpD.Position(4)-10];            
             hDslider.Position(1:2)=[hpD.Position(3)-hDslider.Position(3) 0];     
             
             % Update digital axis position
@@ -295,8 +296,7 @@ htbl_time.CellEditCallback=@tblCB;
 hpA=uipanel('parent',hF,'units','pixels','Title','Analog',...
     'backgroundcolor',hF.Color);
 
-% Analog channels axes cell list
-axs={};
+
 
 for kk=1:length(aTracesSHOW)  
     % Create the axis for this channel
@@ -518,6 +518,8 @@ linkaxes([axDL axD],'y');
 
 % Link the time limits to a table
 addlistener(axD,'XLim','PostSet',@beep);
+
+hF.SizeChangedFcn=@adjustSize;
 
 adjustSize;
 end

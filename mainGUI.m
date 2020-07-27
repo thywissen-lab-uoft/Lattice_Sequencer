@@ -1,6 +1,10 @@
 function mainGUI
 %MAINGUI Summary of this function goes here
-%   Detailed explanation goes here
+%
+% Author      : CJ Fujiwara
+% Last Edited : 2020/08
+%
+% This is the primary GUI for running the lattice experiment.
 
 
 %%%%%%%%%%%%%%% Initialize Sequence Data %%%%%%%%%%%%%%%%%
@@ -30,7 +34,7 @@ h=250;
 
 % Initialize the figure graphics objects
 hF=figure('toolbar','none','Name',fName,'color',cc,...
-    'NumberTitle','off');
+    'NumberTitle','off','MenuBar','none','resize','off');
 clf
 hF.Position(3:4)=[w h];
 hF.SizeChangedFcn=@adjustSize;
@@ -65,7 +69,7 @@ tSeq.Position(1:2)=[5 tTit.Position(2)-tSeq.Position(4)];
 str='@Load_MagTrap_sequence';
 eSeq=uicontrol(hpMain,'style','edit','string',str,...
     'horizontalalignment','left','fontsize',10,'backgroundcolor',cc);
-eSeq.Position(3)=250;
+eSeq.Position(3)=210;
 eSeq.Position(4)=eSeq.Extent(4);
 eSeq.Position(1:2)=[5 tSeq.Position(2)-eSeq.Position(4)];
 
@@ -73,13 +77,13 @@ cdata=imresize(imread(['GUI Functions' filesep 'browse.jpg']),[20 20]);
 bBrowse=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc);
 bBrowse.Position(3:4)=size(cdata,[1 2]);
-bBrowse.Position(1:2)=eSeq.Position(1:2)+[eSeq.Position(3) 0];
+bBrowse.Position(1:2)=eSeq.Position(1:2)+[eSeq.Position(3)+2 0];
 bBrowse.Callback=@browseCB;
 
-bPlot=uicontrol(hpMain,'style','pushbutton','String','plotter',...
+bPlot=uicontrol(hpMain,'style','pushbutton','String','plot',...
     'backgroundcolor',cc,'FontSize',10,'units','pixels',...
     'fontweight','normal');
-bPlot.Position(3:4)=[50 20];
+bPlot.Position(3:4)=[30 20];
 bPlot.Position(1:2)=[bBrowse.Position(1)+bBrowse.Position(3)+5 ...
     bBrowse.Position(2)];
 bPlot.Callback=@bPlotCB;
@@ -88,6 +92,20 @@ bPlot.Callback=@bPlotCB;
         fh = str2func(erase(eSeq.String,'@'));        
         plotgui(fh);
     end
+
+% Manual overrride
+bOver=uicontrol(hpMain,'style','pushbutton','String','override',...
+    'backgroundcolor',cc,'FontSize',10,'units','pixels',...
+    'fontweight','normal');
+bOver.Position(3:4)=[60 20];
+bOver.Position(1:2)=[bPlot.Position(1)+bPlot.Position(3)+5 ...
+    bPlot.Position(2)];
+bOver.Callback=@bOverCB;
+
+    function bOverCB(~,~)
+       overrideGUI; 
+    end
+
 
 
     function browseCB(~,~)
@@ -212,14 +230,20 @@ bStop.Position(1:2)=[5 bIter.Position(2)-bStop.Position(4)-5];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ABORT  %%%%%%%%%%%%%%%%%%%%%%
 
+
+ttStr=['Interrupts AdWIN and sends all digital and analog voltage outputs to their ' ...
+    'reset value.  DANGEROUS'];
 bAbort=uicontrol(hpMain,'style','pushbutton','String','ABORT',...
     'backgroundcolor','r','FontSize',10,'units','pixels',...
-    'fontweight','bold','enable','off');
+    'fontweight','bold','Tooltip',ttStr);
 bAbort.Position(3:4)=[80 30];
 bAbort.Position(1:2)=[5 bStop.Position(2)-bAbort.Position(4)-5];
 bAbort.Position(1:2)=[hpMain.Position(3)-bAbort.Position(3)-5 ...
     hpMain.Position(4)-bAbort.Position(4)-5];
 
+jButton= findjobj(bAbort);
+set(jButton,'Enabled',false);
+set(jButton,'ToolTipText',ttStr);
 
 end
 

@@ -1,4 +1,4 @@
-function hFGUI=plotgui
+function hFGUI=plotgui(sequencefunc)
 % plotgui.m
 %
 % Author CJ : Fujiwara
@@ -22,12 +22,11 @@ initialize_channels();
 % then we would probably want to visually compares different sequences of
 % the machine.
 
-
-
-%%%%%%%%%%%%%%%%%%% TERRIBLE
-% fetch seuqnece function
-% THIS IS NOT GOOD CODE! NEVER USE EVAL IF YOU AVOID IT
-    
+if nargin==1 && isa(sequencefunc,'function_handle')
+    %new way
+    startcycle=1;
+else
+    % old way
     fh = findobj('Type','Figure','Name','Lattice Sequencer');
     if ~isempty(fh)
         uiobj1 = findobj(fh,'tag','sequence');
@@ -40,7 +39,27 @@ initialize_channels();
             % manual override    
         sequencefunc=@Load_MagTrap_sequence;
         startcycle=1;
-    end
+    end  
+end
+
+
+%%%%%%%%%%%%%%%%%%% TERRIBLE
+% fetch seuqnece function
+% THIS IS NOT GOOD CODE! NEVER USE EVAL IF YOU AVOID IT
+    
+%     fh = findobj('Type','Figure','Name','Lattice Sequencer');
+% %     if ~isempty(fh)
+%         uiobj1 = findobj(fh,'tag','sequence');
+%         eval(['sequencefunc = ' get(uiobj1,'string') ';']); 
+% 
+%         uiobj1 = findobj(fh,'tag','startcycle');
+%         startcycle = str2double(get(uiobj1,'string'));
+%     else
+%         warning('no lattice sequencer gui, manual override in loadmagtrap');
+%             % manual override    
+%         sequencefunc=@Load_MagTrap_sequence;
+%         startcycle=1;
+%     end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 

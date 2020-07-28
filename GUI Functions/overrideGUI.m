@@ -28,7 +28,7 @@ htbl_aCH.ColumnWidth={20,150,60,50,50};
 htbl_aCH.ColumnFormat={'char', 'char', 'logical','numeric','numeric'};
 htbl_aCH.ColumnEditable=[false false true true true];
 htbl_aCH.Position(3)=htbl_aCH.Extent(3)+17;
-% htbl_aCH.CellEditCallback=@AtblCB;
+htbl_aCH.CellEditCallback=@AtblCB;
  
 htbl_aCH.Position(1)=15;
 htbl_aCH.Position(2)=5;
@@ -49,8 +49,7 @@ drawnow;
  end 
  
  % callback function for the analog table 
-    function AtblCB(htbl,data)
-        % get what row is initiating the callback
+    function AtblCB(tbl,data)
      
     end
 
@@ -75,7 +74,7 @@ htbl_dCH.ColumnEditable=[false false true true];
 htbl_dCH.Position(2:4)=htbl_aCH.Position(2:4);
 htbl_dCH.Position(3)=htbl_dCH.Extent(3)+17;
 htbl_dCH.Position(1)=htbl_aCH.Position(1)+htbl_aCH.Position(3)+50;
-% htbl_dCH.CellEditCallback=@DtblCB;
+htbl_dCH.CellEditCallback=@DtblCB;
 
 % populate the table 
  for kk=1:length(seqdata.analogchannels)
@@ -92,8 +91,28 @@ htbl_dCH.Position(1)=htbl_aCH.Position(1)+htbl_aCH.Position(3)+50;
  
   % callback function
     function DtblCB(htbl,data)
+        s1 = uistyle;
+        s1.BackgroundColor = 'black';
+        s1.FontColor='black';
         % get what row is initiating the callback
-       
+            if data.Indices(2)==3
+                % Your changing the override
+                
+                if data.NewData
+                    % you're sending it high
+                    addStyle(htbl,s1,'cell',[data.Indices(1) 3]);
+                else
+                    % you send it low disable the other ones
+                    removeStyle(htbl)
+                end
+        else
+            
+                
+                
+            
+        end
+        
+
     end
 
 % string label for all available digital channels

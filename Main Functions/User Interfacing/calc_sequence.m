@@ -191,12 +191,12 @@ if (~isempty(seqdata.digadwinlist))
         end
     end
 %     disp(dec2bin(new_digarray(:,3)));
-    %FC - Not sure if the following does anything, and also unsure why we are
-    %adding 2 to new_digarray(ind,2) as this is the digcard channel #
+    %FC - Not sure why we do the following, it gets changed back once
+    %variables are passed to the ADbasic file
     %if the 32nd bit is set, then add a sign
     ind = (bitget(new_digarray(1:curindex,3),32)==1);
     new_digarray(ind,3) = new_digarray(ind,3) - 2^(31);
-    new_digarray(ind,2) = new_digarray(ind,2)+2;
+    new_digarray(ind,2) = new_digarray(ind,2)+seqdata.digcardnum;
     
 %     new_digarray
 
@@ -209,11 +209,13 @@ end
 %% Process Main Array
 
 %sort the adwin list by times
-[templist sortindices] = sort(adwinlist,1);
+[templist, sortindices] = sort(adwinlist,1);
 
 adwinlist = adwinlist(sortindices(:,1),:);
 
 %for some reason the ADWIN starts at the second element in these arrays
+%FC - its because in the ADbasic code, the index counter starts at 2 rather
+%than 1, could be changed?
 seqdata.chnum = [0; adwinlist(:,2)];
 seqdata.chval = [0; adwinlist(:,3)];
 

@@ -3928,9 +3928,9 @@ curtime = timein;
 curtime = calctime(curtime,1000);
 setAnalogChannel(calctime(curtime,0),26,0);
 curtime = calctime(curtime,1000);
-setDigitalChannel(calctime(curtime,0),3,1);% 0:OFF; 1: ON
+setDigitalChannel(calctime(curtime,0),32,1);% 0:OFF; 1: ON
 curtime = calctime(curtime,1000);
-setDigitalChannel(calctime(curtime,0),3,0);% 0:OFF; 1: ON
+setDigitalChannel(calctime(curtime,0),32,0);% 0:OFF; 1: ON
 % curtime = calctime(curtime,1000);
 
 %   rotation_time = 1000;   % The time to rotate the waveplate

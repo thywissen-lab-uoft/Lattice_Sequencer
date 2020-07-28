@@ -41,7 +41,7 @@ if adwin_connected
     %send the update list
     disp('Loading the Update List');
 %     seqdata.updatelist
-    Set_Par(1,length(seqdata.updatelist)-1);
+    Set_Par(1,length(seqdata.updatelist)-1); %maxcount in Adbasic file
     SetData_Double(1,seqdata.updatelist,1);
 
     %set the number of clock cycles between updates
@@ -53,16 +53,16 @@ if adwin_connected
     SetData_Double(3,seqdata.chval,1);
     
     %load the reset to zero data (default DO NOT reset to zero)
-    SetData_Double(4,zeros(1,66),1); % length of zeros: number of analog channels plus number of digital cards
+    SetData_Double(4,zeros(1,64+seqdata.digcardnum),1); % length of zeros: number of analog channels plus number of digital cards
     
     %update the last digital value sent to the sequencer (for subsequent
     %processes)
     for i = 1:length(seqdata.digcardchannels)
-        ind = logical(seqdata.chnum==seqdata.digcardchannels(i)|seqdata.chnum==(seqdata.digcardchannels(i)+2));
+        ind = logical(seqdata.chnum==seqdata.digcardchannels(i)|seqdata.chnum==(seqdata.digcardchannels(i)+seqdata.digcardnum));
         digupdatelist = seqdata.chval(ind);
         digchannellist = seqdata.chnum(ind);
         if ~isempty(digupdatelist)
-            if digchannellist(end)==(seqdata.digcardchannels(i)+2)
+            if digchannellist(end)==(seqdata.digcardchannels(i)+seqdata.digcardnum)
                 digupdatelist(end) = digupdatelist(end) + 2^(31);
             end
             seqdata.diglastvalue(i) = digupdatelist(end);

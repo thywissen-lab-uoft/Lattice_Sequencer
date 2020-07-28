@@ -33,7 +33,7 @@ global adwin_process_path;
 
 adwinprocessnum = -1;
 adwin_booted = 0;
-adwin_process_path = fullfile(curpath,'TransferData.TB1'); 
+adwin_process_path = fullfile(curpath,'TransferData_2020-07-22.TB1'); 
 %path of the TB1 file to be loaded on the ADWIN
 
 %this allows debugging without being connected to the ADWIN

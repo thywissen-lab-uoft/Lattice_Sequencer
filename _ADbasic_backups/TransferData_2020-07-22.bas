@@ -135,7 +135,7 @@ INIT:
 EVENT:
 
   SYNCALL() 'card 1 syntax (Rev B)
-  P2_SYNC_ALL(111111111111b)    'Force synchronized output now.  We are sending out the data programmed in the last cycle.
+  P2_SYNC_ALL(111111110110b)    'Force synchronized output now.  We are sending out the data programmed in the last cycle.
   ' THis way all the outputs are updated at the beginning of an event, which is well timed.
   ' Doing Syncall() at the end of an event causes the channel outputs to move around in time, depending on how many channels
   ' are being programmed. (There is no module 4 so set bit 3 to zero and module 1 is 
@@ -263,7 +263,7 @@ FINISH:
     P2_DIG_WRITE_LATCH(3,0)
   ENDIF
 
-  P2_SYNC_ALL(111111111111b)
+  P2_SYNC_ALL(111111110110b)
   SYNCALL() 'card 1 syntax
 
   '***************************************************

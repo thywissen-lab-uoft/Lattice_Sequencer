@@ -197,7 +197,6 @@ if (~isempty(seqdata.digadwinlist))
     ind = (bitget(new_digarray(1:curindex,3),32)==1);
     new_digarray(ind,3) = new_digarray(ind,3) - 2^(31);
     new_digarray(ind,2) = new_digarray(ind,2)+seqdata.digcardnum;
-    disp(new_digarray(1:curindex,2));
     
 %     new_digarray
 

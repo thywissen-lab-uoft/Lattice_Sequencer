@@ -142,7 +142,9 @@ EVENT:
   ' Doing Syncall() at the end of an event causes the channel outputs to move around in time, depending on how many channels
   ' are being programmed. (There is no module 4 so set bit 3 to zero and module 1 is 
   'a Rev B module so ignore it in P2_SYNC_ALL by setting bit 0 to 0. The highest
-  'module address we have is 12, so we only need 12 bits. This may be wrong.
+  'module address we have is 12, so we only need 12 bits. Same for line 258/259.
+  'Not sure if we should just set bit 0 to 1 just in case, even though its not a Rev E. 
+  'My guess is that it doesn't matter. -FC
 
   eventcount=eventcount+delaymultinuse
   if(eventcount>leddelay) then
@@ -267,7 +269,7 @@ FINISH:
 
   P2_SYNC_ALL(111111110110b)
   SYNCALL() 'card 1 syntax
-
+  'Same as line 127/128
   '***************************************************
 SUB AnalogWrite(achannel, avalue) 
   if((achannel>=1)and(achannel<=8)) then

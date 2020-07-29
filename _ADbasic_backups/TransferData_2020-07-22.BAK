@@ -75,20 +75,22 @@ INIT:
   'Stepping through data2 and 3 is controlled by Data 1
   'Computer send an integer to Par_1.  This tells us how many
   'events to write. )
-  'Channels 1-16 refer to Analog output lines
-  'Channel 101,102 refers to Digital output lines (16 bit word x2)
-  'Channel 103,104 refer to Digital output lines (16 bit word X2)
+  'Channels 1-64 refer to Analog output lines
+  'Channel 101,102,103 refers to Digital output lines (16 bit word x2)
+  'Channel 104,105,106 refer to Digital output lines (16 bit word X2)
 
   delay=PAR_2 ' 40000=>1ms (Enable cyclic update to see PAR values (clock icon))
   GlobalDelay=delay
 
 
   'Set Card 1 to output (card 1 is older - rev B - so different syntax)
-  'This is given in hexadecimal notation This is the conversion
-  'to binary (0FFh = 11111111b). Only the first and 8th bit are used for Rev B.
-  'the rest are ignored. (bit = 1 is output, bit = 0 is input)
-  DIGPROG1(1,0FFh) 
-  DIGPROG2(1,0FFh) 
+  'This is given in hexadecimal notation. This is the conversion
+  'to binary (0FFFh = 111111111111b). Only the 0th and 8th bit are used for Rev B.
+  'the rest are ignored. (bit = 1 is output, bit = 0 is input) DIGPROG1 is used 
+  'for channels 0-15 and DIGPROG2 is used for channels 16-32. (Although, we refer to
+  'these channels as 33-64 in the Matlab code.)
+  DIGPROG1(1,0FFFh) 
+  DIGPROG2(1,0FFFh) 
 
   'P2_DIGPROG(1,011111111111111111111111111111111b) <--- old
   'Can only set channels to input or output in groups of 8. For 32 channels
@@ -135,7 +137,7 @@ INIT:
 EVENT:
 
   SYNCALL() 'card 1 syntax (Rev B)
-  P2_SYNC_ALL(111111111111b)    'Force synchronized output now.  We are sending out the data programmed in the last cycle.
+  P2_SYNC_ALL(111111110110b)    'Force synchronized output now.  We are sending out the data programmed in the last cycle.
   ' THis way all the outputs are updated at the beginning of an event, which is well timed.
   ' Doing Syncall() at the end of an event causes the channel outputs to move around in time, depending on how many channels
   ' are being programmed. (There is no module 4 so set bit 3 to zero and module 1 is 
@@ -263,7 +265,7 @@ FINISH:
     P2_DIG_WRITE_LATCH(3,0)
   ENDIF
 
-  P2_SYNC_ALL(111111111111b)
+  P2_SYNC_ALL(111111110110b)
   SYNCALL() 'card 1 syntax
 
   '***************************************************

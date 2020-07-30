@@ -3952,7 +3952,7 @@ setDigitalChannel(calctime(curtime,0),83,0);
 setDigitalChannel(calctime(curtime,0),84,0);
 setDigitalChannel(calctime(curtime,0),85,0);
 setDigitalChannel(calctime(curtime,0),86,0);
-setDigitalChannel(calctime(curtime,0),87,1);
+setDigitalChannel(calctime(curtime,0),87,0);
 setDigitalChannel(calctime(curtime,0),88,0);
 setDigitalChannel(calctime(curtime,0),89,0);
 setDigitalChannel(calctime(curtime,0),90,0);

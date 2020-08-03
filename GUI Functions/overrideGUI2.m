@@ -1,4 +1,18 @@
 function hFGUI=overrideGUI2
+% overrrideGUI
+%
+% Author : CJ Fujiwara
+%
+% This GUI is meant to override the digital and analog channels of the
+% experiment.  Its purpose is to provide an easy platform to diagnose and
+% calibrate the controls to the experiment. It is not designed to perform
+% custom test sequences for more complicated diagnoses, such as ramps or
+% measuring delays.
+
+% The design of the interface is modeled after the Cicero Word Generator.
+% The author used this at their previously institution and found it
+% intuitive. Further, this design will hopefully make it easier for future
+% lab members coming from "MIT-children" institutions to learn the lab.
 
 % Initialize the sequence data
 global seqdata;
@@ -9,7 +23,7 @@ initialize_channels();
 Achs=seqdata.analogchannels;
 Dchs=seqdata.digchannels;
 
-% Get the color scheme you'd like to use
+% Define the RGB color scheme for the rows in the table
 cc=[0    0.4470    0.7410;
     0.8500    0.3250    0.0980;
     0.9290    0.6940    0.1250;
@@ -28,17 +42,20 @@ hFGUI.Position(3:4)=[900 600];
 hFGUI.Position(2)=50;
 hFGUI.WindowScrollWheelFcn=@scroll;
 
+% Callback function for mouse scroll over the figure.
     function scroll(~,b)
         scrll=-b.VerticalScrollCount;
         C=get(gcf,'CurrentPoint');        
-        if C(2)<hpMain.Position(4)
+        if C(2)<hpMain.Position(4)                  
             if C(1)<hpMain.Position(3)/2
+                % mouse in in digital side
                 newVal=hDsl.Value+scrll*abs(hDsl.Min)*.05;                
                 newVal=max([newVal hDsl.Min]);
                 newVal=min([newVal hDsl.Max]);
                 hDsl.Value=newVal;     
                 DsliderCB;
             else
+                % mouse is in analog side
                 newVal=hAsl.Value+scrll*abs(hAsl.Min)*.05;                
                 newVal=max([newVal hAsl.Min]);
                 newVal=min([newVal hAsl.Max]);
@@ -52,6 +69,8 @@ hFGUI.WindowScrollWheelFcn=@scroll;
 hpMain=uipanel('parent',hFGUI,'backgroundcolor','w',...
     'units','pixels','fontsize',12);
 hpMain.Position=[0 0 hFGUI.Position(3) hFGUI.Position(4)];
+
+% Define the respective size of the digital and analog panels
 w1=350;
 g=50;
 w2=hpMain.Position(3)-w1-g;
@@ -89,13 +108,12 @@ Dlbl=uipanel('parent',hpMain,'backgroundcolor','w',...
 Dlbl.Position(3:4)=[w1 h];
 Dlbl.Position(1:2)=[0 hpD.Position(4)+2];
 
-% Channel label
+% Channel namel label
 t=uicontrol('parent',Dlbl,'style','text','units','pixels',...
 'fontsize',10,'fontname','monospaced','fontweight','bold',...
 'backgroundcolor','w','String','Channel Name');
 t.Position(3:4)=t.Extent(3:4);
 t.Position(1:2)=[10 0];
-
 
 % Override label
 t=uicontrol('parent',Dlbl,'style','text','units','pixels',...
@@ -113,6 +131,7 @@ t.Position(1:2)=[245 0];
 
 % Populate the digital channels
 for kk=1:length(Dchs)
+    % Grab the color
     c=[cc(mod(kk-1,7)+1,:) .1];    
     
     % panel for this row
@@ -249,7 +268,7 @@ t.Position(1:2)=[350 0];
 
 % Populate the analog channels
 for kk=1:length(Achs)
-    c=[cc(mod(kk-1,7)+1,:) .1];    
+    c=[cc(mod(kk-1,size(cc,1))+1,:) .1];    
     
     % panel for this row
     hpAs(kk)=uipanel('parent',hpAS,'backgroundcolor',c,...
@@ -286,18 +305,18 @@ for kk=1:length(Achs)
     ckValue.Enable='off';        
     hpAs(kk).UserData.ckValue=ckValue;
     
-    % Fucntion select
+    % Function select pull-down menu
     pdFunc=uicontrol('parent',hpAs(kk),'style','popupmenu',...
         'units','pixels','fontsize',8,'fontname','monospaced',...
         'backgroundcolor','w','enable','off');
     pdFunc.String=strsplit(num2str(1:length(Achs(kk).voltagefunc)),' ');
     
+    % case where we specify value not using the defaultfunc (value,func#)
     if length(Achs(kk).resetvalue)>1
         pdFunc.Value=Achs(kk).resetvalue(2);          
     else
         pdFunc.Value=Achs(kk).defaultvoltagefunc;
     end    
-    pdFunc.Value
     foo=Achs(kk).voltagefunc{pdFunc.Value};    
 
     pdFunc.Position(3)=30;

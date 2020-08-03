@@ -55,14 +55,14 @@ hpMain.Position=[0 0 hFGUI.Position(3) hFGUI.Position(4)];
 w1=350;
 g=50;
 w2=hpMain.Position(3)-w1-g;
-h=20;
+h=25;
 
 
 %%%%%%%%%%%%%%%%%%%%% DIGITAL CHANNEL GRAPHICS %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Wrapper container uipanel for digital channels
 hpD=uipanel('parent',hpMain,'backgroundcolor','w',...
-    'units','pixels','fontsize',12,'clipping','on','scrollable','on');
+    'units','pixels','fontsize',12,'clipping','on');
 hpD.Position=[0 0 w1 hpMain.Position(4)-60];
  
 
@@ -70,7 +70,7 @@ hpD.Position=[0 0 w1 hpMain.Position(4)-60];
 % (you scroll by moving the large panel inside the small one; it's clunky
 % but MATLAB doesn't have a good scrollable interface for figure interace)
 hpDS=uipanel('parent',hpD,'backgroundcolor','w',...
-    'units','pixels','fontsize',12,'clipping','on','scrollable','on');
+    'units','pixels','fontsize',12,'clipping','on');
 hpDS.Position=[0 0 400 h*length(Dchs)];
 hpDS.Position(2)=hpD.Position(4)-hpDS.Position(4);
 
@@ -99,14 +99,14 @@ t.Position(1:2)=[10 0];
 
 % Override label
 t=uicontrol('parent',Dlbl,'style','text','units','pixels',...
-'fontsize',6,'fontname','monospaced','fontweight','bold',...
+'fontsize',8,'fontname','monospaced','fontweight','bold',...
 'backgroundcolor','w','String','override?');
 t.Position(3:4)=t.Extent(3:4);
-t.Position(1:2)=[185 0];
+t.Position(1:2)=[175 0];
 
 % Value label
 t=uicontrol('parent',Dlbl,'style','text','units','pixels',...
-'fontsize',6,'fontname','monospaced','fontweight','bold',...
+'fontsize',8,'fontname','monospaced','fontweight','bold',...
 'backgroundcolor','w','String','value');
 t.Position(3:4)=t.Extent(3:4);
 t.Position(1:2)=[245 0];
@@ -128,7 +128,7 @@ for kk=1:length(Dchs)
         'backgroundcolor',c);
     t.String=['d' num2str(Dchs(kk).channel) ' ' Dchs(kk).name];      
     t.Position(3:4)=t.Extent(3:4);
-    t.Position(1:2)=[10 0.5*(hpDs(kk).Position(4)-t.Position(4))];
+    t.Position(1:2)=[10 0.5*(hpDs(kk).Position(4)-t.Position(4))-2];
  
     % Override Checkbox
     ckOver=uicontrol('parent',hpDs(kk),'style','checkbox','units','pixels',...
@@ -178,12 +178,12 @@ hDsl.Position(1:2)=[hpD.Position(3)-hDsl.Position(3) 0];
 
 % Wrapper container uipanel for analog channels
 hpA=uipanel('parent',hpMain,'backgroundcolor','w',...
-    'units','pixels','fontsize',12,'clipping','on','scrollable','on');
+    'units','pixels','fontsize',12,'clipping','on');
 hpA.Position=[hpD.Position(3)+g 0 w2 hpD.Position(4)];
 
 % Total container uipanel for analog channels
 hpAS=uipanel('parent',hpA,'backgroundcolor','w',...
-    'units','pixels','fontsize',12,'clipping','on','scrollable','on');
+    'units','pixels','fontsize',12,'clipping','on');
 hpAS.Position=[0 0 w2 h*length(Achs)];
 hpAS.Position(2)=hpA.Position(4)-hpAS.Position(4);
 
@@ -220,34 +220,34 @@ t.Position(1:2)=[10 0];
 
 % Override label
 t=uicontrol('parent',Albl,'style','text','units','pixels',...
-'fontsize',6,'fontname','monospaced','fontweight','bold',...
+'fontsize',8,'fontname','monospaced','fontweight','bold',...
 'backgroundcolor','w','String','override?');
 t.Position(3:4)=t.Extent(3:4);
-t.Position(1:2)=[185 0];
+t.Position(1:2)=[175 0];
 
 % Value label
 t=uicontrol('parent',Albl,'style','text','units','pixels',...
-'fontsize',6,'fontname','monospaced','fontweight','bold',...
+'fontsize',8,'fontname','monospaced','fontweight','bold',...
 'backgroundcolor','w','String','value');
 t.Position(3:4)=t.Extent(3:4);
 t.Position(1:2)=[245 0];
 
 % fucntion label
 t=uicontrol('parent',Albl,'style','text','units','pixels',...
-'fontsize',6,'fontname','monospaced','fontweight','bold',...
+'fontsize',8,'fontname','monospaced','fontweight','bold',...
 'backgroundcolor','w','String','func#');
 t.Position(3:4)=t.Extent(3:4);
 t.Position(1:2)=[285 0];
 
 % voltage label
 t=uicontrol('parent',Albl,'style','text','units','pixels',...
-'fontsize',6,'fontname','monospaced','fontweight','bold',...
+'fontsize',8,'fontname','monospaced','fontweight','bold',...
 'backgroundcolor','w','String','voltage');
 t.Position(3:4)=t.Extent(3:4);
 t.Position(1:2)=[350 0];
 
 
-% Populate the digital channels
+% Populate the analog channels
 for kk=1:length(Achs)
     c=[cc(mod(kk-1,7)+1,:) .1];    
     
@@ -264,7 +264,7 @@ for kk=1:length(Achs)
         'backgroundcolor',c);
     t.String=['a' num2str(Achs(kk).channel) ' ' Achs(kk).name];      
     t.Position(3:4)=t.Extent(3:4);
-    t.Position(1:2)=[10 0.5*(hpAs(kk).Position(4)-t.Position(4))];
+    t.Position(1:2)=[10 0.5*(hpAs(kk).Position(4)-t.Position(4))-2];
  
     % Override Checkbox
     ckOver=uicontrol('parent',hpAs(kk),'style','checkbox','units','pixels',...
@@ -276,9 +276,9 @@ for kk=1:length(Achs)
 
     % Value Number
     ckValue=uicontrol('parent',hpAs(kk),'style','edit','units','pixels',...
-        'fontsize',6,'fontname','monospaced','backgroundcolor','w',...
+        'fontsize',8,'fontname','monospaced','backgroundcolor','w',...
         'enable','off','String', '');
-    ckValue.String=num2str(real(Achs(kk).resetvalue));
+    ckValue.String=num2str(real(Achs(kk).resetvalue(1)));
     ckValue.Position(4)=ckValue.Extent(4);
     ckValue.Position(3)=40;
     ckValue.Position(1)=240;
@@ -288,10 +288,18 @@ for kk=1:length(Achs)
     
     % Fucntion select
     pdFunc=uicontrol('parent',hpAs(kk),'style','popupmenu',...
-        'units','pixels','fontsize',6,'fontname','monospaced',...
+        'units','pixels','fontsize',8,'fontname','monospaced',...
         'backgroundcolor','w','enable','off');
     pdFunc.String=strsplit(num2str(1:length(Achs(kk).voltagefunc)),' ');
-    pdFunc.Value=Achs(kk).defaultvoltagefunc;
+    
+    if length(Achs(kk).resetvalue)>1
+        pdFunc.Value=Achs(kk).resetvalue(2);          
+    else
+        pdFunc.Value=Achs(kk).defaultvoltagefunc;
+    end    
+    pdFunc.Value
+    foo=Achs(kk).voltagefunc{pdFunc.Value};    
+
     pdFunc.Position(3)=30;
     pdFunc.Position(4)=pdFunc.Extent(4);
     pdFunc.Position(1)=ckValue.Position(1)+ckValue.Position(3);
@@ -300,10 +308,9 @@ for kk=1:length(Achs)
     
     % voltage output string
     tVolt=uicontrol('parent',hpAs(kk),'style','text','units','pixels',...
-        'fontsize',6,'fontname','monospaced','backgroundcolor',c,...
+        'fontsize',8,'fontname','monospaced','backgroundcolor',c,...
         'enable','on','horizontalalignment','left');
-    foo=Achs(kk).voltagefunc{Achs(kk).defaultvoltagefunc};    
-    tVolt.String=[num2str(foo(Achs(kk).resetvalue)) ' V'];
+    tVolt.String=[num2str(foo(real(Achs(kk).resetvalue(1)))) ' V'];
     tVolt.Position(1)=350;
     tVolt.Position(3:4)=[120 tVolt.Extent(4)];
     tVolt.Position(2)=2;

@@ -16,6 +16,8 @@ function hFGUI=overrideGUI2
 
 % Initialize the sequence data
 global seqdata;
+
+
 start_new_sequence();
 initialize_channels();
 
@@ -24,14 +26,11 @@ Achs=seqdata.analogchannels;
 Dchs=seqdata.digchannels;
 
 % Define the RGB color scheme for the rows in the table
-cc=[0    0.4470    0.7410;
-    0.8500    0.3250    0.0980;
-    0.9290    0.6940    0.1250;
-    0.4940    0.1840    0.5560;
-    0.4660    0.6740    0.1880;
-    0.3010    0.7450    0.9330;
-    0.6350    0.0780    0.1840];
-cc=brighten(cc,.6);
+cc=[255	255	255;
+    221 235 247]/255;
+bc=[47	117	181]/255;
+
+
 
 % Initialize main figure
 hFGUI=figure(101);
@@ -94,14 +93,6 @@ hpDS.Position=[0 0 400 h*length(Dchs)];
 hpDS.Position(2)=hpD.Position(4)-hpDS.Position(4);
 
 
-% button for reset to default
-bDdefault=uicontrol('parent',hpMain,'style','pushbutton',...
-    'backgroundcolor','w','fontsize',8,'units','pixels');
-bDdefault.String='output to default values';
-bDdefault.Position(1)=5;
-bDdefault.Position(3:4)=[120 20];
-bDdefault.Position(2)=hpD.Position(4)+30;
-
 % Panel for labels
 Dlbl=uipanel('parent',hpMain,'backgroundcolor','w',...
     'units','pixels','fontsize',10,'bordertype','none');
@@ -129,17 +120,20 @@ t=uicontrol('parent',Dlbl,'style','text','units','pixels',...
 t.Position(3:4)=t.Extent(3:4);
 t.Position(1:2)=[245 0];
 
+tic
 % Populate the digital channels
 for kk=1:length(Dchs)
     % Grab the color
-    c=[cc(mod(kk-1,7)+1,:) .1];    
+    c=[cc(mod(kk-1,size(cc,1))+1,:) .1];    
     
     % panel for this row
     hpDs(kk)=uipanel('parent',hpDS,'backgroundcolor',c,...
-        'units','pixels','fontsize',10,'bordertype','none');
-    hpDs(kk).Position(3:4)=[w1 h];
+        'units','pixels','fontsize',10,'bordertype','line',...
+        'highlightcolor',bc,'borderwidth',1);
+    hpDs(kk).Position(3:4)=[w1 h+1];
     hpDs(kk).Position(1:2)=[0 hpDS.Position(4)-kk*h];    
     hpDs(kk).UserData.Channel=Dchs(kk);
+    
     
     % Channel label
     t=uicontrol('parent',hpDs(kk),'style','text','units','pixels',...
@@ -147,16 +141,15 @@ for kk=1:length(Dchs)
         'backgroundcolor',c);
     t.String=['d' num2str(Dchs(kk).channel) ' ' Dchs(kk).name];      
     t.Position(3:4)=t.Extent(3:4);
-    t.Position(1:2)=[10 0.5*(hpDs(kk).Position(4)-t.Position(4))-2];
+    t.Position(1:2)=[10 0.5*(hpDs(kk).Position(4)-t.Position(4))-3];
  
     % Override Checkbox
     ckOver=uicontrol('parent',hpDs(kk),'style','checkbox','units','pixels',...
-        'fontsize',6,'fontname','monospaced','backgroundcolor',c);
-%     ckOver.String=' override?';
+        'fontsize',6,'fontname','monospaced','backgroundcolor',c,...
+        'Callback',{@overCBD kk});
     ckOver.Position(3:4)=ckOver.Extent(3:4)+50;
     ckOver.Position(1)=200;
     ckOver.Position(2)=0.5*(hpDs(kk).Position(4)-ckOver.Position(4));
-    ckOver.Callback={@overCBD kk};
 
     % Value check box
     ckValue=uicontrol('parent',hpDs(kk),'style','checkbox','units','pixels',...
@@ -167,8 +160,9 @@ for kk=1:length(Dchs)
     ckValue.Position(2)=0.5*(hpDs(kk).Position(4)-ckValue.Position(4));
     ckValue.Enable='off';        
     ckValue.Value=real(Dchs(kk).resetvalue);
-    hpDs(kk).UserData.ckValue=ckValue;
+    hpDs(kk).UserData.ckValue=ckValue;    
 end
+toc
 
 % enable or disable a digital channel override
     function overCBD(a,~,ind)
@@ -193,6 +187,8 @@ hDsl.Position(1:2)=[hpD.Position(3)-hDsl.Position(3) 0];
         hpDS.Position(2)=hpD.Position(4)-hpDS.Position(4)-hDsl.Value;   
     end
 
+toc
+
 %%%%%%%%%%%%%%%%%%%%% ANALOG CHANNEL GRAPHICS %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Wrapper container uipanel for analog channels
@@ -206,20 +202,14 @@ hpAS=uipanel('parent',hpA,'backgroundcolor','w',...
 hpAS.Position=[0 0 w2 h*length(Achs)];
 hpAS.Position(2)=hpA.Position(4)-hpAS.Position(4);
 
-% button for set to default values
-bAdefault=uicontrol('parent',hpMain,'style','pushbutton',...
-    'backgroundcolor','w','fontsize',8,'units','pixels');
-bAdefault.String='set to default values';
-bAdefault.Position(1)=hpA.Position(1)+5;
-bAdefault.Position(3:4)=[100 20];
-bAdefault.Position(2)=hpD.Position(4)+30;
 
-% button for set to default values
+% button to output analog channels
 bAoutput=uicontrol('parent',hpMain,'style','pushbutton',...
-    'backgroundcolor','w','fontsize',8,'units','pixels','foregroundcolor','r');
+    'backgroundcolor','w','fontsize',10,'units','pixels',...
+    'foregroundcolor','k')
 bAoutput.String='output analog channels';
-bAoutput.Position(1)=hpA.Position(1)+5+110;
-bAoutput.Position(3:4)=[150 20];
+bAoutput.Position(1)=hpA.Position(1)+5;
+bAoutput.Position(3:4)=[150 25];
 bAoutput.Position(2)=hpD.Position(4)+30;
 
 
@@ -272,8 +262,9 @@ for kk=1:length(Achs)
     
     % panel for this row
     hpAs(kk)=uipanel('parent',hpAS,'backgroundcolor',c,...
-        'units','pixels','fontsize',10,'bordertype','none');
-    hpAs(kk).Position(3:4)=[w2 h];
+        'units','pixels','fontsize',10,'bordertype','line',...
+        'highlightcolor',bc,'borderwidth',1);
+    hpAs(kk).Position(3:4)=[w2 h+1];
     hpAs(kk).Position(1:2)=[0 hpAS.Position(4)-kk*h];    
     hpAs(kk).UserData.Channel=Achs(kk);
     

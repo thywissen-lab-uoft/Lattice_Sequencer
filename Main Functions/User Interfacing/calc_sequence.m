@@ -184,7 +184,7 @@ if (~isempty(seqdata.digadwinlist))
             end
         end
     end
-    disp(dec2bin(new_digarray(1:curindex,3)));
+
     %if the 32nd bit is set, then add a sign
     ind = (bitget(new_digarray(1:curindex,3),32)==1);
     new_digarray(ind,3) = new_digarray(ind,3) - 2^(31);

@@ -46,10 +46,7 @@ if adwin_connected
 
     %set the number of clock cycles between updates
     Set_Par(2,globaldelay);
-    disp(seqdata.chnum);
-    disp('here')
-    disp(dec2bin(seqdata.chval));
-    disp('here')
+
     %send the channel update information
     disp('Loading the Channel Information');
     SetData_Double(2,seqdata.chnum,1);

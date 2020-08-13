@@ -4052,6 +4052,8 @@ setDigitalChannel(calctime(curtime,0),68,1);
 % setAnalogChannel(calctime(curtime,0),'D1 FM',3.80,1);
 % addOutputParam('D1_DP_FM',D1_FM);
 
+setAnalogChannel(calctime(curtime,0),60,0,1);
+setDigitalChannel(calctime(curtime,0),24,0);
 timeout = curtime;
 
         

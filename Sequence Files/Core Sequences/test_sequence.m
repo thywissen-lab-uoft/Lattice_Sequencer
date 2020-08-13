@@ -2370,12 +2370,19 @@ curtime = timein;
 %% K Probe OP
 
 % %set probe detuning
-% setAnalogChannel(calctime(curtime,0),'K Probe/OP FM',170); %195
+setAnalogChannel(calctime(curtime,0),'K Probe/OP FM',190); %195
+setAnalogChannel(calctime(curtime,0),'K Trap FM',3);
+
 % % %SET trap AOM detuning to change probe
-%  setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',0); %0.3
+ setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); %0.3
 % setAnalogChannel(calctime(curtime,0),'K Trap FM',34); %54.5
-%  setAnalogChannel(calctime(curtime,10),'K Probe/OP AM',0.15);
+setAnalogChannel(calctime(curtime,10),'K Probe/OP AM',0.7);
 % setAnalogChannel(calctime(curtime,0),'K Repump AM',0.3);
+
+setDigitalChannel(calctime(curtime,0),24,0)
+setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',0.8); %0.11
+    %TTL
+
 
 %% Test 405 TTL Control
 
@@ -3896,26 +3903,26 @@ setDigitalChannel(calctime(curtime,10),'Kill TTL',0);%0= off, 1=on
 
 
 % 
-reset= 1
-if reset ~=1
-    setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',6590 +32);
-    setAnalogChannel(calctime(curtime,0),'Rb Beat Note FF',0.57,1);
-    setDigitalChannel(calctime(curtime,5),50,1);
-%     setAnalogChannel(calctime(curtime,6),'Rb Beat Note FF',0.57,1);0.55;-0.1;
-    setAnalogChannel(calctime(curtime,5.5),'Rb Beat Note FM',6590 -240);
-    setDigitalChannel(calctime(curtime,6),50,0);
-    setAnalogChannel(calctime(curtime,10),'Rb Beat Note FF',0,1);
-else
+% reset= 1
+% if reset ~=1
+%     setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',6590 +32);
+%     setAnalogChannel(calctime(curtime,0),'Rb Beat Note FF',0.57,1);
+%     setDigitalChannel(calctime(curtime,5),50,1);
+% %     setAnalogChannel(calctime(curtime,6),'Rb Beat Note FF',0.57,1);0.55;-0.1;
+%     setAnalogChannel(calctime(curtime,5.5),'Rb Beat Note FM',6590 -240);
+%     setDigitalChannel(calctime(curtime,6),50,0);
+%     setAnalogChannel(calctime(curtime,10),'Rb Beat Note FF',0,1);
+% else
+% %     setAnalogChannel(calctime(curtime,0),'Rb Beat Note FF',0,1);
+% %     setAnalogChannel(calctime(curtime,5),'Rb Beat Note FM',6590 +32);
+% %     setDigitalChannel(calctime(curtime,1),50,0);
 %     setAnalogChannel(calctime(curtime,0),'Rb Beat Note FF',0,1);
-%     setAnalogChannel(calctime(curtime,5),'Rb Beat Note FM',6590 +32);
-%     setDigitalChannel(calctime(curtime,1),50,0);
-    setAnalogChannel(calctime(curtime,0),'Rb Beat Note FF',0,1);
-    setDigitalChannel(calctime(curtime,5),50,1);
-    setAnalogChannel(calctime(curtime,6),'Rb Beat Note FF',0,1);0.55;
-    setAnalogChannel(calctime(curtime,10),'Rb Beat Note FM',6590 +32);
-    setDigitalChannel(calctime(curtime,15),50,0);
-    setAnalogChannel(calctime(curtime,20),'Rb Beat Note FF',0,1);
-end
+%     setDigitalChannel(calctime(curtime,5),50,1);
+%     setAnalogChannel(calctime(curtime,6),'Rb Beat Note FF',0,1);0.55;
+%     setAnalogChannel(calctime(curtime,10),'Rb Beat Note FM',6590 +32);
+%     setDigitalChannel(calctime(curtime,15),50,0);
+%     setAnalogChannel(calctime(curtime,20),'Rb Beat Note FF',0,1);
+% end
 
 
 
@@ -3948,8 +3955,10 @@ end
 % D1_FM = getScanParameter(D1_FM_List, seqdata.scancycle, seqdata.randcyclelist);%5
 % setAnalogChannel(calctime(curtime,0),'D1 FM',3.80,1);
 % addOutputParam('D1_DP_FM',D1_FM);
+setDigitalChannel(calctime(curtime,0),24,0)
 
 timeout = curtime;
+
 
         
 end

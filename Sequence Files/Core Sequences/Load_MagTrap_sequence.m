@@ -150,9 +150,9 @@ curtime = timein;
     %6: MOT fluor with MOT off, 7: fluorescence image after do_imaging_molasses 
     %8: iXon fluorescence + Pixelfly absorption
     iXon_movie = 1; %Take a multiple frame movie?
-    seqdata.flags.image_atomtype = 0;%  0= Rb, 1 = K, 2 = Rb+K
+    seqdata.flags.image_atomtype = 1;%  0= Rb, 1 = K, 2 = Rb+K
     seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
-    seqdata.flags.img_direction = 0; 
+    seqdata.flags.img_direction = 1; 
     %1 = x direction (Sci) / MOT, 2 = y direction (Sci), 
     %3 = vertical direction, 4 = x direc tion (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
     seqdata.flags.do_stern_gerlach = 0; %1: Do a gradient pulse at the beginning of ToF
@@ -170,7 +170,7 @@ curtime = timein;
     
     %RHYS - params should be defined in a separate location from flags. 
     
-    seqdata.params.tof =  15;  % 45 for rough alignment, 20 for K-D diffraction
+    seqdata.params.tof =  5;  % 45 for rough alignment, 20 for K-D diffraction
     seqdata.params.UV_on_time = 10000; %UV on time + savingtime + wait time = real wait time between cycles%
     % usually 15s for non XDT
     
@@ -200,7 +200,7 @@ curtime = timein;
     % Use stage1  = 2 to evaporate fast for transport benchmarking 
     % Use stage1b = 2 to do microwave evaporation in the plugged QP trap
     seqdata.flags.compress_QP = 1; % compress QP after transport
-    seqdata.flags.RF_evap_stages = [1, 0, 0]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
+    seqdata.flags.RF_evap_stages = [1, 1, 0]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
     
     %RHYS - Here be parameters. 
     

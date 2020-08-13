@@ -170,7 +170,7 @@ curtime = timein;
     
     %RHYS - params should be defined in a separate location from flags. 
     
-    seqdata.params.tof =  5;  % 45 for rough alignment, 20 for K-D diffraction
+    seqdata.params.tof =  3;  % 45 for rough alignment, 20 for K-D diffraction
     seqdata.params.UV_on_time = 10000; %UV on time + savingtime + wait time = real wait time between cycles%
     % usually 15s for non XDT
     

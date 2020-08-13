@@ -143,6 +143,8 @@ bRun=uicontrol(hpMain,'style','pushbutton','String','Run Cycle',...
     'fontweight','bold');
 bRun.Position(3:4)=[130 30];
 bRun.Position(1:2)=[5 tblWait.Position(2)-bRun.Position(4)-5];
+bRun.Callback=@bRunCB;
+
 
 % Checkbox for repeat cycle
 cRpt=uicontrol(hpMain,'style','checkbox','string','Repeat',...
@@ -244,6 +246,21 @@ bAbort.Position(1:2)=[hpMain.Position(3)-bAbort.Position(3)-5 ...
 jButton= findjobj(bAbort);
 set(jButton,'Enabled',false);
 set(jButton,'ToolTipText',ttStr);
+
+%% AdWin Callbacks
+% This section of the code defines the callbacks for running the sequencer.
+%  It is separated by a different section in order to visually separate
+%  front end GUI stuff from the actual sequence code.
+
+% Run button callback.
+    function bRunCB(~,~)
+        disp([datestr(now,13) ' Running the cycle']);
+%         cycle_sequence(sequencefunc,waittime,targettime,startcycle,endcycle);
+        %check if a process is already running or waiting between cycles
+%         curstatus = getRunStatus();
+    end
+
+
 
 end
 

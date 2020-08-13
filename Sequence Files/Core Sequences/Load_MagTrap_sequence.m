@@ -150,7 +150,7 @@ curtime = timein;
     %6: MOT fluor with MOT off, 7: fluorescence image after do_imaging_molasses 
     %8: iXon fluorescence + Pixelfly absorption
     iXon_movie = 1; %Take a multiple frame movie?
-    seqdata.flags.image_atomtype = 1;%  0= Rb, 1 = K, 2 = Rb+K
+    seqdata.flags.image_atomtype = 0;%  0= Rb, 1 = K, 2 = Rb+K
     seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
     seqdata.flags.img_direction = 0; 
     %1 = x direction (Sci) / MOT, 2 = y direction (Sci), 
@@ -170,7 +170,7 @@ curtime = timein;
     
     %RHYS - params should be defined in a separate location from flags. 
     
-    seqdata.params.tof =  5;  % 45 for rough alignment, 20 for K-D diffraction
+    seqdata.params.tof =  15;  % 45 for rough alignment, 20 for K-D diffraction
     seqdata.params.UV_on_time = 10000; %UV on time + savingtime + wait time = real wait time between cycles%
     % usually 15s for non XDT
     

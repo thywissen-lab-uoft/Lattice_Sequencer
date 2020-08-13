@@ -3927,29 +3927,29 @@ curtime = timein;
 %% End
 
 %Test third digital card
-curtime = calctime(curtime,1000);
-setAnalogChannel(calctime(curtime,0),26,0);
-curtime = calctime(curtime,5000);
-setDigitalChannel(calctime(curtime,0),68,1);
-setDigitalChannel(calctime(curtime,0),76,1);
-setDigitalChannel(calctime(curtime,0),84,1);
-setDigitalChannel(calctime(curtime,0),92,1);
-curtime = calctime(curtime,0.005);
-setDigitalChannel(calctime(curtime,0),68,0);
-curtime = calctime(curtime,0.005);
-setDigitalChannel(calctime(curtime,0),76,0);
-curtime = calctime(curtime,0.005);
-setDigitalChannel(calctime(curtime,0),84,0);
-curtime = calctime(curtime,0.005);
-setDigitalChannel(calctime(curtime,0),92,0);
-curtime = calctime(curtime,0.005);
-setDigitalChannel(calctime(curtime,0),92,1);
-curtime = calctime(curtime,0.005);
-setDigitalChannel(calctime(curtime,0),84,1);
-curtime = calctime(curtime,0.005);
-setDigitalChannel(calctime(curtime,0),76,1);
-curtime = calctime(curtime,0.005);
-setDigitalChannel(calctime(curtime,0),68,1);
+% curtime = calctime(curtime,1000);
+% setAnalogChannel(calctime(curtime,0),26,0);
+% curtime = calctime(curtime,5000);
+% setDigitalChannel(calctime(curtime,0),68,1);
+% setDigitalChannel(calctime(curtime,0),76,1);
+% setDigitalChannel(calctime(curtime,0),84,1);
+% setDigitalChannel(calctime(curtime,0),92,1);
+% curtime = calctime(curtime,0.005);
+% setDigitalChannel(calctime(curtime,0),68,0);
+% curtime = calctime(curtime,0.005);
+% setDigitalChannel(calctime(curtime,0),76,0);
+% curtime = calctime(curtime,0.005);
+% setDigitalChannel(calctime(curtime,0),84,0);
+% curtime = calctime(curtime,0.005);
+% setDigitalChannel(calctime(curtime,0),92,0);
+% curtime = calctime(curtime,0.005);
+% setDigitalChannel(calctime(curtime,0),92,1);
+% curtime = calctime(curtime,0.005);
+% setDigitalChannel(calctime(curtime,0),84,1);
+% curtime = calctime(curtime,0.005);
+% setDigitalChannel(calctime(curtime,0),76,1);
+% curtime = calctime(curtime,0.005);
+% setDigitalChannel(calctime(curtime,0),68,1);
 % setDigitalChannel(calctime(curtime,0),65,1);
 % curtime = calctime(curtime,100);
 % setDigitalChannel(calctime(curtime,0),66,1);
@@ -4054,6 +4054,7 @@ setDigitalChannel(calctime(curtime,0),68,1);
 
 setAnalogChannel(calctime(curtime,0),60,0,1);
 setDigitalChannel(calctime(curtime,0),24,0);
+setDigitalChannel(calctime(curtime,0),23,1);
 timeout = curtime;
 
         

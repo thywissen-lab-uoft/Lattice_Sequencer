@@ -77,7 +77,10 @@ INIT:
   'events to write. )
   'Channels 1-64 refer to Analog output lines
   'Channel 101,102,103 refers to Digital output lines (16 bit word x2)
-  'Channel 104,105,106 refer to Digital output lines (16 bit word X2)
+  'Channel 104,105,106 refer to Digital output lines (16 bit word X2); these
+  'channels correspond to channel 101, 102 and 103 respectively, except these
+  'are where the 32nd bit was turned on (and then removed) in the matlab code, 
+  'so we had to make sure that it gets turned back on.
 
   delay=PAR_2 ' 40000=>1ms (Enable cyclic update to see PAR values (clock icon))
   GlobalDelay=delay
@@ -107,7 +110,8 @@ INIT:
   'P2_SYNC_ENABLE enables or disbles the synchronizing option for selected inputs, outputs or function groups on the specified module
   'Syntax: P2_SYNC_ENABLE(module, channel) 
   
-  'This is for analog channels
+  'This is for analog channels, 0FFh corresponds to 11111111b and since our analog 
+  'cards have 8 channels we sync enable all 8 of them
   P2_SYNC_ENABLE(5,0FFh)
   P2_SYNC_ENABLE(6,0FFh)
   P2_SYNC_ENABLE(7,0FFh)
@@ -173,7 +177,7 @@ EVENT:
   val_upper2=0
   counts=counts+1  'Number of events so far
 
-
+  'This section writes all of the sequence values to the different channels
   IF((99>DATA_1[counts]) and (DATA_1[counts]>=1)) then  'A:Check each elementof DATA_1 for an update
     For i=1 to Data_1[counts] 'B: Loop over number of updates at this time
       updates=updates+1
@@ -197,7 +201,7 @@ EVENT:
       endif
       
       if(ch=104) then
-        val_lower=Data_3[updates]+10000000000000000000000000000000b
+        val_lower=Data_3[updates]+10000000000000000000000000000000b 'Adds 32nd bit back
         P2_DIG_WRITE_LATCH(2,val_lower) 'Writes Digital Channels 1-32
       endif
       
@@ -207,7 +211,7 @@ EVENT:
       endif
       
       if(ch=105) then
-        val_upper=Data_3[updates]+10000000000000000000000000000000b
+        val_upper=Data_3[updates]+10000000000000000000000000000000b 'Adds 32nd bit back
         DIG_WRITELATCH32(1,val_upper) 'Writes Digital Channels 33-64 (card 1 syntax)
         'DIGOUT_WORD1(1,1)
       endif
@@ -217,7 +221,7 @@ EVENT:
       endif
       
       if(ch=106) then
-        val_lower=Data_3[updates]+10000000000000000000000000000000b
+        val_lower=Data_3[updates]+10000000000000000000000000000000b 'Adds 32nd bit back
         P2_DIG_WRITE_LATCH(3,val_lower) 'Writes Digital Channels 65-96
       endif
       

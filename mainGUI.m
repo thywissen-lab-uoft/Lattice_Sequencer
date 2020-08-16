@@ -1,11 +1,34 @@
 function mainGUI
-%MAINGUI Summary of this function goes here
+% This is the primary GUI for running the lattice experiment.
 %
 % Author      : CJ Fujiwara
 % Last Edited : 2020/08
 %
-% This is the primary GUI for running the lattice experiment.
-
+% This GUI is written using the figure interface rather than the uifigure
+% coding environment.  This is done because CF is not very familiar with
+% the uifigure interface, but has made many GUIs in the default MATLAB
+% figure interface. I am electing to not use GUIDE, because GUIDE is a
+% piece of shit coding interface in my opinion (why use a GUI to make a
+% GUI?)
+%
+% I have attemtped to extensively comment this code so that students of the
+% lab may edit and improve this GUI.  However, the comments assume a base
+% level of understanding of the MATLAB coding interface, specifcally with
+% the GUI elements and callbacks of uicontrol.
+%
+% The design of this GUI is inspired after the Cicero Word Generator, which
+% was designed by Aviv Keshet at MIT around 2008. This stylistic choice was
+% done because CF used Cicero in the past and found it to be very
+% intuititive.  Moreover, many MIT/Ketterle "children" groups tend to use
+% Cicero (IDK if this will be true in the future), and it is the author's
+% hope that this will enable future group members to learn the software of
+% this group more quickly. (It took me many months to become comfortable
+% with it).
+%
+% In order to make this code work with the existing code in the lab
+% designed by D. McKay (an early graduate student), many aspects of this
+% code have been "Frakenstein'ed" together. It is the author's desire that
+% this code be optimized and simplified.
 
 %%%%%%%%%%%%%%% Initialize Sequence Data %%%%%%%%%%%%%%%%%
 LatticeSequencerInitialize();
@@ -41,7 +64,9 @@ clf
 hF.Position(3:4)=[w h];
 hF.SizeChangedFcn=@adjustSize;
 
+% Callback fucntion on adjust figure sizes
 function adjustSize(fig,~)    
+    % Adjust the main panel to fit within the new figure size
     hpMain.OuterPosition=[0 fig.Position(4)-h w h];
     drawnow;
 end
@@ -51,6 +76,7 @@ hpMain=uipanel('parent',hF,'units','pixels','backgroundcolor',cc,...
     'bordertype','etchedin');
 hpMain.OuterPosition=[0 0 hF.Position(3) hF.Position(4)];
 hpMain.OuterPosition=[0 hF.Position(4)-h w h];
+
 % Title String
 tTit=uicontrol(hpMain,'style','text','string','Lattice Sequencer',...
     'FontSize',18,'fontweight','bold','units','pixels',...
@@ -59,7 +85,6 @@ tTit.Position(3:4)=tTit.Extent(3:4);
 tTit.Position(1:2)=[5 hpMain.Position(4)-tTit.Position(4)];
 
 %%%%%%%%%%%%%%%% SETTINGS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 % Sequence File label
 tSeq=uicontrol(hpMain,'style','text','String','Sequence File:',...
@@ -130,12 +155,38 @@ bOver.Callback=@bOverCB;
     end
 
 % Wait Time Table
-tblWait=uitable(hpMain,'RowName','wait (s)','ColumnName','',...
-    'Data',10,'ColumnWidth',{50},'ColumnEditable',true,...
-    'ColumnFormat',{'numeric'});
+
+
+
+cWait=uicontrol(hpMain,'style','checkbox','string','inter cycle wait?',...
+    'fontsize',10,'units','pixels','backgroundcolor',cc,'value',1);
+cWait.Position(3:4)=cWait.Extent(3:4)+[20 0];
+cWait.Position(1:2)=[5 eSeq.Position(2)-cWait.Position(4)-5];
+cWait.Callback=@cWaitCB;
+
+tblWait=uitable(hpMain,'RowName','','ColumnName','',...
+    'Data',10,'ColumnWidth',{30},'ColumnEditable',true,...
+    'ColumnFormat',{'numeric'},'fontsize',8);
 tblWait.Position(3:4)=tblWait.Extent(3:4);
 tblWait.Position(4)=tblWait.Position(4);
-tblWait.Position(1:2)=[5 eSeq.Position(2)-tblWait.Position(4)-5];
+tblWait.Position(1:2)=[cWait.Position(1)+cWait.Position(3) ...
+    eSeq.Position(2)-tblWait.Position(4)-5];
+
+tWait=uicontrol(hpMain,'style','text','string','sec.',...
+    'fontsize',8,'units','pixels','backgroundcolor',cc);
+tWait.Position(3:4)=tWait.Extent(3:4);
+tWait.Position(1)=tblWait.Position(1)+tblWait.Position(3);
+tWait.Position(2)=tblWait.Position(2);
+
+    function cWaitCB(cBox,~)        
+        if cBox.Value
+           tblWait.Enable='on';
+           axWaitBar.Enable='on';
+        else
+           tblWait.Enable='off';
+           axWaitBar.Enable='off';
+        end
+    end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RUN CYCLE %%%%%%%%%%%%%%%%%%%%%%
 
@@ -281,7 +332,7 @@ tAdWinLabel=text(.5,1.05,'adwin progress','fontsize',10,'horizontalalignment','c
 waitarcolor=[106, 163, 241 ]/255;
 axWaitBar=axes('parent',hpMain,'units','pixels','XTick',[],...
     'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
-axWaitBar.Position(1)=tblWait.Position(1)+tblWait.Position(3)+5;
+axWaitBar.Position(1)=tWait.Position(1)+tWait.Position(3)+5;
 axWaitBar.Position(4)=tblWait.Position(4);
 axWaitBar.Position(3)=hpMain.Position(3)-axWaitBar.Position(1)-10;
 axWaitBar.Position(2)=tblWait.Position(2);
@@ -355,8 +406,10 @@ start(t1);
         fh = str2func(erase(eSeq.String,'@'));           
 
         % Compile the code
-        disp([datestr(now,13) ' Building ' eSeq.String]);        
-        t1=now;                         % compile start time
+        disp(' ');
+        disp(['     Compiling sequence  ' eSeq.String]);     
+        disp(' ');
+        tC1=now;                         % compile start time
         start_new_sequence;             % initialize new sequence
         
         % Put these in so no error. I think it should do nothing. It's from
@@ -372,15 +425,18 @@ start(t1);
         if ~doDebug
             load_sequence();                % load the sequence onto adwin
         end        
-        t2=now;                         % compile end time
-        buildTime=(t2-t1)/(24*60*60);   % Build time in seconds      
+        tC2=now;                         % compile end time
+        buildTime=(tC2-tC1)/(24*60*60);   % Build time in seconds      
         
         
         % Display results
+        disp(' ');
+        disp('     Completed compiling! (did I actually work?)');
         disp(['     Build Time        : ' num2str(round(buildTime,1))]);
         disp(['     Sequence Run Time : ' ...
-            num2str(round(seqdata.sequencetime,1)) 's']);      
-       
+            num2str(round(seqdata.sequencetime,1)) 's']);    
+       disp(' ');
+
         % Update progress bars
 
         

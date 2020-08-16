@@ -154,16 +154,16 @@ bOver.Callback=@bOverCB;
         disp([datestr(now,13) ' New sequence function is ' funcname]);
     end
 
-% Wait Time Table
+%%%%% Wait Time Interface %%%%
 
-
-
+% Text label for inter cycle wait time
 cWait=uicontrol(hpMain,'style','checkbox','string','inter cycle wait?',...
     'fontsize',10,'units','pixels','backgroundcolor',cc,'value',1);
 cWait.Position(3:4)=cWait.Extent(3:4)+[20 0];
 cWait.Position(1:2)=[5 eSeq.Position(2)-cWait.Position(4)-5];
 cWait.Callback=@cWaitCB;
 
+% Table for storing value of wait time
 tblWait=uitable(hpMain,'RowName','','ColumnName','',...
     'Data',10,'ColumnWidth',{30},'ColumnEditable',true,...
     'ColumnFormat',{'numeric'},'fontsize',8);
@@ -172,19 +172,19 @@ tblWait.Position(4)=tblWait.Position(4);
 tblWait.Position(1:2)=[cWait.Position(1)+cWait.Position(3) ...
     eSeq.Position(2)-tblWait.Position(4)-5];
 
+% Seconds label for the wait time.
 tWait=uicontrol(hpMain,'style','text','string','sec.',...
     'fontsize',8,'units','pixels','backgroundcolor',cc);
 tWait.Position(3:4)=tWait.Extent(3:4);
 tWait.Position(1)=tblWait.Position(1)+tblWait.Position(3);
 tWait.Position(2)=tblWait.Position(2);
 
+% Callback for enabling/disabling the wait timer.
     function cWaitCB(cBox,~)        
         if cBox.Value
-           tblWait.Enable='on';
-           axWaitBar.Enable='on';
+            tblWait.Enable='on';    % Enable wait time table
         else
-           tblWait.Enable='off';
-           axWaitBar.Enable='off';
+            tblWait.Enable='off';   % Disable wait time table
         end
     end
 
@@ -320,12 +320,6 @@ tAdWinTime2.Position=[axAdWinBar.Position(3) 21];
 tAdWinLabel=text(.5,1.05,'adwin progress','fontsize',10,'horizontalalignment','center',...
     'verticalalignment','bottom','fontweight','bold');
 
-    function setAdWinBar(tnow,tend)
-        pAdWinBar.XData = [0 tnow/tend tnow/tend 0];    
-        tAdWinTime1.String=[num2str(tnow,'%.2f') ' s'];
-        tAdWinTime2.String=[num2str(tend,'%.2f') ' s'];
-        drawnow;
-    end
 
 
 % Graphical bar and commands for the wait bar.
@@ -339,47 +333,89 @@ axWaitBar.Position(2)=tblWait.Position(2);
 pWaitBar = patch(axWaitBar,[0 0 0 0],[0 0 1 1],...
     waitarcolor);
 
-    function setWaitBar(tnow,tend)
-        pWaitBar.XData = [0 tnow/tend tnow/tend 0];    
-        drawnow;
-    end
-
-
-
-setWaitBar(5,10);
-setAdWinBar(5,30);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TIMERS  %%%%%%%%%%%%%%%%%%%%%%
 
 % adwin_process_timer = timer('TimerFcn',fhandle,'StartDelay',round(seqdata.sequencetime*1000)/1000,...
 %     'Name','adwin_proces_timerCB');
 
-% Adwin progress timer
-t1=timer('Name','AdwinProgressTimer','ExecutionMode','singleShot',...
-    'TimerFcn',@foo,'StartDelay',5);
-t1.StartFcn=@startT1;
+%%%%% Adwin progress timer %%%
+% After the sequence is run, this timer keeps tracks of the AdWins
+% progress. It doesn't have direct access to the Adwin so it assumes the
+% timing based on the results of the sequence compliation.
 
-t1b=timer('Name','AdwinUpdateBar','ExecutionMode','FixedRate',...
-    'TimerFcn',@foo2,'startdelay',0,'period',.1);
+% The adwin progress timer object
+timeAdwin=timer('Name','AdwinProgressTimer','ExecutionMode','FixedSpacing',...
+    'TimerFcn',@updateAdwinBar,'StartFcn',@sAdwin,'Period',.1);
 
-    function startT1(~,~)
-        setAdWinBar(0,seqdata.sequencetime);
-        setWaitBar(0,tblWait.Data);
-        t1b.UserData=now;
-        start(t1b);
+% Function to run when the adwin starts the sequence.
+    function sAdwin(~,~)
+        % Display some user notifications
+        disp('Sequence started.');
+                
+        % Give the progress timer a new start
+        timeAdwin.UserData=now;        
+        % Note that the function now is days since date (January 0, 0000)
+        
     end
 
-    function foo2(~,~)
-        tnow=now;
-        dT=(tnow-t1b.UserData)*24*60*60;
-        setWaitBar(dT,10);
+    function updateAdwinBar(~,~)
+        tstart=timeAdwin.UserData;  % Sequence start time
+        dT0=seqdata.sequencetime;   % Duration of sequence       
+        dT=(now-tstart)*24*60*60;   % Current duration in sec.
+
+        % Update graphical progress bar for wait time      
+        pAdWinBar.XData = [0 dT/dT0 dT/dT0 0];    
+        tAdWinTime1.String=[num2str(dT,'%.2f') ' s'];
+        tAdWinTime2.String=[num2str(dT0,'%.2f') ' s'];
+        drawnow;
+        
+        % Stop the timer if enough time has elapsed
+        if dT>dT0
+           stop(timeAdwin);
+           disp('Sequence complete.');
+           pAdWinBar.XData = [0 1 1 0];    
+           if cWait.Value
+               start(timeWait);
+           end
+        end
     end
 
-    function foo(~,~)
-        disp('hi');
+%%%%% Intecycle wait timer %%%
+% After a seqeunce runs, we typically insert a mandatory wait time before
+% the sequence may run again.  This is because certain parts of the machine
+% (CATs) will get hot. This time allows the water cooling to cool down the
+% system to sufficiently safe levels.
+
+% The wait timer object
+timeWait=timer('Name','InterCycleWaitTimer','ExecutionMode','FixedSpacing',...
+    'TimerFcn',@updateWaitBar,'startdelay',0,'period',.1,'StartFcn',@sWait);
+
+    function sWait(~,~)
+        disp(['Starting the wait timer ' ...
+            num2str(tblWait.Data,'%.2f') ' seconds.']);       
+        
+        % Give the wait timer a new start
+        timeWait.UserData=now;         
+        % Note that the function now is days since date (January 0, 0000)
     end
 
-start(t1);
+    function updateWaitBar(~,~)
+        tstart=timeWait.UserData;       % When the wait started
+        dT0=tblWait.Data;               % Duration of wait        
+        dT=(now-tstart)*24*60*60;       % Current wait duration
+        
+        % Update graphical progress bar for wait time
+        pWaitBar.XData = [0 dT/dT0 dT/dT0 0];    
+        drawnow;
+        
+        % Stop the timer.
+        if dT>dT0
+            disp('Inter cycle wait complete.');
+            stop(timeWait);    
+            pWaitBar.XData = [0 1 1 0];    
+        end
+    end
 
 
 %% AdWin Callbacks
@@ -426,18 +462,19 @@ start(t1);
             load_sequence();                % load the sequence onto adwin
         end        
         tC2=now;                         % compile end time
-        buildTime=(tC2-tC1)/(24*60*60);   % Build time in seconds      
+        buildTime=(tC2-tC1)*(24*60*60);   % Build time in seconds      
         
         
         % Display results
         disp(' ');
         disp('     Completed compiling! (did I actually work?)');
-        disp(['     Build Time        : ' num2str(round(buildTime,1))]);
+        disp(['     Build Time        : ' num2str(round(buildTime,2))]);
         disp(['     Sequence Run Time : ' ...
             num2str(round(seqdata.sequencetime,1)) 's']);    
        disp(' ');
 
         % Update progress bars
+        start(timeAdwin);
 
         
         % Begin various timers

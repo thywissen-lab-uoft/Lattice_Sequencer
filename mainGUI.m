@@ -34,6 +34,19 @@ function mainGUI
 LatticeSequencerInitialize();
 global seqdata;
 
+%% Delete old timer objects
+% The progress of the sequence is tracked using some MATLAB timers. Delete
+% these timers so that MATLAB doesn't get confused and make a whole bunch
+% of timer instances.  You may check this by timerfindall
+
+% Names of timers, defined here so that the constructor uses the same name
+% to make the timers later
+adwinTimeName='AdwinProgressTimer';
+waitTimeName='InterCycleWaitTimer';
+
+% Delete any existing timers
+delete(timerfind('Name',adwinTimeName));
+delete(timerfind('Name',waitTimeName));
 %% Initialize Graphics
 
 %%%%%%%%%%%%%%% Initialize Graphics %%%%%%%%%%%%%%%%%
@@ -45,7 +58,7 @@ windowhnds = get(0,'Children');
 % Close any figure with the same name. Only one instance of mainGUI may be
 % open at a time
 for i = 1:length(windowhnds)
-    if isequal(windowhnds(i).Name,fName)
+    if isequal(windowhnds(i).Name,fName)        
        close(fName); 
     end
 end
@@ -62,14 +75,61 @@ hF=figure('toolbar','none','Name',fName,'color',cc,...
     'NumberTitle','off','MenuBar','none','resize','off');
 clf
 hF.Position(3:4)=[w h];
-hF.SizeChangedFcn=@adjustSize;
+hF.CloseRequestFcn=@closeFig;
 
-% Callback fucntion on adjust figure sizes
-function adjustSize(fig,~)    
-    % Adjust the main panel to fit within the new figure size
-    hpMain.OuterPosition=[0 fig.Position(4)-h w h];
-    drawnow;
-end
+% Callback for a close request function
+    function closeFig(fig,~)
+       disp('Requesting to close the sequencer GUI.'); 
+       
+       if ~isempty(timerfind('Name',adwinTimeName)) && ...
+               isequal(timeAdwin.Running,'on')
+           tt=['The sequence is still running.  Are you sure you want ' ...
+               'to close the GUI? The sequence data has already been ' ...
+               'sent to the Adwin and the experiment will still be ' ...
+               'running.'];
+           tit='Sequence is still running!';
+           
+           f2=figure;
+           set(f2,'Name',tit,'color','w','NumberTitle','off',...
+               'windowstyle','modal','units','pixels','resize','off');
+           f2.Position(3:4)=[400 140];
+           f2.Position(1:2)=fig.Position(1:2)+[-50 100];
+           
+           tt=uicontrol('style','text','String',tt,'parent',f2,...
+               'fontsize',10,'units','normalized','horizontalalignment',...
+               'center','backgroundcolor','w');
+           tt.Position=[0.05 0.5 0.9 0.35];
+           
+           b1=uicontrol('style','pushbutton','string','yes','parent',f2,...
+               'fontsize',10','units','normalized','backgroundcolor','w');
+           b1.Position=[.25 .15 .2 .2];
+           b1.Callback=@doClose;
+  
+           b2=uicontrol('style','pushbutton','string','cancel','parent',f2,...
+               'fontsize',10','units','normalized','backgroundcolor','w');
+           b2.Position=[.55 .15 .2 .2];
+           b2.Callback=@(~,~) close(f2);          
+
+       else
+            disp('Closing the sequencer GUI. Goodybe. I love you'); 
+            try
+                stop(timeAdwin);
+                stop(timeWait);
+                delete(timeAdwin);
+                delete(timeWait);              
+            end
+            delete(fig);
+       end
+       
+        function doClose(~,~)
+            close(f2);
+            disp('Closing the sequencer GUI. Goodybe. I love you');
+            stop(timeAdwin);
+            stop(timeWait);
+            pause(0.5);
+            delete(fig);
+        end       
+    end
 
 % Main uipanel
 hpMain=uipanel('parent',hF,'units','pixels','backgroundcolor',cc,...
@@ -85,7 +145,6 @@ tTit.Position(3:4)=tTit.Extent(3:4);
 tTit.Position(1:2)=[5 hpMain.Position(4)-tTit.Position(4)];
 
 %%%%%%%%%%%%%%%% SETTINGS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 % Sequence File label
 tSeq=uicontrol(hpMain,'style','text','String','Sequence File:',...
     'units','pixels','fontsize',10,'backgroundcolor',cc);
@@ -192,7 +251,6 @@ tWait.Position(2)=tblWait.Position(2);
     end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RUN CYCLE %%%%%%%%%%%%%%%%%%%%%%
-
 % Button to run the cycle
 bRun=uicontrol(hpMain,'style','pushbutton','String','Run Cycle',...
     'backgroundcolor',[152 251 152]/255,'FontSize',10,'units','pixels',...
@@ -200,7 +258,6 @@ bRun=uicontrol(hpMain,'style','pushbutton','String','Run Cycle',...
 bRun.Position(3:4)=[130 30];
 bRun.Position(1:2)=[5 tblWait.Position(2)-bRun.Position(4)-5];
 bRun.Callback=@bRunCB;
-
 
 % Checkbox for repeat cycle
 cRpt=uicontrol(hpMain,'style','checkbox','string','Repeat',...
@@ -215,11 +272,8 @@ cRpt.Callback=@cRptCB;
                 'recompiles every iteration.']);
         else
             disp('Disabling sequence repeat.');
-        end
-        
+        end        
     end
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RUN LIST %%%%%%%%%%%%%%%%%%%%%%
 
 % Button run a list
@@ -291,7 +345,6 @@ bIterUp.Callback=@cbUp;
     end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% STOP  %%%%%%%%%%%%%%%%%%%%%%
-
 bStop=uicontrol(hpMain,'style','pushbutton','String','Stop',...
     'backgroundcolor','#FF5E13','FontSize',10,'units','pixels',...
     'fontweight','bold','enable','off');
@@ -299,10 +352,8 @@ bStop.Position(3:4)=[130 30];
 bStop.Position(1:2)=[5 bIter.Position(2)-bStop.Position(4)-5];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ABORT  %%%%%%%%%%%%%%%%%%%%%%
-
-
-ttStr=['Interrupts AdWIN and sends all digital and analog voltage outputs to their ' ...
-    'reset value.  DANGEROUS'];
+ttStr=['Interrupts AdWIN and sends all digital and analog voltage ' ...
+    'outputs to their reset value.  DANGEROUS'];
 bAbort=uicontrol(hpMain,'style','pushbutton','String','ABORT',...
     'backgroundcolor','r','FontSize',10,'units','pixels',...
     'fontweight','bold','Tooltip',ttStr);
@@ -360,7 +411,7 @@ pWaitBar = patch(axWaitBar,[0 0 0 0],[0 0 1 1],...
 % timing based on the results of the sequence compliation.
 
 % The adwin progress timer object
-timeAdwin=timer('Name','AdwinProgressTimer','ExecutionMode','FixedSpacing',...
+timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
     'TimerFcn',@updateAdwinBar,'StartFcn',@sAdwin,'Period',.1);
 
 % Function to run when the adwin starts the sequence.
@@ -409,7 +460,7 @@ timeAdwin=timer('Name','AdwinProgressTimer','ExecutionMode','FixedSpacing',...
 % system to sufficiently safe levels.
 
 % The wait timer object
-timeWait=timer('Name','InterCycleWaitTimer','ExecutionMode','FixedSpacing',...
+timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
     'TimerFcn',@updateWaitBar,'startdelay',0,'period',.1,...
     'StartFcn',@startWait,'StopFcn',@stopWait);
 
@@ -449,7 +500,6 @@ timeWait=timer('Name','InterCycleWaitTimer','ExecutionMode','FixedSpacing',...
         end
     end
 
-
 %% AdWin Callbacks
 % This section of the code defines the callbacks for running the sequencer.
 %  It is separated by a different section in order to visually separate
@@ -457,8 +507,7 @@ timeWait=timer('Name','InterCycleWaitTimer','ExecutionMode','FixedSpacing',...
 
 % Run button callback.
     function bRunCB(~,~)    
-        doDebug=1;
-        
+        doDebug=1;        
         
         % Initialize the sequence if seqdata is not defined
         % Should this just happen every single time?
@@ -469,9 +518,7 @@ timeWait=timer('Name','InterCycleWaitTimer','ExecutionMode','FixedSpacing',...
         % Am I allowed to run the sequene?
         if ~safeToRun
            return 
-        end        
-        
-
+        end    
         
         disp([datestr(now,13) ' Running the cycle']);  
         fh = str2func(erase(eSeq.String,'@'));           
@@ -497,10 +544,9 @@ timeWait=timer('Name','InterCycleWaitTimer','ExecutionMode','FixedSpacing',...
             load_sequence();                % load the sequence onto adwin
         end        
         tC2=now;                         % compile end time
-        buildTime=(tC2-tC1)*(24*60*60);   % Build time in seconds      
+        buildTime=(tC2-tC1)*(24*60*60);   % Build time in seconds   
         
-        
-        % Display results
+        % Display compiling results
         disp(' ');
         disp('     Completed compiling! (did I actually work?)');
         disp(['     Build Time        : ' num2str(round(buildTime,2))]);
@@ -510,10 +556,7 @@ timeWait=timer('Name','InterCycleWaitTimer','ExecutionMode','FixedSpacing',...
 
         % Update progress bars
         start(timeAdwin);
-
-        
-        % Begin various timers
-        
+               
         % Seqdata history
         
         % update flag monitor
@@ -523,8 +566,7 @@ timeWait=timer('Name','InterCycleWaitTimer','ExecutionMode','FixedSpacing',...
     end
     
     function out=safeToRun
-        out=0;
-        
+        out=0;        
         % Check if the function provided is valid.
         fh = str2func(erase(eSeq.String,'@'));           
         nfo = functions(fh);       
@@ -534,25 +576,20 @@ timeWait=timer('Name','InterCycleWaitTimer','ExecutionMode','FixedSpacing',...
                 'sequence function does not exist in the MATLAB ' ...
                 'path. ' newline ' Proper formatting : @YOURFUNCTION']);
             return;
-        end    
-           
+        end  
         % Is the sequence already running?        
         if isequal(timeAdwin.Running ,'on')
            warning('The sequence is already running you dummy!');
            return;
-        end
-        
+        end        
         % Is the intercycle wait timer running?
         if isequal(timeWait.Running,'on')
            warning(['You cannot run another sequence while the wait ' ...
                'timer is engaged. Disable to wait timer to proceed.']);
            return;
-        end
-        
+        end        
         out=1;
     end
-
-
 end
 
 

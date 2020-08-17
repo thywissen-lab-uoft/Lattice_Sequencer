@@ -414,6 +414,15 @@ timeWait=timer('Name','InterCycleWaitTimer','ExecutionMode','FixedSpacing',...
             disp('Inter cycle wait complete.');
             stop(timeWait);    
             pWaitBar.XData = [0 1 1 0];    
+            
+            % Repeat the sequence if necessary
+            if cRpt.Value
+               disp('Repeating the sequence.');
+               bRunCB; % Should probably change some of these fucntion calls
+            end
+            
+            
+            
         end
     end
 
@@ -427,7 +436,6 @@ timeWait=timer('Name','InterCycleWaitTimer','ExecutionMode','FixedSpacing',...
     function bRunCB(~,~)    
         doDebug=1;
         
-        disp([datestr(now,13) ' Running the cycle']);
         
         % Initialize the sequence if seqdata is not defined
         % Should this just happen every single time?
@@ -439,6 +447,22 @@ timeWait=timer('Name','InterCycleWaitTimer','ExecutionMode','FixedSpacing',...
         if ~safeToRun
            return 
         end        
+        
+        % Is the sequence already running?
+        
+        if isequal(timeAdwin.Running ,'on')
+           warning('The sequence is already running you dummy!');
+           return;
+        end
+        
+        % Is the intercycle wait timer running?
+        if isequal(timeWait.Running,'on')
+           warning(['You cannot run another sequence while the wait ' ...
+               'timer is engaged. Disable to wait timer to proceed.']);
+           return;
+        end
+        
+        disp([datestr(now,13) ' Running the cycle']);  
         fh = str2func(erase(eSeq.String,'@'));           
 
         % Compile the code
@@ -486,8 +510,6 @@ timeWait=timer('Name','InterCycleWaitTimer','ExecutionMode','FixedSpacing',...
         % create output file
 
     end
-
-
     
     function out=safeToRun
         out=0;

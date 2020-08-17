@@ -182,9 +182,12 @@ tWait.Position(2)=tblWait.Position(2);
 % Callback for enabling/disabling the wait timer.
     function cWaitCB(cBox,~)        
         if cBox.Value
-            tblWait.Enable='on';    % Enable wait time table
+            disp('Enabling intercycle wait timer.');
+            tblWait.Enable='on';    % Enable wait time table            
         else
+            disp('Disabling intercycle wait timer.');
             tblWait.Enable='off';   % Disable wait time table
+            stop(timeWait);
         end
     end
 
@@ -204,6 +207,18 @@ cRpt=uicontrol(hpMain,'style','checkbox','string','Repeat',...
     'backgroundcolor',cc,'Fontsize',8,'units','pixels');
 cRpt.Position(3:4)=[100 cRpt.Extent(4)];
 cRpt.Position(1:2)=[10+bRun.Position(3) bRun.Position(2)];
+cRpt.Callback=@cRptCB;
+
+    function cRptCB(c,~)
+        if c.Value
+            disp(['Enabling sequence repeat. Reminder : The sequence ' ...
+                'recompiles every iteration.']);
+        else
+            disp('Disabling sequence repeat.');
+        end
+        
+    end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RUN LIST %%%%%%%%%%%%%%%%%%%%%%
 
@@ -377,6 +392,12 @@ timeAdwin=timer('Name','AdwinProgressTimer','ExecutionMode','FixedSpacing',...
            pAdWinBar.XData = [0 1 1 0];    
            if cWait.Value
                start(timeWait);
+           else
+            % Repeat the sequence if necessary
+            if cRpt.Value
+                disp('Repeating the sequence.');
+                bRunCB; % Should probably change some of these fucntion calls
+            end               
            end
         end
     end
@@ -389,15 +410,28 @@ timeAdwin=timer('Name','AdwinProgressTimer','ExecutionMode','FixedSpacing',...
 
 % The wait timer object
 timeWait=timer('Name','InterCycleWaitTimer','ExecutionMode','FixedSpacing',...
-    'TimerFcn',@updateWaitBar,'startdelay',0,'period',.1,'StartFcn',@sWait);
+    'TimerFcn',@updateWaitBar,'startdelay',0,'period',.1,...
+    'StartFcn',@startWait,'StopFcn',@stopWait);
 
-    function sWait(~,~)
+    function startWait(~,~)
         disp(['Starting the wait timer ' ...
             num2str(tblWait.Data,'%.2f') ' seconds.']);       
         
         % Give the wait timer a new start
         timeWait.UserData=now;         
         % Note that the function now is days since date (January 0, 0000)
+    end
+
+    function stopWait(~,~)
+        disp('Inter cycle wait complete.');
+        pWaitBar.XData = [0 1 1 0]; 
+        drawnow;
+        
+        % Repeat the sequence if necessary
+        if cRpt.Value
+           disp('Repeating the sequence.');
+           bRunCB; % Should probably change some of these fucntion calls
+        end  
     end
 
     function updateWaitBar(~,~)
@@ -411,18 +445,7 @@ timeWait=timer('Name','InterCycleWaitTimer','ExecutionMode','FixedSpacing',...
         
         % Stop the timer.
         if dT>dT0
-            disp('Inter cycle wait complete.');
-            stop(timeWait);    
-            pWaitBar.XData = [0 1 1 0];    
-            
-            % Repeat the sequence if necessary
-            if cRpt.Value
-               disp('Repeating the sequence.');
-               bRunCB; % Should probably change some of these fucntion calls
-            end
-            
-            
-            
+            stop(timeWait);  
         end
     end
 
@@ -448,19 +471,7 @@ timeWait=timer('Name','InterCycleWaitTimer','ExecutionMode','FixedSpacing',...
            return 
         end        
         
-        % Is the sequence already running?
-        
-        if isequal(timeAdwin.Running ,'on')
-           warning('The sequence is already running you dummy!');
-           return;
-        end
-        
-        % Is the intercycle wait timer running?
-        if isequal(timeWait.Running,'on')
-           warning(['You cannot run another sequence while the wait ' ...
-               'timer is engaged. Disable to wait timer to proceed.']);
-           return;
-        end
+
         
         disp([datestr(now,13) ' Running the cycle']);  
         fh = str2func(erase(eSeq.String,'@'));           
@@ -525,20 +536,17 @@ timeWait=timer('Name','InterCycleWaitTimer','ExecutionMode','FixedSpacing',...
             return;
         end    
            
-        % Check if the experiment is already running.
-        isRun=0;
-        if isRun
-           warning(['The experiment is still running you dummy']);
-           return
+        % Is the sequence already running?        
+        if isequal(timeAdwin.Running ,'on')
+           warning('The sequence is already running you dummy!');
+           return;
         end
         
-        % Check if the wait timer is already running.
-        isWait=0;
-        if isWait
-           warning(['The sequencer is waiting before another cycle can ' ...
-               'be run. To override please the wait, please use the ' ...
-               'appropriate GUI buttons.']);
-           return
+        % Is the intercycle wait timer running?
+        if isequal(timeWait.Running,'on')
+           warning(['You cannot run another sequence while the wait ' ...
+               'timer is engaged. Disable to wait timer to proceed.']);
+           return;
         end
         
         out=1;

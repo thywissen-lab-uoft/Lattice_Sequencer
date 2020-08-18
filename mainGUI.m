@@ -37,7 +37,10 @@ global seqdata;
 %% Delete old timer objects
 % The progress of the sequence is tracked using some MATLAB timers. Delete
 % these timers so that MATLAB doesn't get confused and make a whole bunch
-% of timer instances.  You may check this by timerfindall
+% of timer instances.  CF's understanding of how timers are saved in 
+% different MATLAB workspaces may be a little dated.  
+%
+% You may check existing timer instances with timerfindall. 
 
 % Names of timers, defined here so that the constructor uses the same name
 % to make the timers later
@@ -50,16 +53,14 @@ delete(timerfind('Name',waitTimeName));
 %% Initialize Graphics
 
 %%%%%%%%%%%%%%% Initialize Graphics %%%%%%%%%%%%%%%%%
-fName='Lattice Sequencer';
-
-% Acquire the figure handle for the plottter in case you already opened it.
-windowhnds = get(0,'Children');
+figName='Lattice Sequencer';
 
 % Close any figure with the same name. Only one instance of mainGUI may be
 % open at a time
-for i = 1:length(windowhnds)
-    if isequal(windowhnds(i).Name,fName)        
-       close(fName); 
+figs = get(groot,'Children');
+for i = 1:length(figs)
+    if isequal(figs(i).Name,figName)        
+       close(figName); 
     end
 end
 
@@ -71,13 +72,14 @@ h=270;
 %%%%%%%%%%%%%%%% INITIALIZE FIGURE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Initialize the figure graphics objects
-hF=figure('toolbar','none','Name',fName,'color',cc,...
+hF=figure('toolbar','none','Name',figName,'color',cc,...
     'NumberTitle','off','MenuBar','none','resize','off');
 clf
 hF.Position(3:4)=[w h];
 hF.CloseRequestFcn=@closeFig;
 
-% Callback for a close request function
+% Callback for a close request function. The close request function handles
+% whether the adwin is running or other potential timer issues.
     function closeFig(fig,~)
        disp('Requesting to close the sequencer GUI.'); 
        
@@ -435,6 +437,7 @@ timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
            stop(timeAdwin);
            disp('Sequence complete.');
            pAdWinBar.XData = [0 1 1 0];    
+           drawnow;
            if cWait.Value
                start(timeWait);
            else

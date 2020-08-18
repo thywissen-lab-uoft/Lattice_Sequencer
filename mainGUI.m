@@ -66,7 +66,7 @@ end
 % Figure color and size settings
 cc='w';
 w=350;
-h=300;
+h=270;
 
 %%%%%%%%%%%%%%%% INITIALIZE FIGURE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -101,7 +101,8 @@ hF.CloseRequestFcn=@closeFig;
            tt.Position=[0.05 0.5 0.9 0.35];
            
            b1=uicontrol('style','pushbutton','string','yes','parent',f2,...
-               'fontsize',10','units','normalized','backgroundcolor','w');
+               'fontsize',10','units','normalized','backgroundcolor',...
+               [253 106 2]/255);
            b1.Position=[.25 .15 .2 .2];
            b1.Callback=@doClose;
   
@@ -344,13 +345,6 @@ bIterUp.Callback=@cbUp;
         drawnow;
     end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% STOP  %%%%%%%%%%%%%%%%%%%%%%
-bStop=uicontrol(hpMain,'style','pushbutton','String','Stop',...
-    'backgroundcolor','#FF5E13','FontSize',10,'units','pixels',...
-    'fontweight','bold','enable','off');
-bStop.Position(3:4)=[130 30];
-bStop.Position(1:2)=[5 bIter.Position(2)-bStop.Position(4)-5];
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ABORT  %%%%%%%%%%%%%%%%%%%%%%
 ttStr=['Interrupts AdWIN and sends all digital and analog voltage ' ...
     'outputs to their reset value.  DANGEROUS'];
@@ -358,7 +352,7 @@ bAbort=uicontrol(hpMain,'style','pushbutton','String','ABORT',...
     'backgroundcolor','r','FontSize',10,'units','pixels',...
     'fontweight','bold','Tooltip',ttStr);
 bAbort.Position(3:4)=[80 30];
-bAbort.Position(1:2)=[5 bStop.Position(2)-bAbort.Position(4)-5];
+bAbort.Position(1:2)=[5 bIter.Position(2)-bAbort.Position(4)-5];
 bAbort.Position(1:2)=[hpMain.Position(3)-bAbort.Position(3)-5 ...
     hpMain.Position(4)-bAbort.Position(4)-5];
 
@@ -400,7 +394,7 @@ pWaitBar = patch(axWaitBar,[0 0 0 0],[0 0 1 1],...
     waitarcolor);
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TIMERS  %%%%%%%%%%%%%%%%%%%%%%
+%% TIMERS
 
 % adwin_process_timer = timer('TimerFcn',fhandle,'StartDelay',round(seqdata.sequencetime*1000)/1000,...
 %     'Name','adwin_proces_timerCB');

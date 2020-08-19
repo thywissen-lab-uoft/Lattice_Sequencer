@@ -264,6 +264,7 @@ bRun=uicontrol(hpMain,'style','pushbutton','String','Run Cycle',...
 bRun.Position(3:4)=[130 30];
 bRun.Position(1:2)=[5 tblWait.Position(2)-bRun.Position(4)-5];
 bRun.Callback=@bRunCB;
+bRun.Tooltip='Compile and run the currently selected sequence.';
 
 % Checkbox for repeat cycle
 cRpt=uicontrol(hpMain,'style','checkbox','string','Repeat',...
@@ -271,6 +272,7 @@ cRpt=uicontrol(hpMain,'style','checkbox','string','Repeat',...
 cRpt.Position(3:4)=[100 cRpt.Extent(4)];
 cRpt.Position(1:2)=[10+bRun.Position(3) bRun.Position(2)];
 cRpt.Callback=@cRptCB;
+cRpt.Tooltip='Enable or disable automatic repitition of the sequence.';
 
     function cRptCB(c,~)
         if c.Value
@@ -350,20 +352,35 @@ bIterUp.Callback=@cbUp;
         drawnow;
     end
 
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ABORT  %%%%%%%%%%%%%%%%%%%%%%
 ttStr=['Interrupts AdWIN and sends all digital and analog voltage ' ...
     'outputs to their reset value.  DANGEROUS'];
-bAbort=uicontrol(hpMain,'style','pushbutton','String','ABORT',...
+bAbort=uicontrol(hpMain,'style','pushbutton','String','abort',...
     'backgroundcolor','r','FontSize',10,'units','pixels',...
     'fontweight','bold','Tooltip',ttStr);
-bAbort.Position(3:4)=[80 30];
-bAbort.Position(1:2)=[5 bIter.Position(2)-bAbort.Position(4)-5];
+bAbort.Position(3:4)=[60 25];
 bAbort.Position(1:2)=[hpMain.Position(3)-bAbort.Position(3)-5 ...
     hpMain.Position(4)-bAbort.Position(4)-5];
 
-jButton= findjobj(bAbort);
-set(jButton,'Enabled',false);
-set(jButton,'ToolTipText',ttStr);
+jbAbort= findjobj(bAbort);
+set(jbAbort,'Enabled',false);
+set(jbAbort,'ToolTipText',ttStr);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RESET  %%%%%%%%%%%%%%%%%%%%%%
+ttStr=['Reinitialize channels and reset Adwin outputs ' ...
+    'to default values.'];
+bReset=uicontrol(hpMain,'style','pushbutton','String','reset',...
+    'backgroundcolor',[255,165,0]/255,'FontSize',10,'units','pixels',...
+    'fontweight','bold','Tooltip',ttStr);
+bReset.Position(3:4)=[60 25];
+bReset.Position(1:2)=[bAbort.Position(1)-bReset.Position(3) ...
+    bAbort.Position(2)];
+
+jbReset= findjobj(bReset);
+set(jbReset,'Enabled',true);
+set(jbReset,'ToolTipText',ttStr);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% WAIT BARS  %%%%%%%%%%%%%%%%%%%%%%
 % Graphical objects for a timer bar, this will be used for both the adwin
@@ -411,7 +428,8 @@ timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
         % Notify the user
         disp(['Sequence started. ' num2str(seqdata.sequencetime,'%.2f') ...
             ' seconds run time.']);
-                
+            set(jbAbort,'Enabled',true);
+            set(jbReset,'Enabled',false);
         % Give the progress timer a new start time as userdata
         timeAdwin.UserData=now;        
         % Note that the function now is days since date (January 0, 0000)        
@@ -436,6 +454,9 @@ timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
             disp('Sequence complete.');      % Message the user
             pAdWinBar.XData = [0 1 1 0];     % Fill out the bar
             drawnow;                         % Update graphics
+            set(jbAbort,'Enabled',false);
+            set(jbReset,'Enabled',true);
+
             if cWait.Value
                start(timeWait);              % Start wait timer if needed
             else

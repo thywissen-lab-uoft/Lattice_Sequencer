@@ -1,5 +1,8 @@
 function mainGUI
-% This is the primary GUI for running the lattice experiment.
+% This is the primary GUI for running the lattice experiment. You should
+% be able to run the entirety of the experiment from the graphics interface
+% here.  However, edits to the actual sequence need to be done in the code.
+% Please refer to the relevant sequence files to edit those.
 %
 % Author      : CJ Fujiwara
 % Last Edited : 2020/08
@@ -371,38 +374,31 @@ adwinbarcolor=[0.67578 1 0.18359];
 axAdWinBar=axes('parent',hpMain,'units','pixels','XTick',[],...
     'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
 axAdWinBar.Position=[10 10 hpMain.Position(3)-20 20];
-pAdWinBar = patch(axAdWinBar,[0 0 0 0],[0 0 1 1],...
-    adwinbarcolor);
-tAdWinTime1 = text(0,0,'0.00 s','parent',axAdWinBar,'fontsize',10,'horizontalalignment',...
-    'left','units','pixels','verticalalignment','bottom');
+pAdWinBar = patch(axAdWinBar,[0 0 0 0],[0 0 1 1], adwinbarcolor);
+tAdWinTime1 = text(0,0,'0.00 s','parent',axAdWinBar,'fontsize',10,...
+    'horizontalalignment','left','units','pixels','verticalalignment','bottom');
 tAdWinTime1.Position=[5 21];
-tAdWinTime2 = text(0,0,'30.00 s','parent',axAdWinBar,'fontsize',10,'horizontalalignment',...
-    'right','units','pixels','verticalalignment','bottom');
+tAdWinTime2 = text(0,0,'30.00 s','parent',axAdWinBar,'fontsize',10,...
+    'horizontalalignment','right','units','pixels','verticalalignment','bottom');
 tAdWinTime2.Position=[axAdWinBar.Position(3) 21];
-tAdWinLabel=text(.5,1.05,'adwin progress','fontsize',10,'horizontalalignment','center',...
-    'verticalalignment','bottom','fontweight','bold');
-
+tAdWinLabel=text(.5,1.05,'adwin progress','fontsize',10,...
+    'horizontalalignment','center','verticalalignment','bottom','fontweight','bold');
 
 
 % Graphical bar and commands for the wait bar.
-waitarcolor=[106, 163, 241 ]/255;
+waitbarcolor=[106, 163, 241 ]/255;
 axWaitBar=axes('parent',hpMain,'units','pixels','XTick',[],...
     'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
 axWaitBar.Position(1)=tWait.Position(1)+tWait.Position(3)+5;
 axWaitBar.Position(4)=tblWait.Position(4);
 axWaitBar.Position(3)=hpMain.Position(3)-axWaitBar.Position(1)-10;
 axWaitBar.Position(2)=tblWait.Position(2);
-pWaitBar = patch(axWaitBar,[0 0 0 0],[0 0 1 1],...
-    waitarcolor);
+pWaitBar = patch(axWaitBar,[0 0 0 0],[0 0 1 1],waitbarcolor);
 
 
 %% TIMERS
-
-% adwin_process_timer = timer('TimerFcn',fhandle,'StartDelay',round(seqdata.sequencetime*1000)/1000,...
-%     'Name','adwin_proces_timerCB');
-
 %%%%% Adwin progress timer %%%
-% After the sequence is run, this timer keeps tracks of the AdWins
+% After the sequence is run, this timer keeps tracks of the Adwin's
 % progress. It doesn't have direct access to the Adwin so it assumes the
 % timing based on the results of the sequence compliation.
 
@@ -412,16 +408,18 @@ timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
 
 % Function to run when the adwin starts the sequence.
     function sAdwin(~,~)
-        % Display some user notifications
-        disp('Sequence started.');
+        % Notify the user
+        disp(['Sequence started. ' num2str(seqdata.sequencetime,'%.2f') ...
+            ' seconds run time.']);
                 
-        % Give the progress timer a new start
+        % Give the progress timer a new start time as userdata
         timeAdwin.UserData=now;        
-        % Note that the function now is days since date (January 0, 0000)
-        
+        % Note that the function now is days since date (January 0, 0000)        
     end
 
+% Timer callback functions updates the graphics
     function updateAdwinBar(~,~)
+        % Calculate the time transpired so far
         tstart=timeAdwin.UserData;  % Sequence start time
         dT0=seqdata.sequencetime;   % Duration of sequence       
         dT=(now-tstart)*24*60*60;   % Current duration in sec.
@@ -434,19 +432,19 @@ timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
         
         % Stop the timer if enough time has elapsed
         if dT>dT0
-           stop(timeAdwin);
-           disp('Sequence complete.');
-           pAdWinBar.XData = [0 1 1 0];    
-           drawnow;
-           if cWait.Value
-               start(timeWait);
-           else
-            % Repeat the sequence if necessary
-            if cRpt.Value
-                disp('Repeating the sequence.');
-                bRunCB; % Should probably change some of these fucntion calls
-            end               
-           end
+            stop(timeAdwin);                 % Stop the adwin timer
+            disp('Sequence complete.');      % Message the user
+            pAdWinBar.XData = [0 1 1 0];     % Fill out the bar
+            drawnow;                         % Update graphics
+            if cWait.Value
+               start(timeWait);              % Start wait timer if needed
+            else
+                % Repeat the sequence if necessary
+                if cRpt.Value
+                    disp('Repeating the sequence.');
+                    bRunCB; 
+                end               
+            end
         end
     end
 
@@ -461,20 +459,22 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
     'TimerFcn',@updateWaitBar,'startdelay',0,'period',.1,...
     'StartFcn',@startWait,'StopFcn',@stopWait);
 
+% Function to run when the wait timer begins
     function startWait(~,~)
-        disp(['Starting the wait timer ' ...
-            num2str(tblWait.Data,'%.2f') ' seconds.']);       
+        % Notify the user
+        disp(['Starting the wait timer. ' ...
+            num2str(tblWait.Data,'%.2f') ' seconds wait time.']);       
         
-        % Give the wait timer a new start
+        % Give the wait timer a new start as userdata
         timeWait.UserData=now;         
         % Note that the function now is days since date (January 0, 0000)
     end
 
+% Function to run when the wait timer is complete.
     function stopWait(~,~)
-        disp('Inter cycle wait complete.');
-        pWaitBar.XData = [0 1 1 0]; 
-        drawnow;
-        
+        disp('Inter cycle wait complete.'); % Notify the user
+        pWaitBar.XData = [0 1 1 0];         % Fill out the bar
+        drawnow;                            % Update graphics        
         % Repeat the sequence if necessary
         if cRpt.Value
            disp('Repeating the sequence.');
@@ -482,6 +482,7 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         end  
     end
 
+% Timer callback fucntion updates the wait bar graphics
     function updateWaitBar(~,~)
         tstart=timeWait.UserData;       % When the wait started
         dT0=tblWait.Data;               % Duration of wait        

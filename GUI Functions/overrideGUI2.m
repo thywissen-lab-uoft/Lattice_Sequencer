@@ -1,4 +1,5 @@
 function hFGUI=overrideGUI2
+
 % overrrideGUI
 %
 % Author : CJ Fujiwara
@@ -120,7 +121,7 @@ t=uicontrol('parent',Dlbl,'style','text','units','pixels',...
 t.Position(3:4)=t.Extent(3:4);
 t.Position(1:2)=[245 0];
 
-tic
+
 % Populate the digital channels
 for kk=1:length(Dchs)
     % Grab the color
@@ -132,8 +133,7 @@ for kk=1:length(Dchs)
         'highlightcolor',bc,'borderwidth',1);
     hpDs(kk).Position(3:4)=[w1 h+1];
     hpDs(kk).Position(1:2)=[0 hpDS.Position(4)-kk*h];    
-    hpDs(kk).UserData.Channel=Dchs(kk);
-    
+    hpDs(kk).UserData.Channel=Dchs(kk);    
     
     % Channel label
     t=uicontrol('parent',hpDs(kk),'style','text','units','pixels',...
@@ -162,7 +162,7 @@ for kk=1:length(Dchs)
     ckValue.Value=real(Dchs(kk).resetvalue);
     hpDs(kk).UserData.ckValue=ckValue;    
 end
-toc
+
 
 % enable or disable a digital channel override
     function overCBD(a,~,ind)
@@ -187,7 +187,7 @@ hDsl.Position(1:2)=[hpD.Position(3)-hDsl.Position(3) 0];
         hpDS.Position(2)=hpD.Position(4)-hpDS.Position(4)-hDsl.Value;   
     end
 
-toc
+
 
 %%%%%%%%%%%%%%%%%%%%% ANALOG CHANNEL GRAPHICS %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -206,7 +206,7 @@ hpAS.Position(2)=hpA.Position(4)-hpAS.Position(4);
 % button to output analog channels
 bAoutput=uicontrol('parent',hpMain,'style','pushbutton',...
     'backgroundcolor','w','fontsize',10,'units','pixels',...
-    'foregroundcolor','k')
+    'foregroundcolor','k');
 bAoutput.String='output analog channels';
 bAoutput.Position(1)=hpA.Position(1)+5;
 bAoutput.Position(3:4)=[150 25];
@@ -326,6 +326,7 @@ for kk=1:length(Achs)
     tVolt.Position(2)=2;
 end
 
+
 % enable or disable a analog channel override
     function overCBA(a,~,ind)
         if a.Value
@@ -351,4 +352,6 @@ hAsl.Position(1:2)=[hpA.Position(3)-hAsl.Position(3) 0];
     function AsliderCB(~,~)
         hpAS.Position(2)=hpA.Position(4)-hpAS.Position(4)-hAsl.Value;   
     end
+
+
 end

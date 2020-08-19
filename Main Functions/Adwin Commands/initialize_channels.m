@@ -39,6 +39,9 @@ for i = 1:length(seqdata.digchannels)
 end
 
 % digital channel names
+
+
+seqdata.digchannels(1).name = 'K D1 GM Shutter'; % 1: ON, 0: OFF
 seqdata.digchannels(2).name = 'K Trap Shutter'; % 1: ON, 0: OFF
 seqdata.digchannels(3).name = 'K Repump Shutter';% all repump power shutter, different from 0th order shutter
 seqdata.digchannels(4).name = 'Rb Trap Shutter'; %1: ON, 0: OFF

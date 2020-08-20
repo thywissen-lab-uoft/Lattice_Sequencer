@@ -202,8 +202,7 @@ curtime = timein;
     seqdata.flags.compress_QP = 1; % compress QP after transport
     seqdata.flags.RF_evap_stages = [0, 0, 0]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
     
-    %RHYS - Here be parameters. 
-    
+    %RHYS - Here be parameters.     
     rf_evap_time_scale = [1.0 1.5];[1.0 1.2];[0.8 1.2];[1.0 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
     RF_1B_Final_Frequency = 0.85;
     seqdata.flags.do_plug = 0;   % ramp on plug after transfer to window
@@ -310,12 +309,14 @@ curtime = timein;
 %     addOutputParam('D1_DP_FM',D1_FM);
 
 %% Make sure dipole and lattice traps are off and adjust XDT piezo mirrors
-%% and initialize repump imaging.
+% and initialize repump imaging.
 
     %RHYS - Initialization settings for a lot of channels. But, the 'reset
     %values' should already be set in initialize_channels, and, I think,
     %set at the end of the sequence. So, these should just be incorporated
     %into that function properly instead of defined here. 
+    
+    % Perhaps to be safe, we just have another call to @Reset_Channels?
 
     %Initialize modulation ramp to off.
     setAnalogChannel(calctime(curtime,0),'Modulation Ramp',0);

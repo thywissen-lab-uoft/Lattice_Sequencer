@@ -37,6 +37,12 @@ function mainGUI
 LatticeSequencerInitialize();
 global seqdata;
 
+global adwin_booted;
+global adwinprocessnum;
+global adwin_processor_speed;
+global adwin_connected;
+global adwin_process_path;
+
 %% Delete old timer objects
 % The progress of the sequence is tracked using some MATLAB timers. Delete
 % these timers so that MATLAB doesn't get confused and make a whole bunch
@@ -412,6 +418,7 @@ bAbort=uicontrol(hpMain,'style','pushbutton','String','abort',...
 bAbort.Position(3:4)=[60 25];
 bAbort.Position(1:2)=[hpMain.Position(3)-bAbort.Position(3)-5 ...
     hpMain.Position(4)-bAbort.Position(4)-5];
+bAbort.Callback=@bAbortCB;
 
 jbAbort= findjobj(bAbort);
 set(jbAbort,'Enabled',false);
@@ -426,6 +433,7 @@ bReset=uicontrol(hpMain,'style','pushbutton','String','reset',...
 bReset.Position(3:4)=[60 25];
 bReset.Position(1:2)=[bAbort.Position(1)-bReset.Position(3) ...
     bAbort.Position(2)];
+bReset.Callback=@bResetCB;
 
 jbReset= findjobj(bReset);
 set(jbReset,'Enabled',true);
@@ -580,7 +588,6 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
 
 % Run button callback.
     function bRunCB(~,~)    
-        doDebug=1;        
         
         % Initialize the sequence if seqdata is not defined
         % Should this just happen every single time?
@@ -613,8 +620,10 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         % Finish compiling the code
         fh(0);                          % run sequence function                  
         calc_sequence();                % convert seqdata for AdWin        
-        if ~doDebug
+        try
             load_sequence();                % load the sequence onto adwin
+        catch exception
+            warning(exception.message);
         end        
         tC2=now;                         % compile end time
         buildTime=(tC2-tC1)*(24*60*60);   % Build time in seconds   
@@ -663,6 +672,37 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         end        
         out=1;
     end
+
+% Reset Button callback
+    function bResetCB(~,~)        
+        disp('Reseting the adwin outputs to their default values');
+
+        LatticeSequencerInitialize();
+        fh=@reset_sequence;
+
+        fh(0);
+        calc_sequence();
+
+        try
+            load_sequence(); 
+            pause(0.1);
+            disp('The Adwin should have resetted the values');
+        end
+
+    end
+
+
+    function bAbortCB(~,~)       
+        disp('Aborting adwin and then resetting!!! Good luck');
+        try
+            Stop_Process(adwinprocessnum);
+            disp('Sequence should be stopped');
+            bResetCB;      
+        catch exception
+            warning(exception.message)            
+        end
+
+        end
 end
 
 

@@ -70,7 +70,7 @@ end
 % Figure color and size settings
 cc='w';
 w=350;
-h=270;
+h=350;
 
 %%%%%%%%%%%%%%%% INITIALIZE FIGURE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -86,18 +86,21 @@ hF.CloseRequestFcn=@closeFig;
     function closeFig(fig,~)
        disp('Requesting to close the sequencer GUI.'); 
        
-       if ~isempty(timerfind('Name',adwinTimeName)) && ...
-               isequal(timeAdwin.Running,'on')
-           tt=['The sequence is still running.  Are you sure you want ' ...
-               'to close the GUI? The sequence data has already been ' ...
-               'sent to the Adwin and the experiment will still be ' ...
+       if (~isempty(timerfind('Name',adwinTimeName)) && ...
+               isequal(timeAdwin.Running,'on')) || ...
+               (cRpt.Value && isequal(timeWait.Running,'on'))
+           tt=['The sequence is still running or repitions are engaged '...
+               'with the wait timer running. '...
+               'Are you sure you want to close the GUI? ' ... 
+               'If the sequence data has already been ' ...
+               'sent to the Adwin, the experiment will still be ' ...
                'running.'];
            tit='Sequence is still running!';
            
            f2=figure;
            set(f2,'Name',tit,'color','w','NumberTitle','off',...
                'windowstyle','modal','units','pixels','resize','off');
-           f2.Position(3:4)=[400 140];
+           f2.Position(3:4)=[400 200];
            f2.Position(1:2)=fig.Position(1:2)+[-50 100];
            
            tt=uicontrol('style','text','String',tt,'parent',f2,...
@@ -221,40 +224,86 @@ bOver.Callback=@bOverCB;
 
 %%%%% Wait Time Interface %%%%
 
-% Text label for inter cycle wait time
-cWait=uicontrol(hpMain,'style','checkbox','string','inter cycle wait?',...
-    'fontsize',10,'units','pixels','backgroundcolor',cc,'value',1);
-cWait.Position(3:4)=cWait.Extent(3:4)+[20 0];
-cWait.Position(1:2)=[5 eSeq.Position(2)-cWait.Position(4)-5];
-cWait.Callback=@cWaitCB;
+
+% Button group for selecting wait mode. The user data holds the selected
+% button
+bgWait = uibuttongroup('Parent',hpMain,'units','pixels','Title','wait mode',...
+    'backgroundcolor',cc,'UserData',0);
+bgWait.Position(3:4)=[w 90];
+bgWait.Position(1:2)=[0 eSeq.Position(2)-bgWait.Position(4)-5];
+bgWait.SelectionChangedFcn=@waitCB;
+              
+% Create three radio buttons in the button group. The user data holds the
+% selected mode (0,1,2) --> (no wait, intercyle, target time)
+r1=uicontrol(bgWait,'Style','radiobutton', 'String','no wait',...
+    'Position',[5 50 100 20],'Backgroundcolor',cc,'UserData',0);  
+r2=uicontrol(bgWait,'Style','radiobutton','String','intercycle wait',...
+    'Position',[75 50 100 20],'Backgroundcolor',cc,'UserData',1);
+r3=uicontrol(bgWait,'Style','radiobutton','String','target time',...
+    'Position',[175 50 100 20],'Backgroundcolor',cc,'UserData',2);              
 
 % Table for storing value of wait time
-tblWait=uitable(hpMain,'RowName','','ColumnName','',...
+tblWait=uitable(bgWait,'RowName','','ColumnName','',...
     'Data',10,'ColumnWidth',{30},'ColumnEditable',true,...
-    'ColumnFormat',{'numeric'},'fontsize',8);
+    'ColumnFormat',{'numeric'},'fontsize',8,'Enable','off');
 tblWait.Position(3:4)=tblWait.Extent(3:4);
 tblWait.Position(4)=tblWait.Position(4);
-tblWait.Position(1:2)=[cWait.Position(1)+cWait.Position(3) ...
-    eSeq.Position(2)-tblWait.Position(4)-5];
+tblWait.Position(1:2)=[260 50];
 
 % Seconds label for the wait time.
-tWait=uicontrol(hpMain,'style','text','string','sec.',...
+tWait=uicontrol(bgWait,'style','text','string','seconds',...
     'fontsize',8,'units','pixels','backgroundcolor',cc);
 tWait.Position(3:4)=tWait.Extent(3:4);
-tWait.Position(1)=tblWait.Position(1)+tblWait.Position(3);
+tWait.Position(1)=tblWait.Position(1)+tblWait.Position(3)+2;
 tWait.Position(2)=tblWait.Position(2);
 
-% Callback for enabling/disabling the wait timer.
-    function cWaitCB(cBox,~)        
-        if cBox.Value
-            disp('Enabling intercycle wait timer.');
-            tblWait.Enable='on';    % Enable wait time table            
-        else
-            disp('Disabling intercycle wait timer.');
-            tblWait.Enable='off';   % Disable wait time table
-            stop(timeWait);
-        end
+    function waitCB(~,rbutton)        
+        switch rbutton.NewValue.UserData            
+            case 0 % no wait
+                disp('Disabling intercyle wait.');
+                bgWait.UserData=0;               
+                tblWait.Enable='off';
+                tWaitTime1.String='n/a';
+                tWaitTime2.String='n/a';
+                stop(timeWait);
+            case 1
+                disp(['Wait timer engaged. Inter-cycle wait time mode. ' ...
+                    ' This will be updated at end of next cycle.']);
+                bgWait.UserData=1;
+                tblWait.Enable='on';           
+                tWaitTime1.String='~ s';
+                tWaitTime2.String='~ s';
+            case 2
+                disp(['Wait timer engaged. Total sequence wait time mode. ' ...
+                    ' This will be updated at end of next cycle.']);
+                bgWait.UserData=2;
+                tblWait.Enable='on';
+                tWaitTime1.String='~ s';
+                tWaitTime2.String='~ s';
+        end        
     end
+
+% Axis object for plotting the wait bar
+waitbarcolor=[106, 163, 241 ]/255;
+axWaitBar=axes('parent',bgWait,'units','pixels','XTick',[],...
+    'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
+axWaitBar.Position(1:2)=[10 5];
+axWaitBar.Position(3:4)=[bgWait.Position(3)-20 tblWait.Position(4)];
+title('Wait Timer');
+% Plot the wait bar
+pWaitBar = patch(axWaitBar,[0 0 0 0],[0 0 1 1],waitbarcolor);
+
+% String labels for time end points
+tWaitTime1 = text(0,0,'0.00 s','parent',axWaitBar,'fontsize',10,...
+    'horizontalalignment','left','units','pixels','verticalalignment','bottom');
+tWaitTime1.Position=[5 24];
+tWaitTime2 = text(0,0,'10.00 s','parent',axWaitBar,'fontsize',10,...
+    'horizontalalignment','right','units','pixels','verticalalignment','bottom');
+tWaitTime2.Position=[axWaitBar.Position(3) 24];
+
+% Wait bar text label
+% tWaitLabel=text(.5,1.05,'Wait Timer','fontsize',10,...
+%     'horizontalalignment','center','verticalalignment','bottom','fontweight','bold');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RUN CYCLE %%%%%%%%%%%%%%%%%%%%%%
 % Button to run the cycle
@@ -262,7 +311,7 @@ bRun=uicontrol(hpMain,'style','pushbutton','String','Run Cycle',...
     'backgroundcolor',[152 251 152]/255,'FontSize',10,'units','pixels',...
     'fontweight','bold');
 bRun.Position(3:4)=[130 30];
-bRun.Position(1:2)=[5 tblWait.Position(2)-bRun.Position(4)-5];
+bRun.Position(1:2)=[5 140];
 bRun.Callback=@bRunCB;
 bRun.Tooltip='Compile and run the currently selected sequence.';
 
@@ -402,15 +451,6 @@ tAdWinLabel=text(.5,1.05,'adwin progress','fontsize',10,...
     'horizontalalignment','center','verticalalignment','bottom','fontweight','bold');
 
 
-% Graphical bar and commands for the wait bar.
-waitbarcolor=[106, 163, 241 ]/255;
-axWaitBar=axes('parent',hpMain,'units','pixels','XTick',[],...
-    'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
-axWaitBar.Position(1)=tWait.Position(1)+tWait.Position(3)+5;
-axWaitBar.Position(4)=tblWait.Position(4);
-axWaitBar.Position(3)=hpMain.Position(3)-axWaitBar.Position(1)-10;
-axWaitBar.Position(2)=tblWait.Position(2);
-pWaitBar = patch(axWaitBar,[0 0 0 0],[0 0 1 1],waitbarcolor);
 
 
 %% TIMERS
@@ -421,7 +461,7 @@ pWaitBar = patch(axWaitBar,[0 0 0 0],[0 0 1 1],waitbarcolor);
 
 % The adwin progress timer object
 timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
-    'TimerFcn',@updateAdwinBar,'StartFcn',@sAdwin,'Period',.1);
+    'TimerFcn',@updateAdwinBar,'StartFcn',@sAdwin,'Period',.05);
 
 % Function to run when the adwin starts the sequence.
     function sAdwin(~,~)
@@ -450,6 +490,7 @@ timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
         
         % Stop the timer if enough time has elapsed
         if dT>dT0
+            tAdWinTime1.String=[num2str(dT0,'%.2f') ' s'];
             stop(timeAdwin);                 % Stop the adwin timer
             disp('Sequence complete.');      % Message the user
             pAdWinBar.XData = [0 1 1 0];     % Fill out the bar
@@ -457,7 +498,7 @@ timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
             set(jbAbort,'Enabled',false);
             set(jbReset,'Enabled',true);
 
-            if cWait.Value
+            if bgWait.UserData
                start(timeWait);              % Start wait timer if needed
             else
                 % Repeat the sequence if necessary
@@ -469,6 +510,8 @@ timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
         end
     end
 
+
+
 %%%%% Intecycle wait timer %%%
 % After a seqeunce runs, we typically insert a mandatory wait time before
 % the sequence may run again.  This is because certain parts of the machine
@@ -477,17 +520,25 @@ timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
 
 % The wait timer object
 timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
-    'TimerFcn',@updateWaitBar,'startdelay',0,'period',.1,...
+    'TimerFcn',@updateWaitBar,'startdelay',0,'period',.05,...
     'StartFcn',@startWait,'StopFcn',@stopWait);
 
 % Function to run when the wait timer begins
     function startWait(~,~)
         % Notify the user
         disp(['Starting the wait timer. ' ...
-            num2str(tblWait.Data,'%.2f') ' seconds wait time.']);       
+            num2str(tblWait.Data,'%.2f') ' seconds wait time.']);     
+        
+        % Calculate the time to wait.
+        switch bgWait.UserData
+            case 1   
+                dT0=tblWait.Data;                    
+            case 2
+                dT0=tblWait.Data-seqdata.sequencetime;
+        end
         
         % Give the wait timer a new start as userdata
-        timeWait.UserData=now;         
+        timeWait.UserData=[now dT0];         
         % Note that the function now is days since date (January 0, 0000)
     end
 
@@ -505,17 +556,20 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
 
 % Timer callback fucntion updates the wait bar graphics
     function updateWaitBar(~,~)
-        tstart=timeWait.UserData;       % When the wait started
-        dT0=tblWait.Data;               % Duration of wait        
+        tstart=timeWait.UserData(1);    % When the wait started
+        dT0=timeWait.UserData(2);             % Time to wait        
         dT=(now-tstart)*24*60*60;       % Current wait duration
         
         % Update graphical progress bar for wait time
         pWaitBar.XData = [0 dT/dT0 dT/dT0 0];    
+        tWaitTime1.String=[num2str(dT,'%.2f') ' s'];
+        tWaitTime2.String=[num2str(dT0,'%.2f') ' s'];
         drawnow;
         
         % Stop the timer.
         if dT>dT0
             stop(timeWait);  
+            tWaitTime1.String=tWaitTime2.String;
         end
     end
 

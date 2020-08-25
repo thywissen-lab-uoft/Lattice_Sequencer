@@ -15,10 +15,10 @@ seqdata.analogchannels = repmat(struct('channel',0,...
     'maxvoltage',10,...
     'minvoltage',-10),1,64);
 
-%two digital channels of '32' bits each (numbered channel 1-64)
+%three digital channels of '32' bits each (numbered channel 1-96)
 seqdata.digchannels = repmat(struct('channel',0,...
     'bitpos',0,...
-    'cardid',0),1,64);
+    'cardid',0),1,32*seqdata.digcardnum);
 
 %set the digital channels
 for i = 1:length(seqdata.digchannels)
@@ -29,11 +29,10 @@ for i = 1:length(seqdata.digchannels)
     
     if i<33
         seqdata.digchannels(i).cardid = 1;
-%     elseif (i>=33 && i<65)
-%         seqdata.digchannels(i).cardid = 2;
-    else 
-%         seqdata.digchannels(i).cardid = 3;
+    elseif (i>=33 && i<65) 
         seqdata.digchannels(i).cardid = 2;
+    else
+        seqdata.digchannels(i).cardid = 3;
     end
     
 end
@@ -114,6 +113,38 @@ seqdata.digchannels(62).resetvalue = 1;
 seqdata.digchannels(63).name = 'XDT Direct Control'; %0: off, 1:on
 % seqdata.digchannels(63).name = 'Plug Mode Switch';%'plug mode switch'; %1: manual mode, 0:Auto mode
 seqdata.digchannels(64).name = 'K Sci Repump'; %K repump in science chamber 
+seqdata.digchannels(65).name = 'Channel 65'; %unused
+seqdata.digchannels(66).name = 'Channel 66'; %unused
+seqdata.digchannels(67).name = 'Channel 67'; %unused
+seqdata.digchannels(68).name = 'Channel 68'; %unused
+seqdata.digchannels(69).name = 'Channel 69'; %unused
+seqdata.digchannels(70).name = 'Channel 70'; %unused
+seqdata.digchannels(71).name = 'Channel 71'; %unused
+seqdata.digchannels(72).name = 'Channel 72'; %unused
+seqdata.digchannels(73).name = 'Channel 73'; %unused
+seqdata.digchannels(74).name = 'Channel 74'; %unused
+seqdata.digchannels(75).name = 'Channel 75'; %unused
+seqdata.digchannels(76).name = 'Channel 76'; %unused
+seqdata.digchannels(77).name = 'Channel 77'; %unused
+seqdata.digchannels(78).name = 'Channel 78'; %unused
+seqdata.digchannels(79).name = 'Channel 79'; %unused
+seqdata.digchannels(80).name = 'Channel 80'; %unused
+seqdata.digchannels(81).name = 'Channel 81'; %unused
+seqdata.digchannels(82).name = 'Channel 82'; %unused
+seqdata.digchannels(83).name = 'Channel 83'; %unused
+seqdata.digchannels(84).name = 'Channel 84'; %unused
+seqdata.digchannels(85).name = 'Channel 85'; %unused
+seqdata.digchannels(86).name = 'Channel 86'; %unused
+seqdata.digchannels(87).name = 'Channel 87'; %unused
+seqdata.digchannels(88).name = 'Channel 88'; %unused
+seqdata.digchannels(89).name = 'Channel 89'; %unused
+seqdata.digchannels(90).name = 'Channel 90'; %unused
+seqdata.digchannels(91).name = 'Channel 91'; %unused
+seqdata.digchannels(92).name = 'Channel 92'; %unused
+seqdata.digchannels(93).name = 'Channel 93'; %unused
+seqdata.digchannels(94).name = 'Channel 94'; %unused
+seqdata.digchannels(95).name = 'Channel 95'; %unused
+seqdata.digchannels(96).name = 'Channel 96'; %unused
 
 %set the analog channel numbers
 for i = 1:length(seqdata.analogchannels)

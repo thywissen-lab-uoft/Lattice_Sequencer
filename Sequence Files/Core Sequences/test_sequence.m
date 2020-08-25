@@ -3932,8 +3932,111 @@ curtime = timein;
 % AnalogFuncTo(calctime(curtime,ramptime+50),'Rb Beat Note FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),ramptime,ramptime, 6590+32);
 
 %% End
-% setAnalogChannel(calctime(curtime,1),63,0);
-% setDigitalChannel(calctime(curtime,0),23,0);% 0:OFF; 1: ON
+
+%Test third digital card
+% curtime = calctime(curtime,1000);
+% setAnalogChannel(calctime(curtime,0),26,0);
+% curtime = calctime(curtime,5000);
+% setDigitalChannel(calctime(curtime,0),68,1);
+% setDigitalChannel(calctime(curtime,0),76,1);
+% setDigitalChannel(calctime(curtime,0),84,1);
+% setDigitalChannel(calctime(curtime,0),92,1);
+% curtime = calctime(curtime,0.005);
+% setDigitalChannel(calctime(curtime,0),68,0);
+% curtime = calctime(curtime,0.005);
+% setDigitalChannel(calctime(curtime,0),76,0);
+% curtime = calctime(curtime,0.005);
+% setDigitalChannel(calctime(curtime,0),84,0);
+% curtime = calctime(curtime,0.005);
+% setDigitalChannel(calctime(curtime,0),92,0);
+% curtime = calctime(curtime,0.005);
+% setDigitalChannel(calctime(curtime,0),92,1);
+% curtime = calctime(curtime,0.005);
+% setDigitalChannel(calctime(curtime,0),84,1);
+% curtime = calctime(curtime,0.005);
+% setDigitalChannel(calctime(curtime,0),76,1);
+% curtime = calctime(curtime,0.005);
+% setDigitalChannel(calctime(curtime,0),68,1);
+% setDigitalChannel(calctime(curtime,0),65,1);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),66,1);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),67,1);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),68,1);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),68,0);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),67,0);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),66,0);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),65,0);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),65,1);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),66,1);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),67,1);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),68,1);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),68,0);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),67,0);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),66,0);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),65,0);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),65,1);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),66,1);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),67,1);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),68,1);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),68,0);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),67,0);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),66,0);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),65,0);
+
+% setDigitalChannel(calctime(curtime,0),69,0);
+% setDigitalChannel(calctime(curtime,0),70,0);
+% setDigitalChannel(calctime(curtime,0),71,0);
+% setDigitalChannel(calctime(curtime,0),72,0);
+% setDigitalChannel(calctime(curtime,0),73,0);
+% setDigitalChannel(calctime(curtime,0),74,0);
+% setDigitalChannel(calctime(curtime,0),75,0);
+% setDigitalChannel(calctime(curtime,0),76,0);
+% setDigitalChannel(calctime(curtime,0),77,0);
+% setDigitalChannel(calctime(curtime,0),78,0);
+% setDigitalChannel(calctime(curtime,0),79,0);
+% setDigitalChannel(calctime(curtime,0),80,0);
+% setDigitalChannel(calctime(curtime,0),81,0);
+% setDigitalChannel(calctime(curtime,0),82,0);
+% setDigitalChannel(calctime(curtime,0),83,0);
+% setDigitalChannel(calctime(curtime,0),84,0);
+% setDigitalChannel(calctime(curtime,0),85,0);
+% setDigitalChannel(calctime(curtime,0),86,0);
+% setDigitalChannel(calctime(curtime,0),87,0);
+% setDigitalChannel(calctime(curtime,0),88,0);
+% setDigitalChannel(calctime(curtime,0),89,0);
+% setDigitalChannel(calctime(curtime,0),90,0);
+% setDigitalChannel(calctime(curtime,0),91,0);
+% setDigitalChannel(calctime(curtime,0),92,0);
+% setDigitalChannel(calctime(curtime,0),93,0);
+% setDigitalChannel(calctime(curtime,0),94,0);
+% setDigitalChannel(calctime(curtime,0),95,0);
+% setDigitalChannel(calctime(curtime,0),96,0);
+
+% curtime = calctime(curtime,1000);
+% setDigitalChannel(calctime(curtime,0),32,0);% 0:OFF; 1: ON
+% curtime = calctime(curtime,1000);
 
 %   rotation_time = 1000;   % The time to rotate the waveplate
 %       P_lattice = 0.4; %0.5/0.9        % The fraction of power that will be transmitted 
@@ -3965,6 +4068,9 @@ setDigitalChannel(calctime(curtime,0),26,0)
 % setDigitalChannel(calctime(curtime,0),27,0)
 
 
+setAnalogChannel(calctime(curtime,0),60,0,1);
+setDigitalChannel(calctime(curtime,0),24,0);
+setDigitalChannel(calctime(curtime,0),23,1);
 timeout = curtime;
 
 

@@ -2370,12 +2370,19 @@ curtime = timein;
 %% K Probe OP
 
 % %set probe detuning
-% setAnalogChannel(calctime(curtime,0),'K Probe/OP FM',170); %195
-% % %SET trap AOM detuning to change probe
-%  setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',0); %0.3
-% setAnalogChannel(calctime(curtime,0),'K Trap FM',34); %54.5
-%  setAnalogChannel(calctime(curtime,10),'K Probe/OP AM',0.15);
-% setAnalogChannel(calctime(curtime,0),'K Repump AM',0.3);
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP FM',190); %195
+% setAnalogChannel(calctime(curtime,0),'K Trap FM',3);
+% 
+% % % %SET trap AOM detuning to change probe
+%  setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); %0.3
+% % setAnalogChannel(calctime(curtime,0),'K Trap FM',34); %54.5
+% setAnalogChannel(calctime(curtime,10),'K Probe/OP AM',0.7);
+% % setAnalogChannel(calctime(curtime,0),'K Repump AM',0.3);
+% 
+% setDigitalChannel(calctime(curtime,0),24,0)
+% setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',0.8); %0.11
+    %TTL
+
 
 %% Test 405 TTL Control
 
@@ -4051,11 +4058,21 @@ curtime = timein;
 % D1_FM = getScanParameter(D1_FM_List, seqdata.scancycle, seqdata.randcyclelist);%5
 % setAnalogChannel(calctime(curtime,0),'D1 FM',3.80,1);
 % addOutputParam('D1_DP_FM',D1_FM);
+setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',0);
+% setDigitalChannel(calctime(curtime,0),25,1)
+setDigitalChannel(calctime(curtime,0),23,0)
+setDigitalChannel(calctime(curtime,0),24,0)
+setDigitalChannel(calctime(curtime,0),25,0)
+setDigitalChannel(calctime(curtime,0),26,0)
+% setDigitalChannel(calctime(curtime,0),26,1)
+% setDigitalChannel(calctime(curtime,0),27,0)
+
 
 setAnalogChannel(calctime(curtime,0),60,0,1);
 setDigitalChannel(calctime(curtime,0),24,0);
 setDigitalChannel(calctime(curtime,0),23,1);
 timeout = curtime;
+
 
         
 end

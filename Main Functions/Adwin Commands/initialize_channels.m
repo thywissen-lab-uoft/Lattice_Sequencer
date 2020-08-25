@@ -38,6 +38,9 @@ for i = 1:length(seqdata.digchannels)
 end
 
 % digital channel names
+
+
+seqdata.digchannels(1).name = 'K D1 GM Shutter'; % 1: ON, 0: OFF
 seqdata.digchannels(2).name = 'K Trap Shutter'; % 1: ON, 0: OFF
 seqdata.digchannels(3).name = 'K Repump Shutter';% all repump power shutter, different from 0th order shutter
 seqdata.digchannels(4).name = 'Rb Trap Shutter'; %1: ON, 0: OFF
@@ -205,7 +208,7 @@ end
     seqdata.analogchannels(5).maxvoltage = 10;
     %Make the conversion function detuning
     seqdata.analogchannels(5).defaultvoltagefunc = 4; %CHANGED FOR AOM TEST
-    K_trap_freq_offset =-2000/1000;-1700;
+    K_trap_freq_offset =0;-2000/1000;-1700;
     K_repump_freq_offset = 00/1000;
     %40MHz detuning is 105MHz, higher frequency is less detuned
     %seqdata.analogchannels(5).voltagefunc{2} = @(a)((-19.17+0.22514*(134-a/2)-2.48788E-4*(134-a/2)^2)); %for Stefan's homemoade VCO

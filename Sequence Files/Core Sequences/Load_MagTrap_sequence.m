@@ -1064,7 +1064,7 @@ curtime = Reset_Channels(calctime(curtime,0));
     end
         
     %call Load_MOT function
-curtime = Load_MOT(calctime(curtime,mot_wait_time),[rb_MOT_detuning k_MOT_detuning]);
+    curtime = Load_MOT(calctime(curtime,mot_wait_time),[rb_MOT_detuning k_MOT_detuning]);
         
     setAnalogChannel(curtime,'K Repump FM',k_repump_shift,2);
       

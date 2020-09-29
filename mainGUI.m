@@ -43,6 +43,8 @@ global adwin_processor_speed;
 global adwin_connected;
 global adwin_process_path;
 
+seqdata.outputfilepath='Y:\Experiments\Lattice\_communication\';
+seqdata.outputfilepath='C:\Users\coraf\Desktop\LAB';
 %% Delete old timer objects
 % The progress of the sequence is tracked using some MATLAB timers. Delete
 % these timers so that MATLAB doesn't get confused and make a whole bunch
@@ -619,10 +621,11 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         
         % Finish compiling the code
         fh(0);                          % run sequence function                  
-        calc_sequence();                % convert seqdata for AdWin        
+        calc_sequence;                  % convert seqdata for AdWin        
         try
-            load_sequence();                % load the sequence onto adwin
+            load_sequence;              % load the sequence onto adwin
         catch exception
+            disp('Unable to load sequence onto Adwin');
             warning(exception.message);
         end        
         tC2=now;                         % compile end time
@@ -635,16 +638,22 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         disp(['     Sequence Run Time : ' ...
             num2str(round(seqdata.sequencetime,1)) 's']);    
        disp(' ');
+       
+        % Run the sequence
+        try
+            Start_Process(adwinprocessnum);
+        catch exception
+            disp('Unable to start the Adwin');
+            warning(exception.message);            
+        end
 
         % Update progress bars
         start(timeAdwin);
                
         % Seqdata history
-        
-        % update flag monitor
-        
+                
         % create output file
-
+        makeControlFile;
     end
     
     function out=safeToRun
@@ -702,7 +711,61 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
             warning(exception.message)            
         end
 
+    end
+    
+
+    % This function creates files which indicate the configuration of the
+    % most recent cycle run.
+    function makeControlFile
+        % Dispaly output parameters to control prompt
+        disp(' ');
+        disp('--Lattice Sequencer Output Parameters--');        
+        for n = 1:length(seqdata.outputparams)
+            %the first element is a string and the second element is a number
+            fprintf(1,'%s: %g \n',seqdata.outputparams{n}{1},seqdata.outputparams{n}{2});
+        end        
+        disp('----------------------------------------');        
+        filename = fullfile(seqdata.outputfilepath, 'control.txt');
+        disp(['Outputting to ' filename]);        
+        [path,name,ext] = fileparts(filename);
+        % If the location of the control file doesnt exist, make it
+        if ~exist(path,'dir')
+            try
+                mkdir(path);
+            catch 
+                warning('Unable to create output file location');
+            end
+        end        
+        [fid,~]=fopen(filename,'wt+'); % open file, overrite permission, discard old
+        %output the header (date/time,function handle,cycle)
+        fprintf(fid,'Lattice Sequencer Output Parameters \n');
+        fprintf(fid,'------------------------------------\n');
+        fprintf(fid,'Execution Date: %s \n',datestr(now));
+        fprintf(fid,'Function Handle: %s \n',erase(eSeq.String,'@'));
+        fprintf(fid,'Cycle: %g \n', seqdata.cycle);
+        fprintf(fid,'------------------------------------\n');        
+        %output the parameters
+        if ~isempty(seqdata.outputparams)
+            for n = 1:length(seqdata.outputparams)
+                %the first element is a string and the second element is a number
+                fprintf(fid,'%s: %d \n',seqdata.outputparams{n}{1},seqdata.outputparams{n}{2});
+            end
         end
+        %close the file
+        fclose(fid);        
+        %% Making a mat file witht the parameters
+        outparams=struct;
+        for kk=1:length(seqdata.outputparams)
+            a=seqdata.outputparams{kk};
+            outparams.(a{1})=a{2};
+        end        
+        params=seqdata.params;        
+        filename=fullfile(seqdata.outputfilepath, 'control.mat');             
+        % output both outparams and params
+        save(filename,'outparams','params');
+    end
+
+
 end
 
 

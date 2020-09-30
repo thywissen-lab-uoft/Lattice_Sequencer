@@ -76,6 +76,8 @@ for i = 1:length(figs)
     end
 end
 
+
+
 % Figure color and size settings
 cc='w';
 w=350;
@@ -741,21 +743,23 @@ case 'scan'
             runSequence;
         end                  
     else
-        if isequal(cScanFinie.Enable,'on')
+        if cScanFinite.Value
             disp(['Scan stopped at ' num2str(seqdata.scancycle) ...
                 ' cycles of ' num2str(tblMaxScan.Data)]);
         else
-            disp('Scan stopped');
-
+            disp(['Scan stopped at' num2str(seqdata.scancycle) ' cycles']);
+        end
+        
         bRun.Enable='on';
         rScan.Enable='on';
         rSingle.Enable='on';
         bStop.Enable='off';
+        
         end
     end            
 end
 
-end
+
 %% AdWin Callbacks
 % This section of the code defines the callbacks for running the sequencer.
 %  It is separated by a different section in order to visually separate

@@ -433,8 +433,8 @@ curtime = calctime(curtime,controlled_load_time);
     
     %RHYS - The first important code that is called. Applies
     %CMOT/molasses/optical pumping to MOT. 
+
 curtime = Prepare_MOT_for_MagTrap(curtime);
-   
     %RHYS - Should integrate the following lines into the above function. 
 
     %Open other AOMS to keep them warm. Why ever turn them off for long

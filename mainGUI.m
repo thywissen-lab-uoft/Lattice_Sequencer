@@ -45,6 +45,7 @@ global adwin_process_path;
 
 seqdata.outputfilepath='Y:\Experiments\Lattice\_communication\';
 seqdata.outputfilepath='C:\Users\coraf\Desktop\LAB';
+
 %% Delete old timer objects
 % The progress of the sequence is tracked using some MATLAB timers. Delete
 % these timers so that MATLAB doesn't get confused and make a whole bunch
@@ -161,7 +162,8 @@ tTit=uicontrol(hpMain,'style','text','string','Lattice Sequencer',...
 tTit.Position(3:4)=tTit.Extent(3:4);
 tTit.Position(1:2)=[5 hpMain.Position(4)-tTit.Position(4)];
 
-%%%%%%%%%%%%%%%% SETTINGS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Settings Graphical Objects
+
 % Sequence File label
 tSeq=uicontrol(hpMain,'style','text','String','Sequence File:',...
     'units','pixels','fontsize',10,'backgroundcolor',cc);
@@ -230,15 +232,14 @@ bOver.Callback=@bOverCB;
         disp([datestr(now,13) ' New sequence function is ' funcname]);
     end
 
-%%%%% Wait Time Interface %%%%
-
+%% Wait Timer Graphical interface
 
 % Button group for selecting wait mode. The user data holds the selected
 % button
 bgWait = uibuttongroup('Parent',hpMain,'units','pixels','Title','wait mode',...
     'backgroundcolor',cc,'UserData',0);
 bgWait.Position(3:4)=[w 90];
-bgWait.Position(1:2)=[0 eSeq.Position(2)-bgWait.Position(4)-5];
+bgWait.Position(1:2)=[1 eSeq.Position(2)-bgWait.Position(4)-5];
 bgWait.SelectionChangedFcn=@waitCB;
               
 % Create three radio buttons in the button group. The user data holds the
@@ -313,54 +314,174 @@ tWaitTime2.Position=[axWaitBar.Position(3) 24];
 % tWaitLabel=text(.5,1.05,'Wait Timer','fontsize',10,...
 %     'horizontalalignment','center','verticalalignment','bottom','fontweight','bold');
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RUN CYCLE %%%%%%%%%%%%%%%%%%%%%%
-% Button to run the cycle
-bRun=uicontrol(hpMain,'style','pushbutton','String','Run Cycle',...
-    'backgroundcolor',[152 251 152]/255,'FontSize',10,'units','pixels',...
-    'fontweight','bold');
-bRun.Position(3:4)=[130 30];
-bRun.Position(1:2)=[5 140];
-bRun.Callback=@bRunCB;
-bRun.Tooltip='Compile and run the currently selected sequence.';
+%% Run mode graphics and callbacks
+
+% Run sequence mode
+bgRun = uibuttongroup('Parent',hpMain,'units','pixels','Title','run mode',...
+    'backgroundcolor',cc,'UserData',0);
+bgRun.Position(3:4)=[w 130];
+bgRun.Position(1:2)=[1 50];
+bgRun.SelectionChangedFcn=@runModeCB;
+        
+    function runModeCB(~,evnt)
+        switch evnt.NewValue.String
+            case 'single'
+                disp('Changing run mode to single iteration');
+                cScanFinite.Enable='off';
+                tblMaxScan.Enable='off';
+                cRpt.Enable='on';
+                tCycle.Enable='off';
+                bRun.String='Run Sequence';
+                bStop.String='Stop Sequence';
+                bStop.Visible='off';
+            case 'scan'
+                disp('Changing run mode to scan mode.');
+                cScanFinite.Enable='on';
+                tblMaxScan.Enable='on';
+                cRpt.Enable='off';
+                tCycle.Enable='on';
+                bRun.String='Scan Sequence';
+                bStop.String='Stop Scan';
+                bStop.Visible='on';
+        end
+        
+    end
+
+% Radio button for single mode
+rSingle=uicontrol(bgRun,'Style','radiobutton', 'String','single',...
+    'Position',[5 85 65 30],'Backgroundcolor',cc,'UserData',0,...
+    'fontsize',12);  
 
 % Checkbox for repeat cycle
-cRpt=uicontrol(hpMain,'style','checkbox','string','Repeat',...
-    'backgroundcolor',cc,'Fontsize',8,'units','pixels');
-cRpt.Position(3:4)=[100 cRpt.Extent(4)];
-cRpt.Position(1:2)=[10+bRun.Position(3) bRun.Position(2)];
-cRpt.Callback=@cRptCB;
+cRpt=uicontrol(bgRun,'style','checkbox','string','repeat?','fontsize',8,...
+    'backgroundcolor',cc,'units','pixels','Callback',@cRptCB);
+cRpt.Position(3:4)=[60 cRpt.Extent(4)];
+cRpt.Position(1:2)=[80 rSingle.Position(2)+4];
 cRpt.Tooltip='Enable or disable automatic repitition of the sequence.';
 
-    function cRptCB(c,~)
-        if c.Value
+% Callback for changing the repeat. This simply displays and update
+    function cRptCB(src,~)
+        if src.Value
             disp(['Enabling sequence repeat. Reminder : The sequence ' ...
                 'recompiles every iteration.']);
         else
             disp('Disabling sequence repeat.');
         end        
     end
+
+% Radio button for scan mode
+rScan=uicontrol(bgRun,'Style','radiobutton','String','scan',...
+    'Position',[5 60 100 20],'Backgroundcolor',cc,'UserData',1,...
+    'FontSize',12);
+
+% Checkbox for running scan finite number of times
+cScanFinite=uicontrol(bgRun,'style','checkbox','string','stop scan afer',...
+    'backgroundcolor',cc,'Fontsize',8,'units','pixels','enable','off');
+cScanFinite.Position(3:4)=[92 cScanFinite.Extent(4)];
+cScanFinite.Position(1:2)=[80 rScan.Position(2)];
+
+% Table that stores the iteration to run
+tblMaxScan=uitable(bgRun,'RowName','','ColumnName','','Data',100,...
+    'ColumnWidth',{30},'ColumnEditable',true,'ColumnFormat',{'numeric'},...
+    'fontsize',6,'enable','off');
+tblMaxScan.Position(3:4)=tblMaxScan.Extent(3:4);
+tblMaxScan.Position(1:2)=[cScanFinite.Position(3)+cScanFinite.Position(1) ...
+    cScanFinite.Position(2)-2];
+
+% Extra text label for the cycles
+tCycle=uicontrol(bgRun,'style','text','String','cycles','fontsize',8,...
+    'backgroundcolor',cc,'units','pixels','enable','off');
+tCycle.Position(3:4)=tCycle.Extent(3:4);
+tCycle.Position(1:2)=[tblMaxScan.Position(1)+tblMaxScan.Position(3)+1 tblMaxScan.Position(2)];
+
+
+%%%%%%%%%%%%%%%%%%%%% ADWIN PROGRESS BAR  %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Create axis object for the bar
+adwinbarcolor=[0.67578 1 0.18359];
+axAdWinBar=axes('parent',bgRun,'units','pixels','XTick',[],...
+    'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
+axAdWinBar.Position=[10 10 bgRun.Position(3)-20 20];
+
+% Plot the patch of color for the bar
+pAdWinBar = patch(axAdWinBar,[0 0 0 0],[0 0 1 1], adwinbarcolor);
+
+% Add some text labels for the current and end time
+tAdWinTime1 = text(0,0,'0.00 s','parent',axAdWinBar,'fontsize',10,...
+    'horizontalalignment','left','units','pixels','verticalalignment','bottom');
+tAdWinTime1.Position=[5 21];
+tAdWinTime2 = text(0,0,'30.00 s','parent',axAdWinBar,'fontsize',10,...
+    'horizontalalignment','right','units','pixels','verticalalignment','bottom');
+tAdWinTime2.Position=[axAdWinBar.Position(3) 21];
+
+% Add an overall label
+tAdWinLabel=text(.5,1.05,'adwin progress','fontsize',10,...
+    'horizontalalignment','center','verticalalignment','bottom','fontweight','bold');
+
+%% Old run list code and iteration
+% This is code that CF wanted to use for Cicero styel interafce. It might
+% be brought back from the dead one day, but its arhcitecture requires
+% restructuring of how we sepcify our scan parameters
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RUN LIST %%%%%%%%%%%%%%%%%%%%%%
+%{
+% Button run a list
+bScanStart=uicontrol(hpMain,'style','pushbutton','String','Start Scan',...
+    'backgroundcolor',[199 234 70]/255,'FontSize',10,'units','pixels',...
+    'fontweight','bold','enable','on','callback',@bScanStartCB);
+bScanStart.Position(3:4)=[80 40];
+bScanStart.Position(1:2)=[5 bRun.Position(2)-bScanStart.Position(4)-5];
 
 % Button run a list
-bList=uicontrol(hpMain,'style','pushbutton','String','Run List',...
-    'backgroundcolor',[199 234 70]/255,'FontSize',10,'units','pixels',...
-    'fontweight','bold','enable','off');
-bList.Position(3:4)=[130 30];
-bList.Position(1:2)=[5 bRun.Position(2)-bList.Position(4)-5];
+bScanStop=uicontrol(hpMain,'style','pushbutton','String','Stop Scan',...
+    'backgroundcolor',[255,165,0]/255,'FontSize',10,'units','pixels',...
+    'fontweight','bold','enable','off','callback',@bScanStopCB);
+bScanStop.Position(3:4)=[80 40];
+bScanStop.Position(1:2)=[bScanStart.Position(1)+bScanStart.Position(3)+5 ...
+    bRun.Position(2)-bScanStop.Position(4)-5];
 
 % Checkbox to run the list randomly
-cRand=uicontrol(hpMain,'style','checkbox','string','Random',...
-    'backgroundcolor',cc,'Fontsize',8,'units','pixels');
+cRand=uicontrol(hpMain,'style','checkbox','string','random?',...
+    'backgroundcolor',cc,'Fontsize',8,'units','pixels','Value',1,...
+    'callback',@cRandCB);
 cRand.Position(4)=cRand.Extent(4);
-cRand.Position(3)=100;
-cRand.Position(1:2)=[10+bList.Position(3) bList.Position(2)];
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RUN LIST ITERATION %%%%%%%%%%%%%%%%%%%%%%
+cRand.Position(3)=80;
+cRand.Position(1:2)=[bScanStop.Position(1)+bScanStop.Position(3)+5 bScanStop.Position(2)];
 
+    function cRandCB(src,~)
+       if src.Value
+           disp('Scan will run parameter in random order.');
+       else
+           disp('Scan will run parameters in sequential order.');
+       end
+    end
+
+% Checkbox to run the list randomly
+cMaxIter=uicontrol(hpMain,'style','checkbox','string','fixed number?',...
+    'backgroundcolor',cc,'Fontsize',8,'units','pixels','Value',0,...
+    'callback',@cMaxIterCB);
+cMaxIter.Position(4)=cMaxIter.Extent(4);
+cMaxIter.Position(3)=90;
+cMaxIter.Position(1:2)=[bScanStop.Position(1)+bScanStop.Position(3)+5 bScanStop.Position(2)+20];
+
+    function cMaxIterCB(src,~)
+        if src.Value
+           disp('Enabling limiting of scan iterations to a value');
+           tblMaxScan.Enable='on';
+        else
+            disp('Disabling limiting the scan iterations.  Will run forever');
+            tblMaxScan.Enable='off';
+        end
+    end
+
+%}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RUN LIST ITERATION %%%%%%%%%%%%%%%%%%%%%%
+%{
 % Button to run an iteration of a list
 bIter=uicontrol(hpMain,'style','pushbutton','String','Run Iteration (1)',...
     'backgroundcolor',[199 234 70]/255,'FontSize',10,'units','pixels',...
     'fontweight','bold','enable','off');
-bIter.Position(3:4)=[130 30];
+bIter.Position(3:4)=[130 40];
 bIter.Position(1:2)=[5 bList.Position(2)-bIter.Position(4)-5];
 
 % Table that stores the iteration to run
@@ -410,17 +531,19 @@ bIterUp.Callback=@cbUp;
     end
 
 
+%}
+
+%% Interrupt buttons
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ABORT  %%%%%%%%%%%%%%%%%%%%%%
 ttStr=['Interrupts AdWIN and sends all digital and analog voltage ' ...
     'outputs to their reset value.  DANGEROUS'];
 bAbort=uicontrol(hpMain,'style','pushbutton','String','abort',...
     'backgroundcolor','r','FontSize',10,'units','pixels',...
-    'fontweight','bold','Tooltip',ttStr);
+    'fontweight','bold','Tooltip',ttStr,'Callback',@bAbortCB);
 bAbort.Position(3:4)=[60 25];
 bAbort.Position(1:2)=[hpMain.Position(3)-bAbort.Position(3)-5 ...
     hpMain.Position(4)-bAbort.Position(4)-5];
-bAbort.Callback=@bAbortCB;
 
 jbAbort= findjobj(bAbort);
 set(jbAbort,'Enabled',false);
@@ -441,26 +564,25 @@ jbReset= findjobj(bReset);
 set(jbReset,'Enabled',true);
 set(jbReset,'ToolTipText',ttStr);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% WAIT BARS  %%%%%%%%%%%%%%%%%%%%%%
-% Graphical objects for a timer bar, this will be used for both the adwin
-% bar
-
-% Graphical bar and commands for the adwin progress bar.
-adwinbarcolor=[0.67578 1 0.18359];
-axAdWinBar=axes('parent',hpMain,'units','pixels','XTick',[],...
-    'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
-axAdWinBar.Position=[10 10 hpMain.Position(3)-20 20];
-pAdWinBar = patch(axAdWinBar,[0 0 0 0],[0 0 1 1], adwinbarcolor);
-tAdWinTime1 = text(0,0,'0.00 s','parent',axAdWinBar,'fontsize',10,...
-    'horizontalalignment','left','units','pixels','verticalalignment','bottom');
-tAdWinTime1.Position=[5 21];
-tAdWinTime2 = text(0,0,'30.00 s','parent',axAdWinBar,'fontsize',10,...
-    'horizontalalignment','right','units','pixels','verticalalignment','bottom');
-tAdWinTime2.Position=[axAdWinBar.Position(3) 21];
-tAdWinLabel=text(.5,1.05,'adwin progress','fontsize',10,...
-    'horizontalalignment','center','verticalalignment','bottom','fontweight','bold');
+%% Start and Stop Buttons
+% Button to run the cycle
+bRun=uicontrol(hpMain,'style','pushbutton','String','Run Sequence',...
+    'backgroundcolor',[152 251 152]/255,'FontSize',10,'units','pixels',...
+    'fontweight','bold');
+bRun.Position(3:4)=[165 40];
+bRun.Position(1:2)=[5 5];
+bRun.Callback=@bRunCB;
+bRun.Tooltip='Compile and run the currently selected sequence.';
 
 
+% Button to stop
+bStop=uicontrol(hpMain,'style','pushbutton','String','Stop',...
+    'backgroundcolor',[255	218	107]/255,'FontSize',10,'units','pixels',...
+    'fontweight','bold','enable','off','visible','off');
+bStop.Position(3:4)=[165 40];
+bStop.Position(1:2)=[bRun.Position(1)+bRun.Position(3)+5 5];
+bStop.Callback=@bStopCB;
+bStop.Tooltip='Compile and run the currently selected sequence.';
 
 
 %% TIMERS
@@ -471,18 +593,35 @@ tAdWinLabel=text(.5,1.05,'adwin progress','fontsize',10,...
 
 % The adwin progress timer object
 timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
-    'TimerFcn',@updateAdwinBar,'StartFcn',@sAdwin,'Period',.05);
+    'TimerFcn',@updateAdwinBar,'StartFcn',@startAdwinTimer,'Period',.05,...
+    'StopFcn',@stopAdwinTimer);
 
 % Function to run when the adwin starts the sequence.
-    function sAdwin(~,~)
+    function startAdwinTimer(~,~)
         % Notify the user
         disp(['Sequence started. ' num2str(seqdata.sequencetime,'%.2f') ...
             ' seconds run time.']);
-            set(jbAbort,'Enabled',true);
-            set(jbReset,'Enabled',false);
+        
+        % Disable reset and enable abort
+        set(jbAbort,'Enabled',true);
+        set(jbReset,'Enabled',false);
+
         % Give the progress timer a new start time as userdata
         timeAdwin.UserData=now;        
         % Note that the function now is days since date (January 0, 0000)        
+    end
+
+    function stopAdwinTimer(~,~)
+        disp('Sequence complete.');      % Message the user
+        pAdWinBar.XData = [0 1 1 0];     % Fill out the bar
+        drawnow;                         % Update graphics
+        set(jbAbort,'Enabled',false);
+        set(jbReset,'Enabled',true);
+        if bgWait.UserData
+           start(timeWait);              % Start wait timer if needed
+        else
+            cycleComplete;
+        end
     end
 
 % Timer callback functions updates the graphics
@@ -501,26 +640,9 @@ timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
         % Stop the timer if enough time has elapsed
         if dT>dT0
             tAdWinTime1.String=[num2str(dT0,'%.2f') ' s'];
-            stop(timeAdwin);                 % Stop the adwin timer
-            disp('Sequence complete.');      % Message the user
-            pAdWinBar.XData = [0 1 1 0];     % Fill out the bar
-            drawnow;                         % Update graphics
-            set(jbAbort,'Enabled',false);
-            set(jbReset,'Enabled',true);
-
-            if bgWait.UserData
-               start(timeWait);              % Start wait timer if needed
-            else
-                % Repeat the sequence if necessary
-                if cRpt.Value
-                    disp('Repeating the sequence.');
-                    bRunCB; 
-                end               
-            end
+            stop(timeAdwin);                 % Stop the adwin timer            
         end
     end
-
-
 
 %%%%% Intecycle wait timer %%%
 % After a seqeunce runs, we typically insert a mandatory wait time before
@@ -557,11 +679,7 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         disp('Inter cycle wait complete.'); % Notify the user
         pWaitBar.XData = [0 1 1 0];         % Fill out the bar
         drawnow;                            % Update graphics        
-        % Repeat the sequence if necessary
-        if cRpt.Value
-           disp('Repeating the sequence.');
-           bRunCB; % Should probably change some of these fucntion calls
-        end  
+        cycleComplete;
     end
 
 % Timer callback fucntion updates the wait bar graphics
@@ -578,11 +696,66 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         
         % Stop the timer.
         if dT>dT0
-            stop(timeWait);  
             tWaitTime1.String=tWaitTime2.String;
+            stop(timeWait);  
         end
     end
 
+%% other
+
+% This function is called when the sequence has finished running an
+% iteration.  It is called either at the end of an adwin sequence or at the
+% end of the wait timer.  It's purpose is to decide what to do after the
+% iteration of the sequence is complete.
+% Options - Stop running, run on repeat, continue scanning, stop scanning
+function cycleComplete
+    
+switch bgRun.SelectedObject.String
+    
+    % End condition if the sequener is in single mode
+case 'single'
+    if cRpt.Value
+        disp('Repeating the sequence');
+        runSequence;
+    else
+        bRun.Enable='on';
+        rScan.Enable='on';
+        rSingle.Enable='on';
+    end
+
+    % What to do if the sequener is in scan mode.
+case 'scan'                
+    if seqdata.doscan
+        if isequal(cScanFinite.Enable,'on') && tblMaxScan.Data<=seqdata.scancycle
+            % The scan is complete
+            disp(['Scan complete at ' num2str(seqdata.scancycle) ' cycles']);
+            bRun.Enable='on';
+            rScan.Enable='on';
+            rSingle.Enable='on';       
+            bStop.Enable='off';
+        else
+            % Increment the scan and run the sequencer again
+            disp(['Incrementing the scan ' num2str(seqdata.scancycle) ...
+                ' --> ' num2str(seqdata.scancycle+1)]);
+            seqdata.scancycle=seqdata.scancycle+1;   
+            runSequence;
+        end                  
+    else
+        if isequal(cScanFinie.Enable,'on')
+            disp(['Scan stopped at ' num2str(seqdata.scancycle) ...
+                ' cycles of ' num2str(tblMaxScan.Data)]);
+        else
+            disp('Scan stopped');
+
+        bRun.Enable='on';
+        rScan.Enable='on';
+        rSingle.Enable='on';
+        bStop.Enable='off';
+        end
+    end            
+end
+
+end
 %% AdWin Callbacks
 % This section of the code defines the callbacks for running the sequencer.
 %  It is separated by a different section in order to visually separate
@@ -590,7 +763,6 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
 
 % Run button callback.
     function bRunCB(~,~)    
-        
         % Initialize the sequence if seqdata is not defined
         % Should this just happen every single time?
         if isempty(seqdata)
@@ -602,22 +774,48 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
            return 
         end    
         
-        disp([datestr(now,13) ' Running the cycle']);  
-        fh = str2func(erase(eSeq.String,'@'));           
+        start_new_sequence;   
+        seqdata.scancycle=1;      
 
+        % Check the run mode
+        switch bgRun.SelectedObject.String
+            case 'single'
+                seqdata.randcyclelist=0;    
+                seqdata.doscan=0;    
+                rScan.Enable='off';                
+            case 'scan'
+                seqdata.randcyclelist=uint16(randperm(1000));    
+                seqdata.doscan=1; 
+                bStop.Enable='on';
+                rSingle.Enable='off';
+        end   
+        bRun.Enable='off';
+        runSequence;        
+    end
+
+    function bStopCB(~,~)
+        switch bgRun.SelectedObject.String
+            case 'single'
+                warning('HOW DID YOU GET HERE BAD');                
+            case 'scan'
+                disp('Stopping the scan. Wait until next iteration is complete.');
+                seqdata.doscan=0; 
+        end  
+    end
+
+    function runSequence        
+        % Reinitialize the sequence
+        start_new_sequence;
+
+        
+        disp([datestr(now,13) ' Running the sequence']);  
+        fh = str2func(erase(eSeq.String,'@'));  
+        
         % Compile the code
         disp(' ');
         disp(['     Compiling sequence  ' eSeq.String]);     
         disp(' ');
         tC1=now;                         % compile start time
-        start_new_sequence;             % initialize new sequence
-        
-        % Put these in so no error. I think it should do nothing. It's from
-        % the way that we do scan (which will change).
-        seqdata.cycle = 1;   
-        seqdata.scancycle = 1;
-        seqdata.doscan = 0;
-        seqdata.randcyclelist = 1:100;        
         
         % Finish compiling the code
         fh(0);                          % run sequence function                  
@@ -637,7 +835,7 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         disp(['     Build Time        : ' num2str(round(buildTime,2))]);
         disp(['     Sequence Run Time : ' ...
             num2str(round(seqdata.sequencetime,1)) 's']);    
-       disp(' ');
+        disp(' ');
        
         % Run the sequence
         try
@@ -685,21 +883,16 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
 % Reset Button callback
     function bResetCB(~,~)        
         disp('Reseting the adwin outputs to their default values');
-
         LatticeSequencerInitialize();
         fh=@reset_sequence;
-
         fh(0);
         calc_sequence();
-
         try
             load_sequence(); 
             pause(0.1);
             disp('The Adwin should have resetted the values');
         end
-
     end
-
 
     function bAbortCB(~,~)       
         disp('Aborting adwin and then resetting!!! Good luck');
@@ -710,7 +903,6 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         catch exception
             warning(exception.message)            
         end
-
     end
     
 
@@ -718,16 +910,25 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
     % most recent cycle run.
     function makeControlFile
         % Dispaly output parameters to control prompt
-        disp(' ');
-        disp('--Lattice Sequencer Output Parameters--');        
-        for n = 1:length(seqdata.outputparams)
-            %the first element is a string and the second element is a number
-            fprintf(1,'%s: %g \n',seqdata.outputparams{n}{1},seqdata.outputparams{n}{2});
-        end        
-        disp('----------------------------------------');        
-        filename = fullfile(seqdata.outputfilepath, 'control.txt');
-        disp(['Outputting to ' filename]);        
-        [path,name,ext] = fileparts(filename);
+        
+%         disp(' ');
+%         disp('--Lattice Sequencer Output Parameters--');        
+%         for n = 1:length(seqdata.outputparams)
+%             %the first element is a string and the second element is a number
+%             fprintf(1,'%s: %g \n',seqdata.outputparams{n}{1},seqdata.outputparams{n}{2});
+%         end        
+%         disp('----------------------------------------');        
+%         
+        
+        filenametxt = fullfile(seqdata.outputfilepath, 'control.txt');
+        filenamemat=fullfile(seqdata.outputfilepath, 'control.mat');             
+
+        disp(' ')
+        disp([datestr(now,13) ' Saving sequence parameters']);
+        disp(['     ' filenametxt]);
+        disp(['     ' filenamemat]);
+
+        [path,name,ext] = fileparts(filenametxt);
         % If the location of the control file doesnt exist, make it
         if ~exist(path,'dir')
             try
@@ -736,7 +937,7 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
                 warning('Unable to create output file location');
             end
         end        
-        [fid,~]=fopen(filename,'wt+'); % open file, overrite permission, discard old
+        [fid,~]=fopen(filenametxt,'wt+'); % open file, overrite permission, discard old
         %output the header (date/time,function handle,cycle)
         fprintf(fid,'Lattice Sequencer Output Parameters \n');
         fprintf(fid,'------------------------------------\n');
@@ -760,9 +961,10 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
             outparams.(a{1})=a{2};
         end        
         params=seqdata.params;        
-        filename=fullfile(seqdata.outputfilepath, 'control.mat');             
         % output both outparams and params
-        save(filename,'outparams','params');
+        save(filenamemat,'outparams','params');
+        
+        disp(' ');
     end
 
 

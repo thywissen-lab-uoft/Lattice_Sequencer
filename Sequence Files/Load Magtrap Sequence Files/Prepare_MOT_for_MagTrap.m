@@ -38,6 +38,10 @@ curtime = timein;
 %Turn off UV cataract-inducing light.
 setDigitalChannel(calctime(curtime,-500),'UV LED',0);
 setAnalogChannel(calctime(curtime,-500),'UV Lamp 2',0);
+
+setDigitalChannel(calctime(curtime,0),15,1)
+setDigitalChannel(calctime(curtime,10),15,0)
+
 %% Compression
 %RHYS - Should be a seqdata flag.
 do_compression = 1;

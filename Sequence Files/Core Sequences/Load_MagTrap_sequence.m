@@ -206,6 +206,9 @@ curtime = timein;
     %RHYS - Here be parameters. 
     
     rf_evap_time_scale = [1.0 1.5];[1.0 1.2];[0.8 1.2];[1.0 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
+    
+    rf_evap_time_scale=[.1 .1];
+        
     RF_1B_Final_Frequency = 0.85;
     seqdata.flags.do_plug = 0;   % ramp on plug after transfer to window
     seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get clean TOF signal
@@ -562,8 +565,9 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Z Shim',@(t,tt,y1,y2)(ramp_minjerk(t
         freqs_1 = [ start_freq 28 20 16]*MHz;[100 100]*MHz;;[ start_freq 28 20 16]*MHz; %7.5 %[ start_freq 28 20 12]*MHz before 2018-03-06 12MHz
 
         RF_gain_1 = 0.5*[-4.1 -4.1 -4.1 -4.1]*(9)/9*1;1*[-4.1 -4.1 -4.1 -4.1]*(9)/9*1;%1*[ 9 9 9 9]*(9)/9*1;1*[-5.93 -5.93 -5.93 -5.93];  %9 9 9 (5)/9*0.75
-        sweep_times_1 = [ 14000 8000 1000].*rf_evap_time_scale(1);[100];%[ 14000 6000 2000].*rf_evap_speed(1);%[ 14000 6000 2000].*rf_evap_speed(1); before 2017-05-02
+        sweep_times_1 =[ 14000 8000 1000].*rf_evap_time_scale(1);[100];%[ 14000 6000 2000].*rf_evap_speed(1);%[ 14000 6000 2000].*rf_evap_speed(1); before 2017-05-02
 
+        
 
         %hold before evap
 curtime = calctime(curtime,pre_hold_time);
@@ -686,6 +690,7 @@ curtime=calctime(curtime,5);
     RF_gain_1b = [.5*(-4.1) .5*(-4.1) rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 -6.3 -6.3];[4 4 1 1];[-6.74 -6.74 -7.26 -7.26];   % 8 8 5 5
     sweep_times_1b = [6000 2000 10]*rf_evap_time_scale(2); [3000 2000 10];%[3000 2500 10]*rf_evap_speed(2);
 
+    
 curtime = do_evap_stage(curtime, fake_sweep, freqs_1b, sweep_times_1b, RF_gain_1b, 0, 1);
 
     %Get rid of Rb afterwards (used for loading dilute 40K into lattice)

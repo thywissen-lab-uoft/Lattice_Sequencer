@@ -16,6 +16,12 @@ global docycle;
 %clean up the timers
 CleanUpTimers();
 
+if newcycle
+    disp('i am run newcycle')
+else
+    disp('i am an old cycle')
+end
+
 %another function turned off the cycle
 if docycle
 

@@ -145,12 +145,13 @@ curtime = timein;
     %its own thing?
     
     seqdata.flags.image_type = 0; 
+    seqdata.flags.MOT_flour_image = 1;
     %0: absorption image, 1: recapture, 2:fluor, 
     %3: blue_absorption, 4: MOT fluor, 5: load MOT immediately, 
     %6: MOT fluor with MOT off, 7: fluorescence image after do_imaging_molasses 
     %8: iXon fluorescence + Pixelfly absorption
     iXon_movie = 1; %Take a multiple frame movie?
-    seqdata.flags.image_atomtype = 1;%  0= Rb, 1 = K, 2 = Rb+K
+    seqdata.flags.image_atomtype = 0;%  0= Rb, 1 = K, 2 = Rb+K
     seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
     seqdata.flags.img_direction = 1; 
     %1 = x direction (Sci) / MOT, 2 = y direction (Sci), 
@@ -453,6 +454,8 @@ curtime = Prepare_MOT_for_MagTrap(curtime);
     
     setAnalogChannel(calctime(curtime,10),'Rb Repump AM',0.9);
 
+if ~seqdata.flags.MOT_flour_image
+    
 %% Load into Magnetic Trap
 
     %RHYS - One of the first examples of doing something based on a
@@ -574,7 +577,7 @@ curtime = calctime(curtime,pre_hold_time);
 
 curtime = do_evap_stage(curtime, fake_sweep, freqs_1, sweep_times_1, ...
         RF_gain_1, hold_time, (seqdata.flags.RF_evap_stages(3) == 0));
-
+    end
     %This does a fast evaporation to benchmark the transport
     if ( seqdata.flags.RF_evap_stages(1) == 2 )
 
@@ -1042,7 +1045,7 @@ curtime = Reset_Channels(calctime(curtime,0));
         setAnalogChannel(calctime(curtime,5001),'dipoleTrap1',-0.5,1);
         setDigitalChannel(calctime(curtime,5002),'XDT Direct Control',1);
     end
-
+end
 %% Load MOT
     %RHYS - a lot of parameters and cleaning to do here. I've also always
     %thought it was odd that MOT loading happened at the end of the sequence,
@@ -1098,7 +1101,6 @@ curtime = setDigitalChannel(calctime(curtime,10),28,0);
     addOutputParam('timestamp',datenum(datevec(now).*[0 1 1 1 1 1]));
 
 %% Timeout
-
 timeout = curtime;
 
     if (((timeout - timein)*(seqdata.deltat/seqdata.timeunit))>100000)

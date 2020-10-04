@@ -26,6 +26,8 @@ seqdata.outputfilepath='C:\Users\coraf\Desktop\LAB';
 
 figName='Lattice Sequencer';
 
+disp('Opening Lattice Sequencer...');
+
 %% Delete old timer objects
 % The progress of the sequence is tracked using some MATLAB timers. Delete
 % these timers so that MATLAB doesn't get confused and make a whole bunch
@@ -99,6 +101,7 @@ hF.Position(3:4)=[w h];
                 warning('Something went wrong stopping and deleting timers');
             end
             delete(fig);
+%             delete(hFGUI);
        end
        
         function doClose(~,~)
@@ -108,6 +111,7 @@ hF.Position(3:4)=[w h];
             stop(timeWait);
             pause(0.5);
             delete(fig);
+%             delete(hFGUI);
         end       
     end
 
@@ -162,14 +166,14 @@ bPlot.Position(1:2)=[bBrowse.Position(1)+bBrowse.Position(3)+5 ...
 % Button to open the manual override GUI
 bOver=uicontrol(hpMain,'style','pushbutton','String','override',...
     'backgroundcolor',cc,'FontSize',10,'units','pixels',...
-    'fontweight','normal');
+    'fontweight','normal','enable','off');
 bOver.Position(3:4)=[60 20];
 bOver.Position(1:2)=[bPlot.Position(1)+bPlot.Position(3)+5 ...
     bPlot.Position(2)];
 bOver.Callback=@bOverCB;
 
     function bOverCB(~,~)
-       overrideGUI2; 
+%        hFGUI.Visible='on'; 
     end
 
     function browseCB(~,~)
@@ -683,7 +687,7 @@ end
     function runSequence        
         % Reinitialize the sequence
         start_new_sequence;
-
+        initialize_channels
         
         disp([datestr(now,13) ' Running the sequence']);  
         fh = str2func(erase(eSeq.String,'@'));  
@@ -840,32 +844,16 @@ end
     end
 
 
-end
-
-
-function hFGUI=overrideGUI2
-
-% overrrideGUI
-%
-% Author : CJ Fujiwara
-%
+%% Override GUI
 % This GUI is meant to override the digital and analog channels of the
 % experiment.  Its purpose is to provide an easy platform to diagnose and
 % calibrate the controls to the experiment. It is not designed to perform
 % custom test sequences for more complicated diagnoses, such as ramps or
 % measuring delays.
 
-% The design of the interface is modeled after the Cicero Word Generator.
-% The author used this at their previously institution and found it
-% intuitive. Further, this design will hopefully make it easier for future
-% lab members coming from "MIT-children" institutions to learn the lab.
+%{
 
-% Initialize the sequence data
-global seqdata;
-
-
-start_new_sequence();
-initialize_channels();
+disp('Initializing override GUI...');
 
 % Grab the analog and digital channels
 Achs=seqdata.analogchannels;
@@ -882,10 +870,11 @@ bc=[47	117	181]/255;
 hFGUI=figure(101);
 clf
 set(hFGUI,'color','w','Name','Adwin Override','Toolbar','none','menubar','none',...
-    'NumberTitle','off','Resize','off');
+    'NumberTitle','off','Resize','off','Visible','off');
 hFGUI.Position(3:4)=[900 600];
 hFGUI.Position(2)=50;
 hFGUI.WindowScrollWheelFcn=@scroll;
+hFGUI.CloseRequestFcn=@(src,~) set(src,'Visible','off');
 
 
 
@@ -893,8 +882,8 @@ hFGUI.WindowScrollWheelFcn=@scroll;
     function scroll(~,b)
         scrll=-b.VerticalScrollCount;
         C=get(gcf,'CurrentPoint');        
-        if C(2)<hpMain.Position(4)                  
-            if C(1)<hpMain.Position(3)/2
+        if C(2)<hpOver.Position(4)                  
+            if C(1)<hpOver.Position(3)/2
                 % mouse in in digital side
                 newVal=hDsl.Value+scrll*abs(hDsl.Min)*.05;                
                 newVal=max([newVal hDsl.Min]);
@@ -913,23 +902,23 @@ hFGUI.WindowScrollWheelFcn=@scroll;
     end
 
 % Initialize uipanel that contains all channel information
-hpMain=uipanel('parent',hFGUI,'backgroundcolor','w',...
+hpOver=uipanel('parent',hFGUI,'backgroundcolor','w',...
     'units','pixels','fontsize',12);
-hpMain.Position=[0 0 hFGUI.Position(3) hFGUI.Position(4)];
+hpOver.Position=[0 0 hFGUI.Position(3) hFGUI.Position(4)];
 
 % Define the respective size of the digital and analog panels
 w1=350;
 g=50;
-w2=hpMain.Position(3)-w1-g;
+w2=hpOver.Position(3)-w1-g;
 h=25;
 
 
 %%%%%%%%%%%%%%%%%%%%% DIGITAL CHANNEL GRAPHICS %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Wrapper container uipanel for digital channels
-hpD=uipanel('parent',hpMain,'backgroundcolor','w',...
+hpD=uipanel('parent',hpOver,'backgroundcolor','w',...
     'units','pixels','fontsize',12,'clipping','on');
-hpD.Position=[0 0 w1 hpMain.Position(4)-60];
+hpD.Position=[0 0 w1 hpOver.Position(4)-60];
  
 
 % Total container uipanel for digital channels
@@ -942,7 +931,7 @@ hpDS.Position(2)=hpD.Position(4)-hpDS.Position(4);
 
 
 % Panel for labels
-Dlbl=uipanel('parent',hpMain,'backgroundcolor','w',...
+Dlbl=uipanel('parent',hpOver,'backgroundcolor','w',...
     'units','pixels','fontsize',10,'bordertype','none');
 Dlbl.Position(3:4)=[w1 h];
 Dlbl.Position(1:2)=[0 hpD.Position(4)+2];
@@ -968,47 +957,46 @@ t=uicontrol('parent',Dlbl,'style','text','units','pixels',...
 t.Position(3:4)=t.Extent(3:4);
 t.Position(1:2)=[245 0];
 
-tic
 
 % Populate the digital channels
-for kk=1:length(Dchs)
+for nn=1:length(Dchs)
     % Grab the color
-    c=[cc(mod(kk-1,size(cc,1))+1,:) .1];    
+    c=[cc(mod(nn-1,size(cc,1))+1,:) .1];    
     
     % panel for this row
-    hpDs(kk)=uipanel('parent',hpDS,'backgroundcolor',c,...
+    hpDs(nn)=uipanel('parent',hpDS,'backgroundcolor',c,...
         'units','pixels','fontsize',10,'bordertype','line',...
         'highlightcolor',bc,'borderwidth',1);
-    hpDs(kk).Position(3:4)=[w1 h+1];
-    hpDs(kk).Position(1:2)=[0 hpDS.Position(4)-kk*h];    
-    hpDs(kk).UserData.Channel=Dchs(kk);    
+    hpDs(nn).Position(3:4)=[w1 h+1];
+    hpDs(nn).Position(1:2)=[0 hpDS.Position(4)-nn*h];    
+    hpDs(nn).UserData.Channel=Dchs(nn);    
     
     % Channel label
-    t=uicontrol('parent',hpDs(kk),'style','text','units','pixels',...
+    t=uicontrol('parent',hpDs(nn),'style','text','units','pixels',...
         'fontsize',8,'fontname','monospaced','fontweight','bold',...
         'backgroundcolor',c);
-    t.String=['d' num2str(Dchs(kk).channel) ' ' Dchs(kk).name];      
+    t.String=['d' num2str(Dchs(nn).channel) ' ' Dchs(nn).name];      
     t.Position(3:4)=t.Extent(3:4);
-    t.Position(1:2)=[10 0.5*(hpDs(kk).Position(4)-t.Position(4))-3];
+    t.Position(1:2)=[10 0.5*(hpDs(nn).Position(4)-t.Position(4))-3];
  
     % Override Checkbox
-    ckOver=uicontrol('parent',hpDs(kk),'style','checkbox','units','pixels',...
+    ckOver=uicontrol('parent',hpDs(nn),'style','checkbox','units','pixels',...
         'fontsize',6,'fontname','monospaced','backgroundcolor',c,...
-        'Callback',{@overCBD kk});
+        'Callback',{@overCBD nn});
     ckOver.Position(3:4)=ckOver.Extent(3:4)+50;
     ckOver.Position(1)=200;
-    ckOver.Position(2)=0.5*(hpDs(kk).Position(4)-ckOver.Position(4));
+    ckOver.Position(2)=0.5*(hpDs(nn).Position(4)-ckOver.Position(4));
 
     % Value check box
-    ckValue=uicontrol('parent',hpDs(kk),'style','checkbox','units','pixels',...
+    ckValue=uicontrol('parent',hpDs(nn),'style','checkbox','units','pixels',...
         'fontsize',6,'fontname','monospaced','backgroundcolor',c,...
         'enable','off');
     ckValue.Position(3:4)=ckValue.Extent(3:4)+50;
     ckValue.Position(1)=250;
-    ckValue.Position(2)=0.5*(hpDs(kk).Position(4)-ckValue.Position(4));
+    ckValue.Position(2)=0.5*(hpDs(nn).Position(4)-ckValue.Position(4));
     ckValue.Enable='off';        
-    ckValue.Value=real(Dchs(kk).resetvalue);
-    hpDs(kk).UserData.ckValue=ckValue;    
+    ckValue.Value=real(Dchs(nn).resetvalue);
+    hpDs(nn).UserData.ckValue=ckValue;    
 end
 
 
@@ -1040,7 +1028,7 @@ hDsl.Position(1:2)=[hpD.Position(3)-hDsl.Position(3) 0];
 %%%%%%%%%%%%%%%%%%%%% ANALOG CHANNEL GRAPHICS %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Wrapper container uipanel for analog channels
-hpA=uipanel('parent',hpMain,'backgroundcolor','w',...
+hpA=uipanel('parent',hpOver,'backgroundcolor','w',...
     'units','pixels','fontsize',12,'clipping','on');
 hpA.Position=[hpD.Position(3)+g 0 w2 hpD.Position(4)];
 
@@ -1052,7 +1040,7 @@ hpAS.Position(2)=hpA.Position(4)-hpAS.Position(4);
 
 
 % button to output analog channels
-bAoutput=uicontrol('parent',hpMain,'style','pushbutton',...
+bAoutput=uicontrol('parent',hpOver,'style','pushbutton',...
     'backgroundcolor','w','fontsize',10,'units','pixels',...
     'foregroundcolor','k');
 bAoutput.String='output analog channels';
@@ -1062,7 +1050,7 @@ bAoutput.Position(2)=hpD.Position(4)+30;
 
 
 % Panel for labels
-Albl=uipanel('parent',hpMain,'backgroundcolor','w',...
+Albl=uipanel('parent',hpOver,'backgroundcolor','w',...
     'units','pixel','fontsize',10,'bordertype','none');
 Albl.Position(3:4)=[w2 h];
 Albl.Position(1:2)=[hpA.Position(1) hpA.Position(4)+2];
@@ -1105,75 +1093,75 @@ t.Position(1:2)=[350 0];
 
 
 % Populate the analog channels
-for kk=1:length(Achs)
-    c=[cc(mod(kk-1,size(cc,1))+1,:) .1];    
+for nn=1:length(Achs)
+    c=[cc(mod(nn-1,size(cc,1))+1,:) .1];    
     
     % panel for this row
-    hpAs(kk)=uipanel('parent',hpAS,'backgroundcolor',c,...
+    hpAs(nn)=uipanel('parent',hpAS,'backgroundcolor',c,...
         'units','pixels','fontsize',10,'bordertype','line',...
         'highlightcolor',bc,'borderwidth',1);
-    hpAs(kk).Position(3:4)=[w2 h+1];
-    hpAs(kk).Position(1:2)=[0 hpAS.Position(4)-kk*h];    
-    hpAs(kk).UserData.Channel=Achs(kk);
+    hpAs(nn).Position(3:4)=[w2 h+1];
+    hpAs(nn).Position(1:2)=[0 hpAS.Position(4)-nn*h];    
+    hpAs(nn).UserData.Channel=Achs(nn);
     
     % Channel label
-    t=uicontrol('parent',hpAs(kk),'style','text','units','pixels',...
+    t=uicontrol('parent',hpAs(nn),'style','text','units','pixels',...
         'fontsize',8,'fontname','monospaced','fontweight','bold',...
         'backgroundcolor',c);
-    t.String=['a' num2str(Achs(kk).channel) ' ' Achs(kk).name];      
+    t.String=['a' num2str(Achs(nn).channel) ' ' Achs(nn).name];      
     t.Position(3:4)=t.Extent(3:4);
-    t.Position(1:2)=[10 0.5*(hpAs(kk).Position(4)-t.Position(4))-2];
+    t.Position(1:2)=[10 0.5*(hpAs(nn).Position(4)-t.Position(4))-2];
  
     % Override Checkbox
-    ckOver=uicontrol('parent',hpAs(kk),'style','checkbox','units','pixels',...
+    ckOver=uicontrol('parent',hpAs(nn),'style','checkbox','units','pixels',...
         'fontsize',6,'fontname','monospaced','backgroundcolor',c);
     ckOver.Position(3:4)=ckOver.Extent(3:4)+50;
     ckOver.Position(1)=200;
-    ckOver.Position(2)=0.5*(hpAs(kk).Position(4)-ckOver.Position(4));
-    ckOver.Callback={@overCBA kk};
+    ckOver.Position(2)=0.5*(hpAs(nn).Position(4)-ckOver.Position(4));
+    ckOver.Callback={@overCBA nn};
 
     % Value Number
-    ckValue=uicontrol('parent',hpAs(kk),'style','edit','units','pixels',...
+    ckValue=uicontrol('parent',hpAs(nn),'style','edit','units','pixels',...
         'fontsize',8,'fontname','monospaced','backgroundcolor','w',...
         'enable','off','String', '');
-    ckValue.String=num2str(real(Achs(kk).resetvalue(1)));
+    ckValue.String=num2str(real(Achs(nn).resetvalue(1)));
     ckValue.Position(4)=ckValue.Extent(4);
     ckValue.Position(3)=40;
     ckValue.Position(1)=240;
-    ckValue.Position(2)=0.5*(hpAs(kk).Position(4)-ckValue.Position(4));
+    ckValue.Position(2)=0.5*(hpAs(nn).Position(4)-ckValue.Position(4));
     ckValue.Enable='off';        
-    hpAs(kk).UserData.ckValue=ckValue;
+    hpAs(nn).UserData.ckValue=ckValue;
     
     % Function select pull-down menu
-    pdFunc=uicontrol('parent',hpAs(kk),'style','popupmenu',...
+    pdFunc=uicontrol('parent',hpAs(nn),'style','popupmenu',...
         'units','pixels','fontsize',8,'fontname','monospaced',...
         'backgroundcolor','w','enable','off');
-    pdFunc.String=strsplit(num2str(1:length(Achs(kk).voltagefunc)),' ');
+    pdFunc.String=strsplit(num2str(1:length(Achs(nn).voltagefunc)),' ');
     
     % case where we specify value not using the defaultfunc (value,func#)
-    if length(Achs(kk).resetvalue)>1
-        pdFunc.Value=Achs(kk).resetvalue(2);          
+    if length(Achs(nn).resetvalue)>1
+        pdFunc.Value=Achs(nn).resetvalue(2);          
     else
-        pdFunc.Value=Achs(kk).defaultvoltagefunc;
+        pdFunc.Value=Achs(nn).defaultvoltagefunc;
     end    
-    foo=Achs(kk).voltagefunc{pdFunc.Value};    
+    foo=Achs(nn).voltagefunc{pdFunc.Value};    
 
     pdFunc.Position(3)=30;
     pdFunc.Position(4)=pdFunc.Extent(4);
     pdFunc.Position(1)=ckValue.Position(1)+ckValue.Position(3);
-    pdFunc.Position(2)=0.5*(hpAs(kk).Position(4)-pdFunc.Position(4))+1;
-    hpAs(kk).UserData.pdFunc=pdFunc;
+    pdFunc.Position(2)=0.5*(hpAs(nn).Position(4)-pdFunc.Position(4))+1;
+    hpAs(nn).UserData.pdFunc=pdFunc;
     
     % voltage output string
-    tVolt=uicontrol('parent',hpAs(kk),'style','text','units','pixels',...
+    tVolt=uicontrol('parent',hpAs(nn),'style','text','units','pixels',...
         'fontsize',8,'fontname','monospaced','backgroundcolor',c,...
         'enable','on','horizontalalignment','left');
-    tVolt.String=[num2str(foo(real(Achs(kk).resetvalue(1)))) ' V'];
+    tVolt.String=[num2str(foo(real(Achs(nn).resetvalue(1)))) ' V'];
     tVolt.Position(1)=350;
     tVolt.Position(3:4)=[120 tVolt.Extent(4)];
     tVolt.Position(2)=2;
 end
-toc
+
 
 % enable or disable a analog channel override
     function overCBA(a,~,ind)
@@ -1201,6 +1189,7 @@ hAsl.Position(1:2)=[hpA.Position(3)-hAsl.Position(3) 0];
         hpAS.Position(2)=hpA.Position(4)-hpAS.Position(4)-hAsl.Value;   
     end
 
-
+%}
 end
+
 

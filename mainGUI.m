@@ -549,7 +549,13 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         end
     end
 
-%% other
+
+%% AdWin Callbacks
+% This section of the code defines the callbacks for running the sequencer.
+%  It is separated by a different section in order to visually separate
+%  front end GUI stuff from the actual sequence code.
+
+
 
 % This function is called when the sequence has finished running an
 % iteration.  It is called either at the end of an adwin sequence or at the
@@ -622,10 +628,6 @@ end
 end
 
 
-%% AdWin Callbacks
-% This section of the code defines the callbacks for running the sequencer.
-%  It is separated by a different section in order to visually separate
-%  front end GUI stuff from the actual sequence code.
 
 % Run button callback.
     function bRunCB(~,~)    
@@ -781,11 +783,12 @@ end
     end
     
 
+%% Control Files
+
     % This function creates files which indicate the configuration of the
     % most recent cycle run.
     function makeControlFile
-        % Dispaly output parameters to control prompt
-        
+        % Dispaly output parameters to control prompt        
 %         disp(' ');
 %         disp('--Lattice Sequencer Output Parameters--');        
 %         for n = 1:length(seqdata.outputparams)
@@ -794,15 +797,12 @@ end
 %         end        
 %         disp('----------------------------------------');        
 %         
-        
         filenametxt = fullfile(seqdata.outputfilepath, 'control.txt');
-        filenamemat=fullfile(seqdata.outputfilepath, 'control.mat');             
-
+        filenamemat=fullfile(seqdata.outputfilepath, 'control.mat');  
         disp(' ')
         disp([datestr(now,13) ' Saving sequence parameters']);
         disp(['     ' filenametxt]);
         disp(['     ' filenamemat]);
-
         [path,~,~] = fileparts(filenametxt);
         % If the location of the control file doesnt exist, make it
         if ~exist(path,'dir')
@@ -827,9 +827,8 @@ end
                 fprintf(fid,'%s: %d \n',seqdata.outputparams{n}{1},seqdata.outputparams{n}{2});
             end
         end
-        %close the file
-        fclose(fid);        
-        %% Making a mat file witht the parameters
+        fclose(fid);     % close the file   
+        %% Making a mat file with the parameters
         outparams=struct;
         for kk=1:length(seqdata.outputparams)
             a=seqdata.outputparams{kk};
@@ -837,9 +836,7 @@ end
         end        
         params=seqdata.params;        
         % output both outparams and params
-        save(filenamemat,'outparams','params');
-        
-        disp(' ');
+        save(filenamemat,'outparams','params');disp(' ');
     end
 
 

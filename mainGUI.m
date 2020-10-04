@@ -7,27 +7,6 @@ function mainGUI
 % Author      : CJ Fujiwara
 % Last Edited : 2020/08
 %
-% This GUI is written using the figure interface rather than the uifigure
-% coding environment.  This is done because CF is not very familiar with
-% the uifigure interface, but has made many GUIs in the default MATLAB
-% figure interface. I am electing to not use GUIDE, because GUIDE is a
-% piece of shit coding interface in my opinion (why use a GUI to make a
-% GUI?)
-%
-% I have attemtped to extensively comment this code so that students of the
-% lab may edit and improve this GUI.  However, the comments assume a base
-% level of understanding of the MATLAB coding interface, specifcally with
-% the GUI elements and callbacks of uicontrol.
-%
-% The design of this GUI is inspired after the Cicero Word Generator, which
-% was designed by Aviv Keshet at MIT around 2008. This stylistic choice was
-% done because CF used Cicero in the past and found it to be very
-% intuititive.  Moreover, many MIT/Ketterle "children" groups tend to use
-% Cicero (IDK if this will be true in the future), and it is the author's
-% hope that this will enable future group members to learn the software of
-% this group more quickly. (It took me many months to become comfortable
-% with it).
-%
 % In order to make this code work with the existing code in the lab
 % designed by D. McKay (an early graduate student), many aspects of this
 % code have been "Frakenstein'ed" together. It is the author's desire that
@@ -36,7 +15,6 @@ function mainGUI
 %%%%%%%%%%%%%%% Initialize Sequence Data %%%%%%%%%%%%%%%%%
 LatticeSequencerInitialize();
 global seqdata;
-
 global adwin_booted;
 global adwinprocessnum;
 global adwin_processor_speed;
@@ -45,6 +23,8 @@ global adwin_process_path;
 
 seqdata.outputfilepath='Y:\Experiments\Lattice\_communication\';
 seqdata.outputfilepath='C:\Users\coraf\Desktop\LAB';
+
+figName='Lattice Sequencer';
 
 %% Delete old timer objects
 % The progress of the sequence is tracked using some MATLAB timers. Delete
@@ -62,10 +42,8 @@ waitTimeName='InterCycleWaitTimer';
 % Delete any existing timers
 delete(timerfind('Name',adwinTimeName));
 delete(timerfind('Name',waitTimeName));
-%% Initialize Graphics
+%% Initialize Primary Figure graphics
 
-%%%%%%%%%%%%%%% Initialize Graphics %%%%%%%%%%%%%%%%%
-figName='Lattice Sequencer';
 
 % Close any figure with the same name. Only one instance of mainGUI may be
 % open at a time
@@ -75,68 +53,50 @@ for i = 1:length(figs)
        close(figName); 
     end
 end
-
-
-
 % Figure color and size settings
 cc='w';
-w=350;
-h=350;
-
-%%%%%%%%%%%%%%%% INITIALIZE FIGURE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+w=350;h=350;
 
 % Initialize the figure graphics objects
-hF=figure('toolbar','none','Name',figName,'color',cc,...
-    'NumberTitle','off','MenuBar','none','resize','off');
+hF=figure('toolbar','none','Name',figName,'color',cc,'NumberTitle','off',...
+    'MenuBar','none','resize','off','CloseRequestFcn',@closeFig);
 clf
 hF.Position(3:4)=[w h];
-hF.CloseRequestFcn=@closeFig;
 
 % Callback for a close request function. The close request function handles
 % whether the adwin is running or other potential timer issues.
     function closeFig(fig,~)
-       disp('Requesting to close the sequencer GUI.'); 
-       
+       disp('Requesting to close the sequencer GUI.');        
        if (~isempty(timerfind('Name',adwinTimeName)) && ...
                isequal(timeAdwin.Running,'on')) || ...
                (cRpt.Value && isequal(timeWait.Running,'on'))
            tt=['The sequence is still running or repitions are engaged '...
-               'with the wait timer running. '...
-               'Are you sure you want to close the GUI? ' ... 
-               'If the sequence data has already been ' ...
-               'sent to the Adwin, the experiment will still be ' ...
-               'running.'];
-           tit='Sequence is still running!';
-           
-           f2=figure;
-           set(f2,'Name',tit,'color','w','NumberTitle','off',...
+               'with the wait timer running. Are you sure you want to ' ...
+               'close the GUI? If the sequence data has already been ' ...
+               'sent to the Adwin, the experiment will still be running.'];
+           tit='Sequence is still running!';           
+           f2=figure('Name',tit,'color','w','NumberTitle','off',...
                'windowstyle','modal','units','pixels','resize','off');
            f2.Position(3:4)=[400 200];
-           f2.Position(1:2)=fig.Position(1:2)+[-50 100];
-           
-           tt=uicontrol('style','text','String',tt,'parent',f2,...
+           f2.Position(1:2)=fig.Position(1:2)+[-50 100];           
+           uicontrol('style','text','String',tt,'parent',f2,...
                'fontsize',10,'units','normalized','horizontalalignment',...
-               'center','backgroundcolor','w');
-           tt.Position=[0.05 0.5 0.9 0.35];
-           
-           b1=uicontrol('style','pushbutton','string','yes','parent',f2,...
+               'center','backgroundcolor','w','Position',[.05 .5 .9 .35]);           
+           uicontrol('style','pushbutton','string','yes','parent',f2,...
                'fontsize',10','units','normalized','backgroundcolor',...
-               [253 106 2]/255);
-           b1.Position=[.25 .15 .2 .2];
-           b1.Callback=@doClose;
-  
-           b2=uicontrol('style','pushbutton','string','cancel','parent',f2,...
-               'fontsize',10','units','normalized','backgroundcolor','w');
-           b2.Position=[.55 .15 .2 .2];
-           b2.Callback=@(~,~) close(f2);          
-
+               [253 106 2]/255,'Position',[.25 .15 .2 .2],'Callback',@doClose);  
+           uicontrol('style','pushbutton','string','cancel','parent',f2,...
+               'fontsize',10','units','normalized','backgroundcolor','w',...
+               'position',[.55 .15 .2 .2],'Callback',@(~,~) close(f2));  
        else
             disp('Closing the sequencer GUI. Goodybe. I love you'); 
             try
                 stop(timeAdwin);
                 stop(timeWait);
                 delete(timeAdwin);
-                delete(timeWait);              
+                delete(timeWait); 
+            catch exception
+                warning('Something went wrong stopping and deleting timers');
             end
             delete(fig);
        end
@@ -159,8 +119,7 @@ hpMain.OuterPosition=[0 hF.Position(4)-h w h];
 
 % Title String
 tTit=uicontrol(hpMain,'style','text','string','Lattice Sequencer',...
-    'FontSize',18,'fontweight','bold','units','pixels',...
-    'backgroundcolor',cc);
+    'FontSize',18,'fontweight','bold','units','pixels','backgroundcolor',cc);
 tTit.Position(3:4)=tTit.Extent(3:4);
 tTit.Position(1:2)=[5 hpMain.Position(4)-tTit.Position(4)];
 
@@ -183,19 +142,17 @@ eSeq.Position(1:2)=[5 tSeq.Position(2)-eSeq.Position(4)];
 % Button for file selection of the sequenece file
 cdata=imresize(imread(['GUI Functions' filesep 'browse.jpg']),[20 20]);
 bBrowse=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
-    'backgroundcolor',cc);
+    'backgroundcolor',cc,'Callback',@browseCB);
 bBrowse.Position(3:4)=size(cdata,[1 2]);
 bBrowse.Position(1:2)=eSeq.Position(1:2)+[eSeq.Position(3)+2 0];
-bBrowse.Callback=@browseCB;
 
 % Button to plot the sequence
 bPlot=uicontrol(hpMain,'style','pushbutton','String','plot',...
     'backgroundcolor',cc,'FontSize',10,'units','pixels',...
-    'fontweight','normal');
+    'fontweight','normal','callback',@bPlotCB);
 bPlot.Position(3:4)=[30 20];
 bPlot.Position(1:2)=[bBrowse.Position(1)+bBrowse.Position(3)+5 ...
     bBrowse.Position(2)];
-bPlot.Callback=@bPlotCB;
 
     function bPlotCB(~,~)
         fh = str2func(erase(eSeq.String,'@'));        
@@ -239,24 +196,23 @@ bOver.Callback=@bOverCB;
 % Button group for selecting wait mode. The user data holds the selected
 % button
 bgWait = uibuttongroup('Parent',hpMain,'units','pixels','Title','wait mode',...
-    'backgroundcolor',cc,'UserData',0);
+    'backgroundcolor',cc,'UserData',0,'SelectionChangedFcn',@waitCB);
 bgWait.Position(3:4)=[w 90];
 bgWait.Position(1:2)=[1 eSeq.Position(2)-bgWait.Position(4)-5];
-bgWait.SelectionChangedFcn=@waitCB;
               
 % Create three radio buttons in the button group. The user data holds the
 % selected mode (0,1,2) --> (no wait, intercyle, target time)
-r1=uicontrol(bgWait,'Style','radiobutton', 'String','no wait',...
+uicontrol(bgWait,'Style','radiobutton', 'String','no wait',...
     'Position',[5 50 100 20],'Backgroundcolor',cc,'UserData',0);  
-r2=uicontrol(bgWait,'Style','radiobutton','String','intercycle wait',...
+uicontrol(bgWait,'Style','radiobutton','String','intercycle wait',...
     'Position',[75 50 100 20],'Backgroundcolor',cc,'UserData',1);
-r3=uicontrol(bgWait,'Style','radiobutton','String','target time',...
+uicontrol(bgWait,'Style','radiobutton','String','target time',...
     'Position',[175 50 100 20],'Backgroundcolor',cc,'UserData',2);              
 
 % Table for storing value of wait time
-tblWait=uitable(bgWait,'RowName','','ColumnName','',...
-    'Data',10,'ColumnWidth',{30},'ColumnEditable',true,...
-    'ColumnFormat',{'numeric'},'fontsize',8,'Enable','off');
+tblWait=uitable(bgWait,'RowName','','ColumnName','','Data',10,...
+    'ColumnWidth',{30},'ColumnEditable',true,'ColumnFormat',{'numeric'},...
+    'fontsize',8,'Enable','off');
 tblWait.Position(3:4)=tblWait.Extent(3:4);
 tblWait.Position(4)=tblWait.Position(4);
 tblWait.Position(1:2)=[260 50];
@@ -312,18 +268,13 @@ tWaitTime2 = text(0,0,'10.00 s','parent',axWaitBar,'fontsize',10,...
     'horizontalalignment','right','units','pixels','verticalalignment','bottom');
 tWaitTime2.Position=[axWaitBar.Position(3) 24];
 
-% Wait bar text label
-% tWaitLabel=text(.5,1.05,'Wait Timer','fontsize',10,...
-%     'horizontalalignment','center','verticalalignment','bottom','fontweight','bold');
-
 %% Run mode graphics and callbacks
 
 % Run sequence mode
 bgRun = uibuttongroup('Parent',hpMain,'units','pixels','Title','run mode',...
-    'backgroundcolor',cc,'UserData',0);
+    'backgroundcolor',cc,'UserData',0,'SelectionChangedFcn',@runModeCB);
 bgRun.Position(3:4)=[w 130];
 bgRun.Position(1:2)=[1 50];
-bgRun.SelectionChangedFcn=@runModeCB;
         
     function runModeCB(~,evnt)
         switch evnt.NewValue.String
@@ -336,6 +287,7 @@ bgRun.SelectionChangedFcn=@runModeCB;
                 bRun.String='Run Sequence';
                 bStop.String='Stop Sequence';
                 bStop.Visible='off';
+                tCycleLbl.Visible='off';
             case 'scan'
                 disp('Changing run mode to scan mode.');
                 cScanFinite.Enable='on';
@@ -345,6 +297,7 @@ bgRun.SelectionChangedFcn=@runModeCB;
                 bRun.String='Scan Sequence';
                 bStop.String='Stop Scan';
                 bStop.Visible='on';
+                tCycleLbl.Visible='on';
         end
         
     end
@@ -571,7 +524,7 @@ set(jbReset,'ToolTipText',ttStr);
 bRun=uicontrol(hpMain,'style','pushbutton','String','Run Sequence',...
     'backgroundcolor',[152 251 152]/255,'FontSize',10,'units','pixels',...
     'fontweight','bold');
-bRun.Position(3:4)=[165 40];
+bRun.Position(3:4)=[135 40];
 bRun.Position(1:2)=[5 5];
 bRun.Callback=@bRunCB;
 bRun.Tooltip='Compile and run the currently selected sequence.';
@@ -581,10 +534,18 @@ bRun.Tooltip='Compile and run the currently selected sequence.';
 bStop=uicontrol(hpMain,'style','pushbutton','String','Stop',...
     'backgroundcolor',[255	218	107]/255,'FontSize',10,'units','pixels',...
     'fontweight','bold','enable','off','visible','off');
-bStop.Position(3:4)=[165 40];
+bStop.Position(3:4)=[135 40];
 bStop.Position(1:2)=[bRun.Position(1)+bRun.Position(3)+5 5];
 bStop.Callback=@bStopCB;
 bStop.Tooltip='Compile and run the currently selected sequence.';
+
+
+str=['1'];
+tCycleLbl=uicontrol(hpMain,'style','text','string',str,...
+    'backgroundcolor','w','fontsize',16,'units','pixels',...
+    'fontweight','bold','visible','off','horizontalalignment','center');
+tCycleLbl.Position(3:4)=[60 35];
+tCycleLbl.Position(1:2)=[bStop.Position(1)+bStop.Position(3) 3];
 
 
 %% TIMERS
@@ -723,6 +684,11 @@ case 'single'
         bRun.Enable='on';
         rScan.Enable='on';
         rSingle.Enable='on';
+        
+        bPlot.Enable='on';
+        bOver.Enable='on';
+        bBrowse.Enable='on';
+        eSeq.Enable='on';
     end
 
     % What to do if the sequener is in scan mode.
@@ -735,11 +701,17 @@ case 'scan'
             rScan.Enable='on';
             rSingle.Enable='on';       
             bStop.Enable='off';
+
+            bPlot.Enable='on';
+            bOver.Enable='on';
+            bBrowse.Enable='on';
+            eSeq.Enable='on';
         else
             % Increment the scan and run the sequencer again
             disp(['Incrementing the scan ' num2str(seqdata.scancycle) ...
                 ' --> ' num2str(seqdata.scancycle+1)]);
             seqdata.scancycle=seqdata.scancycle+1;   
+            tCycleLbl.String=[num2str(seqdata.scancycle)];           
             runSequence;
         end                  
     else
@@ -747,16 +719,21 @@ case 'scan'
             disp(['Scan stopped at ' num2str(seqdata.scancycle) ...
                 ' cycles of ' num2str(tblMaxScan.Data)]);
         else
-            disp(['Scan stopped at' num2str(seqdata.scancycle) ' cycles']);
+            disp(['Scan stopped at ' num2str(seqdata.scancycle) ' cycles']);
         end
         
         bRun.Enable='on';
         rScan.Enable='on';
         rSingle.Enable='on';
         bStop.Enable='off';
+        bPlot.Enable='on';
+        bOver.Enable='on';
+        bBrowse.Enable='on';
+        eSeq.Enable='on';
         
-        end
-    end            
+    end
+end  
+
 end
 
 
@@ -788,11 +765,20 @@ end
                 seqdata.doscan=0;    
                 rScan.Enable='off';                
             case 'scan'
+                
+                tCycleLbl.String='1';           
                 seqdata.randcyclelist=uint16(randperm(1000));    
                 seqdata.doscan=1; 
                 bStop.Enable='on';
                 rSingle.Enable='off';
-        end   
+        end  
+        
+        
+        bPlot.Enable='off';
+        bOver.Enable='off';
+        bBrowse.Enable='off';
+        eSeq.Enable='off';
+        
         bRun.Enable='off';
         runSequence;        
     end
@@ -932,7 +918,7 @@ end
         disp(['     ' filenametxt]);
         disp(['     ' filenamemat]);
 
-        [path,name,ext] = fileparts(filenametxt);
+        [path,~,~] = fileparts(filenametxt);
         % If the location of the control file doesnt exist, make it
         if ~exist(path,'dir')
             try
@@ -974,4 +960,365 @@ end
 
 end
 
+
+function hFGUI=overrideGUI2
+
+% overrrideGUI
+%
+% Author : CJ Fujiwara
+%
+% This GUI is meant to override the digital and analog channels of the
+% experiment.  Its purpose is to provide an easy platform to diagnose and
+% calibrate the controls to the experiment. It is not designed to perform
+% custom test sequences for more complicated diagnoses, such as ramps or
+% measuring delays.
+
+% The design of the interface is modeled after the Cicero Word Generator.
+% The author used this at their previously institution and found it
+% intuitive. Further, this design will hopefully make it easier for future
+% lab members coming from "MIT-children" institutions to learn the lab.
+
+% Initialize the sequence data
+global seqdata;
+
+
+start_new_sequence();
+initialize_channels();
+
+% Grab the analog and digital channels
+Achs=seqdata.analogchannels;
+Dchs=seqdata.digchannels;
+
+% Define the RGB color scheme for the rows in the table
+cc=[255	255	255;
+    221 235 247]/255;
+bc=[47	117	181]/255;
+
+
+
+% Initialize main figure
+hFGUI=figure(101);
+clf
+set(hFGUI,'color','w','Name','Adwin Override','Toolbar','none','menubar','none',...
+    'NumberTitle','off','Resize','off');
+hFGUI.Position(3:4)=[900 600];
+hFGUI.Position(2)=50;
+hFGUI.WindowScrollWheelFcn=@scroll;
+
+
+
+% Callback function for mouse scroll over the figure.
+    function scroll(~,b)
+        scrll=-b.VerticalScrollCount;
+        C=get(gcf,'CurrentPoint');        
+        if C(2)<hpMain.Position(4)                  
+            if C(1)<hpMain.Position(3)/2
+                % mouse in in digital side
+                newVal=hDsl.Value+scrll*abs(hDsl.Min)*.05;                
+                newVal=max([newVal hDsl.Min]);
+                newVal=min([newVal hDsl.Max]);
+                hDsl.Value=newVal;     
+                DsliderCB;
+            else
+                % mouse is in analog side
+                newVal=hAsl.Value+scrll*abs(hAsl.Min)*.05;                
+                newVal=max([newVal hAsl.Min]);
+                newVal=min([newVal hAsl.Max]);
+                hAsl.Value=newVal;     
+                AsliderCB;
+            end            
+        end
+    end
+
+% Initialize uipanel that contains all channel information
+hpMain=uipanel('parent',hFGUI,'backgroundcolor','w',...
+    'units','pixels','fontsize',12);
+hpMain.Position=[0 0 hFGUI.Position(3) hFGUI.Position(4)];
+
+% Define the respective size of the digital and analog panels
+w1=350;
+g=50;
+w2=hpMain.Position(3)-w1-g;
+h=25;
+
+
+%%%%%%%%%%%%%%%%%%%%% DIGITAL CHANNEL GRAPHICS %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Wrapper container uipanel for digital channels
+hpD=uipanel('parent',hpMain,'backgroundcolor','w',...
+    'units','pixels','fontsize',12,'clipping','on');
+hpD.Position=[0 0 w1 hpMain.Position(4)-60];
+ 
+
+% Total container uipanel for digital channels
+% (you scroll by moving the large panel inside the small one; it's clunky
+% but MATLAB doesn't have a good scrollable interface for figure interace)
+hpDS=uipanel('parent',hpD,'backgroundcolor','w',...
+    'units','pixels','fontsize',12,'clipping','on');
+hpDS.Position=[0 0 400 h*length(Dchs)];
+hpDS.Position(2)=hpD.Position(4)-hpDS.Position(4);
+
+
+% Panel for labels
+Dlbl=uipanel('parent',hpMain,'backgroundcolor','w',...
+    'units','pixels','fontsize',10,'bordertype','none');
+Dlbl.Position(3:4)=[w1 h];
+Dlbl.Position(1:2)=[0 hpD.Position(4)+2];
+
+% Channel namel label
+t=uicontrol('parent',Dlbl,'style','text','units','pixels',...
+'fontsize',10,'fontname','monospaced','fontweight','bold',...
+'backgroundcolor','w','String','Channel Name');
+t.Position(3:4)=t.Extent(3:4);
+t.Position(1:2)=[10 0];
+
+% Override label
+t=uicontrol('parent',Dlbl,'style','text','units','pixels',...
+'fontsize',8,'fontname','monospaced','fontweight','bold',...
+'backgroundcolor','w','String','override?');
+t.Position(3:4)=t.Extent(3:4);
+t.Position(1:2)=[175 0];
+
+% Value label
+t=uicontrol('parent',Dlbl,'style','text','units','pixels',...
+'fontsize',8,'fontname','monospaced','fontweight','bold',...
+'backgroundcolor','w','String','value');
+t.Position(3:4)=t.Extent(3:4);
+t.Position(1:2)=[245 0];
+
+tic
+
+% Populate the digital channels
+for kk=1:length(Dchs)
+    % Grab the color
+    c=[cc(mod(kk-1,size(cc,1))+1,:) .1];    
+    
+    % panel for this row
+    hpDs(kk)=uipanel('parent',hpDS,'backgroundcolor',c,...
+        'units','pixels','fontsize',10,'bordertype','line',...
+        'highlightcolor',bc,'borderwidth',1);
+    hpDs(kk).Position(3:4)=[w1 h+1];
+    hpDs(kk).Position(1:2)=[0 hpDS.Position(4)-kk*h];    
+    hpDs(kk).UserData.Channel=Dchs(kk);    
+    
+    % Channel label
+    t=uicontrol('parent',hpDs(kk),'style','text','units','pixels',...
+        'fontsize',8,'fontname','monospaced','fontweight','bold',...
+        'backgroundcolor',c);
+    t.String=['d' num2str(Dchs(kk).channel) ' ' Dchs(kk).name];      
+    t.Position(3:4)=t.Extent(3:4);
+    t.Position(1:2)=[10 0.5*(hpDs(kk).Position(4)-t.Position(4))-3];
+ 
+    % Override Checkbox
+    ckOver=uicontrol('parent',hpDs(kk),'style','checkbox','units','pixels',...
+        'fontsize',6,'fontname','monospaced','backgroundcolor',c,...
+        'Callback',{@overCBD kk});
+    ckOver.Position(3:4)=ckOver.Extent(3:4)+50;
+    ckOver.Position(1)=200;
+    ckOver.Position(2)=0.5*(hpDs(kk).Position(4)-ckOver.Position(4));
+
+    % Value check box
+    ckValue=uicontrol('parent',hpDs(kk),'style','checkbox','units','pixels',...
+        'fontsize',6,'fontname','monospaced','backgroundcolor',c,...
+        'enable','off');
+    ckValue.Position(3:4)=ckValue.Extent(3:4)+50;
+    ckValue.Position(1)=250;
+    ckValue.Position(2)=0.5*(hpDs(kk).Position(4)-ckValue.Position(4));
+    ckValue.Enable='off';        
+    ckValue.Value=real(Dchs(kk).resetvalue);
+    hpDs(kk).UserData.ckValue=ckValue;    
+end
+
+
+% enable or disable a digital channel override
+    function overCBD(a,~,ind)
+        if a.Value
+            hpDs(ind).UserData.ckValue.Enable='on';   
+        else
+            hpDs(ind).UserData.ckValue.Enable='off';            
+        end     
+    end
+
+% Digital channel panel slider
+hDsl = uicontrol('parent',hpD,'Units','pixels','Style','Slider',...
+    'visible','on','Tag','scroll','Max',0,'Value',0);
+hDsl.Callback=@DsliderCB;
+hDsl.SliderStep=[0.05 .1];
+hDsl.Min=-(hpDS.Position(4)-hpD.Position(4));
+hDsl.OuterPosition(3:4)=[20 hpD.Position(4)];            
+hDsl.Position(1:2)=[hpD.Position(3)-hDsl.Position(3) 0];     
+
+% Callback for when the slider bar moves
+    function DsliderCB(~,~)
+        hpDS.Position(2)=hpD.Position(4)-hpDS.Position(4)-hDsl.Value;   
+    end
+
+
+
+%%%%%%%%%%%%%%%%%%%%% ANALOG CHANNEL GRAPHICS %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Wrapper container uipanel for analog channels
+hpA=uipanel('parent',hpMain,'backgroundcolor','w',...
+    'units','pixels','fontsize',12,'clipping','on');
+hpA.Position=[hpD.Position(3)+g 0 w2 hpD.Position(4)];
+
+% Total container uipanel for analog channels
+hpAS=uipanel('parent',hpA,'backgroundcolor','w',...
+    'units','pixels','fontsize',12,'clipping','on');
+hpAS.Position=[0 0 w2 h*length(Achs)];
+hpAS.Position(2)=hpA.Position(4)-hpAS.Position(4);
+
+
+% button to output analog channels
+bAoutput=uicontrol('parent',hpMain,'style','pushbutton',...
+    'backgroundcolor','w','fontsize',10,'units','pixels',...
+    'foregroundcolor','k');
+bAoutput.String='output analog channels';
+bAoutput.Position(1)=hpA.Position(1)+5;
+bAoutput.Position(3:4)=[150 25];
+bAoutput.Position(2)=hpD.Position(4)+30;
+
+
+% Panel for labels
+Albl=uipanel('parent',hpMain,'backgroundcolor','w',...
+    'units','pixel','fontsize',10,'bordertype','none');
+Albl.Position(3:4)=[w2 h];
+Albl.Position(1:2)=[hpA.Position(1) hpA.Position(4)+2];
+
+% Channel label
+t=uicontrol('parent',Albl,'style','text','units','pixels',...
+'fontsize',10,'fontname','monospaced','fontweight','bold',...
+'backgroundcolor','w','String','Channel Name');
+t.Position(3:4)=t.Extent(3:4);
+t.Position(1:2)=[10 0];
+
+
+% Override label
+t=uicontrol('parent',Albl,'style','text','units','pixels',...
+'fontsize',8,'fontname','monospaced','fontweight','bold',...
+'backgroundcolor','w','String','override?');
+t.Position(3:4)=t.Extent(3:4);
+t.Position(1:2)=[175 0];
+
+% Value label
+t=uicontrol('parent',Albl,'style','text','units','pixels',...
+'fontsize',8,'fontname','monospaced','fontweight','bold',...
+'backgroundcolor','w','String','value');
+t.Position(3:4)=t.Extent(3:4);
+t.Position(1:2)=[245 0];
+
+% fucntion label
+t=uicontrol('parent',Albl,'style','text','units','pixels',...
+'fontsize',8,'fontname','monospaced','fontweight','bold',...
+'backgroundcolor','w','String','func#');
+t.Position(3:4)=t.Extent(3:4);
+t.Position(1:2)=[285 0];
+
+% voltage label
+t=uicontrol('parent',Albl,'style','text','units','pixels',...
+'fontsize',8,'fontname','monospaced','fontweight','bold',...
+'backgroundcolor','w','String','voltage');
+t.Position(3:4)=t.Extent(3:4);
+t.Position(1:2)=[350 0];
+
+
+% Populate the analog channels
+for kk=1:length(Achs)
+    c=[cc(mod(kk-1,size(cc,1))+1,:) .1];    
+    
+    % panel for this row
+    hpAs(kk)=uipanel('parent',hpAS,'backgroundcolor',c,...
+        'units','pixels','fontsize',10,'bordertype','line',...
+        'highlightcolor',bc,'borderwidth',1);
+    hpAs(kk).Position(3:4)=[w2 h+1];
+    hpAs(kk).Position(1:2)=[0 hpAS.Position(4)-kk*h];    
+    hpAs(kk).UserData.Channel=Achs(kk);
+    
+    % Channel label
+    t=uicontrol('parent',hpAs(kk),'style','text','units','pixels',...
+        'fontsize',8,'fontname','monospaced','fontweight','bold',...
+        'backgroundcolor',c);
+    t.String=['a' num2str(Achs(kk).channel) ' ' Achs(kk).name];      
+    t.Position(3:4)=t.Extent(3:4);
+    t.Position(1:2)=[10 0.5*(hpAs(kk).Position(4)-t.Position(4))-2];
+ 
+    % Override Checkbox
+    ckOver=uicontrol('parent',hpAs(kk),'style','checkbox','units','pixels',...
+        'fontsize',6,'fontname','monospaced','backgroundcolor',c);
+    ckOver.Position(3:4)=ckOver.Extent(3:4)+50;
+    ckOver.Position(1)=200;
+    ckOver.Position(2)=0.5*(hpAs(kk).Position(4)-ckOver.Position(4));
+    ckOver.Callback={@overCBA kk};
+
+    % Value Number
+    ckValue=uicontrol('parent',hpAs(kk),'style','edit','units','pixels',...
+        'fontsize',8,'fontname','monospaced','backgroundcolor','w',...
+        'enable','off','String', '');
+    ckValue.String=num2str(real(Achs(kk).resetvalue(1)));
+    ckValue.Position(4)=ckValue.Extent(4);
+    ckValue.Position(3)=40;
+    ckValue.Position(1)=240;
+    ckValue.Position(2)=0.5*(hpAs(kk).Position(4)-ckValue.Position(4));
+    ckValue.Enable='off';        
+    hpAs(kk).UserData.ckValue=ckValue;
+    
+    % Function select pull-down menu
+    pdFunc=uicontrol('parent',hpAs(kk),'style','popupmenu',...
+        'units','pixels','fontsize',8,'fontname','monospaced',...
+        'backgroundcolor','w','enable','off');
+    pdFunc.String=strsplit(num2str(1:length(Achs(kk).voltagefunc)),' ');
+    
+    % case where we specify value not using the defaultfunc (value,func#)
+    if length(Achs(kk).resetvalue)>1
+        pdFunc.Value=Achs(kk).resetvalue(2);          
+    else
+        pdFunc.Value=Achs(kk).defaultvoltagefunc;
+    end    
+    foo=Achs(kk).voltagefunc{pdFunc.Value};    
+
+    pdFunc.Position(3)=30;
+    pdFunc.Position(4)=pdFunc.Extent(4);
+    pdFunc.Position(1)=ckValue.Position(1)+ckValue.Position(3);
+    pdFunc.Position(2)=0.5*(hpAs(kk).Position(4)-pdFunc.Position(4))+1;
+    hpAs(kk).UserData.pdFunc=pdFunc;
+    
+    % voltage output string
+    tVolt=uicontrol('parent',hpAs(kk),'style','text','units','pixels',...
+        'fontsize',8,'fontname','monospaced','backgroundcolor',c,...
+        'enable','on','horizontalalignment','left');
+    tVolt.String=[num2str(foo(real(Achs(kk).resetvalue(1)))) ' V'];
+    tVolt.Position(1)=350;
+    tVolt.Position(3:4)=[120 tVolt.Extent(4)];
+    tVolt.Position(2)=2;
+end
+toc
+
+% enable or disable a analog channel override
+    function overCBA(a,~,ind)
+        if a.Value
+            hpAs(ind).UserData.ckValue.Enable='on';   
+            hpAs(ind).UserData.pdFunc.Enable='on';   
+
+        else
+            hpAs(ind).UserData.ckValue.Enable='off';            
+            hpAs(ind).UserData.pdFunc.Enable='off';   
+        end     
+    end
+
+% Analog channel panel slider
+hAsl = uicontrol('parent',hpA,'Units','pixels','Style','Slider',...
+    'visible','on','Tag','scroll','Max',0,'Value',0);
+hAsl.Callback=@AsliderCB;
+hAsl.SliderStep=[0.05 .1];
+hAsl.Min=-(hpAS.Position(4)-hpA.Position(4));
+hAsl.OuterPosition(3:4)=[20 hpA.Position(4)];            
+hAsl.Position(1:2)=[hpA.Position(3)-hAsl.Position(3) 0];     
+
+% Callback for when the slider bar moves
+    function AsliderCB(~,~)
+        hpAS.Position(2)=hpA.Position(4)-hpAS.Position(4)-hAsl.Value;   
+    end
+
+
+end
 

@@ -142,19 +142,24 @@ end
 
 %Used to be in the ADWIN, but moved here so that we can use a long for the
 %ADWIN data array
-seqdata.analogadwinlist(:,3) = (seqdata.analogadwinlist(:,3)+10)/20*2^(16);
-
+%FC - If an analog channel isn't addressed throughout the sequence then this
+%throws an error.
+if (~isempty(seqdata.analogadwinlist))
+    seqdata.analogadwinlist(:,3) = (seqdata.analogadwinlist(:,3)+10)/20*2^(16);
+else
+    error('No analog channel was referenced during sequence.');
+end
 
 %% Reformat Digital Channel Update Array
 %Change the digital update array into an array of update words
 
 if (~isempty(seqdata.digadwinlist))
-
+    
     %pre-allocate, can be no bigger than the current update list
     new_digarray = zeros(length(seqdata.digadwinlist(:,1)),3);
 
     %first sort the digital array by time
-    [tempdigarray sortindices] = sort(seqdata.digadwinlist(:,1));
+    [tempdigarray, sortindices] = sort(seqdata.digadwinlist(:,1));
     sorteddiglist = seqdata.digadwinlist(sortindices(:,1),:);
     curcardindex=zeros(1,length(seqdata.digcardchannels));
     curindex = 0;
@@ -163,7 +168,7 @@ if (~isempty(seqdata.digadwinlist))
 
         %get the elements associated with this card
         ind = logical(sorteddiglist(:,4)==seqdata.digcardchannels(i));
-        curdigarray = sorteddiglist(ind,:);       
+        curdigarray = sorteddiglist(ind,:);  
         for j = 1:length(curdigarray(:,1))
             
             %if the same update time then just change the bit
@@ -176,6 +181,7 @@ if (~isempty(seqdata.digadwinlist))
                     curcardindex(i) = 1;
                     curindex = curindex+1;
                     new_digarray(curindex,:) = [curdigarray(j,1) curdigarray(j,4) seqdata.diglastvalue(i)];
+%                     disp(dec2bin(new_digarray(1,3)));
                 else
                     curindex = curindex + 1;
                     new_digarray(curindex,:) = [curdigarray(j,1) curdigarray(j,4) new_digarray(curindex-1,3)];
@@ -184,14 +190,16 @@ if (~isempty(seqdata.digadwinlist))
             end
         end
     end
-
+%     disp(dec2bin(new_digarray(:,3)));
+    %FC - Not sure why we do the following, it gets changed back once
+    %variables are passed to the ADbasic file
     %if the 32nd bit is set, then add a sign
     ind = (bitget(new_digarray(1:curindex,3),32)==1);
     new_digarray(ind,3) = new_digarray(ind,3) - 2^(31);
-    new_digarray(ind,2) = new_digarray(ind,2)+2;
+    new_digarray(ind,2) = new_digarray(ind,2)+seqdata.digcardnum;
     
 %     new_digarray
-    
+
     %append the digital array to the current analog array
     adwinlist = [seqdata.analogadwinlist; new_digarray(1:curindex,:)];
 else
@@ -201,11 +209,13 @@ end
 %% Process Main Array
 
 %sort the adwin list by times
-[templist sortindices] = sort(adwinlist,1);
+[templist, sortindices] = sort(adwinlist,1);
 
 adwinlist = adwinlist(sortindices(:,1),:);
 
 %for some reason the ADWIN starts at the second element in these arrays
+%FC - its because in the ADbasic code, the index counter starts at 2 rather
+%than 1, could be changed?
 seqdata.chnum = [0; adwinlist(:,2)];
 seqdata.chval = [0; adwinlist(:,3)];
 

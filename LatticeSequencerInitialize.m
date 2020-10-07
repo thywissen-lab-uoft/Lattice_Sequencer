@@ -54,9 +54,9 @@ seqdata = struct('analogadwinlist',[],... %adwin list is [time channel value];
     'timeunit',1E-3,... %how we refer to times (ie. this sets to 1ms)
     'digchannels',struct([]),... %digital channel info
     'digoffset',80,... %offset to add to dig channels to differentiate from analog
-    'digcardchannels',[101,102],... %actual dig card channel on adwin
-    'diglastvalue',[0 0],... %last value of the digital card sent to the sequencer
-    'digcardnum',2,...%number of dig cards
+    'digcardchannels',[101,102,103],... %101 corresponds to Module 2 on ADwin, 102 corresponds to Module 1, 103 corresponds to Module 3
+    'diglastvalue',[0 0 0],... %last value of the digital card sent to the sequencer
+    'digcardnum',3,...%number of dig cards
     'updatelist',[],...%update list to send to ADWIN
     'chnum',[],... %channel list to send to ADWIN
     'chval',[],... %channel value list to send to ADWIN
@@ -68,7 +68,8 @@ seqdata = struct('analogadwinlist',[],... %adwin list is [time channel value];
     'createoutfile',1,... 
     'numDDSsweeps',0,... %Add these two lines! 
     'DDSsweeps',[],...
-    'atomtype',4); %1 - K-40, 2 - K-41, 3 - Rb-87 , 4 - Rb+K
+    'atomtype',4,...  %1 - K-40, 2 - K-41, 3 - Rb-87 , 4 - Rb+K
+    'params', []); %various parameters, recently defined here by FC 07/23/2020
 
 %ADWIN processor speed
 adwin_processor_speed = 300E6;

@@ -25,6 +25,9 @@ curtime = timein;
     ramp_time2 = 75;
     hold_time2 = 10;
     gradient_value2 = 1.0*(1.22 + 89.6*1);
+    
+%     gList=10:10:100;
+%     gradient_value2 = getScanParameter(gList,seqdata.scancycle,seqdata.randcyclelist,'gradient');
 
     %Turn on MOT TTL
     setDigitalChannel(calctime(curtime,0),16,0);

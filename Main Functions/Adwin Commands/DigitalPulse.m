@@ -24,7 +24,7 @@ if ~(setting==0 || setting==1)
 end
 
 if pulsetime<=0
-    error('Pulsetime must be positive and non-zero')
+    error('Pulsetime must be positive and non-zero');
 end
 
 %recalc pulse time in cycle counts

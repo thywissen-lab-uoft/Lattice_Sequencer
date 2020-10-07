@@ -38,8 +38,6 @@ for i = 1:length(seqdata.digchannels)
 end
 
 % digital channel names
-
-
 seqdata.digchannels(1).name = 'K D1 GM Shutter'; % 1: ON, 0: OFF
 seqdata.digchannels(2).name = 'K Trap Shutter'; % 1: ON, 0: OFF
 seqdata.digchannels(3).name = 'K Repump Shutter';% all repump power shutter, different from 0th order shutter
@@ -49,38 +47,38 @@ seqdata.digchannels(6).name = 'K Trap TTL'; %AOM is before the TA, so this canno
 seqdata.digchannels(7).name = 'K Repump TTL'; %AOM is before the TA
 seqdata.digchannels(8).name = 'Rb Trap TTL'; %AOM is before the TA
 % seqdata.digchannels(3).name = 'xLatticeOFF';
-seqdata.digchannels(9).name = 'K Probe/OP TTL'; % 0: OFF; 1: ON
-seqdata.digchannels(10).name = 'Plug Shutter'; %1: ON; 0: OFF
-seqdata.digchannels(11).name = 'UV LED'; %No Longer Used, UV TTL
+seqdata.digchannels(9).name = 'K Probe/OP TTL';     % 0: OFF; 1: ON
+seqdata.digchannels(10).name = 'Plug Shutter';      % 1: ON; 0: OFF
+seqdata.digchannels(11).name = 'UV LED';            % No Longer Used, UV TTL
 seqdata.digchannels(12).name = 'ScopeTrigger';
-seqdata.digchannels(14).name = 'Rb uWave TTL'; %0 is off
-seqdata.digchannels(15).name = 'Dimple Shutter'; %0 is off
-seqdata.digchannels(16).name = 'MOT TTL'; %0 is on, 1 is off: What does this do? Why is it ever off?
-seqdata.digchannels(17).name = 'RF/uWave Transfer'; %0 is RF, 1 is uWaves
+seqdata.digchannels(14).name = 'Rb uWave TTL';      % 0 is off
+seqdata.digchannels(15).name = 'Dimple Shutter';    % 0 is off
+seqdata.digchannels(16).name = 'MOT TTL';           % 0 is on, 1 is off: What does this do? Why is it ever off?
+seqdata.digchannels(17).name = 'RF/uWave Transfer'; % 0 is RF, 1 is uWaves
 seqdata.digchannels(17).resetvalue = 0;
 seqdata.digchannels(18).name = 'DDS ADWIN Trigger';
-seqdata.digchannels(19).name = 'RF TTL'; %0 is off
-seqdata.digchannels(20).name = 'RaspPi Trig'; %1 Triggers
-seqdata.digchannels(21).name = 'Coil 16 TTL'; %(fast switch) 1 is off - on control board, bypasses servo.
-seqdata.digchannels(22).name = '15/16 Switch'; %15 Switch (A FET - beside coil short detector). Used for sending equal currents into both coils for QP.
+seqdata.digchannels(19).name = 'RF TTL';            % 0 is off
+seqdata.digchannels(20).name = 'RaspPi Trig';       % 1 Triggers
+seqdata.digchannels(21).name = 'Coil 16 TTL';       % (fast switch) 1 is off - on control board, bypasses servo.
+seqdata.digchannels(22).name = '15/16 Switch';      % 15 Switch (A FET - beside coil short detector). Used for sending equal currents into both coils for QP.
 seqdata.digchannels(23).name = 'D1 Shutter';
-seqdata.digchannels(24).name = 'Rb Probe/OP TTL'; %0: laser ON; 1 laser OFF
+seqdata.digchannels(24).name = 'Rb Probe/OP TTL';   % 0: laser ON; 1 laser OFF
 seqdata.digchannels(25).name = 'Rb Probe/OP shutter';
 seqdata.digchannels(26).name = 'PixelFly Trigger';
-seqdata.digchannels(27).name = 'K High Field Probe'; %0: on, 1 off
-seqdata.digchannels(28).name = 'Transport Relay'; %Relay to use one FET for two coils (3 & 11)
-seqdata.digchannels(29).name = 'Kitten Relay'; %Physical relay to use different currents in coils 15 and 16.
-seqdata.digchannels(30).name = 'K Probe/OP shutter';%0: OFF , 1: ON ;
-seqdata.digchannels(31).name = 'fast FB Switch'; % 1 = on (make sure channel 37 is set to -0.5 before opening to avoid current spike, after opening set channel 37 to 0 to have a smooth ramp on from zero)
+seqdata.digchannels(27).name = 'K High Field Probe'; % 0: on, 1 off
+seqdata.digchannels(28).name = 'Transport Relay';   % Relay to use one FET for two coils (3 & 11)
+seqdata.digchannels(29).name = 'Kitten Relay';      % Physical relay to use different currents in coils 15 and 16.
+seqdata.digchannels(30).name = 'K Probe/OP shutter';% 0: OFF , 1: ON ;
+seqdata.digchannels(31).name = 'fast FB Switch';    % 1 = on (make sure channel 37 is set to -0.5 before opening to avoid current spike, after opening set channel 37 to 0 to have a smooth ramp on from zero)
 seqdata.digchannels(32).name = 'iXon Trigger';
-seqdata.digchannels(33).name = 'Shim Relay'; %1 = on (MOT Shims)
-seqdata.digchannels(34).name = 'yLatticeOFF'; %Controls all 3 lattice beams (i.e. Lattice TTL)
+seqdata.digchannels(33).name = 'Shim Relay';        % 1 = on (MOT Shims)
+seqdata.digchannels(34).name = 'yLatticeOFF';       % Controls all 3 lattice beams (i.e. Lattice TTL)
 seqdata.digchannels(35).name = 'D1 TTL';
 seqdata.digchannels(36).name = 'EIT Shutter';
-seqdata.digchannels(37).name = 'Shim Multiplexer';  %0 = MOT Shims (unipolar), 1: Science shim coils ???
+seqdata.digchannels(37).name = 'Shim Multiplexer';  % 0 = MOT Shims (unipolar), 1: Science shim coils ???
 seqdata.digchannels(37).resetvalue = 0; 
-seqdata.digchannels(38).name = 'FPump Direct'; %0 off, 1 on
-seqdata.digchannels(39).name = 'K uWave TTL'; %0 off, 1 on
+seqdata.digchannels(38).name = 'FPump Direct';      % 0 off, 1 on
+seqdata.digchannels(39).name = 'K uWave TTL';       % 0 off, 1 on
 seqdata.digchannels(40).name = 'K/Rb uWave Transfer'; %0 = K, 1 = Rb
 seqdata.digchannels(40).resetvalue = 0;
 seqdata.digchannels(41).name = 'Lattice Direct Control'; 

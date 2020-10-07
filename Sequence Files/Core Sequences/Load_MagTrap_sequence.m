@@ -202,10 +202,11 @@ curtime = timein;
     % Use stage1  = 2 to evaporate fast for transport benchmarking 
     % Use stage1b = 2 to do microwave evaporation in the plugged QP trap
     seqdata.flags.compress_QP = 1; % compress QP after transport
+
     seqdata.flags.RF_evap_stages = [1, 1, 0]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
     
-    %RHYS - Here be parameters. 
     
+    %RHYS - Here be parameters.     
     rf_evap_time_scale = [1.0 1.5];[1.0 1.2];[0.8 1.2];[1.0 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
     
     rf_evap_time_scale=[.1 .1];
@@ -315,12 +316,14 @@ curtime = timein;
 %     addOutputParam('D1_DP_FM',D1_FM);
 
 %% Make sure dipole and lattice traps are off and adjust XDT piezo mirrors
-%% and initialize repump imaging.
+% and initialize repump imaging.
 
     %RHYS - Initialization settings for a lot of channels. But, the 'reset
     %values' should already be set in initialize_channels, and, I think,
     %set at the end of the sequence. So, these should just be incorporated
     %into that function properly instead of defined here. 
+    
+    % Perhaps to be safe, we just have another call to @Reset_Channels?
 
     %Initialize modulation ramp to off.
     setAnalogChannel(calctime(curtime,0),'Modulation Ramp',0);
@@ -437,8 +440,8 @@ curtime = calctime(curtime,controlled_load_time);
     
     %RHYS - The first important code that is called. Applies
     %CMOT/molasses/optical pumping to MOT. 
+
 curtime = Prepare_MOT_for_MagTrap(curtime);
-   
     %RHYS - Should integrate the following lines into the above function. 
 
     %Open other AOMS to keep them warm. Why ever turn them off for long
@@ -1031,7 +1034,9 @@ curtime = Reset_Channels(calctime(curtime,0));
     %XDT pointing is not done right now, since we removed the QPDs, but is in
     %theory useful (the idea of using QPDs to keep our critical beams aligned
     %is still a good one). 
-    DigitalPulse(calctime(curtime,0),'RaspPi Trig',1000,1) % trigger pulse for pyKraken
+    % trigger pulse for pyKraken
+    DigitalPulse(calctime(curtime,0),'RaspPi Trig',1000,1); 
+    
     measure_XDT_pointing = 0;
     if (measure_XDT_pointing)
         %pulse XDTs on
@@ -1070,9 +1075,9 @@ end
     end
         
     %call Load_MOT function
-curtime = Load_MOT(calctime(curtime,mot_wait_time),[rb_MOT_detuning k_MOT_detuning]);
+    curtime = Load_MOT(calctime(curtime,mot_wait_time),[rb_MOT_detuning k_MOT_detuning]);
         
-    setAnalogChannel(curtime,'K Repump FM',k_repump_shift,2)
+    setAnalogChannel(curtime,'K Repump FM',k_repump_shift,2);
       
     if ( seqdata.flags.do_dipole_trap == 1 )
 curtime = calctime(curtime,dip_holdtime);
@@ -1093,6 +1098,7 @@ curtime = setDigitalChannel(calctime(curtime,10),28,0);
 
     %RHYS - Following is some irrelevant stuff and some quality of life stuff,
     %including an important check on overall cycle time. 
+    
 %% Scope trigger selection
 
     SelectScopeTrigger(scope_trigger);

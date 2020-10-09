@@ -15,14 +15,16 @@ function mainGUI
 %%%%%%%%%%%%%%% Initialize Sequence Data %%%%%%%%%%%%%%%%%
 LatticeSequencerInitialize();
 global seqdata;
-global adwin_booted;
+% global adwin_booted;
 global adwinprocessnum;
-global adwin_processor_speed;
-global adwin_connected;
-global adwin_process_path;
+% global adwin_processor_speed;
+% global adwin_connected;
+% global adwin_process_path;
 
-seqdata.outputfilepath='Y:\Experiments\Lattice\_communication\';
-seqdata.outputfilepath='C:\Users\coraf\Desktop\LAB';
+
+
+seqdata.outputfilepath='Y:\_communication';
+defaultSequence='@test_sequence';
 
 figName='Lattice Sequencer';
 
@@ -136,8 +138,7 @@ tSeq.Position(3:4)=tSeq.Extent(3:4);
 tSeq.Position(1:2)=[5 tTit.Position(2)-tSeq.Position(4)];
 
 % Sequence File edit box
-str='@Load_MagTrap_sequence';
-eSeq=uicontrol(hpMain,'style','edit','string',str,...
+eSeq=uicontrol(hpMain,'style','edit','string',defaultSequence,...
     'horizontalalignment','left','fontsize',10,'backgroundcolor',cc);
 eSeq.Position(3)=210;
 eSeq.Position(4)=eSeq.Extent(4);
@@ -200,23 +201,24 @@ bOver.Callback=@bOverCB;
 % Button group for selecting wait mode. The user data holds the selected
 % button
 bgWait = uibuttongroup('Parent',hpMain,'units','pixels','Title','wait mode',...
-    'backgroundcolor',cc,'UserData',0,'SelectionChangedFcn',@waitCB);
+    'backgroundcolor',cc,'UserData',1,'SelectionChangedFcn',@waitCB);
 bgWait.Position(3:4)=[w 90];
 bgWait.Position(1:2)=[1 eSeq.Position(2)-bgWait.Position(4)-5];
-              
+
 % Create three radio buttons in the button group. The user data holds the
 % selected mode (0,1,2) --> (no wait, intercyle, target time)
 uicontrol(bgWait,'Style','radiobutton', 'String','no wait',...
-    'Position',[5 50 100 20],'Backgroundcolor',cc,'UserData',0);  
+    'Position',[5 50 100 20],'Backgroundcolor',cc,'UserData',0,'value',0);  
 uicontrol(bgWait,'Style','radiobutton','String','intercycle wait',...
-    'Position',[75 50 100 20],'Backgroundcolor',cc,'UserData',1);
+    'Position',[75 50 100 20],'Backgroundcolor',cc,'UserData',1,'value',1);
 uicontrol(bgWait,'Style','radiobutton','String','target time',...
-    'Position',[175 50 100 20],'Backgroundcolor',cc,'UserData',2);              
+    'Position',[175 50 100 20],'Backgroundcolor',cc,'UserData',2,'value',0);              
+
 
 % Table for storing value of wait time
 tblWait=uitable(bgWait,'RowName','','ColumnName','','Data',10,...
     'ColumnWidth',{30},'ColumnEditable',true,'ColumnFormat',{'numeric'},...
-    'fontsize',8,'Enable','off');
+    'fontsize',8,'Enable','on');
 tblWait.Position(3:4)=tblWait.Extent(3:4);
 tblWait.Position(4)=tblWait.Position(4);
 tblWait.Position(1:2)=[260 50];
@@ -429,8 +431,8 @@ bStop.Callback=@bStopCB;
 bStop.Tooltip='Compile and run the currently selected sequence.';
 
 
-str=['1'];
-tCycleLbl=uicontrol(hpMain,'style','text','string',str,...
+defaultSequence=['1'];
+tCycleLbl=uicontrol(hpMain,'style','text','string',defaultSequence,...
     'backgroundcolor','w','fontsize',16,'units','pixels',...
     'fontweight','bold','visible','off','horizontalalignment','center');
 tCycleLbl.Position(3:4)=[60 35];
@@ -700,7 +702,9 @@ end
         
         % Finish compiling the code
         fh(0);                          % run sequence function                  
-        calc_sequence;                  % convert seqdata for AdWin        
+        calc_sequence;                  % convert seqdata for AdWin  
+        
+        % create output file
         try
             load_sequence;              % load the sequence onto adwin
         catch exception
@@ -718,6 +722,9 @@ end
             num2str(round(seqdata.sequencetime,1)) 's']);    
         disp(' ');
        
+        
+        makeControlFile;
+
         % Run the sequence
         try
             Start_Process(adwinprocessnum);
@@ -731,8 +738,7 @@ end
                
         % Seqdata history
                 
-        % create output file
-        makeControlFile;
+
     end
     
     function out=safeToRun
@@ -793,20 +799,20 @@ end
     % most recent cycle run.
     function makeControlFile
         % Dispaly output parameters to control prompt        
-%         disp(' ');
-%         disp('--Lattice Sequencer Output Parameters--');        
-%         for n = 1:length(seqdata.outputparams)
-%             %the first element is a string and the second element is a number
-%             fprintf(1,'%s: %g \n',seqdata.outputparams{n}{1},seqdata.outputparams{n}{2});
-%         end        
-%         disp('----------------------------------------');        
+        disp(' ');
+        disp('--Lattice Sequencer Output Parameters--');        
+        for n = 1:length(seqdata.outputparams)
+            %the first element is a string and the second element is a number
+            fprintf(1,'%s: %g \n',seqdata.outputparams{n}{1},seqdata.outputparams{n}{2});
+        end        
+        disp('----------------------------------------');        
 %         
         filenametxt = fullfile(seqdata.outputfilepath, 'control.txt');
         filenamemat=fullfile(seqdata.outputfilepath, 'control.mat');  
-        disp(' ')
-        disp([datestr(now,13) ' Saving sequence parameters']);
-        disp(['     ' filenametxt]);
-        disp(['     ' filenamemat]);
+%         disp(' ')
+        disp(['Saving sequence parameters to ' seqdata.outputfilepath filesep 'control']);
+%         disp(['     ' filenametxt]);
+%         disp(['     ' filenamemat]);
         [path,~,~] = fileparts(filenametxt);
         % If the location of the control file doesnt exist, make it
         if ~exist(path,'dir')

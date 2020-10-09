@@ -15,11 +15,11 @@ global seqdata;
 curtime = timein;
 
 %% Optical pumping parameters
-optime_list = [5];
+optime_list = 5;
 optime = getScanParameter(optime_list,seqdata.scancycle,seqdata.randcyclelist,'optime');
 
 % K
-k_op_am_list = [0.1:0.1:1];[0.9];[0.6];
+k_op_am_list = 1;[0.9];[0.6];
 k_op_am = getScanParameter(k_op_am_list,seqdata.scancycle,seqdata.randcyclelist,'k_op_am');
 k_op_offset = 0.0;
 k_op_time = optime;
@@ -27,7 +27,7 @@ k_op_detuning_list = [3];3;[31];  32;29;
 k_op_detuning = getScanParameter(k_op_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'k_op_det');
 
 % Rb
-rb_op_am_list = [0.4];[0.7];  %  (1) RF amplitude (V)       
+rb_op_am_list = .4;[0.4];[0.7];  %  (1) RF amplitude (V)       
 rb_op_am = getScanParameter(rb_op_am_list,seqdata.scancycle,seqdata.randcyclelist,'rb_op_am');
 rb_op_offset = 0.0;
 rb_op_time = optime;        % (1) optical pumping time
@@ -36,20 +36,21 @@ rb_op_detuning_set(1) = -20;-5;     %5 for 2->2
 rb_op_detuning_set(2) = -3;     % for 2->3
 
 rb_op_detuning = rb_op_detuning_set(seqdata.flags.Rb_Probe_Order);
-
-% rb_op_detuning_list = [-40:2:20];
+% 
+% rb_op_detuning_list = [-20:2:40];
 % rb_op_detuning = getScanParameter(rb_op_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'rb_op_detuning');
 
-
+% rb_op_detuning=15;
 %% Prepare OP
-% CF : Let's make sure to put the appropriate voltagefunc in shim calls
 
-%turn on the Y (quantizing) shim on after 400us (the MOT turn-off time)
-setAnalogChannel(calctime(curtime,0.0),'Y Shim',3.3,2);%3.3 setAnalogChannel(calctime(curtime,0.4),19,3.5);    
+% yshims=0:.25:5;
+% yshim=getScanParameter(yshims,seqdata.scancycle,seqdata.randcyclelist,'yshim');
+
+setAnalogChannel(calctime(curtime,0.0),'Y Shim',3.3,2); % 3.3
 %turn on the X (left/right) shim 
-setAnalogChannel(calctime(curtime,0.0),'X Shim',0.2,2); % 0.1
+setAnalogChannel(calctime(curtime,0.0),'X Shim',.2,2); % 0.2,2
 %turn on the Z (top/bottom) shim 
-setAnalogChannel(calctime(curtime,0.0),'Z Shim',0.0,2); %0.0
+setAnalogChannel(calctime(curtime,0.0),'Z Shim',0,2); %0.0
 
 %Turn repump back up
 %K
@@ -87,6 +88,7 @@ end
 %Rb
 if (seqdata.atomtype==3 || seqdata.atomtype==4)
     setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP Shutter',1); % Open shutter
+
     setAnalogChannel(calctime(curtime,-5),'Rb Probe/OP AM',rb_op_am); % Set 
     setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',1); % inverted logic
 end
@@ -155,7 +157,7 @@ if (seqdata.atomtype == 1 || seqdata.atomtype == 4)
     %analog
     %setAnalogChannel(calctime(curtime,0),k_opanalogid,0);
     %ttl
-    setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',0); % inverted logic
+    setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',0); % 0 is off
 %     setDigitalChannel(calctime(curtime,0),'gray molasses shear mod AOM TLL',0); % turn off shear mod AOM
 %     setDigitalChannel(calctime(curtime,0),'Gray Molasses switch',0); % Switch back to MOT sources
     %close shutter if transporting to science cell
@@ -183,7 +185,10 @@ if (seqdata.atomtype == 3 || seqdata.atomtype == 4)
     %offset detuning
     setAnalogChannel(calctime(curtime,4.0),'Rb Beat Note FM',6590+25);
 end
-            
+
+% curtime = calctime(curtime,tmax-optime);   
+
+
 timeout = curtime;
 
 end

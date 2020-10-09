@@ -22,6 +22,7 @@ if adwin_connected
 
     %run ADWIN loading processes
     if ~adwin_booted
+        disp('booting adwin');
         ADwin_Init();
         Set_DeviceNo(1);
         Boot('C:\ADWIN\ADWIN11.BTL',0);

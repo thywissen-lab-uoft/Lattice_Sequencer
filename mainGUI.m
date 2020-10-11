@@ -22,8 +22,8 @@ global adwinprocessnum;
 % global adwin_process_path;
 
 
+compath='Y:\_communication';
 
-seqdata.outputfilepath='Y:\_communication';
 defaultSequence='@test_sequence';
 
 figName='Lattice Sequencer';
@@ -63,9 +63,10 @@ w=350;h=350;
 
 % Initialize the figure graphics objects
 hF=figure('toolbar','none','Name',figName,'color',cc,'NumberTitle','off',...
-    'MenuBar','none','resize','off','CloseRequestFcn',@closeFig);
+    'MenuBar','figure','resize','off','CloseRequestFcn',@closeFig);
 clf
 hF.Position(3:4)=[w h];
+
 
 % Callback for a close request function. The close request function handles
 % whether the adwin is running or other potential timer issues.
@@ -806,7 +807,7 @@ end
             fprintf(1,'%s: %g \n',seqdata.outputparams{n}{1},seqdata.outputparams{n}{2});
         end        
         disp('----------------------------------------');        
-%         
+        seqdata.outputfilepath=compath;
         filenametxt = fullfile(seqdata.outputfilepath, 'control.txt');
         filenamemat=fullfile(seqdata.outputfilepath, 'control.mat');  
 %         disp(' ')

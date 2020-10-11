@@ -49,8 +49,8 @@ function pushbutton_callback(varargin)
     switch get(hobject,'tag')
 
         case 'scan' % checkbox in GUI
-
             if ( get(hobject,'Value') )
+                disp('scan enable?')
                 seqdata.scancycle = 0;
                 seqdata.doscan = 1;
                 seqdata.multiscannum = [];%Feb-2017
@@ -59,6 +59,7 @@ function pushbutton_callback(varargin)
                 seqdata.randcyclelist = rand(1,scanmax);
                 [void,seqdata.randcyclelist] = sort(seqdata.randcyclelist);
             else
+                disp('scan disable?');
                 seqdata.scancycle = 1;
                 seqdata.doscan = 0;
                 seqdata.randcyclelist = 1:100;

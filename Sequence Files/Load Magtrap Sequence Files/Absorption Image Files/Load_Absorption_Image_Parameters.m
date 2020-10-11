@@ -64,7 +64,7 @@ function params = Load_Absorption_Image_Parameters()
     params.timings.K_OP_time = 0.3;
     params.timings.k_detuning_shift_time = 0.5;
     params.timings.rb_detuning_shift_time.MOT = 4;
-    params.timings.rb_detuning_shift_time.X = 50;
+    params.timings.rb_detuning_shift_time.X = 1500;50;
     params.timings.rb_detuning_shift_time.Y = 50;
     
     %% Quantization field timings

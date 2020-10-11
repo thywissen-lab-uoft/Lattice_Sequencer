@@ -1,4 +1,4 @@
-%------
+% %------
 %Author: David McKay
 %Created: July 2009
 %Summary: This turns on the MOT
@@ -145,6 +145,7 @@ curtime = timein;
     %its own thing?
     
     seqdata.flags.image_type = 0; 
+    seqdata.flags.MOT_flour_image = 1;
     %0: absorption image, 1: recapture, 2:fluor, 
     %3: blue_absorption, 4: MOT fluor, 5: load MOT immediately, 
     %6: MOT fluor with MOT off, 7: fluorescence image after do_imaging_molasses 
@@ -152,7 +153,7 @@ curtime = timein;
     iXon_movie = 1; %Take a multiple frame movie?
     seqdata.flags.image_atomtype = 0;%  0= Rb, 1 = K, 2 = Rb+K
     seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
-    seqdata.flags.img_direction = 0; 
+    seqdata.flags.img_direction = 1; 
     %1 = x direction (Sci) / MOT, 2 = y direction (Sci), 
     %3 = vertical direction, 4 = x direc tion (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
     seqdata.flags.do_stern_gerlach = 0; %1: Do a gradient pulse at the beginning of ToF
@@ -170,7 +171,8 @@ curtime = timein;
     
     %RHYS - params should be defined in a separate location from flags. 
     
-    seqdata.params.tof =  15;  % 45 for rough alignment, 20 for K-D diffraction
+    seqdata.params.tof =  5;  % 45 for rough alignment, 20 for K-D diffraction
+
     seqdata.params.UV_on_time = 10000; %UV on time + savingtime + wait time = real wait time between cycles%
     % usually 15s for non XDT
     
@@ -200,11 +202,15 @@ curtime = timein;
     % Use stage1  = 2 to evaporate fast for transport benchmarking 
     % Use stage1b = 2 to do microwave evaporation in the plugged QP trap
     seqdata.flags.compress_QP = 1; % compress QP after transport
-    seqdata.flags.RF_evap_stages = [1, 0, 0]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
+
+    seqdata.flags.RF_evap_stages = [1, 1, 0]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
     
-    %RHYS - Here be parameters. 
     
+    %RHYS - Here be parameters.     
     rf_evap_time_scale = [1.0 1.5];[1.0 1.2];[0.8 1.2];[1.0 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
+    
+    rf_evap_time_scale=[.1 .1];
+        
     RF_1B_Final_Frequency = 0.85;
     seqdata.flags.do_plug = 0;   % ramp on plug after transfer to window
     seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get clean TOF signal
@@ -310,12 +316,14 @@ curtime = timein;
 %     addOutputParam('D1_DP_FM',D1_FM);
 
 %% Make sure dipole and lattice traps are off and adjust XDT piezo mirrors
-%% and initialize repump imaging.
+% and initialize repump imaging.
 
     %RHYS - Initialization settings for a lot of channels. But, the 'reset
     %values' should already be set in initialize_channels, and, I think,
     %set at the end of the sequence. So, these should just be incorporated
     %into that function properly instead of defined here. 
+    
+    % Perhaps to be safe, we just have another call to @Reset_Channels?
 
     %Initialize modulation ramp to off.
     setAnalogChannel(calctime(curtime,0),'Modulation Ramp',0);
@@ -432,8 +440,8 @@ curtime = calctime(curtime,controlled_load_time);
     
     %RHYS - The first important code that is called. Applies
     %CMOT/molasses/optical pumping to MOT. 
+
 curtime = Prepare_MOT_for_MagTrap(curtime);
-   
     %RHYS - Should integrate the following lines into the above function. 
 
     %Open other AOMS to keep them warm. Why ever turn them off for long
@@ -449,6 +457,8 @@ curtime = Prepare_MOT_for_MagTrap(curtime);
     
     setAnalogChannel(calctime(curtime,10),'Rb Repump AM',0.9);
 
+if ~seqdata.flags.MOT_flour_image
+    
 %% Load into Magnetic Trap
 
     %RHYS - One of the first examples of doing something based on a
@@ -559,18 +569,19 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Z Shim',@(t,tt,y1,y2)(ramp_minjerk(t
          start_freq = 42;42;%42  
 
         %this worked well with 0.6 kitten
-        freqs_1 = [ start_freq 28 20 16]*MHz;[ start_freq 28 20 16]*MHz; %7.5 %[ start_freq 28 20 12]*MHz before 2018-03-06 12MHz
+        freqs_1 = [ start_freq 28 20 16]*MHz;[100 100]*MHz;;[ start_freq 28 20 16]*MHz; %7.5 %[ start_freq 28 20 12]*MHz before 2018-03-06 12MHz
 
         RF_gain_1 = 0.5*[-4.1 -4.1 -4.1 -4.1]*(9)/9*1;1*[-4.1 -4.1 -4.1 -4.1]*(9)/9*1;%1*[ 9 9 9 9]*(9)/9*1;1*[-5.93 -5.93 -5.93 -5.93];  %9 9 9 (5)/9*0.75
-        sweep_times_1 = [ 14000 8000 1000].*rf_evap_time_scale(1);%[ 14000 6000 2000].*rf_evap_speed(1);%[ 14000 6000 2000].*rf_evap_speed(1); before 2017-05-02
+        sweep_times_1 =[ 14000 8000 1000].*rf_evap_time_scale(1);[100];%[ 14000 6000 2000].*rf_evap_speed(1);%[ 14000 6000 2000].*rf_evap_speed(1); before 2017-05-02
 
+        
 
         %hold before evap
 curtime = calctime(curtime,pre_hold_time);
 
 curtime = do_evap_stage(curtime, fake_sweep, freqs_1, sweep_times_1, ...
         RF_gain_1, hold_time, (seqdata.flags.RF_evap_stages(3) == 0));
-
+    end
     %This does a fast evaporation to benchmark the transport
     if ( seqdata.flags.RF_evap_stages(1) == 2 )
 
@@ -686,6 +697,7 @@ curtime=calctime(curtime,5);
     RF_gain_1b = [.5*(-4.1) .5*(-4.1) rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 -6.3 -6.3];[4 4 1 1];[-6.74 -6.74 -7.26 -7.26];   % 8 8 5 5
     sweep_times_1b = [6000 2000 10]*rf_evap_time_scale(2); [3000 2000 10];%[3000 2500 10]*rf_evap_speed(2);
 
+    
 curtime = do_evap_stage(curtime, fake_sweep, freqs_1b, sweep_times_1b, RF_gain_1b, 0, 1);
 
     %Get rid of Rb afterwards (used for loading dilute 40K into lattice)
@@ -1023,7 +1035,9 @@ curtime = Reset_Channels(calctime(curtime,0));
     %XDT pointing is not done right now, since we removed the QPDs, but is in
     %theory useful (the idea of using QPDs to keep our critical beams aligned
     %is still a good one). 
-    DigitalPulse(calctime(curtime,0),'RaspPi Trig',1000,1) % trigger pulse for pyKraken
+    % trigger pulse for pyKraken
+    DigitalPulse(calctime(curtime,0),'RaspPi Trig',1000,1); 
+    
     measure_XDT_pointing = 0;
     if (measure_XDT_pointing)
         %pulse XDTs on
@@ -1037,7 +1051,7 @@ curtime = Reset_Channels(calctime(curtime,0));
         setAnalogChannel(calctime(curtime,5001),'dipoleTrap1',-0.5,1);
         setDigitalChannel(calctime(curtime,5002),'XDT Direct Control',1);
     end
-
+end
 %% Load MOT
     %RHYS - a lot of parameters and cleaning to do here. I've also always
     %thought it was odd that MOT loading happened at the end of the sequence,
@@ -1062,9 +1076,9 @@ curtime = Reset_Channels(calctime(curtime,0));
     end
         
     %call Load_MOT function
-curtime = Load_MOT(calctime(curtime,mot_wait_time),[rb_MOT_detuning k_MOT_detuning]);
+    curtime = Load_MOT(calctime(curtime,mot_wait_time),[rb_MOT_detuning k_MOT_detuning]);
         
-    setAnalogChannel(curtime,'K Repump FM',k_repump_shift,2)
+    setAnalogChannel(curtime,'K Repump FM',k_repump_shift,2);
       
     if ( seqdata.flags.do_dipole_trap == 1 )
 curtime = calctime(curtime,dip_holdtime);
@@ -1085,6 +1099,7 @@ curtime = setDigitalChannel(calctime(curtime,10),28,0);
 
     %RHYS - Following is some irrelevant stuff and some quality of life stuff,
     %including an important check on overall cycle time. 
+    
 %% Scope trigger selection
 
     SelectScopeTrigger(scope_trigger);
@@ -1093,7 +1108,6 @@ curtime = setDigitalChannel(calctime(curtime,10),28,0);
     addOutputParam('timestamp',datenum(datevec(now).*[0 1 1 1 1 1]));
 
 %% Timeout
-
 timeout = curtime;
 
     if (((timeout - timein)*(seqdata.deltat/seqdata.timeunit))>100000)

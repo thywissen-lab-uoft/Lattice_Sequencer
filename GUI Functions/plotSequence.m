@@ -52,6 +52,8 @@ fhandle(0);
 % therefore would not require another run of the sequence code.
 
 %% Grab the channel data
+% Analog channels axes cell list
+axs={};
 
 % Sort the analog and digital data by traces
 [aTraces, dTraces]=generateTraces(seqdata);
@@ -82,7 +84,6 @@ set(hF,'Name',fName);
 hF.AutoResizeChildren='off';
 % hF.Color='w';
 hF.Position(1:4)=[100 100 500 800];
-hF.SizeChangedFcn=@adjustSize;
 hZ=zoom(hF);
 
 % Assign callbacks to zoom function.  This only works if you had clicked on
@@ -103,12 +104,14 @@ hZ.ActionPostCallback=@chZoomPost;
 
 % Add a left hand slider to control the relative size of the analog and
 % digital channels
+warning off % supress the warnings that JAVACOMPONENT is going to be removed
+% I like this slider and matlab has shitty default sliders.
 jSlider = javax.swing.JSlider;
 [jhSlider, hContainer]=javacomponent(jSlider,[0,60,15,hF.Position(4)-30]);
 set(jSlider, 'Value',30, 'PaintLabels',false, 'PaintTicks',true,...
     'Orientation',1);  % with ticks, no labels
 set(jSlider, 'StateChangedCallback', @adjustSize);  %alternative
-
+warning off
 % Figure change sizes callback; this is the main callback function
     function adjustSize(~,~)
         % The time table size; (it doesn't change size)
@@ -173,7 +176,7 @@ set(jSlider, 'StateChangedCallback', @adjustSize);  %alternative
                 
         if H*pD>75        
             % Set the position of the digital scroll bar            
-            hDslider.OuterPosition(3:4)=[20 hpD.Position(4)-10];
+            hDslider.OuterPosition(3:4)=[20 hpD.Position(4)-10];            
             hDslider.Position(1:2)=[hpD.Position(3)-hDslider.Position(3) 0];     
             
             % Update digital axis position
@@ -293,8 +296,7 @@ htbl_time.CellEditCallback=@tblCB;
 hpA=uipanel('parent',hF,'units','pixels','Title','Analog',...
     'backgroundcolor',hF.Color);
 
-% Analog channels axes cell list
-axs={};
+
 
 for kk=1:length(aTracesSHOW)  
     % Create the axis for this channel
@@ -516,6 +518,8 @@ linkaxes([axDL axD],'y');
 
 % Link the time limits to a table
 addlistener(axD,'XLim','PostSet',@beep);
+
+hF.SizeChangedFcn=@adjustSize;
 
 adjustSize;
 end

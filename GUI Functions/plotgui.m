@@ -1,4 +1,4 @@
-function hFGUI=plotgui
+function hFGUI=plotgui(sequencefunc)
 % plotgui.m
 %
 % Author CJ : Fujiwara
@@ -11,6 +11,10 @@ function hFGUI=plotgui
 version='0.2';
 str=['PlotGUI_v' version];
 
+
+cc=[255	255	255;
+    221 235 247]/255;
+
 %% Fetch information from the primary GUI
 
 % Intiailize sequence data
@@ -22,25 +26,44 @@ initialize_channels();
 % then we would probably want to visually compares different sequences of
 % the machine.
 
+if nargin==1 && isa(sequencefunc,'function_handle')
+    %new way
+    startcycle=1;
+else
+    % old way
+%     fh = findobj('Type','Figure','Name','Lattice Sequencer');
+%     if ~isempty(fh)
+%         uiobj1 = findobj(fh,'tag','sequence');
+%         eval(['sequencefunc = ' get(uiobj1,'string') ';']); 
+% 
+%         uiobj1 = findobj(fh,'tag','startcycle');
+%         startcycle = str2double(get(uiobj1,'string'));
+%     else
+%         warning('no lattice sequencer gui, manual override in loadmagtrap');
+            % manual override    
+        sequencefunc=@Load_MagTrap_sequence;
+        startcycle=1;
+%     end  
+end
 
 
 %%%%%%%%%%%%%%%%%%% TERRIBLE
 % fetch seuqnece function
 % THIS IS NOT GOOD CODE! NEVER USE EVAL IF YOU AVOID IT
     
-    fh = findobj('Type','Figure','Name','Lattice Sequencer');
-    if ~isempty(fh)
-        uiobj1 = findobj(fh,'tag','sequence');
-        eval(['sequencefunc = ' get(uiobj1,'string') ';']); 
-
-        uiobj1 = findobj(fh,'tag','startcycle');
-        startcycle = str2double(get(uiobj1,'string'));
-    else
-        warning('no lattice sequencer gui, manual override in loadmagtrap');
-            % manual override    
-        sequencefunc=@Load_MagTrap_sequence;
-        startcycle=1;
-    end
+%     fh = findobj('Type','Figure','Name','Lattice Sequencer');
+% %     if ~isempty(fh)
+%         uiobj1 = findobj(fh,'tag','sequence');
+%         eval(['sequencefunc = ' get(uiobj1,'string') ';']); 
+% 
+%         uiobj1 = findobj(fh,'tag','startcycle');
+%         startcycle = str2double(get(uiobj1,'string'));
+%     else
+%         warning('no lattice sequencer gui, manual override in loadmagtrap');
+%             % manual override    
+%         sequencefunc=@Load_MagTrap_sequence;
+%         startcycle=1;
+%     end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -92,11 +115,12 @@ htbl_aCH.ColumnWidth={20,150,40};
 htbl_aCH.ColumnFormat={'char', 'char', 'logical'};
 htbl_aCH.ColumnEditable=[false false true];
 htbl_aCH.Position(3)=htbl_aCH.Extent(3)+17;
-htbl_aCH.CellEditCallback=@AtblCB;
- 
+htbl_aCH.CellEditCallback=@AtblCB; 
 htbl_aCH.Position(1)=15;
 htbl_aCH.Position(2)=5;
 htbl_aCH.Position(4)=300;
+htbl_aCH.BackgroundColor=cc;
+
 
 drawnow;
 
@@ -158,6 +182,7 @@ htbl_dCH.Position(3)=htbl_dCH.Extent(3)+17;
 htbl_dCH.Position(2:4)=htbl_aCH.Position(2:4);
 htbl_dCH.Position(1)=htbl_aCH.Position(1)+htbl_aCH.Position(3)+5;
 htbl_dCH.CellEditCallback=@DtblCB;
+htbl_dCH.BackgroundColor=cc;
 
 % populate the table 
  for kk=1:length(seqdata.analogchannels)
@@ -225,7 +250,7 @@ hF_Plot=[];
        plotchannels=[plotchannels tt];      
        
 %        [aTraces, dTraces]=generateTraces(seqdata);      
-        hF_Plot=PlotSequenceVersion2(sequencefunc,startcycle,plotchannels,plottimes);    
+%         hF_Plot=PlotSequenceVersion2(sequencefunc,startcycle,plotchannels,plottimes);    
 % 
         hF_Plot=plotSequence(sequencefunc,startcycle,...
             [aCHshow.channel],[dCHshow.channel],plottimes);    

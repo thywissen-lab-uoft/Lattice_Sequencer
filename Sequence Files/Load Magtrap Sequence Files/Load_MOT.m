@@ -45,9 +45,8 @@ ScopeTriggerPulse(calctime(curtime,0),'Load MOT',1);
     setDigitalChannel(calctime(curtime,0),37,0); 
     %Don't close relay for Science Cell Shims because of current spikes
     setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);
-
+    
 %% Turn on Trap and Repump Light
-
 curtime = calctime(curtime, load_MOT_tof);
 %MOT stagger
 K_MOT_before_Rb_time=0;

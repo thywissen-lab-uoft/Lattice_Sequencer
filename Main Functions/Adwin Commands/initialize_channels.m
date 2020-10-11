@@ -15,10 +15,10 @@ seqdata.analogchannels = repmat(struct('channel',0,...
     'maxvoltage',10,...
     'minvoltage',-10),1,64);
 
-%two digital channels of '32' bits each (numbered channel 1-64)
+%three digital channels of '32' bits each (numbered channel 1-96)
 seqdata.digchannels = repmat(struct('channel',0,...
     'bitpos',0,...
-    'cardid',0),1,64);
+    'cardid',0),1,32*seqdata.digcardnum);
 
 %set the digital channels
 for i = 1:length(seqdata.digchannels)
@@ -29,16 +29,16 @@ for i = 1:length(seqdata.digchannels)
     
     if i<33
         seqdata.digchannels(i).cardid = 1;
-%     elseif (i>=33 && i<65)
-%         seqdata.digchannels(i).cardid = 2;
-    else 
-%         seqdata.digchannels(i).cardid = 3;
+    elseif (i>=33 && i<65) 
         seqdata.digchannels(i).cardid = 2;
+    else
+        seqdata.digchannels(i).cardid = 3;
     end
     
 end
 
 % digital channel names
+seqdata.digchannels(1).name = 'K D1 GM Shutter'; % 1: ON, 0: OFF
 seqdata.digchannels(2).name = 'K Trap Shutter'; % 1: ON, 0: OFF
 seqdata.digchannels(3).name = 'K Repump Shutter';% all repump power shutter, different from 0th order shutter
 seqdata.digchannels(4).name = 'Rb Trap Shutter'; %1: ON, 0: OFF
@@ -47,38 +47,38 @@ seqdata.digchannels(6).name = 'K Trap TTL'; %AOM is before the TA, so this canno
 seqdata.digchannels(7).name = 'K Repump TTL'; %AOM is before the TA
 seqdata.digchannels(8).name = 'Rb Trap TTL'; %AOM is before the TA
 % seqdata.digchannels(3).name = 'xLatticeOFF';
-seqdata.digchannels(9).name = 'K Probe/OP TTL'; % 0: OFF; 1: ON
-seqdata.digchannels(10).name = 'Plug Shutter'; %1: ON; 0: OFF
-seqdata.digchannels(11).name = 'UV LED'; %No Longer Used, UV TTL
+seqdata.digchannels(9).name = 'K Probe/OP TTL';     % 0: OFF; 1: ON
+seqdata.digchannels(10).name = 'Plug Shutter';      % 1: ON; 0: OFF
+seqdata.digchannels(11).name = 'UV LED';            % No Longer Used, UV TTL
 seqdata.digchannels(12).name = 'ScopeTrigger';
-seqdata.digchannels(14).name = 'Rb uWave TTL'; %0 is off
-seqdata.digchannels(15).name = 'Dimple Shutter'; %0 is off
-seqdata.digchannels(16).name = 'MOT TTL'; %0 is on, 1 is off: What does this do? Why is it ever off?
-seqdata.digchannels(17).name = 'RF/uWave Transfer'; %0 is RF, 1 is uWaves
+seqdata.digchannels(14).name = 'Rb uWave TTL';      % 0 is off
+seqdata.digchannels(15).name = 'Dimple Shutter';    % 0 is off
+seqdata.digchannels(16).name = 'MOT TTL';           % 0 is on, 1 is off: What does this do? Why is it ever off?
+seqdata.digchannels(17).name = 'RF/uWave Transfer'; % 0 is RF, 1 is uWaves
 seqdata.digchannels(17).resetvalue = 0;
 seqdata.digchannels(18).name = 'DDS ADWIN Trigger';
-seqdata.digchannels(19).name = 'RF TTL'; %0 is off
-seqdata.digchannels(20).name = 'RaspPi Trig'; %1 Triggers
-seqdata.digchannels(21).name = 'Coil 16 TTL'; %(fast switch) 1 is off - on control board, bypasses servo.
-seqdata.digchannels(22).name = '15/16 Switch'; %15 Switch (A FET - beside coil short detector). Used for sending equal currents into both coils for QP.
+seqdata.digchannels(19).name = 'RF TTL';            % 0 is off
+seqdata.digchannels(20).name = 'RaspPi Trig';       % 1 Triggers
+seqdata.digchannels(21).name = 'Coil 16 TTL';       % (fast switch) 1 is off - on control board, bypasses servo.
+seqdata.digchannels(22).name = '15/16 Switch';      % 15 Switch (A FET - beside coil short detector). Used for sending equal currents into both coils for QP.
 seqdata.digchannels(23).name = 'D1 Shutter';
-seqdata.digchannels(24).name = 'Rb Probe/OP TTL'; %0: laser ON; 1 laser OFF
+seqdata.digchannels(24).name = 'Rb Probe/OP TTL';   % 0: laser ON; 1 laser OFF
 seqdata.digchannels(25).name = 'Rb Probe/OP shutter';
 seqdata.digchannels(26).name = 'PixelFly Trigger';
-seqdata.digchannels(27).name = 'K High Field Probe'; %0: on, 1 off
-seqdata.digchannels(28).name = 'Transport Relay'; %Relay to use one FET for two coils (3 & 11)
-seqdata.digchannels(29).name = 'Kitten Relay'; %Physical relay to use different currents in coils 15 and 16.
-seqdata.digchannels(30).name = 'K Probe/OP shutter';%0: OFF , 1: ON ;
-seqdata.digchannels(31).name = 'fast FB Switch'; % 1 = on (make sure channel 37 is set to -0.5 before opening to avoid current spike, after opening set channel 37 to 0 to have a smooth ramp on from zero)
+seqdata.digchannels(27).name = 'K High Field Probe'; % 0: on, 1 off
+seqdata.digchannels(28).name = 'Transport Relay';   % Relay to use one FET for two coils (3 & 11)
+seqdata.digchannels(29).name = 'Kitten Relay';      % Physical relay to use different currents in coils 15 and 16.
+seqdata.digchannels(30).name = 'K Probe/OP shutter';% 0: OFF , 1: ON ;
+seqdata.digchannels(31).name = 'fast FB Switch';    % 1 = on (make sure channel 37 is set to -0.5 before opening to avoid current spike, after opening set channel 37 to 0 to have a smooth ramp on from zero)
 seqdata.digchannels(32).name = 'iXon Trigger';
-seqdata.digchannels(33).name = 'Shim Relay'; %1 = on (MOT Shims)
-seqdata.digchannels(34).name = 'yLatticeOFF'; %Controls all 3 lattice beams (i.e. Lattice TTL)
+seqdata.digchannels(33).name = 'Shim Relay';        % 1 = on (MOT Shims)
+seqdata.digchannels(34).name = 'yLatticeOFF';       % Controls all 3 lattice beams (i.e. Lattice TTL)
 seqdata.digchannels(35).name = 'D1 TTL';
 seqdata.digchannels(36).name = 'EIT Shutter';
-seqdata.digchannels(37).name = 'Shim Multiplexer';  %0 = MOT Shims (unipolar), 1: Science shim coils ???
+seqdata.digchannels(37).name = 'Shim Multiplexer';  % 0 = MOT Shims (unipolar), 1: Science shim coils ???
 seqdata.digchannels(37).resetvalue = 0; 
-seqdata.digchannels(38).name = 'FPump Direct'; %0 off, 1 on
-seqdata.digchannels(39).name = 'K uWave TTL'; %0 off, 1 on
+seqdata.digchannels(38).name = 'FPump Direct';      % 0 off, 1 on
+seqdata.digchannels(39).name = 'K uWave TTL';       % 0 off, 1 on
 seqdata.digchannels(40).name = 'K/Rb uWave Transfer'; %0 = K, 1 = Rb
 seqdata.digchannels(40).resetvalue = 0;
 seqdata.digchannels(41).name = 'Lattice Direct Control'; 
@@ -111,6 +111,38 @@ seqdata.digchannels(62).resetvalue = 1;
 seqdata.digchannels(63).name = 'XDT Direct Control'; %0: off, 1:on
 % seqdata.digchannels(63).name = 'Plug Mode Switch';%'plug mode switch'; %1: manual mode, 0:Auto mode
 seqdata.digchannels(64).name = 'K Sci Repump'; %K repump in science chamber 
+seqdata.digchannels(65).name = 'K D1 GM Shutter 2'; % Second D1 GM shutter
+seqdata.digchannels(66).name = 'Channel 66'; %unused
+seqdata.digchannels(67).name = 'Channel 67'; %unused
+seqdata.digchannels(68).name = 'Channel 68'; %unused
+seqdata.digchannels(69).name = 'Channel 69'; %unused
+seqdata.digchannels(70).name = 'Channel 70'; %unused
+seqdata.digchannels(71).name = 'Channel 71'; %unused
+seqdata.digchannels(72).name = 'Channel 72'; %unused
+seqdata.digchannels(73).name = 'Channel 73'; %unused
+seqdata.digchannels(74).name = 'Channel 74'; %unused
+seqdata.digchannels(75).name = 'Channel 75'; %unused
+seqdata.digchannels(76).name = 'Channel 76'; %unused
+seqdata.digchannels(77).name = 'Channel 77'; %unused
+seqdata.digchannels(78).name = 'Channel 78'; %unused
+seqdata.digchannels(79).name = 'Channel 79'; %unused
+seqdata.digchannels(80).name = 'Channel 80'; %unused
+seqdata.digchannels(81).name = 'Channel 81'; %unused
+seqdata.digchannels(82).name = 'Channel 82'; %unused
+seqdata.digchannels(83).name = 'Channel 83'; %unused
+seqdata.digchannels(84).name = 'Channel 84'; %unused
+seqdata.digchannels(85).name = 'Channel 85'; %unused
+seqdata.digchannels(86).name = 'Channel 86'; %unused
+seqdata.digchannels(87).name = 'Channel 87'; %unused
+seqdata.digchannels(88).name = 'Channel 88'; %unused
+seqdata.digchannels(89).name = 'Channel 89'; %unused
+seqdata.digchannels(90).name = 'Channel 90'; %unused
+seqdata.digchannels(91).name = 'Channel 91'; %unused
+seqdata.digchannels(92).name = 'Channel 92'; %unused
+seqdata.digchannels(93).name = 'Channel 93'; %unused
+seqdata.digchannels(94).name = 'Channel 94'; %unused
+seqdata.digchannels(95).name = 'Channel 95'; %unused
+seqdata.digchannels(96).name = 'Channel 96'; %unused
 
 %set the analog channel numbers
 for i = 1:length(seqdata.analogchannels)
@@ -174,7 +206,7 @@ end
     seqdata.analogchannels(5).maxvoltage = 10;
     %Make the conversion function detuning
     seqdata.analogchannels(5).defaultvoltagefunc = 4; %CHANGED FOR AOM TEST
-    K_trap_freq_offset =-2000/1000;-1700;
+    K_trap_freq_offset =0;-2000/1000;-1700;
     K_repump_freq_offset = 00/1000;
     %40MHz detuning is 105MHz, higher frequency is less detuned
     %seqdata.analogchannels(5).voltagefunc{2} = @(a)((-19.17+0.22514*(134-a/2)-2.48788E-4*(134-a/2)^2)); %for Stefan's homemoade VCO
@@ -321,11 +353,14 @@ end
     %Intercept error = 0.0123
     
     %channel 19 ( Y (Quantizing) Shim - G units)
+    % This analog channel controls the Y shim. This channel controls both
+    % the shim current in the science chamber as well as the MOT cell.    
     seqdata.analogchannels(19).name = 'Y Shim';
     seqdata.analogchannels(19).minvoltage = -5;
-    seqdata.analogchannels(19).maxvoltage = 10;
-    %Current
-    seqdata.analogchannels(19).voltagefunc{2} = @(a)(a/0.8+0.3);
+    seqdata.analogchannels(19).maxvoltage = 10; 
+    % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents  
+    seqdata.analogchannels(19).voltagefunc{2} = @(a) (a+.293)/.77;      
+    
     seqdata.analogchannels(19).defaultvoltagefunc = 3; %3 BIPOLAR SHIM SUPPLY CHANGE
     %'Field' in G (not well calibrated)
     seqdata.analogchannels(19).voltagefunc{3} = @(a)(a*1.1875+0.52); % calibration for Shimmer control
@@ -411,8 +446,11 @@ end
     seqdata.analogchannels(27).name = 'X Shim';
     seqdata.analogchannels(27).minvoltage = -10;
     seqdata.analogchannels(27).maxvoltage = 10;
+    
+    % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents  
     seqdata.analogchannels(27).defaultvoltagefunc = 2;
-    seqdata.analogchannels(27).voltagefunc{2} = @(a)(a/0.8+0.3);     %Amps: When used with Shimmer
+    seqdata.analogchannels(27).voltagefunc{2} = @(a) (a+.268)/.842;
+        
     seqdata.analogchannels(27).voltagefunc{4} = @(a)((a-0.081)/0.91); %Amps: When used to control bipolar supply  a*0.506-0.013 for old supply
     seqdata.analogchannels(27).voltagefunc{3} = @(a)(1.0536*a-0.1132); % Amps: new shim supplies, calibrated to match old shim supply voltagefunc
     
@@ -420,8 +458,11 @@ end
     seqdata.analogchannels(28).name = 'Z Shim';
     seqdata.analogchannels(28).minvoltage = -10;
     seqdata.analogchannels(28).maxvoltage = 10;
+    % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents
     seqdata.analogchannels(28).defaultvoltagefunc = 2;
-    seqdata.analogchannels(28).voltagefunc{2} = @(a)(a/0.8+0.3);
+    seqdata.analogchannels(28).voltagefunc{2} = @(a)(a+.266)/.819;
+    
+    
     seqdata.analogchannels(28).voltagefunc{4} = @(a)((a-0*0.115)/0.977);   %a*0.506-0.013 for old supply
     seqdata.analogchannels(28).voltagefunc{3} = @(a)(0.9271*a-0.0327); % Amps: new shim supplies, calibrated to match old shim supply voltagefunc
                                                     %((a-0.11)/0.97)
@@ -484,7 +525,7 @@ seqdata.analogchannels(34).name = 'Rb Beat Note FM';
 seqdata.analogchannels(34).minvoltage = 0;
 seqdata.analogchannels(34).maxvoltage = 10;
 seqdata.analogchannels(34).defaultvoltagefunc = 2;
-Rb_Trap_Frequency_Offset = 3.5;3.0;-2.5; %Frequency offset for all Rb trap/probe beams in MHz.
+Rb_Trap_Frequency_Offset = 2; -7;3.5;3.0;-2.5; %Frequency offset for all Rb trap/probe beams in MHz.
 seqdata.analogchannels(34).voltagefunc{2} = @(a)((a*1-4418.47 + Rb_Trap_Frequency_Offset)/541.355);
 
 %channel 35 (Rb Offset FF)

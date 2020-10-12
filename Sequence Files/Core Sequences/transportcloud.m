@@ -1,4 +1,4 @@
-function timeout = transportcloud(timein,flags)
+function timeout = transportcloud(timein)
 % transportcloud.m
 % This function modifies the seqdata to include the magnetic transport.
 %
@@ -45,9 +45,7 @@ if nargin==0
    time=0; 
 end
 
-if nargin==1
-    flags.TransportMode='normal';
-end
+
 
 curtime = timein;
 global seqdata;
@@ -55,14 +53,14 @@ global seqdata;
 %% Load the splines
 % Load the spline data which converts the transport distance to the set of
 % coil currents {I_n(z)}
-
-mydir=pwd;
-splinedir='C:\Users\coraf\Documents\GitHub\Lattice_Sequencer\Current Transport Splines';
-cd(splinedir)
-tic
-[splines,data] = loadTransportSplines;
-toc
-cd(mydir);
+% 
+% mydir=pwd;
+% splinedir='C:\Users\coraf\Documents\GitHub\Lattice_Sequencer\Current Transport Splines';
+% cd(splinedir)
+% 
+% [splines,data] = loadTransportSplines;
+% 
+% cd(mydir);
 
 %% Transport
 
@@ -71,8 +69,9 @@ cd(mydir);
 % Specify Dh(t)
 [yH,tH]=Dh_modified;
 
+
 % Calculate the analog writes
-analog=foo(tH+curtime,yH);  
+analog = transport_coil_currents_kitten_troubleshoot_raise_topQP(calctime(curtime,tH),yH);
 % Append analog write commands
 seqdata.analogadwinlist = [seqdata.analogadwinlist; analog];
 
@@ -85,7 +84,7 @@ curtime=calctime(curtime,tH(end));
 [yV,tV]=Dv_modified;
 
 % Calculate the analog writes
-analog=foo(tV+curtime,yV+DH);  
+analog = transport_coil_currents_kitten_troubleshoot_raise_topQP(calctime(curtime,tV),yV+DH);
 
 % Append analog write commands
 seqdata.analogadwinlist = [seqdata.analogadwinlist; analog];

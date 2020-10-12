@@ -70,7 +70,6 @@ M18 = dlmread([transportfolder cur_rev 'coilMOTfill.txt'],',',0,2)*vertical_scal
 ver_vec_length = 539;  
 
 if coil_num == 1
-    
     %Push
     
     %horizontal section

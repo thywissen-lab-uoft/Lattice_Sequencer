@@ -37,30 +37,30 @@ deltat=seqdata.deltat;
 chs=[aTraces.channel];
 
 hF=figure(1212);
+set(hF,'color','w');
 clf
 
-axes;
+
+subplot(211);
 cla
-% ind=find(chs==aNums(1),1);
-%     data=aTraces(ind).data;    
-%     plot(data(:,1)*deltat,data(:,2),'k-','linewidth',1);
 hold on
 colors = distinguishable_colors(length(aNums));
-
-
-
 legStrs={};
 for kk=1:length(aNums)
     ind=find(chs==aNums(kk),1);
     data=aTraces(ind).data;
-    legStrs{kk}=aTraces(ind).name;
-    
-    plot(data(:,1)*deltat,data(:,2),'.','color',colors(kk,:),'linewidth',2);
+    legStrs{kk}=aTraces(ind).name;    
+    scatter(data(:,1)*deltat,data(:,2),3,'o','markerfacecolor',colors(kk,:),'linewidth',1,...
+        'markeredgecolor',colors(kk,:));
 hold on
 end
-% xlim([0 3300]*1E-3);
 
-legend(legStrs,'location','eastoutside');
+leg=legend(legStrs,'location','eastoutside','fontsize',8);
+
+
+set(gca,'fontsize',14,'box','on','linewidth',1);
+xlabel('time (s)');
+ylabel('set voltage (V)');
 
 %% New Transport
 
@@ -82,7 +82,6 @@ toc
 [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_trans(curtime, seqdata.flags.compress_QP);
 
 
-% curtime = Transport_Cloud(curtime,seqdata.flags.hor_transport_type,seqdata.flags.ver_transport_type, seqdata.flags.image_loc);curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_trans(curtime, seqdata.flags.compress_QP);
 
 curtime = setDigitalChannel(calctime(curtime,10),28,0); % Line 1096
 
@@ -98,11 +97,12 @@ cmap=jet(length(aNums));
 deltat=seqdata.deltat;
 chs=[aTraces.channel];
 
-hF=figure(1213);
-clf
-
-axes;
-cla
+figure(hF);
+% hF=figure(1213);
+% clf
+subplot(212);
+% axes;
+% cla
 % ind=find(chs==aNums(1),1);
 %     data=aTraces(ind).data;    
 %     plot(data(:,1)*deltat,data(:,2),'k-','linewidth',1);
@@ -117,13 +117,19 @@ for kk=1:length(aNums)
     data=aTraces(ind).data;
     legStrs{kk}=aTraces(ind).name;
     
-    plot(data(:,1)*deltat,data(:,2),'.','color',colors(kk,:),'linewidth',2);
-hold on
+    scatter(data(:,1)*deltat,data(:,2),3,'o','markerfacecolor',colors(kk,:),'linewidth',1,...
+        'markeredgecolor',colors(kk,:));
+    hold on
 end
 % xlim([0 3300]*1E-3);
 
-legend(legStrs,'location','eastoutside');
 
+leg=legend(legStrs,'location','eastoutside','fontsize',8);
+
+
+set(gca,'fontsize',14,'box','on','linewidth',1);
+xlabel('time (s)');
+ylabel('set voltage (V)');
 end
 
 function colors = distinguishable_colors(n_colors,bg,func)

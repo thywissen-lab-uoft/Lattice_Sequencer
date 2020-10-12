@@ -42,7 +42,7 @@ DV = 174;      % Length of vertical transport in mm
 %% Initialize
 
 if nargin==0
-   time=0; 
+   timein=0; 
 end
 
 
@@ -54,13 +54,13 @@ global seqdata;
 % Load the spline data which converts the transport distance to the set of
 % coil currents {I_n(z)}
 % 
-% mydir=pwd;
-% splinedir='C:\Users\coraf\Documents\GitHub\Lattice_Sequencer\Current Transport Splines';
-% cd(splinedir)
-% 
-% [splines,data] = loadTransportSplines;
-% 
-% cd(mydir);
+mydir=pwd;
+splinedir='C:\Users\coraf\Documents\GitHub\Lattice_Sequencer\Current Transport Splines';
+cd(splinedir)
+
+[splines,data] = loadTransportSplines;
+
+cd(mydir);
 
 %% Transport
 
@@ -68,7 +68,7 @@ global seqdata;
 
 % Specify Dh(t)
 [yH,tH]=Dh_modified;
-
+% yH=0:365;tH=0:365;
 
 % Calculate the analog writes
 analog = transport_coil_currents_kitten_troubleshoot_raise_topQP(calctime(curtime,tH),yH);
@@ -82,6 +82,7 @@ curtime=calctime(curtime,tH(end));
 
 % Specify Dh(t)
 [yV,tV]=Dv_modified;
+% yV=1:174;tV=1:174;
 
 % Calculate the analog writes
 analog = transport_coil_currents_kitten_troubleshoot_raise_topQP(calctime(curtime,tV),yV+DH);
@@ -94,6 +95,11 @@ curtime=calctime(curtime,tV(end));
 
 % Exit
 timeout=curtime;   
+
+%% Plot
+
+hF=figure(1235);
+plot([tH, tV+tH(end)],[yH yV+yH(end)],'k-');
 end
 
 function [y,t] = Dv_modified

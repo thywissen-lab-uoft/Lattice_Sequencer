@@ -136,7 +136,7 @@ strs{11}='Coil 11';
 Y=[MExtra xV*0];
 data(:,12)=Y;
 splines(12)=spline(x0,Y);
-strs{12}='Coil 12';
+strs{12}='Coil Extra';
 
 % Vertical now
 
@@ -195,7 +195,7 @@ if doPlot
     % Don't plot channels 19 and 20 because I dont think we use those
     % Make a color map
     cmap=hsv(18);
-        cmap = distinguishable_colors(18)
+    cmap = distinguishable_colors(18);
 
     % Close the old calibration figure if you plotted it
     fname='TransportCalibrationRaw';    
@@ -215,7 +215,9 @@ if doPlot
     
     % Plot the data
     for kk=1:18
-       plot(x0,data(:,kk),'linewidth',2,'color',cmap(kk,:));        
+%        plot(x0,data(:,kk),'linewidth',2,'color',cmap(kk,:));      
+      scatter(x0,data(:,kk),3,'o','markerfacecolor',cmap(kk,:),'linewidth',1,...
+        'markeredgecolor',cmap(kk,:));
     end    
     
     % Make a legend

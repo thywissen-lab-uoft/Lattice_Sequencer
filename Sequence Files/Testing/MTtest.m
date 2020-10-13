@@ -21,6 +21,8 @@ tic
 curtime = Transport_Cloud(curtime,seqdata.flags.hor_transport_type,seqdata.flags.ver_transport_type, seqdata.flags.image_loc);
 toc
 [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_trans(curtime, seqdata.flags.compress_QP);
+seqdata.flags.RF_evap_stages = [1, 1, 0];
+[curtime I_QP I_kitt V_QP I_fesh] = ramp_QP_before_transfer(curtime, seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
 
 curtime = setDigitalChannel(calctime(curtime,10),28,0); % Line 1096
 
@@ -37,6 +39,7 @@ deltat=seqdata.deltat;
 chs=[aTraces.channel];
 
 hF=figure(1212);
+clf
 set(hF,'color','w');
 clf
 
@@ -80,6 +83,8 @@ tic
 curtime = transportcloud(curtime);
 toc
 [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_trans(curtime, seqdata.flags.compress_QP);
+seqdata.flags.RF_evap_stages = [1, 1, 0];
+[curtime I_QP I_kitt V_QP I_fesh] = ramp_QP_before_transfer(curtime, seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
 
 
 

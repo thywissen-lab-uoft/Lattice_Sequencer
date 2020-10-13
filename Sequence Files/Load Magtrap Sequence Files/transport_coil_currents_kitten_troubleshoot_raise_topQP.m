@@ -631,7 +631,6 @@ y = currentarray;
                       %y(ind) = y(ind) + ppval(pp,x);
                      
                      
-                     
                     %Modified Nov 1, 2019: ramp coil up explicitly to
                     %avoid oscillations at begining (previous version below)
                     %horizontal section 
@@ -652,7 +651,6 @@ y = currentarray;
                     %avoid oscillations at end (previous version below)
                     %vertical section
                     y(ind) = y(ind) + (x>=368).*(x<=467.0).*ppval(pp,x);
-                    
                     %%vertical section
                     %y(ind) = y(ind) + (x>=368).*ppval(pp,x);                
             case 16 %3rd vert transport coil [Coil 13]                             

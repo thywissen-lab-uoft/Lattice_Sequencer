@@ -454,10 +454,10 @@ global seqdata;
 % setAnalogChannel(calctime(curtime,0),24,0,1);
 
 %% Transport test
-% % 
-% setDigitalChannel(curtime,'Kitten Relay',0); %0: OFF, 1: ON
+% 
+% setDigitalChannel(curtime,'Kitten Relay',1); %0: OFF, 1: ON
 % setDigitalChannel(curtime,'15/16 Switch',0); %0: OFF, 1: ON
-% setDigitalChannel(curtime,'Coil 16 TTL',1); %1: turns coil off; 0: coil can be on
+% setDigitalChannel(curtime,'Coil 16 TTL',0); %1: turns coil off; 0: coil can be on
 % 
 % curtime = calctime(curtime,500);
 %  
@@ -469,8 +469,8 @@ global seqdata;
 %  
 % curtime = calctime(curtime,500);
 % 
-% current = 39;
-% channel = 22;
+% current = 10;
+% channel = 1;
 % 
 % is_bipolar = 0;
 % 
@@ -478,15 +478,15 @@ global seqdata;
 % ramp_cosine = @(t,tt,y0) y0/2*(1-cos(2*pi*t/tt));
 % 
 % %set FF
-% setAnalogChannel(calctime(curtime,-200),18,25*(abs(current)/30)/3 + 0.5);
+% % setAnalogChannel(calctime(curtime,-200),18,25*(abs(current)/30)/3 + 0.5);
 % % %use the following for QT coil
-% % AnalogFunc(calctime(curtime,-200),18,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,0.5,25*(abs(current)/30)/1 + 0.5);
+% AnalogFunc(calctime(curtime,-200),18,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,0.5,25*(abs(current)/30)/1 + 0.5);
 % 
 % % use the following for other transfer coils
 % % AnalogFunc(calctime(curtime,-200),18,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,0.5,8*(abs(current)/30)/1 + 0.5);
 % 
 % %Kitten to max current for the ramp if using coil 15 or 16 alone.
-% setAnalogChannel(calctime(curtime,-175),3,0,1); % current set to 5 for fully on   
+% setAnalogChannel(calctime(curtime,-175),3,5,1); % current set to 5 for fully on   
 % 
 % %"Turn on" coil to 0
 % setAnalogChannel(calctime(curtime,-50),channel,0,1); %Start at zero for AnalogFuncTo
@@ -536,13 +536,13 @@ global seqdata;
 %         setAnalogChannel(calctime(curtime,0),i,0,1);
 %     end
 %     %Turn off QP Coils
-%     setAnalogChannel(calctime(curtime,0),'Coil 15',0,1); %15
+%     setAnalogChannel(calctime(curtime,0),'Coil 15',-.8,1); %15
 % curtime = setAnalogChannel(calctime(curtime,0),'Coil 16',0,1); %16
 % curtime = setAnalogChannel(curtime,3,0,1); %kitten
 % curtime = setDigitalChannel(curtime,'15/16 Switch',0);
 % % 
-% % 
-
+% % % 
+% 
 
 
 %% Test Offset Lock
@@ -4128,10 +4128,11 @@ global seqdata;
 
 % Turn off GM Shutter
 setDigitalChannel(calctime(curtime,0),'K D1 GM Shutter',0);
+setDigitalChannel(calctime(curtime,0),'K D1 GM Shutter 2',1);
 
-%% MOT Load
+% MOT Load
 
-doMOT  = 1;
+doMOT  = 0;
 if doMOT
 % This code initializses the MOT. This includes
 % Rb+K detunings and power
@@ -4139,10 +4140,15 @@ if doMOT
     
 rb_MOT_detuning= 32; % Rb trap MOT detuning in MHz
 k_MOT_detuning = 22; % K trap MOT detuning in MHz   
-MOT_time=1000;           % MOT load time in ms
+MOT_time = 10000;           % MOT load time in ms
+
+
 
 curtime = calctime(curtime,100);
 
+% Turn the UV on
+setDigitalChannel(calctime(curtime,-0),'UV LED',1); % THe X axis bulb 1 on 0 off
+setAnalogChannel(calctime(curtime,-0),'UV Lamp 2',3); % The y axis bubls 3V on , 0off
 %%%%%%%%%%%%%%%% Set Rb MOT Beams %%%%%%%%%%%%%%%%
 % Trap
 setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',...          
@@ -4187,13 +4193,20 @@ setAnalogChannel(calctime(curtime,0),18,10);
 setDigitalChannel(calctime(curtime,0),'Shim Relay',1);
 
 % The MOT shims in AMPS
-curtime = setAnalogChannel(calctime(curtime,0),'Y Shim',0.94,2); 
-curtime = setAnalogChannel(calctime(curtime,0),'X Shim',0.065,2);  
-curtime = setAnalogChannel(calctime(curtime,0),'Z Shim',1.045,2);  
+% shims=0:0.1:.5;
+% shim=getScanParameter(shims,seqdata.scancycle,seqdata.randcyclelist,'MOT_yshim');
+curtime = setAnalogChannel(calctime(curtime,0),'X Shim',0.2 ,2);  0.2;
+curtime = setAnalogChannel(calctime(curtime,0),'Y Shim', 2.0  ,2); 2;
+curtime = setAnalogChannel(calctime(curtime,0),'Z Shim',0.9 ,2);  0.9;
 
 %%%%%%%%%%%%%% Advance time %%%%%%%%%%%%%%%%
 curtime = calctime(curtime,MOT_time);
 addOutputParam('MOT_time',MOT_time);
+
+% Turn UV off
+setDigitalChannel(calctime(curtime,-0),'UV LED',0); % THe X axis bulb 1 on 0 off
+setAnalogChannel(calctime(curtime,-0),'UV Lamp 2',0); % The y axis bubls 3V on , 0off
+
 %% Test D1 locking
 % This piece of code is useful to check if the D1 laser has gone out of
 % lock by checking to see if the D1 light can be used as a repumper for the
@@ -4201,12 +4214,170 @@ addOutputParam('MOT_time',MOT_time);
 
 doKD1MOT = 0;
 if doKD1MOT
+    setDigitalChannel(calctime(curtime,-2),'Rb Trap Shutter',0);        % Rb MOT trap shutter (1 : ON)
+setDigitalChannel(calctime(curtime,0),'Rb Repump Shutter',0);       % Rb MOT repumper shutter (1 : ON)
+
+     
     setDigitalChannel(calctime(curtime,0),'K Repump TTL',1);        % (1 : OFF)
     setDigitalChannel(calctime(curtime,-3),'K D1 GM Shutter',1);    % (1 : ON);
 end    
     
 
 end
+
+
+
+    
+%% cMOT V2. try to get best CMOT
+% This code loads the CMOT from the MOT. This includes ramps of the 
+% detunings, power, shims, and field gradients. In order to function 
+% properly it needs to havethe correct parameters from the MOT.
+doCMOTv2 =0;        
+if doCMOTv2
+if ~doMOT
+   error('You cannot load a CMOT without a MOT');       
+end
+            
+% Time duration
+rb_cMOT_time = 25;              % Ramp time of Rb CMOT
+k_cMOT_time = 25;               % Ramp time of K CMOT
+cMOT_time = 50;                 % Total CMOT time
+
+% Rubidum
+rb_cMOT_detuning = 42;          % Rubdium trap CMOT detuning in MHz
+rb_cmot_repump_power = 0.0275;  % Rubidum CMOT repump power in V
+
+% Potassium
+k_cMOT_detuning = 5; 5;         % K CMOT trap detuning in MHz
+k_cMOT_repump_detuning = 0;     % K CMOT repump detuning in MHz
+
+% k_cMOT_detunings=[0:2:20];
+% k_cMOT_detuning= getScanParameter(k_cMOT_detunings,seqdata.scancycle,seqdata.randcyclelist,'k_cMOT_detuning');  %in MHZ
+
+% k_cMOT_times=[5:5:50];
+% k_cMOT_time= getScanParameter(k_cMOT_times,seqdata.scancycle,seqdata.randcyclelist,'k_cMOT_time');  %in MHZ
+
+
+% Append output parameters if desired   
+addOutputParam('k_cMOT_detuning',k_cMOT_detuning);
+addOutputParam('k_cMOT_repump_detuning',k_cMOT_repump_detuning); 
+addOutputParam('rb_cMOT_detuning',rb_cMOT_detuning);
+addOutputParam('rb_cmot_repump_power',rb_cmot_repump_power); 
+
+yshim_comp = 0.84;
+xshim_comp = 0.25;
+zshim_comp = 0.00;
+
+%%%%%%%%%%%%%%%% Set CMOT Shims %%%%%%%%%%%%%%%%
+% setAnalogChannel(calctime(curtime,-2),'Y Shim',0.84,2); 
+% setAnalogChannel(calctime(curtime,-2),'X Shim',0.25,2); 
+% setAnalogChannel(calctime(curtime,-2),'Z Shim',0.00,2);
+
+%%%%%%%%%%%%%%%% Set CMOT Rb Beams %%%%%%%%%%%%%%%%
+AnalogFuncTo(calctime(curtime,cMOT_time - rb_cMOT_time),'Rb Beat Note FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),rb_cMOT_time,rb_cMOT_time,6590+rb_cMOT_detuning);
+setAnalogChannel(calctime(curtime,cMOT_time - rb_cMOT_time),'Rb Repump AM',rb_cmot_repump_power);
+setAnalogChannel(calctime(curtime,cMOT_time - rb_cMOT_time),'Rb Trap AM',0.1);
+
+%%%%%%%%%%%%%%%% Set CMOT K Beams %%%%%%%%%%%%%%%%
+% setAnalogChannel(calctime(curtime,cMOT_time - k_cMOT_time),'K Trap FM',k_cMOT_detuning); %765
+AnalogFuncTo(calctime(curtime,cMOT_time - k_cMOT_time),'K Trap FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),k_cMOT_time,k_cMOT_time,k_cMOT_detuning);
+% setAnalogChannel(calctime(curtime,cMOT_time - k_cMOT_time),'K Repump FM',k_cMOT_repump_detuning,2); %765
+AnalogFuncTo(calctime(curtime,cMOT_time - k_cMOT_time),'K Repump FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),k_cMOT_time,k_cMOT_time,k_cMOT_repump_detuning,2);
+setAnalogChannel(calctime(curtime,cMOT_time - k_cMOT_time),'K Repump AM',0.25); %0.25
+setAnalogChannel(calctime(curtime,cMOT_time - k_cMOT_time),'K Trap AM',0.7); %0.7 %0.3 Oct 30, 2015 
+
+%%%%%%%%%%%%%% Set CMOT Field Gradient %%%%%%%%%%%%%%%%
+CMOTBGrad=10;
+setAnalogChannel(calctime(curtime,cMOT_time - k_cMOT_time),'MOT Coil',CMOTBGrad);
+
+%%%%%%%%%%%%%% Advance time %%%%%%%%%%%%%%%%
+curtime=calctime(curtime,cMOT_time);   
+end
+%% cMOT V3. try to get best CMOT
+% This code loads the CMOT from the MOT. This includes ramps of the 
+% detunings, power, shims, and field gradients. In order to function 
+% properly it needs to havethe correct parameters from the MOT.
+doCMOTv3 =0;        
+if doCMOTv3
+if ~doMOT
+   error('You cannot load a CMOT without a MOT');       
+end
+            
+% Time duration
+rb_cMOT_time = 25;              % Ramp time of Rb CMOT
+k_cMOT_time = 25;               % Ramp time of K CMOT
+
+% Rubidum
+rb_cMOT_detuning = 42;          % Rubdium trap CMOT detuning in MHz
+rb_cmot_repump_power = 0.0275;  % Rubidum CMOT repump power in V
+
+% rb_cMOT_detunings=0:5:50;
+% rb_cMOT_detuning=getScanParameter(rb_cMOT_detunings,seqdata.scancycle,seqdata.randcyclelist,'rb_cmot_detuning');
+
+% rb_cmot_repump_powers=0:.1:.9;
+% rb_cmot_repump_power= getScanParameter(rb_cmot_repump_powers,seqdata.scancycle,seqdata.randcyclelist,'rb_cmot_repump_am');  %in MHZ
+%  
+
+
+% Potassium
+k_cMOT_detuning = 5; 5;         % K CMOT trap detuning in MHz
+k_cMOT_repump_detuning = 0;     % K CMOT repump detuning in MHz
+
+
+k_cMOT_detunings=[4];
+k_cMOT_detuning= getScanParameter(k_cMOT_detunings,seqdata.scancycle,seqdata.randcyclelist,'k_cMOT_detuning');  %in MHZ
+
+k_cMOT_times=[20];
+k_cMOT_time= getScanParameter(k_cMOT_times,seqdata.scancycle,seqdata.randcyclelist,'k_cMOT_time');  
+rb_cMOT_time=k_cMOT_time;
+
+cMOT_time = max([rb_cMOT_time k_cMOT_time]); [50];% Total CMOT time
+
+% Append output parameters if desired   
+addOutputParam('k_cMOT_detuning',k_cMOT_detuning);
+addOutputParam('k_cMOT_repump_detuning',k_cMOT_repump_detuning); 
+addOutputParam('rb_cMOT_detuning',rb_cMOT_detuning);
+addOutputParam('rb_cmot_repump_power',rb_cmot_repump_power); 
+
+yshim_comp = 0.84;
+xshim_comp = 0.25;
+zshim_comp = 0.00;
+
+%%%%%%%%%%%%%%%% Set CMOT Shims %%%%%%%%%%%%%%%%
+% setAnalogChannel(calctime(curtime,-2),'Y Shim',0.84,2); 
+% setAnalogChannel(calctime(curtime,-2),'X Shim',0.25,2); 
+% setAnalogChannel(calctime(curtime,-2),'Z Shim',0.00,2);
+
+%%%%%%%%%%%%%%%% Set CMOT Rb Beams %%%%%%%%%%%%%%%%
+setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',6590+rb_cMOT_detuning); 
+% AnalogFuncTo(calctime(curtime,0),'Rb Beat Note FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),rb_cMOT_time,rb_cMOT_time,6590+rb_cMOT_detuning);
+setAnalogChannel(calctime(curtime,0),'Rb Repump AM',rb_cmot_repump_power);
+setAnalogChannel(calctime(curtime,0),'Rb Trap AM',0.1);
+
+%%%%%%%%%%%%%%%% Set CMOT K Beams %%%%%%%%%%%%%%%%
+setAnalogChannel(calctime(curtime,0),'K Trap FM',k_cMOT_detuning); %765
+% AnalogFuncTo(calctime(curtime,0),'K Trap FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),k_cMOT_time,k_cMOT_time,k_cMOT_detuning);
+setAnalogChannel(calctime(curtime,0),'K Repump FM',k_cMOT_repump_detuning,2); %765
+% AnalogFuncTo(calctime(curtime,0),'K Repump FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),k_cMOT_time,k_cMOT_time,k_cMOT_repump_detuning,2);
+
+K_trap_am_list = [0.5];0.7;
+k_cMOT_trap_am = getScanParameter(K_trap_am_list,seqdata.scancycle,seqdata.randcyclelist,'k_cMOT_trap_am');  %in MHZ
+setAnalogChannel(calctime(curtime,0),'K Repump AM',0.25); %0.25
+setAnalogChannel(calctime(curtime,0),'K Trap AM',k_cMOT_trap_am); %0.7 %0.3 Oct 30, 2015 
+
+%%%%%%%%%%%%%% Set CMOT Field Gradient %%%%%%%%%%%%%%%%
+% CMOTBGrad=10;
+% setAnalogChannel(calctime(curtime,0),'MOT Coil',CMOTBGrad);
+
+% CMOTBGrads=20;
+% CMOTBGrad= getScanParameter(CMOTBGrads,seqdata.scancycle,seqdata.randcyclelist,'CMOTBGrad');  %G/cm
+% AnalogFuncTo(calctime(curtime,0),'MOT Coil',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),cMOT_time,cMOT_time,CMOTBGrad);
+
+
+%%%%%%%%%%%%%% Advance time %%%%%%%%%%%%%%%%
+curtime=calctime(curtime,cMOT_time);   
+end
+
 
 %% cMOT
 % This code loads the CMOT from the MOT. This includes ramps of the 
@@ -4228,8 +4399,14 @@ cMOT_time = 50;
 rb_cMOT_detuning = 42;      % Rubdium trap CMOT detuning in MHz
 rb_cmot_repump_power = 0.0275;
 
+
+
+    
+
+
+
 % Potassium power
-k_cMOT_detuning = 5;            % K CMOT trap detuning in MHz
+k_cMOT_detuning = 5; 5;           % K CMOT trap detuning in MHz
 k_cMOT_repump_detuning = 0;     % K CMOT repump detuning in MHz
 
 % Append output parameters if desired   
@@ -4238,10 +4415,14 @@ addOutputParam('k_cMOT_repump_detuning',k_cMOT_repump_detuning);
 addOutputParam('rb_cMOT_detuning',rb_cMOT_detuning);
 addOutputParam('rb_cmot_repump_power',rb_cmot_repump_power); 
 
+yshim_comp = 0.84;
+xshim_comp = 0.25;
+zshim_comp = 0.00;
+
 %%%%%%%%%%%%%%%% Set CMOT Shims %%%%%%%%%%%%%%%%
-setAnalogChannel(calctime(curtime,-2),'Y Shim',0.84,2); 
-setAnalogChannel(calctime(curtime,-2),'X Shim',0.25,2); 
-setAnalogChannel(calctime(curtime,-2),'Z Shim',0.00,2);
+% setAnalogChannel(calctime(curtime,-2),'Y Shim',0.84,2); 
+% setAnalogChannel(calctime(curtime,-2),'X Shim',0.25,2); 
+% setAnalogChannel(calctime(curtime,-2),'Z Shim',0.00,2);
 
 %%%%%%%%%%%%%%%% Set CMOT Rb Beams %%%%%%%%%%%%%%%%
 setAnalogChannel(calctime(curtime,cMOT_time - rb_cMOT_time),'Rb Beat Note FM',6590+rb_cMOT_detuning); 
@@ -4261,8 +4442,6 @@ setAnalogChannel(calctime(curtime,cMOT_time - k_cMOT_time),'MOT Coil',CMOTBGrad)
 %%%%%%%%%%%%%% Advance time %%%%%%%%%%%%%%%%
 curtime=calctime(curtime,cMOT_time);   
 end
-
-
 %% Combined Molasses - K D1 GM and Rb D2 Mol
 % This code is for running the D1 Grey Molasses for K and the D2 Optical
 % Molasses for Rb at the same time from the CMOT phase
@@ -4273,17 +4452,22 @@ if doMol
 % Set field gradient and shim values (ideally) to zero
 
 % Turn off field gradients
-setAnalogChannel(curtime,'MOT Coil',0,1);   
+setAnalogChannel(calctime(curtime,0),'MOT Coil',0,1);   
 
 % Set the shims
-setAnalogChannel(calctime(curtime,0),'Y Shim',0.15,2); %0.15
 setAnalogChannel(calctime(curtime,0),'X Shim',0.15,2); %0.15
+setAnalogChannel(calctime(curtime,0),'Y Shim',0.15,2); %0.15
 setAnalogChannel(calctime(curtime,0),'Z Shim',0.00,2); %0.00
+
+% Wait for fields to turn off (testing)
+curtime=calctime(curtime,0);  
 
 %%%%%%%%%%%% Turn off K D2  %%%%%%%%%%%%
 % Turn off the K D2 light
 setDigitalChannel(calctime(curtime,0),'K Trap TTL',1);   % (1: OFF)
 setDigitalChannel(calctime(curtime,0),'K Repump TTL',1); % (1: OFF)
+
+
 
 %%%%%%%%%%%% Rb D2 Molasses Settings %%%%%%%%%%%%
 
@@ -4294,8 +4478,7 @@ rb_molasses_detuning = getScanParameter(rb_molasses_detuning_list,...
 
 % Rb Mol trap power setting
 rb_mol_trap_power_list = 0.15;
-rb_mol_trap_power = getScanParameter(rb_mol_trap_power_list,seqdata.scancycle,seqdata.randcyclelist,'Rb_mol_trap_power');
-
+rb_mol_trap_power = getScanParameter(rb_mol_trap_power_list,seqdata.scancycle,seqdata.randcyclelist,'rb_mol_trap_power');
 % Rb Mol repump power settings
 rb_mol_repump_power_list = 0.08;[0.01:0.01:0.15];
 rb_mol_repump_power = getScanParameter(rb_mol_repump_power_list,seqdata.scancycle,seqdata.randcyclelist,'Rb_mol_repump_power');
@@ -4307,11 +4490,11 @@ setAnalogChannel(curtime,'Rb Repump AM',rb_mol_repump_power); %0.14
 
 %%%%%%%%%%%% K D1 GM Settings %%%%%%%%%%%%
 % K D1 GM two photon detuning
-SRS_det_list =  -0.6;
+SRS_det_list = [0];%0
 SRS_det = getScanParameter(SRS_det_list,seqdata.scancycle,seqdata.randcyclelist,'GM_SRS_det');
 
 % K D1 GM two photon sideband power
-SRSpower_list = [2];   %%8
+SRSpower_list = [4];   %%8
 SRSpower = getScanParameter(SRSpower_list,seqdata.scancycle,seqdata.randcyclelist,'SRSpower');
 
 % Set the two-photon detuning (SRS)
@@ -4323,7 +4506,7 @@ D1_freq_list = [0];
 D1_freq = getScanParameter(D1_freq_list,seqdata.scancycle,seqdata.randcyclelist,'D1_freq');
 
 % K D1 GM Double pass - modulation depth
-mod_amp_list = [1.2];
+mod_amp_list = [1.3];
 mod_amp = getScanParameter(mod_amp_list,seqdata.scancycle,seqdata.randcyclelist,'GM_power');
 
 % Set the single photon detuning (Rigol)
@@ -4333,19 +4516,79 @@ str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
 addVISACommand(3, str);
 
 % Open the D1 shutter (3 ms pre-trigger for delay)
-setDigitalChannel(calctime(curtime,-3),'K D1 GM Shutter',1);
+setDigitalChannel(calctime(curtime,-2.5),'K D1 GM Shutter',1);
 
 %%%%%%%%%%%% Total Molasses Time %%%%%%%%%%%%
 % Total Molasses Time
-molasses_time_list = 5;
+molasses_time_list = [8];
 molasses_time =getScanParameter(molasses_time_list,seqdata.scancycle,seqdata.randcyclelist,'molasses_time'); 
 
 %%%%%%%%%%%% advance time during molasses  %%%%%%%%%%%%
 curtime = calctime(curtime,molasses_time);
 
 % Close the D1 Shutter (3 ms pre-trigger for delay); 
-setDigitalChannel(calctime(curtime,-3),'K D1 GM Shutter 2',0); % we have a double shutter on this beam
+setDigitalChannel(calctime(curtime,-2.5),'K D1 GM Shutter 2',0); % we have a double shutter on this beam
+setDigitalChannel(calctime(curtime,0),'K D1 GM Shutter',0);     % close this shutter too
+
 end
+
+%% Combined Molasses - K D2 GM and Rb D2 Mol
+% This code is for running the D1 Grey Molasses for K and the D2 Optical
+% Molasses for Rb at the same time from the CMOT phase
+doMol2 = 0;
+if doMol2
+
+%%%%%%%%%%%% Shift the fields %%%%%%%%%%%%
+% Set field gradient and shim values (ideally) to zero
+
+% Turn off field gradients
+setAnalogChannel(calctime(curtime,0),'MOT Coil',0,1);   
+
+% Set the shims
+setAnalogChannel(calctime(curtime,0),'X Shim',0.15,2); %0.15
+setAnalogChannel(calctime(curtime,0),'Y Shim',0.15,2); %0.15
+setAnalogChannel(calctime(curtime,0),'Z Shim',0.00,2); %0.00
+
+% Wait for fields to turn off (testing)
+curtime=calctime(curtime,0);  
+
+%%%%%%%%%%%% Shift D2  %%%%%%%%%%%%
+% setAnalogChannel(calctime(curtime,0),'K Trap FM',15); 
+% setAnalogChannel(calctime(curtime,0),'K Repump FM',-50,2); %765
+% setAnalogChannel(calctime(curtime,0),'K Repump AM',0.025); %0.5
+% setAnalogChannel(calctime(curtime,0),'K Trap AM',0.7); %0.7 Oct 30, 2015
+
+%%%%%%%%%%%% Rb D2 Molasses Settings %%%%%%%%%%%%
+
+% Rb Mol detuning setting
+rb_molasses_detuning_list = 110;
+rb_molasses_detuning = getScanParameter(rb_molasses_detuning_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'Rb_molasses_det');  
+
+% Rb Mol trap power setting
+rb_mol_trap_power_list = 0.15;
+rb_mol_trap_power = getScanParameter(rb_mol_trap_power_list,seqdata.scancycle,seqdata.randcyclelist,'rb_mol_trap_power');
+% Rb Mol repump power settings
+rb_mol_repump_power_list = 0.08;[0.01:0.01:0.15];
+rb_mol_repump_power = getScanParameter(rb_mol_repump_power_list,seqdata.scancycle,seqdata.randcyclelist,'Rb_mol_repump_power');
+   
+% Set the power and detunings
+setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',6590+rb_molasses_detuning);
+setAnalogChannel(curtime,'Rb Trap AM',rb_mol_trap_power); %0.7
+setAnalogChannel(curtime,'Rb Repump AM',rb_mol_repump_power); %0.14 
+
+%%%%%%%%%%%% Total Molasses Time %%%%%%%%%%%%
+% Total Molasses Time
+molasses_time_list = [8];
+molasses_time =getScanParameter(molasses_time_list,seqdata.scancycle,seqdata.randcyclelist,'molasses_time'); 
+
+%%%%%%%%%%%% advance time during molasses  %%%%%%%%%%%%
+curtime = calctime(curtime,molasses_time);
+
+
+end
+
+
 
 
 %% Optical Pumping
@@ -4373,10 +4616,14 @@ if doOP
 
     % Perform optical pumping
     curtime = optical_pumping(calctime(curtime,0.0));
+    
+
 end
 
+
+
 %% Load into Magnetic Trap
-loadMT =0;
+loadMT = 0;
 
 if loadMT 
     % Turn off Rb MOT Trap
@@ -4399,30 +4646,45 @@ if loadMT
     setDigitalChannel(calctime(curtime,-2),'K Repump Shutter',0); 
 
     % Turn off K Probe
-    setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); 
+    setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',0); % (0 is off for this beam)
     setDigitalChannel(calctime(curtime,-2),'K Probe/OP Shutter',0); 
 
     % Turn on the magtrap
     curtime = Load_MagTrap_from_MOT(curtime);    
-
-    % Hold in magnetic trap if desired
-    curtime = calctime(curtime,100);    
+    
+%     curtime = calctime(curtime,100);    
 
     % Set the shims away from pumping values back to "zero" field
     setAnalogChannel(calctime(curtime,0),'X Shim',0.15,2); % 0.15
     setAnalogChannel(calctime(curtime,0),'Y Shim',0.15,2); % 0.15
     setAnalogChannel(calctime(curtime,0),'Z Shim',0.00,2); % 0.0    
+    
+    
+    % Hold in magnetic trap if desired
+    MTholds = [50];
+    MThold =getScanParameter(MTholds,seqdata.scancycle,seqdata.randcyclelist,'MThold'); 
+    curtime = calctime(curtime,MThold);    
+
 end
 
 %% Time of flight
 % This section of code performs a time flight before doing fluorescence
 % imaging with the MOT beams.
-doTOF = 0;
+doTOF =0;
+
+if ~doTOF && loadMT
+   error('MT load is not followed by TOF. Coils will get too hot');       
+end
+
 if doTOF      
 
 %%%%%%%%%%%% Turn off beams and gradients %%%%%%%%%%%%%%    
 % Turn off the field gradient
 setAnalogChannel(calctime(curtime,0),'MOT Coil',0,1); 
+
+% levitateGradient=[60:2:90];
+% levitateGradient= getScanParameter(levitateGradient,seqdata.scancycle,seqdata.randcyclelist,'levitateGradient');  %in MHZ
+% setAnalogChannel(calctime(curtime,0),'MOT Coil',levitateGradient,3); 
 
 % Turn off the D2 beams, if they arent off already
 setDigitalChannel(calctime(curtime,0),'K Trap TTL',1); 
@@ -4432,18 +4694,21 @@ setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);
 %%%%%%%%%%%% Perform the time of flight %%%%%%%%%%%%
 
 % Set the time of flight
-tof_list = 1:1:20;
+tof_list = [5];
 tof =getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof_time'); 
 
 % Increment the time (ie. perform the time of flight)
 curtime = calctime(curtime,tof);
-    
+
+% Turn coil off in case levitation was on
+% setAnalogChannel(calctime(curtime,0),'MOT Coil',0,1); 
+
 %%%%%%%%%%%%%% Perform fluoresence imaging %%%%%%%%%%%%
 %turn back on D2 for imaging (or make it on resonance)  
 
 % Set potassium detunings to resonances (0.5 ms prior to allow for switching)
-setAnalogChannel(calctime(curtime,0),'K Trap FM',0);
-setAnalogChannel(calctime(curtime,0),'K Repump FM',0,2);
+setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',0);
+setAnalogChannel(calctime(curtime,-0.5),'K Repump FM',0,2);
 
 % Set potassium power to standard value
 setAnalogChannel(calctime(curtime,-1),'K Repump AM',0.45);          
@@ -4457,19 +4722,22 @@ setAnalogChannel(calctime(curtime,-1),'Rb Trap AM', 0.7);
 setAnalogChannel(calctime(curtime,-1),'Rb Repump AM',0.9);          
 
 % Imaging beams for K
-% setDigitalChannel(calctime(curtime,-5),'K Repump Shutter',1); 
-% setDigitalChannel(calctime(curtime,-5),'K Trap Shutter',1); 
-% setDigitalChannel(calctime(curtime,0),'K Trap TTL',0); 
-% setDigitalChannel(calctime(curtime,0),'K Repump TTL',0); 
+setDigitalChannel(calctime(curtime,-5),'K Repump Shutter',1); 
+setDigitalChannel(calctime(curtime,-5),'K Trap Shutter',1); 
+setDigitalChannel(calctime(curtime,0),'K Trap TTL',0); 
+setDigitalChannel(calctime(curtime,0),'K Repump TTL',0); 
 
-% Imaging beams for Rb
-setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);      
-setDigitalChannel(calctime(curtime,-2),'Rb Repump Shutter',1); 
-setDigitalChannel(calctime(curtime,-5),'Rb Trap Shutter',1); 
+% % Imaging beams for Rb
+% setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);      
+% setDigitalChannel(calctime(curtime,-2),'Rb Repump Shutter',1); 
+% setDigitalChannel(calctime(curtime,-5),'Rb Trap Shutter',1); 
 
 % Camera Trigger (1) : Light+Atoms
 setDigitalChannel(calctime(curtime,0),15,1);
 setDigitalChannel(calctime(curtime,10),15,0);
+
+% Turn off the field gradient
+% setAnalogChannel(calctime(curtime,20),'MOT Coil',0,1); 
 
 % Wait for second image trigger
 curtime = calctime(curtime,3000);
@@ -4486,26 +4754,75 @@ end
 
 
 %% Optical pumping test
-% curtime = calctime(curtime,1000);
-% setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP Shutter',0);    
-% setAnalogChannel(calctime(curtime,-5),'Rb Probe/OP AM',1); %0.11
-% setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',1); % inverted logic
-%     setAnalogChannel(calctime(curtime,0.0),'Rb Beat Note FM',6590-5);
-% % 
-% % 
-% setDigitalChannel(calctime(curtime,-2),'Rb Repump Shutter',0); 
-% setDigitalChannel(calctime(curtime,-2),'Rb Trap Shutter',0); 
-% % 
+curtime = calctime(curtime,1000);
+% % % setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP Shutter',0);    
+% % % setAnalogChannel(calctime(curtime,-5),'Rb Probe/OP AM',1); %0.11
+% % % setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',0); % inverted logic
+% % % setAnalogChannel(calctime(curtime,0.0),'Rb Beat Note FM',6590-5);
+% % % % 
+% % % % 
+% % % setDigitalChannel(calctime(curtime,-2),'Rb Repump Shutter',0); 
+% % % setDigitalChannel(calctime(curtime,-2),'Rb Trap Shutter',0); 
+% % % % 
+% % % % % 
+% % % % setAnalogChannel(calctime(curtime,0),'Y Shim',2); %0.15
+% % % % setAnalogChannel(calctime(curtime,0),'X Shim',1); %0.15
+% % % % setAnalogChannel(calctime(curtime,0),'Z Shim',3);%0.0 
 % % % 
-% % setAnalogChannel(calctime(curtime,0),'Y Shim',2); %0.15
-% % setAnalogChannel(calctime(curtime,0),'X Shim',1); %0.15
-% % setAnalogChannel(calctime(curtime,0),'Z Shim',3);%0.0 
-% 
 % setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',190);%202.5); %200
-% setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',30);
-% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1.0);% inverted logic
+% setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',3);
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
 % setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
-% setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',0);
+% setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
+% % % 
+% % 
+% setAnalogChannel(calctime(curtime,0),59,0); %0.11
+
+%ODT test
+setAnalogChannel(calctime(curtime,0),59,0); %0.11
+curtime = calctime(curtime,1000);
+setDigitalChannel(calctime(curtime,0),'XDT TTL',0);
+ODT1power = 0.5;
+ODT2power = 0.5;
+AnalogFunc(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),250,250,0,ODT1power);
+    
+AnalogFunc(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),250,250,0,ODT2power);
+
+curtime = calctime(curtime,2000);
+setAnalogChannel(curtime,'dipoleTrap1',0); 
+setAnalogChannel(curtime,'dipoleTrap2',0);
+setDigitalChannel(calctime(curtime,10),'XDT TTL',1);
+
+% 
+% 
+% curtime = calctime(curtime,5000);
+% setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
+
+%FB test
+% setDigitalChannel(calctime(curtime,0),'fast FB Switch',1);
+% setAnalogChannel(calctime(curtime,0),'FB current',0,2);
+% 
+% setAnalogChannel(calctime(curtime,0),'FB current',10,2);
+% curtime = calctime(curtime,1000);
+% setAnalogChannel(calctime(curtime,0),'FB current',-0.5,2);
+% setDigitalChannel(calctime(curtime,0),'fast FB Switch',0);
+% 
+% 
+% fesh_current = 2;
+% ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); 
+% 
+% setDigitalChannel(calctime(curtime,-100),'fast FB Switch',1); %switch Feshbach field on
+% setAnalogChannel(calctime(curtime,-95),'FB current',0.0); %switch Feshbach field closer to on
+% setDigitalChannel(calctime(curtime,-100),'FB Integrator OFF',0); %switch Feshbach integrator on            
+%         %linear ramp from zero
+% AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),250,250, fesh_current,0);
+% 
+% curtime = calctime(curtime,1000);
+% 
+% AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),250,250, 0,fesh_current);
+% 
+% setAnalogChannel(calctime(curtime,0),'FB current',-0.5,2);
+% setDigitalChannel(calctime(curtime,0),'fast FB Switch',0);
 
 
 timeout = curtime;

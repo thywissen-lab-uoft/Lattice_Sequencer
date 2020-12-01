@@ -702,7 +702,11 @@ end
         tC1=now;                         % compile start time
         
         % Finish compiling the code
-        fh(0);                          % run sequence function                  
+%         try
+            fh(0);                          % run sequence function                  
+%         catch ME
+%             warning('OH NO SOMETHING WENT WRONG');
+%         end
         calc_sequence;                  % convert seqdata for AdWin  
         
         % create output file

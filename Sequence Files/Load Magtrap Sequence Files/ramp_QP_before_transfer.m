@@ -30,7 +30,7 @@ Feshval = I_fesh ;
     %values). Recently raised, although one would think smaller would be
     %better here. Could try the JILA trick of decompressing further during
     %RF1B evaporation also.
-    ramp_factor = 0.8; %0.7 DCM added 0.6 Aug 18
+    ramp_factor = 0.80; %0.7 DCM added 0.6 Aug 18
     
     QP_ramp_time = 500; %500
     QP_curval = QP_value;

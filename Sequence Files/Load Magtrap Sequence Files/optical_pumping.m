@@ -16,11 +16,11 @@ curtime = timein;
 
 %% Optical pumping parameters
 % tmax=15;
-optime_list = 5;
+optime_list = [2];
 optime = getScanParameter(optime_list,seqdata.scancycle,seqdata.randcyclelist,'optime');
 
 % K
-k_op_am_list = 1;[0.9];[0.6];
+k_op_am_list = [.3]; [1];[0.6];
 k_op_am = getScanParameter(k_op_am_list,seqdata.scancycle,seqdata.randcyclelist,'k_op_am');
 k_op_offset = 0.0;
 k_op_time = optime;
@@ -28,7 +28,7 @@ k_op_detuning_list = [3];3;[31];  32;29;
 k_op_detuning = getScanParameter(k_op_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'k_op_det');
 
 % Rb
-rb_op_am_list = .4;[0.4];[0.7];  %  (1) RF amplitude (V)       
+rb_op_am_list = [0.8];[0.8];  %  (1) RF amplitude (V)       
 rb_op_am = getScanParameter(rb_op_am_list,seqdata.scancycle,seqdata.randcyclelist,'rb_op_am');
 rb_op_offset = 0.0;
 rb_op_time = optime;        % (1) optical pumping time
@@ -36,33 +36,45 @@ rb_op_time = optime;        % (1) optical pumping time
 rb_op_detuning_set(1) = -20;-5;     %5 for 2->2    
 rb_op_detuning_set(2) = -3;     % for 2->3
 
-rb_op_detuning = rb_op_detuning_set(seqdata.flags.Rb_Probe_Order);
+% rb_op_detuning = rb_op_detuning_set(seqdata.flags.Rb_Probe_Order);
 % 
-% rb_op_detuning_list = [-20:2:40];
-% rb_op_detuning = getScanParameter(rb_op_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'rb_op_detuning');
+rb_op_detuning_list = [-20];
+rb_op_detuning = getScanParameter(rb_op_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'rb_op_detuning');
 
-% rb_op_detuning=15;
 %% Prepare OP
 
-% yshims=0:.25:5;
-% yshim=getScanParameter(yshims,seqdata.scancycle,seqdata.randcyclelist,'yshim');
+% zshims=0:0.1:1;
+% zshim=getScanParameter(zshims,seqdata.scancycle,seqdata.randcyclelist,'op_zshim');
 
-setAnalogChannel(calctime(curtime,0.0),'Y Shim',3.3,2); % 3.3
+% Old configuration
+% setAnalogChannel(calctime(curtime,0.0),'Y Shim',3.3,2); % 3.3
 %turn on the X (left/right) shim 
-setAnalogChannel(calctime(curtime,0.0),'X Shim',.2,2); % 0.2,2
+% setAnalogChannel(calctime(curtime,0.0),'X Shim',0.2,2); % 0.2,2
 %turn on the Z (top/bottom) shim 
-setAnalogChannel(calctime(curtime,0.0),'Z Shim',0,2); %0.0
+% setAnalogChannel(calctime(curtime,0.0),'Z Shim',0.2,2); %0.0
+
+% xshims=0:.5:4;
+% xshim=getScanParameter(xshims,seqdata.scancycle,seqdata.randcyclelist,'op_xshim');
+
+% For pumping along X axis
+setAnalogChannel(calctime(curtime,0.0),'X Shim',3.5,2); % 3.3
+setAnalogChannel(calctime(curtime,0.0),'Y Shim',0.0,2); % 0.2,2
+setAnalogChannel(calctime(curtime,0.0),'Z Shim',0.0,2); %0.0
+
 
 %Turn repump back up
 %K
 if (seqdata.atomtype==1 || seqdata.atomtype==4)
-    K_repump_power_for_OP = 0.7;%0.3
-    %RHYS - delete, never will be used.
-     if seqdata.flags.K_D2_gray_molasses == 1
-        K_repump_power_for_OP_list = [0.4];
-        K_repump_power_for_OP = getScanParameter(K_repump_power_for_OP_list,seqdata.scancycle,seqdata.randcyclelist,'K_repump_power_for_OP');
-     end
-     setAnalogChannel(curtime,'K Repump AM',K_repump_power_for_OP); %0.3
+%     K_OP_repump_am = 0.7;
+
+     K_OP_repump_am_list = [0.3];
+     K_OP_repump_am =  getScanParameter(K_OP_repump_am_list,seqdata.scancycle,seqdata.randcyclelist,'K_OP_repump_am');
+
+     setAnalogChannel(curtime,'K Repump AM',K_OP_repump_am); %0.3
+% %      
+%      setDigitalChannel(calctime(curtime,0),'K Repump TTL',1); 
+%      setDigitalChannel(calctime(curtime,-5),'K Repump Shutter',0);
+
 end
 
 %Rb
@@ -89,7 +101,6 @@ end
 %Rb
 if (seqdata.atomtype==3 || seqdata.atomtype==4)
     setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP Shutter',1); % Open shutter
-
     setAnalogChannel(calctime(curtime,-5),'Rb Probe/OP AM',rb_op_am); % Set 
     setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',1); % inverted logic
 end
@@ -188,7 +199,6 @@ if (seqdata.atomtype == 3 || seqdata.atomtype == 4)
 end
 
 % curtime = calctime(curtime,tmax-optime);   
-
 
 timeout = curtime;
 

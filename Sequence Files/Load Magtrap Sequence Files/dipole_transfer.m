@@ -36,7 +36,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     %--------------------
     %RHYS - Move all of these flags out of this function, and declare them
     %in the seqdata structure to be passed in.
-    seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1; %transfer Rb atoms from F=2 to F=1 at the begining of XDT
+    seqdata.flags.do_Rb_uwave_transfer_in_ODT = 0; %transfer Rb atoms from F=2 to F=1 at the begining of XDT
     get_rid_of_Rb_init = 0;%get rid of Rb with resonant light pulse
     init_Rb_RF_sweep = 0;%Sweep 87Rb to |1,-1> (or |2,-2>) before evaporation
     seqdata.flags.do_K_uwave_transfer_in_ODT = 0;%transfer K atoms from F=9/2 to F=7/2
@@ -47,7 +47,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     tilt_evaporation = 0;
     dipole_holdtime_before_evap = 0;
     %RHYS - A very important parameter. Pass these from elsewhere.
-    Evap_End_Power_List =[0.28];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
+    Evap_End_Power_List =[0.20];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
     exp_end_pwr = getScanParameter(Evap_End_Power_List,seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power');
     Second_Evaporation_Stage = 0;
     %exp_end_pwr =  0.3; %0.36  
@@ -93,8 +93,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     %XDT2_power_func = @(P_XDT1)(P_XDT1/2);
     %RHYS - More parameters.
     %Initial powers.
-    P1 = 1.0;1.50;1;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
-    P2 = 1.0;1.50;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
+    P1 = 1.5;1.50;1;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
+    P2 = 1.5;1.50;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
     %P2 = XDT2_power_func(P1);
     %Power at start of evaporation.
     P1e = 1.0;0.5;1.0; %0.5
@@ -184,12 +184,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     %the two ramps. 
     qp_rampdown_starttime2 = 0*500; %500
     %RHYS - This used to be the larger value of 5.25.
-    mean_fesh_current = 2;5.25392;%before 2017-1-6   22.6/4; %Calculated resonant fesh current. Feb 6th. %Rb: 21, K: 21
+    mean_fesh_current = 5.25392;%before 2017-1-6   22.6/4; %Calculated resonant fesh current. Feb 6th. %Rb: 21, K: 21
     fesh_current = mean_fesh_current;
-    
-    %for testing 
-    add_fesh_current = 0*10.0;
-    add_fesh_time = 0;
         
     vSet_ramp = 1.07*vSet; %24
     
@@ -309,8 +305,8 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,y2)(ramp_line
         %ramp Feshbach field
         FB_time_list = [0];
         FB_time = getScanParameter(FB_time_list,seqdata.scancycle,seqdata.randcyclelist,'FB_time');
-        setDigitalChannel(calctime(curtime,-100-FB_time),31,1); %switch Feshbach field on
-        setAnalogChannel(calctime(curtime,-95-FB_time),37,0.0); %switch Feshbach field closer to on
+        setDigitalChannel(calctime(curtime,-100-FB_time),'fast FB Switch',1); %switch Feshbach field on
+        setAnalogChannel(calctime(curtime,-95-FB_time),'FB current',0.0); %switch Feshbach field closer to on
         setDigitalChannel(calctime(curtime,-100-FB_time),'FB Integrator OFF',0); %switch Feshbach integrator on            
         %linear ramp from zero
         AnalogFunc(calctime(curtime,0-FB_time),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),qp_ramp_down_time2+FB_time,qp_ramp_down_time2+FB_time, fesh_current,0);
@@ -641,7 +637,7 @@ curtime = calctime(curtime,50);
         % FB coil settings for spectroscopy
         ramp.fesh_ramptime = 50;
         ramp.fesh_ramp_delay = -0;
-        ramp.fesh_final = 10;20.98111;%before 2017-1-6 1*22.6; %22.6 %20.8;22.7391;%
+        ramp.fesh_final = 10;10;20.98111;%before 2017-1-6 1*22.6; %22.6 %20.8;22.7391;%
         addOutputParam('K_RF_B',ramp.fesh_final);
         ramp.settling_time = 200;
 
@@ -659,10 +655,10 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 
         %Do RF Sweep
         clear('sweep');
-        sweep_pars.freq = 3.3; %MHz
-        sweep_pars.power = -2;-4;10;
-        sweep_pars.delta_freq = -1;-6; -1.5; % end_frequency - start_frequency
-        sweep_pars.pulse_length = 200;300; % also is sweep length
+        sweep_pars.freq = 3.11; %MHz
+        sweep_pars.power = 2;-2;-4;10;
+        sweep_pars.delta_freq = -2;-1;-6; -1.5; % end_frequency - start_frequency
+        sweep_pars.pulse_length = 200;200;300; % also is sweep length
         
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
 

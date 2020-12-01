@@ -166,7 +166,7 @@ if loc==0
     
 %         %turn on the Y (quantizing) shim 
 %     curtime = setAnalogChannel(calctime(curtime,0),19,0.95,1); % 0.8 May 29 2013 %0.9 feb 4 (0.9 June 6)  (k=1.8, rb=0.8 june 25)
-%     %turn on the X (left/right) shim 
+    %turn on the X (left/right) shim 
 %     curtime = setAnalogChannel(calctime(curtime,0),27,0.5,1);  % 0.4 May 29 2013 %0.0 feb 4 (0.0 June 6)  (k=0.0, rb=0.4 june 25)
 %     %turn on the Z (top/bottom) shim 
 %     curtime = setAnalogChannel(calctime(curtime,0),28,0.42,1);  % 0.42 May 29 2013 %0.45 feb 4 (0.42 June 6) (k=0.6,rb=0.42 june 25)
@@ -175,13 +175,24 @@ if loc==0
 
     
     %turn on the Y (quantizing) shim 
-    curtime = setAnalogChannel(calctime(curtime,0),19,1.6,1); %1.6 % 0.8 May 29 2013 %0.9 feb 4 (0.9 June 6)  (k=1.8, rb=0.8 june 25)
+%     curtime = setAnalogChannel(calctime(curtime,0),'Y Shim',2,2)%(1.6,1); %1.6 % 0.8 May 29 2013 %0.9 feb 4 (0.9 June 6)  (k=1.8, rb=0.8 june 25)
     %turn on the X (left/right) shim 
-    curtime = setAnalogChannel(calctime(curtime,0),27,0.4,1);  % 0.4 May 29 2013 %0.0 feb 4 (0.0 June 6)  (k=0.0, rb=0.4 june 25)
+%     curtime = setAnalogChannel(calctime(curtime,0),'X Shim',0.2,2)%(0.4,1);  % 0.4 May 29 2013 %0.0 feb 4 (0.0 June 6)  (k=0.0, rb=0.4 june 25)
     %turn on the Z (top/bottom) shim 
-    curtime = setAnalogChannel(calctime(curtime,0),28,1.6,1);  %1.6 % 0.42 May 29 2013 %0.45 feb 4 (0.42 June 6) (k=0.6,rb=0.42 june 25)
+%     curtime = setAnalogChannel(calctime(curtime,0),'Z Shim',0.9,2)%(1.6,1);  %1.6 % 0.42 May 29 2013 %0.45 feb 4 (0.42 June 6) (k=0.6,rb=0.42 june 25)
     %turn on the Z (top/bottom) shim via bipolar supply
     %curtime = setAnalogChannel(calctime(curtime,0),47,0.42,1);  % 0.42 May 29 2013 %0.45 feb 4 (0.42 June 6) (k=0.6,rb=0.42 june 25)
+
+ %Rb optimized shim values
+    curtime = setAnalogChannel(calctime(curtime,0),'X Shim',0.2,2);
+    curtime = setAnalogChannel(calctime(curtime,0),'Y Shim',2.0,2);
+    curtime = setAnalogChannel(calctime(curtime,0),'Z Shim',0.9,2);
+
+ %K optimized shim values
+% curtime = setAnalogChannel(calctime(curtime,0),'X Shim',0.0 ,2);  0.2;
+% curtime = setAnalogChannel(calctime(curtime,0),'Y Shim', 0.0  ,2); 2;
+% curtime = setAnalogChannel(calctime(curtime,0),'Z Shim',0.2 ,2);  0.9;
+%  
 elseif loc==1
     
     %turn on the Y (quantizing) shim 

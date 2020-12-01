@@ -45,7 +45,7 @@ if do_ramp_qp
     
     
     
-    ramp_factor = 1.1; %1.1
+    ramp_factor = 1.1;1.1; %1.1
     
         
     QP_ramp_time = 500+0*7500; %500+7500

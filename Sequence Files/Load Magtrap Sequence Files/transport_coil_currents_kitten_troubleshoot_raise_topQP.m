@@ -61,9 +61,9 @@ num_analog_channels = 21;
 num_dig_channels = 2;
 
 overallscale = 1.0; %scales all the transport currents
-verticalscale = 1*1; %scales the vertical currents
+verticalscale = 1*1.00; %scales the vertical currents
 
-coil_scale_factors = ones(1,num_channels);%scaling of the max current in each coil
+coil_scale_factors = 1*ones(1,num_channels);%scaling of the max current in each coil
 
 coil_widths = ones(1,num_channels);%widths of each of the coil curves
 
@@ -193,7 +193,7 @@ coil_scale_factors(9) = 1.0;
 %seventh horizontal transport
 coil_range(1,10) = 180;
 coil_range(2,10) = 300;
-coil_scale_factors(10) = 1.0;
+% coil_scale_factors(10) = 1.0;
 
 %coil 10
 %eighth horizontal transport

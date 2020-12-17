@@ -69,7 +69,7 @@ curtime = timein;
     %centre of the imaging window is different from the natural QP centre)
     seqdata.params. plug_shims = [(seqdata.params. shim_zero(1)-1-0.04-0.3),...
     (seqdata.params. shim_zero(2)+0.125), ...
-    (seqdata.params. shim_zero(3)+ 0.35 + 0.35 + 0.20)];%0.35 + 0.55)];
+    (seqdata.params. shim_zero(3)+ 0.35  )];%0.35 + 0.55)];
 
 
     seqdata.params. shim_val = [0 0 0]; %Current shim values (x,y,z)- reset to zero
@@ -157,7 +157,7 @@ curtime = timein;
     seqdata.flags.img_direction = 1; 
     %1 = x direction (Sci) / MOT, 2 = y direction (Sci), 
     %3 = vertical direction, 4 = x direc tion (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
-    seqdata.flags.do_stern_gerlach = 1; %1: Do a gradient pulse at the beginning of ToF
+    seqdata.flags.do_stern_gerlach = 0; %1: Do a gradient pulse at the beginning of ToF
     seqdata.flags.iXon = 0; % use iXon camera to take an absorption image (only vertical)
     seqdata.flags.do_F1_pulse = 0; % repump Rb F=1 before/during imaging
    
@@ -208,15 +208,18 @@ curtime = timein;
     
     
     %RHYS - Here be parameters.     
-    rf_evap_time_scale = [0.7 0.9];[1.0 1.5];[0.8 1.2];[1.00 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
-    RF_1B_Final_Frequency = 0.80;
+    rf_evap_time_scale = [0.7 0.9];[1.0 1.5];[0.7 0.9];[1.0 1.5];[0.8 1.2];[1.00 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
+    RF_1A_Final_Frequency_list = [12];
+    RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1A_finalfreq');
+    RF_1B_Final_Frequency = 0.8;0.80;
+    
     seqdata.flags.do_plug = 1;   % ramp on plug after transfer to window
     seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get clean TOF signal
 
     %RHYS - a bunch of unused options here. 
     
     % Dipole trap
-    seqdata.flags.do_dipole_trap = 1; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
+    seqdata.flags.do_dipole_trap = 0; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
     seqdata.flags.CDT_evap = 0;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
     seqdata.flags.K_RF_sweep = 0;    %sweep 40K into |9/2,-9/2>; %create mixture in XDT, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1    
     seqdata.flags.init_K_RF_sweep = 0; %sweep 40K into |9/2,-9/2>; %create mixture in XDT before evap, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1  
@@ -240,8 +243,9 @@ curtime = timein;
     seqdata.flags.do_imaging_molasses = 0; % 1: In Lattice or XDT, 2: Free space after QP, 3: Free Space after XDT
     seqdata.flags.evap_away_Rb_in_QP = 0; %Evaporate to 0.4MHz in QP+XDT to kill Rb and load lots of K (only works when loading XDT)
     seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / alignment
-    %RHYS - Useful! Where to trigger scope. Should be more apparent. 
     
+    
+    %RHYS - Useful! Where to trigger scope. Should be more apparent.     
     scope_trigger = 'Rampup ODT'; 
 
 %% Set switches for predefined scenarios
@@ -536,13 +540,13 @@ curtime = Transport_Cloud(curtime, seqdata.flags.hor_transport_type,...
     %at this stage, and may be unhelpful/irrelevant. Also, integrate into the
     %function for cleanliness (I'm going to stop repeating this). 
 
-[curtime I_QP I_kitt V_QP I_fesh] = ramp_QP_after_trans(curtime, seqdata.flags.compress_QP);
+[curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_trans(curtime, seqdata.flags.compress_QP);
 
 
     %Shim Values to Turn On To: (0 to do plug evaporation, Bzero values for molasses after RF Stage 1)
-    y_shim_val = seqdata.params. plug_shims(2); %0*0.5
-    x_shim_val = seqdata.params. plug_shims(1); %0*1.6
-    z_shim_val = seqdata.params. plug_shims(3); %0*0.8
+    y_shim_val = seqdata.params.plug_shims(2); %0*0.5
+    x_shim_val = seqdata.params.plug_shims(1); %0*1.6
+    z_shim_val = seqdata.params.plug_shims(3); %0*0.8
        
     
     %turn on shims
@@ -550,63 +554,54 @@ curtime = Transport_Cloud(curtime, seqdata.flags.hor_transport_type,...
     AnalogFuncTo(calctime(curtime,0),'X Shim',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,x_shim_val,3); 
 curtime = AnalogFuncTo(calctime(curtime,0),'Z Shim',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,z_shim_val,3); 
 
-%% Evaporate in Tight QP Trap
+%% RF1A
+if ( seqdata.flags.RF_evap_stages(1) == 1 )
+    fake_sweep = 0;             % do a fake RF sweep
+    hold_time = 100;            % hold time after sweeps
+    pre_hold_time =  100;       % Hold time before sweeps
+    start_freq = 42;            % Beginning RF1A frequnecy 42 MHz 
 
-    %RHYS - Here lies a mess of parameters, with the relevant code being
-    %do_evap_stage called with the aforementioned parameters. Prime candidate
-    %for cleaning up. 
+    % Frequency points
+    freqs_1 = [ start_freq 28 20 RF_1A_Final_Frequency]*MHz;
+    % Gains during each sweep
+    RF_gain_1 = 0.5*[-4.1 -4.1 -4.1 -4.1]; 
+    % Duration of each sweep interval
+    sweep_times_1 =[14000 8000 4000].*rf_evap_time_scale(1);
 
-    if ( seqdata.flags.RF_evap_stages(1) == 1 )
 
-         fake_sweep = 0;
+    % Hold before beginning evaporation
+    curtime = calctime(curtime,pre_hold_time);
 
-         hold_time = 100;
-         pre_hold_time =  100;
+    % Do a pulse of Rb repump to kill F=1
+%     setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',1);
+%     curtime = setDigitalChannel(calctime(curtime,1000),'Rb Sci Repump',0);
 
-         start_freq = 42;42;%42  
-
-        %this worked well with 0.6 kitten
-        freqs_1 = [ start_freq 28 20 10]*MHz;[100 100]*MHz;;[ start_freq 28 20 12]*MHz; %7.5 %[ start_freq 28 20 12]*MHz before 2018-03-06 12MHz
-
-        RF_gain_1 = 0.5*[-4.1 -4.1 -4.1 -4.1]*(9)/9*1;1*[-4.1 -4.1 -4.1 -4.1]*(9)/9*1;%1*[ 9 9 9 9]*(9)/9*1;1*[-5.93 -5.93 -5.93 -5.93];  %9 9 9 (5)/9*0.75
-        
-        
-%         RF_gain_1_val_list = [-4.5:0.1:-3.5];
-%         RF_gain_1_val = getScanParameter(RF_gain_1_val_list,seqdata.scancycle,seqdata.randcyclelist,'RF_gain_1_val');
-%         RF_gain_1 = 0.5*[RF_gain_1_val RF_gain_1_val RF_gain_1_val RF_gain_1_val]*(9)/9*1;
-%        
-
-        sweep_times_1 =[ 14000 8000 1000].*rf_evap_time_scale(1);[100];%[ 14000 8000 1000].*rf_evap_speed(1);%[ 14000 6000 2000].*rf_evap_speed(1); before 2017-05-02
-
-        
-
-        %hold before evap
-curtime = calctime(curtime,pre_hold_time);
-
-curtime = do_evap_stage(curtime, fake_sweep, freqs_1, sweep_times_1, ...
+    % Do the RF evaporation
+    curtime = do_evap_stage(curtime, fake_sweep, freqs_1, sweep_times_1, ...
         RF_gain_1, hold_time, (seqdata.flags.RF_evap_stages(3) == 0));
-    end
-    %This does a fast evaporation to benchmark the transport
-    if ( seqdata.flags.RF_evap_stages(1) == 2 )
+end
+    
+%% RF1A Alternate : Fast RF for transport benchmark
+% This does a fast evaporation to benchmark the transport
+% CF : I don't konw what this is for?
 
-         fake_sweep = 1;
-
-         hold_time = 100;
-
-         %Jan 2019
-         start_freq = 42;%42
-
-        %this worked well with 0.6 kitten
-        freqs_1 = [start_freq 10]*MHz; %7.5
-        RF_gain_1 = [9]*(5)/9*0.75;%[9]*(5)/9*0.75; %9 9 9
-        sweep_times_1 = [15000]; 
+if ( seqdata.flags.RF_evap_stages(1) == 2 )
+     fake_sweep = 1;
+     hold_time = 100;
+     %Jan 2019
+     start_freq = 42;%42
+    %this worked well with 0.6 kitten
+    freqs_1 = [start_freq 10]*MHz; %7.5
+    RF_gain_1 = [9]*(5)/9*0.75;%[9]*(5)/9*0.75; %9 9 9
+    sweep_times_1 = [15000]; 
 
 curtime = do_evap_stage(curtime, fake_sweep, freqs_1, sweep_times_1, ...
         RF_gain_1, hold_time, (seqdata.flags.RF_evap_stages(3) ~= 0));
 
-    end
+end
     
-    %Get rid of Rb afterwards (used for loading dilute 40K into lattice)
+%% Kill Rb after RF1A
+%Get rid of Rb afterwards (used for loading dilute 40K into lattice)
     kill_Rb_after_RFStage1 = 0;
     
     if kill_Rb_after_RFStage1
@@ -632,16 +627,16 @@ curtime = do_evap_stage(curtime, fake_sweep, freqs_1, sweep_times_1, ...
 
         %pulse beam with TTL 
         %TTL probe pulse
-curtime = DigitalPulse(calctime(curtime,0),24,kill_pulse_time,0);
+        curtime = DigitalPulse(calctime(curtime,0),24,kill_pulse_time,0);
         %repump pulse
         %setAnalogChannel(calctime(curtime,0),2,0.7); %0.7
         %curtime = setAnalogChannel(calctime(curtime,kill_pulse_time),2,0.0);
         
         %close shutter
-curtime = setDigitalChannel(calctime(curtime,0),25,0); %0=closed, 1=open
+        curtime = setDigitalChannel(calctime(curtime,0),25,0); %0=closed, 1=open
         %curtime = setDigitalChannel(calctime(curtime,0),5,0);
         
-curtime=calctime(curtime,5);
+        curtime=calctime(curtime,5);
     end
     
 %% Evaporation during compression
@@ -655,34 +650,39 @@ curtime=calctime(curtime,5);
                 RF_gain_1, 0, (seqdata.flags.RF_evap_stages(3) == 0));
 
     end
-%% Ramp down QP and transfer to the window
+%% Ramp down QP and/or transfer to the window
+% Decompress the QP trap and transpor the atoms closer to the window.
 
-    %RHYS - Decompress the trap and bring atoms closer to the window. Trap
-    %depth and position can be played with here. Should automatically rescale
-    %plug_shim values with the depth of the gradient so trap doesn't move when
-    %adjusting depth (typically we compensate by hand, but why waste the time
-    %when the relationship is known?)
+%This is only for testing the constituent spins of Rb after the RF1A stage.
+%When ramp_wo_transfer flag is on, we do a gradient ramp without
+%tansfering the atoms to near the window
+ramp_wo_transfer = 0; 
+ramp_after_transfer = 0;
+if ramp_wo_transfer
+    [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_wo_transfer(curtime,...
+        seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
+else
+    [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_before_transfer(curtime,...
+        seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
+end
 
-[curtime I_QP I_kitt V_QP I_fesh] = ramp_QP_before_transfer(curtime, seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
+if ramp_after_transfer
+    [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_transfer_test(curtime,...
+        seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
+end
 
+%% Turn on Plug Beam
+% Turn on the plug beam.  We currently only have a shutter on the plug beam
 
-%% Ramp on Plug
-    % ramped up once atoms arrived at imaging position (or a bit later, but not earlier)
+if  seqdata.flags.do_plug==1       
+    plug_offset = -500; % -200
+    setDigitalChannel(calctime(curtime,plug_offset),'Plug Shutter',1); %0: CLOSED; 1: OPEN
+end
 
-    %RHYS - Obviously cut a lot here... we just open a shutter now. It doesn't
-    %even necessarily need to be its own flag (as in, it could be on by default
-    %if getting to the third stage of RF evap... having the option to turn it
-    %off is sometimes useful for alignments, however). 
-
-    if ( seqdata.flags.do_plug == 1 )
-   
-        %set plug on time from end of evap       
-        plug_offset = -500; % -200
-    
-        %open plug shutter
-        setDigitalChannel(calctime(curtime,plug_offset),'Plug Shutter',1); %0: OFF; 1: ON
-   
-    end
+ramp_after_plug=0;
+if ramp_after_plug
+    [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_transfer_test(curtime, seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
+end
 
 %% Evaporation Stage 1b
     % At the imaging position
@@ -690,23 +690,41 @@ curtime=calctime(curtime,5);
     %RHYS - same comments as for the previous evaporation stage. This is just a
     %mess of parameters, with a call to do_evap_stage. 
 
-    if ( seqdata.flags.RF_evap_stages(3) == 1 )
-%% RF 1b
-    fake_sweep = 0;
-    rf_gain_1b_list= .5*(-4.1);[-6.3];[-4]; %-6.3;
-    rf_1b_gain=getScanParameter(rf_gain_1b_list,seqdata.scancycle,seqdata.randcyclelist,'rf_1b_gain');
-    %USUAL SETTINGS    
-    %Evaporate to 0.7MHz to load into ODT (0.8MHz to look at Rb)
-    freqs_1b = [freqs_1(end)/MHz*1.1 7 RF_1B_Final_Frequency 2]*MHz;
-    RF_gain_1b = [.5*(-4.1) .5*(-4.1) rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 -6.3 -6.3];[4 4 1 1];[-6.74 -6.74 -7.26 -7.26];   % 8 8 5 5
-    sweep_times_1b = [6000 2000 10]*rf_evap_time_scale(2); [3000 2000 10];%[3000 2500 10]*rf_evap_speed(2);
+if ( seqdata.flags.RF_evap_stages(3) == 1 )
 
-    
+% This section of code runs the RF evaporation for RF1B where Coil 16 and
+% Coil 15 have the same current running through them.
+
+fake_sweep = 0;     % Enable if fake sweep
+
+rf_gain_1b_list=[-2.05]; .5*(-4.1);[-4]; %-6.3;
+rf_1b_gain=getScanParameter(rf_gain_1b_list,seqdata.scancycle,seqdata.randcyclelist,'rf_1b_gain');
+
+%Evaporate to 0.7MHz to load into ODT (0.8MHz to look at Rb)
+freqs_1b = [freqs_1(end)/MHz*1.1 7 RF_1B_Final_Frequency 2]*MHz;    % Frequency
+sweep_times_1b = [6000 2000 10]*rf_evap_time_scale(2);              % Sweep times in ms
+% RF_gain_1b =[.5*(-4.1) .5*(-4.1) rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 -6.3 -6.3];[4 4 1 1];[-6.74 -6.74 -7.26 -7.26];   % 8 8 5 5
+RF_gain_1b =ones(1,length(freqs_1b))*rf_1b_gain;                     % Uniform gain
+
+% %do a quick pulse of Rb repump before RF1B
+% setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',1);
+% curtime = setDigitalChannel(calctime(curtime,1000),'Rb Sci Repump',0);
+
+
+% Perform the evaporation
 curtime = do_evap_stage(curtime, fake_sweep, freqs_1b, sweep_times_1b, RF_gain_1b, 0, 1);
 
-    %Get rid of Rb afterwards (used for loading dilute 40K into lattice)
-    kill_Rb_after_RFStage1b = 0;
-    
+%Get rid of Rb afterwards (used for loading dilute 40K into lattice)
+kill_Rb_after_RFStage1b = 0;
+
+
+    ramp_after_1B = 0;
+    if ramp_after_1B
+        [curtime, I_QP, I_kitt, V_QP, I_fesh] = ...
+            ramp_QP_after_transfer_test(curtime, ...
+            seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
+    end
+
     if kill_Rb_after_RFStage1b
         kill_pulse_time = 5; %5
 
@@ -715,18 +733,18 @@ curtime = do_evap_stage(curtime, fake_sweep, freqs_1b, sweep_times_1b, RF_gain_1
         setAnalogChannel(calctime(curtime,-10),36,0.7); 
         %probe TTL
         setDigitalChannel(calctime(curtime,-10),24,1);
-            
+
         %set detuning
         setAnalogChannel(calctime(curtime,-10),34,6590-237);
 
         %pulse beam with TTL 
         %TTL probe pulse
-curtime = DigitalPulse(calctime(curtime,0),24,kill_pulse_time,0);
-        
+        curtime = DigitalPulse(calctime(curtime,0),24,kill_pulse_time,0);
+
         %close shutter
-curtime = setDigitalChannel(calctime(curtime,0),25,0); %0=closed, 1=open
-        
-curtime=calctime(curtime,5);
+        curtime = setDigitalChannel(calctime(curtime,0),25,0); %0=closed, 1=open
+
+        curtime=calctime(curtime,5);
     end
     
 %% Post RF1b Tasks
@@ -736,9 +754,7 @@ curtime=calctime(curtime,5);
     %from the mag trap. 
 
     %blow-away Rb
-    do_Rb_blow_away = 0;
-
-   
+    do_Rb_blow_away = 0;   
 
     if do_Rb_blow_away
         
@@ -782,47 +798,48 @@ curtime = DigitalPulse(calctime(curtime,0),24,15,0);
     end
     %hold at end of evap
 curtime = calctime(curtime,250); %3000
-    
    
-%% Microwave evaporation instead of RF    
-    elseif ( seqdata.flags.RF_evap_stages(3) == 2 )
-%% uWave Evap
-        %RHYS - interesting option that I've never tried. Uses Rb microwaves for
-        %evaporation (lower Rabi freq but possibly cleaner?)
+end
+
+%% RF1B Alternate : uWave Evaporation
+if ( seqdata.flags.RF_evap_stages(3) == 2 )
+%RHYS - interesting option that I've never tried. Uses Rb microwaves for
+    %evaporation (lower Rabi freq but possibly cleaner?)
+    
         freqs_1b = [freqs_1(end)/MHz*0.6 4 1.0 ]*MHz; 
         RF_gain_1b = [-4 -4 -7]; 
         sweep_times_1b = [4000 3500 ]*6/6;
     
         %Do uWave evaporation
-curtime = do_uwave_evap_stage(curtime, fake_sweep, freqs_1b*3, sweep_times_1b, 0);
-    end
+        curtime = do_uwave_evap_stage(curtime, fake_sweep, freqs_1b*3, sweep_times_1b, 0);
+end
 
 %% Post QP Evap Tasks
-    %RHYS - clean.
-    %turn plug off
-    if ( seqdata.flags.do_plug == 1)
-        hold_time_list = [0];
-        hold_time = getScanParameter(hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'hold_time_QPcoils');
-curtime = calctime(curtime,hold_time);   
-        plug_offset = -2.5;175;%0 for experiment, -10 to align for in trap image
-    
-        if ( seqdata.flags.do_dipole_trap ~= 1 )
-            setDigitalChannel(calctime(curtime,plug_offset),'Plug Shutter',0);% 0:OFF; 1: ON
-            ScopeTriggerPulse(calctime(curtime,0),'plug test');
-        end        
-    end
-%% Dipole trap ramp on (and QP rampdown)
-    if ( seqdata.flags.do_dipole_trap == 1 )
+%RHYS - clean.
+%turn plug off
+if ( seqdata.flags.do_plug == 1)
+    hold_time_list = [0];
+    hold_time = getScanParameter(hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'hold_time_QPcoils');
+    curtime = calctime(curtime,hold_time);   
+    plug_offset = -2.5;175;%0 for experiment, -10 to align for in trap image
 
-        dipole_on_time = 10; %500
-    
-        %RHYS - an important code. Ramp down the mag trap, load the XDT, and
-        %evaporate.
-[curtime I_QP V_QP P_dip dip_holdtime] = dipole_transfer(curtime, I_QP, V_QP);
-    
-  
-    
-    end
+    if ( seqdata.flags.do_dipole_trap ~= 1 )
+        setDigitalChannel(calctime(curtime,plug_offset),'Plug Shutter',0);% 0:OFF; 1: ON
+        ScopeTriggerPulse(calctime(curtime,0),'plug test');
+    end        
+end
+%% Dipole trap ramp on (and QP rampdown)
+if ( seqdata.flags.do_dipole_trap == 1 )
+
+    dipole_on_time = 10; %500
+
+    %RHYS - an important code. Ramp down the mag trap, load the XDT, and
+    %evaporate.
+[curtime, I_QP, V_QP, P_dip, dip_holdtime] = dipole_transfer(curtime, I_QP, V_QP);
+
+
+
+end
 curtime=calctime(curtime,0);
 
 
@@ -841,7 +858,7 @@ curtime = Pulse_Lattice(curtime,seqdata.flags.pulse_lattice_for_alignment);
     if ( seqdata.flags.load_lattice ~= 0 )
     %RHYS - loads the lattices and performs science/fluorescence imaging.
     %Important. Code is probably way too bulky. 
-[curtime P_dip P_Xlattice P_Ylattice P_Zlattice P_RotWave]= Load_Lattice(curtime);
+[curtime, P_dip, P_Xlattice, P_Ylattice, P_Zlattice, P_RotWave]= Load_Lattice(curtime);
     end
 
 %% Pulse Z Lattice after ramping up other lattices to align
@@ -879,8 +896,8 @@ curtime = AnalogFunc(curtime,1,@(t,tt,dt)(dt*t/tt+I_QP),lower_transfer_time,lowe
     
     %Turn off QP Coils
     setAnalogChannel(calctime(curtime,0),21,0,1); %15
-curtime = setAnalogChannel(calctime(curtime,0),1,0,1); %16
-curtime = setAnalogChannel(curtime,3,0,1); %kitten
+    curtime = setAnalogChannel(calctime(curtime,0),1,0,1); %16
+    curtime = setAnalogChannel(curtime,3,0,1); %kitten
     
     %MOT
     if ( seqdata.flags.image_type ~= 4 )

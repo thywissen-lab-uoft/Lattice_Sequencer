@@ -36,7 +36,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     %--------------------
     %RHYS - Move all of these flags out of this function, and declare them
     %in the seqdata structure to be passed in.
-    seqdata.flags.do_Rb_uwave_transfer_in_ODT = 0; %transfer Rb atoms from F=2 to F=1 at the begining of XDT
+    seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1; %transfer Rb atoms from F=2 to F=1 at the begining of XDT
     get_rid_of_Rb_init = 0;%get rid of Rb with resonant light pulse
     init_Rb_RF_sweep = 0;%Sweep 87Rb to |1,-1> (or |2,-2>) before evaporation
     seqdata.flags.do_K_uwave_transfer_in_ODT = 0;%transfer K atoms from F=9/2 to F=7/2

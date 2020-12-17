@@ -453,11 +453,11 @@ global seqdata;
 
 % setAnalogChannel(calctime(curtime,0),24,0,1);
 
-%% Transport test
+% %% Transport test
 % 
-% setDigitalChannel(curtime,'Kitten Relay',1); %0: OFF, 1: ON
+% setDigitalChannel(curtime,'Kitten Relay',0); %0: OFF, 1: ON
 % setDigitalChannel(curtime,'15/16 Switch',0); %0: OFF, 1: ON
-% setDigitalChannel(curtime,'Coil 16 TTL',0); %1: turns coil off; 0: coil can be on
+% setDigitalChannel(curtime,'Coil 16 TTL',1); %1: turns coil off; 0: coil can be on
 % 
 % curtime = calctime(curtime,500);
 %  
@@ -469,7 +469,7 @@ global seqdata;
 %  
 % curtime = calctime(curtime,500);
 % 
-% current = 10;
+% current = 0;
 % channel = 1;
 % 
 % is_bipolar = 0;
@@ -486,7 +486,7 @@ global seqdata;
 % % AnalogFunc(calctime(curtime,-200),18,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,0.5,8*(abs(current)/30)/1 + 0.5);
 % 
 % %Kitten to max current for the ramp if using coil 15 or 16 alone.
-% setAnalogChannel(calctime(curtime,-175),3,5,1); % current set to 5 for fully on   
+% setAnalogChannel(calctime(curtime,-175),3,0,1); % current set to 5 for fully on   
 % 
 % %"Turn on" coil to 0
 % setAnalogChannel(calctime(curtime,-50),channel,0,1); %Start at zero for AnalogFuncTo
@@ -541,8 +541,8 @@ global seqdata;
 % curtime = setAnalogChannel(curtime,3,0,1); %kitten
 % curtime = setDigitalChannel(curtime,'15/16 Switch',0);
 % % 
-% % % 
-% 
+% % % % 
+% % 
 
 
 %% Test Offset Lock
@@ -2661,49 +2661,6 @@ global seqdata;
 % setAnalogChannel(calctime(curtime,0),47,10,1);
 
 
-
-
-%% Test DDS for TA lock
-% MHz=10^6;
-% curtime = calctime(curtime,100);
-% DDSFreq = 350*MHz;
-% DDS_sweep(calctime(curtime,-10),3,DDSFreq,DDSFreq,100);
-% % setDigitalChannel(calctime(curtime,0),'D1 TTL',1);
-% setAnalogChannel(calctime(curtime,0),47,10,1);
-
-
-%% Test Repump FM
-% setAnalogChannel(curtime,50,0,2);
-
-%% Test Homebuilt Shutter
-% setAnalogChannel(curtime,38,-1);
-% curtime = calctime(curtime, 500);
-% 
-% %Resonant light pulse to remove any untransferred atoms from F=9/2
-% kill_probe_pwr = 1;
-% kill_time = 5; %10
-% kill_detuning = 15; %-8 MHz to be resonant with |9/2,9/2> -> |11/2,11/2> transition in 40G field
-%                      %110 MHz to be resonant with |9/2,-9/2> -> |11/2,-11/2> transition in 40G field
-% addOutputParam('kill_detuning',kill_detuning);
-% addOutputParam('kill_time',kill_time);
-% 
-% pulse_offset_time = -5; %Need to step back in time a bit to do the kill pulse
-%                           % directly after transfer, not after the subsequent wait times
-% 
-% %set probe detuning
-% setAnalogChannel(calctime(curtime,pulse_offset_time-50),'K Probe/OP FM',180); %195
-% %set trap AOM detuning to change probe
-% setAnalogChannel(calctime(curtime,pulse_offset_time-50),'K Trap FM',kill_detuning); %54.5
-% 
-% %open K probe shutter
-% setDigitalChannel(calctime(curtime,pulse_offset_time-10),'Downwards D2 Shutter',0); %0=closed, 1=open
-% %turn up analog
-% setAnalogChannel(calctime(curtime,pulse_offset_time-10),29,kill_probe_pwr);
-% 
-% %pulse beam with TTL
-% setDigitalChannel(calctime(curtime,pulse_offset_time),9,1);
-
-
 %% Test B Field Impulse Response
 
 % source = 2; % 0 = Nothing, 1 = Feshbach, 2 = Z-Shim, 3 = Coil 16
@@ -2824,17 +2781,6 @@ global seqdata;
 % SetDigitalChannel(calctime(curtime,0),31,0);
 % SelectScopeTrigger(scope_trigger);
 
-
-    %% Change D1 doublepass AOM settings.
-% % %Set Detuning
-% k_D1_detuning = 235;
-% k_D1_power = 7.75;
-% setAnalogChannel(calctime(curtime,0),48,k_D1_detuning);
-% setDigitalChannel(curtime,'D1 TTL',1)
-% %turn on D1 AOM 3s before it's being used in order for it to
-% %warm up
-% setAnalogChannel(calctime(curtime,0),47,k_D1_power,1);
-% setAnalogChannel(calctime(curtime,0),'D1 FM',224.5);
 
 %% Test Raman Beams
 % setAnalogChannel(calctime(curtime,0),64,0.0);
@@ -3225,7 +3171,7 @@ global seqdata;
 
 %% Test Plug and TiSapph
 
-% % %Plug beam
+% % % %Plug beam
 % setDigitalChannel(calctime(curtime,0),'Plug Shutter',0); %0: off, 1: on
 % setAnalogChannel(calctime(curtime,0),'Plug Beam',5,1);
 % % % 
@@ -4592,8 +4538,8 @@ end
 
 
 %% Optical Pumping
-setDigitalChannel(calctime(curtime,0),'ScopeTrigger',1);
-setDigitalChannel(calctime(curtime,1),'ScopeTrigger',0); 
+% setDigitalChannel(calctime(curtime,0),'ScopeTrigger',1);
+% setDigitalChannel(calctime(curtime,1),'ScopeTrigger',0); 
 
 doOP =0;
 if doOP
@@ -4754,7 +4700,7 @@ end
 
 
 %% Optical pumping test
-curtime = calctime(curtime,1000);
+% curtime = calctime(curtime,1000);
 % % % setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP Shutter',0);    
 % % % setAnalogChannel(calctime(curtime,-5),'Rb Probe/OP AM',1); %0.11
 % % % setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',0); % inverted logic
@@ -4779,19 +4725,19 @@ curtime = calctime(curtime,1000);
 % setAnalogChannel(calctime(curtime,0),59,0); %0.11
 
 %ODT test
-setAnalogChannel(calctime(curtime,0),59,0); %0.11
-curtime = calctime(curtime,1000);
-setDigitalChannel(calctime(curtime,0),'XDT TTL',0);
-ODT1power = 0.5;
-ODT2power = 0.5;
-AnalogFunc(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),250,250,0,ODT1power);
-    
-AnalogFunc(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),250,250,0,ODT2power);
-
-curtime = calctime(curtime,2000);
-setAnalogChannel(curtime,'dipoleTrap1',0); 
-setAnalogChannel(curtime,'dipoleTrap2',0);
-setDigitalChannel(calctime(curtime,10),'XDT TTL',1);
+% setAnalogChannel(calctime(curtime,0),59,0); %0.11
+% curtime = calctime(curtime,1000);
+% setDigitalChannel(calctime(curtime,0),'XDT TTL',0);
+% ODT1power = 0.5;
+% ODT2power = 0.5;
+% AnalogFunc(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),250,250,0,ODT1power);
+%     
+% AnalogFunc(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),250,250,0,ODT2power);
+% 
+% curtime = calctime(curtime,2000);
+% setAnalogChannel(curtime,'dipoleTrap1',0); 
+% setAnalogChannel(curtime,'dipoleTrap2',0);
+% setDigitalChannel(calctime(curtime,10),'XDT TTL',1);
 
 % 
 % 
@@ -4823,6 +4769,28 @@ setDigitalChannel(calctime(curtime,10),'XDT TTL',1);
 % 
 % setAnalogChannel(calctime(curtime,0),'FB current',-0.5,2);
 % setDigitalChannel(calctime(curtime,0),'fast FB Switch',0);
+
+% %%Shim test
+%     %Turn shim multiplexer to Science shims
+%     setDigitalChannel(calctime(curtime,-5),37,1); 
+%     %Close Science Cell Shim Relay for Plugged QP Evaporation
+%     setDigitalChannel(calctime(curtime,-5),'Bipolar Shim Relay',1);
+%  
+%     setDigitalChannel(calctime(curtime,0),12,1);
+%     setDigitalChannel(calctime(curtime,5),12,0);
+% 
+% 
+%     setAnalogChannel(calctime(curtime,0),'X Shim',0.0,3); %3
+%     setAnalogChannel(calctime(curtime,0),'Y Shim',0.0,4); %4
+%     setAnalogChannel(calctime(curtime,0),'Z Shim',0,3); %3
+% 
+% curtime = calctime(curtime, 1000)
+
+
+%     setAnalogChannel(calctime(curtime,0),'X Shim',0,3); %3
+%     setAnalogChannel(calctime(curtime,0),'Y Shim',0,4); %4
+%     setAnalogChannel(calctime(curtime,0),'Z Shim',0,3); %3
+
 
 
 timeout = curtime;

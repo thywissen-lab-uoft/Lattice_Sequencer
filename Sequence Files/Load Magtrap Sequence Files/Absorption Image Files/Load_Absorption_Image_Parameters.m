@@ -2,11 +2,11 @@ function params = Load_Absorption_Image_Parameters()
     global seqdata;
     %% Set imaging detunings
     % Potassium - X-cam
-    kdet_shift_list = [2.5];-1
+    kdet_shift_list = [0];-1
     kdet_shift = getScanParameter(kdet_shift_list,seqdata.scancycle,seqdata.randcyclelist,'kdet_shift');
     params.detunings.K.X.positive.normal = 19+2.5;19;
     params.detunings.K.X.positive.in_trap = 23.5;
-    params.detunings.K.X.positive.QP_imaging = 21.5+2.5;21.5;
+    params.detunings.K.X.positive.QP_imaging = 21.5+2.5;
     params.detunings.K.X.positive.SG = 24.5;
     params.detunings.K.X.positive.short_tof = 24.5;
     params.detunings.K.X.negative.normal = 30.5+2;
@@ -19,11 +19,11 @@ function params = Load_Absorption_Image_Parameters()
     params.detunings.K.MOT.positive.short_tof = 24.0;
     % Rubidium - X-cam
     params.detunings.Rb.X.positive.normal = 6590 - 238;
-    params.detunings.Rb.X.positive.in_trap = 6590 - 246;
-    rbdet_shift_list = [0];-1
-    rbdet_shift = getScanParameter(rbdet_shift_list,seqdata.scancycle,seqdata.randcyclelist,'rbdet_shift');
-    params.detunings.Rb.X.positive.QP_imaging = 6590 - 238.5+rbdet_shift;
-    params.detunings.Rb.X.positive.SG = 6590 - 241.8;
+%     rbdet_shift_list = [7];-1
+%     rbdet_shift = getScanParameter(rbdet_shift_list,seqdata.scancycle,seqdata.randcyclelist,'rbdet_shift');
+    params.detunings.Rb.X.positive.in_trap = 6590 - 246+7;
+    params.detunings.Rb.X.positive.QP_imaging = 6590 - 238.5;
+    params.detunings.Rb.X.positive.SG = 6590 - 241.8 + 4;
     params.detunings.Rb.X.negative.normal = 6590 - 232;
     % Rubidium - Y-cam
     params.detunings.Rb.Y.positive.normal = 6590 - 230.7;
@@ -52,11 +52,13 @@ function params = Load_Absorption_Image_Parameters()
     params.SG.SG_shim_rampdelay = 0; %0 with respect to pulse start
     params.SG.SG_fesh_ramptime = 1;
     params.SG.SG_fesh_rampdelay = 0; % with respect to pulse start
-    params.SG.SG_QP_val = 6*1.78;
-    params.SG.SG_QP_pulsetime = 5;
-    params.SG.SG_QP_ramptime = 2;
+    SG_QP_val_list = [6];
+    SG_QP_val = getScanParameter(SG_QP_val_list,seqdata.scancycle,seqdata.randcyclelist,'SG_QP_val');
+    params.SG.SG_QP_val = SG_QP_val*1.78;%6*1.78
+    params.SG.SG_QP_pulsetime = 5;%5
+    params.SG.SG_QP_ramptime = 2;%2
     params.SG.SG_QP_FF = 23*(params.SG.SG_QP_val/30); % voltage FF on delta supply
-    params.SG.SG_wait_TOF = 1; %4.5 must be longer than FF_rampdelay + FF_ramptime and shim_ramptime + shim_rampdelay
+    params.SG.SG_wait_TOF = 1;%1
 
     
     %% Other parameters

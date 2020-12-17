@@ -44,209 +44,209 @@ function timeout = Load_MagTrap_sequence(timein)
 curtime = timein;
 
 %% Initialize seqdata
-    global seqdata;
+global seqdata;
 
-    seqdata.numDDSsweeps = 0;
-    seqdata.scanindex = -1;
+seqdata.numDDSsweeps = 0;
+seqdata.scanindex = -1;
 
-    %RHYS - which parameters should be sequence parameters and which should
-    %not? An answer is that perhaps all parameters could be sequence
-    %parameters... but seqdata is a global variable, and this could lead to
-    %local conflicts (ramp_time is probably used in many different local
-    %contexts as a variable, for instance). Two solutions come to mind: 1) more
-    %layers to the seqdata structure (easy) or 2) switching to class-based
-    %sequencer with local properties defined (e.g. XDT.ramp_time, 
-    %Lattice.ramp_time, etc...) (harder, but better)
+%RHYS - which parameters should be sequence parameters and which should
+%not? An answer is that perhaps all parameters could be sequence
+%parameters... but seqdata is a global variable, and this could lead to
+%local conflicts (ramp_time is probably used in many different local
+%contexts as a variable, for instance). Two solutions come to mind: 1) more
+%layers to the seqdata structure (easy) or 2) switching to class-based
+%sequencer with local properties defined (e.g. XDT.ramp_time, 
+%Lattice.ramp_time, etc...) (harder, but better)
 
-    %Ambient field cancelling values (ramp to these at end of XDT loading)
-    seqdata.params. shim_zero = [(0.1585-0.0160), (-0.0432-0.022), (-0.0865-0.015)];
+%Ambient field cancelling values (ramp to these at end of XDT loading)
+seqdata.params. shim_zero = [(0.1585-0.0160), (-0.0432-0.022), (-0.0865-0.015)];
 
-    %RHYS - Global comment: remove things like this where old values have been
-    %commented out for years. Let's use version control (i.e. git) for this
-    %purpose. 
+%RHYS - Global comment: remove things like this where old values have been
+%commented out for years. Let's use version control (i.e. git) for this
+%purpose. 
 
-    %Shim values that align the plugged-QP trap (these are non-zero, since the
-    %centre of the imaging window is different from the natural QP centre)
-    seqdata.params. plug_shims = [(seqdata.params. shim_zero(1)-1-0.04-0.3),...
-    (seqdata.params. shim_zero(2)+0.125), ...
-    (seqdata.params. shim_zero(3)+ 0.35  )];%0.35 + 0.55)];
+%Shim values that align the plugged-QP trap (these are non-zero, since the
+%centre of the imaging window is different from the natural QP centre)
+seqdata.params. plug_shims = [(seqdata.params. shim_zero(1)-1-0.04-0.3),...
+(seqdata.params. shim_zero(2)+0.125), ...
+(seqdata.params. shim_zero(3)+ 0.35  )];%0.35 + 0.55)];
 
 
-    seqdata.params. shim_val = [0 0 0]; %Current shim values (x,y,z)- reset to zero
+seqdata.params. shim_val = [0 0 0]; %Current shim values (x,y,z)- reset to zero
 
-    hold_list = [500];
-    seqdata.params. molasses_time = getScanParameter(hold_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'hold_list');%192.5;
-    addOutputParam('molasses_hold_list',seqdata.params. molasses_time); 
-       
-    % Dipole trap and lattice beam parameters 
-    seqdata.params. XDT_area_ratio = 1; % DT2 with respect to DT1
+hold_list = [500];
+seqdata.params. molasses_time = getScanParameter(hold_list,...
+seqdata.scancycle,seqdata.randcyclelist,'hold_list');%192.5;
+addOutputParam('molasses_hold_list',seqdata.params. molasses_time); 
 
-    %RHYS - the ordering here is odd. Why do these flags happen before other
-    %flags? Should collate.
+% Dipole trap and lattice beam parameters 
+seqdata.params. XDT_area_ratio = 1; % DT2 with respect to DT1
 
-    % Rb Probe Beam AOM Order
-    seqdata.flags.Rb_Probe_Order = 1;   %1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
-                                    %2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
+%RHYS - the ordering here is odd. Why do these flags happen before other
+%flags? Should collate.
 
-    seqdata.flags. in_trap_OP = 0; 
-    seqdata.flags. plane_selection_after_D1 = 0;
-    seqdata.flags. lattice_img_molasses = 0;
-    seqdata.flags. SRS_programmed = [0 0]; %Flags for whether SRS A and B have been programmed via GPIB
-        
-    kHz = 1E3;
-    MHz = 1E6;
-    GHz = 1E9;
+% Rb Probe Beam AOM Order
+seqdata.flags.Rb_Probe_Order = 1;   %1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
+                                %2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
+
+seqdata.flags. in_trap_OP = 0; 
+seqdata.flags. plane_selection_after_D1 = 0;
+seqdata.flags. lattice_img_molasses = 0;
+seqdata.flags. SRS_programmed = [0 0]; %Flags for whether SRS A and B have been programmed via GPIB
+
+kHz = 1E3;
+MHz = 1E6;
+GHz = 1E9;
 
 %% Initialize channes
 
-    initialize_channels();
+initialize_channels();
 
 %% Switches
 
-    %RHYS - please fix indenting in whole code, it is awful. 
+%RHYS - please fix indenting in whole code, it is awful. 
 
-    %RHYS - these can be switched on for certain predefined sequences. It's
-    %a good idea, but I have never used them (except MOT_abs_image). They
-    %should be studied before considering deleting (transfer recap for
-    %instance was used for benchmarking transport system). 
-    
-    %It's preferable to add a switch here than comment out code!
-    %Special flags
-    mag_trap_MOT = 0; %Absportion image of MOT after magnetic trapping
-    MOT_abs_image = 0; %Absorption image of the MOT (no load in mag trap);
-    transfer_recap_curve = 0; %Transport curve from MOT and back
-    after_sci_cell_load = 0; %Abs image after loading into science cell
-    bench_transport = 0; %special stage for benchmarking the transport
-    bench_rf = 0; %special stage for benchmarking RF power making it to the atoms
-    seqdata.flags.rb_vert_insitu_image = 0; 
-    %take a vertical in-situ image of BEC in XDT to centre the microscope objective
-    
-    seqdata.flags.controlled_load = 0; %do a specific load time
-    controlled_load_time = 20000;
+%RHYS - these can be switched on for certain predefined sequences. It's
+%a good idea, but I have never used them (except MOT_abs_image). They
+%should be studied before considering deleting (transfer recap for
+%instance was used for benchmarking transport system). 
 
-    %RHYS - go through flags and remove obsolete options. PXU and VV should
-    %know most of what is and is not useful, but should still be done
-    %carefully. Obviously the code that would be called by the flag must
-    %also be modified. 
-    
-    %RHYS - the flag system makes some sense, in that it is useful for
-    %specifying what parts of the sequence to run, whether to look at Rb or
-    %K, etc. Compared with the CHIP lab approach of running a different
-    %file for each possible sequence, this seems more natural. However, it
-    %should be streamlined: only a few flags are ever actually switched for
-    %controlling the sequence these days. The others are basically
-    %permanent, and thus should no longer be considered 'flags', but more
-    %like 'fixed properties'. 
-    
-    % Imaging
-    
-    %RHYS - really don't need so many image types, and why is iXon_movie
-    %its own thing?
-    
-    seqdata.flags.image_type = 0; 
-    %0: absorption image, 1: recapture, 2:fluor, 
-    %3: blue_absorption, 4: MOT fluor, 5: load MOT immediately, 
-    %6: MOT fluor with MOT off, 7: fluorescence image after do_imaging_molasses 
-    %8: iXon fluorescence + Pixelfly absorption
-    seqdata.flags.MOT_flour_image = 0;
+%It's preferable to add a switch here than comment out code!
+%Special flags
+mag_trap_MOT = 0; %Absportion image of MOT after magnetic trapping
+MOT_abs_image = 0; %Absorption image of the MOT (no load in mag trap);
+transfer_recap_curve = 0; %Transport curve from MOT and back
+after_sci_cell_load = 0; %Abs image after loading into science cell
+bench_transport = 0; %special stage for benchmarking the transport
+bench_rf = 0; %special stage for benchmarking RF power making it to the atoms
+seqdata.flags.rb_vert_insitu_image = 0; 
+%take a vertical in-situ image of BEC in XDT to centre the microscope objective
 
-    iXon_movie = 1; %Take a multiple frame movie?
-    seqdata.flags.image_atomtype = 0;%  0= Rb, 1 = K, 2 = Rb+K
-    seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
-    seqdata.flags.img_direction = 1; 
-    %1 = x direction (Sci) / MOT, 2 = y direction (Sci), 
-    %3 = vertical direction, 4 = x direc tion (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
-    seqdata.flags.do_stern_gerlach = 0; %1: Do a gradient pulse at the beginning of ToF
-    seqdata.flags.iXon = 0; % use iXon camera to take an absorption image (only vertical)
-    seqdata.flags.do_F1_pulse = 0; % repump Rb F=1 before/during imaging
-   
-    %RHYS - thse two should be fixed by the circumstance of the sequence,
-    %not separately defined. 
-    
-    seqdata.flags.In_Trap_imaging = 0;
-    seqdata.flags.High_Field_Imaging = 0;
-    %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
-    %3 = make sure shim are off for D1 molasses (should be removed)
-    seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now. 
-    
-    %RHYS - params should be defined in a separate location from flags. 
-    
-    seqdata.params.tof = 15;  % 45 for rough alignment, 20 for K-D diffraction
+seqdata.flags.controlled_load = 0; %do a specific load time
+controlled_load_time = 20000;
 
-    seqdata.params.UV_on_time = 10000; %UV on time + savingtime + wait time = real wait time between cycles%
-    % usually 15s for non XDT
-    
-    %RHYS - Global comment: All of these flags and parameters could be
-    %defined in an text file and loaded on sequence run, rather than
-    %hardcoded. Should make for better organization. 
-    
-    %RHYS - These have been fixed for years. Other options could be
-    %compared.
-    
-    % Transport curves
-    seqdata.flags.hor_transport_type = 1; 
-    %0: min jerk curves, 1: slow down in middle section curves, 2: none
-    seqdata.flags.ver_transport_type = 3; 
-    %0: min jerk curves, 1: slow down in middle section curves, 2: none, 3: linear, 4: triple min jerk
+%RHYS - go through flags and remove obsolete options. PXU and VV should
+%know most of what is and is not useful, but should still be done
+%carefully. Obviously the code that would be called by the flag must
+%also be modified. 
 
-    % For debugging: enable only certain coils during the transport
-    % sequence (and only during the transport sequence!)
-    % seqdata.coil_enable = ones(1,23); % can comment these lines for normal operation
-    % seqdata.coil_enable(8) = 0; %coil 7
-    % List of channels as they are ordered in transport_coil_currents*.m:
-    % 1:a18, 2:a7, 3:a8 4:a9, 5:a10, 6:a11, 7:a12, 8:a13, 9:a14, 10:a15,
-    % 11:a16, 12:a17, 13:a9, 14:a22, 15:a23, 16:a24, 17:a20, 18:a21, 19:a6,
-    % 20:a3, 21:a17, 22:d22, 23:d28
-    % use this order with the boolean enable array!
+%RHYS - the flag system makes some sense, in that it is useful for
+%specifying what parts of the sequence to run, whether to look at Rb or
+%K, etc. Compared with the CHIP lab approach of running a different
+%file for each possible sequence, this seems more natural. However, it
+%should be streamlined: only a few flags are ever actually switched for
+%controlling the sequence these days. The others are basically
+%permanent, and thus should no longer be considered 'flags', but more
+%like 'fixed properties'. 
 
-    % Use stage1  = 2 to evaporate fast for transport benchmarking 
-    % Use stage1b = 2 to do microwave evaporation in the plugged QP trap
-    seqdata.flags.compress_QP = 1; % compress QP after transport
+% Imaging
 
-    seqdata.flags.RF_evap_stages = [1, 1, 1]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
-    
-    
-    %RHYS - Here be parameters.     
-    rf_evap_time_scale = [0.7 0.9];[1.0 1.5];[0.7 0.9];[1.0 1.5];[0.8 1.2];[1.00 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
-    RF_1A_Final_Frequency_list = [12];
-    RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1A_finalfreq');
-    RF_1B_Final_Frequency = 0.8;0.80;
-    
-    seqdata.flags.do_plug = 1;   % ramp on plug after transfer to window
-    seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get clean TOF signal
+%RHYS - really don't need so many image types, and why is iXon_movie
+%its own thing?
 
-    %RHYS - a bunch of unused options here. 
-    
-    % Dipole trap
-    seqdata.flags.do_dipole_trap = 0; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
-    seqdata.flags.CDT_evap = 0;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
-    seqdata.flags.K_RF_sweep = 0;    %sweep 40K into |9/2,-9/2>; %create mixture in XDT, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1    
-    seqdata.flags.init_K_RF_sweep = 0; %sweep 40K into |9/2,-9/2>; %create mixture in XDT before evap, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1  
+seqdata.flags.image_type = 0; 
+%0: absorption image, 1: recapture, 2:fluor, 
+%3: blue_absorption, 4: MOT fluor, 5: load MOT immediately, 
+%6: MOT fluor with MOT off, 7: fluorescence image after do_imaging_molasses 
+%8: iXon fluorescence + Pixelfly absorption
+seqdata.flags.MOT_flour_image = 0;
 
-    % Optical lattice
-    seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
-    seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
-    seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
+iXon_movie = 1; %Take a multiple frame movie?
+seqdata.flags.image_atomtype = 0;%  0= Rb, 1 = K, 2 = Rb+K
+seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
+seqdata.flags.img_direction = 1; 
+%1 = x direction (Sci) / MOT, 2 = y direction (Sci), 
+%3 = vertical direction, 4 = x direc tion (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
+seqdata.flags.do_stern_gerlach = 0; %1: Do a gradient pulse at the beginning of ToF
+seqdata.flags.iXon = 0; % use iXon camera to take an absorption image (only vertical)
+seqdata.flags.do_F1_pulse = 0; % repump Rb F=1 before/during imaging
 
-    if (seqdata.flags.do_dipole_trap ~= 0 || seqdata.flags.load_lattice ~= 0)
-        seqdata.flags.QP_imaging = 0;
-    else
-        seqdata.flags.QP_imaging = 1;
-    end
+%RHYS - thse two should be fixed by the circumstance of the sequence,
+%not separately defined. 
 
-    %RHYS - these are kind of useless.
-    %VV - Although these are set to zero there are a bunch of occurrances of these flags in the this
-    %sequeence and other files. So keeping these for now. Will be deleted
-    %later
-    %Imaging Molasses
-    seqdata.flags.do_imaging_molasses = 0; % 1: In Lattice or XDT, 2: Free space after QP, 3: Free Space after XDT
-    seqdata.flags.evap_away_Rb_in_QP = 0; %Evaporate to 0.4MHz in QP+XDT to kill Rb and load lots of K (only works when loading XDT)
-    seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / alignment
-    
-    
-    %RHYS - Useful! Where to trigger scope. Should be more apparent.     
-    scope_trigger = 'Rampup ODT'; 
+seqdata.flags.In_Trap_imaging = 0;
+seqdata.flags.High_Field_Imaging = 0;
+%1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
+%3 = make sure shim are off for D1 molasses (should be removed)
+seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now. 
+
+%RHYS - params should be defined in a separate location from flags. 
+
+seqdata.params.tof = 15;  % 45 for rough alignment, 20 for K-D diffraction
+
+seqdata.params.UV_on_time = 10000; %UV on time + savingtime + wait time = real wait time between cycles%
+% usually 15s for non XDT
+
+%RHYS - Global comment: All of these flags and parameters could be
+%defined in an text file and loaded on sequence run, rather than
+%hardcoded. Should make for better organization. 
+
+%RHYS - These have been fixed for years. Other options could be
+%compared.
+
+% Transport curves
+seqdata.flags.hor_transport_type = 1; 
+%0: min jerk curves, 1: slow down in middle section curves, 2: none
+seqdata.flags.ver_transport_type = 3; 
+%0: min jerk curves, 1: slow down in middle section curves, 2: none, 3: linear, 4: triple min jerk
+
+% For debugging: enable only certain coils during the transport
+% sequence (and only during the transport sequence!)
+% seqdata.coil_enable = ones(1,23); % can comment these lines for normal operation
+% seqdata.coil_enable(8) = 0; %coil 7
+% List of channels as they are ordered in transport_coil_currents*.m:
+% 1:a18, 2:a7, 3:a8 4:a9, 5:a10, 6:a11, 7:a12, 8:a13, 9:a14, 10:a15,
+% 11:a16, 12:a17, 13:a9, 14:a22, 15:a23, 16:a24, 17:a20, 18:a21, 19:a6,
+% 20:a3, 21:a17, 22:d22, 23:d28
+% use this order with the boolean enable array!
+
+% Use stage1  = 2 to evaporate fast for transport benchmarking 
+% Use stage1b = 2 to do microwave evaporation in the plugged QP trap
+seqdata.flags.compress_QP = 1; % compress QP after transport
+
+seqdata.flags.RF_evap_stages = [1, 1, 1]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
+
+
+%RHYS - Here be parameters.     
+rf_evap_time_scale = [0.7 0.9];[1.0 1.5];[0.7 0.9];[1.0 1.5];[0.8 1.2];[1.00 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
+RF_1A_Final_Frequency_list = [12];
+RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1A_finalfreq');
+RF_1B_Final_Frequency = 0.8;0.80;
+
+seqdata.flags.do_plug = 1;   % ramp on plug after transfer to window
+seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get clean TOF signal
+
+%RHYS - a bunch of unused options here. 
+
+% Dipole trap
+seqdata.flags.do_dipole_trap = 0; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
+seqdata.flags.CDT_evap = 0;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
+seqdata.flags.K_RF_sweep = 0;    %sweep 40K into |9/2,-9/2>; %create mixture in XDT, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1    
+seqdata.flags.init_K_RF_sweep = 0; %sweep 40K into |9/2,-9/2>; %create mixture in XDT before evap, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1  
+
+% Optical lattice
+seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
+seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
+seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
+
+if (seqdata.flags.do_dipole_trap ~= 0 || seqdata.flags.load_lattice ~= 0)
+    seqdata.flags.QP_imaging = 0;
+else
+    seqdata.flags.QP_imaging = 1;
+end
+
+%RHYS - these are kind of useless.
+%VV - Although these are set to zero there are a bunch of occurrances of these flags in the this
+%sequeence and other files. So keeping these for now. Will be deleted
+%later
+%Imaging Molasses
+seqdata.flags.do_imaging_molasses = 0; % 1: In Lattice or XDT, 2: Free space after QP, 3: Free Space after XDT
+seqdata.flags.evap_away_Rb_in_QP = 0; %Evaporate to 0.4MHz in QP+XDT to kill Rb and load lots of K (only works when loading XDT)
+seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / alignment
+
+
+%RHYS - Useful! Where to trigger scope. Should be more apparent.     
+scope_trigger = 'Rampup ODT'; 
 
 %% Set switches for predefined scenarios
 
@@ -602,54 +602,54 @@ end
     
 %% Kill Rb after RF1A
 %Get rid of Rb afterwards (used for loading dilute 40K into lattice)
-    kill_Rb_after_RFStage1 = 0;
-    
-    if kill_Rb_after_RFStage1
-        kill_pulse_time = 5; %5
+kill_Rb_after_RFStage1 = 0;
 
-        %open shutter
-        %probe
-        setDigitalChannel(calctime(curtime,-10),25,1); %0=closed, 1=open
-        %repump
-        %setDigitalChannel(calctime(curtime,-10),5,1);
-        %open analog
-        %probe
-        setAnalogChannel(calctime(curtime,-10),36,0.7);
-        %repump (keep off since no TTL)
-            
-        %set TTL
-        %probe
-        setDigitalChannel(calctime(curtime,-10),24,1);
-        %repump doesn't have one
-            
-        %set detuning
-        setAnalogChannel(calctime(curtime,-10),34,6590-237);
+if kill_Rb_after_RFStage1
+    kill_pulse_time = 5; %5
 
-        %pulse beam with TTL 
-        %TTL probe pulse
-        curtime = DigitalPulse(calctime(curtime,0),24,kill_pulse_time,0);
-        %repump pulse
-        %setAnalogChannel(calctime(curtime,0),2,0.7); %0.7
-        %curtime = setAnalogChannel(calctime(curtime,kill_pulse_time),2,0.0);
-        
-        %close shutter
-        curtime = setDigitalChannel(calctime(curtime,0),25,0); %0=closed, 1=open
-        %curtime = setDigitalChannel(calctime(curtime,0),5,0);
-        
-        curtime=calctime(curtime,5);
-    end
+    %open shutter
+    %probe
+    setDigitalChannel(calctime(curtime,-10),25,1); %0=closed, 1=open
+    %repump
+    %setDigitalChannel(calctime(curtime,-10),5,1);
+    %open analog
+    %probe
+    setAnalogChannel(calctime(curtime,-10),36,0.7);
+    %repump (keep off since no TTL)
+
+    %set TTL
+    %probe
+    setDigitalChannel(calctime(curtime,-10),24,1);
+    %repump doesn't have one
+
+    %set detuning
+    setAnalogChannel(calctime(curtime,-10),34,6590-237);
+
+    %pulse beam with TTL 
+    %TTL probe pulse
+    curtime = DigitalPulse(calctime(curtime,0),24,kill_pulse_time,0);
+    %repump pulse
+    %setAnalogChannel(calctime(curtime,0),2,0.7); %0.7
+    %curtime = setAnalogChannel(calctime(curtime,kill_pulse_time),2,0.0);
+
+    %close shutter
+    curtime = setDigitalChannel(calctime(curtime,0),25,0); %0=closed, 1=open
+    %curtime = setDigitalChannel(calctime(curtime,0),5,0);
+
+    curtime=calctime(curtime,5);
+end
     
 %% Evaporation during compression
-    do_evap_during_compression = 0;
-    if (do_evap_during_compression && seqdata.flags.RF_evap_stages(2)==1)
-        
-        freqs_1 = [freqs_1(end)/MHz*1 25]*MHz;
-        RF_gain_1 = [0.5 0.5]*[-4.1];
-        sweep_times_1 = 560; %560 is maximum
-        do_evap_stage(curtime,0, freqs_1, sweep_times_1, ...
-                RF_gain_1, 0, (seqdata.flags.RF_evap_stages(3) == 0));
+do_evap_during_compression = 0;
+if (do_evap_during_compression && seqdata.flags.RF_evap_stages(2)==1)
 
-    end
+    freqs_1 = [freqs_1(end)/MHz*1 25]*MHz;
+    RF_gain_1 = [0.5 0.5]*[-4.1];
+    sweep_times_1 = 560; %560 is maximum
+    do_evap_stage(curtime,0, freqs_1, sweep_times_1, ...
+            RF_gain_1, 0, (seqdata.flags.RF_evap_stages(3) == 0));
+
+end
 %% Ramp down QP and/or transfer to the window
 % Decompress the QP trap and transpor the atoms closer to the window.
 
@@ -685,38 +685,33 @@ if ramp_after_plug
 end
 
 %% Evaporation Stage 1b
-    % At the imaging position
-
-    %RHYS - same comments as for the previous evaporation stage. This is just a
-    %mess of parameters, with a call to do_evap_stage. 
 
 if ( seqdata.flags.RF_evap_stages(3) == 1 )
 
-% This section of code runs the RF evaporation for RF1B where Coil 16 and
-% Coil 15 have the same current running through them.
+    fake_sweep = 0;     % Enable if fake sweep
 
-fake_sweep = 0;     % Enable if fake sweep
+    rf_gain_1b_list=[-2.05]; .5*(-4.1);[-4]; %-6.3;
+    rf_1b_gain=getScanParameter(rf_gain_1b_list,seqdata.scancycle,seqdata.randcyclelist,'rf_1b_gain');
 
-rf_gain_1b_list=[-2.05]; .5*(-4.1);[-4]; %-6.3;
-rf_1b_gain=getScanParameter(rf_gain_1b_list,seqdata.scancycle,seqdata.randcyclelist,'rf_1b_gain');
+    %Evaporate to 0.7MHz to load into ODT (0.8MHz to look at Rb)
+    
+    % Frequency points to sweep over
+    freqs_1b = [freqs_1(end)/MHz*1.1 7 RF_1B_Final_Frequency 2]*MHz;    
+    % Sweep times in ms
+    sweep_times_1b = [6000 2000 10]*rf_evap_time_scale(2);              
+    % RF gain settings
+    % RF_gain_1b =[.5*(-4.1) .5*(-4.1) rf_1b_gain rf_1b_gain];
+    RF_gain_1b =ones(1,length(freqs_1b))*rf_1b_gain;                     % Uniform gain
 
-%Evaporate to 0.7MHz to load into ODT (0.8MHz to look at Rb)
-freqs_1b = [freqs_1(end)/MHz*1.1 7 RF_1B_Final_Frequency 2]*MHz;    % Frequency
-sweep_times_1b = [6000 2000 10]*rf_evap_time_scale(2);              % Sweep times in ms
-% RF_gain_1b =[.5*(-4.1) .5*(-4.1) rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 rf_1b_gain rf_1b_gain];[-6.74 -6.74 -7.0 -7.0];[-6.74 -6.74 -7.0 -7.0];[-5.5 -5.5 -6.3 -6.3];[4 4 1 1];[-6.74 -6.74 -7.26 -7.26];   % 8 8 5 5
-RF_gain_1b =ones(1,length(freqs_1b))*rf_1b_gain;                     % Uniform gain
+    % %do a quick pulse of Rb repump before RF1B
+    % setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',1);
+    % curtime = setDigitalChannel(calctime(curtime,1000),'Rb Sci Repump',0);
 
-% %do a quick pulse of Rb repump before RF1B
-% setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',1);
-% curtime = setDigitalChannel(calctime(curtime,1000),'Rb Sci Repump',0);
+    % Perform the evaporation
+    curtime = do_evap_stage(curtime, fake_sweep, freqs_1b, sweep_times_1b, RF_gain_1b, 0, 1);
 
-
-% Perform the evaporation
-curtime = do_evap_stage(curtime, fake_sweep, freqs_1b, sweep_times_1b, RF_gain_1b, 0, 1);
-
-%Get rid of Rb afterwards (used for loading dilute 40K into lattice)
-kill_Rb_after_RFStage1b = 0;
-
+    %Get rid of Rb afterwards (used for loading dilute 40K into lattice)
+    kill_Rb_after_RFStage1b = 0;
 
     ramp_after_1B = 0;
     if ramp_after_1B
@@ -745,17 +740,21 @@ kill_Rb_after_RFStage1b = 0;
         curtime = setDigitalChannel(calctime(curtime,0),25,0); %0=closed, 1=open
 
         curtime=calctime(curtime,5);
-    end
-    
-%% Post RF1b Tasks
+    end    
+end
 
+%% Blow away Rb or K
+% This code pulses resonant light with either Rb or K to purify the
+% magnetic trap of atomic species
+
+do_Rb_blow_away = 0;    % Blow away Rb?
+do_K_blow_away = 0;     % Blow away K?
+
+if do_Rb_blow_away || do_K_blowa_away
     %RHYS - these should not be here, but could actually be useful for
     %debugging XDT loading... if they still work. Removes one species of atom
     %from the mag trap. 
-
-    %blow-away Rb
-    do_Rb_blow_away = 0;   
-
+    
     if do_Rb_blow_away
         
         %blow away any atoms left in F=2
@@ -769,13 +768,12 @@ kill_Rb_after_RFStage1b = 0;
         setAnalogChannel(calctime(curtime,-10),34,6590-237);
         
         %pulse beam with TTL
-curtime = DigitalPulse(calctime(curtime,0),24,15,0);
+        curtime = DigitalPulse(calctime(curtime,0),24,15,0);
         
         %close shutter
         setDigitalChannel(calctime(curtime,0),25,0); %0=closed, 1=open
     end
     
-    do_K_blow_away = 0;
     K_blow_away_time = -15; %1350
      
     if do_K_blow_away
@@ -797,8 +795,8 @@ curtime = DigitalPulse(calctime(curtime,0),24,15,0);
         %%0=closed, 1=open
     end
     %hold at end of evap
-curtime = calctime(curtime,250); %3000
-   
+    curtime = calctime(curtime,250); %3000   
+    
 end
 
 %% RF1B Alternate : uWave Evaporation
@@ -830,7 +828,6 @@ if ( seqdata.flags.do_plug == 1)
 end
 %% Dipole trap ramp on (and QP rampdown)
 if ( seqdata.flags.do_dipole_trap == 1 )
-
     dipole_on_time = 10; %500
 
     %RHYS - an important code. Ramp down the mag trap, load the XDT, and

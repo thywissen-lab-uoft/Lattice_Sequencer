@@ -250,37 +250,37 @@ scope_trigger = 'Rampup ODT';
 
 %% Set switches for predefined scenarios
 
-    %RHYS - the predefined scenarios described before. These have not been
-    %used in years, so cannot verify whether they do or do not work. Useful
-    %idea though. 
+%RHYS - the predefined scenarios described before. These have not been
+%used in years, so cannot verify whether they do or do not work. Useful
+%idea though. 
 
-    if mag_trap_MOT || MOT_abs_image || transfer_recap_curve
-        seqdata.flags.hor_transport_type = 2;
-        seqdata.flags.ver_transport_type = 2;
-        seqdata.flags.image_type = 0; %0: absorption image, 1: recapture, 2:fluor, 3: blue_absorption, 4: MOT fluor, 5: load MOT immediately, 6: MOT fluor with MOT off
-        seqdata.flags.image_loc = 0;
-        seqdata.flags.do_plug = 0;
-        seqdata.flags.compress_QP = 0;
-        seqdata.flags.RF_evap_stages = [0 0 0];
-        seqdata.flags.do_dipole_trap = 0;
-        seqdata.flags.load_lattice = 0;  
-        seqdata.flags.pulse_lattice_for_alignment = 0;
-    end
+if mag_trap_MOT || MOT_abs_image || transfer_recap_curve
+    seqdata.flags.hor_transport_type = 2;
+    seqdata.flags.ver_transport_type = 2;
+    seqdata.flags.image_type = 0; %0: absorption image, 1: recapture, 2:fluor, 3: blue_absorption, 4: MOT fluor, 5: load MOT immediately, 6: MOT fluor with MOT off
+    seqdata.flags.image_loc = 0;
+    seqdata.flags.do_plug = 0;
+    seqdata.flags.compress_QP = 0;
+    seqdata.flags.RF_evap_stages = [0 0 0];
+    seqdata.flags.do_dipole_trap = 0;
+    seqdata.flags.load_lattice = 0;  
+    seqdata.flags.pulse_lattice_for_alignment = 0;
+end
 
-    if seqdata.flags.image_loc == 0 %MOT cell imaging
-        seqdata.flags.do_plug = 0;
-        seqdata.flags.compress_QP = 0;
-        seqdata.flags.RF_evap_stages = [0 0 0];
-        seqdata.flags.do_dipole_trap = 0;
-        seqdata.flags.load_lattice = 0;  
-        seqdata.flags.pulse_lattice_for_alignment = 0;
-    end
+if seqdata.flags.image_loc == 0 %MOT cell imaging
+    seqdata.flags.do_plug = 0;
+    seqdata.flags.compress_QP = 0;
+    seqdata.flags.RF_evap_stages = [0 0 0];
+    seqdata.flags.do_dipole_trap = 0;
+    seqdata.flags.load_lattice = 0;  
+    seqdata.flags.pulse_lattice_for_alignment = 0;
+end
 
 %% Consistency checks
-    %Implement special flags
-    if (mag_trap_MOT + MOT_abs_image + transfer_recap_curve + after_sci_cell_load)>1
-        error('Too many special flags set');
-    end
+%Implement special flags
+if (mag_trap_MOT + MOT_abs_image + transfer_recap_curve + after_sci_cell_load)>1
+    error('Too many special flags set');
+end
 
 %% Set Objective Piezo Voltage
 % If the cloud moves up, the voltage must increase to refocus
@@ -586,18 +586,17 @@ end
 % CF : I don't konw what this is for?
 
 if ( seqdata.flags.RF_evap_stages(1) == 2 )
-     fake_sweep = 1;
-     hold_time = 100;
-     %Jan 2019
-     start_freq = 42;%42
+    fake_sweep = 1;
+    hold_time = 100;
+    %Jan 2019
+    start_freq = 42;%42
     %this worked well with 0.6 kitten
     freqs_1 = [start_freq 10]*MHz; %7.5
     RF_gain_1 = [9]*(5)/9*0.75;%[9]*(5)/9*0.75; %9 9 9
     sweep_times_1 = [15000]; 
 
-curtime = do_evap_stage(curtime, fake_sweep, freqs_1, sweep_times_1, ...
+    curtime = do_evap_stage(curtime, fake_sweep, freqs_1, sweep_times_1, ...
         RF_gain_1, hold_time, (seqdata.flags.RF_evap_stages(3) ~= 0));
-
 end
     
 %% Kill Rb after RF1A
@@ -750,7 +749,7 @@ end
 do_Rb_blow_away = 0;    % Blow away Rb?
 do_K_blow_away = 0;     % Blow away K?
 
-if do_Rb_blow_away || do_K_blowa_away
+if do_Rb_blow_away || do_K_blow_away
     %RHYS - these should not be here, but could actually be useful for
     %debugging XDT loading... if they still work. Removes one species of atom
     %from the mag trap. 
@@ -842,39 +841,40 @@ curtime=calctime(curtime,0);
 
 %% Pulse lattice after releasing from dipole trap
 
-    if ( seqdata.flags.pulse_lattice_for_alignment ~= 0 )
-        %RHYS - how should these 'pulse lattice' alignment codes be
-        %organized/called?
-curtime = Pulse_Lattice(curtime,seqdata.flags.pulse_lattice_for_alignment);
-
-    end
+if ( seqdata.flags.pulse_lattice_for_alignment ~= 0 )
+    %RHYS - how should these 'pulse lattice' alignment codes be
+    %organized/called?
+    curtime = Pulse_Lattice(curtime,...
+        seqdata.flags.pulse_lattice_for_alignment);
+end
 
 
 %% Load Lattice
 
-    if ( seqdata.flags.load_lattice ~= 0 )
-    %RHYS - loads the lattices and performs science/fluorescence imaging.
-    %Important. Code is probably way too bulky. 
-[curtime, P_dip, P_Xlattice, P_Ylattice, P_Zlattice, P_RotWave]= Load_Lattice(curtime);
-    end
+if ( seqdata.flags.load_lattice ~= 0 )
+%RHYS - loads the lattices and performs science/fluorescence imaging.
+%Important. Code is probably way too bulky. 
+    [curtime, P_dip, P_Xlattice, P_Ylattice, P_Zlattice, P_RotWave]= Load_Lattice(curtime);
+end
 
 %% Pulse Z Lattice after ramping up other lattices to align
 
-    if (seqdata.flags. pulse_zlattice_for_alignment == 1 )
+if (seqdata.flags. pulse_zlattice_for_alignment == 1 )
     %RHYS - another alignment tool. 
-curtime = Pulse_Lattice(curtime,4);
-    end
+    curtime = Pulse_Lattice(curtime,4);
+end
 
 
 %% lower atoms from window for clean TOF release
 
-    if ( seqdata.flags.lower_atoms_after_evap == 1 )
-        %RHYS - this is probably useful and we should use it more. Gets atoms
-        %away from the window before dropping after RF1A. 
-        %100ms, 15A works well for RF_stage_2
-        lower_transfer_time = 100;
-curtime = AnalogFunc(curtime,1,@(t,tt,dt)(dt*t/tt+I_QP),lower_transfer_time,lower_transfer_time,15-I_QP);
-    end
+if ( seqdata.flags.lower_atoms_after_evap == 1 )
+    %RHYS - this is probably useful and we should use it more. Gets atoms
+    %away from the window before dropping after RF1A. 
+    %100ms, 15A works well for RF_stage_2
+    lower_transfer_time = 100;
+    curtime = AnalogFunc(curtime,...
+        1,@(t,tt,dt)(dt*t/tt+I_QP),lower_transfer_time,lower_transfer_time,15-I_QP);
+end
 
 
 %% Turn off coils and traps.  

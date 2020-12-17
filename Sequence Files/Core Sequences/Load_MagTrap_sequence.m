@@ -746,8 +746,8 @@ end
 % This code pulses resonant light with either Rb or K to purify the
 % magnetic trap of atomic species
 
-do_Rb_blow_away = 0;    % Blow away Rb?
-do_K_blow_away = 0;     % Blow away K?
+do_Rb_blow_away = 0;    % Blow away Rb
+do_K_blow_away = 0;     % Blow away K
 
 if do_Rb_blow_away || do_K_blow_away
     %RHYS - these should not be here, but could actually be useful for

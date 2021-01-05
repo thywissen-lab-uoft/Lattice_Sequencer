@@ -47,7 +47,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     tilt_evaporation = 0;
     dipole_holdtime_before_evap = 0;
     %RHYS - A very important parameter. Pass these from elsewhere.
-    Evap_End_Power_List =[0.20];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
+    Evap_End_Power_List =[0.25];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
     exp_end_pwr = getScanParameter(Evap_End_Power_List,seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power');
     Second_Evaporation_Stage = 0;
     %exp_end_pwr =  0.3; %0.36  
@@ -75,7 +75,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     Lattice_in_XDT_Evap = 0;
     ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
     Kill_Beam_Alignment = 0;        %Pulse Kill beam on for whatever needs to be aligned.    
-    ramp_XDT_after_evap = 1;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
+    ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
     Raman_in_XDT = 0;
     remix_at_end = 0;
     
@@ -142,7 +142,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
    
     %% Ramp Dipoletrap up from zero
 
-    dipole_ramp_start_time = -250;-250;%-3000; 
+    dipole_ramp_start_time = -500;-250;%-3000; 
     dipole_ramp_up_time = 250;250; %1500
 
     %RHYS - Actually unused. 
@@ -182,7 +182,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     qp_ramp_down_time2 = 250; %250
     %RHYS - I think this is now 0*500 because curtime is updated between
     %the two ramps. 
-    qp_rampdown_starttime2 = 0*500; %500
+    qp_rampdown_starttime2 = 0; %500
     %RHYS - This used to be the larger value of 5.25.
     mean_fesh_current = 5.25392;%before 2017-1-6   22.6/4; %Calculated resonant fesh current. Feb 6th. %Rb: 21, K: 21
     fesh_current = mean_fesh_current;
@@ -216,9 +216,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     %setAnalogChannel(calctime(curtime,-150),1,QP_curval*0.82);
     %QP_curval = QP_curval*0.82;
     
-    %ramp down part of the way
-    if do_qp_ramp_down1
-    
+%%%% QP RAMP DOWN PART 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+    if do_qp_ramp_down1  
         %Last varied October 27, 2014 (no dipole trap realignment). 
         %zshim_end = 0.05; %0.28  (0.05)
         %yshim_end = 0.0;% + getScanParameter(shim_list,seqdata.scancycle,seqdata.randcyclelist,'shim');  %0.0 (Shimmer Control)  
@@ -227,35 +226,59 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
         %RHYS - This shows how the shims can be ramped down linearly to
         %keep the QP position fixed as the gradient ramps down
         %simultaneously.
-        zshim_end = (seqdata.params. plug_shims(3) - seqdata.params. shim_zero(3)) * QP_ramp_end1 / QP_value + seqdata.params. shim_zero(3); %0.28  (0.05)
-        yshim_end = (seqdata.params. plug_shims(2) - seqdata.params. shim_zero(2)) * QP_ramp_end1 / QP_value + seqdata.params. shim_zero(2);% + getScanParameter(shim_list,seqdata.scancycle,seqdata.randcyclelist,'shim');  %0.0 (Shimmer Control)  
-        xshim_end = (seqdata.params. plug_shims(1) - seqdata.params. shim_zero(1)) * QP_ramp_end1 / QP_value + seqdata.params. shim_zero(1);
+        
+        %%%%%%%%%% Added 2021/01/05 to ramp shims with new calibrations
+        dI_QP=QP_ramp_end1-QP_curval; % How much the QP currents changes
+        
+        % Get the plug shim values
+        I0=seqdata.params.plug_shims;
+        Ix0=I0(1);Iy0=I0(2);Iz0=I0(3);
+        
+        % The shift in currents is linearly proportional to the QP currents shift
+        dIx=dI_QP*-0.0499;
+        dIy=dI_QP*0.0045;
+        dIz=dI_QP*0.0105;
 
-        %ramp shims
-        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),28,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,zshim_end,3); %0.28 (2013-05-17) %0.8
-        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),19,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,yshim_end,4); %1.1875
-        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),27,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,xshim_end,3);%0.8
-
-        %put on rf knife 
+        % Calculate the new shim
+        Xshim_value=Ix0+dIx;
+        Yshim_value=Iy0+dIy;
+        Zshim_value=Iz0+dIz;        
+        
+        % Ramp shims
+        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),28,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,Zshim_value,3); 
+        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),19,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,Yshim_value,4); 
+        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),27,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,Xshim_value,3);
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+%        %old shim calibrations 
+%         zshim_end = (seqdata.params. plug_shims(3) - seqdata.params. shim_zero(3)) * QP_ramp_end1 / QP_value + seqdata.params. shim_zero(3); %0.28  (0.05)
+%         yshim_end = (seqdata.params. plug_shims(2) - seqdata.params. shim_zero(2)) * QP_ramp_end1 / QP_value + seqdata.params. shim_zero(2);% + getScanParameter(shim_list,seqdata.scancycle,seqdata.randcyclelist,'shim');  %0.0 (Shimmer Control)  
+%         xshim_end = (seqdata.params. plug_shims(1) - seqdata.params. shim_zero(1)) * QP_ramp_end1 / QP_value + seqdata.params. shim_zero(1);
+% 
+%         % Ramp the shims
+%         AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),28,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,zshim_end,3); %0.28 (2013-05-17) %0.8
+%         AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),19,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,yshim_end,4); %1.1875
+%         AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),27,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,xshim_end,3);%0.8
+       
+        
+        
+        % Turn on RF knife
         %Maybe not beneficially when transferring at lower freqs
         %cut_freq = 0.6;
         %do_evap_stage(calctime(curtime,qp_ramp_down_start_time+200), 0, [8 8]*1E6, qp_ramp_down_time1-200, [-2], 0, 1);
 
-        %ramp down plug
+        % Turn off plug
         %AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),33,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,0);
 
-
-        %Ramp down FF.
+        % Ramp down FF.
         AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'Transport FF',@(t,tt,y2,y1)(ramp_func(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,QP_ramp_end1*23/30);
-        %ramp down QP
-curtime = AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'Coil 16',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,QP_ramp_end1);
-
-
-        %extra time
-curtime = calctime(curtime,0*9000);
         
+        % Ramp down QP and advance time
+        curtime = AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'Coil 16',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,QP_ramp_end1);
+
+        % Some extra advances in time (WHAT IS THIS FOR?)
         if (dipole_ramp_start_time+dipole_ramp_up_time)>(qp_ramp_down_start_time+qp_ramp_down_time1)
-curtime =   calctime(curtime,(dipole_ramp_start_time+dipole_ramp_up_time)-(qp_ramp_down_start_time+qp_ramp_down_time1));
+            curtime =   calctime(curtime,(dipole_ramp_start_time+dipole_ramp_up_time)-(qp_ramp_down_start_time+qp_ramp_down_time1));
         end
 
         I_QP  = QP_ramp_end1;
@@ -286,21 +309,18 @@ curtime =   calctime(curtime,(dipole_ramp_start_time+dipole_ramp_up_time)-(qp_ra
         I_QP = QP_curval;
     end
     
+%%%% QP RAMP DOWN PART 2 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+     
     %ramp down rest of the way, pin with DT2
     if do_qp_ramp_down2
-        %set shim coils to the field cancelling values             
-        zshim_end2 = (seqdata.params. plug_shims(3) - seqdata.params. shim_zero(3)) * QP_ramp_end2 / QP_value + seqdata.params. shim_zero(3); %0.28  (0.05)
-        yshim_end2 = (seqdata.params. plug_shims(2) - seqdata.params. shim_zero(2)) * QP_ramp_end2 / QP_value + seqdata.params. shim_zero(2);% + getScanParameter(shim_list,seqdata.scancycle,seqdata.randcyclelist,'shim');  %0.0 (Shimmer Control)  
-        xshim_end2 = (seqdata.params. plug_shims(1) - seqdata.params. shim_zero(1)) * QP_ramp_end2 / QP_value + seqdata.params. shim_zero(1);
-        
-        shim_ramp_offset = 0;
                      
-        XDT_pin_time = 400;
+        XDT_pin_time =400;400;
         
         %ramp dipole 2 trap on
         AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),XDT_pin_time,XDT_pin_time,DT2_power(2));
         %ramp dipole 1 down a bit while dipole 2 ramps up
-curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),XDT_pin_time,XDT_pin_time,DT1_power(2));
+
+        curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),XDT_pin_time,XDT_pin_time,DT1_power(2));
         
         %ramp Feshbach field
         FB_time_list = [0];
@@ -316,14 +336,51 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,y2)(ramp_line
         AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),18,@(t,tt,y2,y1)(ramp_func(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,QP_ramp_end2*23/30);      
         %ramp down QP
         AnalogFuncTo(calctime(curtime,0*qp_rampdown_starttime2),1,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,QP_ramp_end2);
-                     
-        %ramp down shim along y and down along x and z
-        AnalogFuncTo(calctime(curtime,shim_ramp_offset+qp_rampdown_starttime2),'Y Shim',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,yshim_end2,4);%-0.52/1.1875 % BIPOLAR SHIM SUPPLY CHANGE
-        AnalogFuncTo(calctime(curtime,shim_ramp_offset+qp_rampdown_starttime2),'Z Shim',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,zshim_end2,3);%-0.3*0.8 for shimmer (augst 29, 2013)
-        AnalogFuncTo(calctime(curtime,shim_ramp_offset+qp_rampdown_starttime2),'X Shim',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,xshim_end2,3);%-0.3*0.8
-              
-        seqdata.params. yshim_val = yshim_end2;
         
+         
+         shim_ramp_offset = 0;       
+        
+%         %%%%%%%%%% Added 2021/01/05 to ramp shims with new calibrations
+        dI_QP=QP_ramp_end2-QP_ramp_end1; % How much the QP currents changes
+        
+        % The shift in currents is linearly proportional to the QP currents shift
+        dIx=dI_QP*-0.0499;
+        dIy=dI_QP*0.0045;
+        dIz=dI_QP*0.0105;
+
+        % Calculate the new shim
+        Xshim_value=Xshim_value+dIx;
+        Yshim_value=Yshim_value+dIy;
+        Zshim_value=Zshim_value+dIz;        
+        
+        % Ramp shims
+        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),28,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,Zshim_value,3); 
+        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),19,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,Yshim_value,4); 
+        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),27,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,Xshim_value,3);
+        
+        % Save the shim values (but why?)
+        seqdata.params.yshim_val = Yshim_value;
+        seqdata.params.xshim_val = Xshim_value;
+        seqdata.params.zshim_val = Zshim_value;
+
+% 
+%         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+        %old shim calibrations
+
+%         %set shim coils to the field cancelling values             
+%         zshim_end2 = (seqdata.params. plug_shims(3) - seqdata.params. shim_zero(3)) * QP_ramp_end2 / QP_value + seqdata.params. shim_zero(3); %0.28  (0.05)
+%         yshim_end2 = (seqdata.params. plug_shims(2) - seqdata.params. shim_zero(2)) * QP_ramp_end2 / QP_value + seqdata.params. shim_zero(2);%   
+%         xshim_end2 = (seqdata.params. plug_shims(1) - seqdata.params. shim_zero(1)) * QP_ramp_end2 / QP_value + seqdata.params. shim_zero(1);
+%         
+% 
+%         %ramp down shim along y and down along x and z
+%         AnalogFuncTo(calctime(curtime,shim_ramp_offset+qp_rampdown_starttime2),'Y Shim',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,yshim_end2,4);%-0.52/1.1875 % BIPOLAR SHIM SUPPLY CHANGE
+%         AnalogFuncTo(calctime(curtime,shim_ramp_offset+qp_rampdown_starttime2),'Z Shim',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,zshim_end2,3);%-0.3*0.8 for shimmer (augst 29, 2013)
+%         AnalogFuncTo(calctime(curtime,shim_ramp_offset+qp_rampdown_starttime2),'X Shim',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,xshim_end2,3);%-0.3*0.8
+%               
+%         seqdata.params. yshim_val = yshim_end2;
+%         
 curtime = calctime(curtime,shim_ramp_offset+qp_rampdown_starttime2+qp_ramp_down_time2+extra_hold_time);   
          
         I_QP  = QP_ramp_end2;
@@ -340,11 +397,11 @@ curtime = calctime(curtime,shim_ramp_offset+qp_rampdown_starttime2+qp_ramp_down_
             end
             
         end
-        
+
     else
         dipole2_pin_pwr = 4.5;%2.5
     end
-    
+
     V_QP = vSet_ramp;
         
     

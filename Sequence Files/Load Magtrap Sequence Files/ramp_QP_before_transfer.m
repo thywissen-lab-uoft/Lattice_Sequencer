@@ -16,7 +16,7 @@ if ramp_down_QP_before_transfer
 QP_value = I_QP;
 Kitten_curval = I_kitt;
 vSet = V_QP;
-
+% disp(QP_value)
 
 %Feshval = 0;
 Feshval = I_fesh ;
@@ -76,6 +76,7 @@ Feshval = I_fesh ;
        
     curtime = calctime(curtime,100);
     
+% disp(QP_value)
        
     I_QP  = QP_value;
     I_kitt = Kitten_value;

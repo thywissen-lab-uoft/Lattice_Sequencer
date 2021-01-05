@@ -13,6 +13,8 @@ curtime = timein;
 global seqdata;
 
 if ramp_down_QP_before_transfer
+    
+    dispLineStr('Ramping the field gradients');
 
 % Get the kitten and QP currents. Also grab the voltage set point
 QP_value = I_QP;                % QP Current
@@ -21,7 +23,7 @@ Kitten_value = Kitten_curval;
 vSet = V_QP;
     
 %Final Gradient ramp factor
-ramp_factor_list = [1];
+ramp_factor_list = [0.5];
 ramp_factor = getScanParameter(ramp_factor_list,seqdata.scancycle,...
     seqdata.randcyclelist,'ramp_factorB');
 
@@ -36,6 +38,8 @@ QP_curval = QP_value;
 Zshim_curval = seqdata.params.plug_shims(3); % The current, current value  
 Yshim_curval = seqdata.params.plug_shims(2);
 Xshim_curval = seqdata.params.plug_shims(1);
+
+
 
 
 % This doesn't appear to be used?
@@ -60,6 +64,9 @@ vSet_ramp = 22.0*ramp_factor*1.2; %24 %DCM added 1.2 Aug 18
 I_QP0=26.4;
 I0=seqdata.params.plug_shims;
 Ix0=I0(1);Iy0=I0(2);Iz0=I0(3);
+
+% These calibrations were done with a MT center position with plugs
+% I0=[-1.1975, 0.0598, 0.2485]
 
 % How much the QP currents have changed by
 dI_QP=QP_value-I_QP0;
@@ -119,25 +126,25 @@ if Kitten_value==0
     %make kitten relay an open switch
     setDigitalChannel(calctime(curtime,30),29,0);        
 end
-
-% Hold at the new ramp factor
-hold_time_list = [50];
-hold_time = getScanParameter(hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'QP_hold_time');
-curtime = calctime(curtime,hold_time);
-%     
-% Ramp voltage feed forward
-AnalogFunc(calctime(curtime,0),18,@(t,tt,dt)(minimum_jerk(t,tt,dt)+vSet_ramp),QP_ramp_time,QP_ramp_time,-vSet_ramp+vSet);
-
-% Ramp coil 16 back to original value
-AnalogFunc(calctime(curtime,0),1,@(t,tt,dt)(minimum_jerk(t,tt,dt)+QP_value),QP_ramp_time,QP_ramp_time,-QP_value+QP_curval);
-
-% Ramp shims to original values and advance time
-AnalogFunc(calctime(curtime,0),'Y Shim',@(t,tt,dt)(minimum_jerk(t,tt,dt)+Yshim_value),QP_ramp_time,QP_ramp_time,-Yshim_value+Yshim_curval,4); 
-AnalogFunc(calctime(curtime,0),'X Shim',@(t,tt,dt)(minimum_jerk(t,tt,dt)+Xshim_value),QP_ramp_time,QP_ramp_time,-Xshim_value+Xshim_curval,3); 
-curtime = AnalogFunc(calctime(curtime,0),'Z Shim',@(t,tt,dt)(minimum_jerk(t,tt,dt)+Zshim_value),QP_ramp_time,QP_ramp_time,-Zshim_value+Zshim_curval,3); 
-
-% Wait an additional 10 ms
-curtime = calctime(curtime,10);
+% 
+% % Hold at the new ramp factor
+% hold_time_list = [10];
+% hold_time = getScanParameter(hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'QP_hold_time');
+% curtime = calctime(curtime,hold_time);
+% %     
+% % Ramp voltage feed forward
+% AnalogFunc(calctime(curtime,0),18,@(t,tt,dt)(minimum_jerk(t,tt,dt)+vSet_ramp),QP_ramp_time,QP_ramp_time,-vSet_ramp+vSet);
+% 
+% % Ramp coil 16 back to original value
+% AnalogFunc(calctime(curtime,0),1,@(t,tt,dt)(minimum_jerk(t,tt,dt)+QP_value),QP_ramp_time,QP_ramp_time,-QP_value+QP_curval);
+% 
+% % Ramp shims to original values and advance time
+% AnalogFunc(calctime(curtime,0),'Y Shim',@(t,tt,dt)(minimum_jerk(t,tt,dt)+Yshim_value),QP_ramp_time,QP_ramp_time,-Yshim_value+Yshim_curval,4); 
+% AnalogFunc(calctime(curtime,0),'X Shim',@(t,tt,dt)(minimum_jerk(t,tt,dt)+Xshim_value),QP_ramp_time,QP_ramp_time,-Xshim_value+Xshim_curval,3); 
+% curtime = AnalogFunc(calctime(curtime,0),'Z Shim',@(t,tt,dt)(minimum_jerk(t,tt,dt)+Zshim_value),QP_ramp_time,QP_ramp_time,-Zshim_value+Zshim_curval,3); 
+% 
+% % Wait an additional 10 ms
+% curtime = calctime(curtime,10);
     
 % Output the current values       
 I_QP  = QP_value;

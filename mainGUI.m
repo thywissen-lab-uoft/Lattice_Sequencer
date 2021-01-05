@@ -454,8 +454,8 @@ timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
 % Function to run when the adwin starts the sequence.
     function startAdwinTimer(~,~)
         % Notify the user
-        disp(['Sequence started. ' num2str(seqdata.sequencetime,'%.2f') ...
-            ' seconds run time.']);
+        disp(['Sequence timer started. ' num2str(seqdata.sequencetime,'%.2f') ...
+            ' seconds.']);
         
         % Disable reset and enable abort
         set(jbAbort,'Enabled',true);
@@ -467,7 +467,7 @@ timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
     end
 
     function stopAdwinTimer(~,~)
-        disp('Sequence complete.');      % Message the user
+        disp('Sequence timer ended.');      % Message the user
         pAdWinBar.XData = [0 1 1 0];     % Fill out the bar
         drawnow;                         % Update graphics
         set(jbAbort,'Enabled',false);
@@ -690,45 +690,77 @@ end
     function runSequence        
         % Reinitialize the sequence
         start_new_sequence;
-        initialize_channels
+        initialize_channels;
         
-        disp([datestr(now,13) ' Running the sequence']);  
-        fh = str2func(erase(eSeq.String,'@'));  
+        % Grab the sequence function
+        fName=eSeq.String;
+        fh = str2func(erase(fName,'@'));  
+        
+        % Display new run call
+        disp(' ');
+        disp(repmat('-',1,60));
+        disp(repmat('-',1,60));
+        disp([' Sequence Call - ' datestr(now,14)]);  
+        disp([' ' fName]);
+        disp(repmat('-',1,60));
+        disp(repmat('-',1,60));
+                
         
         % Compile the code
-        disp(' ');
-        disp(['     Compiling sequence  ' eSeq.String]);     
-        disp(' ');
+        disp([' Compiling seqdata from  ' fName]);     
         tC1=now;                         % compile start time
+        try
+            fh(0);                                 
+        catch ME
+            warning('Unable to compile, abandoning');
+            return
+        end
+        tC2=now;
+        compileTime=(tC2-tC1)*24*60*60;
+%         disp([' Compiling sequence took ' num2str(round(compileTime,2)) ' s.']);
         
-        % Finish compiling the code
-%         try
-            fh(0);                          % run sequence function                  
-%         catch ME
-%             warning('OH NO SOMETHING WENT WRONG');
-%         end
-        calc_sequence;                  % convert seqdata for AdWin  
-        
-        % create output file
+        % Generate hardware commands
+        disp(repmat('-',1,60));
+        disp(' Converting seqdata into Adwin and hardware calls ...');      
+        disp(repmat('-',1,60));
+        try
+            calc_sequence;                  % convert seqdata for AdWin  
+        catch ME
+            warning('Unable to generate hardware commands');
+            return
+        end
+        tC3=now;
+        hwTime=(tC3-tC2)*24*60*60;
+
+%         disp([' Hardware command generation took ' num2str(round(hwTime,2)) ' s.']);
+
+        % Load adwin
+        disp(repmat('-',1,60));
+        disp(' Loading adwin ...');           
+        disp(repmat('-',1,60));
         try
             load_sequence;              % load the sequence onto adwin
         catch exception
             disp('Unable to load sequence onto Adwin');
             warning(exception.message);
-        end        
-        tC2=now;                         % compile end time
-        buildTime=(tC2-tC1)*(24*60*60);   % Build time in seconds   
+            return
+        end           
+        tC4=now;                         % compile end time
+        loadTime=(tC4-tC3)*(24*60*60);   % Build time in seconds   
+%         disp([' Adwin load time ' num2str(round(loadTime,2))]);
+       disp(repmat('-',1,60));
+   
+        makeControlFile;
+
         
         % Display compiling results
+        disp(repmat('-',1,60));
+        disp([fName ' READY. Duration is '  ...
+            num2str(round(seqdata.sequencetime,1)) 's']);
         disp(' ');
-        disp('     Completed compiling! (did I actually work?)');
-        disp(['     Build Time        : ' num2str(round(buildTime,2))]);
-        disp(['     Sequence Run Time : ' ...
-            num2str(round(seqdata.sequencetime,1)) 's']);    
+        disp('STARTING ADWIN');
         disp(' ');
-       
         
-        makeControlFile;
 
         % Run the sequence
         try
@@ -804,17 +836,23 @@ end
     % most recent cycle run.
     function makeControlFile
         % Dispaly output parameters to control prompt        
-        disp(' ');
-        disp('--Lattice Sequencer Output Parameters--');        
-        for n = 1:length(seqdata.outputparams)
-            %the first element is a string and the second element is a number
-            fprintf(1,'%s: %g \n',seqdata.outputparams{n}{1},seqdata.outputparams{n}{2});
-        end        
-        disp('----------------------------------------');        
+%         disp(' ');
+%         disp('--Lattice Sequencer Output Parameters--');        
+%         for n = 1:length(seqdata.outputparams)
+%             %the first element is a string and the second element is a number
+%             fprintf(1,'%s: %g \n',seqdata.outputparams{n}{1},seqdata.outputparams{n}{2});
+%         end        
+%         disp('----------------------------------------');        
+%         
+        
+        
         seqdata.outputfilepath=compath;
         filenametxt = fullfile(seqdata.outputfilepath, 'control.txt');
         filenamemat=fullfile(seqdata.outputfilepath, 'control.mat');  
 %         disp(' ')
+
+
+
         disp(['Saving sequence parameters to ' seqdata.outputfilepath filesep 'control']);
 %         disp(['     ' filenametxt]);
 %         disp(['     ' filenamemat]);
@@ -834,7 +872,9 @@ end
         fprintf(fid,'Execution Date: %s \n',datestr(now));
         fprintf(fid,'Function Handle: %s \n',erase(eSeq.String,'@'));
         fprintf(fid,'Cycle: %g \n', seqdata.cycle);
-        fprintf(fid,'------------------------------------\n');        
+        fprintf(fid,'------------------------------------\n');    
+        
+        
         %output the parameters
         if ~isempty(seqdata.outputparams)
             for n = 1:length(seqdata.outputparams)
@@ -845,13 +885,17 @@ end
         fclose(fid);     % close the file   
         %% Making a mat file with the parameters
         outparams=struct;
+        
+        
         for kk=1:length(seqdata.outputparams)
             a=seqdata.outputparams{kk};
             outparams.(a{1})=a{2};
         end        
+        assignin('base','seqparams',outparams)
+
         params=seqdata.params;        
         % output both outparams and params
-        save(filenamemat,'outparams','params');disp(' ');
+        save(filenamemat,'outparams','params');
     end
 
 

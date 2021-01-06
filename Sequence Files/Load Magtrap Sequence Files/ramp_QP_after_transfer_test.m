@@ -14,7 +14,7 @@ global seqdata;
 
 if ramp_down_QP_before_transfer
     
-    dispLineStr('Ramping the field gradients');
+    dispLineStr('Ramping the field gradients',curtime);
 
 % Get the kitten and QP currents. Also grab the voltage set point
 QP_value = I_QP;                % QP Current

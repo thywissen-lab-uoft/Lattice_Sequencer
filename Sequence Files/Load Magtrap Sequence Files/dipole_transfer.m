@@ -36,7 +36,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     %--------------------
     %RHYS - Move all of these flags out of this function, and declare them
     %in the seqdata structure to be passed in.
-    seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1; %transfer Rb atoms from F=2 to F=1 at the begining of XDT
+    seqdata.flags.do_Rb_uwave_transfer_in_ODT = 0; %transfer Rb atoms from F=2 to F=1 at the begining of XDT
     get_rid_of_Rb_init = 0;%get rid of Rb with resonant light pulse
     init_Rb_RF_sweep = 0;%Sweep 87Rb to |1,-1> (or |2,-2>) before evaporation
     seqdata.flags.do_K_uwave_transfer_in_ODT = 0;%transfer K atoms from F=9/2 to F=7/2
@@ -124,26 +124,27 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     DT1_power = 1*[P1         P1        P1e          xdt1_end_power];
     %DT1_power = -1*[1         1        1          1]; 
     DT2_power = 1*[-1        P2        P2e          xdt2_end_power];  
-    %DT2_power = -1*[1         1        1          1];  
+%     DT2_power = -1*[1         1        1          1];  
 
 
 
-    %% Special Flags
+%% Special Flags
     if seqdata.flags.rb_vert_insitu_image
         seqdata.flags.do_Rb_uwave_transfer_in_ODT = 0;
         get_rid_of_Rb = 0;
         exp_end_pwr =0.18;
     end
 
-    %% Sanity checks
+%% Sanity checks
     if ( do_K_uwave_spectroscopy + do_Rb_uwave_spectroscopy + do_RF_spectroscopy + do_singleshot_spectroscopy) > 1
         buildWarning('dipole_transfer','More than one type of spectroscopy is selected! Need specific solution?',1)
     end
    
-    %% Ramp Dipoletrap up from zero
+%% Dipole trap initial ramp on
+% Perform the initial ramp on of dipole trap 1    
 
-    dipole_ramp_start_time = -500;-250;%-3000; 
-    dipole_ramp_up_time = 250;250; %1500
+    dipole_ramp_start_time = -500; % Offset time to begin ramp on    
+    dipole_ramp_up_time = 250;      % Duration of initial ramp on
 
     %RHYS - Actually unused. 
     CDT_power = 3.8;%3.5; %4.5   7.0 Jan 22nd
@@ -151,11 +152,13 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     dipole1_power = CDT_power*1; %1
     dipole2_power = CDT_power*0; %Voltage = 0.328 + 0.2375*dipole_power...about 4.2Watts/V when dipole 1 is off
 
+    
     setDigitalChannel(calctime(curtime,dipole_ramp_start_time),'XDT Direct Control',0);
-    setDigitalChannel(calctime(curtime,dipole_ramp_start_time),'XDT TTL',0); %%%%%%%%%%%%%%%%%0
-    %ramp dipole 1 trap on
+    setDigitalChannel(calctime(curtime,dipole_ramp_start_time),'XDT TTL',0);  
+    
+    % Ramp dipole 1 trap on
     AnalogFunc(calctime(curtime,dipole_ramp_start_time),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_ramp_up_time,dipole_ramp_up_time,0,DT1_power(1));
-    %ramp dipole 2 trap on
+    % Ramp dipole 2 trap on
     AnalogFunc(calctime(curtime,dipole_ramp_start_time),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_ramp_up_time,dipole_ramp_up_time,-1,DT2_power(1));
 
     ScopeTriggerPulse(curtime,'Rampup ODT');
@@ -193,16 +196,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     extra_hold_time_list =0;[0,50,100,200,500,750,1000]; %PX added for measuring lifetime hoding in high power XDT
     extra_hold_time = getScanParameter(extra_hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'extra_hold_time');
     
-    
    
-    %RHYS - if (0)... lol
-    if (0)
-        %original configuration
-        do_qp_ramp_down2 = 0;
-        QP_ramp_end1 = 1.5 + 0.25 +0.15 + 0*8+ 0*QP_value;
-        qp_ramp_down_time1 = 1000;
-    end
-    
+    % Check thermal power dissipation
     if vSet_ramp^2/4/(2*0.310) > 700
         error('Too much power dropped across FETS');
     end
@@ -381,7 +376,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
 %               
 %         seqdata.params. yshim_val = yshim_end2;
 %         
-curtime = calctime(curtime,shim_ramp_offset+qp_rampdown_starttime2+qp_ramp_down_time2+extra_hold_time);   
+        curtime = calctime(curtime,shim_ramp_offset+qp_rampdown_starttime2+qp_ramp_down_time2+extra_hold_time);   
          
         I_QP  = QP_ramp_end2;
         
@@ -420,7 +415,9 @@ curtime = calctime(curtime,shim_ramp_offset+qp_rampdown_starttime2+qp_ramp_down_
 
     %USE CODE ABOVE INSTEAD WHEN SWITCHING BACK
      setDigitalChannel(calctime(curtime,-200),'Plug Shutter',0);%0:OFF; 1:ON; -200
-    %plug_off_time = 0.0*1000; 
+%      setDigitalChannel(calctime(curtime,-2),'Plug Shutter',0);%0:OFF; 1:ON; -200
+
+%plug_off_time = 0.0*1000; 
     %setDigitalChannel(calctime(curtime,-10),'Compensation Shutter',1); %-10
     %setDigitalChannel(calctime(curtime,0),'Plug TTL',1);
     %ScopeTriggerPulse(calctime(curtime,plug_off_time),'plug test');
@@ -446,7 +443,7 @@ curtime = calctime(curtime,shim_ramp_offset+qp_rampdown_starttime2+qp_ramp_down_
 
         %ramp dipole 1 trap down and ramp dipole 2 trap up
         AnalogFuncTo(calctime(curtime,0),40,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),handover_time,handover_time,0);
-curtime = AnalogFuncTo(calctime(curtime,0),38,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),handover_time,handover_time,DT2_handover_power);
+        curtime = AnalogFuncTo(calctime(curtime,0),38,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),handover_time,handover_time,DT2_handover_power);
 
     else
     end
@@ -2898,7 +2895,6 @@ curtime = DigitalPulse(calctime(curtime,0),'F Pump TTL',Raman_On_Time,1);
 
     end
 
-
     %% Pulse kill beam for alignment
     %RHYS - Can be useful. Pretty sure it exists in lattice too though.
     if Kill_Beam_Alignment
@@ -2957,9 +2953,11 @@ curtime=calctime(curtime,kill_time);
     else
         %XDT on for 100ms before further physics
 %curtime=calctime(curtime,100 + 0*10000); %100%35
-        exxdthold_list=[1000];[1000];+500; %necessory for loading lattice => give some time for waveplate to rotate 
+        exxdthold_list=1000;[1000];[1000];+500; %necessory for loading lattice => give some time for waveplate to rotate 
+        
+        exxdthold_list=[100];
         exxdthold = getScanParameter(exxdthold_list,seqdata.scancycle,seqdata.randcyclelist,'exxdthold');
-curtime=calctime(curtime,exxdthold + 0*14500);%for sparse image
+        curtime=calctime(curtime,exxdthold + 0*14500);%for sparse image
 
     end
     

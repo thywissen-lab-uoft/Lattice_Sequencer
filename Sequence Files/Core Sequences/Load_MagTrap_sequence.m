@@ -152,7 +152,7 @@ seqdata.flags.image_type = 0;
 seqdata.flags.MOT_flour_image = 0;
 
 iXon_movie = 1; %Take a multiple frame movie?
-seqdata.flags.image_atomtype = 1;%  0= Rb, 1 = K, 2 = Rb+K
+seqdata.flags.image_atomtype = 0;%  0= Rb, 1 = K, 2 = Rb+K
 seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.img_direction = 1; 
 %1 = x direction (Sci) / MOT, 2 = y direction (Sci), 
@@ -172,7 +172,7 @@ seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now.
 
 %RHYS - params should be defined in a separate location from flags. 
 
-seqdata.params.tof = 5;  % 45 for rough alignment, 20 for K-D diffraction
+seqdata.params.tof = 15;  % 45 for rough alignment, 20 for K-D diffraction
 
 seqdata.params.UV_on_time = 10000; %UV on time + savingtime + wait time = real wait time between cycles%
 % usually 15s for non XDT
@@ -211,7 +211,12 @@ seqdata.flags.RF_evap_stages = [1, 1, 1]; %[stage1, decomp/transport, stage1b] %
 rf_evap_time_scale = [0.7 0.9];[1.0 1.5];[0.7 0.9];[1.0 1.5];[0.8 1.2];[1.00 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
 RF_1A_Final_Frequency_list = [12];
 RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1A_finalfreq');
-RF_1B_Final_Frequency = 0.6;
+
+
+% RF_1B_Final_Frequency = 0.4;
+RF_1B_Final_Frequency_list = [0.8];%0.8,0.4
+RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq');
+
 
 seqdata.flags.do_plug = 1;   % ramp on plug after transfer to window
 seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get clean TOF signal
@@ -1155,14 +1160,11 @@ dispLineStr('Loading MOT.',curtime);
     setAnalogChannel(curtime,'K Repump FM',k_repump_shift,2);
       
     if ( seqdata.flags.do_dipole_trap == 1 )
-curtime = calctime(curtime,dip_holdtime);
-        
-    elseif mag_trap_MOT || MOT_abs_image
-
-curtime = calctime(curtime,100);
-        
+%         curtime = calctime(curtime,dip_holdtime);        
+    elseif mag_trap_MOT || MOT_abs_image    
+        curtime = calctime(curtime,100);        
     else
-curtime = calctime(curtime,1*500);%25000
+        curtime = calctime(curtime,1*500);%25000
     end
 
 

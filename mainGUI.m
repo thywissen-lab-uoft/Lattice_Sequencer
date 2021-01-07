@@ -66,7 +66,7 @@ hF=figure('toolbar','none','Name',figName,'color',cc,'NumberTitle','off',...
     'MenuBar','figure','resize','off','CloseRequestFcn',@closeFig);
 clf
 hF.Position(3:4)=[w h];
-
+set(hF,'WindowStyle','docked');
 
 % Callback for a close request function. The close request function handles
 % whether the adwin is running or other potential timer issues.

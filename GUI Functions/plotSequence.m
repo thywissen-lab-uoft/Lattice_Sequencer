@@ -32,9 +32,7 @@ global seqdata;
 % Acquire the figure handle for the plottter in case you already opened it.
 windowhnds = get(0,'Children');
 
-% Close any figure with the same name.  Only one instance of the plotter is
-% allowed.  (Maybe want to chage this in the future if we want to compare
-% sequences?)
+
 for i = 1:length(windowhnds)
     if isequal(windowhnds(i).Name,fName)
        close(fName); 
@@ -295,8 +293,6 @@ htbl_time.CellEditCallback=@tblCB;
 % analog channels window pane
 hpA=uipanel('parent',hF,'units','pixels','Title','Analog',...
     'backgroundcolor',hF.Color);
-
-
 
 for kk=1:length(aTracesSHOW)  
     % Create the axis for this channel

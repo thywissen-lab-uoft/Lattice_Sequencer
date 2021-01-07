@@ -162,7 +162,8 @@ bPlot.Position(1:2)=[bBrowse.Position(1)+bBrowse.Position(3)+5 ...
 
     function bPlotCB(~,~)
         fh = str2func(erase(eSeq.String,'@'));        
-        plotgui(fh);
+%         plotgui(fh);
+        plotgui2;
     end
 
 % Button to open the manual override GUI
@@ -668,7 +669,7 @@ end
         end  
         
         
-        bPlot.Enable='off';
+%         bPlot.Enable='off';
         bOver.Enable='off';
         bBrowse.Enable='off';
         eSeq.Enable='off';
@@ -688,6 +689,7 @@ end
     end
 
     function runSequence        
+        
         % Reinitialize the sequence
         start_new_sequence;
         initialize_channels;

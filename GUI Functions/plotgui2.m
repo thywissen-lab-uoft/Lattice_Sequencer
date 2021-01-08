@@ -5,6 +5,7 @@ dTracesShow=struct('Plot',{},'Label',{});
 
 
 funcname='@Load_MagTrap_sequence';       
+hText=20;
 
 if nargin==1
     seqdata=sdata;
@@ -166,33 +167,43 @@ set(jSlider, 'StateChangedCallback', @adjustSize);  %alternative
 warning on
 
 
-% Figure change sizes callback; this is the main callback function
-    function adjustSize(~,~)
-        % The time table size; (it doesn't change size)
-        h=htbl_time.Extent(4);
+% Figure change sizes callback
+    function adjustSize(~,~)                        
+        h=htbl_time.Extent(4);          % Time table height  
+        pS=get(hContainer,'Position');  % Slider adjust width
         
-        % Get slider size
-        pS=get(hContainer,'Position');
-        val=get(jSlider,'Value');
-        pD=val/100;
-        pA=1-pD;
+        W=hF.Position(3)-pS(3);         % GUI width less slider width
+        H=hF.Position(4)-h;             % GUI height less table height
         
-        % Get the main GUI figure size modulo settings size
-        W=hF.Position(3)-pS(3);
-        H=hF.Position(4)-h;    
-        
+        % Exit if you are resizing inappropriately
         if W <200 || H < 100
            warning(['Your making the figure too small to ' ...
                'render the graphics! Bad grad student.']); 
            return
         end
         
-        % Set the size of the analog panel               
-        hpA.Position(3:4)=[W H*pA];
-        hpA.Position(1:2)=[pS(3) h+H*pD];               
-          
-        % Set the position and properties of the scrollbar
-        if pA*H<50 || isempty(aTracesShow)
+        % Slider position that sets analog vs digital relative size
+        val=get(jSlider,'Value');
+        pD=val/100;pA=1-pD;       
+        
+        % Resize the analog and digital panels to the slider values 
+        hpA.Position=[pS(3) h+H*pD W H*pA];        
+        hpD.Position=[pS(3) h W H*pD];             
+        
+        resizeAObj;     % Resize children of analog panel
+        resizeDObj;     % Resize children of digital panel           
+        
+        % Left scroll bar position
+        pp=[0,htbl_time.Extent(4),15,hF.Position(4)-htbl_time.Extent(4)];
+        set(hContainer,'position',pp); %note container size change
+              
+        % Apply graphical updates
+        drawnow;
+    end
+
+    function resizeAObj           
+        % Adjust the analog panel scroll bar
+        if hpA.Position(4)<50 || isempty(aTracesShow)
             % No slider bar to draw
             hAslider.Visible='off';
             hAslider.Value=0;
@@ -202,8 +213,8 @@ warning on
             hAslider.Position(1:2)=[hpA.Position(3)-hAslider.Position(3) 0];   
             
             % Calculate the range of the scroll bar
-            minVal=-(aTracesShow(1).Axis.Position(2)-aTracesShow(end).Axis.Position(2)-...
-                hpA.Position(4)+200);               
+            minVal=-(aTracesShow(1).Axis.Position(2)-...
+                aTracesShow(end).Axis.Position(2)-hpA.Position(4)+200);              
           
             if minVal>=0
                 % No scroll bar to plot since the panel is large enough
@@ -217,58 +228,68 @@ warning on
             end      
         end        
         
-        % Assign new positions to analog channel traces
+        % Resize analog plots to fit within panel
         for nn=1:length(aTracesShow)
             pos=getAxPos(hpA,nn);
             aTracesShow(nn).Axis.Position=pos;
             aTracesShow(nn).Axis.Position(2)=pos(2)-hAslider.Value;
-        end        
-      
-        % Set the size of the digital panel
-        hpD.Position(3:4)=[W H*pD];
-        hpD.Position(1:2)=[pS(3) h];  
-                
-        if H*pD>75        
-            % Set the position of the digital scroll bar            
+        end   
+    end
+
+    function resizeDObj        
+        % Adjust digital axis size to panel
+        t=getAxPos(hpD,1);
+        axD.Position(1)=t(1);
+        axD.Position(3)=t(3);
+
+        % Adjust digital label axis size to panel
+        axDL.Position=axD.Position;
+        axDL.Position(1)=5;
+        axDL.Position(3)=axD.Position(1)-axDL.Position(1);
+        
+        % Top gap between digital panel and axis
+        tgap=18;
+
+        % Adjust size of axes and scroll bar
+        if hpD.Position(4)<75 || isempty(dTracesShow) % If too small or nothing to show            
+            hDslider.Visible='off';
+            axDL.Visible='off';
+            axD.Visible='off';
+        else
+             % Set the position of the digital scroll bar            
             hDslider.OuterPosition(3:4)=[20 hpD.Position(4)-10];            
             hDslider.Position(1:2)=[hpD.Position(3)-hDslider.Position(3) 0];     
             
-            % Update digital axis position
-            t=getAxPos(hpD,1);
-            axD.Position(1)=t(1);
-            axD.Position(3)=t(3);
-            axD.Position(2)=50;
-            axD.Position(4)=hpD.Position(4)-axD.Position(2)-17;
+            % Height to capture all digital traces
+            h1=length(dTracesShow)*hText;
+            % Max height the panel can accomondate            
+            h2=hpD.Position(4)-tgap-50;
 
-            % Update digital label axis position
-            axDL.Position(1)=5;
-            axDL.Position(3)=axD.Position(1)-axDL.Position(1);
-            axDL.Position(2)=axD.Position(2);
+            % Set digital axis vertical size and position
+            axD.Position(4)=min([h1 h2]);
+            axD.Position(2)=hpD.Position(4)-axD.Position(4)-tgap;
+            % Match digital axis label axis
             axDL.Position(4)=axD.Position(4);
-
+            axDL.Position(2)=axD.Position(2);
+                       
             % Reset the digital axis limits
             axDL.YLim=[-axDL.Position(4) 0];        
             axD.YLim=axDL.YLim;
             
+            if h1<h2
+                hDslider.Visible='off'; 
+            else
+                hDslider.Visible='on';
+                hDslider.Max=0;
+                hDslider.Min=h2-h1;
+                hDslider.SliderStep=[.05 .1];
+            end
+            
             % Make Visible
-            hDslider.Visible='on';
             axDL.Visible='on';
-        else
-            axD.Position(1)=aTracesShow(1).Axis.Position(1);
-            axD.Position(3)=aTracesShow(1).Axis.Position(3);
-            hDslider.Visible='off';
-            axDL.Visible='off';
-            axD.Position(4)=30;           
-        end        
-        
-        % Left scroll bar position
-        pp=[0,htbl_time.Extent(4),15,hF.Position(4)-htbl_time.Extent(4)];
-        set(hContainer,'position',pp); %note container size change
-              
-        % Apply graphical updates
-        drawnow;
+            axD.Visible='on';
+        end
     end
-
 % Calculate the analog axis position
     function pos=getAxPos(prnt,ind)    
         % [left, right, bottom, top] boundaries between figure
@@ -436,6 +457,9 @@ addlistener(hDslider,'Value','PreSet',@DsliderCB);
 jDScroll = findjobj(hDslider);
 jDScroll.MouseWheelMovedCallback = @DscrollStep;
 
+% Link the y-axis of the digital text labels
+linkaxes([axDL axD],'y');
+
 % Callback when the mouse wheel is scrolled over the slider bar
     function DscrollStep(~,b)   
         % Scroll wheel information is a string; process it
@@ -460,11 +484,9 @@ jDScroll.MouseWheelMovedCallback = @DscrollStep;
 
 
 
-% Link the x-axis of digital and analog plots
-linkaxes([axs{:} axD],'x');
 
-% Link the y-axis of the digital text labels
-linkaxes([axDL axD],'y');
+
+
 
 % Link the time limits to a table
 addlistener(axD,'XLim','PostSet',@beep);
@@ -596,6 +618,9 @@ function addAnalogChannel(ch)
         aTracesShow=trc;
     end
     adjustSize;    
+    
+    % Link the x-axis of the analog plot with the digital ones
+    linkaxes([ax axD],'x');
 end
 
 function removeAnalogChannel(ch)
@@ -611,7 +636,6 @@ function removeAnalogChannel(ch)
     end
     adjustSize
 end
-    hText=20;
 function addDigitalChannel(ch)
     j=length(dTracesShow)+1;
 
@@ -635,7 +659,6 @@ function addDigitalChannel(ch)
     axes(axD);
     hold on
 
-    
     % Plot the data as series of rectangles
     s=1;
     for np=1:(length(X)-1)
@@ -646,34 +669,42 @@ function addDigitalChannel(ch)
                 'EdgeColor',[co(mod(j-1,7)+1,:)]);
             pps(s)=r;s=s+1;
         end        
-    end
+    end   
+    
+    % Plot a gray box to indicate unused
+    if isempty(X)
+        p=[0 -j*hText 1E6 hText]; 
+        pps(s)=rectangle('Position',p,'linestyle','none',...
+            'facecolor',[.5 .5 .5 .5]);
+        s=s+1;
+    end    
     
     if ~exist('pps')
         pps=[];
     end
     
-    % Plot a gray box to indicate unused
-    if isempty(X)
-        p=[0 -j*hText 1E6 hText]; 
-        rectangle('Position',p,'linestyle','none','facecolor',[.5 .5 .5]);
-    end    
     hold on
     
-    
+    % Plot the text label rectangle
     axes(axDL)
-    rectangle('Position',[0 -j*hText 1 1*hText],...
-        'facecolor',[co(mod(j-1,7)+1,:) 0.5])
+    pL=rectangle('Position',[0 -j*hText 1 1*hText],...
+        'facecolor',[co(mod(j-1,7)+1,:) 0.5]);
+    
+    % Fill the text label with text
     tstr=[' d' num2str(trc.channel,'%02.f') ' ' trc.name];
     tt=text(0,-(j-.5)*hText,tstr,...
         'HorizontalAlignment','left','fontsize',8,'clipping','on',...
         'units','data','verticalalignment','middle','fontname','monospaced',...
         'fontweight','bold');
-    
-    
+        
     % Track graphical objects
     trc.Label=tt;
+    trc.LabelPlot=pL;
+    try
     trc.Plot=pps;
-    
+    catch exception
+        keyboard
+    end
     % Add trace
     if ~isempty(dTracesShow)
         dTracesShow(end+1)=trc;          % Add the trace
@@ -681,8 +712,10 @@ function addDigitalChannel(ch)
         dTracesShow=trc;
     end
     
-    axD.YTick=flip([0:1:length(dTracesShow)])*-hText;
+    % Add y ticks to help delineate
+    axD.YTick=flip([0:1:length(dTracesShow)])*-hText;   
     
+    resizeDObj;
 end
 
 function removeDigitalChannel(ch)
@@ -691,21 +724,25 @@ function removeDigitalChannel(ch)
         delete(dTracesShow(n).Plot(kk));
     end
     delete(dTracesShow(n).Label); 
+    delete(dTracesShow(n).LabelPlot);
+
     dTracesShow(n)=[];   
 
     for n=1:length(dTracesShow)
         c=co(mod(n-1,7)+1,:);
-        dTracesShow(n).Label.Color=c; 
-
         for kk=1:length(dTracesShow(n).Plot)
             p=dTracesShow(n).Plot(kk);
-            p.FaceColor=c;
+            p.FaceColor=[c .5];
+            p.EdgeColor=c;
             p.Position(2)=-n*hText;
         end
+        dTracesShow(n).LabelPlot.Position(2)=-n*hText;
+        dTracesShow(n).Label.Position(2)=-(n-.5)*hText;
     end
     axD.YTick=flip([0:1:length(dTracesShow)])*-hText;
-
+    resizeDObj;
 end
+
 
 
 end

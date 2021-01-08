@@ -183,8 +183,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     QP_curval = QP_value;
     
     %value to ramp down to first
-    QP_ramp_end1_list = [0.9]*15;
-    QP_ramp_end1 = getScanParameter(QP_ramp_end1_list/15*1.78,seqdata.scancycle,seqdata.randcyclelist,'QP_ramp_end1');
+    QP_ramp_end1_list = [0.9];
+    QP_ramp_end1 = getScanParameter(QP_ramp_end1_list*1.78,seqdata.scancycle,seqdata.randcyclelist,'QP_ramp_end1');
 %     QP_ramp_end1 = 0.7*1.78; % 0.9*1.78  // doubled Dec-2013 (tighter hybrid trap)
     
     qp_ramp_down_time1_list = [250];

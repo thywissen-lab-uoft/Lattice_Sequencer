@@ -453,7 +453,7 @@ global seqdata;
 
 % setAnalogChannel(calctime(curtime,0),24,0,1);
 
-% %% Transport test
+ %% Transport test
 % 
 % setDigitalChannel(curtime,'Kitten Relay',0); %0: OFF, 1: ON
 % setDigitalChannel(curtime,'15/16 Switch',0); %0: OFF, 1: ON
@@ -4078,7 +4078,7 @@ setDigitalChannel(calctime(curtime,0),'K D1 GM Shutter 2',1);
 
 % MOT Load
 
-doMOT  = 0;
+doMOT  = 1;
 if doMOT
 % This code initializses the MOT. This includes
 % Rb+K detunings and power
@@ -4243,7 +4243,7 @@ end
 % This code loads the CMOT from the MOT. This includes ramps of the 
 % detunings, power, shims, and field gradients. In order to function 
 % properly it needs to havethe correct parameters from the MOT.
-doCMOTv3 =0;        
+doCMOTv3 =1;        
 if doCMOTv3
 if ~doMOT
    error('You cannot load a CMOT without a MOT');       
@@ -4391,7 +4391,7 @@ end
 %% Combined Molasses - K D1 GM and Rb D2 Mol
 % This code is for running the D1 Grey Molasses for K and the D2 Optical
 % Molasses for Rb at the same time from the CMOT phase
-doMol = 0;
+doMol = 1;
 if doMol
 
 %%%%%%%%%%%% Shift the fields %%%%%%%%%%%%
@@ -4541,7 +4541,7 @@ end
 % setDigitalChannel(calctime(curtime,0),'ScopeTrigger',1);
 % setDigitalChannel(calctime(curtime,1),'ScopeTrigger',0); 
 
-doOP =0;
+doOP =1;
 if doOP
 % This stage using the Rb/K Pump (trap light) beam along the Y-axis to pump
 % atoms into the |2,2> and |9/2,9/2> state
@@ -4569,7 +4569,7 @@ end
 
 
 %% Load into Magnetic Trap
-loadMT = 0;
+loadMT = 1;
 
 if loadMT 
     % Turn off Rb MOT Trap
@@ -4607,7 +4607,7 @@ if loadMT
     
     
     % Hold in magnetic trap if desired
-    MTholds = [50];
+    MTholds = [10];
     MThold =getScanParameter(MTholds,seqdata.scancycle,seqdata.randcyclelist,'MThold'); 
     curtime = calctime(curtime,MThold);    
 
@@ -4616,7 +4616,7 @@ end
 %% Time of flight
 % This section of code performs a time flight before doing fluorescence
 % imaging with the MOT beams.
-doTOF =0;
+doTOF =1;
 
 if ~doTOF && loadMT
    error('MT load is not followed by TOF. Coils will get too hot');       
@@ -4640,7 +4640,7 @@ setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);
 %%%%%%%%%%%% Perform the time of flight %%%%%%%%%%%%
 
 % Set the time of flight
-tof_list = [5];
+tof_list = [1:15];
 tof =getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof_time'); 
 
 % Increment the time (ie. perform the time of flight)

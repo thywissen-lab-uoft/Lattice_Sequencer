@@ -27,10 +27,10 @@ AnalogFuncTo(calctime(curtime,0),8,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),50,50,
  
 curtime = calctime(curtime,500);
 
-current = 0;
-channel = 1;
+current = 38;
+channel = 20;
 
-is_bipolar = 0;
+is_bipolar = 1;
 
 ramp_iparabola = @(t,tt,y0,y1) (y1-y0)*(1-(2*t/tt-1).^2)+y0;%(y1-y0)*(1-(tt-t)/tt)+y0;
 ramp_cosine = @(t,tt,y0) y0/2*(1-cos(2*pi*t/tt));
@@ -38,13 +38,13 @@ ramp_cosine = @(t,tt,y0) y0/2*(1-cos(2*pi*t/tt));
 %set FF
 % setAnalogChannel(calctime(curtime,-200),18,25*(abs(current)/30)/3 + 0.5);
 % %use the following for QT coil
-AnalogFunc(calctime(curtime,-200),18,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,0.5,25*(abs(current)/30)/1 + 0.5);
+% AnalogFunc(calctime(curtime,-200),18,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,0.5,25*(abs(current)/30)/1 + 0.5);
 
 % use the following for other transfer coils
-% AnalogFunc(calctime(curtime,-200),18,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,0.5,8*(abs(current)/30)/1 + 0.5);
+AnalogFunc(calctime(curtime,-200),18,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,0.5,8*(abs(current)/30)/1 + 0.5);
 
 %Kitten to max current for the ramp if using coil 15 or 16 alone.
-setAnalogChannel(calctime(curtime,-175),3,0,1); % current set to 5 for fully on   
+setAnalogChannel(calctime(curtime,-175),3,5,1); % current set to 5 for fully on   
 
 %"Turn on" coil to 0
 setAnalogChannel(calctime(curtime,-50),channel,0,1); %Start at zero for AnalogFuncTo

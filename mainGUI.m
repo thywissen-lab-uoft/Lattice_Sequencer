@@ -21,7 +21,7 @@ global adwinprocessnum;
 % global adwin_connected;
 % global adwin_process_path;
 
-
+waitDefault=30;
 compath='Y:\_communication';
 
 defaultSequence='@test_sequence';
@@ -218,7 +218,7 @@ uicontrol(bgWait,'Style','radiobutton','String','target time',...
 
 
 % Table for storing value of wait time
-tblWait=uitable(bgWait,'RowName','','ColumnName','','Data',10,...
+tblWait=uitable(bgWait,'RowName','','ColumnName','','Data',waitDefault,...
     'ColumnWidth',{30},'ColumnEditable',true,'ColumnFormat',{'numeric'},...
     'fontsize',8,'Enable','on');
 tblWait.Position(3:4)=tblWait.Extent(3:4);

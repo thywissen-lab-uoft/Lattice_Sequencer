@@ -204,7 +204,7 @@ seqdata.flags.ver_transport_type = 3;
 % Use stage1b = 2 to do microwave evaporation in the plugged QP trap
 seqdata.flags.compress_QP = 1; % compress QP after transport
 
-seqdata.flags.RF_evap_stages = [1, 1, 1]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
+seqdata.flags.RF_evap_stages = [1, 1, 0]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
 
 
 %RHYS - Here be parameters.     
@@ -213,12 +213,12 @@ RF_1A_Final_Frequency_list = [12];
 RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1A_finalfreq');
 
 
-% RF_1B_Final_Frequency = 0.4;
+% RF_1B_Final_Frequency = 0.8;
 RF_1B_Final_Frequency_list = [0.8];%0.8,0.4
 RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq');
 
 
-seqdata.flags.do_plug = 1;   % ramp on plug after transfer to window
+seqdata.flags.do_plug = 0;   % ramp on plug after transfer to window
 seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get clean TOF signal
 
 %RHYS - a bunch of unused options here. 
@@ -873,6 +873,7 @@ if ( seqdata.flags.do_plug == 1)
     curtime = calctime(curtime,hold_time);   
     plug_offset = -2.5;-2.5;175;%0 for experiment, -10 to align for in trap image
 
+    
     if ( seqdata.flags.do_dipole_trap ~= 1 )
         dispLineStr('Turning off plug at',calctime(curtime,plug_offset));
 

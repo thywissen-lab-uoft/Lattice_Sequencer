@@ -2962,7 +2962,7 @@ curtime=calctime(curtime,kill_time);
 %curtime=calctime(curtime,100 + 0*10000); %100%35
         exxdthold_list=1000;[1000];[1000];+500; %necessory for loading lattice => give some time for waveplate to rotate 
         
-        exxdthold_list=[100];
+        exxdthold_list=[7000 8000];
         exxdthold = getScanParameter(exxdthold_list,seqdata.scancycle,seqdata.randcyclelist,'exxdthold');
         curtime=calctime(curtime,exxdthold + 0*14500);%for sparse image
 

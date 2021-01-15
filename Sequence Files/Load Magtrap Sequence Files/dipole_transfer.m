@@ -123,7 +123,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     %Power    Load ODT1  Load ODT2  Begin Evap      Finish Evap
     DT1_power = 1*[P1         P1        P1e          xdt1_end_power];
     %DT1_power = -1*[1         1        1          1]; 
-    DT2_power = 1*[-1        P2        P2e          xdt2_end_power];  
+    DT2_power = 1*[-1      P2        P2e          xdt2_end_power];  
 %     DT2_power = -1*[1         1        1          1];  
 
 
@@ -142,8 +142,9 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
    
 %% Dipole trap initial ramp on
 % Perform the initial ramp on of dipole trap 1    
-
-    dipole_ramp_start_time = -500; % Offset time to begin ramp on    
+    dipole_ramp_start_time_list = [-500];
+    dipole_ramp_start_time = getScanParameter(dipole_ramp_start_time_list,seqdata.scancycle,seqdata.randcyclelist,'dipole_ramp_start_time');
+%     dipole_ramp_start_time = -500; % Offset time to begin ramp on    
     dipole_ramp_up_time = 250;      % Duration of initial ramp on
 
     %RHYS - Actually unused. 
@@ -156,11 +157,16 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     setDigitalChannel(calctime(curtime,dipole_ramp_start_time),'XDT Direct Control',0);
     setDigitalChannel(calctime(curtime,dipole_ramp_start_time),'XDT TTL',0);  
     
+    dispLineStr('ODT 1 ramp up started at',calctime(curtime,dipole_ramp_start_time));
+
     % Ramp dipole 1 trap on
     AnalogFunc(calctime(curtime,dipole_ramp_start_time),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_ramp_up_time,dipole_ramp_up_time,0,DT1_power(1));
     % Ramp dipole 2 trap on
     AnalogFunc(calctime(curtime,dipole_ramp_start_time),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_ramp_up_time,dipole_ramp_up_time,-1,DT2_power(1));
+    dispLineStr('ODT 1 ramp up finished at',calctime(curtime,dipole_ramp_start_time+dipole_ramp_up_time));
 
+    
+    
     ScopeTriggerPulse(curtime,'Rampup ODT');
 
 
@@ -177,12 +183,19 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     QP_curval = QP_value;
     
     %value to ramp down to first
-    QP_ramp_end1 = 0.9*1.78; % 0.9*1.78  // doubled Dec-2013 (tighter hybrid trap)
-    qp_ramp_down_time1 = 500; %500
-        
+    QP_ramp_end1_list = [0.9];
+    QP_ramp_end1 = getScanParameter(QP_ramp_end1_list*1.78,seqdata.scancycle,seqdata.randcyclelist,'QP_ramp_end1');
+%     QP_ramp_end1 = 0.7*1.78; % 0.9*1.78  // doubled Dec-2013 (tighter hybrid trap)
+    
+    qp_ramp_down_time1_list = [250];
+    qp_ramp_down_time1 = getScanParameter(qp_ramp_down_time1_list,seqdata.scancycle,seqdata.randcyclelist,'qp_ramp_down_time1');        
+   
+    
     %value to ramp down to second
     QP_ramp_end2 = 0*1.78; %0*1.78 // doubled Dec-2013 (tighter hybrid trap)
-    qp_ramp_down_time2 = 250; %250
+    qp_ramp_down_time2_list = [100];
+    qp_ramp_down_time2 = getScanParameter(qp_ramp_down_time2_list,seqdata.scancycle,seqdata.randcyclelist,'qp_ramp_down_time2');        
+    %     qp_ramp_down_time2 = 250; %250
     %RHYS - I think this is now 0*500 because curtime is updated between
     %the two ramps. 
     qp_rampdown_starttime2 = 0; %500
@@ -239,6 +252,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
         Yshim_value=Iy0+dIy;
         Zshim_value=Iz0+dIz;        
         
+        dispLineStr('QP rampdown stage 1 started at',curtime);
+
         % Ramp shims
         AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),28,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,Zshim_value,3); 
         AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),19,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,Yshim_value,4); 
@@ -270,6 +285,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
         
         % Ramp down QP and advance time
         curtime = AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'Coil 16',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,QP_ramp_end1);
+
+        dispLineStr('QP rampdown stage 1 finished at',curtime);
 
         % Some extra advances in time (WHAT IS THIS FOR?)
         if (dipole_ramp_start_time+dipole_ramp_up_time)>(qp_ramp_down_start_time+qp_ramp_down_time1)
@@ -308,15 +325,22 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
      
     %ramp down rest of the way, pin with DT2
     if do_qp_ramp_down2
-                     
-        XDT_pin_time =400;400;
         
+        XDT_pin_time_list = [50];
+        XDT_pin_time = getScanParameter(XDT_pin_time_list,seqdata.scancycle,seqdata.randcyclelist,'XDT_pin_time');                
+        
+%         XDT_pin_time =400;400;
+        dispLineStr('ODT2 ramp up started at',curtime);
+
         %ramp dipole 2 trap on
         AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),XDT_pin_time,XDT_pin_time,DT2_power(2));
         %ramp dipole 1 down a bit while dipole 2 ramps up
 
         curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),XDT_pin_time,XDT_pin_time,DT1_power(2));
         
+        
+        dispLineStr('ODT2 ramp up finished at',curtime);
+
         %ramp Feshbach field
         FB_time_list = [0];
         FB_time = getScanParameter(FB_time_list,seqdata.scancycle,seqdata.randcyclelist,'FB_time');
@@ -326,7 +350,10 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
         %linear ramp from zero
         AnalogFunc(calctime(curtime,0-FB_time),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),qp_ramp_down_time2+FB_time,qp_ramp_down_time2+FB_time, fesh_current,0);
         fesh_current_val = fesh_current;
-            
+        
+        
+        dispLineStr('QP rampdown stage 2 started at',curtime);
+
         %Ramp down FF.
         AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),18,@(t,tt,y2,y1)(ramp_func(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,QP_ramp_end2*23/30);      
         %ramp down QP
@@ -377,7 +404,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
 %         seqdata.params. yshim_val = yshim_end2;
 %         
         curtime = calctime(curtime,shim_ramp_offset+qp_rampdown_starttime2+qp_ramp_down_time2+extra_hold_time);   
-         
+        dispLineStr('QP rampdown stage 2 finished at',curtime);
+ 
         I_QP  = QP_ramp_end2;
         
         if QP_ramp_end2 <= 0 % second rampdown segment concludes QP rampdown
@@ -399,31 +427,10 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
 
     V_QP = vSet_ramp;
         
-    
-    %Turn off plug
-    %plug_off_time = -0*1000; 
-    %plug_rampoff_time = 1000;
-    %AnalogFuncTo(calctime(curtime,plug_off_time-plug_rampoff_time),'Plug Beam',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), plug_rampoff_time, plug_rampoff_time,0);
-    %setAnalogChannel(calctime(curtime,plug_off_time+0.1),'Plug Beam',-10); %0
-    %setDigitalChannel(calctime(curtime,plug_off_time-10),'Plug TTL',1);%20170124, TTL = 1 is TTL off
-    %setDigitalChannel(calctime(curtime,plug_off_time-10),'Plug Shutter',1);%20170124
-    %for thermal stabilzation
-    %setAnalogChannel(calctime(curtime,plug_off_time+1000),'Plug Beam',80); %0
-    %setDigitalChannel(calctime(curtime,plug_off_time+1000),'Plug TTL',0);%20170124, TTL = 1 is TTL off
-    %set to Manual mode (does not exist currently)
-    %setDigitalChannel(calctime(curtime,plug_off_time+1000),'Plug Mode Switch',1);
+    plug_turnoff_time = -200;
+     setDigitalChannel(calctime(curtime,plug_turnoff_time),'Plug Shutter',0);%0:OFF; 1:ON; -200
+     dispLineStr('Plug turned off at ',calctime(curtime,plug_turnoff_time));
 
-    %USE CODE ABOVE INSTEAD WHEN SWITCHING BACK
-     setDigitalChannel(calctime(curtime,-200),'Plug Shutter',0);%0:OFF; 1:ON; -200
-%      setDigitalChannel(calctime(curtime,-2),'Plug Shutter',0);%0:OFF; 1:ON; -200
-
-%plug_off_time = 0.0*1000; 
-    %setDigitalChannel(calctime(curtime,-10),'Compensation Shutter',1); %-10
-    %setDigitalChannel(calctime(curtime,0),'Plug TTL',1);
-    %ScopeTriggerPulse(calctime(curtime,plug_off_time),'plug test');
-%curtime = setAnalogChannel(curtime,1,QP_value);
-  
-    
     %this code below is to hold atoms in the XDT beams to check the heating issue 
     % hold_time_list = [17000 20000];
     % hold_time = getScanParameter(hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'hold_time_XDT');
@@ -2955,7 +2962,7 @@ curtime=calctime(curtime,kill_time);
 %curtime=calctime(curtime,100 + 0*10000); %100%35
         exxdthold_list=1000;[1000];[1000];+500; %necessory for loading lattice => give some time for waveplate to rotate 
         
-        exxdthold_list=[100];
+        exxdthold_list=[7000 8000];
         exxdthold = getScanParameter(exxdthold_list,seqdata.scancycle,seqdata.randcyclelist,'exxdthold');
         curtime=calctime(curtime,exxdthold + 0*14500);%for sparse image
 

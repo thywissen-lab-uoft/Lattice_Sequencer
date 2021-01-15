@@ -213,7 +213,7 @@ RF_1A_Final_Frequency_list = [12];
 RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1A_finalfreq');
 
 
-% RF_1B_Final_Frequency = 0.4;
+% RF_1B_Final_Frequency = 0.8;
 RF_1B_Final_Frequency_list = [0.8];%0.8,0.4
 RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq');
 
@@ -702,34 +702,56 @@ end
 %% Evaporation Stage 1b
 
 if ( seqdata.flags.RF_evap_stages(3) == 1 )
-    dispLineStr('RF1B',curtime);
-
-    fake_sweep = 0;     % Enable if fake sweep
-
-    rf_gain_1b_list=[-2.05]; .5*(-4.1);[-4]; %-6.3;
-    rf_1b_gain=getScanParameter(rf_gain_1b_list,seqdata.scancycle,seqdata.randcyclelist,'rf_1b_gain');
-
-    %Evaporate to 0.7MHz to load into ODT (0.8MHz to look at Rb)
     
-    % Frequency points to sweep over
-    freqs_1b = [freqs_1(end)/MHz*1.1 7 RF_1B_Final_Frequency 10]*MHz;  [freqs_1(end)/MHz*1.1 freqs_1(end)/MHz*1.1 freqs_1(end)/MHz*1.1 10]*MHz;    % Sweep times in ms
-    sweep_times_1b = [6000 2000 10]*rf_evap_time_scale(2);              
-     
+%     %%%%%%%%%%%%%%%%% OLD RF 1B %%%%%%%%%%%%%%%%%%%%
+%     dispLineStr('RF1B begins at',curtime);
+% 
+%     fake_sweep = 0;     % Enable if fake sweep
+% 
+%     rf_gain_1b_list=[-2.05]; .5*(-4.1);[-4]; %-6.3;
+%     rf_1b_gain=getScanParameter(rf_gain_1b_list,seqdata.scancycle,seqdata.randcyclelist,'rf_1b_gain');
+% 
+%     %Evaporate to 0.7MHz to load into ODT (0.8MHz to look at Rb)
+%     
+%     %Frequency points to sweep over
+%     freqs_1b = [freqs_1(end)/MHz*1.1 7 RF_1B_Final_Frequency 10]*MHz;  [freqs_1(end)/MHz*1.1 freqs_1(end)/MHz*1.1 freqs_1(end)/MHz*1.1 10]*MHz;    % Sweep times in ms
+%     sweep_times_1b = [6000 2000 10]*rf_evap_time_scale(2);              
+%      
+%     
+%    % RF gain settings
+%     RF_gain_1b =[.5*(-4.1) .5*(-4.1) rf_1b_gain rf_1b_gain];
+%     RF_gain_1b =ones(1,length(freqs_1b))*rf_1b_gain;                     % Uniform gain
+% 
+%     %do a quick pulse of Rb repump before RF1B
+%     %setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',1);
+%     %curtime = setDigitalChannel(calctime(curtime,1000),'Rb Sci Repump',0);
+%     
+%     %Perform the evaporation
+%     curtime = do_evap_stage(curtime, fake_sweep, freqs_1b, sweep_times_1b, RF_gain_1b, 0, 1);
+% 
+%     dispLineStr('RF1B ends at',curtime);
     
-    % RF gain settings
-    % RF_gain_1b =[.5*(-4.1) .5*(-4.1) rf_1b_gain rf_1b_gain];
-    RF_gain_1b =ones(1,length(freqs_1b))*rf_1b_gain;                     % Uniform gain
+    %%%%%%%%%%%%%%%%% NEW RF 1B (w gradient) %%%%%%%%%%%%%%%%%%%%
+    dispLineStr('RF1B begins.',curtime);
 
-    % %do a quick pulse of Rb repump before RF1B
-    % setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',1);
-    % curtime = setDigitalChannel(calctime(curtime,1000),'Rb Sci Repump',0);
+    sweep_times_1b = [6000 2000 10]*rf_evap_time_scale(2);  
+    currs_1b = [1 1 1 1]*I_QP;
+    freqs_1b = [freqs_1(end)/MHz*1.1 7 RF_1B_Final_Frequency 10]*MHz;
+    rf_1b_gain = -2;    
+    gains = ones(1,length(freqs_1b))*rf_1b_gain;
     
     
-    % Perform the evaporation
-    curtime = do_evap_stage(curtime, fake_sweep, freqs_1b, sweep_times_1b, RF_gain_1b, 0, 1);
-
-
-
+    RF1Bopts=struct;
+    RF1Bopts.Freqs = freqs_1b;
+    RF1Bopts.SweepTimes = sweep_times_1b;
+    RF1Bopts.Gains = gains;
+    RF1Bopts.RFEnable = ones(1,length(sweep_times_1b));
+    RF1Bopts.QPCurrents = currs_1b;
+    
+    [curtime, I_QP, V_QP] = MT_rfevaporation(curtime, RF1Bopts, I_QP, V_QP);
+    
+    dispLineStr('RF1B ends.',curtime);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     ramp_after_1B = 0;
     if ramp_after_1B
         [curtime, I_QP, I_kitt, V_QP, I_fesh] = ...
@@ -739,7 +761,7 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
 %     curtime = calctime(curtime,100);
 
     % Hold at the new ramp factor
-    hold_time_list = [0];
+    hold_time_list = [500];
     hold_time = getScanParameter(hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'QP_hold_time');
 %     setDigitalChannel(calctime(curtime,-2.5),'Plug Shutter',0);% 0:OFF; 1: ON
     curtime = calctime(curtime,hold_time);  % This goes away if you want to keep knife on
@@ -873,8 +895,9 @@ if ( seqdata.flags.do_plug == 1)
     curtime = calctime(curtime,hold_time);   
     plug_offset = -2.5;-2.5;175;%0 for experiment, -10 to align for in trap image
 
+    
     if ( seqdata.flags.do_dipole_trap ~= 1 )
-        dispLineStr('Turning off plug.',curtime);
+        dispLineStr('Turning off plug at',calctime(curtime,plug_offset));
 
         setDigitalChannel(calctime(curtime,plug_offset),'Plug Shutter',0);% 0:OFF; 1: ON
         ScopeTriggerPulse(calctime(curtime,0),'plug test');
@@ -882,8 +905,6 @@ if ( seqdata.flags.do_plug == 1)
 end
 %% Dipole trap ramp on (and QP rampdown)
 if ( seqdata.flags.do_dipole_trap == 1 )
-    dispLineStr('Loading dipole traps.',curtime);
-
     dipole_on_time = 10; %500
 
     %RHYS - an important code. Ramp down the mag trap, load the XDT, and

@@ -206,7 +206,7 @@ end
     seqdata.analogchannels(5).maxvoltage = 10;
     %Make the conversion function detuning
     seqdata.analogchannels(5).defaultvoltagefunc = 4; %CHANGED FOR AOM TEST
-    K_trap_freq_offset =0;-2000/1000;-1700;
+    K_trap_freq_offset =0;-2000/1000;
     K_repump_freq_offset = 00/1000;
     %40MHz detuning is 105MHz, higher frequency is less detuned
     %seqdata.analogchannels(5).voltagefunc{2} = @(a)((-19.17+0.22514*(134-a/2)-2.48788E-4*(134-a/2)^2)); %for Stefan's homemoade VCO
@@ -525,7 +525,7 @@ seqdata.analogchannels(34).name = 'Rb Beat Note FM';
 seqdata.analogchannels(34).minvoltage = 0;
 seqdata.analogchannels(34).maxvoltage = 10;
 seqdata.analogchannels(34).defaultvoltagefunc = 2;
-Rb_Trap_Frequency_Offset = 7; -7;3.5;3.0;-2.5; %Frequency offset for all Rb trap/probe beams in MHz.
+Rb_Trap_Frequency_Offset = 8; -7;3.5;3.0;-2.5; %Frequency offset for all Rb trap/probe beams in MHz.
 seqdata.analogchannels(34).voltagefunc{2} = @(a)((a*1-4418.47 + Rb_Trap_Frequency_Offset)/541.355);
 
 %channel 35 (Rb Offset FF)

@@ -1,15 +1,23 @@
 function foo=plotgui2(sdata)
 global seqdata
-aTracesShow=struct('Axis',{},'Plot',{},'Label',{});
+aTracesShow=struct('Axis',{},'Plot',{},'Label',{},'SelecUnit',{});
 dTracesShow=struct('Plot',{},'Label',{});
 
 
 funcname='@Load_MagTrap_sequence';       
 hText=20;
 
-if nargin==1
-    seqdata=sdata;
-    [aTraces, dTraces]=generateTraces(sdata);    
+switch nargin
+    case 1
+        seqdata=sdata;
+        [aTraces, dTraces]=generateTraces(sdata); 
+    case 0
+        if isfield(seqdata,'analogchannels') && ...
+                ~isempty([seqdata.analogchannels]) && ...
+                isfield(seqdata,'analogadwinlist') && ...
+                ~isempty([seqdata.analogadwinlist])
+            [aTraces, dTraces]=generateTraces(seqdata); 
+        end
 end
 
 %% Initialize figure
@@ -28,6 +36,8 @@ clf
 m1=uimenu('text','File');   % Setting menu
 m2=uimenu('text','Digital');    % Digital channel menu
 m3=uimenu('text','Analog');     % Analog Channel menu
+m4=uimenu('text','Pre-sets');   % Shortcuts to saved traces
+
 
 % Setting sub menu
 % uimenu(m1,'text','Auto Update','checked','on');
@@ -233,6 +243,7 @@ warning on
             pos=getAxPos(hpA,nn);
             aTracesShow(nn).Axis.Position=pos;
             aTracesShow(nn).Axis.Position(2)=pos(2)-hAslider.Value;
+            aTracesShow(nn).SelectUnit.Position(2) = pos(2)-hAslider.Value;
         end   
     end
 
@@ -388,6 +399,7 @@ hAslider = uicontrol('parent',hpA,'Units','pixels','Style','Slider',...
         for n=1:length(aTracesShow)
             pos=getAxPos(hpA,n);
             aTracesShow(n).Axis.Position(2)=pos(2)-hAslider.Value;
+            aTracesShow(n).SelectUnit.Position(2)=pos(2)-hAslider.Value;
         end
     end
 
@@ -482,12 +494,6 @@ linkaxes([axDL axD],'y');
     end
 %% Finish
 
-
-
-
-
-
-
 % Link the time limits to a table
 addlistener(axD,'XLim','PostSet',@beep);
 
@@ -575,67 +581,165 @@ function updatePlots
 
 end
 
-function addAnalogChannel(ch)        
+% Get the time and value for an analog channel 
+function [X,Y,funcnum] = getAnalogValue(trc,funcnum)
+% This a very experimental piece of code, which attempts to invert our
+% voltage fucntion writes to determine what the original parameter we
+% wanted to write was.  This is kinda stupid because it basically inverts
+% our calibration data, but is required because we don't sensibly save the
+% calibration. Ie. We store voltage = f(parameter), but this doesn't easily
+% give parameter = g(voltage).
+%
+% This code does the inversion operation numerically by interpolation
+    
+    % Grab the raw data
+    X=trc.data(:,1)*seqdata.deltat;
+    V=trc.data(:,2);   % Voltage output to analog channels    
+    
+    
+    % Numerically invert
+    if nargin~=1 && funcnum~=1 && ~isempty(funcnum)
+        try            
+            f=trc.voltagefunc{funcnum};     % Calibration V=f(param) 
+            v1 = min(V);                    % Lowest voltage written
+            v2 = max(V);                    % Maximal voltage written
+            
+            % Edge case if no change in parameter
+            if range(V)==0
+                p = fzero(@(x) real(f(x))-V(1),0);  % Find mapping
+                Y = (V/V(1))*p;                     % Scale                
+            else
+                % Find zeroes
+                p1 = fzero(@(x) real(f(x))-v1,0);
+                p2 = fzero(@(x) real(f(x))-v2,10);
+
+                % Evaluate function over the found paramter domain
+                pVec=linspace(p1,p2,1E3);
+                vVec=f(pVec);
+
+                % Interpolate the results
+                P = interp1(vVec,pVec,V);
+                Y=P;                
+            end           
+
+
+        catch ME
+            warning(ME.message);
+            warning('Unable to numerically invert');
+            Y=V;
+            funcnum=1;
+        end
+    else
+        Y=V;
+        funcnum=1;
+    end
+    
+end
+
+function addAnalogChannel(ch)     
     % Create the new axis
     j=length(aTracesShow)+1;
     ax=axes('parent',hpA,'units','pixels');
-    ax.Position=getAxPos(hpA,j); 
+    ax.Position=getAxPos(hpA,j);     
+    hold on
 
-    % Grab the trace
+    % Grab the channel data
     n=find(ch==[aTraces.channel],1);    % Find the analog channel
     trc=aTraces(n);                     % Get the trace
-    X=trc.data(:,1)*seqdata.deltat;     % Time data (seconds)
-    Y=trc.data(:,2);                    % Y Data
+    
+    % Generate voltage function strings
+    strs={};
+    for i=1:length(trc.voltagefunc)
+        try 
+            fstr=func2str(trc.voltagefunc{i});
+        catch exception
+            fstr='BAD FUNC';
+        end
+        strs{i}=['(' num2str(i) ') ' fstr];
+    end  
+    funcnum = trc.defaultvoltagefunc;
+    
+    % Grab the data and format by the function
+    [X,Y,funcnum]=getAnalogValue(trc,funcnum);  
+
+    
+    % Pulldown menu for function
+    pu = uicontrol('parent',hpA,'Style','popup','units','pixels',...
+        'fontsize',8,'Position',[5 ax.Position(2) 120 20],...
+        'String',strs,'Value',funcnum,'Callback',{@chAFun ch});
+    
+    c = [co(mod(j-1,7)+1,:) .5];
+    
+    % Channel text label
+    mystr=['a' num2str(trc.channel,'%02.f') newline trc.name];
+    tt=text(0,0,mystr,'fontsize',12,'horizontalalignment','left',...
+        'verticalalignment','top','units','pixels',...
+        'fontname','monospaced','fontweight','bold','Color',c);       
+    tt.Position(1)=5-ax.Position(1);
+    tt.Position(2)=ax.Position(4);    
+        
 
     % Add t=0 and t=infty values
     if ~isempty(X)
         X=[0; X; 500];Y=[Y(end); Y; Y(end)]; 
-    end    
+    end       
 
     % Plot the data; stairs interpolates the digital write calls
-    p=stairs(X,Y,'color',co(1,:),'linewidth',2);
-    p.Color='k';
-    p.Color=[co(mod(j-1,7)+1,:) .5];
-    % Channel text label
-    str=['a' num2str(trc.channel,'%02.f') newline trc.name];
-    tt=text(0,0,str,'fontsize',12,'horizontalalignment','left',...
-        'verticalalignment','top','units','pixels',...
-        'fontname','monospaced','fontweight','bold','Color',p.Color);       
-    tt.Position(1)=15-ax.Position(1);
-    tt.Position(2)=ax.Position(4);
-
+    p=stairs(X,Y,'color',c,'linewidth',2);
+               
+    % Format the axis
     set(gca,'fontsize',10,'linewidth',1,'xaxislocation','top',...
-        'XLim',htbl_time.Data*1E-3); 
+        'XLim',htbl_time.Data*1E-3,'box','on'); 
+    
+    % 
+%     listener = addlistener(ax,'XLim','PostSet',@chXLIM); 
     
     % Track graphical objects
     trc.Axis=ax;                     
     trc.Label=tt;
     trc.Plot=p;
+    trc.SelectUnit=pu;
+%     trc.Listener=listener;
+    
     % Add trace
     if ~isempty(aTracesShow)
         aTracesShow(end+1)=trc;          % Add the trace
     else
         aTracesShow=trc;
-    end
-    adjustSize;    
+    end      
     
+    % Change graphics sizes
+    adjustSize;    
+   
     % Link the x-axis of the analog plot with the digital ones
-    linkaxes([ax axD],'x');
+    linkaxes([aTracesShow.Axis axD],'x');
 end
 
 function removeAnalogChannel(ch)
     n=find(ch==[aTracesShow.channel],1);
     delete(aTracesShow(n).Axis);
+    delete(aTracesShow(n).SelectUnit);
+    
     aTracesShow(n)=[];           
     for n=1:length(aTracesShow)
         c=co(mod(n-1,7)+1,:);
-%         c='k';
         aTracesShow(n).Axis.Position=getAxPos(hpA,n);
         aTracesShow(n).Plot.Color=c; 
-        aTracesShow(n).Label.Color=c; 
+        aTracesShow(n).Label.Color=c;         
     end
-    adjustSize
+    adjustSize;
 end
+
+    function chAFun(a,~,ch)
+        n=find(ch==[aTracesShow.channel],1);    % Find the analog channel        
+        funcnum=a.Value;
+        [X,Y,funcnum]=getAnalogValue(aTracesShow(n),funcnum);  
+        a.Value=funcnum;
+        set(aTracesShow(n).Plot,'XData',X,'YData',Y);
+        drawnow;      
+    end
+
+
 function addDigitalChannel(ch)
     j=length(dTracesShow)+1;
 

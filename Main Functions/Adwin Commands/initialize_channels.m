@@ -495,7 +495,7 @@ end
     seqdata.analogchannels(30).maxvoltage = 10;
     seqdata.analogchannels(30).defaultvoltagefunc = 2;
 %     seqdata.analogchannels(30).voltagefunc{2} = @(a)(1.41911-0.09634*a+8.43139*10^(-4)*a^2-1.57057*10^(-6)*a^3);%@(a)((a*1-136.96864)/19.37436);%@(a)((a*1-184.2)/79.972);
-    seqdata.analogchannels(30).voltagefunc{2} = @(a)(-28.25805+0.22225*a-2.54054*10^(-4)*a^2);
+    seqdata.analogchannels(30).voltagefunc{2} = @(a)(-28.25805+0.22225*a-2.54054*10^(-4)*a.^2);
     
      %channel 31 (Coil 16 trigger)
     seqdata.analogchannels(31).name = 'Coil 16 Trigger';

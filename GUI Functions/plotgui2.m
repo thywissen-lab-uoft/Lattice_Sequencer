@@ -1,12 +1,21 @@
 function foo=plotgui2(sdata)
+
+foo=@update;
+
+
 global seqdata
+
+% Settings
+funcname='@Load_MagTrap_sequence';       
+hText=20;
+
+
+% Initialize data structures
 aTracesShow=struct('Axis',{},'Plot',{},'Label',{},'SelecUnit',{});
 dTracesShow=struct('Plot',{},'Label',{});
 
 
-funcname='@Load_MagTrap_sequence';       
-hText=20;
-
+% Initialize seqdata and traces if possible
 switch nargin
     case 1
         seqdata=sdata;
@@ -32,6 +41,7 @@ set(hF,'WindowState','maximized');
 clf
 
 %%%%%%%%%%%%%%%%%%%%%%%%%% UI MENU %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Create menu bars
 m1=uimenu('text','File');   % Setting menu
 m2=uimenu('text','Digital');    % Digital channel menu
@@ -42,32 +52,30 @@ m4=uimenu('text','Pre-sets');   % Shortcuts to saved traces
 % Setting sub menu
 % uimenu(m1,'text','Auto Update','checked','on');
 mRun=uimenu(m1,'text',['Compile ' funcname ' and update'],...
-    'callback',@runupdate);
+    'callback',@recompile);
 mUpdate=uimenu(m1,'text','Update Plots',...
     'callback',@update);
 uimenu(m1,'text','Change Sequence File','callback',@chfile);
 drawnow;
 
-foo=@update;
 
-    function runupdate(~,~)
-        % Reinitialize the sequence
-        start_new_sequence;
-        seqdata.scancycle=1;      
+% Recompile sequence and update plots
+    function recompile(~,~)
+        start_new_sequence;             % Initialize sequence
+        seqdata.scancycle=1;            % 
         seqdata.randcyclelist=0;    
         seqdata.doscan=0;    
-        initialize_channels;        
-
-        
-        fh = str2func(erase(funcname,'@'));       
-        fh(0);               
-        updatePlots;
+        initialize_channels;            % Initialize channels
+        fh = str2func(erase(funcname,'@'));       % Grab the sequence func
+        fh(0);                          % Run the sequence / update seqdata
+        updatePlots;                    % Update plots and graphics
     end
 
     function update(~,~)
        updatePlots; 
     end
 
+% Call to change the sequence file
     function chfile(~,~)       
         dirName=['Sequence Files' filesep 'Core Sequences'];
         % The directory of the root
@@ -83,13 +91,11 @@ foo=@update;
         mRun.Text=['Update traces with ' funcname];
     end
 
-
 % Get java menu
 jFrame = get(handle(hF),'JavaFrame');
 jMenuBar = jFrame.fHG2Client.getMenuBar;
 jMenuD = jMenuBar.getComponent(1);          % Digital channel menu
 jMenuA = jMenuBar.getComponent(2);          % Analog channel menu
-
 
 % Populate digital channel submenus
 for ll=1:ceil(length(dCh)/20)
@@ -244,6 +250,9 @@ warning on
             aTracesShow(nn).Axis.Position=pos;
             aTracesShow(nn).Axis.Position(2)=pos(2)-hAslider.Value;
             aTracesShow(nn).SelectUnit.Position(2) = pos(2)-hAslider.Value;
+            
+
+            
         end   
     end
 
@@ -642,6 +651,9 @@ function addAnalogChannel(ch)
     ax=axes('parent',hpA,'units','pixels');
     ax.Position=getAxPos(hpA,j);     
     hold on
+    
+    % Color for this object
+    c = [co(mod(j-1,7)+1,:) .5];
 
     % Grab the channel data
     n=find(ch==[aTraces.channel],1);    % Find the analog channel
@@ -661,19 +673,30 @@ function addAnalogChannel(ch)
     
     % Grab the data and format by the function
     [X,Y,funcnum]=getAnalogValue(trc,funcnum);  
-
     
     % Pulldown menu for function
     pu = uicontrol('parent',hpA,'Style','popup','units','pixels',...
         'fontsize',8,'Position',[5 ax.Position(2) 120 20],...
         'String',strs,'Value',funcnum,'Callback',{@chAFun ch});
     
-    c = [co(mod(j-1,7)+1,:) .5];
+    % YLimit table
+    ytbl = uitable('parent',hpA,'units','pixels','RowName',{},...
+        'ColumnName',{},'ColumnWidth',{60 60},'FontSize',8);
+    ytbl.Data=[0 1];
+    ytbl.Position(3:4)=ytbl.Extent(3:4);
+    ytbl.Position(1:2)=pu.Position(1:2)+[0 pu.Position(4)+2];
+
+    % Auto limits?
+    ylimc = uicontrol('style','checkbox','parent',hpA,'units',...
+        'pixels','string','auto-ylim?','value',1,'fontsize',8,...
+        'backgroundcolor','w');
+    ylimc.Position(3:4)=[70 15];
+    ylimc.Position(1:2)=ytbl.Position(1:2)+[0 ytbl.Position(4)];
     
     % Channel text label
     mystr=['a' num2str(trc.channel,'%02.f') newline trc.name];
     tt=text(0,0,mystr,'fontsize',12,'horizontalalignment','left',...
-        'verticalalignment','top','units','pixels',...
+        'verticalalignment','cap','units','pixels',...
         'fontname','monospaced','fontweight','bold','Color',c);       
     tt.Position(1)=5-ax.Position(1);
     tt.Position(2)=ax.Position(4);    

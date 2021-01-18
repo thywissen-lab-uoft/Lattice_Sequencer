@@ -1,8 +1,6 @@
 function foo=plotgui2(sdata)
 
 foo=@update;
-
-
 global seqdata
 
 % Settings
@@ -43,21 +41,25 @@ clf
 %%%%%%%%%%%%%%%%%%%%%%%%%% UI MENU %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Create menu bars
-m1=uimenu('text','File');   % Setting menu
+m1=uimenu('text','File');       % File menu
 m2=uimenu('text','Digital');    % Digital channel menu
 m3=uimenu('text','Analog');     % Analog Channel menu
 m4=uimenu('text','Pre-sets');   % Shortcuts to saved traces
 
 
 % Setting sub menu
-% uimenu(m1,'text','Auto Update','checked','on');
 mRun=uimenu(m1,'text',['Compile ' funcname ' and update'],...
     'callback',@recompile);
-mUpdate=uimenu(m1,'text','Update Plots',...
-    'callback',@update);
+mUpdate=uimenu(m1,'text','Update Plots','callback',@update);
 uimenu(m1,'text','Change Sequence File','callback',@chfile);
 drawnow;
 
+
+Tseq=0;
+
+    function tend=getSequenceDuration
+        tend=max([max(seqdata.analogadwinlist(:,1)) max(seqdata.digadwinlist(:,1))]);
+    end
 
 % Recompile sequence and update plots
     function recompile(~,~)
@@ -68,7 +70,11 @@ drawnow;
         initialize_channels;            % Initialize channels
         fh = str2func(erase(funcname,'@'));       % Grab the sequence func
         fh(0);                          % Run the sequence / update seqdata
+        
+        
         updatePlots;                    % Update plots and graphics
+        
+    
     end
 
     function update(~,~)
@@ -246,13 +252,12 @@ warning on
         
         % Resize analog plots to fit within panel
         for nn=1:length(aTracesShow)
-            pos=getAxPos(hpA,nn);
+            pos=getAxPos(hpA,nn);pxY=hAslider.Value;
             aTracesShow(nn).Axis.Position=pos;
-            aTracesShow(nn).Axis.Position(2)=pos(2)-hAslider.Value;
-            aTracesShow(nn).SelectUnit.Position(2) = pos(2)-hAslider.Value;
-            
-
-            
+            aTracesShow(nn).Axis.Position(2)=pos(2)-pxY;     
+            aTracesShow(nn).SelectUnit.Position(2) = pos(2)-pxY;            
+            aTracesShow(nn).YLimTbl.Position(2) = pos(2)+25-pxY;
+            aTracesShow(nn).YLimCheck.Position(2) = pos(2)+50-pxY;            
         end   
     end
 
@@ -409,6 +414,8 @@ hAslider = uicontrol('parent',hpA,'Units','pixels','Style','Slider',...
             pos=getAxPos(hpA,n);
             aTracesShow(n).Axis.Position(2)=pos(2)-hAslider.Value;
             aTracesShow(n).SelectUnit.Position(2)=pos(2)-hAslider.Value;
+            aTracesShow(n).YLimTbl.Position(2) = pos(2)+25-hAslider.Value;
+            aTracesShow(n).YLimCheck.Position(2) = pos(2)+50-hAslider.Value;  
         end
     end
 
@@ -513,7 +520,10 @@ adjustSize;
 %%
 
 function updatePlots
-    [aTraces, dTraces]=generateTraces(seqdata);
+    [aTraces, dTraces]=generateTraces(seqdata);    
+    Tseq=getSequenceDuration;
+
+    
     for nn=1:length(aTracesShow)
        in=find(aTracesShow(nn).channel==[aTraces.channel],1);
        aTracesShow(nn).data=aTraces(in).data;
@@ -605,6 +615,20 @@ function [X,Y,funcnum] = getAnalogValue(trc,funcnum)
     X=trc.data(:,1)*seqdata.deltat;
     V=trc.data(:,2);   % Voltage output to analog channels    
     
+    xNaN=find(isnan(X));    
+    if ~isempty(xNaN)
+       warning('Found NaN times');
+       X(xNaN)=[];
+       V(xNaN)=[];
+    end
+    
+    vNaN=find(isnan(V));
+    if ~isempty(vNaN)
+        warning('Found NaN voltages.');
+        X(vNaN)=[];
+        V(vNaN)=[];
+    end
+    
     
     % Numerically invert
     if nargin~=1 && funcnum~=1 && ~isempty(funcnum)
@@ -643,7 +667,67 @@ function [X,Y,funcnum] = getAnalogValue(trc,funcnum)
         funcnum=1;
     end
     
+    % Add endpoints at t=0 and t=ifnity
+    X = [0; X; 500];
+    Y = [Y(end); Y; Y(end)];
+    
+    
 end
+
+% Callback function for automatic ylimits adjust
+    function limCheckCB(cBox,~,ch)
+        n=find(ch==[aTracesShow.channel],1);   
+        if cBox.Value
+            set(aTracesShow(n).Axis,'YLimMode','Auto');
+            aTracesShow(n).YLimTbl.Data=aTracesShow(n).Axis.YLim;
+            aTracesShow(n).YLimTbl.ColumnEditable=[false false];
+        else
+            set(aTracesShow(n).Axis,'YLimMode','Manual');
+            aTracesShow(n).YLimTbl.ColumnEditable=[true true];
+        end
+    end
+
+    function boop(~,evt,ch)
+        n=find(ch==[aTracesShow.channel],1);   
+        
+        if aTracesShow(n).YLimCheck.Value
+            set(aTracesShow(n).Axis,'YLimMode','Auto');
+        else
+            set(aTracesShow(n).Axis,'YLimMode','Manual');
+        end       
+        aTracesShow(n).YLimTbl.Data=evt.AffectedObject.YLim;
+
+    end
+
+    function foob(tbl,data,ch)
+        n=find(ch==[aTracesShow.channel],1);   
+
+        % Check if data is properly formatted
+        if isnan(data.NewData) && isnumeric(data.NewData)
+            disp([datestr(now,13) ' You inputted a non-numerical input' ...
+                ' to the limits of the plot. Shameful']);
+            tbl.Data(data.Indices(2))=data.PreviousData;
+            return;
+        end      
+        
+        % Make sure limits are in ascending order
+        if tbl.Data(2)<tbl.Data(1) 
+            disp([datestr(now,13) ' Wow, you colossal buffoon,' ...
+                ' plot limits must in increasing order. Shameful']);
+           tbl.Data(data.Indices(2))=data.PreviousData;
+            return;
+        end
+        
+        % Check that data is actually different
+        if isequal(data.NewData,data.PreviousData)
+            return;
+        end          
+        
+        aTracesShow(n).Axis.YLim=tbl.Data;
+        
+
+    
+    end
 
 function addAnalogChannel(ch)     
     % Create the new axis
@@ -674,24 +758,33 @@ function addAnalogChannel(ch)
     % Grab the data and format by the function
     [X,Y,funcnum]=getAnalogValue(trc,funcnum);  
     
+    % Add t=0 and t=infty values
+    %if ~isempty(X)
+     %   X=[0; X; 500];Y=[Y(end); Y; Y(end)]; 
+    %end       
+
+    
     % Pulldown menu for function
     pu = uicontrol('parent',hpA,'Style','popup','units','pixels',...
-        'fontsize',8,'Position',[5 ax.Position(2) 120 20],...
+        'fontsize',8,'Position',[5 ax.Position(2) 110 20],...
         'String',strs,'Value',funcnum,'Callback',{@chAFun ch});
     
     % YLimit table
     ytbl = uitable('parent',hpA,'units','pixels','RowName',{},...
-        'ColumnName',{},'ColumnWidth',{60 60},'FontSize',8);
-    ytbl.Data=[0 1];
-    ytbl.Position(3:4)=ytbl.Extent(3:4);
-    ytbl.Position(1:2)=pu.Position(1:2)+[0 pu.Position(4)+2];
+        'fontsize',8,'ColumnEditable',[false false],...
+        'ColumnName',{},'ColumnWidth',{45 45},'Data',[0 1],...
+        'Position',[5 pu.Position(2)+25 84 22],...
+        'CellEditCallback',{@foob ch});
+    ytbl.Position(3:4)=ytbl.Extent(3:4);  
 
-    % Auto limits?
+    addlistener(ax,'YLim','PostSet',@(a,b) boop(a,b,ch) );
+    
+    
+    % YLimits Automatic adjust checkbox
     ylimc = uicontrol('style','checkbox','parent',hpA,'units',...
         'pixels','string','auto-ylim?','value',1,'fontsize',8,...
-        'backgroundcolor','w');
-    ylimc.Position(3:4)=[70 15];
-    ylimc.Position(1:2)=ytbl.Position(1:2)+[0 ytbl.Position(4)];
+        'backgroundcolor','w','CallBack',{@limCheckCB, ch},...
+        'Position',[5 ytbl.Position(2)+25 70 15]);
     
     % Channel text label
     mystr=['a' num2str(trc.channel,'%02.f') newline trc.name];
@@ -699,30 +792,28 @@ function addAnalogChannel(ch)
         'verticalalignment','cap','units','pixels',...
         'fontname','monospaced','fontweight','bold','Color',c);       
     tt.Position(1)=5-ax.Position(1);
-    tt.Position(2)=ax.Position(4);    
-        
+    tt.Position(2)=ax.Position(4);            
 
-    % Add t=0 and t=infty values
-    if ~isempty(X)
-        X=[0; X; 500];Y=[Y(end); Y; Y(end)]; 
-    end       
 
     % Plot the data; stairs interpolates the digital write calls
     p=stairs(X,Y,'color',c,'linewidth',2);
                
     % Format the axis
     set(gca,'fontsize',10,'linewidth',1,'xaxislocation','top',...
-        'XLim',htbl_time.Data*1E-3,'box','on'); 
+        'XLim',htbl_time.Data*1E-3,'box','on');    
     
-    % 
-%     listener = addlistener(ax,'XLim','PostSet',@chXLIM); 
+    ytbl.Data=get(gca,'YLim');
     
     % Track graphical objects
     trc.Axis=ax;                     
     trc.Label=tt;
     trc.Plot=p;
     trc.SelectUnit=pu;
-%     trc.Listener=listener;
+    trc.YLimTbl = ytbl;
+    trc.YLimCheck = ylimc;
+    
+    
+    
     
     % Add trace
     if ~isempty(aTracesShow)
@@ -742,6 +833,8 @@ function removeAnalogChannel(ch)
     n=find(ch==[aTracesShow.channel],1);
     delete(aTracesShow(n).Axis);
     delete(aTracesShow(n).SelectUnit);
+    delete(aTracesShow(n).YLimTbl);
+    delete(aTracesShow(n).YLimCheck);
     
     aTracesShow(n)=[];           
     for n=1:length(aTracesShow)
@@ -757,6 +850,14 @@ end
         n=find(ch==[aTracesShow.channel],1);    % Find the analog channel        
         funcnum=a.Value;
         [X,Y,funcnum]=getAnalogValue(aTracesShow(n),funcnum);  
+       
+       % Add t=0 and t=infty values
+        if ~isempty(X)
+            disp('hi');
+            X=[0; X; 500];Y=[Y(end); Y; Y(end)]; 
+        end       
+
+        
         a.Value=funcnum;
         set(aTracesShow(n).Plot,'XData',X,'YData',Y);
         drawnow;      

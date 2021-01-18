@@ -1,33 +1,34 @@
 function foo=plotgui2(sdata)
-
 foo=@update;
 global seqdata
 
 % Settings
 funcname='@Load_MagTrap_sequence';       
 hText=20;
-
+Tseq=0;
 
 % Initialize data structures
 aTracesShow=struct('Axis',{},'Plot',{},'Label',{},'SelecUnit',{});
 dTracesShow=struct('Plot',{},'Label',{});
-
 
 % Initialize seqdata and traces if possible
 switch nargin
     case 1
         seqdata=sdata;
         [aTraces, dTraces]=generateTraces(sdata); 
+        Tseq=getSequenceDuration;
     case 0
         if isfield(seqdata,'analogchannels') && ...
                 ~isempty([seqdata.analogchannels]) && ...
                 isfield(seqdata,'analogadwinlist') && ...
                 ~isempty([seqdata.analogadwinlist])
             [aTraces, dTraces]=generateTraces(seqdata); 
+            Tseq=getSequenceDuration;
         end
 end
 
 %% Initialize figure
+
 dCh=seqdata.digchannels;
 aCh=seqdata.analogchannels;
 
@@ -46,7 +47,6 @@ m2=uimenu('text','Digital');    % Digital channel menu
 m3=uimenu('text','Analog');     % Analog Channel menu
 m4=uimenu('text','Pre-sets');   % Shortcuts to saved traces
 
-
 % Setting sub menu
 mRun=uimenu(m1,'text',['Compile ' funcname ' and update'],...
     'callback',@recompile);
@@ -54,11 +54,9 @@ mUpdate=uimenu(m1,'text','Update Plots','callback',@update);
 uimenu(m1,'text','Change Sequence File','callback',@chfile);
 drawnow;
 
-
-Tseq=0;
-
     function tend=getSequenceDuration
         tend=max([max(seqdata.analogadwinlist(:,1)) max(seqdata.digadwinlist(:,1))]);
+        tend=seqdata.deltat*tend;
     end
 
 % Recompile sequence and update plots
@@ -69,16 +67,14 @@ Tseq=0;
         seqdata.doscan=0;    
         initialize_channels;            % Initialize channels
         fh = str2func(erase(funcname,'@'));       % Grab the sequence func
-        fh(0);                          % Run the sequence / update seqdata
-        
-        
-        updatePlots;                    % Update plots and graphics
-        
-    
+        fh(0);                          % Run the sequence / update seqdata  
+        Tseq=getSequenceDuration;
+        refreshPlotData;                % Update plots and graphics 
     end
 
     function update(~,~)
-       updatePlots; 
+        Tseq=getSequenceDuration;
+       refreshPlotData; 
     end
 
 % Call to change the sequence file
@@ -90,7 +86,7 @@ Tseq=0;
         fstr='Select a sequence file to use...';
         [file,~] = uigetfile('*.m',fstr,defname);          
         if ~file
-            disp([datestr(now,13) ' Cancelling'])
+            disp([datestr(now,13) ' Cancelling']);
             return;
         end        
         funcname=['@' erase(file,'.m')];        
@@ -170,11 +166,13 @@ hZ.ActionPostCallback=@chZoomPost;
 
     function chZoomPre(~,obj)
         ax=obj.Axes;            
-        htbl_time.Data=ax.XLim;
+        htbl_time.Data(1:2)=ax.XLim;
+        htbl_time.Data(3)=range(htbl_time.Data(1:2));
     end
     function chZoomPost(~,obj)
         ax=obj.Axes;            
-        htbl_time.Data=ax.XLim;
+        htbl_time.Data(1:2)=ax.XLim;
+        htbl_time.Data(3)=range(htbl_time.Data(1:2));
     end
 
 % Add a left hand slider to control the relative size of the analog and
@@ -342,24 +340,24 @@ warning on
 %% Settings 
 
 % Time limits table
-htbl_time=uitable('parent',hF);
-htbl_time.ColumnName={'start (ms)','end (ms)'};
-htbl_time.RowName={};
-htbl_time.ColumnEditable=[true true];
-htbl_time.ColumnFormat={'numeric','numeric'};
-htbl_time.Data=[0 50]*1E3;
-htbl_time.ColumnWidth={120 120 120};
+htbl_time=uitable('parent',hF,'RowName',{},'ColumnEditable',[true true true],...
+    'ColumnFormat',{'numeric','numeric','numeric'},'ColumnWidth',{120 120 120},...
+    'ColumnName',{'start (ms)','end (ms)', 'span (ms)'},'Data',[0 50000 50000],...
+    'CellEditCallback',@tblCB);
 htbl_time.Position(3:4)=htbl_time.Extent(3:4);
 htbl_time.Position(1:2)=[0 0];
-htbl_time.CellEditCallback=@tblCB;
 
 % Add listener to update it before changing the value
     function beep(~,~)
-       htbl_time.Data=1E3*axD.XLim; 
+       htbl_time.Data(1:2)=1E3*axD.XLim; 
+       htbl_time.Data(3)=range(htbl_time.Data(1:2));     
+       
     end
 
 % Callback for editing the time table
     function tblCB(tbl,data)
+        
+        
 
         % Check if data is properly formatted
         if isnan(data.NewData) & isnumeric(data.NewData)
@@ -369,24 +367,45 @@ htbl_time.CellEditCallback=@tblCB;
             return;
         end      
         
-        % Make sure limits are in ascending order
-        if tbl.Data(2)<tbl.Data(1) 
-            disp([datestr(now,13) ' Wow, you colossal buffoon,' ...
-                ' plot limits must in increasing order. Shameful']);
-           tbl.Data(data.Indices(2))=data.PreviousData;
-            return;
+        % If you switch the start or end point      
+        if data.Indices(2)==1 || data.Indices(2)==2        
+            % Make sure limits are in ascending order
+            if tbl.Data(2)<tbl.Data(1) 
+                disp([datestr(now,13) ' Wow, you colossal buffoon,' ...
+                    ' plot limits must in increasing order. Shameful']);
+               tbl.Data(data.Indices(2))=data.PreviousData;
+                return;
+            end
+
+            % Check that data is actually different
+            if isequal(data.NewData,data.PreviousData)
+                return;
+            end          
+
+            % Change the plot limits
+            disp([datestr(now,13) ' Changing the plot limits.']);  
+            for n=1:length(aTracesShow)
+               aTracesShow(n).Axis.XLim=tbl.Data(1:2)*1E-3;
+            end
         end
         
-        % Check that data is actually different
-        if isequal(data.NewData,data.PreviousData)
-            return;
-        end          
+        % If you change the span
+        if data.Indices(2)==3
+            % Make sure span is positive
+            if tbl.Data(3)<=0
+               disp([datestr(now,13) ' Wow, you colossal buffon,' ...
+                   ' x limit span must be positive. Dummy']);
+               tbl.Data(data.Indices(2))=data.PreviousData;
+               return;
+            end
+            
+            % Change span about center
+            xC=mean(tbl.Data(1:2));
+            tbl.Data(1:2)=xC+[-.5 .5]*tbl.Data(3);
+            
+        end
+
         
-        % Change the plot limits
-        disp([datestr(now,13) ' Changing the plot limits.']);  
-        for n=1:length(aTracesShow)
-           aTracesShow(n).Axis.XLim=tbl.Data(1:2)*1E-3;
-        end  
        axD.XLim=tbl.Data(1:2)*1E-3;
 
     end      
@@ -454,7 +473,7 @@ hpD=uipanel('parent',hF,'units','pixels','Title','Digital',...
 
 % Axis for digital channel data
 axD=axes('parent',hpD,'units','pixels','box','on','linewidth',1,'YGrid',...
-    'On','YTickLabel',{},'GridAlpha',1,'fontsize',10,'XLim',htbl_time.Data*1E-3);
+    'On','YTickLabel',{},'GridAlpha',1,'fontsize',10,'XLim',htbl_time.Data(1:2)*1E-3);
 xlabel('time (s)');
 co=get(gca,'colororder');
 hold on
@@ -519,35 +538,31 @@ adjustSize;
 
 %%
 
-function updatePlots
-    [aTraces, dTraces]=generateTraces(seqdata);    
-    Tseq=getSequenceDuration;
-
+% Grab the new sequenece information from seqdata and update graphical
+% objects.
+function refreshPlotData
+    % Update all channels data
+    [aTraces, dTraces]=generateTraces(seqdata); % Get traces
+    Tseq=getSequenceDuration;                   % Sequence time
     
+    % Update analog and digital data for shown channels
     for nn=1:length(aTracesShow)
        in=find(aTracesShow(nn).channel==[aTraces.channel],1);
        aTracesShow(nn).data=aTraces(in).data;
-    end
-    
+    end    
     for nn=1:length(dTracesShow)
        in=find(dTracesShow(nn).channel==[dTraces.channel],1);
        dTracesShow(nn).data=dTraces(in).data;
     end
 
-    for nn=1:length(aTracesShow)
-        
-        X=aTracesShow(nn).data(:,1)*seqdata.deltat;     % Time data (seconds)
-        Y=aTracesShow(nn).data(:,2);                    % Y Data
-
-        % Add t=0 and t=infty values
-        if ~isempty(X)
-            X=[0; X; 500];Y=[Y(end); Y; Y(end)]; 
-        end   
-        
+    % Update the graphical object with new data
+    for nn=1:length(aTracesShow)        
+        funcnum=aTracesShow(nn).SelectUnit.Value;
+        [X,Y,funcnum]=getAnalogValue(aTracesShow(nn),funcnum);
+        aTracesShow(nn).SelectUnit.Value=funcnum;  
         set(aTracesShow(nn).Plot,'XData',X,'YData',Y);
     end
-    drawnow;
-    
+        
     for j=1:length(dTracesShow)
         % Delete old digital plots
         pps=dTracesShow.Plot;
@@ -597,7 +612,8 @@ function updatePlots
         
         dTracesShow(j).Plot=pps;
     end
-
+    
+    drawnow;
 end
 
 % Get the time and value for an analog channel 
@@ -651,7 +667,7 @@ function [X,Y,funcnum] = getAnalogValue(trc,funcnum)
                 vVec=f(pVec);
 
                 % Interpolate the results
-                P = interp1(vVec,pVec,V);
+                P = interp1(vVec,pVec,V,'linear','extrap');
                 Y=P;                
             end           
 
@@ -668,7 +684,8 @@ function [X,Y,funcnum] = getAnalogValue(trc,funcnum)
     end
     
     % Add endpoints at t=0 and t=ifnity
-    X = [0; X; 500];
+    X = [0; X; Tseq];
+    
     Y = [Y(end); Y; Y(end)];
     
     
@@ -757,13 +774,7 @@ function addAnalogChannel(ch)
     
     % Grab the data and format by the function
     [X,Y,funcnum]=getAnalogValue(trc,funcnum);  
-    
-    % Add t=0 and t=infty values
-    %if ~isempty(X)
-     %   X=[0; X; 500];Y=[Y(end); Y; Y(end)]; 
-    %end       
-
-    
+       
     % Pulldown menu for function
     pu = uicontrol('parent',hpA,'Style','popup','units','pixels',...
         'fontsize',8,'Position',[5 ax.Position(2) 110 20],...
@@ -777,8 +788,7 @@ function addAnalogChannel(ch)
         'CellEditCallback',{@foob ch});
     ytbl.Position(3:4)=ytbl.Extent(3:4);  
 
-    addlistener(ax,'YLim','PostSet',@(a,b) boop(a,b,ch) );
-    
+    addlistener(ax,'YLim','PostSet',@(a,b) boop(a,b,ch) );    
     
     % YLimits Automatic adjust checkbox
     ylimc = uicontrol('style','checkbox','parent',hpA,'units',...
@@ -797,10 +807,16 @@ function addAnalogChannel(ch)
 
     % Plot the data; stairs interpolates the digital write calls
     p=stairs(X,Y,'color',c,'linewidth',2);
-               
+    
+    % Plot a background color; this is kinda stupid
+%     x = [0 Tseq; 0 Tseq; -200 200; -200 200];
+%     y = [ax.YLim(1)*[1 1];ax.YLim(2)*[1 1];ax.YLim(2)*[1 1];ax.YLim(1)*[1 1]];    
+%     bg=patch(x,y,[.5 .5 .5],'facealpha',.3,'edgecolor','none');
+
+
     % Format the axis
     set(gca,'fontsize',10,'linewidth',1,'xaxislocation','top',...
-        'XLim',htbl_time.Data*1E-3,'box','on');    
+        'XLim',htbl_time.Data(1:2)*1E-3,'box','on');    
     
     ytbl.Data=get(gca,'YLim');
     
@@ -811,6 +827,7 @@ function addAnalogChannel(ch)
     trc.SelectUnit=pu;
     trc.YLimTbl = ytbl;
     trc.YLimCheck = ylimc;
+%     trc.Bkgd = bg;
     
     
     
@@ -849,15 +866,7 @@ end
     function chAFun(a,~,ch)
         n=find(ch==[aTracesShow.channel],1);    % Find the analog channel        
         funcnum=a.Value;
-        [X,Y,funcnum]=getAnalogValue(aTracesShow(n),funcnum);  
-       
-       % Add t=0 and t=infty values
-        if ~isempty(X)
-            disp('hi');
-            X=[0; X; 500];Y=[Y(end); Y; Y(end)]; 
-        end       
-
-        
+        [X,Y,funcnum]=getAnalogValue(aTracesShow(n),funcnum);                
         a.Value=funcnum;
         set(aTracesShow(n).Plot,'XData',X,'YData',Y);
         drawnow;      

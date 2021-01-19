@@ -214,7 +214,7 @@ RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,seqdata.scan
 
 
 % RF_1B_Final_Frequency = 0.8;
-RF_1B_Final_Frequency_list = [0.8];%0.8,0.4
+RF_1B_Final_Frequency_list = [0.8];[0.8];%0.8,0.4
 RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq');
 
 
@@ -734,7 +734,7 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     %%%%%%%%%%%%%%%%% NEW RF 1B (w gradient) %%%%%%%%%%%%%%%%%%%%
     dispLineStr('RF1B begins.',curtime);
 
-    sweep_times_1b = [6000 2000 10]*rf_evap_time_scale(2);  
+    sweep_times_1b = [6000 2000 2]*rf_evap_time_scale(2);  
     currs_1b = [1 1 1 1]*I_QP;
     freqs_1b = [freqs_1(end)/MHz*1.1 7 RF_1B_Final_Frequency 10]*MHz;
     rf_1b_gain = -2;    
@@ -750,6 +750,9 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     
     [curtime, I_QP, V_QP] = MT_rfevaporation(curtime, RF1Bopts, I_QP, V_QP);
     
+    % Turn off the RF
+    setDigitalChannel(curtime,'RF TTL',0);% rf TTL
+
     dispLineStr('RF1B ends.',curtime);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     ramp_after_1B = 0;
@@ -761,7 +764,7 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
 %     curtime = calctime(curtime,100);
 
     % Hold at the new ramp factor
-    hold_time_list = [500];
+    hold_time_list = [0];
     hold_time = getScanParameter(hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'QP_hold_time');
 %     setDigitalChannel(calctime(curtime,-2.5),'Plug Shutter',0);% 0:OFF; 1: ON
     curtime = calctime(curtime,hold_time);  % This goes away if you want to keep knife on

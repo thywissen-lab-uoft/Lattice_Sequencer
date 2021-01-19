@@ -3737,14 +3737,15 @@ global seqdata;
 
 %     setAnalogChannel(calctime(curtime,0),'K Probe/OP FM',205);
 %% align K probe AOM (K Probe/OP FM, analog channel 30)
-% % probe: set to 180;
-% % optical pumping: set to 202.5
-% % for the AOM alignment: set to 190; For the optical pumping fiber alignment, set to 202.5; for the probe fiber alignment, set to 180;
+% probe: set to 180;
+% optical pumping: set to 202.5
+% for the AOM alignment: set to 190; For the optical pumping fiber alignment, set to 202.5; for the probe fiber alignment, set to 180;
 % curtime = calctime(curtime,1000);
-% 
-% setAnalogChannel(calctime(curtime,0),'K Probe/OP FM',190);
+% setAnalogChannel(calctime(curtime,0),'K Trap FM',21.5);
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP FM',180);
 % setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1);
 % setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.9);
+% setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
 % curtime = calctime(curtime,1000);
 % setDigitalChannel(calctime(curtime,0),'RF TTL',0);
 % setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',0);
@@ -4078,7 +4079,7 @@ setDigitalChannel(calctime(curtime,0),'K D1 GM Shutter 2',1);
 
 % MOT Load
 
-doMOT  = 1;
+doMOT  = 0;
 if doMOT
 % This code initializses the MOT. This includes
 % Rb+K detunings and power
@@ -4243,7 +4244,7 @@ end
 % This code loads the CMOT from the MOT. This includes ramps of the 
 % detunings, power, shims, and field gradients. In order to function 
 % properly it needs to havethe correct parameters from the MOT.
-doCMOTv3 =1;        
+doCMOTv3 =0;        
 if doCMOTv3
 if ~doMOT
    error('You cannot load a CMOT without a MOT');       
@@ -4391,7 +4392,7 @@ end
 %% Combined Molasses - K D1 GM and Rb D2 Mol
 % This code is for running the D1 Grey Molasses for K and the D2 Optical
 % Molasses for Rb at the same time from the CMOT phase
-doMol = 1;
+doMol = 0;
 if doMol
 
 %%%%%%%%%%%% Shift the fields %%%%%%%%%%%%
@@ -4541,7 +4542,7 @@ end
 % setDigitalChannel(calctime(curtime,0),'ScopeTrigger',1);
 % setDigitalChannel(calctime(curtime,1),'ScopeTrigger',0); 
 
-doOP =1;
+doOP =0;
 if doOP
 % This stage using the Rb/K Pump (trap light) beam along the Y-axis to pump
 % atoms into the |2,2> and |9/2,9/2> state
@@ -4569,7 +4570,7 @@ end
 
 
 %% Load into Magnetic Trap
-loadMT = 1;
+loadMT = 0;
 
 if loadMT 
     % Turn off Rb MOT Trap
@@ -4616,7 +4617,7 @@ end
 %% Time of flight
 % This section of code performs a time flight before doing fluorescence
 % imaging with the MOT beams.
-doTOF =1;
+doTOF =0;
 
 if ~doTOF && loadMT
    error('MT load is not followed by TOF. Coils will get too hot');       

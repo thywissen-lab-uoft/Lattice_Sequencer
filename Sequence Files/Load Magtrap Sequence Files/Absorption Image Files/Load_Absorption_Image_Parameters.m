@@ -2,7 +2,7 @@ function params = Load_Absorption_Image_Parameters()
     global seqdata;
     %% Set imaging detunings
     % Potassium - X-cam
-    kdet_shift_list = [0];%-1
+    kdet_shift_list = [-5:5];%-1
     kdet_shift = getScanParameter(kdet_shift_list,seqdata.scancycle,seqdata.randcyclelist,'kdet_shift');
     params.detunings.K.X.positive.normal = 19+2.5;19;
     params.detunings.K.X.positive.in_trap = 23.5;
@@ -18,12 +18,12 @@ function params = Load_Absorption_Image_Parameters()
     params.detunings.K.MOT.positive.normal = 20.5;
     params.detunings.K.MOT.positive.short_tof = 24.0;
     % Rubidium - X-cam
-    params.detunings.Rb.X.positive.normal = 6590 - 238-2;
+    params.detunings.Rb.X.positive.normal = 6590 - 238-4;
 %     rbdet_shift_list = [7];-1
 %     rbdet_shift = getScanParameter(rbdet_shift_list,seqdata.scancycle,seqdata.randcyclelist,'rbdet_shift');
     params.detunings.Rb.X.positive.in_trap = 6590 - 246+7;
     params.detunings.Rb.X.positive.QP_imaging = 6590 - 238.5;
-    params.detunings.Rb.X.positive.SG = 6590 - 241.8 + 4;
+    params.detunings.Rb.X.positive.SG = 6590 - 241.8 +2;
     params.detunings.Rb.X.negative.normal = 6590 - 232;
     % Rubidium - Y-cam
     params.detunings.Rb.Y.positive.normal = 6590 - 230.7;
@@ -70,7 +70,7 @@ function params = Load_Absorption_Image_Parameters()
     params.timings.K_OP_time = 0.3;
     params.timings.k_detuning_shift_time = 0.5;
     params.timings.rb_detuning_shift_time.MOT = 4;
-    params.timings.rb_detuning_shift_time.X = 1500;50;
+    params.timings.rb_detuning_shift_time.X = 50;1500;
     params.timings.rb_detuning_shift_time.Y = 50;
     
     %% Quantization field timings

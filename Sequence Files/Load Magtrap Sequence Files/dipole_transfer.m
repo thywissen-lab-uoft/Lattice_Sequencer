@@ -36,7 +36,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     %--------------------
     %RHYS - Move all of these flags out of this function, and declare them
     %in the seqdata structure to be passed in.
-    seqdata.flags.do_Rb_uwave_transfer_in_ODT = 0; %transfer Rb atoms from F=2 to F=1 at the begining of XDT
+    seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1; %transfer Rb atoms from F=2 to F=1 at the begining of XDT
     get_rid_of_Rb_init = 0;%get rid of Rb with resonant light pulse
     init_Rb_RF_sweep = 0;%Sweep 87Rb to |1,-1> (or |2,-2>) before evaporation
     seqdata.flags.do_K_uwave_transfer_in_ODT = 0;%transfer K atoms from F=9/2 to F=7/2
@@ -89,8 +89,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     end
     %Calibrate to match horizontal trap frequencies.
     %RHYS - Might only be desirable for the isotropic conductivity work. 
-    XDT2_power_func = @(P_XDT1)((sqrt(81966+1136.6*(21.6611-(-119.75576*P_XDT1^2+159.16306*P_XDT1+13.0019)))-286.29766)/2/(-284.1555));
-    %XDT2_power_func = @(P_XDT1)(P_XDT1/2);
+%     XDT2_power_func = @(P_XDT1)((sqrt(81966+1136.6*(21.6611-(-119.75576*P_XDT1^2+159.16306*P_XDT1+13.0019)))-286.29766)/2/(-284.1555));
+    XDT2_power_func = @(P_XDT1)(P_XDT1/2);
     %RHYS - More parameters.
     %Initial powers.
     P1 = 1.5;1.50;1;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
@@ -123,7 +123,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     %Power    Load ODT1  Load ODT2  Begin Evap      Finish Evap
     DT1_power = 1*[P1         P1        P1e          xdt1_end_power];
     %DT1_power = -1*[1         1        1          1]; 
-    DT2_power = 1*[-1      P2        P2e          xdt2_end_power];  
+    DT2_power = 1*[-1     P2        P2e          xdt2_end_power];  
 %     DT2_power = -1*[1         1        1          1];  
 
 
@@ -428,6 +428,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     V_QP = vSet_ramp;
         
     plug_turnoff_time = -200;
+    
      setDigitalChannel(calctime(curtime,plug_turnoff_time),'Plug Shutter',0);%0:OFF; 1:ON; -200
      dispLineStr('Plug turned off at ',calctime(curtime,plug_turnoff_time));
 
@@ -489,7 +490,7 @@ curtime = calctime(curtime,dipole_holdtime_before_evap);
 
         %Field about which to do the sweep
         %mean_field =19.435;%19.468706; %before 2017-1-6 20.97; %21.66
-        mean_field_list = 19.432;%0.2 for 0.7xdt power
+        mean_field_list = 19.432;19.432;%0.2 for 0.7xdt power
         mean_field = getScanParameter(mean_field_list,seqdata.scancycle,seqdata.randcyclelist,'Rb_Transfer_Field');
         del_fesh_current = 0.2;1;%0.10431;% before 2017-1-6 0.1; %0.1
         addOutputParam('del_fesh_current',del_fesh_current)
@@ -531,14 +532,14 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 
     %transfer Rb from F=2 to F=1
     if seqdata.flags.do_Rb_uwave_transfer_in_ODT
-
+        
         do_roundtrip = 0; % whether to sweep field there and back again
-        do_F2_blowaway = 0; % whether to remove remaining F=2 atoms after transfer
+        do_F2_blowaway = 1; % whether to remove remaining F=2 atoms after transfer
 
         % switch Rb microwave source to Anritsu for transfer
         setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',0); %0 = Anritsu, 1 = Sextupler
 
-curtime=calctime(curtime,100); % some time for opening transfer switches and field settling
+curtime=calctime(curtime,0); % some time for opening transfer switches and field settling
 
         uWave_sweep_time = 60; %60
         fesh_uWave_current = mean_field-del_fesh_current/2;
@@ -576,8 +577,8 @@ curtime  =  AnalogFuncTo(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y
             AnalogFuncTo(calctime(curtime,-15),35,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,1.2,1); % Ramp FF to Rb trap beat-lock 
             setDigitalChannel(calctime(curtime,-10),25,1); % open Rb probe shutter
             setDigitalChannel(calctime(curtime,-10),24,1); % disable AOM rf (TTL), just to be sure
-
-curtime = DigitalPulse(calctime(curtime,0),24,1,0); % pulse beam with TTL   15
+            pulse_time = 3;
+curtime = DigitalPulse(calctime(curtime,0),24,pulse_time,0); % pulse beam with TTL   15
 
            setDigitalChannel(calctime(curtime,0),25,0); % close shutter
 
@@ -634,7 +635,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 
         else
             %some additional hold time
-curtime = calctime(curtime,70);
+curtime = calctime(curtime,70);70;
 
         end
 
@@ -644,39 +645,50 @@ curtime = calctime(curtime,70);
     %% Get rid of Rb before uWave manipulation of K
     %RHYS - Kind of unneccessary (could just kill it in the mag trap if desired).    
     if get_rid_of_Rb_init
+        
+        do_repump_before_kill = 0;
+        
 
-        kill_pulse_time = 5; %5
-
+        kill_pulse_time_list = 2; %5 %%DO NOT SET TO ZERO%%
+        kill_pulse_time = getScanParameter(kill_pulse_time_list,seqdata.scancycle,seqdata.randcyclelist,'kill_pulse_time');
         %repump atoms from F=1 to F=2, and blow away these F=2 atoms with
         %the probe
         %open shutter
         %probe
-        setDigitalChannel(calctime(curtime,-10),25,1); %0=closed, 1=open
-        %repump
-        setDigitalChannel(calctime(curtime,-10),5,1);
+        setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP shutter',1); %0=closed, 1=open, d25
+        
+        if do_repump_before_kill
+            %repump
+            setDigitalChannel(calctime(curtime,-10),'Rb Sci Repump',1); 
+        else
+            setDigitalChannel(calctime(curtime,-10),'Rb Sci Repump',0); 
+        end
+        setAnalogChannel(calctime(curtime,-100),'Rb Repump AM',0,1); %0.7
+        
+        
         %open analog
         %probe
-        setAnalogChannel(calctime(curtime,-10),36,0.7);
+        setAnalogChannel(calctime(curtime,-10),'Rb Probe/OP AM',0.7); %a36
         %repump (keep off since no TTL)
 
         %set TTL
         %probe
-        setDigitalChannel(calctime(curtime,-10),24,1);
+        setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',1);%d24
         %repump doesn't have one
 
         %set detuning
-        setAnalogChannel(calctime(curtime,-10),34,6590-237);
+        setAnalogChannel(calctime(curtime,-10), 'Rb Beat Note FM',6590-237); %a34
 
         %pulse beam with TTL 
         %TTL probe pulse
-        DigitalPulse(calctime(curtime,0),24,kill_pulse_time,0);
+        DigitalPulse(calctime(curtime,0),'Rb Probe/OP TTL',kill_pulse_time,0);
         %repump pulse
-        setAnalogChannel(calctime(curtime,0),2,0.7); %0.7
-curtime = setAnalogChannel(calctime(curtime,kill_pulse_time),2,0.0);
+        setAnalogChannel(calctime(curtime,0),'Rb Repump AM',1,1); %0.7
+curtime = setAnalogChannel(calctime(curtime,kill_pulse_time),'Rb Repump AM',0.0,1);
 
         %close shutter
-        setDigitalChannel(calctime(curtime,0),25,0); %0=closed, 1=open
-curtime = setDigitalChannel(calctime(curtime,0),5,0);
+        setDigitalChannel(calctime(curtime,0),'Rb Probe/OP shutter',0); %0=closed, 1=open
+curtime = setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',0);
 
 curtime = calctime(curtime,50);
     end
@@ -2962,7 +2974,7 @@ curtime=calctime(curtime,kill_time);
 %curtime=calctime(curtime,100 + 0*10000); %100%35
         exxdthold_list=1000;[1000];[1000];+500; %necessory for loading lattice => give some time for waveplate to rotate 
         
-        exxdthold_list=[7000 8000];
+        exxdthold_list=[100];
         exxdthold = getScanParameter(exxdthold_list,seqdata.scancycle,seqdata.randcyclelist,'exxdthold');
         curtime=calctime(curtime,exxdthold + 0*14500);%for sparse image
 

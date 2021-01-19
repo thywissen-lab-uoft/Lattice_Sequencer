@@ -14,14 +14,14 @@ pulsetime = 2000;       % Duration of pulse
 current = 20;            % Current in amps
 % channel = 21;           % Channel to use
 
-% channel = 'Coil 16';
-channel = 'Coil 15';
+channel = 'Coil 16';
+% channel = 'Coil 15';
 
 % Set logic for digital switch FETs
 curtime = calctime(curtime,100);
-setDigitalChannel(curtime,'Kitten Relay',1); %0: OFF, 1: ON
-setDigitalChannel(curtime,'15/16 Switch',0); %0: OFF, 1: ON
-setDigitalChannel(curtime,'Coil 16 TTL',1); %1: turns coil off; 0: coil can be on
+setDigitalChannel(curtime,'Kitten Relay',0); %0: OFF, 1: ON
+setDigitalChannel(curtime,'15/16 Switch',1); %0: OFF, 1: ON
+setDigitalChannel(curtime,'Coil 16 TTL',0); %1: turns coil off; 0: coil can be on
 curtime = calctime(curtime,500);
  
 %Ramp off MOT

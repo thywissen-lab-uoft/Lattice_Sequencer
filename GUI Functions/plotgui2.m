@@ -24,6 +24,7 @@ switch nargin
                 ~isempty([seqdata.analogadwinlist])
             [aTraces, dTraces]=generateTraces(seqdata); 
             Tseq=getSequenceDuration;
+            
         end
 end
 
@@ -57,6 +58,7 @@ drawnow;
     function tend=getSequenceDuration
         tend=max([max(seqdata.analogadwinlist(:,1)) max(seqdata.digadwinlist(:,1))]);
         tend=seqdata.deltat*tend;
+        htbl_time.Data(4)=Tseq*1E3;
     end
 
 % Recompile sequence and update plots
@@ -340,9 +342,10 @@ warning on
 %% Settings 
 
 % Time limits table
-htbl_time=uitable('parent',hF,'RowName',{},'ColumnEditable',[true true true],...
-    'ColumnFormat',{'numeric','numeric','numeric'},'ColumnWidth',{120 120 120},...
-    'ColumnName',{'start (ms)','end (ms)', 'span (ms)'},'Data',[0 50000 50000],...
+htbl_time=uitable('parent',hF,'RowName',{},'ColumnEditable',[true true true false],...
+    'ColumnFormat',{'numeric','numeric','numeric','numeric'},...
+    'ColumnWidth',{80 80 80 80},...
+    'ColumnName',{'start (ms)','end (ms)', 'span (ms)', 'total (ms)'},'Data',[0 50000 50000 0],...
     'CellEditCallback',@tblCB);
 htbl_time.Position(3:4)=htbl_time.Extent(3:4);
 htbl_time.Position(1:2)=[0 0];

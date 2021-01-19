@@ -548,17 +548,19 @@ function refreshPlotData
     [aTraces, dTraces]=generateTraces(seqdata); % Get traces
     Tseq=getSequenceDuration;                   % Sequence time
     
-    % Update analog and digital data for shown channels
+    % Update analog data for shown channels
     for nn=1:length(aTracesShow)
        in=find(aTracesShow(nn).channel==[aTraces.channel],1);
        aTracesShow(nn).data=aTraces(in).data;
-    end    
+    end 
+    
+    % Update digital data for shown channels
     for nn=1:length(dTracesShow)
        in=find(dTracesShow(nn).channel==[dTraces.channel],1);
        dTracesShow(nn).data=dTraces(in).data;
     end
 
-    % Update the graphical object with new data
+    % Update the analog graphical object with new data
     for nn=1:length(aTracesShow)        
         funcnum=aTracesShow(nn).SelectUnit.Value;
         [X,Y,funcnum]=getAnalogValue(aTracesShow(nn),funcnum);

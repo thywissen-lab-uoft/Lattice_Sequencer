@@ -1,4 +1,4 @@
-function [curtime, I_QP, V_QP] = MT_rfevaporation(timein, opts, I_QP, V_QP)
+function [curtime, I_QP, V_QP,I_shim] = MT_rfevaporation(timein, opts, I_QP, V_QP)
 % MT_rfevaporation.m
 %
 % This function performs RF evaporation out of the plugged magnetic
@@ -41,6 +41,8 @@ Cx = -0.0499;
 Cy = 0.0045;
 Cz = 0.0105;
 
+% Record the starting shim values
+I_shim = [Ix Iy Iz];
 
 %% Sequence
 
@@ -103,6 +105,9 @@ for kk=1:length(opts.SweepTimes)
         Iy=Iy+dIy;
         Iz=Iz+dIz;   
 
+        % Update shim current vector
+        I_shim = [Ix Iy Iz];
+        
         % Ramp XYZ shims to their next value in the sweep
         AnalogFuncTo(curtime,'X Shim',@(t,tt,y1,y2)ramp_linear(t,tt,y1,y2), ...
             dT,dT,Ix,3);

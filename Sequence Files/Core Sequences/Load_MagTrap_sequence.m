@@ -514,6 +514,7 @@ curtime = setDigitalChannel(curtime,'Kitten Relay',1);
 
     %Turn shim multiplexer to Science shims
     setDigitalChannel(calctime(curtime,1000),37,1); 
+    
     %Close Science Cell Shim Relay for Plugged QP Evaporation
     setDigitalChannel(calctime(curtime,800),'Bipolar Shim Relay',1);
     
@@ -701,46 +702,17 @@ end
 
 %% Evaporation Stage 1b
 
-if ( seqdata.flags.RF_evap_stages(3) == 1 )
+if ( seqdata.flags.RF_evap_stages(3) == 1 )    
+    dispLineStr('RF1B begins.',curtime);  
     
-%     %%%%%%%%%%%%%%%%% OLD RF 1B %%%%%%%%%%%%%%%%%%%%
-%     dispLineStr('RF1B begins at',curtime);
-% 
-%     fake_sweep = 0;     % Enable if fake sweep
-% 
-%     rf_gain_1b_list=[-2.05]; .5*(-4.1);[-4]; %-6.3;
-%     rf_1b_gain=getScanParameter(rf_gain_1b_list,seqdata.scancycle,seqdata.randcyclelist,'rf_1b_gain');
-% 
-%     %Evaporate to 0.7MHz to load into ODT (0.8MHz to look at Rb)
-%     
-%     %Frequency points to sweep over
-%     freqs_1b = [freqs_1(end)/MHz*1.1 7 RF_1B_Final_Frequency 10]*MHz;  [freqs_1(end)/MHz*1.1 freqs_1(end)/MHz*1.1 freqs_1(end)/MHz*1.1 10]*MHz;    % Sweep times in ms
-%     sweep_times_1b = [6000 2000 10]*rf_evap_time_scale(2);              
-%      
-%     
-%    % RF gain settings
-%     RF_gain_1b =[.5*(-4.1) .5*(-4.1) rf_1b_gain rf_1b_gain];
-%     RF_gain_1b =ones(1,length(freqs_1b))*rf_1b_gain;                     % Uniform gain
-% 
-%     %do a quick pulse of Rb repump before RF1B
-%     %setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',1);
-%     %curtime = setDigitalChannel(calctime(curtime,1000),'Rb Sci Repump',0);
-%     
-%     %Perform the evaporation
-%     curtime = do_evap_stage(curtime, fake_sweep, freqs_1b, sweep_times_1b, RF_gain_1b, 0, 1);
-% 
-%     dispLineStr('RF1B ends at',curtime);
-    
-    %%%%%%%%%%%%%%%%% NEW RF 1B (w gradient) %%%%%%%%%%%%%%%%%%%%
-    dispLineStr('RF1B begins.',curtime);
-
+    % Define RF1B parameters (frequency, gain, timescale, gradient, etc)
     sweep_times_1b = [6000 2000 2]*rf_evap_time_scale(2);  
     currs_1b = [1 1 1 1]*I_QP;
     freqs_1b = [freqs_1(end)/MHz*1.1 7 RF_1B_Final_Frequency 10]*MHz;
     rf_1b_gain = -2;    
     gains = ones(1,length(freqs_1b))*rf_1b_gain;
     
-    
+    % Create RF1B structure object
     RF1Bopts=struct;
     RF1Bopts.Freqs = freqs_1b;
     RF1Bopts.SweepTimes = sweep_times_1b;
@@ -748,12 +720,13 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     RF1Bopts.RFEnable = ones(1,length(sweep_times_1b));
     RF1Bopts.QPCurrents = currs_1b;
     
-    [curtime, I_QP, V_QP] = MT_rfevaporation(curtime, RF1Bopts, I_QP, V_QP);
+    % Perform RF1B
+    [curtime, I_QP, V_QP, I_shim] = MT_rfevaporation(curtime, RF1Bopts, I_QP, V_QP);
     
     % Turn off the RF
     setDigitalChannel(curtime,'RF TTL',0);% rf TTL
 
-    dispLineStr('RF1B ends.',curtime);
+    dispLineStr('RF1B ends.',curtime);    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     ramp_after_1B = 0;
     if ramp_after_1B
@@ -769,9 +742,6 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
 %     setDigitalChannel(calctime(curtime,-2.5),'Plug Shutter',0);% 0:OFF; 1: ON
     curtime = calctime(curtime,hold_time);  % This goes away if you want to keep knife on
     
-
-% So here, you want to disable line 742 but then turn on lines 748 to 757,
-% since the DDS_sweep advances time by hold time. Did you do that?
 
 % % % % 
     % Keep RF on
@@ -912,7 +882,7 @@ if ( seqdata.flags.do_dipole_trap == 1 )
 
     %RHYS - an important code. Ramp down the mag trap, load the XDT, and
     %evaporate.
-    [curtime, I_QP, V_QP, P_dip, dip_holdtime] = dipole_transfer(curtime, I_QP, V_QP);
+    [curtime, I_QP, V_QP, P_dip, dip_holdtime, I_shim] = dipole_transfer(curtime, I_QP, V_QP, I_shim);
 end
 
 

@@ -144,11 +144,16 @@ end
 %ADWIN data array
 %FC - If an analog channel isn't addressed throughout the sequence then this
 %throws an error.
-if (~isempty(seqdata.analogadwinlist))
-    seqdata.analogadwinlist(:,3) = (seqdata.analogadwinlist(:,3)+10)/20*2^(16);
-else
-    error('No analog channel was referenced during sequence.');
-end
+% if (~isempty(seqdata.analogadwinlist))
+%     seqdata.analogadwinlist(:,3) = (seqdata.analogadwinlist(:,3)+10)/20*2^(16);
+% else
+%     error('No analog channel was referenced during sequence.');
+% end
+
+% Convert analog voltage commands [-10V, 10V] into [0 2^16] for adwin write
+analogAdwin = seqdata.analogadwinlist;
+analogAdwin(:,3) = (seqdata.analogadwinlist(:,3)+10)/20*2^(16);
+
 
 %% Reformat Digital Channel Update Array
 %Change the digital update array into an array of update words
@@ -201,10 +206,13 @@ if (~isempty(seqdata.digadwinlist))
 %     new_digarray
 
     %append the digital array to the current analog array
-    adwinlist = [seqdata.analogadwinlist; new_digarray(1:curindex,:)];
-else
-    adwinlist = [seqdata.analogadwinlist];
+%     adwinlist = [seqdata.analogadwinlist; new_digarray(1:curindex,:)];    
+    adwinlist = [analogAdwin; new_digarray(1:curindex,:)];    
+else    
+%     adwinlist = [seqdata.analogadwinlist];    
+    adwinlist = [analogAdwin];
 end
+
 
 %% Process Main Array
 

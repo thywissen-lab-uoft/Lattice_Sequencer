@@ -226,6 +226,9 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
     
 %%%% QP RAMP DOWN PART 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
     if do_qp_ramp_down1  
+        dispLineStr('QP RAMP DOWN 1',curtime);
+
+        
         %Last varied October 27, 2014 (no dipole trap realignment). 
         %zshim_end = 0.05; %0.28  (0.05)
         %yshim_end = 0.0;% + getScanParameter(shim_list,seqdata.scancycle,seqdata.randcyclelist,'shim');  %0.0 (Shimmer Control)  
@@ -286,7 +289,6 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
         % Ramp down QP and advance time
         curtime = AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'Coil 16',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,QP_ramp_end1);
 
-        dispLineStr('QP rampdown stage 1 finished at',curtime);
 
         % Some extra advances in time (WHAT IS THIS FOR?)
         if (dipole_ramp_start_time+dipole_ramp_up_time)>(qp_ramp_down_start_time+qp_ramp_down_time1)
@@ -325,12 +327,12 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
      
     %ramp down rest of the way, pin with DT2
     if do_qp_ramp_down2
-        
+        dispLineStr('QP RAMP DOWN 2',curtime);
+
         XDT_pin_time_list = [50];
         XDT_pin_time = getScanParameter(XDT_pin_time_list,seqdata.scancycle,seqdata.randcyclelist,'XDT_pin_time');                
         
 %         XDT_pin_time =400;400;
-        dispLineStr('ODT2 ramp up started at',curtime);
 
         %ramp dipole 2 trap on
         AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),XDT_pin_time,XDT_pin_time,DT2_power(2));
@@ -339,7 +341,6 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
         curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),XDT_pin_time,XDT_pin_time,DT1_power(2));
         
         
-        dispLineStr('ODT2 ramp up finished at',curtime);
 
         %ramp Feshbach field
         FB_time_list = [0];
@@ -352,7 +353,6 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
         fesh_current_val = fesh_current;
         
         
-        dispLineStr('QP rampdown stage 2 started at',curtime);
 
         %Ramp down FF.
         AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),18,@(t,tt,y2,y1)(ramp_func(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,QP_ramp_end2*23/30);      
@@ -404,7 +404,6 @@ function [timeout I_QP V_QP P_dip dip_holdtime] = dipole_transfer(timein, I_QP, 
 %         seqdata.params. yshim_val = yshim_end2;
 %         
         curtime = calctime(curtime,shim_ramp_offset+qp_rampdown_starttime2+qp_ramp_down_time2+extra_hold_time);   
-        dispLineStr('QP rampdown stage 2 finished at',curtime);
  
         I_QP  = QP_ramp_end2;
         

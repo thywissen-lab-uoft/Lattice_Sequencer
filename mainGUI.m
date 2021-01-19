@@ -728,6 +728,8 @@ end
         try
             calc_sequence;                  % convert seqdata for AdWin  
         catch ME
+            warning(ME.message);
+            ME;
             warning('Unable to generate hardware commands');
             return
         end

@@ -115,8 +115,8 @@ end
 %% Action do a RF pulse or sweep
 
 % % Program Rigol generator
-str = sprintf('SOUR1:APPL:SIN;SOUR1:FREQ %g;SOUR1:VOLT %g;SOUR1:VOLT:OFFS %g;',frequency, amplitude, offset);
-addVISACommand(2, str); %Device 3 is newest 25MHZ Rigol.
+str = sprintf('SOUR2:APPL:SIN;SOUR2:FREQ %g;SOUR2:VOLT %g;SOUR2:VOLT:OFFS %g;',frequency, amplitude, offset);
+addVISACommand(5, str); %Device 3 is newest 25MHZ Rigol.
 
 % Add a scope trigger at beginning of modulation
 if ~isempty(opt.ScopeTrigger)
@@ -132,9 +132,11 @@ if (opt.RampLatticeDelta ~= 0)
 end
 
 % Start modulation (gated)
-setDigitalChannel(calctime(curtime,0),51,1); 
+% setDigitalChannel(calctime(curtime,0),51,1); 
+setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1)
 % stoip modulation (gated)
-curtime = setDigitalChannel(calctime(curtime,duration),51,0);
+% curtime = setDigitalChannel(calctime(curtime,duration),51,0);
+curtime = setDigitalChannel(calctime(curtime,duration),'Lattice Direct Control',0)
 
 
 % Add some time at the end (this is at least 1ms for pulses, for a reason that is not directly clear)

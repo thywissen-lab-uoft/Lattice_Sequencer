@@ -159,7 +159,7 @@ field_shift_time = 20;                  % time to shift the field to the initial
 field_shift_settle = 40;                % settling time after initial and final field shifts
     
     if (opt.Microwave_Or_Raman == 1)
-        
+
         %Settings for plane selection
         spect_pars.freq = opt.Selection__Frequency;
         spect_pars.SRS_select = opt.SRS_Selection;
@@ -209,7 +209,6 @@ field_shift_settle = 40;                % settling time after initial and final 
         ramp.shim_ramp_delay = -field_shift_settle-field_shift_time; %offset from the beginning of uwave pulse
         ramp.xshim_final = x_shim_sweep_start;
         ramp.yshim_final = y_shim_sweep_start;
-
         ramp_bias_fields(calctime(curtime,0), ramp);
 
         %Ramp shim during uwave pulse to transfer atoms
@@ -329,7 +328,7 @@ field_shift_settle = 40;                % settling time after initial and final 
 
             ramp_bias_fields(calctime(curtime,0), ramp);
         end       
-        
+       
 %Execute the transfer pulse
 % DigitalPulse(calctime(curtime,-2),'Raman TTL',opt.Microwave_Pulse_Length+4,1);
 % DigitalPulse(calctime(curtime,0),'Raman TTL',spect_pars.pulse_length,0);
@@ -393,11 +392,13 @@ curtime =   calctime(curtime,opt.Microwave_Pulse_Length);
             iXon_FluorescenceImage(curtime,'ExposureOffsetTime',opt.Microwave_Pulse_Length,'ExposureDelay',0,'FrameTime',opt.Microwave_Pulse_Length/opt.Num_Frames,'NumFrames',opt.Num_Frames)
         end
     end
-    
+
+   
 if opt.Double_Selection
     %Leave extra time for the large change in shim field
     curtime = calctime(curtime,opt.Shim_Rotation_Time+field_shift_settle);
 end
+
     
 %Remove unwanted atoms with resonant D2 light down through the microscope
 if opt.Resonant_Light_Removal
@@ -718,8 +719,12 @@ if opt.Ramp_Fields_Down
     ramp.QP_final =  0;
 
     ramp.settling_time = 200; %200
-       
+
+dispLineStr('TIME!!!!',curtime);
 curtime = ramp_bias_fields(calctime(curtime,0), ramp);
+
+else
+curtime = calctime(curtime,opt.Microwave_Pulse_Length); %Added March 19,2021 to shorten the lattice time for Raman transfers
 end
         
 %% assigning outputs (edit with care!)

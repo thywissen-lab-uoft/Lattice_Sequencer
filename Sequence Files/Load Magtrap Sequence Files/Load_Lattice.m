@@ -10,7 +10,7 @@
 function [timeout P_dip P_Xlattice P_Ylattice P_Zlattice P_RotWave] = Load_Lattice(varargin)
 
 timein = varargin{1};
-lattice_flags(timein)
+lattice_flags(timein);
 
 if nargin > 1
     Imaging_Time = varargin{2};
@@ -81,10 +81,9 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     rotate_waveplate_after_ramp = 1; %keep:  Turn Rotating Waveplate to Shift Power to Lattice Beams
     do_lattice_ramp_after_spectroscopy = 1; %keep: Ramp lattices on or off after doing spectroscopy, must be on for fluorescence image
     do_shear_mode_mod = 0; %delete: used to be a way modulate XDT using shear mode aom
-    Raman_Transfers = 0;  %keep                  % for fluorescence image
+    Raman_transfers = 1;  %keep                  % for fluorescence image
     do_lattice_sweeps = 0; %delete
     Drop_From_XDT = 0; %May need to add code to rotate waveplate back here.
-    short_holdtime = 0;
 
 
     
@@ -94,15 +93,8 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 
     %RHYS - Some confusing parameters defined here. Consolidate.
     
-    lattice_holdtime_for_lifetimeM_list = [50]; %150 sept28
-    lattice_holdtime_desired = getScanParameter(lattice_holdtime_for_lifetimeM_list,seqdata.scancycle,seqdata.randcyclelist,'lthdt');%maximum is 4
-    
-    %lattice_holdtime_desired = 50; %Beware of hold times <50ms, since this is the quantization handover time
-    if ~short_holdtime
-        lattice_holdtime = max(lattice_holdtime_desired,50);
-    else
-        lattice_holdtime = lattice_holdtime_desired;
-    end
+    lattice_holdtime_list =[0]; [100 200 500 1000 1500 2000 2500 3000 3500 4000 4500 5000 6000 7500 8000 10000 12000 15000]; %150 sept28
+    lattice_holdtime = getScanParameter(lattice_holdtime_list,seqdata.scancycle,seqdata.randcyclelist,'latt_holdtime');%maximum is 4
     
     if Drop_From_XDT
         lattice_rampdown = 50;
@@ -114,19 +106,21 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
    
 % Parameters for lattice loading, section used for lattice alignment
 %     lat_rampup_common_depths = [200 200]/atomscale;
-    Depth_List = [20];
+    Depth_List = [50];
 %     ZLD = getmultiScanParameter(Depth_List,seqdata.scancycle,'x_lattice_depth',1,2);
     ZLD = getScanParameter(Depth_List,seqdata.scancycle,seqdata.randcyclelist,'zld');
 % ZLD = getmultiScanParameter(Depth_List,seqdata.scancycle,'ylattice_depth',1,2);
 
 %RHYS - Is there a better way to switch between lattice ramp sequences? Or,
 %again, perhaps store in an external file a load in.
+lattice_rampup_time_list = [250];
+lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycle,seqdata.randcyclelist,'lattice_rampup_time');
 
 %%%LOADING SEQ BELOW CAN BE USED FOR SIMPLE LATTICE LOADING
     lat_rampup_depth = 1*[1*[ZLD    ZLD];
                           1*[ZLD    ZLD];                
                           1*[ZLD    ZLD];]/atomscale;
-    lat_rampup_time = 1*[100    100]; 
+    lat_rampup_time = 1*[lattice_rampup_time    lattice_rampup_time]; 
 %     lat_rampup_depth = 1*[1*[5  5  ZLD    ZLD];
 %                           1*[5  5  ZLD    ZLD];                
 %                           1*[5  5  ZLD    ZLD];]/atomscale;
@@ -179,7 +173,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 
 
 %RHYS - DMD stuff above and below. Write a module rather than commenting
-%out.
+%out70
 
 %%%%%%%%DENSITY PROPAGATION
 % % First, ramp up box
@@ -284,12 +278,10 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
         error('Invalid ramp specification for lattice loading!');
     end
     
-    addOutputParam('Lattice_Time',lattice_holdtime)
-    
     %Additional parameters and flags for this sequence    
     %RHYS - Parameter determining how dipole trap behaves should be with
     %the rest of the lattice ramp parameters.
-    dipole_trap_off_after_lattice_on = 0; 
+    dipole_trap_off_after_lattice_on = 1; 
     % 0 - use ramp parameters below; 
     % 1 - snap off after 1st lattice ramp;
     % 2 - ramp off after 1st lattice ramp;
@@ -335,7 +327,7 @@ else
 
     %Turn rotating waveplate to shift all power to the lattice beams
     rotation_time = 1000;   % The time to rotate the waveplate
-    P_RotWave = 0.9;%0.9       % The fraction of power that will be transmitted 
+    P_RotWave = 0.5;%0.9       % The fraction of power that will be transmitted 
                             % through the PBS to lattice beams
                             % 0 = dipole, 1 = lattice
     AnalogFunc(calctime(curtime,-100-rotation_time),41,@(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),rotation_time,rotation_time,P_RotWave);
@@ -344,17 +336,21 @@ end
 
 %% Ramp up lattice
 %RHYS - Basically the main functionality of this bit of code (ramp up the lattices).     
+    dispLineStr('Ramping up lattices.',curtime);
+    disp(['     Ramp Times        (ms) : ' mat2str(lat_rampup_time) ]);
+
+
     seqdata.times.lattice_start_time = curtime;
     ScopeTriggerPulse(curtime,'Load lattices');
     
     % set lattice ALPS to zero in the beginning (in case they haven't been)
-    setAnalogChannel(calctime(curtime,-60),'xLattice',-0.2,1);
-    setAnalogChannel(calctime(curtime,-60),'yLattice',-10,1);
-    setAnalogChannel(calctime(curtime,-60),'zLattice',-10,1);
+    setAnalogChannel(calctime(curtime,-60),'xLattice',-0.1,1);
+    setAnalogChannel(calctime(curtime,-60),'yLattice',-0.1,1);
+    setAnalogChannel(calctime(curtime,-60),'zLattice',-0.1,1);
     
     % Enable rf output on ALPS3 (fast rf-switch and enable integrator)
     setDigitalChannel(calctime(curtime,-50),'yLatticeOFF',0);
-    setDigitalChannel(calctime(curtime,-25),'Lattice Direct Control',0);
+    setDigitalChannel(calctime(curtime,-60),'Lattice Direct Control',0);
     
         
     % ODT1&2 ramps
@@ -409,8 +405,8 @@ curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk
     if (dipole_trap_off_after_lattice_on == 2) % '__' = 2: ramp off after 1st lattice ramp;
        xdt_end_power = 0;
        xdt_ramp_time1 = 50;
-       AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), xdt_ramp_time1,xdt_ramp_time1,xdt_end_power,1);
-       AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), xdt_ramp_time1,xdt_ramp_time1,seqdata.params. XDT_area_ratio*xdt_end_power,1);
+       AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), xdt_ramp_time1,xdt_ramp_time1,xdt_end_power);
+       AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), xdt_ramp_time1,xdt_ramp_time1,seqdata.params. XDT_area_ratio*xdt_end_power);
 curtime = setDigitalChannel(calctime(curtime,xdt_ramp_time1),'XDT TTL',1);
     end
     
@@ -476,6 +472,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
     %Only do this if evaporation has happened
 %RHYS - If attempting to evaporate in lattice with Rb as well. Never been useful, could delete.    
 if (get_rid_of_Rb_in_lattice && seqdata.flags. CDT_evap == 1)
+    dispLineStr('Removing Rb in lattice.',curtime);
 
         %repump atoms from F=1 to F=2, and blow away these F=2 atoms with
         %the probe
@@ -550,6 +547,7 @@ curtime = calctime(curtime,lat_rampup_time(j));
 %RHYS - If the lattice is loaded right from the QP, can call this to turn
 %the QP trap off, otherwise it will be on until the sequence ends.
 if QP_off_after_load
+
             FB_init = getChannelValue(seqdata,37,1,0);
             clear('ramp');
             
@@ -1633,6 +1631,7 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
     setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
     setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);
     
+
     %Open shutter
     setDigitalChannel(calctime(curtime,-8),'D1 Shutter', 1);%1: turn on laser; 0: turn off laser
     
@@ -1663,6 +1662,8 @@ curtime = calctime(curtime,optical_pump_time);
 curtime =  setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);    
     
 end
+
+
 
 %% Ramp lattices back down for plane selection after optical pumping.
 %RHYS - Kind of pointless. Delete.
@@ -1711,6 +1712,8 @@ end
 %okay to keep for now, since there were open questions about this. It is
 %also very similar to plane selection code, so could perhaps be an option
 %for a more general selection code.
+
+
 if remove_one_spin_state
     
     %Set magnetic field and field gradient strengths.
@@ -2128,7 +2131,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 
 end
 
-
+ 
 %% Plane selection
 %%Remove atoms in undesired vertical planes from the lattice.
 %RHYS - This code is a doozy of a mess. See Graham's
@@ -2937,6 +2940,8 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
         
 end
 
+
+
 %RHYS - Possibly useful but probably not unless making a larger spacing
 %z-lattice. Mixture always exists before the lattice these days. But, the
 %idea of this is that it enables a mixture to be created after isolating a
@@ -2982,6 +2987,9 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,10),3,sweep_pars);
 curtime = calctime(curtime,50);
 
 end
+
+
+
 %% Horizontal Selection
 %RHYS - Can make a stripe of atoms using this code. The DMD kind of makes
 %the patterning irrelevant. However, this code would enable spin
@@ -3323,7 +3331,6 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 
 end
 
-
 %% Do field ramp for spectroscopy
 
 % Shim values for zero field found via spectroscopy
@@ -3557,6 +3564,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars); % ch
 
     end
 
+
     
 %% uWave single shot spectroscopy
 if ( do_singleshot_spectroscopy ) % does an rf pulse or sweep for spectroscopy
@@ -3651,6 +3659,8 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     end
     
 end
+
+
 %% Ramp down the dipole trap if it is on at higher intensity.
     dipole_rampdown = 0;
     %RHYS - Useless, delete. 
@@ -3720,7 +3730,6 @@ curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk
 curtime = calctime(curtime, Dimple_Wait_Time);
 
 end
-
 
 
 %% Modulate Dimple Trap
@@ -4079,6 +4088,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
     end      
 
 end
+
 %% Lattice Modulation; use bandstructure calculation for conversion into
 %RHYS - Use to calibrate the lattice depths.
 if do_lattice_mod
@@ -4093,13 +4103,13 @@ if do_lattice_mod
 curtime = calctime (curtime,50);
     end
     
-    freq_list = [80:10:200]*1e3;
+    freq_list = [50]*1e3;
 %     freq_list = [35:5:125]*1e3; %560
 
     mod_freq = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'lat_mod_freq');
     
-    mod_time = 0.1;%0.2; %Closer to 100ms to kill atoms, 3ms for band excitations only.
-    mod_amp = 0.1;
+    mod_time = 1;%0.2; %Closer to 100ms to kill atoms, 3ms for band excitations only.
+    mod_amp = 0.2;
     addOutputParam('mod_amp',mod_amp);
     mod_wait_time = -50;
     mod_offset = 0;
@@ -4137,6 +4147,8 @@ curtime = calctime(curtime,50);
 
 end
 
+
+
 %% Rotate power distribution waveplate again (if loading lattice from a strong dipole trap)
 %RHYS - Remove comments, keep.
     if rotate_waveplate_after_ramp
@@ -4162,9 +4174,9 @@ curtime = AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmi
 if do_lattice_ramp_after_spectroscopy
 
     %Define ramp parameters
-     xLatDepth = 1000;
-     yLatDepth = 1000;
-     zLatDepth = 1000; 
+     xLatDepth = 800;
+     yLatDepth = 800;
+     zLatDepth = 800; 
      
      addOutputParam('xLatDepth',xLatDepth);
      addOutputParam('yLatDepth',yLatDepth);
@@ -4212,54 +4224,65 @@ curtime =   calctime(curtime,lat_rampup_imaging_time(j));
     setAnalogChannel(calctime(curtime,0),'dipoleTrap1',0);
     setAnalogChannel(calctime(curtime,0),'dipoleTrap2',0);
     setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
-curtime=calctime(curtime,50);
+
+    
+deep_latt_holdtime_list = [50];
+deep_latt_holdtime = getScanParameter(deep_latt_holdtime_list,seqdata.scancycle,seqdata.randcyclelist,'deep_latt_holdtime'); 
+curtime=calctime(curtime,deep_latt_holdtime);
     
 end
 
 
-%% Horizontal magnetic field Raman transfers, flag = Raman_Transfers
+%% Horizontal magnetic field Raman transfers, flag = 
 %turn on raman beams for side band cooling
 %RHYS - Important code for Raman/EIT cooling. Probably should not be a
 %branch off horizontal plane selection though.
-if (seqdata.flags.lattice.Raman_transfers == 1)
-    
+if (Raman_transfers == 1)
+    dispLineStr('Raman Transfer',curtime);
+
     %During imaging, generate about a 4.4G horizontal field. Both shims get
     %positive control voltages, but draw from the 'negative' shim supply. 
     clear('horizontal_plane_select_params')
-    F_Pump_List = [1];[0.60];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
+    F_Pump_List = [0.7];[0.60];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power'); %1.4;
-    Raman_Power_List =[0.5]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
+    Raman_Power_List =[1.2]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
     horizontal_plane_select_params.Raman_Power1 = getScanParameter(Raman_Power_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Power'); 
     horizontal_plane_select_params.Raman_Power2 = horizontal_plane_select_params.Raman_Power1;
     horizontal_plane_select_params.Fake_Pulse = 0;
-    horizontal_plane_select_params.Use_EIT_Beams = 1;
+    horizontal_plane_select_params.Use_EIT_Beams = 0;
     horizontal_plane_select_params.Selection__Frequency = 1285.8 + 11.025; %11.550
+    
+    
     Raman_List = [0];[-50];0;   %-30% : in kHz;
     horizontal_plane_select_params.Raman_AOM_Frequency = 110 + getScanParameter(Raman_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Freq')/1000;
     
     %CHECK PERFORMANCE OF SWEEP IN BURST MODE. CURRENTLY USING BURST MODE
     %SINCE REMOVING ZASWA SWITCHES.
-    horizontal_plane_select_params.Rigol_Mode = 'Pulse';  %'Sweep', 'Pulse', 'Modulate'
-    Range_List = [0];%in kHz
+    horizontal_plane_select_params.Rigol_Mode = 'Sweep';  %'Sweep', 'Pulse', 'Modulate'
+    Range_List = [2000];%in kHz
     horizontal_plane_select_params.Selection_Range = getScanParameter(Range_List,seqdata.scancycle,seqdata.randcyclelist,'Sweep_Range')/1000; 
-    Raman_On_Time_List = [2000];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
+    Raman_On_Time_List = [.6 .7 .8];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
     horizontal_plane_select_params.Microwave_Pulse_Length = getScanParameter(Raman_On_Time_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Time'); 
-    horizontal_plane_select_params.Fluorescence_Image = 1;
+    horizontal_plane_select_params.Fluorescence_Image = 0;
     horizontal_plane_select_params.Num_Frames = 1; % 2 for 2 images
-    Modulation_List = [1];
+    Modulation_List = Raman_On_Time_List;
     horizontal_plane_select_params.Modulation_Time = getScanParameter(Modulation_List,seqdata.scancycle,seqdata.randcyclelist,'Modulation_Time');
-    horizontal_plane_select_params.Microwave_Or_Raman = 2; 
+    horizontal_plane_select_params.Microwave_Or_Raman = 2; %1: uwave, 2: Raman
     horizontal_plane_select_params.Sweep_About_Central_Frequency = 1;
     horizontal_plane_select_params.Resonant_Light_Removal = 0;
     horizontal_plane_select_params.Final_Transfer = 0; 
     horizontal_plane_select_params.SRS_Selection = 1;
     horizontal_plane_select_params.QP_Selection_Gradient = 0;
+    horizontal_plane_select_params.Ramp_Fields_Up = 1; % ramp B field down in the begining
+    horizontal_plane_select_params.Ramp_Fields_Down = 0; 
     Field_Shift_List = [0.135];[0.155];[0.134]; %unit G 
     horizontal_plane_select_params.Field_Shift = getScanParameter(Field_Shift_List,seqdata.scancycle,seqdata.randcyclelist,'Field_Shift');
     horizontal_plane_select_params.X_Shim_Offset = 0;
     horizontal_plane_select_params.Y_Shim_Offset = 0;
     horizontal_plane_select_params.Z_Shim_Offset = 0.055;0.055;%b4:0.05;
-    horizontal_plane_select_params.Selection_Angle = 62;66.5; %-30 for vertical, +60 for horizontal (iXon axes)
+    Angle_List = [62];
+    Angle = getScanParameter(Angle_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Angle');
+    horizontal_plane_select_params.Selection_Angle = Angle;62;66.5; %-30 for vertical, +60 for horizontal (iXon axes)
     %Kill pulse uses the shim fields for quantization, atom removal may
     %be poor for angles much different from 0deg!!
     
@@ -4267,8 +4290,8 @@ if (seqdata.flags.lattice.Raman_transfers == 1)
     setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);
         
     ScopeTriggerPulse(curtime,'Raman Beams On');
-        
-    curtime = do_horizontal_plane_selection(curtime, horizontal_plane_select_params);
+      
+curtime = do_horizontal_plane_selection(curtime, horizontal_plane_select_params);
 
     %turn on optical pumping beam AOM for thermal stabilization
     setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);
@@ -4326,52 +4349,7 @@ curtime = calctime(curtime,lattice_holdtime);
 
 
 
-%RHYS - This commented stuff can go.
 
-%% load atoms back into XDT, ramp down lattice % flag = Drop_From_XDT
-% ScopeTriggerPulse(curtime,'dropXDT',0.1);
-% %Drop_From_XDT = 0: do not load back into XDT
-% %Drop_From_XDT = 1: load back into XDT
-% if (Drop_From_XDT = 1)
-%     xlat_endpower = 0; % where to end the lattice ramp
-%     ylat_endpower = 0; % where to end the lattice ramp
-%     zlat_endpower = 0; % where to end the lattice ramp
-%     lat_rampdowntime = 5; %how long to ramp down (0: switch off; other value: ramp down)
-%     lat_rampdowntau = 5;  %time constant for exponential rampdown (0: min-jerk ramp; other value: exponential ramp)
-%     lat_post_waittime = 0;%holding time after ramp down lattice
-%     
-%     DT1_power = 0.6; % where to end the XDT ramp
-%     DT1_power = 0.6; % where to end the XDT ramp
-%     dipole_ramp_up_time = 50; %how fast to ramp up XDT
-%     
-%     %ramp up dipole trap
-%     setDigitalChannel(calctime(curtime,0),'XDT TTL',0); %turn on XDT TTL
-%     AnalogFuncTo(calctime(curtime,0),40,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_ramp_up_time,dipole_ramp_up_time,DT1_power);
-%     % ramp dipole 1 trap on
-%     curtime = AnalogFuncTo(calctime(curtime,0),38,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_ramp_up_time,dipole_ramp_up_time,DT2_power);
-%     % ramp dipole 2 trap on
-%     
-%     %ramp down lattice
-%     if ( lat_rampdowntime == 0 )
-%         %lat_rampdowntime == 0: switch off lattices
-%         setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);
-%         setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);
-%         setAnalogChannel(calctime(curtime,0),'zLattice',-10,1);
-%     else if ( lat_ramptau == 0 )
-%             % %lat_rampdowntime ~= 0: ramp down lattice
-%             % lat_ramptau == 0: min-jerk ramp
-%             AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),lat_rampdowntime,lat_rampdowntime,xlat_endpower);
-%             AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),lat_rampdowntime,lat_rampdowntime,ylat_endpower);
-%             curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),lat_rampdowntime,lat_rampdowntime,zlat_endpower);
-%         else
-%             % lat_ramptau ~= 0: exponential ramp
-%             AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2,tau)(ramp_exponential(t,tt,y1,y2,tau)),lat_rampdowntime,lat_rampdowntime,xlat_endpower,lat_rampdowntau);
-%             AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2,tau)(ramp_exponential(t,tt,y1,y2,tau)),lat_rampdowntime,lat_rampdowntime,ylat_endpower,lat_rampdowntau);
-%             curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2,tau)(ramp_exponential(t,tt,y1,y2,tau)),lat_rampdowntime,lat_rampdowntime,zlat_endpower,lat_rampdowntau);
-%          end
-%     end
-%         
-% end
 %% lattice_depth_calibration by amplitude modulation
 %RHYS - Another lattice depth calibration code. Might work, not sure if it
 %is better than do_lattice_mod.
@@ -4396,27 +4374,7 @@ curtime = calctime(curtime,mod_time);
         setDigitalChannel(calctime(curtime,0),'Lattice FM',0);   
 end
 %% Turn off lattices and dipole traps for ToF imaging, flag name: Drop from XDT
-%%%%%%%%%=============================================================
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %     P_dip=0;
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %     P_Xlattice=0;
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %     P_Ylattice=0;
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %     P_Zlattice=0;
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %     Rotate waveplate to divert all power to dipole traps.
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %     AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),200,200,P_RotWave,0); 
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %     P_RotWave = 0;
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %turn off xdt
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %         setAnalogChannel(calctime(curtime,0),'dipoleTrap1',-10,1);
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %         setAnalogChannel(calctime(curtime,0),'dipoleTrap2',-10,1);
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %         setDigitalChannel(calctime(curtime,0),'XDT TTL',0);
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %pulse off lattices
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %         setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %         setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %         setAnalogChannel(calctime(curtime,0),'zLattice',-10,1);
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %         setDigitalChannel(calctime(curtime,0),'xLatticeOFF',1);  %0: ON / 1: OFF, XLatticeOFF         
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %         setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);  %0: ON / 1: OFF,yLatticeOFF
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %         setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1); % Added 2014-03-06 in order to avoid integrator wind-up
-%%%%%%%%%=============================================================
+
 %RHYS - Definitely change this. Fudong's addition here was useful
 %(pre_lat_off_code = 0 just turns off all traps immediately), but, the name
 %of this flag is not good, nor should it be set all the way down here.
@@ -4497,14 +4455,14 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minje
     
     % Finish turning off lattices and dipole traps
     setAnalogChannel(calctime(curtime,0),'xLattice',-0.1,1);
-    setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);
+    setAnalogChannel(calctime(curtime,0),'yLattice',-0.1,1);
     setAnalogChannel(calctime(curtime,0),'zLattice',-0.1,1);
     %TTLs
     setDigitalChannel(calctime(curtime,0),11,1);  %0: ON / 1: OFF, XLatticeOFF         
     setDigitalChannel(calctime(curtime,0),34,1);  %0: ON / 1: OFF,yLatticeOFF
     setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1); % Added 2014-03-06 in order to avoid integrator wind-up
     
-    XDT_Holding_time_list = [500];%holding time in XDT
+    XDT_Holding_time_list = [50];%holding time in XDT
     XDT_Holding_time = getScanParameter(XDT_Holding_time_list,seqdata.scancycle,seqdata.randcyclelist,'xdtht');%maximum is 4
       
     if ( Drop_From_XDT )%loaded back into XDT
@@ -4512,9 +4470,9 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minje
         setAnalogChannel(calctime(curtime,XDT_Holding_time),'dipoleTrap2',0,1);
 curtime = setDigitalChannel(calctime(curtime,XDT_Holding_time),'XDT TTL',1);
     else
-        setAnalogChannel(calctime(curtime,0.0),'dipoleTrap1',0,1);
-        setAnalogChannel(calctime(curtime,0.0),'dipoleTrap2',0,1);
-        setDigitalChannel(calctime(curtime,0),'XDT TTL',1);        
+%         setAnalogChannel(calctime(curtime,0.0),'dipoleTrap1',0,1);
+%         setAnalogChannel(calctime(curtime,0.0),'dipoleTrap2',0,1);
+%         setDigitalChannel(calctime(curtime,0),'XDT TTL',1);        
     end
 % % % % % % % % % % % %     %Rotate waveplate to divert all power to dipole traps.
 % % % % % % % % % % % %     AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),200,200,P_RotWave,0); 

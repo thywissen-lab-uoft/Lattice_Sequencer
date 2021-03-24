@@ -4701,46 +4701,59 @@ end
 
 
 %% Optical pumping test
-% curtime = calctime(curtime,1000);
-% % % setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP Shutter',0);    
-% % % setAnalogChannel(calctime(curtime,-5),'Rb Probe/OP AM',1); %0.11
-% % % setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',0); % inverted logic
-% % % setAnalogChannel(calctime(curtime,0.0),'Rb Beat Note FM',6590-5);
-% % % % 
-% % % % 
-% % % setDigitalChannel(calctime(curtime,-2),'Rb Repump Shutter',0); 
-% % % setDigitalChannel(calctime(curtime,-2),'Rb Trap Shutter',0); 
-% % % % 
+curtime = calctime(curtime,1000);
+% setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP Shutter',1);    
+% setAnalogChannel(calctime(curtime,-5),'Rb Probe/OP AM',1); %0.11
+% setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',0); % inverted logic
+% setAnalogChannel(calctime(curtime,0.0),'Rb Beat Note FM',6590-5);
+% % 
+% % 
+% % setDigitalChannel(calctime(curtime,-2),'Rb Repump Shutter',1); 
+% % setDigitalChannel(calctime(curtime,-2),'Rb Trap Shutter',1); 
+% % 
 % % % % % 
 % % % % setAnalogChannel(calctime(curtime,0),'Y Shim',2); %0.15
 % % % % setAnalogChannel(calctime(curtime,0),'X Shim',1); %0.15
 % % % % setAnalogChannel(calctime(curtime,0),'Z Shim',3);%0.0 
 % % % 
-% setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',190);%202.5); %200
-% setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',3);
-% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
-% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
-% setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
-% % % 
+setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',190);%202.5); %200
+setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',3); 
+setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
+setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
+setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
+% % 
 % % 
 % setAnalogChannel(calctime(curtime,0),59,0); %0.11
 
-%ODT test
-% setAnalogChannel(calctime(curtime,0),59,0); %0.11
+% % ODT test
 % curtime = calctime(curtime,1000);
-% setDigitalChannel(calctime(curtime,0),'XDT TTL',0);
-% ODT1power = 0.5;
-% ODT2power = 0.5;
-% AnalogFunc(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),250,250,0,ODT1power);
-%     
-% AnalogFunc(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),250,250,0,ODT2power);
+% setDigitalChannel(calctime(curtime,-10),'XDT Direct Control',0);
+% setDigitalChannel(calctime(curtime,-10),'XDT TTL',0);
 % 
-% curtime = calctime(curtime,2000);
+% % Choose the power limits
+% ODT1powerLOW=0;
+% ODT1powerHIGH = 2;
+% 
+% ODT2powerLOW=0;
+% ODT2powerHIGH = ODT1powerHIGH;
+% 
+% 
+% % % setAnalogChannel(curtime,'dipoleTrap1',-0.025); 
+% AnalogFunc(calctime(curtime,0),'dipoleTrap1',...
+%     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),25,25,ODT1powerLOW,ODT1powerHIGH);
+%     
+% AnalogFunc(calctime(curtime,0),'dipoleTrap2',...
+%     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),25,25,ODT2powerLOW,ODT2powerHIGH);
+% 
+% curtime = calctime(curtime,500);
+% 
 % setAnalogChannel(curtime,'dipoleTrap1',0); 
 % setAnalogChannel(curtime,'dipoleTrap2',0);
 % setDigitalChannel(calctime(curtime,10),'XDT TTL',1);
+% setDigitalChannel(calctime(curtime,.5),'XDT Direct Control',1);
 
-% 
+
+% setAnalogChannel(curtime,54,0);
 % 
 % curtime = calctime(curtime,5000);
 % setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
@@ -4765,11 +4778,11 @@ end
 % AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),250,250, fesh_current,0);
 % 
 % curtime = calctime(curtime,1000);
+% % 
+% % AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),250,250, 0,fesh_current);
 % 
-% AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),250,250, 0,fesh_current);
-% 
-% setAnalogChannel(calctime(curtime,0),'FB current',-0.5,2);
-% setDigitalChannel(calctime(curtime,0),'fast FB Switch',0);
+% setAnalogChannel(calctime(curtime,0),54,5);
+% setDigitalChannel(calctime(curtime,0),64,0);
 
 % %%Shim test
 %     %Turn shim multiplexer to Science shims
@@ -4786,12 +4799,21 @@ end
 %     setAnalogChannel(calctime(curtime,0),'Z Shim',0,3); %3
 % 
 % curtime = calctime(curtime, 1000)
-
-
 %     setAnalogChannel(calctime(curtime,0),'X Shim',0,3); %3
 %     setAnalogChannel(calctime(curtime,0),'Y Shim',0,4); %4
 %     setAnalogChannel(calctime(curtime,0),'Z Shim',0,3); %3
+% curtime = calctime(curtime, 1000)
+% setAnalogChannel(calctime(curtime,0),59,0); 
+% 
+% setDigitalChannel(calctime(curtime,-10),'EIT Shutter',0);
+% setDigitalChannel(calctime(curtime,-10),'D1 Shutter',0);
+% 
+% curtime = calctime(curtime, 1000)
 
+% setAnalogChannel(calctime(curtime,0),59,0); 
+% setDigitalChannel(calctime(curtime,0),'Downwards D2 Shutter',1);
+% setDigitalChannel(calctime(curtime,0),'Kill TTL',1);
+% setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
 
 
 timeout = curtime;

@@ -578,7 +578,7 @@ function refreshPlotData
         % Grab the trace
         X=dTracesShow(j).data(:,1)*seqdata.deltat;     % Time data
         Y=dTracesShow(j).data(:,2);                    % Y data
-
+        
         % Add t=0 and t=infty values
         if ~isempty(X)
             X=[0; X; 500]; Y=[Y(end); Y; Y(end)]; 

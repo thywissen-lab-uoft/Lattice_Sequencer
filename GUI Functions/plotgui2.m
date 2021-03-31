@@ -63,16 +63,28 @@ drawnow;
 
 % Recompile sequence and update plots
     function recompile(~,~)
-        start_new_sequence;             % Initialize sequence
-        seqdata.scancycle=1;            % 
-        seqdata.randcyclelist=0;    
-        seqdata.doscan=0;    
-        initialize_channels;            % Initialize channels
-        fh = str2func(erase(funcname,'@'));       % Grab the sequence func
-        fh(0);                          % Run the sequence / update seqdata  
-        Tseq=getSequenceDuration;
-        
-        refreshPlotData;                % Update plots and graphics 
+        try        
+            start_new_sequence;             % Initialize sequence
+            seqdata.scancycle=1;            % 
+            seqdata.randcyclelist=0;    
+            seqdata.doscan=0;    
+            initialize_channels;            % Initialize channels
+            fh = str2func(erase(funcname,'@'));       % Grab the sequence func
+            fh(0);                          % Run the sequence / update seqdata  
+            Tseq=getSequenceDuration;
+            
+            refreshPlotData;                % Update plots and graphics 
+
+        catch ME
+            warning('Error on sequence compilation');
+            warning(ME.message);
+            disp(' ');
+            for kk=length(ME.stack):-1:1
+               disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
+            end
+            disp(' ');  
+        end
+
     end
 
     function update(~,~)

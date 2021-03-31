@@ -63,19 +63,33 @@ drawnow;
 
 % Recompile sequence and update plots
     function recompile(~,~)
-        start_new_sequence;             % Initialize sequence
-        seqdata.scancycle=1;            % 
-        seqdata.randcyclelist=0;    
-        seqdata.doscan=0;    
-        initialize_channels;            % Initialize channels
-        fh = str2func(erase(funcname,'@'));       % Grab the sequence func
-        fh(0);                          % Run the sequence / update seqdata  
-        Tseq=getSequenceDuration;
-        refreshPlotData;                % Update plots and graphics 
+        try        
+            start_new_sequence;             % Initialize sequence
+            seqdata.scancycle=1;            % 
+            seqdata.randcyclelist=0;    
+            seqdata.doscan=0;    
+            initialize_channels;            % Initialize channels
+            fh = str2func(erase(funcname,'@'));       % Grab the sequence func
+            fh(0);                          % Run the sequence / update seqdata  
+            Tseq=getSequenceDuration;
+            
+            refreshPlotData;                % Update plots and graphics 
+
+        catch ME
+            warning('Error on sequence compilation');
+            warning(ME.message);
+            disp(' ');
+            for kk=length(ME.stack):-1:1
+               disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
+            end
+            disp(' ');  
+        end
+
     end
 
     function update(~,~)
         Tseq=getSequenceDuration;
+        
        refreshPlotData; 
     end
 
@@ -567,56 +581,44 @@ function refreshPlotData
         aTracesShow(nn).SelectUnit.Value=funcnum;  
         set(aTracesShow(nn).Plot,'XData',X,'YData',Y);
     end
-        
-    for j=1:length(dTracesShow)
-        % Delete old digital plots
-        pps=dTracesShow.Plot;
-        for in=1:length(pps)
-           delete(pps(in)); 
-        end
-        
+    
+    for nn=1:length(dTracesShow)        
         % Grab the trace
-        X=dTracesShow(j).data(:,1)*seqdata.deltat;     % Time data
-        Y=dTracesShow(j).data(:,2);                    % Y data
-        
-        % Add t=0 and t=infty values
-        if ~isempty(X)
-            X=[0; X; 500]; Y=[Y(end); Y; Y(end)]; 
+        trc=dTracesShow(nn);                     % Get the trace
+
+        X=trc.data(:,1)*seqdata.deltat;     % Time data
+        Y=trc.data(:,2);                    % Y data
+ 
+        if ~isempty(X)      
+            j=dTracesShow(nn).pFill.UserData; % the offset
+            
+            % Append begining and end data
+            X=[0; X; Tseq]; 
+            Y=[Y(end); Y; Y(end)]; 
+
+            % Sort the data
+            [~,inds]=sort(X);
+            X=X(inds);
+            Y=Y(inds);
+
+            % Convert data to row vector
+            X=X';      
+            Y=Y';
+            % Normalize and offset Y data for plotting
+            Y=(Y-j)*hText;
+
+            % Convert data in vertices for fill
+            x = [X(1) ,repelem(X(2:end),2)];
+            y = [repelem(Y(1:end-1),2),Y(end)];
+            xx=[x,fliplr(x)];
+            yy=[y,-j*hText*ones(size(y))];
+            
+            set(dTracesShow(nn).pFill,'XData',xx,'YData',yy);
+        else
+            set(dTracesShow(nn).pFill,'XData',[],'YData',[]);         
         end
-
-        % Sort the data
-        [~,inds]=sort(X);
-        X=X(inds);
-        Y=Y(inds);
-
-        axes(axD);
-        hold on
-
-        % Plot the data as series of rectangles
-        s=1;
-        for np=1:(length(X)-1)
-            p=[X(np) -j*hText (X(np+1)-X(np)) hText];        
-            if Y(np)
-                r=rectangle('Position',p,'linestyle','-',...
-                    'facecolor',[co(mod(j-1,7)+1,:) .5],'linewidth',.5,...
-                    'EdgeColor',[co(mod(j-1,7)+1,:)]);
-                pps(s)=r;s=s+1;
-            end        
-        end
-
-        if ~exist('pps')
-            pps=[];
-        end
-
-        % Plot a gray box to indicate unused
-        if isempty(X)
-            p=[0 -j*hText 1E6 hText]; 
-            rectangle('Position',p,'linestyle','none','facecolor',[.5 .5 .5]);
-        end    
-        hold on
-        
-        dTracesShow(j).Plot=pps;
     end
+  
     
     drawnow;
 end
@@ -876,7 +878,7 @@ end
         set(aTracesShow(n).Plot,'XData',X,'YData',Y);
         drawnow;      
     end
-
+      
 
 function addDigitalChannel(ch)
     j=length(dTracesShow)+1;
@@ -888,42 +890,45 @@ function addDigitalChannel(ch)
     X=trc.data(:,1)*seqdata.deltat;     % Time data
     Y=trc.data(:,2);                    % Y data
     
-    % Add t=0 and t=infty values
-    if ~isempty(X)
-        X=[0; X; 500]; Y=[Y(end); Y; Y(end)]; 
-    end
-    
-    % Sort the data
-    [~,inds]=sort(X);
-    X=X(inds);
-    Y=Y(inds);
-    
     axes(axD);
     hold on
-
-    % Plot the data as series of rectangles
-    s=1;
-    for np=1:(length(X)-1)
-        p=[X(np) -j*hText (X(np+1)-X(np)) hText];        
-        if Y(np)
-            r=rectangle('Position',p,'linestyle','-',...
-                'facecolor',[co(mod(j-1,7)+1,:) .5],'linewidth',.5,...
-                'EdgeColor',[co(mod(j-1,7)+1,:)]);
-            pps(s)=r;s=s+1;
-        end        
-    end   
     
-    % Plot a gray box to indicate unused
-    if isempty(X)
-        p=[0 -j*hText 1E6 hText]; 
-        pps(s)=rectangle('Position',p,'linestyle','none',...
-            'facecolor',[.5 .5 .5 .5]);
-        s=s+1;
-    end    
-    
-    if ~exist('pps')
-        pps=[];
-    end
+    % Add t=0 and t=end of sequence values
+    if ~isempty(X)
+        X=[0; X; Tseq]; Y=[Y(end); Y; Y(end)]; 
+        
+        % Sort the data
+        [~,inds]=sort(X);
+        X=X(inds);
+        Y=Y(inds);
+        
+        % Convert data to row vector
+        X=X';      
+        Y=Y';
+        % Normalize and offset Y data for plotting
+        Y=(Y-j)*hText;
+        
+        % Convert data in vertices for fill
+        x = [X(1) ,repelem(X(2:end),2)];
+        y = [repelem(Y(1:end-1),2),Y(end)];
+        xx=[x,fliplr(x)];
+        yy=[y,-j*hText*ones(size(y))];
+        
+        % Plot fill with edges
+        pFill=fill(xx,yy,'r',...
+        'facecolor',co(mod(j-1,7)+1,:),'FaceAlpha',0.5,...
+        'edgecolor',co(mod(j-1,7)+1,:),'linewidth',.5,'UserData',j);
+        
+        % Add plot to traces
+        trc.pFill=pFill;
+    else
+        % Make an empty patch
+        pFill=fill([],[],'r','facealpha',0.5,'linewidth',1);
+        
+        % add plot to traces
+        trc.pFill=pFill;
+    end  
+   
     
     hold on
     
@@ -942,11 +947,7 @@ function addDigitalChannel(ch)
     % Track graphical objects
     trc.Label=tt;
     trc.LabelPlot=pL;
-    try
-    trc.Plot=pps;
-    catch exception
-        keyboard
-    end
+
     % Add trace
     if ~isempty(dTracesShow)
         dTracesShow(end+1)=trc;          % Add the trace
@@ -956,30 +957,34 @@ function addDigitalChannel(ch)
     
     % Add y ticks to help delineate
     axD.YTick=flip([0:1:length(dTracesShow)])*-hText;   
-    
+        
     resizeDObj;
 end
 
 function removeDigitalChannel(ch)
-    n=find(ch==[dTracesShow.channel],1);
-    for kk=1:length(dTracesShow(n).Plot)
-        delete(dTracesShow(n).Plot(kk));
-    end
+    % Find the trace to delete
+    n=find(ch==[dTracesShow.channel],1);    
+    
+    % Delete the plots
+    delete(dTracesShow(n).pFill);       
     delete(dTracesShow(n).Label); 
     delete(dTracesShow(n).LabelPlot);
 
+    % Remove trace
     dTracesShow(n)=[];   
+ 
+    % For all traces after the deleted, shift the plots
+    for jj=n:length(dTracesShow)
+        c=co(mod(jj-1,7)+1,:);
+        
+        dTracesShow(jj).pFill.YData=dTracesShow(jj).pFill.YData+hText;
+        dTracesShow(jj).pFill.UserData=dTracesShow(jj).pFill.UserData-1;
+        dTracesShow(jj).pFill.FaceColor=c;
+        dTracesShow(jj).pFill.EdgeColor=c;
 
-    for n=1:length(dTracesShow)
-        c=co(mod(n-1,7)+1,:);
-        for kk=1:length(dTracesShow(n).Plot)
-            p=dTracesShow(n).Plot(kk);
-            p.FaceColor=[c .5];
-            p.EdgeColor=c;
-            p.Position(2)=-n*hText;
-        end
-        dTracesShow(n).LabelPlot.Position(2)=-n*hText;
-        dTracesShow(n).Label.Position(2)=-(n-.5)*hText;
+        dTracesShow(jj).LabelPlot.FaceColor=[c .5];
+        dTracesShow(jj).LabelPlot.Position(2)=-jj*hText;
+        dTracesShow(jj).Label.Position(2)=-(jj-.5)*hText;
     end
     axD.YTick=flip([0:1:length(dTracesShow)])*-hText;
     resizeDObj;

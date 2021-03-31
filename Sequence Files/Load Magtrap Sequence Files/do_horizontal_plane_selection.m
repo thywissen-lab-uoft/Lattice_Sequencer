@@ -398,6 +398,86 @@ curtime =   calctime(curtime,opt.Microwave_Pulse_Length);
         if (opt.Fluorescence_Image == 1)
             iXon_FluorescenceImage(curtime,'ExposureOffsetTime',opt.Microwave_Pulse_Length,'ExposureDelay',0,'FrameTime',opt.Microwave_Pulse_Length/opt.Num_Frames,'NumFrames',opt.Num_Frames)
         end
+        
+        
+        
+        
+        
+        
+        
+        
+    elseif (opt.Microwave_Or_Raman == 3)  %doing Raman transfers with field sweeps
+        
+        spect_pars.pulse_length = opt.Microwave_Pulse_Length;
+        
+        
+        str = sprintf('SOURce1:SWEep:STATe OFF;SOURce1:MOD:STATe OFF; SOURce1:FREQuency %gMHZ;SOURce1:VOLT %gVPP;SOURce2:VOLT %gVPP;', opt.Raman_AOM_Frequency, opt.Raman_Power1, opt.Raman_Power2);
+        addVISACommand(1, str);
+        
+        
+        %Take frequency range in MHz, convert to shim range in Amps (-5.714 MHz/A on Jan 29th 2015)
+        dBx = opt.Selection_Range * cosd(opt.Selection_Angle) / Shim_Calibration_Values(1);
+        dBy = opt.Selection_Range * sind(opt.Selection_Angle) / Shim_Calibration_Values(2);
+
+        if (opt.Sweep_About_Central_Frequency)
+            %Shift field down and up by half of the desired width
+            x_shim_sweep_center = getChannelValue(seqdata,27,1,0);
+            x_shim_sweep_start = x_shim_sweep_center-1*dBx/2;
+            x_shim_sweep_final = x_shim_sweep_center+1*dBx/2;
+
+            y_shim_sweep_center = getChannelValue(seqdata,19,1,0);
+            y_shim_sweep_start = y_shim_sweep_center-1*dBy/2;
+            y_shim_sweep_final = y_shim_sweep_center+1*dBy/2;
+        else %Start at current field and ramp up
+            x_shim_sweep_center = getChannelValue(seqdata,27,1,0);
+            x_shim_sweep_start = x_shim_sweep_center;
+            x_shim_sweep_final = x_shim_sweep_center+1*dBx;
+
+            y_shim_sweep_center = getChannelValue(seqdata,19,1,0);
+            y_shim_sweep_start = y_shim_sweep_center;
+            y_shim_sweep_final = y_shim_sweep_center+1*dBy;
+        end
+    
+        %Ramp shim to start value before generator turns on
+        clear('ramp');
+        ramp.shim_ramptime = field_shift_time;
+        ramp.shim_ramp_delay = -field_shift_settle-field_shift_time; %offset from the beginning of uwave pulse
+        ramp.xshim_final = x_shim_sweep_start;
+        ramp.yshim_final = y_shim_sweep_start;
+        ramp_bias_fields(calctime(curtime,0), ramp);
+
+        %Ramp shim during uwave pulse to transfer atoms
+        ramp.shim_ramptime = spect_pars.pulse_length;
+        ramp.shim_ramp_delay = 0;
+        ramp.xshim_final = x_shim_sweep_final;
+        ramp.yshim_final = y_shim_sweep_final;
+
+        ramp_bias_fields(calctime(curtime,0), ramp);
+        
+  
+        %Ramp shim back to initial value after selection is complete
+
+        clear('ramp');
+        ramp.shim_ramptime = field_shift_time;
+        ramp.shim_ramp_delay = spect_pars.pulse_length+field_shift_settle; %offset from the beginning of uwave pulse
+        ramp.xshim_final = x_shim_sweep_center;
+        ramp.yshim_final = y_shim_sweep_center;
+
+        ramp_bias_fields(calctime(curtime,0), ramp);      
+                
+        
+        %Raman excitation beam AOM-shutter sequence.
+        DigitalPulse(calctime(curtime,-150),'Raman TTL',150,0);
+        
+%         DigitalPulse(calctime(curtime,-100),'Raman Shutter',opt.Microwave_Pulse_Length+3100,0);
+        DigitalPulse(calctime(curtime,-100),'Raman Shutter',opt.Microwave_Pulse_Length+3100,1);% CF 2021/03/30 new shutter
+
+        DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL',3050,0);
+        
+        % add some wait time for the shims to ramp back
+        curtime = calctime(curtime,25);
+    
+    
     end
 
    

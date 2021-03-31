@@ -705,16 +705,22 @@ end
         disp([' Sequence Call - ' datestr(now,14)]);  
         disp([' ' fName]);
         disp(repmat('-',1,60));
-        disp(repmat('-',1,60));
-                
+        disp(repmat('-',1,60));                
         
         % Compile the code
         disp([' Compiling seqdata from  ' fName]);     
         tC1=now;                         % compile start time
         try
             fh(0);                                 
-        catch ME
-            warning('Unable to compile, abandoning');
+        catch ME     
+            disp(' ');
+            warning('Exception caught on compling sequence!');
+            disp(' ');
+            for kk=length(ME.stack):-1:1
+               disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
+            end
+            disp(' '); 
+            resetAfterError;
             return
         end
         tC2=now;
@@ -728,9 +734,14 @@ end
         try
             calc_sequence;                  % convert seqdata for AdWin  
         catch ME
-            warning(ME.message);
-            ME;
             warning('Unable to generate hardware commands');
+            warning(ME.message);
+            disp(' ');
+            for kk=length(ME.stack):-1:1
+               disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
+            end
+            disp(' ');  
+            resetAfterError;
             return
         end
         tC3=now;
@@ -744,9 +755,15 @@ end
         disp(repmat('-',1,60));
         try
             load_sequence;              % load the sequence onto adwin
-        catch exception
-            disp('Unable to load sequence onto Adwin');
-            warning(exception.message);
+        catch ME
+            warning('Unable to load sequence onto Adwin');
+            warning(ME.message);
+            disp(' ');
+            for kk=length(ME.stack):-1:1
+               disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
+            end
+            disp(' ');  
+            resetAfterError;
             return
         end           
         tC4=now;                         % compile end time
@@ -769,9 +786,16 @@ end
         % Run the sequence
         try
             Start_Process(adwinprocessnum);
-        catch exception
-            disp('Unable to start the Adwin');
-            warning(exception.message);            
+        catch ME
+            warning('Unable to start the Adwin');
+            warning(ME.message);     
+            disp(' ');
+            for kk=length(ME.stack):-1:1
+               disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
+            end
+            disp(' '); 
+            resetAfterError;
+            return;
         end
 
         % Update progress bars
@@ -780,6 +804,37 @@ end
         % Seqdata history
                 
 
+    end
+
+    function resetAfterError
+        warning(['Resetting the GUI after an error on sequence ' ...
+            'run call. Unknown if the Adwin is in a stable state']);
+
+        switch bgRun.SelectedObject.String
+
+            % Renable buttons on single
+            case 'single'
+                bRun.Enable='on';
+                rScan.Enable='on';
+                rSingle.Enable='on';
+
+                bPlot.Enable='on';
+                bOver.Enable='on';
+                bBrowse.Enable='on';
+                eSeq.Enable='on';        
+
+            % Renable buttons on single
+            case 'scan'                
+                bRun.Enable='on';
+                rScan.Enable='on';
+                rSingle.Enable='on';
+                bStop.Enable='off';
+                bPlot.Enable='on';
+                bOver.Enable='on';
+                bBrowse.Enable='on';
+                eSeq.Enable='on';
+        end  
+        
     end
     
     function out=safeToRun

@@ -4716,11 +4716,11 @@ curtime = calctime(curtime,1000);
 % % % % setAnalogChannel(calctime(curtime,0),'X Shim',1); %0.15
 % % % % setAnalogChannel(calctime(curtime,0),'Z Shim',3);%0.0 
 % % % 
-setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',190);%202.5); %200
-setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',3); 
-setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
-setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
-setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
+% setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',190);%202.5); %200
+% setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',3); 
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
+% setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
 % % 
 % % 
 % setAnalogChannel(calctime(curtime,0),59,0); %0.11
@@ -4815,6 +4815,10 @@ setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
 % setDigitalChannel(calctime(curtime,0),'Kill TTL',1);
 % setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
 
+%% Raman check
+setAnalogChannel(calctime(curtime,0),59,0); 
+% setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1)
+setDigitalChannel(calctime(curtime,0),'Raman Shutter',0)
 
 timeout = curtime;
 

@@ -3408,21 +3408,160 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     
 end
 
-%% uWave Spectroscopy    
-    if do_K_uwave_spectroscopy
+%% K uWave Manipulations
+% do_K_uwave_spectroscopy2=0;
+if do_K_uwave_spectroscopy
+    dispLineStr('Performing K uWave Spectroscopy',curtime);
+
+    % All fields that are not the shims are assumed to be properly
+    % configured ahead of time. This code only manipulates the uWave
+    
+%     uWaveMode='rabi';
+    uWaveMode='sweep';
+    
+    % Define the SRS frequency
+    freq_list = [25]/1000;
+    freq_val = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'freq_val');
+    
+    % Program the SRS to output single frequency
+    uWave_opts=struct;
+    uWave_opts.Address=28;                       % K uWave ("SRS B");
+    uWave_opts.Frequency=1335.845+2.5+freq_val;  % Frequency in MHz
+    uWave_opts.Power=15;                         % Power in dBm
+    uWave_opts.Enable=1;                         % Enable SRS output
+    programSRS(uWave_opts);                      % Send GPIB command
+    
+    addOutputParam('uwave_pwr',uWave_opts.Power)
+    addOutputParam('uwave_frequency',uWave_opts.Frequency);
+    
+    
+    % Make sure RF, Rb uWave, K uWave are all off for safety
+    setDigitalChannel(calctime(curtime,-50),'RF TTL',0);
+    setDigitalChannel(calctime(curtime,-50),'Rb uWave TTL',0);
+    setDigitalChannel(calctime(curtime,-50),'K uWave TTL',0);
+
+    % Switch antenna to uWaves (0: RF, 1: uWave)
+    setDigitalChannel(calctime(curtime,-40),'RF/uWave Transfer',1); 
+    
+    % Set uWave power to max (VVA)
+    setAnalogChannel(calctime(curtime,-10),'uWave VVA',10);
+
+    
+    % Switch uWave source to the K sources (0: K, 1: Rb);
+    setDigitalChannel(calctime(curtime,-30),'K/Rb uWave Transfer',0);
+
+    % RF Switch for K SRS depreciated? (1:B, 0:A)
+    setDigitalChannel(calctime(curtime,-20),'K uWave Source',1);  
+    
+switch uWaveMode
+    case 'rabi'
+        % Note that looking for uWave Rabi oscillations may be a fool's
+        % errand given the low rabi frequencies we can get.
         
+        disp(' Rabi Oscillations');
+        % Have uWaves on for a fixed time and no field changes
+        
+        % Define the time to have uWaves on
+        uwave_time_list=[1.4];
+        uwave_time = getScanParameter(uwave_time_list,seqdata.scancycle,seqdata.randcyclelist,'pulse_time');
+
+        % Turn on the uWave
+        setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);    
+        % Wait
+        curtime = calctime(curtime,uwave_time);
+        % Turn off the uWave
+        setDigitalChannel(calctime(curtime,0),'K uWave TTL',0); 
+        
+    case 'sweep'
+        disp(' Landau-Zener Sweep B-Field');
+
+        % Sweep the magnetic field to perform Landau-Zener sweep
+        
+        % Define sweep range (MHz)
+        delta_freq_list=[500/1000];  
+        delta_freq=getScanParameter(delta_freq_list,seqdata.scancycle,seqdata.randcyclelist,'delta_freq');
+        
+        % Define sweep time (ms)
+         sweep_time_list =[delta_freq*1000/5]; % Keep rate to be 5 kHz/ms
+%         sweep_time_list =[10]; 
+        sweep_time = getScanParameter(sweep_time_list,seqdata.scancycle,seqdata.randcyclelist,'sweep_time');
+        
+        % Convert sweep range to current of z shim
+        dBz = delta_freq/(-5.714); % -5.714 MHz/A for Z shim (2015/01/29)         
+
+        % Define the magnetic field sweep
+        Bzc = getChannelValue(seqdata,'Z Shim',1,0);
+        Bzi = Bzc-dBz/2;
+        Bzf = Bzc+dBz/2;
+        
+        % Time to shift shims to intial/final values
+        field_shift_time=5;      
+       
+        % Time wait after ramping shims (for field settling);
+        field_shift_offset = 15;     
+        
+        % Display summary
+        disp(['     Field Shift (kHz) : ' num2str(1E3*delta_freq)]);
+        disp(['     Ramp Time   (ms)  : ' num2str(sweep_time)]);
+
+        
+        % Ramp Z Shim to initial field of sweep before uWave        
+        ramp=struct;
+        ramp.shim_ramptime = field_shift_time;
+        ramp.shim_ramp_delay = -field_shift_offset; 
+        ramp.zshim_final = Bzi;
+        ramp_bias_fields(calctime(curtime,0), ramp);
+
+        % Ramp Z Shim to final field of sweep during uWave
+        ramp=struct;
+        ramp.shim_ramptime = sweep_time;
+        ramp.shim_ramp_delay = 0;                   
+        ramp.zshim_final = Bzf;
+        ramp_bias_fields(calctime(curtime,0), ramp);
+
+        % Ramp Z Shim back to original field after uWave
+        clear('ramp');
+        ramp=struct;
+        ramp.shim_ramptime = field_shift_time;
+        ramp.shim_ramp_delay = sweep_time+field_shift_offset;
+        ramp.zshim_final = Bzc;            
+        ramp_bias_fields(calctime(curtime,0), ramp);
+        
+        % Turn on the uWave
+        setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);    
+        % Wait
+        curtime = calctime(curtime,sweep_time);
+        % Turn off the uWave
+        setDigitalChannel(calctime(curtime,0),'K uWave TTL',0); 
+    otherwise
+        error('you fucked up');
+end
+
+% Wait a bit for future pieces of code (should get rid of this)
+curtime = calctime(curtime,20);    
+    
+    
+end
+
+%% uWave Spectroscopy    
+
+%{
+    if do_K_uwave_spectroscopy
+        dispLineStr('Performing K uWave Spectroscopy',curtime);
+
+
         clear('spect_pars');
         
-        freq_list = [2500]/1000;[150]/1000;
+        freq_list = [0]/1000;[150]/1000;
         freq_val = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'freq_val');
         %Currently 1390.75 for 2*22.6.
-        spect_pars.freq = 1335.845 + freq_val;1298.3 + freq_val;1335.845 + freq_val; %Optimal stub-tuning frequency. Center of a sweep (~1390.75 for 2*22.6 and -9/2; ~1498.25 for 4*22.6 and -9/2)
-        spect_pars.power = 15; %dBm
-        spect_pars.delta_freq = 1500/1000; 1000;% end_frequency - start_frequency (in
+        spect_pars.freq = 1335.845 +2.5+ freq_val;1298.3 + freq_val;1335.845 + freq_val; %Optimal stub-tuning frequency. Center of a sweep (~1390.75 for 2*22.6 and -9/2; ~1498.25 for 4*22.6 and -9/2)
+        spect_pars.power = 15; % 15 %dBm
+        spect_pars.delta_freq =1500/1000; 1000;% end_frequency - start_frequency (in
         spect_pars.mod_dev = spect_pars.delta_freq;
         
 %         spect_pars.pulse_length = t0*10^(-1.5)/10^(pwr/10); % also is sweep length (max is Keithley time - 20ms)
-        pulse_time_list = [spect_pars.delta_freq*1000/5]; %Keep fixed at 5kHz/ms.
+        pulse_time_list =[spect_pars.delta_freq*1000/5]; %Keep fixed at 5kHz/ms.
         spect_pars.pulse_length = getScanParameter(pulse_time_list,seqdata.scancycle,seqdata.randcyclelist,'uwave_pulse_time');
         spect_pars.pulse_type = 1;  %0 - Basic Pulse; 1 - Ramp up and down with min-jerk
         spect_pars.AM_ramp_time = 5;
@@ -3433,9 +3572,9 @@ end
         spect_pars.SRS_select = 1;
         
 %         addOutputParam('uwave_pwr',pwr)
-        addOutputParam('sweep_time',spect_pars.pulse_length)
-        addOutputParam('sweep_range',spect_pars.delta_freq)
-        addOutputParam('freq_val',freq_val)
+        addOutputParam('sweep_time',spect_pars.pulse_length);
+        addOutputParam('sweep_range',spect_pars.delta_freq);
+        addOutputParam('freq_val',freq_val);
     
         do_field_sweep = 1;
         if do_field_sweep
@@ -3508,7 +3647,6 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
 curtime = calctime(curtime,20);
 
 ScopeTriggerPulse(curtime,'K uWave Spectroscopy');
-
     Raman_Back = 0;
 
     if Raman_Back
@@ -3545,6 +3683,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
 
 
     elseif ( do_Rb_uwave_spectroscopy ) % does a uwave pulse or sweep for spectroscopy
+        dispLineStr('Rb_uwave_spectroscopy.',curtime);
 
 %         freq_list = [-20:0.8:-12]/1000;%
 %         freq_val = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'freq_val');
@@ -3564,11 +3703,11 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars); % ch
 
     end
 
-
     
 %% uWave single shot spectroscopy
 if ( do_singleshot_spectroscopy ) % does an rf pulse or sweep for spectroscopy
-    
+        dispLineStr('singleshot_spectroscopy.',curtime);
+
 %     addGPIBCommand(2,sprintf(['FUNC PULS; PULS:PER %g; FUNG:PULS:WIDT %g; VOLT:HIGH 4.5V; VOLT:LOW 0V; BURS:MODE TRIG; BURS:NCYC 1; ' ...
 %         'AMPR %gdBm; MODL 1; DISP 2; ENBR
 %         %g;'],SRSfreq,SRSmod_dev,SRSpower,rf_on));
@@ -3577,10 +3716,13 @@ if ( do_singleshot_spectroscopy ) % does an rf pulse or sweep for spectroscopy
 curtime = uwave_singleshot_spectroscopy(calctime(curtime,0));
 
 end       
-    
+    %}
 %% RF Spectroscopy
 
     if do_RF_spectroscopy
+        dispLineStr('RF spectroscopy.',curtime);
+
+        
         %Do RF Sweep
         clear('sweep');
         B = 5;
@@ -3622,7 +3764,8 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
 %          (May 20th, 2013)
 
 if ( do_K_uwave_spectroscopy || do_Rb_uwave_spectroscopy || do_RF_spectroscopy || do_singleshot_spectroscopy )
-    
+    dispLineStr('Ramping fields after spectroscopy.',curtime);
+
     ramp_fields = 1; % do a field ramp for spectroscopy
     
     if ramp_fields
@@ -3632,9 +3775,9 @@ curtime = calctime(curtime,100);
         ramp.shim_ramptime = 50;
         ramp.shim_ramp_delay = -100; % ramp earlier than FB field if FB field is ramped to zero
        
-        getChannelValue(seqdata,27,1,0)
-        getChannelValue(seqdata,19,1,0)
-        getChannelValue(seqdata,28,1,0)
+        getChannelValue(seqdata,27,1,0);
+        getChannelValue(seqdata,19,1,0);
+        getChannelValue(seqdata,28,1,0);
         
         %Give ramp shim values if we want to do spectroscopy using the
         %shims instead of FB coil. If nothing set here, then
@@ -4245,26 +4388,28 @@ if (Raman_transfers == 1)
     clear('horizontal_plane_select_params')
     F_Pump_List = [0.7];[0.60];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power'); %1.4;
-    Raman_Power_List =[1.2]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
+    Raman_Power_List =[.7]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
     horizontal_plane_select_params.Raman_Power1 = getScanParameter(Raman_Power_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Power'); 
     horizontal_plane_select_params.Raman_Power2 = horizontal_plane_select_params.Raman_Power1;
     horizontal_plane_select_params.Fake_Pulse = 0;
     horizontal_plane_select_params.Use_EIT_Beams = 0;
-    horizontal_plane_select_params.Selection__Frequency = 1285.8 + 11.025; %11.550
+    uwave_freq_list = [0]/1000;
+    uwave_freq = getScanParameter(uwave_freq_list,seqdata.scancycle,seqdata.randcyclelist,'uwave_freq');
+    horizontal_plane_select_params.Selection__Frequency = 1285.8 + 11.025 +uwave_freq; %11.550
+    horizontal_plane_select_params.Microwave_Power_For_Selection = 15; %dBm
     
-    
-    Raman_List = [0];[-50];0;   %-30% : in kHz;
+    Raman_List = [-150];[-50];0;   %-30% : in kHz;
     horizontal_plane_select_params.Raman_AOM_Frequency = 110 + getScanParameter(Raman_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Freq')/1000;
     
     %CHECK PERFORMANCE OF SWEEP IN BURST MODE. CURRENTLY USING BURST MODE
     %SINCE REMOVING ZASWA SWITCHES.
     horizontal_plane_select_params.Rigol_Mode = 'Sweep';  %'Sweep', 'Pulse', 'Modulate'
-    Range_List = [2000];%in kHz
+    Range_List = [1000];%in kHz
     horizontal_plane_select_params.Selection_Range = getScanParameter(Range_List,seqdata.scancycle,seqdata.randcyclelist,'Sweep_Range')/1000; 
-    Raman_On_Time_List = [.6 .7 .8];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
+    Raman_On_Time_List = [1];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
     horizontal_plane_select_params.Microwave_Pulse_Length = getScanParameter(Raman_On_Time_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Time'); 
     horizontal_plane_select_params.Fluorescence_Image = 0;
-    horizontal_plane_select_params.Num_Frames = 1; % 2 for 2 images
+    horizontal_plane_select_params.Num_Frames = 2; % 2 for 2 images
     Modulation_List = Raman_On_Time_List;
     horizontal_plane_select_params.Modulation_Time = getScanParameter(Modulation_List,seqdata.scancycle,seqdata.randcyclelist,'Modulation_Time');
     horizontal_plane_select_params.Microwave_Or_Raman = 2; %1: uwave, 2: Raman

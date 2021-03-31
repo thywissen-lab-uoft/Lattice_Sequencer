@@ -344,6 +344,10 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
         % Program Rigol generator
         if strcmp(opt.Rigol_Mode, 'Sweep')
             str = sprintf('SOURce1:SWEep:STATe ON;SOURce1:SWEep:TRIGger:SOURce: EXTernal;SOURce1:SWEep:TIME %gMS;SOURce1:FREQuency:CENTer %gMHZ;SOURce1:FREQuency:SPAN %gMHZ;SOURce1:VOLT %g;SOURce2:VOLT %g;', opt.Modulation_Time, opt.Raman_AOM_Frequency, opt.Selection_Range, opt.Raman_Power1, opt.Raman_Power2);
+            
+            % Hold at end of sweep (FROM CF)
+%             str = sprintf('SOURce1:SWEep:STATe ON;SOURce1:SWEep:TRIGger:SOURce: EXTernal;SOURce1:SWEep:TIME %gMS;SOURce1:FREQuency:CENTer %gMHZ;SOURce1:FREQuency:SPAN %gMHZ;SOURce1:VOLT %g;SOURce2:VOLT %g;', opt.Modulation_Time, opt.Raman_AOM_Frequency, opt.Selection_Range, opt.Raman_Power1, opt.Raman_Power2);
+
         elseif strcmp(opt.Rigol_Mode, 'Pulse')
             str = sprintf('SOURce1:SWEep:STATe OFF;SOURce1:MOD:STATe OFF; SOURce1:FREQuency %gMHZ;SOURce1:VOLT %gVPP;SOURce2:VOLT %gVPP;', opt.Raman_AOM_Frequency, opt.Raman_Power1, opt.Raman_Power2);
         elseif strcmp(opt.Rigol_Mode, 'Modulate')
@@ -369,7 +373,10 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
         end
         %Raman excitation beam AOM-shutter sequence.
         DigitalPulse(calctime(curtime,-150),'Raman TTL',150,0);
-        DigitalPulse(calctime(curtime,-100),'Raman Shutter',opt.Microwave_Pulse_Length+3100,0);
+        
+%         DigitalPulse(calctime(curtime,-100),'Raman Shutter',opt.Microwave_Pulse_Length+3100,0);
+        DigitalPulse(calctime(curtime,-100),'Raman Shutter',opt.Microwave_Pulse_Length+3100,1);% CF 2021/03/30 new shutter
+
         DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL',3050,0);
         if opt.Use_EIT_Beams
             %Turn off EIT beams.
@@ -724,7 +731,7 @@ dispLineStr('TIME!!!!',curtime);
 curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 
 else
-curtime = calctime(curtime,opt.Microwave_Pulse_Length); %Added March 19,2021 to shorten the lattice time for Raman transfers
+curtime = calctime(curtime,opt.Microwave_Pulse_Length+50); %Added March 19,2021 to shorten the lattice time for Raman transfers
 end
         
 %% assigning outputs (edit with care!)

@@ -30,6 +30,8 @@ curtime = timein;
     end 
 %     setDigitalChannel(calctime(curtime,transfer_switch_delay),'RF/uWave Transfer',1);
     %Make sure that K/Rb uWave switch is set to the right atom
+
+    
     if atomtype == 0
         %Rb
         if ~(getChannelValue(seqdata,'K/Rb uWave Transfer',0) == 1)

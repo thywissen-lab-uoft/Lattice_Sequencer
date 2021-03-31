@@ -402,7 +402,9 @@ end
     
     %Set Raman AOM TTL to open.
     %Turn off Raman shutter with TTL.
-    setDigitalChannel(calctime(curtime,5),'Raman Shutter',1);
+%     setDigitalChannel(calctime(curtime,5),'Raman Shutter',1);
+    setDigitalChannel(calctime(curtime,5),'Raman Shutter',0); %2021/03/30 new shutter
+
     setDigitalChannel(calctime(curtime,0),'Raman TTL',1);
     
     %Set 'D1' Raman AOMs to open, shutter closed.

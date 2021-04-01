@@ -19,7 +19,9 @@ function programRigol(global_settings,ch1_set,ch2_set)
 %   - sweep the frequency of carrier (ie. for Landau-Zener)
 %   - ramp up/down power of both outputs (ie. for STIRAP).
 %   - set the clock to be external
-%
+%   -
+% While units can be specified in the write commands, to keep things simple
+% all units shall use their default values (Hz, and seconds)
 
 if nargin~=3
     global_settings=struct;
@@ -91,6 +93,7 @@ disp([' Progamming ' nfo]);
 disp(' Notes: ');
 disp(' - BURST,MOD, and SWEEP are mutually exclusive commands');
 disp(' - SWEEP outputs constants frequency is start and end are equal.');
+disp(' - SWEEP returns to start frequency at end of sweep');
 disp(' - BURST can only go up to 100 MHz, <300ns trigger latency');
 fopen(obj);
 
@@ -114,9 +117,15 @@ fprintf(obj,[':SYSTem:ROSCillator:SOURce ' global_settings.ClockSource]);
 %     'SWEEP_FREQUENCY_CENTER',...
 %     'SWEEP_FREQUENCY_SPAN',...
 %     'SWEEP_TRIGGER'};
-    
+
+% testing
+fprintf(obj,[':SOURCE1:SWEEP:STATE ON']);
+fprintf(obj,[':SOURCE1:SWEEP:TIME 10ms']);
+
 
 %% READ IN ALL COMMANDS
+
+
 
 ch1_get=readRigol(obj,1);
 ch2_get=readRigol(obj,2);
@@ -153,6 +162,8 @@ if isequal(out.SWEEP,'ON')
     out.SWEEP_FREQUENCY_CENTER=strtrim(query(obj,[':SOURCE' num2str(ch) ':FREQUENCY:CENTER?']));
     out.SWEEP_FREQUENCY_SPAN=strtrim(query(obj,[':SOURCE' num2str(ch) ':FREQUENCY:SPAN?']));
     out.SWEEP_TIME=strtrim(query(obj,[':SOURCE' num2str(ch) ':SWEEP:TIME?']));
+    out.SWEEP_HOLDTIME_START=strtrim(query(obj,[':SOURCE' num2str(ch) ':SWEEP:HTIME:START?']));
+    out.SWEEP_HOLDTIME_STOP=strtrim(query(obj,[':SOURCE' num2str(ch) ':SWEEP:HTIME:STOP?']));
     out.SWEEP_TYPE=strtrim(query(obj,[':SOURCE' num2str(ch) ':SWEEP:SPACING?']));
     out.SWEEP_TRIGGER=strtrim(query(obj,[':SOURCE' num2str(ch) ':SWEEP:TRIGGER:SOURCE?']));
 end

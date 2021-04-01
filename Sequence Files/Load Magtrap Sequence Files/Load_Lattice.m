@@ -79,9 +79,9 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     do_lattice_mod = 0; %keep: calibrate lattice depth
     lattice_depth_calibration = 0; %keep: another lattice calibration method
     rotate_waveplate_after_ramp = 1; %keep:  Turn Rotating Waveplate to Shift Power to Lattice Beams
-    do_lattice_ramp_after_spectroscopy = 1; %keep: Ramp lattices on or off after doing spectroscopy, must be on for fluorescence image
+    do_lattice_ramp_after_spectroscopy = 0; %keep: Ramp lattices on or off after doing spectroscopy, must be on for fluorescence image
     do_shear_mode_mod = 0; %delete: used to be a way modulate XDT using shear mode aom
-    Raman_transfers = 1;  %keep                  % for fluorescence image
+    Raman_transfers = 0;  %keep                  % for fluorescence image
     do_lattice_sweeps = 0; %delete
     Drop_From_XDT = 0; %May need to add code to rotate waveplate back here.
 
@@ -4404,9 +4404,9 @@ if (Raman_transfers == 1)
     %CHECK PERFORMANCE OF SWEEP IN BURST MODE. CURRENTLY USING BURST MODE
     %SINCE REMOVING ZASWA SWITCHES.
     horizontal_plane_select_params.Rigol_Mode = 'Sweep';  %'Sweep', 'Pulse', 'Modulate'
-    Range_List = [100];%in kHz
+    Range_List = [50];%in kHz
     horizontal_plane_select_params.Selection_Range = getScanParameter(Range_List,seqdata.scancycle,seqdata.randcyclelist,'Sweep_Range')/1000; 
-    Raman_On_Time_List = [1 2 3 4 5 6 7 8 9 10 20 30 40];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
+    Raman_On_Time_List = [10];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
     horizontal_plane_select_params.Microwave_Pulse_Length = getScanParameter(Raman_On_Time_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Time'); 
     horizontal_plane_select_params.Fluorescence_Image = 0;
     horizontal_plane_select_params.Num_Frames = 2; % 2 for 2 images

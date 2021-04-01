@@ -1,4 +1,4 @@
-function programRigol(global_settings,ch1_set,ch2_set)
+function programRigol(InternalAddress,ch1_set,ch2_set)
 % programRigol.m
 %
 % Author : C Fujiwara
@@ -7,6 +7,8 @@ function programRigol(global_settings,ch1_set,ch2_set)
 % This code programs the Rigol DG4162 which we use in lab as a function
 % generator in lab to drive AOMs.  This code includes a brief overview of
 % the functioning of these function generators.
+%
+%   global_settings
 % 
 % Some primary features that we desire
 %
@@ -18,16 +20,27 @@ function programRigol(global_settings,ch1_set,ch2_set)
 %   (short pulses that the adwin can't do)
 %   - sweep the frequency of carrier (ie. for Landau-Zener)
 %   - ramp up/down power of both outputs (ie. for STIRAP).
-%   - set the clock to be external
+%   - set the clock to be external%
 %
+%   The modes of operation are CONSTANT, BURST, SWEEP, MOD
+%   CONSTANT - constant frequency (occurs if BURST,SWEEP, and MOD are off)
+%   BURST - output on when given a trigger (duration can be linked to
+%       trigger or can be externally set)
+%   SWEEP - Sweep the output frequency over a range
+%   MOD - modulate the frequency (currently only amplitude modulation);
+%
+% If a settings if not provided for a given parameter, it is not written.
+% However, all typically set parameters will be read.
+
+%% Default settings
 
 if nargin~=3
-    global_settings=struct;
-    global_settings.InternalAddress=1;
-    global_settings.ClockSource='External';
+    warning(['You should really give me all argument all the time. ' ...
+        ' Just make an argument an empty [] if you don'' want to use it.']);
+    InternalAddress=1;
     
     ch1_set=struct;
-    ch1_set.FREQUENCY='1.0985E9';
+    ch1_set.FREQUENCY='1.0985E8';
     ch1_set.STATE='ON';
     ch1_set.AMPLITUDE='0.4';
     ch1_set.AMPLITUDE_UNIT='VPP';
@@ -42,119 +55,121 @@ if nargin~=3
     ch2_set.AMPLITUDE_UNIT='VPP';
     ch2_set.BURST='OFF';
     ch2_set.MOD='OFF';
-    ch2_set.SWEEP='OFF';    
-    
+    ch2_set.SWEEP='OFF';  
 end
-%% Description of Operation
-% This code always writes a SIN wave to the Rigol
-%
-% The modes of operation are CONSTANT, BURST, SWEEP
-%   CONSTANT - output a constant frequency
-%   BURST - output 
-%   SWEEP
-%   MOD
 
+%% Grab the Device Name
 
-%% Define your settings
+DeviceName=getVISADeviceName(InternalAddress);
 
-global_settings.DeviceName=getVISADeviceName(global_settings.InternalAddress);
+%% Define Commands
+% This structure defines all readable and writable commands to the Rigol
+% DG4162.  The fieldname of the structure corresponds to the fieldname of
+% the input structure fieldnames.  The value of each field is a string
+% which corresponds to the command to be written to the Rigol.  It accounts
+% for the channel output via <n> which is later replaced with an integer.
+% Queries are automatically hanlded by just adding a ? in the readRigol
+% function defined later.
 
+cmds=struct;
 
+cmds.CLOCK_SOURCE=':SYSTEM:ROSCILLATOR:SOURCE';
 
+cmds.LOAD=':OUTPUT<n>:LOAD';
+cmds.STATE=':OUTPUT<n>:STATE';
+
+cmds.FREQUENCY=':OUTPUT<n>:LOAD';
+cmds.AMPLITUDE_UNIT=':SOURCE<n>:VOLTAGE:UNIT';
+cmds.AMPLITUDE=':SOURCE<n>:IMMEDIATE:AMPLITUDE';
+cmds.BURST=':OUTPUT<n>:BURST:STATE';
+cmds.MOD=':OUTPUT<n>:MOD:STATE';
+cmds.SWEEP=':OUTPUT<n>:SWEEP:STATE';
+
+cmds.SWEEP_FREQUENCY_CENTER=':SOURCE<n>:FREQUENCY:CENTER';
+cmds.SWEEP_FREQUENCY_SPAN=':SOURCE<n>:FREQUENCY:SPAN';
+cmds.SWEEP_FREQUENCY_TIME=':SOURCE<n>:FREQUENCY:TIME';
+cmds.SWEEP_FREQUENCY_TYPE=':SOURCE<n>:FREQUENCY:TYPE';
+cmds.SWEEP_FREQUENCY_TRIGGER=':SOURCE<n>:SWEEP:TRIGGER:SOURCE';
+cmds.SWEEP_HOLDTIME_STOP='SOURCE<n>:SWEEP:HTIME:STOP';
+cmds.SWEEP_HOLDTIME_START='SOURCE<n>:SWEEP:HTIME:START';
+
+%% Notify the user
+disp(' ');
+disp([' Progamming ' DeviceName]);
+disp(' - BURST, MOD, and SWEEP are mutually exclusive commands');
+disp(' - SWEEP returns to initial frequency at end of sweep.');
+disp(' - BURST can only go up to 100 MHz, <300ns trigger latency');
+disp(' - MOD is not coded yet.');
 
 %% Verify connection to VISA object and display its name
-try
-    % Find the VISA object
-    obj = instrfind('Type','visa-usb','RsrcName', global_settings.DeviceName);
-    if isempty(obj)
-        obj = visa('NI', global_settings.DeviceName);
-    else
-        fclose(obj);
-        obj = obj(1);
-    end
 
-    % Open the VISA object
-    fopen(obj);
-    nfo = query(obj, '*IDN?');
-    nfo=strtrim(nfo);    
+% Connect to Rigol
+obj=visaConnect(DeviceName);
 
-    fclose(obj);
-catch ME
-    warning('Unable to connect to Rigol');
-    disp(ME);
+% If connection faile exit the function
+if isempty(obj)
     return;
-end
-try
-%% Initiate Connection to write
-disp(' ');
-disp([' Progamming ' nfo]);
-disp(' Notes: ');
-disp(' - BURST,MOD, and SWEEP are mutually exclusive commands');
-disp(' - SWEEP outputs constants frequency is start and end are equal.');
-disp(' - BURST can only go up to 100 MHz, <300ns trigger latency');
-fopen(obj);
+end   
+%% Write and Read
 
-fprintf(obj,[':SYSTem:ROSCillator:SOURce ' global_settings.ClockSource]);
-
-%% WRITE SETTINGS
-% 
-% cmds=struct;
-% 
-% cmds(1).Name='Frequency';
-% cmds(2).Command=@(ch) [':SOURCE' num2str(1) ':FREQUENCY?'];
-% 
-% 
-% fnames={'FREQUENCY',...
-%     'STATE',...
-%     'AMPLITUDE_UNIT',...
-%     'AMPLITUDE',...
-%     'BURST',...
-%     'MOD',...
-%     'SWEEP',...
-%     'SWEEP_FREQUENCY_CENTER',...
-%     'SWEEP_FREQUENCY_SPAN',...
-%     'SWEEP_TRIGGER'};
-    
-
-%% READ IN ALL COMMANDS
-
-ch1_get=readRigol(obj,1);
-ch2_get=readRigol(obj,2);
-
-%%%%% Display Results
-
-disp(ch1_get)
-disp(ch2_get)
+try 
+    % Read channe 1 and channel 2 settings.
+    ch1_get=readRigol(obj,1);
+    ch2_get=readRigol(obj,2);
+    disp(ch1_get)
+    disp(ch2_get)
 catch ME    
     warning('Unable to read from Rigol. Closing connection safely');
+    disp(ME);
 end
-
 
 
 %% Close Connect and Delete
 fclose(obj);
 delete(obj);
-end
 
-function out=readRigol(obj,ch)
+%% Helper Functions
 
-out=struct;
-out.NAME=['OUTPUT' num2str(ch)];
-out.LOAD=strtrim(query(obj,[':OUTPUT' num2str(ch) ':LOAD?']));
-out.STATE=strtrim(query(obj,[':OUTPUT' num2str(ch) ':STATE?']));
-out.FREQUENCY=strtrim(query(obj,[':SOURCE' num2str(ch) ':FREQUENCY?']));
-out.AMPLITUDE=strtrim(query(obj,[':SOURCE' num2str(ch) ':VOLTAGE:IMMEDIATE:AMPLITUDE?']));
-out.AMPLITUDE_UNIT=strtrim(query(obj,[':SOURCE' num2str(ch) ':VOLTAGE:UNIT?']));
-out.BURST=strtrim(query(obj,[':SOURCE' num2str(ch) ':BURST:STATE?']));
-out.MOD=strtrim(query(obj,[':SOURCE' num2str(ch) ':MOD:STATE?']));
-out.SWEEP=strtrim(query(obj,[':SOURCE' num2str(ch) ':SWEEP:STATE?']));
+    function out=readRigol(ch)
+        out=struct;
+        out.NAME=['OUTPUT' num2str(ch)];
+        fnames=fieldnames(cmds);
 
-if isequal(out.SWEEP,'ON')
-    out.SWEEP_FREQUENCY_CENTER=strtrim(query(obj,[':SOURCE' num2str(ch) ':FREQUENCY:CENTER?']));
-    out.SWEEP_FREQUENCY_SPAN=strtrim(query(obj,[':SOURCE' num2str(ch) ':FREQUENCY:SPAN?']));
-    out.SWEEP_TIME=strtrim(query(obj,[':SOURCE' num2str(ch) ':SWEEP:TIME?']));
-    out.SWEEP_TYPE=strtrim(query(obj,[':SOURCE' num2str(ch) ':SWEEP:SPACING?']));
-    out.SWEEP_TRIGGER=strtrim(query(obj,[':SOURCE' num2str(ch) ':SWEEP:TRIGGER:SOURCE?']));
-end
+        for kk=1:length(fieldnames(cmds))
+            str=cmds.(fnames{kk});              % Get the command for this parameter
+            str=strrep(str,'<n>',num2str(ch));  % Replace <n> with the channel  
+            str=[str '?'];                      % Add question mark for query
+            out.(fnames{kk})=strtrim(query(obj,str));
+        end       
+    end
 
 end
+
+function obj=visaConnect(DeviceName)
+    obj=[];
+
+    try
+        % Find the VISA object
+        obj = instrfind('Type','visa-usb','RsrcName', DeviceName);
+        if isempty(obj)
+            obj = visa('NI', DeviceName);
+        else
+            fclose(obj);
+            obj = obj(1);
+        end
+
+        % Open the VISA object
+        fopen(obj);
+        
+        % Get basic device information
+        nfo = query(obj, '*IDN?');
+        nfo=strtrim(nfo);   
+        disp(['Established connection to ' nfo]);
+
+    catch ME
+        warning(['Unable to connect to ' DeviceName]);
+        disp(ME);
+    end
+
+end
+

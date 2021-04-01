@@ -4388,7 +4388,7 @@ if (Raman_transfers == 1)
     clear('horizontal_plane_select_params')
     F_Pump_List = [0.7];[0.60];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power'); %1.4;
-    Raman_Power_List =[.3]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
+    Raman_Power_List =[.4]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
     horizontal_plane_select_params.Raman_Power1 = getScanParameter(Raman_Power_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Power'); 
     horizontal_plane_select_params.Raman_Power2 = horizontal_plane_select_params.Raman_Power1;
     horizontal_plane_select_params.Fake_Pulse = 0;
@@ -4404,9 +4404,9 @@ if (Raman_transfers == 1)
     %CHECK PERFORMANCE OF SWEEP IN BURST MODE. CURRENTLY USING BURST MODE
     %SINCE REMOVING ZASWA SWITCHES.
     horizontal_plane_select_params.Rigol_Mode = 'Sweep';  %'Sweep', 'Pulse', 'Modulate'
-    Range_List = [250];%in kHz
+    Range_List = [100];%in kHz
     horizontal_plane_select_params.Selection_Range = getScanParameter(Range_List,seqdata.scancycle,seqdata.randcyclelist,'Sweep_Range')/1000; 
-    Raman_On_Time_List = [10];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
+    Raman_On_Time_List = [1 2 3 4 5 6 7 8 9 10 20 30 40];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
     horizontal_plane_select_params.Microwave_Pulse_Length = getScanParameter(Raman_On_Time_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Time'); 
     horizontal_plane_select_params.Fluorescence_Image = 0;
     horizontal_plane_select_params.Num_Frames = 2; % 2 for 2 images

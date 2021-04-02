@@ -79,9 +79,9 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     do_lattice_mod = 0; %keep: calibrate lattice depth
     lattice_depth_calibration = 0; %keep: another lattice calibration method
     rotate_waveplate_after_ramp = 1; %keep:  Turn Rotating Waveplate to Shift Power to Lattice Beams
-    do_lattice_ramp_after_spectroscopy = 0; %keep: Ramp lattices on or off after doing spectroscopy, must be on for fluorescence image
+    do_lattice_ramp_after_spectroscopy = 1; %keep: Ramp lattices on or off after doing spectroscopy, must be on for fluorescence image
     do_shear_mode_mod = 0; %delete: used to be a way modulate XDT using shear mode aom
-    Raman_transfers = 0;  %keep                  % for fluorescence image
+    Raman_transfers = 1;  %keep                  % for fluorescence image
     do_lattice_sweeps = 0; %delete
     Drop_From_XDT = 0; %May need to add code to rotate waveplate back here.
 

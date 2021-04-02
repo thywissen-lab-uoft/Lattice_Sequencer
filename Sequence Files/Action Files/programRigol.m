@@ -2,26 +2,10 @@ function programRigol(InternalAddress,ch1_set,ch2_set)
 % programRigol.m
 %
 % Author : C Fujiwara
-% Last Edited : 2021/03/31
+% Last Edited : 2021/04/01
 %
 % This code programs the Rigol DG4162 which we use in lab as a function
-% generator in lab to drive AOMs.  This code includes a brief overview of
-% the functioning of these function generators.
-%
-%   global_settings
-% 
-% Some primary features that we desire
-%
-%   - set the carrier frequency (around 80 MHz)
-%   - set the output amplitude (either in Vpp or dBm)
-%   - specify the anticipated load (50Ohm or Z=infinity)
-%   - turn on/off the output with an external trigger (long pulses)
-%   - turn on the output with an external and run for a set period of time
-%   (short pulses that the adwin can't do)
-%   - sweep the frequency of carrier (ie. for Landau-Zener)
-%   - ramp up/down power of both outputs (ie. for STIRAP).
-
-%   - set the clock to be external%
+% generator in lab to drive AOMs.  
 %
 %   The modes of operation are CONSTANT, BURST, SWEEP, MOD
 %   CONSTANT - constant frequency (occurs if BURST,SWEEP, and MOD are off)
@@ -67,27 +51,19 @@ function programRigol(InternalAddress,ch1_set,ch2_set)
 
 % Some default settings. This should really never be called.
 if nargin~=3
-    warning(['You should really give me all argument all the time. ' ...
-        ' Just make an argument an empty [] if you don'' want to use it.']);
-    InternalAddress=1;
+    warning(['Unexpected number of input arguments (' num2str(nargin) ').' ...
+        ' Three arguments expected (addr,ch1,ch2); performing read only.']);
     
+    % Default to Raman Rigo
+    InternalAddress=1;    
+    
+    % No ch1 writes
+    ch1_set=[];
     ch1_set=struct;
-    ch1_set.FREQUENCY='1.0985E8';
-    ch1_set.STATE='ON';
-    ch1_set.AMPLITUDE='0.4';
-    ch1_set.AMPLITUDE_UNIT='VPP';
-    ch1_set.BURST='OFF';
-    ch1_set.MOD='OFF';
-    ch1_set.SWEEP='OFF';
-
-    ch2_set=struct;
-    ch2_set.FREQUENCY='80E6';
-    ch2_set.STATE='ON';
-    ch2_set.AMPLITUDE='0.4';
-    ch2_set.AMPLITUDE_UNIT='VPP';
-    ch2_set.BURST='OFF';
-    ch2_set.MOD='OFF';
-    ch2_set.SWEEP='OFF';  
+    ch1_set.FREQUENCY=109.8500E+06;
+    
+    % No ch2 writes
+    ch2_set=[];
 end
 
 %% Grab the Device Name
@@ -99,7 +75,9 @@ DeviceName=getVISADeviceName(InternalAddress);
 % DG4162.  The fieldname of the structure corresponds to the fieldname of
 % the input structure fieldnames.  The value of each field is a string
 % which corresponds to the command to be written to the Rigol.  It accounts
-% for the channel output via <n> which is later replaced with an integer.
+% for the channel output via <n> which is a placeholder to be replaced with
+% an integer corresponding to the output channel.
+%
 % Queries are automatically hanlded by just adding a ? in the readRigol
 % function defined later.
 %
@@ -110,12 +88,12 @@ DeviceName=getVISADeviceName(InternalAddress);
 
 cmds=struct;
 
-cmds.CLOCK_SOURCE=':SYSTEM:ROSCILLATOR:SOURCE';
+cmds.CLOCK_SOURCE=':SYSTEM:ROSCILLATOR:SOURCE';         % Technically a global command
 
 cmds.LOAD=':OUTPUT<n>:LOAD';
 cmds.STATE=':OUTPUT<n>:STATE';
 
-cmds.FREQUENCY=':OUTPUT<n>:LOAD';                               % Hz
+cmds.FREQUENCY=':SOURCE<n>:FREQUENCY';                               % Hz
 cmds.AMPLITUDE_UNIT=':SOURCE<n>:VOLTAGE:UNIT';                  % 
 cmds.AMPLITUDE=':SOURCE<n>:VOLTAGE:LEVEL:IMMEDIATE:AMPLITUDE';  % VPP VRMS DBM
 cmds.BURST=':SOURCE<n>:BURST:STATE';                            % ON, OFF
@@ -134,7 +112,7 @@ cmds.SWEEP_HOLDTIME_START='SOURCE<n>:SWEEP:HTIME:START';    % seconds
 
 % Specific to BURST MODE
 cmds.BURST_MODE=':SOURCE<n>:BURST:MODE';                    % TRIG, GAT, INF
-cmds.BURST_TRIGGER=':SOURCE<n>:BURST:TRIGGER';              % INT, EXT, MAN
+cmds.BURST_TRIGGER=':SOURCE<n>:BURST:TRIGGER:SOURCE';              % INT, EXT, MAN
 cmds.BURST_TRIGGER_SLOPE=':SOURCE<n>:BURST:TRIGGER:SLOPE';  % POS, NEG
 cmds.BURST_PHASE=':SOURCE<n>:BURST:PHASE';                  % degress (also be 0?)
 cmds.BURST_NCYCLES=':SOURCE<n>:BURST:NCYCLES';              % Number of cycles
@@ -148,10 +126,8 @@ disp(' - SWEEP returns to initial frequency at end of sweep.');
 disp(' - BURST can only go up to 100 MHz, <300ns trigger latency');
 disp(' - MOD is not coded yet.');
 
-
 % Connect to Rigol
 obj=visaConnect(DeviceName);
-
 
 % If connection faile exit the function
 if isempty(obj)
@@ -161,8 +137,24 @@ end
 % Have the Rigol beep to show that you're talking to it
 playBeep;
 
-%% Write and Read
+%% Write
+try
+    if ~isempty(ch1_set)
+        disp('Programming channel 1.');
+        writeRigol(1,ch1_set);
+    end
+    
+    if ~isempty(ch2_set)
+        disp('Programming channel 2.');
+        writeRigol(2,ch2_set);
+    end
+catch ME
+    warning('Unable to write to Rigol.');
+    disp(ME);  
+end
 
+
+%% Read
 try 
     % Read channe 1 and channel 2 settings.
     ch1_get=readRigol(1);
@@ -173,7 +165,6 @@ catch ME
     warning('Unable to read from Rigol. Closing connection safely');
     disp(ME);
 end
-
 
 %% Close Connect and Delete
 fclose(obj);
@@ -195,17 +186,40 @@ delete(obj);
         end       
     end
 
+    function writeRigol(ch,ch_set)              
+        fnamesSet=fieldnames(ch_set);   % All field names in the write
+        fnamesAll=fieldnames(cmds);     % All possible field names
+        for kk=1:length(fnamesSet)
+            fname=fnamesSet{kk};    % This field name
+            
+            if ismember(fname,fnamesAll)           
+                str=cmds.(fname);           % Get the command for this parameter
+                str=strrep(str,'<n>',num2str(ch));  % Replace <n> with the channel 
+                
+                if isnumeric(ch_set.(fname))
+                    % Convert number to string
+                    str=[str ' ' sprintf('%g',ch_set.(fname))];
+                else
+                    % Assumed you gave me string otherwise
+                    str=[str ' ' ch_set.(fname)];
+                end                
+                fprintf(obj,str);
+            end
+        end       
+    end
+
 % Have the function generator play a beep;
-    function playBeep        
-        strBeepON=':SYSTEM:BEEPER:STATE ON';
-        strBeepOFF=':SYSTEM:BEEPER:STATE ON';
-        strBeepGo=':SYSTEM:BEEPER::IMMEDIATE';
+    function playBeep      
+        disp('Playing a BEEP on the Rigol.');
+        strBeepON=':SYSTEM:BEEPER:STATE ON';        % Enable the beeper
+        strBeepOFF=':SYSTEM:BEEPER:STATE OFF';      % Disable the beeper
+        strBeepGo=':SYSTEM:BEEPER::IMMEDIATE';      % Play the Beeper
         
-        fprintf(obj,strBeepON);
+        fprintf(obj,strBeepON);     % Beep enable
         pause(0.01);
-        fprintf(obj,strBeepGo);
+        fprintf(obj,strBeepGo);     % Play beep
         pause(0.01);
-        fprintf(obj,strBeepOFF);
+        fprintf(obj,strBeepOFF);    % Disable beep
     end
 
 end

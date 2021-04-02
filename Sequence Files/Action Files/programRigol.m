@@ -32,9 +32,40 @@ function programRigol(InternalAddress,ch1_set,ch2_set)
 %
 % If a settings if not provided for a given parameter, it is not written.
 % However, all typically set parameters will be read.
+%
+%
+%   BASIC TIPS
+%
+%   CONSTANT FREQUENCY
+%   For constant frequency, set BURST, SWEEP, and MOD to OFF. And then
+%   you just need to specify the FREQUENCY, and AMPLITUDE. You may also
+%   want to make sure that STATE is ON to enable the output
+%
+%   SWEEP
+%   To sweep the frequency, set SWEEP to ON. (BURST and MOD will default
+%   to OFF).  Then you just need to specify teh FREQUENCY_CENTER, the
+%   AMPLITUDE, the FREQUENCY_SPAN, and the SWEEP_TIME. May also want to
+%   want sure that SWEEP_TRIGGER is set to EXT so that you can trigger the
+%   device.
+%
+%   BURST
+%   This mode is a bit more complicated because it depends whether you want
+%   the Rigol to internally set the maximum burst time (<1E6 cycles,
+%   reliable timing) or if you want to externally set the burst time via an
+%   external trigger (resolution limited by Adwin to ~5us). This is set by
+%   the BURST_MODE to TRIG or GAT respectively.  
+%   
+%   In TRIG (aka NCYCLE) mode, the NCYCLES are specified which governs the 
+%   time.  It is up to the user to calculate the number of cycles for the
+%   desired time (you should dothis in sequencer code); it will be 
+%   NCYCLES/FREQUENCY. You will also want to verify that the trigger is
+%   external (this is a start trigger).
+%
+%   In GAT mode the burst will begin and end with an external trigger.
 
 %% Default settings
 
+% Some default settings. This should really never be called.
 if nargin~=3
     warning(['You should really give me all argument all the time. ' ...
         ' Just make an argument an empty [] if you don'' want to use it.']);
@@ -71,6 +102,11 @@ DeviceName=getVISADeviceName(InternalAddress);
 % for the channel output via <n> which is later replaced with an integer.
 % Queries are automatically hanlded by just adding a ? in the readRigol
 % function defined later.
+%
+% Feel free to append additional commands onto here, the code will ignore
+% any commands that are not specified in the input structure.
+%
+% See the programming manual for description of commands
 
 cmds=struct;
 
@@ -79,20 +115,29 @@ cmds.CLOCK_SOURCE=':SYSTEM:ROSCILLATOR:SOURCE';
 cmds.LOAD=':OUTPUT<n>:LOAD';
 cmds.STATE=':OUTPUT<n>:STATE';
 
-cmds.FREQUENCY=':OUTPUT<n>:LOAD';
-cmds.AMPLITUDE_UNIT=':SOURCE<n>:VOLTAGE:UNIT';
-cmds.AMPLITUDE=':SOURCE<n>:VOLTAGE:LEVEL:IMMEDIATE:AMPLITUDE';
-cmds.BURST=':SOURCE<n>:BURST:STATE';
-cmds.MOD=':SOURCE<n>:MOD:STATE';
-cmds.SWEEP=':SOURCE<n>:SWEEP:STATE';
+cmds.FREQUENCY=':OUTPUT<n>:LOAD';                               % Hz
+cmds.AMPLITUDE_UNIT=':SOURCE<n>:VOLTAGE:UNIT';                  % 
+cmds.AMPLITUDE=':SOURCE<n>:VOLTAGE:LEVEL:IMMEDIATE:AMPLITUDE';  % VPP VRMS DBM
+cmds.BURST=':SOURCE<n>:BURST:STATE';                            % ON, OFF
+cmds.MOD=':SOURCE<n>:MOD:STATE';                                % ON, OFF
+cmds.SWEEP=':SOURCE<n>:SWEEP:STATE';                            % ON, OFF
 
-cmds.SWEEP_FREQUENCY_CENTER=':SOURCE<n>:FREQUENCY:CENTER';
-cmds.SWEEP_FREQUENCY_SPAN=':SOURCE<n>:FREQUENCY:SPAN';
-cmds.SWEEP_FREQUENCY_TIME=':SOURCE<n>:SWEEP:TIME';
-cmds.SWEEP_FREQUENCY_TYPE=':SOURCE<n>:SWEEP:SPACING';
-cmds.SWEEP_FREQUENCY_TRIGGER=':SOURCE<n>:SWEEP:TRIGGER:SOURCE';
-cmds.SWEEP_HOLDTIME_STOP='SOURCE<n>:SWEEP:HTIME:STOP';
-cmds.SWEEP_HOLDTIME_START='SOURCE<n>:SWEEP:HTIME:START';
+% Specific to SWEEP mode
+cmds.SWEEP_FREQUENCY_CENTER=':SOURCE<n>:FREQUENCY:CENTER';  % Hz
+cmds.SWEEP_FREQUENCY_SPAN=':SOURCE<n>:FREQUENCY:SPAN';      % Hz
+cmds.SWEEP_TIME=':SOURCE<n>:SWEEP:TIME';                    % seconds
+cmds.SWEEP_TYPE=':SOURCE<n>:SWEEP:SPACING';                 % LIN, LOG, STE
+cmds.SWEEP_TRIGGER=':SOURCE<n>:SWEEP:TRIGGER:SOURCE';       % INT, EXT, MAN
+cmds.SWEEP_TRIGGER_SLOPE=':SOURCE<n>:SWEEP:TRIGGER:SLOPE';  % POS,NEG
+cmds.SWEEP_HOLDTIME_STOP='SOURCE<n>:SWEEP:HTIME:STOP';      % seconds
+cmds.SWEEP_HOLDTIME_START='SOURCE<n>:SWEEP:HTIME:START';    % seconds
+
+% Specific to BURST MODE
+cmds.BURST_MODE=':SOURCE<n>:BURST:MODE';                    % TRIG, GAT, INF
+cmds.BURST_TRIGGER=':SOURCE<n>:BURST:TRIGGER';              % INT, EXT, MAN
+cmds.BURST_TRIGGER_SLOPE=':SOURCE<n>:BURST:TRIGGER:SLOPE';  % POS, NEG
+cmds.BURST_PHASE=':SOURCE<n>:BURST:PHASE';                  % degress (also be 0?)
+cmds.BURST_NCYCLES=':SOURCE<n>:BURST:NCYCLES';              % Number of cycles
 
 %% Notify the user
 disp(' ');
@@ -107,16 +152,21 @@ disp(' - MOD is not coded yet.');
 % Connect to Rigol
 obj=visaConnect(DeviceName);
 
+
 % If connection faile exit the function
 if isempty(obj)
     return;
 end   
+
+% Have the Rigol beep to show that you're talking to it
+playBeep;
+
 %% Write and Read
 
 try 
     % Read channe 1 and channel 2 settings.
     ch1_get=readRigol(1);
-     ch2_get=readRigol(2);
+    ch2_get=readRigol(2);
     disp(ch1_get)
     disp(ch2_get)
 catch ME    
@@ -143,6 +193,19 @@ delete(obj);
             str=[str '?'];                      % Add question mark for query
             out.(fnames{kk})=strtrim(query(obj,str));
         end       
+    end
+
+% Have the function generator play a beep;
+    function playBeep        
+        strBeepON=':SYSTEM:BEEPER:STATE ON';
+        strBeepOFF=':SYSTEM:BEEPER:STATE ON';
+        strBeepGo=':SYSTEM:BEEPER::IMMEDIATE';
+        
+        fprintf(obj,strBeepON);
+        pause(0.01);
+        fprintf(obj,strBeepGo);
+        pause(0.01);
+        fprintf(obj,strBeepOFF);
     end
 
 end
@@ -174,4 +237,3 @@ function obj=visaConnect(DeviceName)
     end
 
 end
-

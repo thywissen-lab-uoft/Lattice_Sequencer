@@ -4079,7 +4079,7 @@ setDigitalChannel(calctime(curtime,0),'K D1 GM Shutter 2',1);
 
 % MOT Load
 
-doMOT  = 0;
+doMOT  =1;
 if doMOT
 % This code initializses the MOT. This includes
 % Rb+K detunings and power
@@ -4453,7 +4453,8 @@ D1_freq_list = [0];
 D1_freq = getScanParameter(D1_freq_list,seqdata.scancycle,seqdata.randcyclelist,'D1_freq');
 
 % K D1 GM Double pass - modulation depth
-mod_amp_list = [1.3];
+mod_amp_list = [1.3
+    ];
 mod_amp = getScanParameter(mod_amp_list,seqdata.scancycle,seqdata.randcyclelist,'GM_power');
 
 % Set the single photon detuning (Rigol)
@@ -4467,7 +4468,7 @@ setDigitalChannel(calctime(curtime,-2.5),'K D1 GM Shutter',1);
 
 %%%%%%%%%%%% Total Molasses Time %%%%%%%%%%%%
 % Total Molasses Time
-molasses_time_list = [8];
+molasses_time_list = [5];
 molasses_time =getScanParameter(molasses_time_list,seqdata.scancycle,seqdata.randcyclelist,'molasses_time'); 
 
 %%%%%%%%%%%% advance time during molasses  %%%%%%%%%%%%
@@ -4641,7 +4642,7 @@ setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);
 %%%%%%%%%%%% Perform the time of flight %%%%%%%%%%%%
 
 % Set the time of flight
-tof_list = [1:15];
+tof_list = [10];
 tof =getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof_time'); 
 
 % Increment the time (ie. perform the time of flight)
@@ -4705,24 +4706,24 @@ curtime = calctime(curtime,1000);
 % setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP Shutter',1);    
 % setAnalogChannel(calctime(curtime,-5),'Rb Probe/OP AM',1); %0.11
 % setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',0); % inverted logic
-% setAnalogChannel(calctime(curtime,0.0),'Rb Beat Note FM',6590-5);
+% setAnalogChannel(calctime(curtime,0.0),'Rb Beat Note FM',6590 - 5);
 % % 
 % % 
-% % setDigitalChannel(calctime(curtime,-2),'Rb Repump Shutter',1); 
-% % setDigitalChannel(calctime(curtime,-2),'Rb Trap Shutter',1); 
-% % 
-% % % % % 
-% % % % setAnalogChannel(calctime(curtime,0),'Y Shim',2); %0.15
-% % % % setAnalogChannel(calctime(curtime,0),'X Shim',1); %0.15
-% % % % setAnalogChannel(calctime(curtime,0),'Z Shim',3);%0.0 
+% setDigitalChannel(calctime(curtime,-2),'Rb Repump Shutter',1); 
+% setDigitalChannel(calctime(curtime,-2),'Rb Trap Shutter',1); 
 % % % 
+% % % % % % 
+% % % % % setAnalogChannel(calctime(curtime,0),'Y Shim',2); %0.15
+% % % % % setAnalogChannel(calctime(curtime,0),'X Shim',1); %0.15
+% % % % % setAnalogChannel(calctime(curtime,0),'Z Shim',3);%0.0 
+% % % % 
 % setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',190);%202.5); %200
 % setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',3); 
 % setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
 % setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
 % setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
-% % 
-% % 
+% % % % 
+% % % 
 % setAnalogChannel(calctime(curtime,0),59,0); %0.11
 
 % % ODT test
@@ -4815,10 +4816,10 @@ curtime = calctime(curtime,1000);
 % setDigitalChannel(calctime(curtime,0),'Kill TTL',1);
 % setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
 
-%% Raman check
-setAnalogChannel(calctime(curtime,0),59,0); 
-% setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1)
-setDigitalChannel(calctime(curtime,0),'Raman Shutter',0)
+% %% Raman check
+% setAnalogChannel(calctime(curtime,0),59,0); 
+% % setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1)
+% setDigitalChannel(calctime(curtime,0),'Raman Shutter',0)
 
 timeout = curtime;
 

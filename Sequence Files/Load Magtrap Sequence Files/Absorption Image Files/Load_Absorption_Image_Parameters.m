@@ -9,7 +9,7 @@ function params = Load_Absorption_Image_Parameters()
     params.detunings.K.X.positive.QP_imaging = 21.5+2.5;
     params.detunings.K.X.positive.SG = 24.5;
     params.detunings.K.X.positive.short_tof = 24.5;
-    params.detunings.K.X.negative.normal = 30.5+2;
+    params.detunings.K.X.negative.normal = 30.5+1;
     params.detunings.K.X.negative.SG = 32.5;32.5;
     % Potassium - Y-cam
     params.detunings.K.Y.positive.normal = 21.5;
@@ -20,13 +20,13 @@ function params = Load_Absorption_Image_Parameters()
     % Rubidium - X-cam
     
 %     
-%     rbdet_shift_list = [-4:1:8];2;
-%     rbdet_shift = getScanParameter(rbdet_shift_list,...
-%         seqdata.scancycle,seqdata.randcyclelist,'rbdet_shift');
+    rbdet_shift_list = [0];2;
+    rbdet_shift = getScanParameter(rbdet_shift_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'rbdet_shift');
     
     params.detunings.Rb.X.positive.normal = 6590 - 238;           % XDTs/lattice
     params.detunings.Rb.X.positive.in_trap = 6590 - 246+7;          % QP in-situ
-    params.detunings.Rb.X.positive.QP_imaging = 6590 - 238.5;       % QP TOF
+    params.detunings.Rb.X.positive.QP_imaging = 6590 - 238.5 + rbdet_shift;       % QP TOF
     params.detunings.Rb.X.positive.SG = 6590 - 241.8 +2;            % Stern Gerlach
     params.detunings.Rb.X.negative.normal = 6590 - 232;
     % Rubidium - Y-cam
@@ -42,10 +42,14 @@ function params = Load_Absorption_Image_Parameters()
     params.k_repump_shift.positive = 28;
     params.k_repump_shift.negative = 21;
     %% Probe beam powers
-    params.powers.K.X = 0.19;0.09;
+    params.powers.K.X = 0.12;0.09;
     params.powers.K.Y = 0.05;
     params.powers.K.MOT = 0.8;
-    params.powers.Rb.X = 0.3;
+    Rb_probe_pwr_list = [0.025];[0.1];%-1
+    Rb_probe_pwr = getScanParameter(Rb_probe_pwr_list,seqdata.scancycle,seqdata.randcyclelist,'Rb_probe_pwr');
+    
+    
+    params.powers.Rb.X = Rb_probe_pwr;
     params.powers.Rb.Y = 0.25;
     params.powers.Rb.MOT = 0.25;
     

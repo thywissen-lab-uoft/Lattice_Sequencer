@@ -529,7 +529,7 @@ y = currentarray;
                  
                  %ramp 4
                  vert_voltage(1,4) = vert_voltage(2,3);
-                 vert_voltage(2,4) = 11.5; %10.5 11.5
+                 vert_voltage(2,4) = 11.5;11.5; %10.5 11.5
                  vert_volt_pos(1,4) = vert_volt_pos(2,3);
                  vert_volt_pos(2,4) = 365 + 85; %85
                  
@@ -545,7 +545,7 @@ y = currentarray;
                  
                  %ramp 6
                  vert_voltage(1,6) = vert_voltage(2,5);
-                 vert_voltage(2,6) = 12.25; %10.0 12.25
+                 vert_voltage(2,6) = 12.25;12.25; %10.0 12.25
                  vert_volt_pos(1,6) = 365+166; %166 %365+160
                  vert_volt_pos(2,6) = 365+174; %365+174
                  

@@ -76,12 +76,12 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
    
 
     Dimple_Mod = 0; %keep: Used to calibrate dimple trap depth
-    do_lattice_mod = 0; %keep: calibrate lattice depth
+    do_lattice_mod = 1; %keep: calibrate lattice depth
     lattice_depth_calibration = 0; %keep: another lattice calibration method
-    rotate_waveplate_after_ramp = 1; %keep:  Turn Rotating Waveplate to Shift Power to Lattice Beams
-    do_lattice_ramp_after_spectroscopy = 1; %keep: Ramp lattices on or off after doing spectroscopy, must be on for fluorescence image
+    rotate_waveplate_after_ramp = 0; %keep:  Turn Rotating Waveplate to Shift Power to Lattice Beams
+    do_lattice_ramp_after_spectroscopy = 0; %keep: Ramp lattices on or off after doing spectroscopy, must be on for fluorescence image
     do_shear_mode_mod = 0; %delete: used to be a way modulate XDT using shear mode aom
-    Raman_transfers = 1;  %keep                  % for fluorescence image
+    Raman_transfers = 0;  %keep                  % for fluorescence image
     do_lattice_sweeps = 0; %delete
     Drop_From_XDT = 0; %May need to add code to rotate waveplate back here.
 
@@ -106,14 +106,14 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
    
 % Parameters for lattice loading, section used for lattice alignment
 %     lat_rampup_common_depths = [200 200]/atomscale;
-    Depth_List = [50];
+    Depth_List = [200];
 %     ZLD = getmultiScanParameter(Depth_List,seqdata.scancycle,'x_lattice_depth',1,2);
     ZLD = getScanParameter(Depth_List,seqdata.scancycle,seqdata.randcyclelist,'zld');
 % ZLD = getmultiScanParameter(Depth_List,seqdata.scancycle,'ylattice_depth',1,2);
 
 %RHYS - Is there a better way to switch between lattice ramp sequences? Or,
 %again, perhaps store in an external file a load in.
-lattice_rampup_time_list = [250];
+lattice_rampup_time_list =[250];
 lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycle,seqdata.randcyclelist,'lattice_rampup_time');
 
 %%%LOADING SEQ BELOW CAN BE USED FOR SIMPLE LATTICE LOADING
@@ -281,7 +281,7 @@ lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycl
     %Additional parameters and flags for this sequence    
     %RHYS - Parameter determining how dipole trap behaves should be with
     %the rest of the lattice ramp parameters.
-    dipole_trap_off_after_lattice_on = 1; 
+    dipole_trap_off_after_lattice_on = 0; 
     % 0 - use ramp parameters below; 
     % 1 - snap off after 1st lattice ramp;
     % 2 - ramp off after 1st lattice ramp;
@@ -4233,12 +4233,11 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 end
 
 %% Lattice Modulation; use bandstructure calculation for conversion into
+% Amplitude modulation
 %RHYS - Use to calibrate the lattice depths.
 if do_lattice_mod
     
-    raman_coupling = 0;
-    raman_time = 10;
-
+    % Turn off ODTs before modulation (if not already off)
     switch_off_XDT_before_Lat_modulation = 0;
     if (switch_off_XDT_before_Lat_modulation == 1) 
         AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50,50,-1);
@@ -4246,22 +4245,53 @@ if do_lattice_mod
 curtime = calctime (curtime,50);
     end
     
-    freq_list = [50]*1e3;
+    
+    freq_list = [260]*1e3;
 %     freq_list = [35:5:125]*1e3; %560
 
     mod_freq = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'lat_mod_freq');
     
     mod_time = 1;%0.2; %Closer to 100ms to kill atoms, 3ms for band excitations only.
-    mod_amp = 0.2;
+    
+    % For Z Lattice
+%     mod_amp =  (1.1E-5)*(mod_freq/1000)^2-0.00092*(mod_freq/1000)+0.04;0.2;
+    
+    % For Y Lattice
+    mod_amp =  (1.1E-5)*(80+mod_freq/1000)^2-0.00092*(80+mod_freq/1000)+0.04;0.2;
+    
+    
     addOutputParam('mod_amp',mod_amp);
-    mod_wait_time = -50;
-    mod_offset = 0;
+  
+    % We manually select which channel is modulatig via the Rigol channel
+    % to the newport box
+    % Program the Rigol
+    addr=5;                     % Lattice modulation Rigol channel 2
+    ch2=struct;
+    ch2.FREQUENCY=mod_freq;     % Modulation Frequency
+    ch2.AMPLITUDE_UNIT='VPP';   % Unit of modulation (Volts PP)
+    ch2.AMPLITUDE=mod_amp;      % Modulation amplitude
+    ch2.BURST='ON';             % Burst MODE 
+    ch2.BURST_MODE='GATED';     % Trig via the gate
+    ch2.BURST_TRIGGER_SLOPE='POS';% Positive trigger slope
+    ch2.BURST_TRIGGER='EXT';    % External trigger.
+    programRigol(addr,[],ch2);
+    
+    % We leave the feedback on as it cannot keep up. This + the VVA will
+    % make a frequency dependent drive.
+    % Trigger and wait
+    ScopeTriggerPulse(calctime(curtime,0),'Lattice_Mod');
+    setDigitalChannel(calctime(curtime,0),51,1); 
+    curtime = setDigitalChannel(calctime(curtime,mod_time),51,0);
 
+
+    % OLD MODULATION
+%       mod_wait_time = -50;
+%     mod_offset = 0;
 % Apply the lattice modulation   
-applyLatticeModulation(calctime(curtime,0), mod_freq, mod_amp, mod_offset, mod_time, ...
-    'Lattice', 'zlattice', 'RampLatticeDelta', 0, 'ScopeTrigger', 'Lattice_Mod');
+% applyLatticeModulation(calctime(curtime,0), mod_freq, mod_amp, mod_offset, mod_time, ...
+%     'Lattice', 'zlattice', 'RampLatticeDelta', 0, 'ScopeTrigger', 'Lattice_Mod');
 % Wait for some time
-curtime = calctime(curtime,mod_time+mod_wait_time+50);
+% curtime = calctime(curtime,mod_time+mod_wait_time+50);
 
     do_excitation_swap = 0;
     if do_excitation_swap
@@ -4286,7 +4316,7 @@ curtime = calctime(curtime,ramptime);
 %     AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60/atomscale)
 % curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60/atomscale);
 
-curtime = calctime(curtime,50);
+curtime = calctime(curtime,1);
 
 end
 
@@ -4398,7 +4428,7 @@ if (Raman_transfers == 1)
     horizontal_plane_select_params.Selection__Frequency = 1285.8 + 11.025 +uwave_freq; %11.550
     horizontal_plane_select_params.Microwave_Power_For_Selection = 15; %dBm
     
-    Raman_List = [-150];[-50];0;   %-30% : in kHz;
+    Raman_List = [-150];[-150];0;   %-30% : in kHz;
     horizontal_plane_select_params.Raman_AOM_Frequency = 110 + getScanParameter(Raman_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Freq')/1000;
     
     %CHECK PERFORMANCE OF SWEEP IN BURST MODE. CURRENTLY USING BURST MODE
@@ -4406,13 +4436,13 @@ if (Raman_transfers == 1)
     horizontal_plane_select_params.Rigol_Mode = 'Sweep';  %'Sweep', 'Pulse', 'Modulate'
     Range_List = [50];%in kHz
     horizontal_plane_select_params.Selection_Range = getScanParameter(Range_List,seqdata.scancycle,seqdata.randcyclelist,'Sweep_Range')/1000; 
-    Raman_On_Time_List = [10];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
+    Raman_On_Time_List = [1];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
     horizontal_plane_select_params.Microwave_Pulse_Length = getScanParameter(Raman_On_Time_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Time'); 
     horizontal_plane_select_params.Fluorescence_Image = 0;
-    horizontal_plane_select_params.Num_Frames = 2; % 2 for 2 images
+    horizontal_plane_select_params.Num_Frames = 1; % 2 for 2 images
     Modulation_List = Raman_On_Time_List;
     horizontal_plane_select_params.Modulation_Time = getScanParameter(Modulation_List,seqdata.scancycle,seqdata.randcyclelist,'Modulation_Time');
-    horizontal_plane_select_params.Microwave_Or_Raman = 3; %1: uwave, 2: Raman 3:Raman with field sweep
+    horizontal_plane_select_params.Microwave_Or_Raman = 2; %1: uwave, 2: Raman 3:Raman with field sweep
     horizontal_plane_select_params.Sweep_About_Central_Frequency = 1;
     horizontal_plane_select_params.Resonant_Light_Removal = 0;
     horizontal_plane_select_params.Final_Transfer = 0; 

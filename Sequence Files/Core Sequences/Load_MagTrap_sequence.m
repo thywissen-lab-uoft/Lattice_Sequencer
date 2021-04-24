@@ -163,7 +163,7 @@ seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber
 seqdata.flags.img_direction = 1; 
 %1 = x direction (Sci) / MOT, 2 = y direction (Sci), 
 %3 = vertical direction, 4 = x direc tion (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
-seqdata.flags.do_stern_gerlach = 1; %1: Do a gradient pulse at the beginning of ToF
+seqdata.flags.do_stern_gerlach = 0; %1: Do a gradient pulse at the beginning of ToF
 seqdata.flags.iXon = 0; % use iXon camera to take an absorption image (only vertical)
 seqdata.flags.do_F1_pulse = 0; % repump Rb F=1 before/during imaging
 
@@ -177,7 +177,7 @@ seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now.
 
 %RHYS - params should be defined in a separate location from flags. 
 seqdata.flags.In_Trap_imaging = 0;
-tof_list = [13];
+tof_list = [5];
 seqdata.params.tof = getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof');
 % seqdata.params.tof = 5;  % 45 for rough alignment, 20 for K-D diffraction
 
@@ -214,28 +214,29 @@ seqdata.flags.compress_QP = 1; % compress QP after transport
 seqdata.flags.RF_evap_stages = [1, 1, 1]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
 
 
-%RHYS - Here be parameters.     
-rf_evap_time_scale = [0.6 0.8];[0.7 0.9];[1.0 1.5];[0.8 1.2];[1.00 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
-RF_1A_Final_Frequency_list = [16];
+%RHYS - Here be parameters.
+RF_1B_time_scale_list = [0.9];
+RF_1B_time_scale = getScanParameter(RF_1B_time_scale_list,seqdata.scancycle,seqdata.randcyclelist,'RF1B_time_scale');
+rf_evap_time_scale = [0.6 RF_1B_time_scale];[0.6 .9];[0.7 0.9];[1.0 1.5];[0.8 1.2];[1.00 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
+RF_1A_Final_Frequency_list = [16];%16
 RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1A_finalfreq');
 
 
 % RF_1B_Final_Frequency = 0.8;
-RF_1B_Final_Frequency_list = [0.7];%0.8,0.4
+RF_1B_Final_Frequency_list = [0.8];%0.8,0.4
 RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq');
 
 
 seqdata.flags.do_plug = 1;   % ramp on plug after transfer to window
 seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get clean TOF signal
-plug_current = 2.66;
-addOutputParam('plug_current',plug_current);
+
  
 
 % Dipole trap
-seqdata.flags.do_dipole_trap = 1; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
-seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
+seqdata.flags.do_dipole_trap = 0; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
+seqdata.flags.CDT_evap = 0;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
 seqdata.flags.K_RF_sweep = 0;    %sweep 40K into |9/2,-9/2>; %create mixture in XDT, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1    
-seqdata.flags.init_K_RF_sweep = 1; %sweep 40K into |9/2,-9/2>; %create mixture in XDT before evap, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1  
+seqdata.flags.init_K_RF_sweep = 0; %sweep 40K into |9/2,-9/2>; %create mixture in XDT before evap, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1  
 
 % Optical lattice
 seqdata.flags.load_lattice = 1; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
@@ -259,7 +260,7 @@ seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / ali
 
 
 %RHYS - Useful! Where to trigger scope. Should be more apparent.     
-scope_trigger = 'Load lattices'; 
+scope_trigger = 'Lattice_Mod'; 
 
 %% Set switches for predefined scenarios
 
@@ -521,9 +522,9 @@ dispLineStr('Magnetic Transport',curtime);
 
     %open kitten relay
 curtime = setDigitalChannel(curtime,'Kitten Relay',1);
-    setDigitalChannel(curtime,'Transport LabJack Trigger',1);
-    setDigitalChannel(calctime(curtime,100),'Transport LabJack Trigger',0);
 
+    DigitalPulse(calctime(curtime,-500),'Transport LabJack Trigger',100,0)
+    
     %Turn shim multiplexer to Science shims
     setDigitalChannel(calctime(curtime,1000),37,1); 
     
@@ -724,7 +725,10 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     dispLineStr('RF1B begins.',curtime);  
     
     % Define RF1B parameters (frequency, gain, timescale, gradient, etc)
-    sweep_times_1b = [6000 2000 2]*rf_evap_time_scale(2); 
+    sweep_time_list = [5000 9000];
+    sweep_time = getScanParameter(sweep_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'RF1B_sweep_time');
+    sweep_times_1b = [6000 5000 2]*rf_evap_time_scale(2); 2000;
     evap_end_gradient_factor_list = [0.8];
     evap_end_gradient_factor = getScanParameter(evap_end_gradient_factor_list,...
         seqdata.scancycle,seqdata.randcyclelist,'evap_end_gradient_factor');

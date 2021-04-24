@@ -157,7 +157,7 @@ setDigitalChannel(calctime(curtime,0),'K Repump TTL',1); % (1: OFF)
 %%%%%%%%%%%% Rb D2 Molasses Settings %%%%%%%%%%%%
 
 % Rb Mol detuning setting
-rb_molasses_detuning_list = 90;
+rb_molasses_detuning_list = 90;90;
 rb_molasses_detuning = getScanParameter(rb_molasses_detuning_list,...
     seqdata.scancycle,seqdata.randcyclelist,'Rb_molasses_det');  
 

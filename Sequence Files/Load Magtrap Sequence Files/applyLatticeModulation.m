@@ -114,29 +114,34 @@ end
 
 %% Action do a RF pulse or sweep
 
-% % Program Rigol generator
-str = sprintf('SOUR2:APPL:SIN;SOUR2:FREQ %g;SOUR2:VOLT %g;SOUR2:VOLT:OFFS %g;',frequency, amplitude, offset);
-addVISACommand(5, str); %Device 3 is newest 25MHZ Rigol.
+% % Program Rigol generator OLD AND NO BURST TRIGGEr
+% str = sprintf('SOUR2:APPL:SIN;SOUR2:FREQ %g;SOUR2:VOLT %g;SOUR2:VOLT:OFFS %g;',frequency, amplitude, offset);
+% addVISACommand(5, str); %Device 3 is newest 25MHZ Rigol.
+
+% NEW SOMEWHAT TESTING
+ch2=struct;
+ch2.FREQUENCY=frequency;
+ch2.AMPLITUDE_UNIT='VPP';
+amplitude = 1.1E(-5)*(frequency/1000)^2-0.00092*(frequency/1000)+0.04;
+ch2.AMPLITUDE=amplitude;
+ch2.BURST='ON';
+ch2.BURST_MODE='GATED';
+ch2.BURST_TRIGGER_SLOPE='POS';
+ch2.BURST_TRIGGER='EXT';  
+programRigol(5,[],ch2);
 
 % Add a scope trigger at beginning of modulation
 if ~isempty(opt.ScopeTrigger)
     ScopeTriggerPulse(calctime(curtime,0),'Lattice_Mod');
 end
 
-% ramp lattice during modulation
-this_lattice = 'ylattice';
-if (opt.RampLatticeDelta ~= 0)
-    Vini = getChannelValue(seqdata,opt.Lattice,1)*atomscale;
-    Vfin = (Vini + opt.RampLatticeDelta)/atomscale;
-    AnalogFuncTo(calctime(curtime,0),opt.Lattice,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), duration, duration, Vfin);    
-end
-
 % Start modulation (gated)
-% setDigitalChannel(calctime(curtime,0),51,1); 
-setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1)
-% stoip modulation (gated)
-% curtime = setDigitalChannel(calctime(curtime,duration),51,0);
-curtime = setDigitalChannel(calctime(curtime,duration),'Lattice Direct Control',0)
+
+setDigitalChannel(calctime(curtime,0),51,1); 
+% setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1)
+% % stoip modulation (gated)
+curtime = setDigitalChannel(calctime(curtime,duration),51,0);
+% curtime = setDigitalChannel(calctime(curtime,duration),'Lattice Direct Control',0);
 
 
 % Add some time at the end (this is at least 1ms for pulses, for a reason that is not directly clear)

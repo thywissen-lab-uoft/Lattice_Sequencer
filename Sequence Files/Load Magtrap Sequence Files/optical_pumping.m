@@ -20,7 +20,7 @@ optime_list = [2];
 optime = getScanParameter(optime_list,seqdata.scancycle,seqdata.randcyclelist,'optime');
 
 % K
-k_op_am_list = [0.25]; [1];[0.6];
+k_op_am_list = [0.3];[0.25]; [1];[0.6];
 k_op_am = getScanParameter(k_op_am_list,seqdata.scancycle,seqdata.randcyclelist,'k_op_am');
 k_op_offset = 0.0;
 k_op_time = optime;
@@ -28,7 +28,7 @@ k_op_detuning_list = [3];3;[31];  32;29;
 k_op_detuning = getScanParameter(k_op_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'k_op_det');
 
 % Rb
-rb_op_am_list = 0.8;[0.8];[0.8];  %  (1) RF amplitude (V)       
+rb_op_am_list = [1];[0.8];[0.8];  %  (1) RF amplitude (V)       
 rb_op_am = getScanParameter(rb_op_am_list,seqdata.scancycle,seqdata.randcyclelist,'rb_op_am');
 rb_op_offset = 0.0;
 rb_op_time = optime;        % (1) optical pumping time

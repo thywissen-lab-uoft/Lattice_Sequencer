@@ -206,7 +206,7 @@ end
     seqdata.analogchannels(5).maxvoltage = 10;
     %Make the conversion function detuning
     seqdata.analogchannels(5).defaultvoltagefunc = 4; %CHANGED FOR AOM TEST
-    K_trap_freq_offset =0;-2000/1000;
+    K_trap_freq_offset =-1;-2000/1000;
     K_repump_freq_offset = 00/1000;
     %40MHz detuning is 105MHz, higher frequency is less detuned
     %seqdata.analogchannels(5).voltagefunc{2} = @(a)((-19.17+0.22514*(134-a/2)-2.48788E-4*(134-a/2)^2)); %for Stefan's homemoade VCO
@@ -525,7 +525,7 @@ seqdata.analogchannels(34).name = 'Rb Beat Note FM';
 seqdata.analogchannels(34).minvoltage = 0;
 seqdata.analogchannels(34).maxvoltage = 10;
 seqdata.analogchannels(34).defaultvoltagefunc = 2;
-Rb_Trap_Frequency_Offset = 8;5.3; %Frequency offset for all Rb trap/probe beams in MHz.
+Rb_Trap_Frequency_Offset = 6; %Frequency offset for all Rb trap/probe beams in MHz.
 seqdata.analogchannels(34).voltagefunc{2} = @(a)((a*1-4418.47 + Rb_Trap_Frequency_Offset)/541.355);
 
 %channel 35 (Rb Offset FF)
@@ -635,23 +635,9 @@ seqdata.analogchannels(43).minvoltage = -10;
 seqdata.analogchannels(43).maxvoltage = 10;
 seqdata.analogchannels(43).resetvalue = [-0.1,1];
 seqdata.analogchannels(43).defaultvoltagefunc = 2;
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)((a+2)/337.96806); %change to linear feedback, From 16, Jan, 2018.
-seqdata.analogchannels(43).voltagefunc{2} = @(a)((a+4.769)/317.49); %change to linear feedback, From 16, Jan, 2018.
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)(max(2.23537*log10(max((a),1E-9))-3.65955,-10)); %From 17, Jan, 2018.
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)((a+2.36732)/337.596); %change to linear feedback, From 16, Jan, 2018.
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)(max(2.2207*log10(max((a),1E-9))-1.203,-10)); %From 11, Jan, 2018.
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)(max(2.26812*log10(max((a),1E-9))-1.81445,-10)); %From 28, June, 2017.
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)(max(2.2880*log10(max((a/1.09046-0.0),1E-9))-1.8248,-10)); %From 22, June, 2017.
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)(max(2.31443*log10(max((a-0.0),1E-9))-2.04569,-10)); % May 18, 2017.
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)(max(2.40223*log10(max((a-0.02),1E-9))-2.28163,-10)); %From Mar30, 2017.
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)(max(3.31877*log10(max(a,1E-9))-2.05995,-10)); %Temp old z lattice alps Mar 20, 2017.
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)(max(2.5077*log10(max((a-0.05),1E-9))-2.2598,-10)); %From Mar9, 2017.
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)(max(2.54822*log10(max(a,1E-9))-2.2754,-10)); %From Feb 24, 2017.
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)(max(log10(max((2*a*1.612-0.37099)/35.01058,1e-9))/0.41173,-10)); %Extra factor of 2(*a) for larger beam waist.
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)(max(log10(max((2*a+0*1.05694)/15.82836,1e-9))/0.39335,-10)); 
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)(max(log10(max((2*a-0.02346)/14.94575,1e-9))/0.40035,-10)); %Extra factor of 2(*a) for larger beam waist.
-%Extra factor of 2(*a) for larger beam waist.
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)(max((log(max((-0.18079 + 0.4744*a + 8.87096E-5 * a.^2)*0.00135,1e-9)*1000)/log(10)-0.5577)/0.29395,-10));
+seqdata.analogchannels(43).voltagefunc{2} = @(a)((a*0.4+8.5772)/89.2457); % 2021/04/23 0.4 is for atom scale to be changed
+% seqdata.analogchannels(43).voltagefunc{2} = @(a)((a*0.4+7.9602)/88.725); % 2021/04/23 0.4 is for atom scale to be changed
+% seqdata.analogchannels(43).voltagefunc{2} = @(a)((a+7.9551)/244.94);
 
 %channel 44 (Y lattice AM control)
 seqdata.analogchannels(44).name = 'yLattice';
@@ -659,14 +645,10 @@ seqdata.analogchannels(44).minvoltage = -10;
 seqdata.analogchannels(44).maxvoltage = 10;
 seqdata.analogchannels(44).resetvalue = [-0.1,1]; %Issue in the circuit when asking for -10V, causes siren
 seqdata.analogchannels(44).defaultvoltagefunc = 2;
-seqdata.analogchannels(44).voltagefunc{2} = @(a)(a-5.0878)/432.98;%28 June, 2017
+seqdata.analogchannels(44).voltagefunc{2} = @(a)(a*0.4-8.6812)/141.2965;% 2021/04/23
+
+% seqdata.analogchannels(44).voltagefunc{2} = @(a)(a-5.0878)/432.98;%28 June, 2017
 % seqdata.analogchannels(44).voltagefunc{2} = @(a)(max(2.27178*log10(max(a,1E-9))-2.77493,-10));%28 June, 2017
-% seqdata.analogchannels(44).voltagefunc{2} = @(a)(max(2.12074*log10(max(a/0.82894,1E-9))-2.6451,-10));%22 June, 2017
-% seqdata.analogchannels(44).voltagefunc{2} = @(a)(max(2.25415*log10(max(a,1E-9))-2.9949,-10));%18 May, 2017
-% seqdata.analogchannels(44).voltagefunc{2} = @(a)(max(2.20848*log10(max(a,1E-9))-2.88427,-10));
-% seqdata.analogchannels(44).voltagefunc{2} = @(a)(max(log10(max((a-2.46193+2.4)/18.02319,1e-9))/0.44698,-10));
-% seqdata.analogchannels(44).voltagefunc{2} = @(a)(max(log10(max((a-1.79364)/18.44795,1e-9))/0.44664,-10));
-% seqdata.analogchannels(44).voltagefunc{2} = @(a)(max((log(max((-0.12792 + 0.30045*a - 6.32254E-6 * a.^2)*0.00137/1.69,1e-9)*1000)/log(10)-0.5577)/0.29395,-10));
 
 %channel 45 (X lattice AM control)
 seqdata.analogchannels(45).name = 'xLattice';

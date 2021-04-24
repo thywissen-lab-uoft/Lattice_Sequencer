@@ -213,18 +213,17 @@ if(~flags.High_Field_Imaging)
   
   %K High Field Imaging
 else
-  %RHYS - This could be its own little thing.
   if strcmp(flags.image_atomtype, 'K')
     %set trap detuning
     setAnalogChannel(calctime(curtime,params.timings.tof-params.timings.k_detuning_shift_time),'K Trap FM',detuning);
     
-    HF_prob_freq_list = [3.6];%3.75
+    HF_prob_freq_list = [0];%3.75
     HF_prob_freq = getScanParameter(HF_prob_freq_list,seqdata.scancycle,seqdata.randcyclelist,'HF_prob_freq')+ 1.4*(seqdata.HF_FeshValue_final-205)/2; %3.75 for 205G;
-    mod_freq =  (120+HF_prob_freq)*1E6;
+    mod_freq =  (110+HF_prob_freq)*1E6;
     mod_amp = 1.5;
     mod_offset =0;
-    str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
-    addVISACommand(3, str);
+    str=sprintf(':SOUR2:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
+    addVISACommand(6, str);
   end
   
   

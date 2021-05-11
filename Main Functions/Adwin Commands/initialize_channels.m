@@ -1,7 +1,7 @@
 %------
 %Author: David McKay
 %Created: July 2009
-%Summary: Initalize all the channel parameters
+%Summary: Initialize all the channel parameters
 %------
 function initialize_channels()
 

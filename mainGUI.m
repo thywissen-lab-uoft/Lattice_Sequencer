@@ -12,7 +12,7 @@ function mainGUI
 % code have been "Frakenstein'ed" together. It is the author's desire that
 % this code be optimized and simplified.
 
-% Hello darby this is my edit to the code here.
+% Hello darby this is my edit to the code here. hi
 
 %%%%%%%%%%%%%%% Initialize Sequence Data %%%%%%%%%%%%%%%%%
 LatticeSequencerInitialize();

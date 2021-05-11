@@ -177,7 +177,7 @@ seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now.
 
 %RHYS - params should be defined in a separate location from flags. 
 seqdata.flags.In_Trap_imaging = 0;
-tof_list = [5];
+tof_list = [25]; %DB TOF in milliseconds
 seqdata.params.tof = getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof');
 % seqdata.params.tof = 5;  % 45 for rough alignment, 20 for K-D diffraction
 
@@ -211,8 +211,7 @@ seqdata.flags.ver_transport_type = 3;
 % Use stage1b = 2 to do microwave evaporation in the plugged QP trap
 seqdata.flags.compress_QP = 1; % compress QP after transport
 
-seqdata.flags.RF_evap_stages = [1, 1, 1]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
-
+seqdata.flags.RF_evap_stages = [1, 1, 0]; %DB RF1B [1,1,1]; RF1A [1,1,0]? %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
 
 %RHYS - Here be parameters.
 RF_1B_time_scale_list = [0.9];
@@ -227,10 +226,10 @@ RF_1B_Final_Frequency_list = [0.8];%0.8,0.4
 RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq');
 
 
-seqdata.flags.do_plug = 1;   % ramp on plug after transfer to window
+seqdata.flags.do_plug = 1;   %DB 1 RF1B % ramp on plug after transfer to window
 seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get clean TOF signal
 
- 
+
 
 % Dipole trap
 seqdata.flags.do_dipole_trap = 0; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
@@ -239,7 +238,7 @@ seqdata.flags.K_RF_sweep = 0;    %sweep 40K into |9/2,-9/2>; %create mixture in 
 seqdata.flags.init_K_RF_sweep = 0; %sweep 40K into |9/2,-9/2>; %create mixture in XDT before evap, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1  
 
 % Optical lattice
-seqdata.flags.load_lattice = 1; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
+seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
 seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
 seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 
@@ -251,7 +250,7 @@ end
 
 %RHYS - these are kind of useless.
 %VV - Although these are set to zero there are a bunch of occurrances of these flags in the this
-%sequeence and other files. So keeping these for now. Will be deleted
+%sequence and other files. So keeping these for now. Will be deleted
 %later
 %Imaging Molasses
 seqdata.flags.do_imaging_molasses = 0; % 1: In Lattice or XDT, 2: Free space after QP, 3: Free Space after XDT

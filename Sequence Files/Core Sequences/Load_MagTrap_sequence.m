@@ -788,7 +788,6 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
 %     setDigitalChannel(calctime(curtime,0),19,0);    % swithing off
 %     setAnalogChannel(calctime(curtime,0), 39,-10,1); % RF gain low
 
-
     %Get rid of Rb afterwards (used for loading dilute 40K into lattice)   
     kill_Rb_after_RFStage1b = 0;
     if kill_Rb_after_RFStage1b
@@ -917,7 +916,6 @@ end
 
 
 curtime=calctime(curtime,0);
-
 
 %% Pulse lattice after releasing from dipole trap
 

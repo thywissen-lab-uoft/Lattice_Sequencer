@@ -93,8 +93,12 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
         error('QP ramp must happen after time zero');
     end
     
+    
+    %%%%% Specify the XDT2 power relative to XDT1 %%%%%%%%%%%%%%%%%%%%%%%%%
+    % This is useful to ensure that at the end of optical evaporation the
+    % horizontal trap frequencies are rotationally symmetric which is
+    % useful for the condutitivty experiments.
     %Calibrate to match horizontal trap frequencies.
-    %RHYS - Might only be desirable for the isotropic conductivity work. 
 %     XDT2_power_func = @(P_XDT1)((sqrt(81966+1136.6*(21.6611-(-119.75576*P_XDT1^2+159.16306*P_XDT1+13.0019)))-286.29766)/2/(-284.1555));
     XDT2_power_func = @(P_XDT1)(P_XDT1/2);
     
@@ -106,33 +110,32 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
 %     P1 = 1.5;1.50;1;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
 %     P2 = 1.5;1.50;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
 %     
+
+    % Initial XDT power
     P12_list = [1.5];
     P12 = getScanParameter(P12_list,...
         seqdata.scancycle,seqdata.randcyclelist,'XDT_initial_power');
     P1 = P12;
-    P2 = P12;
-    
-    
-    %P2 = XDT2_power_func(P1);
-    %Power at start of evaporation.
+    P2 = P12;       %P2 = XDT2_power_func(P1);
+            
+    % Sympathetic cooling powers
     P1e = 1.0;0.5;1.0; %0.5
     P2e = 1.0;0.5; %0.5
-% %     
+
+    % Uncomment these to overwrite initial ramp and just use max powers.
     P1e=P1;
-    P2e=P2;
+    P2e=P2;    
+    %P2e = XDT2_power_func(P1e);    
     
-    %P2e = XDT2_power_func(P1e);
     %Final powers.
     xdt1_end_power = exp_end_pwr;
     xdt2_end_power = XDT2_power_func(exp_end_pwr);
     %xdt2_end_power =(sqrt(81966+1136.6*(21.6611-(-119.75576*xdt1_end_power^2+159.16306*xdt1_end_power+13.0019)))-286.29766)/2/(-284.1555);
     
+    % Evaporation Time
     Time_List =  [15000];[15000]; %[500] for fast evap, for sparse image, [15000] for normal experiment
-    %RHYS - Crazy amount of renaming the same variable.
-    Evap_time = getScanParameter(Time_List,seqdata.scancycle,seqdata.randcyclelist,'evap_time');
-    
-    exp_evap_time = Evap_time; 
-        
+    Evap_time = getScanParameter(Time_List,seqdata.scancycle,seqdata.randcyclelist,'evap_time');   
+    exp_evap_time = Evap_time;         
     Tau_List = [4];[4];   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
     exp_tau_frac = getScanParameter(Tau_List,seqdata.scancycle,seqdata.randcyclelist,'Evap_Tau_frac');
     exp_tau=Evap_time/exp_tau_frac;

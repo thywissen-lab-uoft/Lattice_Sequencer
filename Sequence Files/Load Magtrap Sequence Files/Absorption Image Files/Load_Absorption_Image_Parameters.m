@@ -13,7 +13,7 @@ function params = Load_Absorption_Image_Parameters()
     params.detunings.K.X.negative.SG = 32.5;32.5;
     % Potassium - Y-cam
     params.detunings.K.Y.positive.normal = 21.5;
-    params.detunings.K.Y.negative.normal = 31.5;
+    params.detunings.K.Y.negative.normal = 31.5+0;
     % Potassium - MOT
     params.detunings.K.MOT.positive.normal = 20.5;
     params.detunings.K.MOT.positive.short_tof = 24.0;
@@ -43,7 +43,7 @@ function params = Load_Absorption_Image_Parameters()
     params.k_repump_shift.negative = 21;
     %% Probe beam powers
     params.powers.K.X = 0.12;0.09;
-    params.powers.K.Y = 0.05;
+    params.powers.K.Y = 0.12;
     params.powers.K.MOT = 0.8;
     Rb_probe_pwr_list = [0.025];[0.1];%-1
     Rb_probe_pwr = getScanParameter(Rb_probe_pwr_list,seqdata.scancycle,seqdata.randcyclelist,'Rb_probe_pwr');
@@ -63,8 +63,8 @@ function params = Load_Absorption_Image_Parameters()
     SG_QP_val_list = 5;%[6];
     SG_QP_val = getScanParameter(SG_QP_val_list,seqdata.scancycle,seqdata.randcyclelist,'SG_QP_val');
     params.SG.SG_QP_val = SG_QP_val*1.78;
-    params.SG.SG_QP_pulsetime = 2;%5
-    params.SG.SG_QP_ramptime = 1;%2
+    params.SG.SG_QP_pulsetime =5; 2;%5
+    params.SG.SG_QP_ramptime =2; 1;%2
     params.SG.SG_QP_FF = 23*(params.SG.SG_QP_val/30); % voltage FF on delta supply
     params.SG.SG_wait_TOF = 1;
 

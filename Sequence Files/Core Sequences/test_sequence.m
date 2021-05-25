@@ -4102,11 +4102,11 @@ setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',...
     6590+rb_MOT_detuning);      
 setAnalogChannel(calctime(curtime,0),'Rb Trap AM', 0.7);            % Rb MOT Trap power   (voltage)
 setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);             % Rb MOT trap TTL     (0 : ON)
-setDigitalChannel(calctime(curtime,-2),'Rb Trap Shutter',1);        % Rb MOT trap shutter (1 : ON)
+setDigitalChannel(calctime(curtime,-2),'Rb Trap Shutter',0);        % Rb MOT trap shutter (1 : ON)
 
 % Repump
 setAnalogChannel(calctime(curtime,0),'Rb Repump AM',0.9);           % Rb MOT repump power (voltage)
-setDigitalChannel(calctime(curtime,0),'Rb Repump Shutter',1);       % Rb MOT repumper shutter (1 : ON)
+setDigitalChannel(calctime(curtime,0),'Rb Repump Shutter',0);       % Rb MOT repumper shutter (1 : ON)
 
 %%%%%%%%%%%%%%%% Set K MOT Beams %%%%%%%%%%%%%%%%
 % Trap
@@ -4244,7 +4244,7 @@ end
 % This code loads the CMOT from the MOT. This includes ramps of the 
 % detunings, power, shims, and field gradients. In order to function 
 % properly it needs to havethe correct parameters from the MOT.
-doCMOTv3 =0;        
+doCMOTv3 =1;        
 if doCMOTv3
 if ~doMOT
    error('You cannot load a CMOT without a MOT');       
@@ -4392,7 +4392,7 @@ end
 %% Combined Molasses - K D1 GM and Rb D2 Mol
 % This code is for running the D1 Grey Molasses for K and the D2 Optical
 % Molasses for Rb at the same time from the CMOT phase
-doMol = 0;
+doMol = 1;
 if doMol
 
 %%%%%%%%%%%% Shift the fields %%%%%%%%%%%%
@@ -4453,8 +4453,7 @@ D1_freq_list = [0];
 D1_freq = getScanParameter(D1_freq_list,seqdata.scancycle,seqdata.randcyclelist,'D1_freq');
 
 % K D1 GM Double pass - modulation depth
-mod_amp_list = [1.3
-    ];
+mod_amp_list = [1.3];
 mod_amp = getScanParameter(mod_amp_list,seqdata.scancycle,seqdata.randcyclelist,'GM_power');
 
 % Set the single photon detuning (Rigol)
@@ -4468,7 +4467,7 @@ setDigitalChannel(calctime(curtime,-2.5),'K D1 GM Shutter',1);
 
 %%%%%%%%%%%% Total Molasses Time %%%%%%%%%%%%
 % Total Molasses Time
-molasses_time_list = [5];
+molasses_time_list = [8];
 molasses_time =getScanParameter(molasses_time_list,seqdata.scancycle,seqdata.randcyclelist,'molasses_time'); 
 
 %%%%%%%%%%%% advance time during molasses  %%%%%%%%%%%%
@@ -4618,7 +4617,7 @@ end
 %% Time of flight
 % This section of code performs a time flight before doing fluorescence
 % imaging with the MOT beams.
-doTOF =0;
+doTOF =1;
 
 if ~doTOF && loadMT
    error('MT load is not followed by TOF. Coils will get too hot');       
@@ -4642,7 +4641,7 @@ setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);
 %%%%%%%%%%%% Perform the time of flight %%%%%%%%%%%%
 
 % Set the time of flight
-tof_list = [10];
+tof_list = [1:15];
 tof =getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof_time'); 
 
 % Increment the time (ie. perform the time of flight)
@@ -4702,7 +4701,7 @@ end
 
 
 %% Optical pumping test
-curtime = calctime(curtime,1000);
+% curtime = calctime(curtime,1000);
 % setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP Shutter',1);    
 % setAnalogChannel(calctime(curtime,-5),'Rb Probe/OP AM',1); %0.11
 % setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',0); % inverted logic
@@ -4723,7 +4722,7 @@ curtime = calctime(curtime,1000);
 % setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
 % setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
 % % % % 
-% % % 
+% % 
 % setAnalogChannel(calctime(curtime,0),59,0); %0.11
 
 % % ODT test
@@ -4812,14 +4811,33 @@ curtime = calctime(curtime,1000);
 % curtime = calctime(curtime, 1000)
 
 % setAnalogChannel(calctime(curtime,0),59,0); 
-% setDigitalChannel(calctime(curtime,0),'Downwards D2 Shutter',1);
-% setDigitalChannel(calctime(curtime,0),'Kill TTL',1);
-% setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
+% setDigitalChannel(calctime(curtime,0),'Downwards D2 Shutter',0);
+% setDigitalChannel(calctime(curtime,0),'Kill TTL',0);
+% % setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
 
 % %% Raman check
 % setAnalogChannel(calctime(curtime,0),59,0); 
+% curtime =  setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);    
+
 % % setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1)
 % setDigitalChannel(calctime(curtime,0),'Raman Shutter',0)
+% setDigitalChannel(calctime(curtime,0),'D1 Shutter',0)
+% setDigitalChannel(calctime(curtime,0),'EIT Shutter',0)
+% setAnalogChannel(calctime(curtime,0),'F Pump',9.99);
+
+
+% mod_freq =  (120)*1E6;
+% mod_amp = 1.5;
+% mod_offset =0;
+% str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
+% addVISACommand(6, str);
+
+% %OP test
+% curtime =  setDigitalChannel(calctime(curtime,0),'D1 OP TTL',1);    
+% setAnalogChannel(calctime(curtime,0),'D1 AM',10); 
+
+tnow=now;
+addOutputParam('now',(tnow-floor(tnow))*24*60*60);
 
 timeout = curtime;
 

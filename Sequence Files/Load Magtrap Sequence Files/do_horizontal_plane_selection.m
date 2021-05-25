@@ -811,7 +811,7 @@ dispLineStr('TIME!!!!',curtime);
 curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 
 else
-curtime = calctime(curtime,opt.Microwave_Pulse_Length+50); %Added March 19,2021 to shorten the lattice time for Raman transfers
+curtime = calctime(curtime,100); %Added March 19,2021 to shorten the lattice time for Raman transfers
 end
         
 %% assigning outputs (edit with care!)

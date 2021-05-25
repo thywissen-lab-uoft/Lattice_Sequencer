@@ -11,10 +11,10 @@ global seqdata;
 
 % Channel to test
 pulsetime = 2000;       % Duration of pulse
-current = 20;            % Current in amps
+current = 5;            % Current in amps
 % channel = 21;           % Channel to use
 
-channel = 'Coil 13';
+channel = 22;'Coil 12a';
 % channel = 'Coil 15';
 
 % Set logic for digital switch FETs
@@ -30,14 +30,14 @@ AnalogFuncTo(calctime(curtime,0),8,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),50,50,
 curtime = calctime(curtime,500);
 
 
-is_bipolar = 1;
+is_bipolar = 0;
 
 % Define current ramp function
 ramp_iparabola = @(t,tt,y0,y1) (y1-y0)*(1-(2*t/tt-1).^2)+y0;%(y1-y0)*(1-(tt-t)/tt)+y0;
 ramp_cosine = @(t,tt,y0) y0/2*(1-cos(2*pi*t/tt));
 
 %set FF
-% setAnalogChannel(calctime(curtime,-200),18,25*(abs(current)/30)/3 + 0.5);
+setAnalogChannel(calctime(curtime,-200),18,25*(abs(current)/30)/3 + 0.5);
 
 % %use the following for QT coil
 % AnalogFunc(calctime(curtime,-200),18,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,0.5,25*(abs(current)/30)/1 + 0.5);

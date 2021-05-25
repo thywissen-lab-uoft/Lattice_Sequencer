@@ -50,16 +50,15 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     do_evaporation_before_plane_selection = 0;   %delete: QP evaporation by tilting out of the lattice. Never worked, delete. %Move -7/2 atoms to -9/2 for plane selection if spin mixture existed
     
     do_raman_optical_pumping = 000; %keep: for an option, normal D1 OP should be fine 
-    do_optical_pumping = 0; %keep: useful
+    do_optical_pumping = 1; %keep: useful
     
     remove_one_spin_state = 0;% keep: An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
-    do_plane_selection = 0;     kill_pulses = 0;  %Kill Pulses only active if do_plane_selection=1
+    do_plane_selection = 1;     kill_pulses = 1;  %Kill Pulses only active if do_plane_selection=1
     second_plane_selection = 0; % copy 
     fast_plane_selection = 0;% keep: could be the future of plane selection code for cleaner control
     eliminate_planes_with_QP = 0; %keep: QP vacuum cleaner. In 2nd time plane selection section
     do_plane_selection_horizontally = 0;  %worth keeping, generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
 
-    do_K_uwave_transfer =  0; %delete %not used very often
     do_K_uwave_spectroscopy = 0; %keep
     do_Rb_uwave_spectroscopy = 0;
     do_singleshot_spectroscopy = 0;
@@ -76,12 +75,12 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
    
 
     Dimple_Mod = 0; %keep: Used to calibrate dimple trap depth
-    do_lattice_mod = 1; %keep: calibrate lattice depth
+    do_lattice_mod = 0; %keep: calibrate lattice depth
     lattice_depth_calibration = 0; %keep: another lattice calibration method
-    rotate_waveplate_after_ramp = 0; %keep:  Turn Rotating Waveplate to Shift Power to Lattice Beams
-    do_lattice_ramp_after_spectroscopy = 0; %keep: Ramp lattices on or off after doing spectroscopy, must be on for fluorescence image
+    rotate_waveplate_after_ramp = 1; %keep:  Turn Rotating Waveplate to Shift Power to Lattice Beams
+    do_lattice_ramp_after_spectroscopy = 1; %keep: Ramp lattices on or off after doing spectroscopy, must be on for fluorescence image
     do_shear_mode_mod = 0; %delete: used to be a way modulate XDT using shear mode aom
-    Raman_transfers = 0;  %keep                  % for fluorescence image
+    Raman_transfers = 1;  %keep                  % for fluorescence image
     do_lattice_sweeps = 0; %delete
     Drop_From_XDT = 0; %May need to add code to rotate waveplate back here.
 
@@ -99,14 +98,14 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     if Drop_From_XDT
         lattice_rampdown = 50;
     else
-        lattice_rampdown = 2; %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
+        lattice_rampdown = 1; %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
     end
     atomscale = 0.4;%0.4045; %0.4 for 40K, 1.0 for Rb
       
    
 % Parameters for lattice loading, section used for lattice alignment
 %     lat_rampup_common_depths = [200 200]/atomscale;
-    Depth_List = [200];
+    Depth_List = [60];
 %     ZLD = getmultiScanParameter(Depth_List,seqdata.scancycle,'x_lattice_depth',1,2);
     ZLD = getScanParameter(Depth_List,seqdata.scancycle,seqdata.randcyclelist,'zld');
 % ZLD = getmultiScanParameter(Depth_List,seqdata.scancycle,'ylattice_depth',1,2);
@@ -127,7 +126,8 @@ lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycl
 %     lat_rampup_time = 1*[50  50  50  50]; 
 
 
-%%%LOADING SEQ BELOW CAN BE USED FOR DIRECT LATTICE LOADING FROM QP
+%% LOADING SEQ BELOW CAN BE USED FOR DIRECT LATTICE LOADING FROM QP
+
 %     lat_rampup_depth = 1*[1*[0 0 ZLD ZLD];
 %                           1*[0 0 ZLD ZLD];
 %                           1*[ZLD ZLD ZLD ZLD]]/atomscale;   
@@ -269,7 +269,7 @@ lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycl
 %     setAnalogChannel(calctime(curtime,Total_Time),'Modulation Ramp',0);
 %             
 % end
-
+%%
 
 
 
@@ -344,26 +344,27 @@ end
     ScopeTriggerPulse(curtime,'Load lattices');
     
     % set lattice ALPS to zero in the beginning (in case they haven't been)
-    setAnalogChannel(calctime(curtime,-60),'xLattice',-0.1,1);
-    setAnalogChannel(calctime(curtime,-60),'yLattice',-0.1,1);
-    setAnalogChannel(calctime(curtime,-60),'zLattice',-0.1,1);
+%     setAnalogChannel(calctime(curtime,-60),'xLattice',-0.1,1);
+%     setAnalogChannel(calctime(curtime,-60),'yLattice',-0.1,1);
+%     setAnalogChannel(calctime(curtime,-60),'zLattice',-0.1,1);
+    
+    setAnalogChannel(calctime(curtime,-60),'xLattice',-22);
+    setAnalogChannel(calctime(curtime,-60),'yLattice',-19);
+    setAnalogChannel(calctime(curtime,-60),'zLattice',-19);
     
     % Enable rf output on ALPS3 (fast rf-switch and enable integrator)
     setDigitalChannel(calctime(curtime,-50),'yLatticeOFF',0);
-    setDigitalChannel(calctime(curtime,-60),'Lattice Direct Control',0);
+    setDigitalChannel(calctime(curtime,-100),'Lattice Direct Control',0);
     
-        
-    % ODT1&2 ramps
-%RHYS - What is this? Delete.    
-%     if (~dipole_trap_off_after_lattice_on) % '__'=0 : use ramp parameters defined above;
-%         AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_endpower);
-%         AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,seqdata.params. XDT_area_ratio*dip_endpower);
-%     end
-%         
+  
     % 1st lattice rampup segment
     AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_time(1), lat_rampup_time(1), lat_rampup_depth(1,1));
     AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_time(1), lat_rampup_time(1), lat_rampup_depth(2,1));
 curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_time(1), lat_rampup_time(1), lat_rampup_depth(3,1));
+
+%     disp9
+
+
 
     %Ramp up feshbach field after 1st lattice ramp. 
     %RHYS - Can ramp the FB field up high here during lattice loading to
@@ -1593,10 +1594,14 @@ curtime= AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(
 
     
 curtime = calctime(curtime,10);%10 ms for the system to be stablized
-    
-    op_time_list = [10];[20];
+
+  op_time_list = [3];
     optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle, seqdata.randcyclelist, 'op_time'); %optical pumping pulse length
-    repump_power = 1.5;1.0;
+    repump_power_list = [0.5];
+    repump_power =getScanParameter(repump_power_list, seqdata.scancycle, seqdata.randcyclelist, 'op_repump_pwr'); %optical pumping repump power
+    D1op_pwr_list = [5]; %min: 0, max:10
+    D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle, seqdata.randcyclelist, 'D1op_pwr'); %optical power
+
     
     %Determine the requested frequency offset from zero-field resonance
     frequency_shift = (4)*2.4889;(4)*2.4889;
@@ -1618,25 +1623,24 @@ curtime = calctime(curtime,10);%10 ms for the system to be stablized
     newramp = struct('ShimValues',seqdata.params.shim_zero + [X_Shim_Value+X_Shim_Offset, Y_Shim_Value+Y_Shim_Offset, Z_Shim_Offset],...
             'FeshValue',0.01,'QPValue',0,'SettlingTime',100);
 
-%RHYS - rampMagneticFields used here. This module was designed to replace
-%ramp_bias_fields, as it has a more friendly structural syntax.
-curtime = rampMagneticFields(calctime(curtime,0), newramp);
+    % Ramp fields for pumping
+curtime = rampMagneticFields(calctime(curtime,0), newramp);   
+
+    % Close EIT Probe Shutter
+    setDigitalChannel(calctime(curtime,-20),'EIT Shutter',0);
     
-
-
-
-    setDigitalChannel(calctime(curtime,-10),'EIT Shutter',0);
-    %Break the thermal stabilzation of AOMs by turning them off
+    % Break the thermal stabilzation of AOMs by turning them off
     setDigitalChannel(calctime(curtime,-10),'D1 TTL',0);
+    setAnalogChannel(calctime(curtime,-10),'F Pump',-1);
     setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
-    setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);
-    
+    setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);    
+    setAnalogChannel(calctime(curtime,-10),'D1 AM',D1op_pwr); 
 
-    %Open shutter
+    
+    % Open D1 shutter (FPUMP + OPT PUMP)
     setDigitalChannel(calctime(curtime,-8),'D1 Shutter', 1);%1: turn on laser; 0: turn off laser
-    
-    
-    %Open optical pumping AOMS and regulate F-pump
+        
+    % Open optical pumping AOMS (allow light) and regulate F-pump
     setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
     setAnalogChannel(calctime(curtime,0),'F Pump',repump_power);
     setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
@@ -1645,21 +1649,99 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
     %Optical pumping time
 curtime = calctime(curtime,optical_pump_time);
     
-    %Turn off OP before F-pump so atoms repumped back to -9/2.
+    % Turn off OP before F-pump so atoms repumped back to -9/2.
     setDigitalChannel(calctime(curtime,0),'D1 OP TTL',0);
 
-    %Close optical pumping AOMS
-    setDigitalChannel(calctime(curtime,5),'F Pump TTL',1);%1
-    setAnalogChannel(calctime(curtime,5),'F Pump',-1);%1
-    setDigitalChannel(calctime(curtime,5),'FPump Direct',1);
-    %Close shutter
+    op_repump_extra_time = 2; %additional time for which repump beams are on
+    % Close optical pumping AOMS (no light)
+    setDigitalChannel(calctime(curtime,op_repump_extra_time),'F Pump TTL',1);%1
+    setAnalogChannel(calctime(curtime,op_repump_extra_time),'F Pump',-1);%1
+    setDigitalChannel(calctime(curtime,op_repump_extra_time),'FPump Direct',1);
+    
+    % Close D1 shutter shutter
     setDigitalChannel(calctime(curtime,5),'D1 Shutter', 0);%2
     
     %After optical pumping, turn on all AOMs for thermal stabilzation
     
     setDigitalChannel(calctime(curtime,10),'D1 TTL',1);
     setDigitalChannel(calctime(curtime,10),'F Pump TTL',0);
+%     setAnalogChannel(calctime(curtime,10),'D1 AM',10); 
+
 curtime =  setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);    
+    
+
+
+%     op_time_list = [10];[20];
+%     optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle, seqdata.randcyclelist, 'op_time'); %optical pumping pulse length
+%     repump_power = 1.5;1.0;
+%     D1op_pwr = 10; %min: 0, max:10 
+%     
+%     %Determine the requested frequency offset from zero-field resonance
+%     frequency_shift = (4)*2.4889;(4)*2.4889;
+%     Selection_Angle = 62.0;
+%     addOutputParam('Selection_Angle',Selection_Angle)
+% 
+%     %Define the measured shim calibrations (NOT MEASURED YET, ASSUMING 2G/A)
+%     Shim_Calibration_Values = [2.4889*2, 0.983*2.4889*2];  %Conversion from Shim Values (Amps) to frequency (MHz) to
+% 
+%     %Determine how much to turn on the X and Y shims to get this frequency
+%     %shift at the requested angle
+%     X_Shim_Value = frequency_shift * cosd(Selection_Angle) / Shim_Calibration_Values(1);
+%     Y_Shim_Value = frequency_shift * sind(Selection_Angle) / Shim_Calibration_Values(2);
+%     X_Shim_Offset = 0;
+%     Y_Shim_Offset = 0;
+%     Z_Shim_Offset = 0.055;0.055;
+% 
+%     %Ramp the magnetic fields so that we are spin-polarized.
+%     newramp = struct('ShimValues',seqdata.params.shim_zero + [X_Shim_Value+X_Shim_Offset, Y_Shim_Value+Y_Shim_Offset, Z_Shim_Offset],...
+%             'FeshValue',0.01,'QPValue',0,'SettlingTime',100);
+% 
+% %RHYS - rampMagneticFields used here. This module was designed to replace
+% %ramp_bias_fields, as it has a more friendly structural syntax.
+% curtime = rampMagneticFields(calctime(curtime,0), newramp);
+%     
+% 
+% 
+% 
+%     setDigitalChannel(calctime(curtime,-10),'EIT Shutter',0);
+%     %Break the thermal stabilzation of AOMs by turning them off
+%     setDigitalChannel(calctime(curtime,-10),'D1 TTL',0);
+%     setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
+%     setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);
+%     setAnalogChannel(calctime(curtime,-10),'D1 AM',D1op_pwr); 
+% 
+%     
+% 
+%     %Open shutter
+%     setDigitalChannel(calctime(curtime,-8),'D1 Shutter', 1);%1: turn on laser; 0: turn off laser
+%     
+%     
+%     %Open optical pumping AOMS and regulate F-pump
+%     setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
+%     setAnalogChannel(calctime(curtime,0),'F Pump',repump_power);
+%     setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
+%     setDigitalChannel(calctime(curtime,0),'D1 OP TTL',1); %0:off 1:on
+%     
+%     %Optical pumping time
+% curtime = calctime(curtime,optical_pump_time);
+%     
+%     %Turn off OP before F-pump so atoms repumped back to -9/2.
+%     setDigitalChannel(calctime(curtime,0),'D1 OP TTL',0);
+% 
+%     %Close optical pumping AOMS
+%     setDigitalChannel(calctime(curtime,5),'F Pump TTL',1);%1
+%     setAnalogChannel(calctime(curtime,5),'F Pump',-1);%1
+%     setDigitalChannel(calctime(curtime,5),'FPump Direct',1);
+%     %Close shutter
+%     setDigitalChannel(calctime(curtime,5),'D1 Shutter', 0);%2
+%     
+%     %After optical pumping, turn on all AOMs for thermal stabilzation
+%     
+%     setDigitalChannel(calctime(curtime,10),'D1 TTL',1);
+%     setDigitalChannel(calctime(curtime,10),'F Pump TTL',0);
+%     setAnalogChannel(calctime(curtime,10),'D1 AM',10); 
+% 
+% curtime =  setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);    
     
 end
 
@@ -1968,7 +2050,7 @@ curtime=calctime(curtime,50);
             
     %%%%Kill beam 
     %----------------------------------------------
-    Downwards_D2 = 1;% turn on the kill beam
+    Downwards_D2 = 0;% turn on the kill beam
     if Downwards_D2
         %Should be plenty of time to do optical removal without
         %updating curtime, due to the shim field settling time above
@@ -1976,7 +2058,7 @@ curtime=calctime(curtime,50);
         if kill_pulses==1
             %Resonant light pulse to remove any untransferred atoms from F=9/2
             kill_probe_pwr = 1;
-            kill_time_list = 10; 5 %10
+            kill_time_list = 50; 5 %10
             kill_time = getScanParameter(kill_time_list,seqdata.scancycle,seqdata.randcyclelist,'kill_time');
             kill_detuning = 30;39; %27 for 80G
             addOutputParam('kill_detuning',kill_detuning);
@@ -2186,7 +2268,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minj
         % FB coil settings for spectroscopy
         ramp.fesh_ramptime = 100;
         ramp.fesh_ramp_delay = -0;
-        fb_shift_list = [0.2];[0.265];%0.2 for 0.7xdt power
+        fb_shift_list = [0.5];[0.5];[0.265];%0.2 for 0.7xdt power
         fb_shift = getScanParameter(fb_shift_list,seqdata.scancycle,seqdata.randcyclelist,'fb_shift');
         ramp.fesh_final = 128-fb_shift;125.829-fb_shift; %before 2017-1-6 6*22.6; %22.6% smaller b field means farther away from the window
         %default value of ramp.fesh_final is 6*22.6, for plane
@@ -2196,7 +2278,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minj
         % QP coil settings for spectroscopy
         ramp.QP_ramptime = 100;
         ramp.QP_ramp_delay = -0;
-        ramp.QP_final =  14*1.78; %7
+        ramp.QP_final =  14*1.78; %7 %210G/cm
 
         ramp.settling_time = 300; %200
         
@@ -2218,7 +2300,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 %         planeselect_freq = 1364.658; %select atoms in |9/2,-7/2> to |7/2,-5/2>
         spect_pars.freq = planeselect_freq;   % |9/2,-9/2>
         spect_pars.power = 15;15;%6.5; %-15 %uncalibrated "gain" for rf
-        ffscan_list = [000]/1000;%frequency sweep width
+        ffscan_list = [25]/1000;%frequency sweep width
         ffscan = getScanParameter(ffscan_list,seqdata.scancycle,seqdata.randcyclelist,'ffscan');
         planeselect_sweep_width = ffscan;%500/1000;
         spect_pars.delta_freq = planeselect_sweep_width; %300
@@ -2246,8 +2328,11 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
         %Determine the frequency to plane select |9/2,-7/2> atoms
         freq2 = DoublePlaneSelectionFrequency(spect_pars.freq, [9/2,-9/2],[7/2,-7/2],[9/2,-7/2],[7/2,-5/2]);
                  
-        initial_transfer = 0;
+
 %% Transfer atoms to |7/2,-7/2> initially.
+
+        initial_transfer = 0;
+        
         if initial_transfer
             
             %Save pulse settings for plane selection
@@ -2406,7 +2491,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars); % se
             end
             
             % synchronizing this plane-selection sweep
-            do_ACync_plane_selection = 1;
+            do_ACync_plane_selection = 0;
             if do_ACync_plane_selection
 %                 % Enable ACync right after ramping up to start field
 %                 ACync_start_time = calctime(curtime,spect_pars.uwave_delay + field_shift_time);
@@ -2460,32 +2545,55 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
         end
 
         Downwards_D2 = 1;% turn on the kill beam
-        if Downwards_D2
+        if Downwards_D2            
+
             %Should be plenty of time to do optical removal without
             %updating curtime, due to the shim field settling time above
             
             if kill_pulses==1
+            dispLineStr('Vertical D2 Kill Pulse',curtime);
+
             %Resonant light pulse to remove any untransferred atoms from
             %F=9/2
-            kill_time_list = [20];
-            kill_time = getScanParameter(kill_time_list,seqdata.scancycle,seqdata.randcyclelist,'kill_time'); %10 
-            kill_detuning_list = [30];[54];40;39;
-            kill_detuning = getScanParameter(kill_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'kill_det');
+            kill_time_list = [1];
+            kill_time = getScanParameter(kill_time_list,seqdata.scancycle,...
+                seqdata.randcyclelist,'kill_time'); %10 
+            kill_detuning_list = [42.7];[54];40;39;
+            kill_detuning = getScanParameter(kill_detuning_list,...
+                seqdata.scancycle,seqdata.randcyclelist,'kill_det');
 %             kill_detuning = 39;   40;   %27 for 80G       %43 @ 2018-02-22
 %             addOutputParam('kill_det',kill_detuning);
 %             addOutputParam('kill_time',kill_time);
+
+            
+            %Kill SP AOM 
+            mod_freq =  (120)*1E6;
+            mod_amp = 0.05;0.1;
+            mod_offset =0;
+            str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
+            addVISACommand(6, str);
+            
+            % Display update about
+            disp(' D2 Kill pulse');
+            disp(['     Kill Time       (ms) : ' num2str(kill_time)]); 
+            disp(['     Kill Frequency (MHz) : ' num2str(mod_freq*1E-6)]); 
+            disp(['     Kill Amp         (V) : ' num2str(mod_amp)]); 
+            disp(['     Kill Detuning  (MHz) : ' num2str(kill_detuning)]); 
+
+
 
             pulse_offset_time = -5; %Need to step back in time a bit to do the kill pulse
                                       % directly after transfer, not after the subsequent wait times
                                       
 %             %set probe detuning
 %             setAnalogChannel(calctime(curtime,pulse_offset_time-50),'K Probe/OP FM',170); %195
-            %set trap AOM detuning to change probe
+            % Set trap AOM detuning to change probe
             setAnalogChannel(calctime(curtime,pulse_offset_time-50),'K Trap FM',kill_detuning); %54.5
 
-            %open K probe shutter
+            % open K probe shutter
             setDigitalChannel(calctime(curtime,pulse_offset_time-5),'Downwards D2 Shutter',1); %0=closed, 1=open
-            %set TTL off initially
+            
+            % Set TTL off initially
             setDigitalChannel(calctime(curtime,pulse_offset_time-20),'Kill TTL',0);%0= off, 1=on
             
 %             kill_lat_ramp_time = 3;
@@ -2507,6 +2615,9 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
         
         Horizontal_D2 = 0;
         if Horizontal_D2
+            dispLineStr('Horizontal D2 Kill Pulse',curtime);
+
+            
             %Should be plenty of time to do optical removal without
             %updating curtime, due to the shim field settling time above
             
@@ -2540,12 +2651,14 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
             setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time + 1),'K Probe/OP shutter',0);
         end
         
-        transfer_back_to_9half = 1;1;% transfer back to -9/2
+        
+        
+        transfer_back_to_9half = 1;% transfer back to -9/2
         if transfer_back_to_9half
             
             % wait time (code related -- need to accomodate for AnalogFuncTo
             % calls to the past in rf_uwave_spectroscopy)
-curtime = calctime(curtime,65);
+            curtime = calctime(curtime,65);
                 
             %SRS in pulsed mode with amplitude modulation
             spect_type = 2;
@@ -4246,7 +4359,7 @@ curtime = calctime (curtime,50);
     end
     
     
-    freq_list = [260]*1e3;
+    freq_list = [160:2.5:170]*1e3;
 %     freq_list = [35:5:125]*1e3; %560
 
     mod_freq = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'lat_mod_freq');
@@ -4257,7 +4370,10 @@ curtime = calctime (curtime,50);
 %     mod_amp =  (1.1E-5)*(mod_freq/1000)^2-0.00092*(mod_freq/1000)+0.04;0.2;
     
     % For Y Lattice
-    mod_amp =  (1.1E-5)*(80+mod_freq/1000)^2-0.00092*(80+mod_freq/1000)+0.04;0.2;
+%     mod_amp =  (1.1E-5)*(80+mod_freq/1000)^2-0.00092*(80+mod_freq/1000)+0.04;
+
+    
+    mod_amp =  (1.1E-5)*(60+mod_freq/1000)^2-0.00092*(60+mod_freq/1000)+0.04;
     
     
     addOutputParam('mod_amp',mod_amp);
@@ -4280,8 +4396,8 @@ curtime = calctime (curtime,50);
     % make a frequency dependent drive.
     % Trigger and wait
     ScopeTriggerPulse(calctime(curtime,0),'Lattice_Mod');
-    setDigitalChannel(calctime(curtime,0),51,1); 
-    curtime = setDigitalChannel(calctime(curtime,mod_time),51,0);
+    setDigitalChannel(calctime(curtime,0),'Lattice FM',1); 
+    curtime = setDigitalChannel(calctime(curtime,mod_time),'Lattice FM',0);
 
 
     % OLD MODULATION
@@ -4347,9 +4463,9 @@ curtime = AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmi
 if do_lattice_ramp_after_spectroscopy
 
     %Define ramp parameters
-     xLatDepth = 800;
-     yLatDepth = 800;
-     zLatDepth = 800; 
+     xLatDepth = 700;
+     yLatDepth = 700;
+     zLatDepth = 700; 
      
      addOutputParam('xLatDepth',xLatDepth);
      addOutputParam('yLatDepth',yLatDepth);
@@ -4398,6 +4514,8 @@ curtime =   calctime(curtime,lat_rampup_imaging_time(j));
     setAnalogChannel(calctime(curtime,0),'dipoleTrap2',0);
     setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
 
+ dispLineStr('Deep lattices ramped at',curtime);
+
     
 deep_latt_holdtime_list = [50];
 deep_latt_holdtime = getScanParameter(deep_latt_holdtime_list,seqdata.scancycle,seqdata.randcyclelist,'deep_latt_holdtime'); 
@@ -4416,29 +4534,29 @@ if (Raman_transfers == 1)
     %During imaging, generate about a 4.4G horizontal field. Both shims get
     %positive control voltages, but draw from the 'negative' shim supply. 
     clear('horizontal_plane_select_params')
-    F_Pump_List = [0.7];[0.60];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
+    F_Pump_List = [0.9];[0.75];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power'); %1.4;
-    Raman_Power_List =[.4]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
+    Raman_Power_List =0.6;[0.45]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
     horizontal_plane_select_params.Raman_Power1 = getScanParameter(Raman_Power_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Power'); 
     horizontal_plane_select_params.Raman_Power2 = horizontal_plane_select_params.Raman_Power1;
     horizontal_plane_select_params.Fake_Pulse = 0;
-    horizontal_plane_select_params.Use_EIT_Beams = 0;
+    horizontal_plane_select_params.Use_EIT_Beams = 1;
     uwave_freq_list = [0]/1000;
     uwave_freq = getScanParameter(uwave_freq_list,seqdata.scancycle,seqdata.randcyclelist,'uwave_freq');
     horizontal_plane_select_params.Selection__Frequency = 1285.8 + 11.025 +uwave_freq; %11.550
     horizontal_plane_select_params.Microwave_Power_For_Selection = 15; %dBm
     
-    Raman_List = [-150];[-150];0;   %-30% : in kHz;
+    Raman_List = [0];0;   %-30% : in kHz;
     horizontal_plane_select_params.Raman_AOM_Frequency = 110 + getScanParameter(Raman_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Freq')/1000;
     
     %CHECK PERFORMANCE OF SWEEP IN BURST MODE. CURRENTLY USING BURST MODE
     %SINCE REMOVING ZASWA SWITCHES.
-    horizontal_plane_select_params.Rigol_Mode = 'Sweep';  %'Sweep', 'Pulse', 'Modulate'
+    horizontal_plane_select_params.Rigol_Mode = 'Pulse';  %'Sweep', 'Pulse', 'Modulate'
     Range_List = [50];%in kHz
     horizontal_plane_select_params.Selection_Range = getScanParameter(Range_List,seqdata.scancycle,seqdata.randcyclelist,'Sweep_Range')/1000; 
-    Raman_On_Time_List = [1];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
+    Raman_On_Time_List = [2000];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
     horizontal_plane_select_params.Microwave_Pulse_Length = getScanParameter(Raman_On_Time_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Time'); 
-    horizontal_plane_select_params.Fluorescence_Image = 0;
+    horizontal_plane_select_params.Fluorescence_Image = 1;
     horizontal_plane_select_params.Num_Frames = 1; % 2 for 2 images
     Modulation_List = Raman_On_Time_List;
     horizontal_plane_select_params.Modulation_Time = getScanParameter(Modulation_List,seqdata.scancycle,seqdata.randcyclelist,'Modulation_Time');
@@ -4450,7 +4568,7 @@ if (Raman_transfers == 1)
     horizontal_plane_select_params.QP_Selection_Gradient = 0;
     horizontal_plane_select_params.Ramp_Fields_Up = 1; % ramp B field down in the begining
     horizontal_plane_select_params.Ramp_Fields_Down = 0; 
-    Field_Shift_List = [0.135];[0.155];[0.134]; %unit G 
+    Field_Shift_List = [0.195];[0.155];[0.134]; %unit G 
     horizontal_plane_select_params.Field_Shift = getScanParameter(Field_Shift_List,seqdata.scancycle,seqdata.randcyclelist,'Field_Shift');
     horizontal_plane_select_params.X_Shim_Offset = 0;
     horizontal_plane_select_params.Y_Shim_Offset = 0;
@@ -4467,6 +4585,9 @@ if (Raman_transfers == 1)
     ScopeTriggerPulse(curtime,'Raman Beams On');
       
 curtime = do_horizontal_plane_selection(curtime, horizontal_plane_select_params);
+
+
+ dispLineStr('do_horizontal_plane_selection execution finished at',curtime);
 
     %turn on optical pumping beam AOM for thermal stabilization
     setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);
@@ -4577,12 +4698,12 @@ lattice_off_delay = 10;
  
 %RHYS - Lattice turn off code (snap or bandmap). Could perhaps be more
 %intuitive.
- if ( seqdata.flags.load_lattice == 1 ); %shut off lattice, keep dipole trap on
+ if ( seqdata.flags.load_lattice == 1 ) %shut off lattice, keep dipole trap on
     
     % Parameters for ramping down the lattice (after things have been done)
-    zlat_endpower = -0.2;       % where to end the ramp
-    ylat_endpower = -0.2;       % where to end the ramp
-    xlat_endpower = -0.2;       % where to end the ramp
+    zlat_endpower = -19;-0.2;       % where to end the ramp
+    ylat_endpower = -20;-0.2;       % where to end the ramp
+    xlat_endpower = -22; -0.2;       % where to end the ramp
     lat_rampdowntime =lattice_rampdown*1; % how long to ramp (0: switch off)   %1ms
     lat_rampdowntau = 1*lattice_rampdown/5;    % time-constant for exponential rampdown (0: min-jerk)
     lat_post_waittime = 0*10 ;% whether to add a waittime after the lattice rampdown (adds to timeout)

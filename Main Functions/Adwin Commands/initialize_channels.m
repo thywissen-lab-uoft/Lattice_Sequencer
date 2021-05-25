@@ -525,7 +525,10 @@ seqdata.analogchannels(34).name = 'Rb Beat Note FM';
 seqdata.analogchannels(34).minvoltage = 0;
 seqdata.analogchannels(34).maxvoltage = 10;
 seqdata.analogchannels(34).defaultvoltagefunc = 2;
-Rb_Trap_Frequency_Offset = 6; %Frequency offset for all Rb trap/probe beams in MHz.
+Rb_Trap_Frequency_Offset_list =[6.5];
+Rb_Trap_Frequency_Offset = getScanParameter(Rb_Trap_Frequency_Offset_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'Rb_Trap_Frequency_Offset');
+% Rb_Trap_Frequency_Offset = 5.5;6; %Frequency offset for all Rb trap/probe beams in MHz.
 seqdata.analogchannels(34).voltagefunc{2} = @(a)((a*1-4418.47 + Rb_Trap_Frequency_Offset)/541.355);
 
 %channel 35 (Rb Offset FF)
@@ -645,7 +648,7 @@ seqdata.analogchannels(44).minvoltage = -10;
 seqdata.analogchannels(44).maxvoltage = 10;
 seqdata.analogchannels(44).resetvalue = [-0.1,1]; %Issue in the circuit when asking for -10V, causes siren
 seqdata.analogchannels(44).defaultvoltagefunc = 2;
-seqdata.analogchannels(44).voltagefunc{2} = @(a)(a*0.4-8.6812)/141.2965;% 2021/04/23
+seqdata.analogchannels(44).voltagefunc{2} = @(a)(a*0.4+8.6812)/141.2965;% 2021/04/23
 
 % seqdata.analogchannels(44).voltagefunc{2} = @(a)(a-5.0878)/432.98;%28 June, 2017
 % seqdata.analogchannels(44).voltagefunc{2} = @(a)(max(2.27178*log10(max(a,1E-9))-2.77493,-10));%28 June, 2017
@@ -658,7 +661,8 @@ seqdata.analogchannels(45).resetvalue = [-0.1,1];
 seqdata.analogchannels(45).defaultvoltagefunc = 2;
 % seqdata.analogchannels(45).voltagefunc{2} = @(a)((a-2.7+5.61047)/473.44593);
 
-seqdata.analogchannels(45).voltagefunc{2} = @(a)((a+1.9553)/555.47);
+% seqdata.analogchannels(45).voltagefunc{2} = @(a)((a+1.9553)/555.47);
+seqdata.analogchannels(45).voltagefunc{2} = @(a)(a*0.4+8.28)/117.3;% 2021/05/04
 
 % seqdata.analogchannels(45).voltagefunc{2} = @(a)(max(2.21374*log10(max((a),1E-9))-2.59682,-10)); %June 28, 2017.
 % seqdata.analogchannels(45).voltagefunc{2} = @(a)(max(2.19994*log10(max((a-0.29448)/0.96966,1E-9))-2.6174,-10)); %June 22, 2017.

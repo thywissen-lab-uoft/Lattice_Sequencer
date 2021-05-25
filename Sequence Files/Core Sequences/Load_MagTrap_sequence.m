@@ -160,7 +160,7 @@ seqdata.flags.MOT_flour_image = 0;
 iXon_movie = 1; %Take a multiple frame movie?
 seqdata.flags.image_atomtype = 1;%  0= Rb, 1 = K, 2 = Rb+K
 seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
-seqdata.flags.img_direction = 1; 
+seqdata.flags.img_direction = 0; 
 %1 = x direction (Sci) / MOT, 2 = y direction (Sci), 
 %3 = vertical direction, 4 = x direc tion (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
 seqdata.flags.do_stern_gerlach = 0; %1: Do a gradient pulse at the beginning of ToF
@@ -177,7 +177,7 @@ seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now.
 
 %RHYS - params should be defined in a separate location from flags. 
 seqdata.flags.In_Trap_imaging = 0;
-tof_list = [5];
+tof_list = [25];
 seqdata.params.tof = getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof');
 % seqdata.params.tof = 5;  % 45 for rough alignment, 20 for K-D diffraction
 
@@ -223,7 +223,7 @@ RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,seqdata.scan
 
 
 % RF_1B_Final_Frequency = 0.8;
-RF_1B_Final_Frequency_list = [0.8];%0.8,0.4
+RF_1B_Final_Frequency_list = [0.6];%0.8,0.4
 RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq');
 
 
@@ -233,13 +233,13 @@ seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get cl
  
 
 % Dipole trap
-seqdata.flags.do_dipole_trap = 0; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
-seqdata.flags.CDT_evap = 0;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
+seqdata.flags.do_dipole_trap = 1; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
+seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
 seqdata.flags.K_RF_sweep = 0;    %sweep 40K into |9/2,-9/2>; %create mixture in XDT, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1    
-seqdata.flags.init_K_RF_sweep = 0; %sweep 40K into |9/2,-9/2>; %create mixture in XDT before evap, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1  
+seqdata.flags.init_K_RF_sweep = 1; %sweep 40K into |9/2,-9/2>; %create mixture in XDT before evap, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1  
 
 % Optical lattice
-seqdata.flags.load_lattice = 1; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
+seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
 seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
 seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 
@@ -260,7 +260,7 @@ seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / ali
 
 
 %RHYS - Useful! Where to trigger scope. Should be more apparent.     
-scope_trigger = 'Lattice_Mod'; 
+scope_trigger = 'Load lattices'; 
 
 %% Set switches for predefined scenarios
 
@@ -303,8 +303,8 @@ end
     %RHYS - Setting some specific parameters for DDS and objective
     %position. Silly that this is here. 
 
-    obj_piezo_V_List = [1.8];4.6;
-    % 0.1V = 700 nm, must be larger than 0. larger value means farther away from the window.
+    obj_piezo_V_List = [2.3];4.6;
+    % 0.1V = 700 nm, must be larger than  larger value means farther away from the window.
     obj_piezo_V = getScanParameter(obj_piezo_V_List, seqdata.scancycle, seqdata.randcyclelist, 'Objective_Piezo_Z');%5
     % obj_piezo_V = 6.8;
     setAnalogChannel(calctime(curtime,0),'objective Piezo Z',obj_piezo_V,1);
@@ -728,7 +728,7 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     sweep_time_list = [5000 9000];
     sweep_time = getScanParameter(sweep_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'RF1B_sweep_time');
-    sweep_times_1b = [6000 5000 2]*rf_evap_time_scale(2); 2000;
+    sweep_times_1b = [6000 2000 2]*rf_evap_time_scale(2); 2000;
     evap_end_gradient_factor_list = [0.8];
     evap_end_gradient_factor = getScanParameter(evap_end_gradient_factor_list,...
         seqdata.scancycle,seqdata.randcyclelist,'evap_end_gradient_factor');

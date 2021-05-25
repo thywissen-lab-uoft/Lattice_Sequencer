@@ -760,6 +760,8 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     ramp_after_1B = 0;
     if ramp_after_1B
+        dispLineStr('Ramp QP after RF1B',curtime);       
+
         [curtime, I_QP, I_kitt, V_QP, I_fesh] = ...
             ramp_QP_after_transfer_test(curtime, ...
             seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
@@ -821,10 +823,6 @@ do_K_blow_away = 0;     % Blow away K
 if do_Rb_blow_away || do_K_blow_away
     dispLineStr('Blow away Rb or K',curtime);
 
-    %RHYS - these should not be here, but could actually be useful for
-    %debugging XDT loading... if they still work. Removes one species of atom
-    %from the mag trap. 
-    
     if do_Rb_blow_away
         
         %blow away any atoms left in F=2
@@ -871,6 +869,8 @@ end
 
 %% RF1B Alternate : uWave Evaporation
 if ( seqdata.flags.RF_evap_stages(3) == 2 )
+        dispLineStr('uWave Evaporation',curtime);
+
 %RHYS - interesting option that I've never tried. Uses Rb microwaves for
     %evaporation (lower Rabi freq but possibly cleaner?)
     
@@ -886,26 +886,27 @@ end
 %RHYS - clean.
 %turn plug off
 if ( seqdata.flags.do_plug == 1)
+    
+    
     hold_time_list = [0];
     hold_time = getScanParameter(hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'hold_time_QPcoils');
     curtime = calctime(curtime,hold_time);   
     plug_offset = -2.5;-2.5;175;%0 for experiment, -10 to align for in trap image
 
-    
+    % Turn off the plug here if you are doing RF1B TOF.
     if ( seqdata.flags.do_dipole_trap ~= 1 )
+        % Dipole transfer has its own code for turning off the plug after
+        % loading the XDTs
         dispLineStr('Turning off plug at',calctime(curtime,plug_offset));
-
         setDigitalChannel(calctime(curtime,plug_offset),'Plug Shutter',0);% 0:OFF; 1: ON
         ScopeTriggerPulse(calctime(curtime,0),'plug test');
     end        
 end
 %% Dipole trap ramp on (and QP rampdown)
 if ( seqdata.flags.do_dipole_trap == 1 )
-    dipole_on_time = 10; %500
-
-    %RHYS - an important code. Ramp down the mag trap, load the XDT, and
-    %evaporate.
-    [curtime, I_QP, V_QP, P_dip, dip_holdtime, I_shim] = dipole_transfer(curtime, I_QP, V_QP, I_shim);
+    dispLineStr('Caling dipole_transfer.m',curtime);   
+    [curtime, I_QP, V_QP, P_dip, dip_holdtime, I_shim] = ...
+        dipole_transfer(curtime, I_QP, V_QP, I_shim);
 end
 
 

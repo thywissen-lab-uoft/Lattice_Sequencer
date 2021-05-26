@@ -223,7 +223,7 @@ RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,seqdata.scan
 
 
 % RF_1B_Final_Frequency = 0.8;
-RF_1B_Final_Frequency_list = [0.6];%0.8,0.4
+RF_1B_Final_Frequency_list = [0.8];%0.8,0.4
 RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq');
 
 
@@ -260,7 +260,7 @@ seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / ali
 
 
 %RHYS - Useful! Where to trigger scope. Should be more apparent.     
-scope_trigger = 'Load lattices'; 
+scope_trigger = 'Rb uwave transfer'; 
 
 %% Set switches for predefined scenarios
 
@@ -725,11 +725,11 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     dispLineStr('RF1B begins.',curtime);  
     
     % Define RF1B parameters (frequency, gain, timescale, gradient, etc)
-    sweep_time_list = [5000 9000];
+    sweep_time_list = [3000];
     sweep_time = getScanParameter(sweep_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'RF1B_sweep_time');
-    sweep_times_1b = [6000 2000 2]*rf_evap_time_scale(2); 2000;
-    evap_end_gradient_factor_list = [0.8];
+    sweep_times_1b = [6000 3000 2]*rf_evap_time_scale(2); 2000;
+    evap_end_gradient_factor_list = [.8];
     evap_end_gradient_factor = getScanParameter(evap_end_gradient_factor_list,...
         seqdata.scancycle,seqdata.randcyclelist,'evap_end_gradient_factor');
     currs_1b = [1 1 evap_end_gradient_factor evap_end_gradient_factor]*I_QP;

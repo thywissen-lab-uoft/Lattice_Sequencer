@@ -47,7 +47,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     tilt_evaporation = 0;
     dipole_holdtime_before_evap = 0;
     %RHYS - A very important parameter. Pass these from elsewhere.
-    Evap_End_Power_List =[0.15];[0.085];[.065];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
+    Evap_End_Power_List =[0.1];[0.085];[.065];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
     
 %    Evap_End_Power_List = [.15 .25 .2:.1:1.5 .14 .13 .12 .11 .1];
     
@@ -123,10 +123,10 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     P2e = 1.0;0.5; %0.5
 
     % Uncomment these to overwrite initial ramp and just use max powers.
-    P1e=P1;
-    P2e=P2;    
-    %P2e = XDT2_power_func(P1e);    
-    
+%     P1e=P1;
+%     P2e=P2;    
+%     %P2e = XDT2_power_func(P1e);    
+%     
     %Final powers.
     xdt1_end_power = exp_end_pwr;
     xdt2_end_power = XDT2_power_func(exp_end_pwr);
@@ -476,6 +476,9 @@ curtime = calctime(curtime,dipole_holdtime_before_evap);
             ramp.fesh_ramp_delay = 0;
             ramp.fesh_final = mean_field+del_fesh_current/2; %22.6
             ramp.settling_time = 50;
+            
+            disp('Ramping the feshbach field');
+%             disp(['     Field (G) : ' num2str(ramp.
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
         end
@@ -484,7 +487,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     % Perform Field ramp with uWave to transfer Rb from F=2 to F=1
     if seqdata.flags.do_Rb_uwave_transfer_in_ODT        
         do_roundtrip = 0;   % Sweep field there and back again?
-        do_F2_blowaway = 0; % Remove remaining F=2 atoms after transfer?
+        do_F2_blowaway = 1; % Remove remaining F=2 atoms after transfer?
 
         % switch Rb microwave source to Anritsu for transfer
         setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',0); %0 = Anritsu, 1 = Sextupler
@@ -529,7 +532,8 @@ curtime  =  AnalogFuncTo(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y
             AnalogFuncTo(calctime(curtime,-15),35,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,1.2,1); % Ramp FF to Rb trap beat-lock 
             setDigitalChannel(calctime(curtime,-10),25,1); % open Rb probe shutter
             setDigitalChannel(calctime(curtime,-10),24,1); % disable AOM rf (TTL), just to be sure
-            pulse_time = 3;
+            RbF2_kill_time_list =[1]; 3;
+            pulse_time = getScanParameter(RbF2_kill_time_list,seqdata.scancycle,seqdata.randcyclelist,'RbF2_kill_time');
 curtime = DigitalPulse(calctime(curtime,0),24,pulse_time,0); % pulse beam with TTL   15
 
            setDigitalChannel(calctime(curtime,0),25,0); % close shutter
@@ -644,24 +648,19 @@ curtime = calctime(curtime,50);
 
     
     %% 40K RF Sweep Init
-    %Sweep 40K to |9/2,-9/2> before evaporation
-    %RHYS - This one is useful. Again, would love to see it tidied up though.
-    %Why declare the file ramp with a bunch of local parameters, then declare
-    %the RF sweep with more local parameters, then do some special stuff to
-    %make a mixture with local parameters, then ramp fields again, with more
-    %local parameters? Seems it could all be contained in one generalized
-    %spectroscopy function. 
+    %Sweep 40K to |9/2,-9/2> before optical evaporation   
+    
     if seqdata.flags.init_K_RF_sweep
         dispLineStr('RF K Sweep 9-->-9',curtime);  
         disp(' Ramping the feshbach field.');
 
-        %Ramp FB Field
+        % Clear the ramp variable
         clear('ramp');
 
         % FB coil settings
         ramp.fesh_ramptime = 50;
         ramp.fesh_ramp_delay = -0;
-        ramp.fesh_final = 10;20.98111;20.98111;10;%before 2017-1-6 1*22.6; %22.6 %20.8;22.7391;%
+        ramp.fesh_final = 10;20.98111;20.98111;
         addOutputParam('K_RF_B',ramp.fesh_final);
         ramp.settling_time = 200;
         
@@ -669,25 +668,36 @@ curtime = calctime(curtime,50);
         disp(['     Ramp Time    (ms) : ' num2str(ramp.fesh_ramptime)]);
 
         % Ramp the bias fields
-curtime = ramp_bias_fields(calctime(curtime,0), ramp);
-        
+curtime = ramp_bias_fields(calctime(curtime,0), ramp);        
+
 
         disp(' Applying RF sweep to transfer state.');
-
         % RF Sweep Settings
+        % Be careful as it is possible to couple to Rb with these RF waves
+        % (especially at higher RF powers)
+        % VERY SENSITIVE PARAMETERS AND COUPLES TO RB
         clear('sweep');
-        k_rf_freq_list = [1];[1.02]*19.3320/10;
-        k_rf_pulsetime_list = [200];350;
-        k_rf_power_list = [2];
-        sweep_pars.freq = 3.11*getScanParameter(k_rf_freq_list,seqdata.scancycle,seqdata.randcyclelist,'k_rftransfer_freq'); %MHz   6.6   3.11
-        sweep_pars.power = getScanParameter(k_rf_power_list,seqdata.scancycle,seqdata.randcyclelist,'k_rftransfer_power'); %4.9 
-        sweep_pars.delta_freq = -2;-0.5; % end_frequency - start_frequency      1MHz
-        sweep_pars.pulse_length = getScanParameter(k_rf_pulsetime_list,seqdata.scancycle,seqdata.randcyclelist,'k_rftransfer_pulsetime'); % also is sweep length
+        k_rf_freq_list = [3.2];
+        k_rf_pulsetime_list = [50];
+        k_rf_power_list = [-3];
+        k_rf_delta_list=[-.5];     -.5;   
+        
+        sweep_pars.freq = getScanParameter(k_rf_freq_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'k_rftransfer_freq'); 
+        sweep_pars.power = getScanParameter(k_rf_power_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'k_rftransfer_power'); 
+        sweep_pars.pulse_length = getScanParameter(k_rf_pulsetime_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'k_rftransfer_pulsetime');
+        sweep_pars.delta_freq = getScanParameter(k_rf_delta_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'k_rftransfer_delta');
+        
+        % CF : What does "fake" mean in this context?
         sweep_pars.fake_pulse = 0;      %Fake the pulse (for debugging)
          
-        disp(['     Center Freq (MHz) : ' num2str(sweep_pars.freq)]);
-        disp(['     Delta Freq  (MHz) : ' num2str(sweep_pars.delta_freq)]);
-        disp(['     Sweep time   (ms) : ' num2str(sweep_pars.pulse_length)]);
+        disp(['     Center Freq   (MHz) : ' num2str(sweep_pars.freq)]);
+        disp(['     Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
+        disp(['     Sweep time     (ms) : ' num2str(sweep_pars.pulse_length)]);
+        disp(['     Sweep Rate (kHz/ms) : ' num2str(1E3*sweep_pars.delta_freq./sweep_pars.pulse_length)]);
 
         % Apply the RF
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars); 
@@ -2752,8 +2762,10 @@ curtime = calctime(curtime,50);
 % FC+CF 2021/05/12
 
 % @VV AND PX FEEL FREE TO DELETE THIS IF THIS IS CRAP CODE
+% do_D1OP_post_evap=1;
 if (do_D1OP_post_evap==1)
-        
+        dispLineStr('D1 Optical Pumping post op evap',curtime);  
+
     op_time_list = [1];
     optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle, seqdata.randcyclelist, 'op_time'); %optical pumping pulse length
     repump_power_list = [0.0];

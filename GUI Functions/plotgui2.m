@@ -652,9 +652,17 @@ function [X,Y,funcnum] = getAnalogValue(trc,funcnum)
         V(vNaN)=[];
     end
     
+    if isempty(X) || isempty(V)
+        mstr=[trc.name ' has no data to plot'];
+        warning(mstr);        
+        X=X;
+        Y=V;
+        return;
+    end
+    
     
     % Numerically invert
-    if nargin~=1 && funcnum~=1 && ~isempty(funcnum)
+    if nargin~=1 && ~isempty(funcnum) && funcnum~=1        
         try            
             f=trc.voltagefunc{funcnum};     % Calibration V=f(param) 
             v1 = min(V);                    % Lowest voltage written
@@ -676,9 +684,7 @@ function [X,Y,funcnum] = getAnalogValue(trc,funcnum)
                 % Interpolate the results
                 P = interp1(vVec,pVec,V,'linear','extrap');
                 Y=P;                
-            end           
-
-
+            end
         catch ME
             warning(ME.message);
             warning('Unable to numerically invert');
@@ -689,10 +695,10 @@ function [X,Y,funcnum] = getAnalogValue(trc,funcnum)
         Y=V;
         funcnum=1;
     end
+    keyboard
     
     % Add endpoints at t=0 and t=ifnity
-    X = [0; X; Tseq];
-    
+    X = [0; X; Tseq];    
     Y = [Y(end); Y; Y(end)];
     
     

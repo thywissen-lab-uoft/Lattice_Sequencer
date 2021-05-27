@@ -695,7 +695,7 @@ function [X,Y,funcnum] = getAnalogValue(trc,funcnum)
         Y=V;
         funcnum=1;
     end
-    keyboard
+    
     
     % Add endpoints at t=0 and t=ifnity
     X = [0; X; Tseq];    

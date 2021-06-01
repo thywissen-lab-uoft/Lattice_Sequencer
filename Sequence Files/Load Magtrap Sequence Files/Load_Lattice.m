@@ -112,18 +112,21 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 
 %RHYS - Is there a better way to switch between lattice ramp sequences? Or,
 %again, perhaps store in an external file a load in.
-lattice_rampup_time_list =[250];
-lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycle,seqdata.randcyclelist,'lattice_rampup_time');
+
 
 %%%LOADING SEQ BELOW CAN BE USED FOR SIMPLE LATTICE LOADING
-    lat_rampup_depth = 1*[1*[ZLD    ZLD];
-                          1*[ZLD    ZLD];                
-                          1*[ZLD    ZLD];]/atomscale;
-    lat_rampup_time = 1*[lattice_rampup_time    lattice_rampup_time]; 
-%     lat_rampup_depth = 1*[1*[5  5  ZLD    ZLD];
-%                           1*[5  5  ZLD    ZLD];                
-%                           1*[5  5  ZLD    ZLD];]/atomscale;
-%     lat_rampup_time = 1*[50  50  50  50]; 
+% lattice_rampup_time_list =[250];
+% lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycle,seqdata.randcyclelist,'lattice_rampup_time');
+%     lat_rampup_depth = 1*[1*[ZLD    ZLD];
+%                           1*[ZLD    ZLD];                
+%                           1*[ZLD    ZLD];]/atomscale;
+%     lat_rampup_time = 1*[lattice_rampup_time    lattice_rampup_time]; 
+    
+    
+    lat_rampup_depth = 1*[1*[5  5  ZLD    ZLD];
+                          1*[5  5  ZLD    ZLD];                
+                          1*[5  5  ZLD    ZLD];]/atomscale;
+    lat_rampup_time = 1*[50  50  50  50]; 
 
 
 %% LOADING SEQ BELOW CAN BE USED FOR DIRECT LATTICE LOADING FROM QP
@@ -4568,7 +4571,7 @@ if (Raman_transfers == 1)
     horizontal_plane_select_params.QP_Selection_Gradient = 0;
     horizontal_plane_select_params.Ramp_Fields_Up = 1; % ramp B field down in the begining
     horizontal_plane_select_params.Ramp_Fields_Down = 0; 
-    Field_Shift_List = [0.195];[0.155];[0.134]; %unit G 
+    Field_Shift_List = [0.120:0.005:0.220];[0.155];[0.134]; %unit G 
     horizontal_plane_select_params.Field_Shift = getScanParameter(Field_Shift_List,seqdata.scancycle,seqdata.randcyclelist,'Field_Shift');
     horizontal_plane_select_params.X_Shim_Offset = 0;
     horizontal_plane_select_params.Y_Shim_Offset = 0;

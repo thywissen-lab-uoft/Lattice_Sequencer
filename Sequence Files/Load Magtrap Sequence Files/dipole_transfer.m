@@ -47,7 +47,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     tilt_evaporation = 0;
     dipole_holdtime_before_evap = 0;
     %RHYS - A very important parameter. Pass these from elsewhere.
-    Evap_End_Power_List =[0.085];[0.085];[.065];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
+    Evap_End_Power_List =[0.09];[0.085];[.065];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
     
 %    Evap_End_Power_List = [.15 .25 .2:.1:1.5 .14 .13 .12 .11 .1];
     
@@ -78,9 +78,10 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     Lattice_in_XDT_Evap = 0;
     ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
     Kill_Beam_Alignment = 0;        %Pulse Kill beam on for whatever needs to be aligned.    
-    ramp_XDT_after_evap = 1;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
+    ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
     Raman_in_XDT = 0;
-    remix_at_end = 1;               % Remix K with RF after evap
+    mix_at_beginning = 1;           % second RF sweep/pulse to make a spin mixture before XDT evap
+    mix_at_end = 0;               % Make a spin mixture at the end of evap
     do_D1OP_post_evap = 0;          % Optically pump afer evap
     
     
@@ -910,7 +911,6 @@ curtime = calctime(curtime,50);
         % Ramp the bias fields
         curtime = ramp_bias_fields(calctime(curtime,0), ramp);              
 
-        mix_at_beginning = 0; %second RF sweep/pulse to make a spin mixture before XDT evap needs to be tweaked still
 
         if (mix_at_beginning)
             
@@ -923,7 +923,7 @@ curtime = calctime(curtime,50);
             sweep_pars.delta_freq = 0.01;0.02;%0.05;0.02; 0.02; % end_frequency - start_frequency   0.01
             sweep_pars.pulse_length = 0.4; 
             % change to 5 for sweep all atoms to |9/2,-7/2>;
-            % 0.2 for mixture creation, multiple sweeps have to be added.
+            % for mixture creation, multiple sweeps have to be added.
             
             
             curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
@@ -1935,7 +1935,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
 %curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
         end
 
-        second_sweep = 1; %second RF sweep/pulse to make a spin mixture
+        second_sweep = 0; %second RF sweep/pulse to make a spin mixture
         if (second_sweep)
             %[freq, power, delta_f, pulse_length] = [6.0, -9, -0.5, 40] for 50% transfer to |9/2,-7/2>
 
@@ -3018,7 +3018,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'DMD Power',@(t,tt,y1,y2)(ramp_linear
         setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',0); %1 on 0 off
     end 
 %% Remix at end: Ensure a 50/50 mixture after spin-mixture evaporation
-if (remix_at_end)  
+if (mix_at_end)  
 
 %             clear('ramp');
 %         % FB coil settings

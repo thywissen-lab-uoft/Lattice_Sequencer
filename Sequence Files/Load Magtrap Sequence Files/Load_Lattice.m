@@ -50,10 +50,10 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     do_evaporation_before_plane_selection = 0;   %delete: QP evaporation by tilting out of the lattice. Never worked, delete. %Move -7/2 atoms to -9/2 for plane selection if spin mixture existed
     
     do_raman_optical_pumping = 000; %keep: for an option, normal D1 OP should be fine 
-    do_optical_pumping = 1; %keep: useful
+    do_optical_pumping = 0; %keep: useful
     
     remove_one_spin_state = 0;% keep: An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
-    do_plane_selection = 1;     kill_pulses = 1;  %Kill Pulses only active if do_plane_selection=1
+    do_plane_selection = 0;     kill_pulses = 0;  %Kill Pulses only active if do_plane_selection=1
     second_plane_selection = 0; % copy 
     fast_plane_selection = 0;% keep: could be the future of plane selection code for cleaner control
     eliminate_planes_with_QP = 0; %keep: QP vacuum cleaner. In 2nd time plane selection section
@@ -98,7 +98,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     if Drop_From_XDT
         lattice_rampdown = 50;
     else
-        lattice_rampdown = 1; %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
+        lattice_rampdown = 2; %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
     end
     atomscale = 0.4;%0.4045; %0.4 for 40K, 1.0 for Rb
       
@@ -4534,7 +4534,7 @@ if (Raman_transfers == 1)
     %During imaging, generate about a 4.4G horizontal field. Both shims get
     %positive control voltages, but draw from the 'negative' shim supply. 
     clear('horizontal_plane_select_params')
-    F_Pump_List = [0.9];[0.75];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
+    F_Pump_List = [0.8];[0.75];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power'); %1.4;
     Raman_Power_List =0.6;[0.45]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
     horizontal_plane_select_params.Raman_Power1 = getScanParameter(Raman_Power_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Power'); 

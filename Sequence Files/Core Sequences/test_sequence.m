@@ -4641,7 +4641,7 @@ setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);
 %%%%%%%%%%%% Perform the time of flight %%%%%%%%%%%%
 
 % Set the time of flight
-tof_list = [1:15];
+tof_list = [15];
 tof =getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof_time'); 
 
 % Increment the time (ie. perform the time of flight)
@@ -4838,6 +4838,8 @@ end
 
 tnow=now;
 addOutputParam('now',(tnow-floor(tnow))*24*60*60);
+
+
 
 timeout = curtime;
 

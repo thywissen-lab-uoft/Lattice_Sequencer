@@ -9,7 +9,7 @@ function params = Load_Absorption_Image_Parameters()
     params.detunings.K.X.positive.QP_imaging = 21.5+2.5;
     params.detunings.K.X.positive.SG = 24.5;
     params.detunings.K.X.positive.short_tof = 24.5;
-    params.detunings.K.X.negative.normal = 30.5+1;
+    params.detunings.K.X.negative.normal = 30.5+2;
     params.detunings.K.X.negative.SG = 32.5;32.5;
     % Potassium - Y-cam
     params.detunings.K.Y.positive.normal = 21.5;

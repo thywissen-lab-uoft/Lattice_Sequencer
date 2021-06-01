@@ -1,12 +1,14 @@
-function programSRS(settings)
+function programSRS_Rb(settings)
 % programSRS.m
 %
 % Author      : C Fujiwara
-% Last Edited : 2021/03/30
+% Last Edited : 2021/05/26
 %
 % This function programs our SRS sources to a single frequency.
 %
-% This works for the SG380 line of SRS sources
+% This works for the SG380 line of SRS sources.  This is custom for the SRS
+% that drives the Rb uWave.  We figure we only have one of these so it's
+% okay to make a custom function.
 %
 % See the SRS manuals for a detailed discussion
 %
@@ -22,17 +24,8 @@ if nargin==0
    settings.Enable=1;
 end
 
-disp('Programming SRS ');
-disp(['     Address   : ' num2str(settings.Address)]);
-disp(['     Frequency : ' num2str(settings.Frequency) ' MHz']);
-disp(['     Power     : ' num2str(settings.Power) ' dBm']);
-disp(['     Enable    : ' num2str(settings.Enable)]);
-
-
 % ADDRESSES:
 % See SRS manual on how to change GPIB adress
-    % 27 - SRS A
-    % 28 - SRS B
     % 29 - SRS RB
     
 %         SRSAddress = 28;
@@ -43,7 +36,7 @@ disp(['     Enable    : ' num2str(settings.Enable)]);
 % GPIB Command Summary
 %
 % FREQ(?) Set(query) the output frequency
-% AMPR(?) Set(query) the output power
+% AMPH(?) Set(query) the output power
 % DISP(?) Set(query) the dispay
 %   0 : Modulation Type
 %   1 : Modulation Function
@@ -58,11 +51,17 @@ disp(['     Enable    : ' num2str(settings.Enable)]);
 %   10 : BNC Offset
 %   11 : Rear DC Offset
 %   12 : Clock Offset
-% ENBR(?) Set(query) the enable state of the Type-N output (0:off 1:on)
 
-cmd=sprintf('FREQ %fMHz; AMPR %gdBm; MODL 0; DISP 2; ENBR %g; FREQ?',...
+% MODL 1(0) enables (disables) modulation
+
+
+disp('Programming Rb uWave Source ');
+disp(['     Address   : ' num2str(settings.Address)]);
+disp(['     Frequency : ' num2str(settings.Frequency) ' GHz']);
+disp(['     Power     : ' num2str(settings.Power) ' dBm']);
+disp(['     Enable    : ' num2str(settings.Enable)]);
+cmd=sprintf('FREQ %fGHz; AMPH %gdBm; MODL 0; DISP 2; ENBH %g; FREQ?',...
     settings.Frequency,settings.Power,settings.Enable);
 
 addGPIBCommand(settings.Address,cmd);
 end
-

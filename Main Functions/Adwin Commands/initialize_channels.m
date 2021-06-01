@@ -525,10 +525,10 @@ seqdata.analogchannels(34).name = 'Rb Beat Note FM';
 seqdata.analogchannels(34).minvoltage = 0;
 seqdata.analogchannels(34).maxvoltage = 10;
 seqdata.analogchannels(34).defaultvoltagefunc = 2;
-Rb_Trap_Frequency_Offset_list =[6.5];
-Rb_Trap_Frequency_Offset = getScanParameter(Rb_Trap_Frequency_Offset_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'Rb_Trap_Frequency_Offset');
-% Rb_Trap_Frequency_Offset = 5.5;6; %Frequency offset for all Rb trap/probe beams in MHz.
+% Rb_Trap_Frequency_Offset_list =[6];
+% Rb_Trap_Frequency_Offset = getScanParameter(Rb_Trap_Frequency_Offset_list,...
+%         seqdata.scancycle,seqdata.randcyclelist,'Rb_Trap_Frequency_Offset');
+Rb_Trap_Frequency_Offset = 6; %Frequency offset for all Rb trap/probe beams in MHz.
 seqdata.analogchannels(34).voltagefunc{2} = @(a)((a*1-4418.47 + Rb_Trap_Frequency_Offset)/541.355);
 
 %channel 35 (Rb Offset FF)

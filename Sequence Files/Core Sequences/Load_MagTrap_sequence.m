@@ -238,6 +238,13 @@ seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test
 seqdata.flags.K_RF_sweep = 0;    %sweep 40K into |9/2,-9/2>; %create mixture in XDT, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1    
 seqdata.flags.init_K_RF_sweep = 1; %sweep 40K into |9/2,-9/2>; %create mixture in XDT before evap, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1  
 
+
+% Alternative flags for uWave and RF transfer of Rb and K EXPERIMENTAL CF
+seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 0; 
+seqdata.flags.init_K_RF_sweep2 = 0;
+
+
+
 % Optical lattice
 seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
 seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
@@ -260,7 +267,7 @@ seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / ali
 
 
 %RHYS - Useful! Where to trigger scope. Should be more apparent.     
-scope_trigger = 'Rb uwave transfer'; 
+scope_trigger = 'Load lattices'; 
 
 %% Set switches for predefined scenarios
 
@@ -729,7 +736,7 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     sweep_time = getScanParameter(sweep_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'RF1B_sweep_time');
     sweep_times_1b = [6000 3000 2]*rf_evap_time_scale(2); 2000;
-    evap_end_gradient_factor_list = [.8];
+    evap_end_gradient_factor_list = [0.75];
     evap_end_gradient_factor = getScanParameter(evap_end_gradient_factor_list,...
         seqdata.scancycle,seqdata.randcyclelist,'evap_end_gradient_factor');
     currs_1b = [1 1 evap_end_gradient_factor evap_end_gradient_factor]*I_QP;

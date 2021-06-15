@@ -531,7 +531,7 @@ seqdata.analogchannels(34).defaultvoltagefunc = 2;
 % Rb_Trap_Frequency_Offset_list =[6.5];
 % Rb_Trap_Frequency_Offset = getScanParameter(Rb_Trap_Frequency_Offset_list,...
 %         seqdata.scancycle,seqdata.randcyclelist,'Rb_Trap_Frequency_Offset');
-Rb_Trap_Frequency_Offset = 5.5;6; %Frequency offset for all Rb trap/probe beams in MHz.
+Rb_Trap_Frequency_Offset = 9; %Frequency offset for all Rb trap/probe beams in MHz.
 seqdata.analogchannels(34).voltagefunc{2} = @(a)((a*1-4418.47 + Rb_Trap_Frequency_Offset)/541.355);
 
 %channel 35 (Rb Offset FF)
@@ -682,6 +682,8 @@ seqdata.analogchannels(46).maxvoltage = 2;
 seqdata.analogchannels(46).resetvalue = [0,1];
 seqdata.analogchannels(46).defaultvoltagefunc = 2; 
 seqdata.analogchannels(46).voltagefunc{2} = @(a)(a); % Use a 10x Voltage Divider before connecting to SRS
+% IS THERE ACTUALLY A 10x voltage divider in place?
+
 
 % %channel 47 (D1 AM Control)
 seqdata.analogchannels(47).name = 'D1 AM';
@@ -730,6 +732,20 @@ seqdata.analogchannels(52).maxvoltage = 10;
 seqdata.analogchannels(53).name = 'uWave VVA';
 seqdata.analogchannels(53).minvoltage = -1;
 seqdata.analogchannels(53).maxvoltage = 10;
+seqdata.analogchannels(53).defaultvoltagefunc = 1; 
+seqdata.analogchannels(53).voltagefunc{1} = @(a) a; 
+
+% Define the relative envelope function using the spec sheet of the VVA
+% ZX73-2500-S+.  This was shown to get a good prediction of the rabi
+% frequency on 2021.06.11
+vva_spec=[0 1 1.5 2 3 4 6 8 10;
+    41.94 41.83 33.91 23.06 15.69 12.46 8.9 6.5 4.48];
+xf=vva_spec(1,:);
+yf=sqrt(10.^(-vva_spec(2,:)*.1)/10^(-4.48*.1));yf(1)=0;
+seqdata.analogchannels(53).voltagefunc{2} = @(a) interp1(yf,xf,a,'pchip');
+
+
+
 
 %channel 54 (Piezo mirror controller, channel X)
 seqdata.analogchannels(54).name = 'Piezo mirror X';

@@ -181,7 +181,7 @@ curtime =   do_linesync_uwave_pulse(calctime(curtime,pars.uwave_delay), pars.fak
                 %Determine max desired power
                 max_power = (-1 + 2*pars.power_scale)*0.99; %Power_scale = 1 gives max_power = 0, corresponding to the default set power on the SRS
                  
-                               
+                if pars.AM_ramp_time ~=0               
                 %Turn off AM initially
                 setAnalogChannel(calctime(curtime,pars.uwave_delay-pars.AM_ramp_time-10),'uWave VVA',-1);
 %                 setAnalogChannel(calctime(curtime,pars.uwave_delay-pars.AM_ramp_time-10),'uWave FM/AM',-0.99);
@@ -193,6 +193,7 @@ curtime =   do_linesync_uwave_pulse(calctime(curtime,pars.uwave_delay), pars.fak
                 %Ramp off with min jerk at end of pulse
 %                 AnalogFuncTo(calctime(curtime,pars.uwave_delay+uwave_time),46,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pars.AM_ramp_time,pars.AM_ramp_time,-0.99);
                 AnalogFuncTo(calctime(curtime,pars.uwave_delay+uwave_time),'uWave VVA',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pars.AM_ramp_time,pars.AM_ramp_time,0);
+                end
                 
                 %Open and close uWave switch for pulse time + AM_ramp_time
 curtime =   do_uwave_pulse(calctime(curtime,pars.uwave_delay-pars.AM_ramp_time), pars.fake_pulse, 0*1E6, uwave_time+2*pars.AM_ramp_time,0,1);

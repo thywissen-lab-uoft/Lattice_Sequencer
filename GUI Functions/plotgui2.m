@@ -73,6 +73,9 @@ drawnow;
             fh(0);                          % Run the sequence / update seqdata  
             Tseq=getSequenceDuration;
             
+            calc_sequence;                  % convert seqdata for AdWin  
+
+            
             refreshPlotData;                % Update plots and graphics 
 
         catch ME

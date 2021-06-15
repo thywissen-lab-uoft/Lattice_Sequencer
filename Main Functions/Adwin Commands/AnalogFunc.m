@@ -64,7 +64,7 @@ else
         %RHYS - really? Update only every 500ms for transport?? That can't be correct,
         %can it? What does it mean "* if we change deltat *"?
     
-    elseif (channel==43 || channel==44 || channel==45 || channel==47) %lattices
+    elseif (channel==43 || channel==44 || channel==45 || channel==47 || channel==46 || channel==53) %lattices
         % ramp lattice channels with smaller steps to avoid heating (put 30kHz
         % filter on AM input of ALPS)
         if endtime <= 1000;

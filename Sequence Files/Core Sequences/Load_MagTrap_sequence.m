@@ -177,7 +177,7 @@ seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now.
 
 %RHYS - params should be defined in a separate location from flags. 
 seqdata.flags.In_Trap_imaging = 0;
-tof_list = [5];
+tof_list = [25];
 seqdata.params.tof = getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof');
 % seqdata.params.tof = 5;  % 45 for rough alignment, 20 for K-D diffraction
 
@@ -310,9 +310,9 @@ end
     %RHYS - Setting some specific parameters for DDS and objective
     %position. Silly that this is here. 
 
-    obj_piezo_V_List = [2.3];4.6;
+    obj_piezo_V_List = 1.0;[1.7];4.6;
     % 0.1V = 700 nm, must be larger than  larger value means farther away from the window.
-    obj_piezo_V = getScanParameter(obj_piezo_V_List, seqdata.scancycle, seqdata.randcyclelist, 'Objective_Piezo_Z');%5
+    obj_piezo_V = getScanParameter(obj_piezo_V_List, seqdata.scancycle, 1, 'Objective_Piezo_Z');%5
     % obj_piezo_V = 6.8;
     setAnalogChannel(calctime(curtime,0),'objective Piezo Z',obj_piezo_V,1);
     addOutputParam('objpzt',obj_piezo_V);

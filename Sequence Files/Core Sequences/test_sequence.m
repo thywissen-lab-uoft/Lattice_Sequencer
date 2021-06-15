@@ -1875,13 +1875,14 @@ global seqdata;
 
 %% Test shims
 % 
+% setDigitalChannel(curtime,'Shim Relay',0);
 % setDigitalChannel(curtime,'Shim Multiplexer',1);%%0 = MOT Shims (unipolar)
 % curtime = calctime(curtime,500);
 % curtime = DigitalPulse(calctime(curtime,0),'Remote field sensor SR',50,1);
 % curtime = calctime(curtime,500);
 % setAnalogChannel(calctime(curtime,0),'X Shim',0,3);
 % setAnalogChannel(calctime(curtime,0),'Y Shim',0,4);
-% setAnalogChannel(calctime(curtime,0),'Z Shim',0,3);
+% setAnalogChannel(calctime(curtime,0),'Z Shim',-0.25,3);
 % 
 % DigitalPulse(calctime(curtime,0),12,10,1);   
 % 
@@ -1996,10 +1997,19 @@ global seqdata;
 % setAnalogChannel(curtime,46,0.0,1);
 
 %% uWave
-
-% setAnalogChannel(calctime(curtime,200),25,0.8);
+setAnalogChannel(calctime(curtime,100),62,0);
+AnalogFunc(calctime(curtime,100),'z shim',@(t,tt,y2,y1)(ramp_linear(t,tt,y2,y1)),2,2,-1,1,1);
+AnalogFunc(calctime(curtime,110),'z shim',@(t,tt,y2,y1)(ramp_linear(t,tt,y2,y1)),2,2,1,-1,1);
+% setAnalogChannel(calctime(curtime,100),'z shim',-1,1);
+% setAnalogChannel(calctime(curtime,110),'z shim',9,1);
 % 
-% setDigitalChannel(calctime(curtime,300),14,1);
+setDigitalChannel(calctime(curtime,100),39,1);
+setDigitalChannel(calctime(curtime,110),39,0);
+
+
+setDigitalChannel(calctime(curtime,0),56,1);
+setDigitalChannel(calctime(curtime,200),56,0);
+
 % 
 % setDigitalChannel(calctime(curtime,1300),14,0);
 %% Test Objective piezo
@@ -4079,7 +4089,7 @@ setDigitalChannel(calctime(curtime,0),'K D1 GM Shutter 2',1);
 
 % MOT Load
 
-doMOT  =1;
+doMOT  =0;
 if doMOT
 % This code initializses the MOT. This includes
 % Rb+K detunings and power
@@ -4244,7 +4254,7 @@ end
 % This code loads the CMOT from the MOT. This includes ramps of the 
 % detunings, power, shims, and field gradients. In order to function 
 % properly it needs to havethe correct parameters from the MOT.
-doCMOTv3 =1;        
+doCMOTv3 =0;        
 if doCMOTv3
 if ~doMOT
    error('You cannot load a CMOT without a MOT');       
@@ -4392,7 +4402,7 @@ end
 %% Combined Molasses - K D1 GM and Rb D2 Mol
 % This code is for running the D1 Grey Molasses for K and the D2 Optical
 % Molasses for Rb at the same time from the CMOT phase
-doMol = 1;
+doMol = 0;
 if doMol
 
 %%%%%%%%%%%% Shift the fields %%%%%%%%%%%%
@@ -4617,7 +4627,7 @@ end
 %% Time of flight
 % This section of code performs a time flight before doing fluorescence
 % imaging with the MOT beams.
-doTOF =1;
+doTOF =0;
 
 if ~doTOF && loadMT
    error('MT load is not followed by TOF. Coils will get too hot');       

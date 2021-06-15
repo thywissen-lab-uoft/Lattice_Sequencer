@@ -17,16 +17,17 @@ if nargin > 1
 else
     Imaging_Time = 1*5000+50;
 end
+
+
 global seqdata;
-% timein is the time at which the lattice starts to be ramped up
+
 curtime = timein;
+
+
 lattices = {'xLattice','yLattice','zLattice'};
 seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 
-% This extra time only for when Load_Lattice is run alone, in order to "not go back in time".  
-%      seqdata.flags. load_lattice = 1;
-% curtime = calctime(curtime,1500);
- 
+
 %% Sequence parameters    
 %Special Flags 
 
@@ -37,17 +38,13 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     %probably be deleted.
     
     ramp_fields_after_lattice_loading = 0; %keep %do a field ramp for spectroscopy %Ramp up feshbach field after 1st lattice ramp. Can ramp the FB field up high here during lattice loading to try to make a Mott-insulator or some such.
-    QP_on = 0;                              % delete
     repump_pulse = 0;                       %delete
-    lattice_QP_hybrid = 0;                  % delete: from QP rampup/down section
     QP_off_after_load = 0;                  % keep: used for turning off QP if loaded from QP directly
-    modulate_XDT_after_loading = 0;         %delete: from lattice rampup section
     get_rid_of_Rb_in_lattice = 0;           %keep: never seem to be useful tho, for evaporation in lattice
     load_XY_after_evap = 0;                 %keep: could be used to evaporate in just z-lattice
     initial_RF_sweep = 0;                   %keep: Sweep 40K to |9/2,-9/2> before plane selection
     spin_mixture_in_lattice_before_plane_selection = 0; % keep: Make a -9/2,-7/2 spin mixture.
     Dimple_Trap_Before_Plane_Selection = 0; % keep: turn on the dimple, leave this option: note that the turning off code was deleted
-    do_evaporation_before_plane_selection = 0;   %delete: QP evaporation by tilting out of the lattice. Never worked, delete. %Move -7/2 atoms to -9/2 for plane selection if spin mixture existed
     
     do_raman_optical_pumping = 000;         %keep: for an option, normal D1 OP should be fine 
     do_optical_pumping = 1;                 %keep: useful
@@ -75,21 +72,20 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     
    
 
-    Dimple_Mod = 0; %keep: Used to calibrate dimple trap depth
-    do_lattice_mod = 0; %keep: calibrate lattice depth
-    lattice_depth_calibration = 0; %keep: another lattice calibration method
-    rotate_waveplate_after_ramp = 1; %keep:  Turn Rotating Waveplate to Shift Power to Lattice Beams
+    Dimple_Mod = 0;                     %keep: Used to calibrate dimple trap depth
+    do_lattice_mod = 0;                 %keep: calibrate lattice depth
+    lattice_depth_calibration = 0;      %keep: another lattice calibration method
+    rotate_waveplate_after_ramp = 1;    %keep:  Turn Rotating Waveplate to Shift Power to Lattice Beams
     do_lattice_ramp_after_spectroscopy = 1; %keep: Ramp lattices on or off after doing spectroscopy, must be on for fluorescence image
-    do_shear_mode_mod = 0; %delete: used to be a way modulate XDT using shear mode aom
-    Raman_transfers = 1;  %keep                  % for fluorescence image
-    do_lattice_sweeps = 0; %delete
-    Drop_From_XDT = 0; %May need to add code to rotate waveplate back here.
-
+    do_shear_mode_mod = 0;              %delete: used to be a way modulate XDT using shear mode aom
+    Raman_transfers = 1;                %keep  % for fluorescence image
+    do_lattice_sweeps = 0;              %delete
+    Drop_From_XDT = 0;                  %May need to add code to rotate waveplate back here.
 
     
     
-    seqdata.flags. lattice_img_molasses = 0; %delete %1 - Do molasses, 0 - No molasses
-    seqdata.flags. plane_selection_after_D1 = 0;%delete
+    seqdata.flags.lattice_img_molasses = 0; %delete %1 - Do molasses, 0 - No molasses
+    seqdata.flags.plane_selection_after_D1 = 0;%delete
 
     %RHYS - Some confusing parameters defined here. Consolidate.
     
@@ -4211,7 +4207,7 @@ curtime = calctime(curtime,dip_rampstart+dip_ramptime+dip_waittime);
 %% Turn off Gradient
 %RHYS - Turns off the QP. Still don't like the structure here, seems it
 %should just be contained to each spectroscopy module.
-if ( QP_on  || do_K_uwave_spectroscopy || do_Rb_uwave_spectroscopy || do_RF_spectroscopy || do_singleshot_spectroscopy )
+if (do_K_uwave_spectroscopy || do_Rb_uwave_spectroscopy || do_RF_spectroscopy || do_singleshot_spectroscopy )
         if isfield(ramp,'QP_final')
             if ramp.QP_final ~=0
                 clear('ramp');

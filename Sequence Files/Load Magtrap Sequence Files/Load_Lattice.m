@@ -7,7 +7,7 @@
 %           Typically called after evaporation in ODT
 %------
 
-function [timeout P_dip P_Xlattice P_Ylattice P_Zlattice P_RotWave] = Load_Lattice(varargin)
+function [timeout, P_dip, P_Xlattice, P_Ylattice, P_Zlattice, P_RotWave] = Load_Lattice(varargin)
 
 timein = varargin{1};
 lattice_flags(timein);
@@ -29,7 +29,6 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 
 
 %% Sequence parameters    
-%Special Flags 
     
     ramp_fields_after_lattice_loading = 0; %keep %do a field ramp for spectroscopy %Ramp up feshbach field after 1st lattice ramp. Can ramp the FB field up high here during lattice loading to try to make a Mott-insulator or some such.
     repump_pulse = 0;                       %delete
@@ -40,7 +39,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     spin_mixture_in_lattice_before_plane_selection = 0; % keep: Make a -9/2,-7/2 spin mixture.
     Dimple_Trap_Before_Plane_Selection = 0; % keep: turn on the dimple, leave this option: note that the turning off code was deleted
     
-    do_raman_optical_pumping = 000;         %keep: for an option, normal D1 OP should be fine 
+    do_raman_optical_pumping = 0;           %keep: for an option, normal D1 OP should be fine 
     do_optical_pumping = 1;                 %keep: useful
     
     remove_one_spin_state = 0;              % keep: An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
@@ -56,7 +55,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     do_Rb_uwave_spectroscopy = 0;
     do_singleshot_spectroscopy = 0;
     do_RF_spectroscopy = 0;
-    eliminate_planes = 0;                   %delete %Blow atoms in |9/2,9/2> away (optimized for 20ER lattice)
+    
     spin_mixture_in_lattice_after_plane_selection = 0; %keep maybe use for 2D physics
     Dimple_Trap_After_Plane_Selection = 0;  %delete?? %turn on dimple trap %Rhys suggested to delete?
     do_evaporation_after_plane_selection = 0; %delete: QP gradient evaporation in lattice after plane selection did not work
@@ -301,7 +300,9 @@ lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycl
 %% Rotate waveplate to shift power to lattice beams
 % This piece of code rotates the rotatable wavepalte to shift the optical
 % power to the lattices.
+
 if rotate_waveplate_after_ramp
+    dispLineStr('Rotating waveplate',curtime);
     %Start with a little power towards lattice beams, and increase power to
     %max only after ramping on the lattice
     
@@ -311,24 +312,30 @@ if rotate_waveplate_after_ramp
         
     P_RotWave_I = 0.6;
     P_RotWave_II = 0.98;    
+    
+    disp(['     Rotation Time 1 : ' num2str(wp_Trot1) ' ms']);
+    disp(['     Rotation Time 2 : ' num2str(wp_Trot1) ' ms']);
+    disp(['     Power 1         : ' num2str(100*P_RotWave_I) '%']);
+    disp(['     Power 2         : ' num2str(100*P_RotWave_II) '%']);
+
     P_RotWave = P_RotWave_II; %output argument    
     AnalogFunc(calctime(curtime,-100-wp_Trot1),'latticeWaveplate',...
-        @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),wp_Trot1,...
-        wp_Trot1,P_RotWave_I);
+        @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
+        wp_Trot1,wp_Trot1,P_RotWave_I);
 else
     %Start with all power towards lattice beams
-
-    %Turn rotating waveplate to shift all power to the lattice beams
     rotation_time = 1000;   % The time to rotate the waveplate
     P_RotWave = 0.5;%0.9       % The fraction of power that will be transmitted 
                             % through the PBS to lattice beams
                             % 0 = dipole, 1 = lattice
-    AnalogFunc(calctime(curtime,-100-rotation_time),41,@(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),rotation_time,rotation_time,P_RotWave);
-    
+    AnalogFunc(calctime(curtime,-100-rotation_time),'latticeWaveplate',...
+        @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
+        rotation_time,rotation_time,P_RotWave);    
 end
 
 %% Ramp up lattice
-%RHYS - Basically the main functionality of this bit of code (ramp up the lattices).     
+%Ramp up the lattices     
+
     dispLineStr('Ramping up lattices.',curtime);
     disp(['     Ramp Times        (ms) : ' mat2str(lat_rampup_time) ]);
 
@@ -341,23 +348,20 @@ end
 %     setAnalogChannel(calctime(curtime,-60),'yLattice',-0.1,1);
 %     setAnalogChannel(calctime(curtime,-60),'zLattice',-0.1,1);
     
+    % Send request powers to low 
     setAnalogChannel(calctime(curtime,-60),'xLattice',-22);
     setAnalogChannel(calctime(curtime,-60),'yLattice',-19);
     setAnalogChannel(calctime(curtime,-60),'zLattice',-19);
     
     % Enable rf output on ALPS3 (fast rf-switch and enable integrator)
     setDigitalChannel(calctime(curtime,-50),'yLatticeOFF',0);
-    setDigitalChannel(calctime(curtime,-100),'Lattice Direct Control',0);
-    
+    setDigitalChannel(calctime(curtime,-100),'Lattice Direct Control',0);    
   
     % 1st lattice rampup segment
     AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_time(1), lat_rampup_time(1), lat_rampup_depth(1,1));
     AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_time(1), lat_rampup_time(1), lat_rampup_depth(2,1));
+
 curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_time(1), lat_rampup_time(1), lat_rampup_depth(3,1));
-
-%     disp9
-
-
 
     %Ramp up feshbach field after 1st lattice ramp. 
     %RHYS - Can ramp the FB field up high here during lattice loading to
@@ -402,8 +406,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk
        AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), xdt_ramp_time1,xdt_ramp_time1,xdt_end_power);
        AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), xdt_ramp_time1,xdt_ramp_time1,seqdata.params. XDT_area_ratio*xdt_end_power);
 curtime = setDigitalChannel(calctime(curtime,xdt_ramp_time1),'XDT TTL',1);
-    end
-    
+    end    
 
     
     %RHYS - The actual lattice ramps.
@@ -595,12 +598,6 @@ end
         end
         seqdata.params. feshbach_val = fesh_final;
     end
-    
-
-    
-    
-   
-   
     
     %Get rid of any leftover Rb atoms
     kill_Rb_in_lattice = 0;

@@ -30,12 +30,6 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 
 %% Sequence parameters    
 %Special Flags 
-
-    %RHYS - This is a bit better organized than the dipole_transfer code,
-    %in that most flags are actually set up here. Still, should be put in
-    %an external flags structure (e.g.
-    %seqdata.flags.lattice.do_plane_selection = True). Also, many can
-    %probably be deleted.
     
     ramp_fields_after_lattice_loading = 0; %keep %do a field ramp for spectroscopy %Ramp up feshbach field after 1st lattice ramp. Can ramp the FB field up high here during lattice loading to try to make a Mott-insulator or some such.
     repump_pulse = 0;                       %delete
@@ -269,10 +263,10 @@ lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycl
 %     setAnalogChannel(calctime(curtime,Total_Time),'Modulation Ramp',0);
 %             
 % end
+
 %%
 
-
-
+% Check that number of times and depths match up
     if (length(lat_rampup_time) ~= size(lat_rampup_depth,2)) || ...
             (size(lat_rampup_depth,1)~=length(lattices))
         error('Invalid ramp specification for lattice loading!');
@@ -304,24 +298,23 @@ lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycl
 %     addOutputParam('lattice_ramptime',lat_rampup_time(2));
     addOutputParam('lattice_depth',lat_rampup_depth(1,end)*atomscale);
     
-%% Turn Rotating Waveplate to Shift Power to Lattice Beams
-%RHYS - This is used. Code is short an straightforward, probably does not
-%need to be changed. 
+%% Rotate waveplate to shift power to lattice beams
+% This piece of code rotates the rotatable wavepalte to shift the optical
+% power to the lattices.
 if rotate_waveplate_after_ramp
     %Start with a little power towards lattice beams, and increase power to
     %max only after ramping on the lattice
     
     %Turn rotating waveplate to shift a little power to the lattice beams
-    rotation_time_I = 600; %happens before lattice rampup (during XDT)
-    rotation_time_II = 150; %gets added as a wait time after lattice rampup
+    wp_Trot1 = 600; % Rotation time during XDT
+    wp_Trot2 = 150; % gets added as a wait time after lattice rampup
         
     P_RotWave_I = 0.6;
-    P_RotWave_II = 0.98;
-    
-    P_RotWave = P_RotWave_II; %output argument
-    
-    AnalogFunc(calctime(curtime,-100-rotation_time_I),41,@(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),rotation_time_I,rotation_time_I,P_RotWave_I);
-
+    P_RotWave_II = 0.98;    
+    P_RotWave = P_RotWave_II; %output argument    
+    AnalogFunc(calctime(curtime,-100-wp_Trot1),'latticeWaveplate',...
+        @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),wp_Trot1,...
+        wp_Trot1,P_RotWave_I);
 else
     %Start with all power towards lattice beams
 
@@ -4712,7 +4705,7 @@ end
 %RHYS - Remove comments, keep.
     if rotate_waveplate_after_ramp
         %Rotate waveplate again to divert the rest of the power to lattice beams
-curtime = AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),rotation_time_II,rotation_time_II,P_RotWave_I,P_RotWave_II); 
+curtime = AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),wp_Trot2,wp_Trot2,P_RotWave_I,P_RotWave_II); 
             
 %Put back in if no need to rotate waveplate before plane selection.
 %         if (do_plane_selection || do_plane_selection_horizontally)

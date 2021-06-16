@@ -674,7 +674,6 @@ curtime = calctime(curtime,lat_rampupII_time(j));
         end
     end
     
-
 %% RF Sweep to |9/2,-9/2>, Sweep 40K to |9/2,-9/2> before plane selection
 %RHYS - Usually atoms are already in this state. Could keep this option
 %around in case in |9/2,9/2>. Comments elsewhere about generalizing the
@@ -770,8 +769,6 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,10),3,sweep_pars);
 
 end
 
-
-
 %% Dimple before plane selecting
 %RHYS - Code for turning on the dimple (850nm beam). Never really worked
 %for making things colder. Could keep the option.
@@ -804,12 +801,11 @@ curtime = calctime(curtime, Dimple_Wait_Time);
 
 end
 
-
-
 %% conductivity modulation without dimple
 %RHYS - This is the code for the conductivity experiment. Should probably
 %keep for now, just clean up. A very long code: make its own module, delete
 %all the commented crap.
+
 if (conductivity_without_dimple == 1 )
     time_in_cond = curtime;
     Post_Mod_Lat_Ramp = 0;
@@ -1471,6 +1467,7 @@ end
 %RHYS - Graham started to condense some of the plane selection code here.
 %Not sure if it works. Probably a good starting point for making a
 %more-organized plane-selection module.
+
 if fast_plane_selection
     
     plane_select_params.Fake_Pulse = 0;
@@ -1488,6 +1485,7 @@ end
 %% Use Raman/EIT beams to optically pump the atoms.
 %RHYS - This should work, but is kind of pointless. Normal D1 optical
 %pumping works. Delete?
+
 if do_raman_optical_pumping
     
      %Define ramp parameters
@@ -1570,6 +1568,7 @@ end
 %% Optically pump atoms
 % flag is "do_optical_pumping"
 %RHYS - This code works and is useful.
+
 if ( do_optical_pumping == 1)
     
     
@@ -1730,8 +1729,6 @@ curtime =  setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);
 % curtime =  setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);    
     
 end
-
-
 
 %% Ramp lattices back down for plane selection after optical pumping.
 %RHYS - Kind of pointless. Delete.
@@ -3550,7 +3547,8 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 
 end
 
-%% Do field ramp for spectroscopy
+%% Field Ramps BEFORE uWave/RF Spectroscopy
+% This code prepares the magnetic fields for uWave and RF spectroscopy
 
 % Shim values for zero field found via spectroscopy
 %          x_Bzero = 0.115; %0.03 minimizes field
@@ -3560,8 +3558,10 @@ end
 
 %RHYS - Spectroscopy sections for calibration. Comments about lack of code
 %generality from dipole_transfer apply here too: clean and generalize!
-if ( do_K_uwave_spectroscopy2 || do_K_uwave_spectroscopy || do_Rb_uwave_spectroscopy || do_RF_spectroscopy || do_singleshot_spectroscopy )
-    
+
+if ( do_K_uwave_spectroscopy2 || do_K_uwave_spectroscopy || ...
+        do_Rb_uwave_spectroscopy || do_RF_spectroscopy || do_singleshot_spectroscopy )
+    dispLineStr('Ramping magnetic fields BEFORE RF/uwave spectroscopy',curtime);
     ramp_fields = 1; % do a field ramp for spectroscopy
     
     if ramp_fields
@@ -3629,7 +3629,8 @@ end
 
 %% K uWave Manipulations
 % This code performs K uWave manipulations such as Rabi Oscillations,
-% Landau Zener Sweeps, and HS1 Sweeps
+% Landau Zener Sweeps, and HS1 Sweeps This is the newer version of the code
+% that programs the SRS.
 
 if do_K_uwave_spectroscopy2
     dispLineStr('Performing K uWave Spectroscopy',curtime);
@@ -3916,6 +3917,9 @@ curtime = calctime(curtime,20);
 end
 
 %% K uWave Spectroscopy (OLD)
+% This code performs K uWave manipulations such as Rabi Oscillations,
+% Landau Zener Sweeps. It is hoped that this code is deprecated and will no
+% longer be used.
 
 if do_K_uwave_spectroscopy
     dispLineStr('Performing K uWave Spectroscopy',curtime);
@@ -4080,9 +4084,9 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars); % check rf_uwave_spectroscopy to see what struct spect_pars may contain
 
     end
-
     
 %% uWave single shot spectroscopy
+
 if ( do_singleshot_spectroscopy ) % does an rf pulse or sweep for spectroscopy
         dispLineStr('singleshot_spectroscopy.',curtime);
 %     addGPIBCommand(2,sprintf(['FUNC PULS; PULS:PER %g; FUNG:PULS:WIDT %g; VOLT:HIGH 4.5V; VOLT:LOW 0V; BURS:MODE TRIG; BURS:NCYC 1; ' ...
@@ -4093,7 +4097,7 @@ end
     
 %% RF Spectroscopy
 
-    if do_RF_spectroscopy
+if do_RF_spectroscopy
         dispLineStr('RF spectroscopy.',curtime);
 
         
@@ -4129,7 +4133,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
     
     end
     
-%% Field Ramps after uWave/RF Spectroscopy
+%% Field Ramps AFTER uWave/RF Spectroscopy
 
 % Shim values for zero field found via spectroscopy
 %          x_Bzero = 0.115; %0.03 minimizes field
@@ -4141,7 +4145,7 @@ if ( do_K_uwave_spectroscopy2 || do_K_uwave_spectroscopy || ...
         do_Rb_uwave_spectroscopy || do_RF_spectroscopy || ...
         do_singleshot_spectroscopy )
     
-    dispLineStr('Ramping down fields after spectroscopy.',curtime);
+    dispLineStr('Ramping magnetic fields AFTER RF/uwave spectroscopy',curtime);
     ramp_fields = 1; % do a field ramp for spectroscopy
     
     if ramp_fields
@@ -4179,12 +4183,13 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     
 end
     
-
 %% Turn off Gradient
 %RHYS - Turns off the QP. Still don't like the structure here, seems it
 %should just be contained to each spectroscopy module.
-if (do_K_uwave_spectroscopy || do_Rb_uwave_spectroscopy || ...
-        do_RF_spectroscopy || do_singleshot_spectroscopy )
+
+if (do_K_uwave_spectroscopy2 ||do_K_uwave_spectroscopy || ...
+        do_Rb_uwave_spectroscopy || do_RF_spectroscopy || ...
+        do_singleshot_spectroscopy )
     
     if isfield(ramp,'QP_final')
         if ramp.QP_final ~=0
@@ -4234,7 +4239,6 @@ curtime = calctime(curtime, Dimple_Wait_Time);
 
 end
 
-
 %% Modulate Dimple Trap
 %RHYS - Used to calibrate dimple trap depth. Make into a module, stick
 %somewhere. 
@@ -4257,9 +4261,11 @@ curtime = AnalogFuncTo(calctime(curtime,Dimple_Sweeptime),'zLattice',@(t,tt,y1,y
 
 
 end
+
  %% Dimple Trap Off
 %RHYS - The second part of that dimple after plane select code, where the
 %dimple turns off. Probably delete.
+
 if (Dimple_Trap_After_Plane_Selection)
     %Lattices to some set depth and XDT to some power for modulating.
     Lattices_to_Pin = 1;
@@ -4593,9 +4599,12 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 end
 
 %% Lattice Modulation; use bandstructure calculation for conversion into
-% Amplitude modulation
-%RHYS - Use to calibrate the lattice depths.
+% This code applies amplitude modulation to XYZ optical lattices.  This is
+% done by programming a Rigol generator that goes into the sum input of the
+% Newport regulation boxes.
+
 if do_lattice_mod
+    dispLineStr('Lattice amplitude modulation spectroscopy.',curtime);
     
     % Turn off ODTs before modulation (if not already off)
     switch_off_XDT_before_Lat_modulation = 0;
@@ -4603,25 +4612,18 @@ if do_lattice_mod
         AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50,50,-1);
         AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50,50,-1);
 curtime = calctime (curtime,50);
-    end
-    
+    end    
     
     freq_list = [160:2.5:170]*1e3;
 %     freq_list = [35:5:125]*1e3; %560
 
     mod_freq = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'lat_mod_freq');
-    
-    mod_time = 1;%0.2; %Closer to 100ms to kill atoms, 3ms for band excitations only.
-    
+    mod_time = 1;%0.2; %Closer to 100ms to kill atoms, 3ms for band excitations only.    
     % For Z Lattice
-%     mod_amp =  (1.1E-5)*(mod_freq/1000)^2-0.00092*(mod_freq/1000)+0.04;0.2;
-    
+%     mod_amp =  (1.1E-5)*(mod_freq/1000)^2-0.00092*(mod_freq/1000)+0.04;0.2;    
     % For Y Lattice
-%     mod_amp =  (1.1E-5)*(80+mod_freq/1000)^2-0.00092*(80+mod_freq/1000)+0.04;
-
-    
-    mod_amp =  (1.1E-5)*(60+mod_freq/1000)^2-0.00092*(60+mod_freq/1000)+0.04;
-    
+%     mod_amp =  (1.1E-5)*(80+mod_freq/1000)^2-0.00092*(80+mod_freq/1000)+0.04;    
+    mod_amp =  (1.1E-5)*(60+mod_freq/1000)^2-0.00092*(60+mod_freq/1000)+0.04;   
     
     addOutputParam('mod_amp',mod_amp);
   
@@ -4684,12 +4686,13 @@ curtime = calctime(curtime,1);
 end
 
 
-
 %% Rotate power distribution waveplate again (if loading lattice from a strong dipole trap)
 %RHYS - Remove comments, keep.
     if rotate_waveplate_after_ramp
         %Rotate waveplate again to divert the rest of the power to lattice beams
-curtime = AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),wp_Trot2,wp_Trot2,P_RotWave_I,P_RotWave_II); 
+curtime = AnalogFunc(calctime(curtime,0),41,...
+    @(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),...
+    wp_Trot2,wp_Trot2,P_RotWave_I,P_RotWave_II); 
             
 %Put back in if no need to rotate waveplate before plane selection.
 %         if (do_plane_selection || do_plane_selection_horizontally)

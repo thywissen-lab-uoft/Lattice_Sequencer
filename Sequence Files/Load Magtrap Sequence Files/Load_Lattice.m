@@ -3628,6 +3628,9 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 end
 
 %% K uWave Manipulations
+% This code performs K uWave manipulations such as Rabi Oscillations,
+% Landau Zener Sweeps, and HS1 Sweeps
+
 if do_K_uwave_spectroscopy2
     dispLineStr('Performing K uWave Spectroscopy',curtime);
 
@@ -3912,39 +3915,44 @@ programSRS(uWave_opts);
 curtime = calctime(curtime,20);  
 end
 
-%% uWave Spectroscopy    
-    if do_K_uwave_spectroscopy
-        dispLineStr('Performing K uWave Spectroscopy',curtime);
-        clear('spect_pars');
-        
-        freq_list = [-7]/1000;[150]/1000;
-        freq_offset = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'freq_val');
-        
-        %Currently 1390.75 for 2*22.6.
-        spect_pars.freq = 1335.845 +2.5+ freq_offset;1298.3 + freq_offset;1335.845 + freq_offset; %Optimal stub-tuning frequency. Center of a sweep (~1390.75 for 2*22.6 and -9/2; ~1498.25 for 4*22.6 and -9/2)
-        
-        uwavepower_list = [15];%15
-        uwavepower_val = getScanParameter(uwavepower_list,seqdata.scancycle,seqdata.randcyclelist,'uwavepower_val');
-                
-        spect_pars.power = uwavepower_val; % 15 %dBm
-        spect_pars.delta_freq = 50/1000;500/1000;% end_frequency - start_frequency (in
-        spect_pars.mod_dev = spect_pars.delta_freq;
-        
+%% K uWave Spectroscopy (OLD)
+
+if do_K_uwave_spectroscopy
+    dispLineStr('Performing K uWave Spectroscopy',curtime);
+    clear('spect_pars');
+
+    freq_list = [-7]/1000;[150]/1000;
+    freq_offset = getScanParameter(freq_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'freq_val');
+
+    %Currently 1390.75 for 2*22.6.
+    spect_pars.freq = 1335.845 +2.5+ freq_offset;
+        %1298.3 + freq_offset;1335.845 + freq_offset; %Optimal stub-tuning frequency. Center of a sweep (~1390.75 for 2*22.6 and -9/2; ~1498.25 for 4*22.6 and -9/2)
+
+    uwavepower_list = [15];%15
+    uwavepower_val = getScanParameter(uwavepower_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'uwavepower_val');
+
+    spect_pars.power = uwavepower_val; % 15 %dBm
+    spect_pars.delta_freq = 50/1000;500/1000;% end_frequency - start_frequency (in
+    spect_pars.mod_dev = spect_pars.delta_freq;
+
 %         spect_pars.pulse_length = t0*10^(-1.5)/10^(pwr/10); % also is sweep length (max is Keithley time - 20ms)
-        pulse_time_list =[20];[spect_pars.delta_freq*1000/5]; %Keep fixed at 5kHz/ms.
-        spect_pars.pulse_length = getScanParameter(pulse_time_list,seqdata.scancycle,seqdata.randcyclelist,'uwave_pulse_time');
-        spect_pars.pulse_type = 1;  %0 - Basic Pulse; 1 - Ramp up and down with min-jerk
-        spect_pars.AM_ramp_time = 0;5;
-        spect_pars.fake_pulse = 0;
-        spect_pars.uwave_delay = 0; %wait time before starting pulse
-        spect_pars.uwave_window = 0; % time to wait during 60Hz sync pulse (Keithley time +20ms)
-        spect_type = 2; %1: sweeps, 2: pulse, 7: 60Hz sync sweeps 9: field sweep
-        spect_pars.SRS_select = 1;
-        
+    pulse_time_list =[20];[spect_pars.delta_freq*1000/5]; %Keep fixed at 5kHz/ms.
+    spect_pars.pulse_length = getScanParameter(pulse_time_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'uwave_pulse_time');
+    spect_pars.pulse_type = 1;  %0 - Basic Pulse; 1 - Ramp up and down with min-jerk
+    spect_pars.AM_ramp_time = 0;5;
+    spect_pars.fake_pulse = 0;
+    spect_pars.uwave_delay = 0; %wait time before starting pulse
+    spect_pars.uwave_window = 0; % time to wait during 60Hz sync pulse (Keithley time +20ms)
+    spect_type = 2; %1: sweeps, 2: pulse, 7: 60Hz sync sweeps 9: field sweep
+    spect_pars.SRS_select = 1;
+
 %         addOutputParam('uwave_pwr',pwr)
-        addOutputParam('sweep_time',spect_pars.pulse_length);
-        addOutputParam('sweep_range',spect_pars.delta_freq);
-        addOutputParam('freq_val',freq_offset);
+    addOutputParam('sweep_time',spect_pars.pulse_length);
+    addOutputParam('sweep_range',spect_pars.delta_freq);
+    addOutputParam('freq_val',freq_offset);
     
         do_field_sweep = 1;
         if do_field_sweep
@@ -4175,26 +4183,27 @@ end
 %% Turn off Gradient
 %RHYS - Turns off the QP. Still don't like the structure here, seems it
 %should just be contained to each spectroscopy module.
-if (do_K_uwave_spectroscopy || do_Rb_uwave_spectroscopy || do_RF_spectroscopy || do_singleshot_spectroscopy )
-        if isfield(ramp,'QP_final')
-            if ramp.QP_final ~=0
-                clear('ramp');
-                %If QP gradient was turned on for spectroscopy/plane selection, turn it
-                %off before releasing from lattice
-                
-                % QP coil settings for spectroscopy
-                rampdown.QP_ramptime = 100;
-                rampdown.QP_ramp_delay = -0;
-                rampdown.QP_final =  0*1.78;
-                
-                rampdown.settling_time = 50;
+if (do_K_uwave_spectroscopy || do_Rb_uwave_spectroscopy || ...
+        do_RF_spectroscopy || do_singleshot_spectroscopy )
+    
+    if isfield(ramp,'QP_final')
+        if ramp.QP_final ~=0
+            clear('ramp');
+            %If QP gradient was turned on for spectroscopy/plane selection, turn it
+            %off before releasing from lattice
+
+            % QP coil settings for spectroscopy
+            rampdown.QP_ramptime = 100;
+            rampdown.QP_ramp_delay = -0;
+            rampdown.QP_final =  0*1.78;
+
+            rampdown.settling_time = 50;
                 
 curtime = ramp_bias_fields(calctime(curtime,0), rampdown); % check ramp_bias_fields to see what struct ramp may contain
-            end
         end
+    end
 end
     
-
 
 %% Dimple on later
 %RHYS - More dimple stuff that will never be used. Delete.

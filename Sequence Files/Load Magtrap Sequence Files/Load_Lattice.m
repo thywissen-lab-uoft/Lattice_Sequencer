@@ -4170,21 +4170,6 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     end
     
 end
-
-
-%% Ramp down the dipole trap if it is on at higher intensity.
-    dipole_rampdown = 0;
-    %RHYS - Useless, delete. 
-     if (dipole_rampdown)
-        dip_1 = 0.18; %1.5
-        dip_2 = 0.18; %1.5
-        dip_ramptime = 100; %1000
-        dip_rampstart = 0;
-        dip_waittime = 100; 
-        AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_1);
-        AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_2);
-curtime = calctime(curtime,dip_rampstart+dip_ramptime+dip_waittime);
-    end
     
 
 %% Turn off Gradient

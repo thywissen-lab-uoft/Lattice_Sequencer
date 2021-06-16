@@ -1878,6 +1878,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     spect_pars.uwave_delay = 0; %wait time before starting pulse
     spect_pars.uwave_window = 45; % time to wait during 60Hz sync pulse (Keithley time +20ms)
     spect_type = 1; %1: sweeps, 2: pulse, 7: 60Hz sync sweeps
+    
     %Options for spect_type = 1:
     sweep_field = 0; %0 to sweep with SRS, 1 to sweep with z Shim
     %Options for spect_type = 2:
@@ -2234,8 +2235,7 @@ end
 
 if do_plane_selection
     dispLineStr('Plane Selection',curtime);
-    %Ramp up gradient and Feshbach field
-    
+    %Ramp up gradient and Feshbach field    
     
 %     AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 40/atomscale); 
 %     AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 40/atomscale);
@@ -2244,23 +2244,33 @@ if do_plane_selection
 Lattices_to_Pin_plane_selection = 1;    
 
     if Lattices_to_Pin_plane_selection
+        disp('Ramping lattices and dipole traps.');
         setDigitalChannel(calctime(curtime,-0.1),'yLatticeOFF',0);%0: ON
-        AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60/atomscale); 
-        AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60/atomscale)
-curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60/atomscale); %30?
-        AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 0);
-curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 0);
+        
+        % Ramp Lattices
+        AnalogFuncTo(calctime(curtime,0),'xLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60/atomscale); 
+        AnalogFuncTo(calctime(curtime,0),'yLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60/atomscale);
+curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60/atomscale); %30?
+        
+        % Ramp dipole traps
+        AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 0);
+curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 0);
 
 %         setDigitalChannel(calctime(curtime,-0.1),'Z Lattice TTL',0);%0: ON
 %         AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 60/atomscale); 
 %         AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 60/atomscale)
 % curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 60/atomscale);
-    end
-    
+    end    
     
     ramp_fields = 1;
     FB_init = getChannelValue(seqdata,37,1,0);
     if ramp_fields
+        disp('Ramping fields');
         clear('ramp');
 %%%%%%%         before 2018-02-22
 % % % %         ramp.xshim_final = seqdata.params. shim_zero(1)+(0.46-0.008-.05-0.75)*1-0.3-2-0.15+0.25; % -0.7 @ 40/7, (0.46-0.008-.05-0.75)*1+0.25 @ 40/14
@@ -2296,7 +2306,6 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minj
         ramp.QP_ramptime = 100;
         ramp.QP_ramp_delay = -0;
         ramp.QP_final =  14*1.78; %7 %210G/cm
-
         ramp.settling_time = 300; %200
         
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
@@ -2305,9 +2314,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     
 %     sweep_field = 0;
 %     if sweep_field ==1
-        
-    % Do uWave sweep to transfer plane(s)
-        
+                
         %Do you want to fake the plane selection sweep?
         fake_the_plane_selection_sweep = 0; %0=No, 1=Yes, no plane selection but remove all atoms.
 
@@ -2349,7 +2356,9 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
         %Determine the frequency to plane select |9/2,-7/2> atoms
         freq2 = DoublePlaneSelectionFrequency(spect_pars.freq, [9/2,-9/2],[7/2,-7/2],[9/2,-7/2],[7/2,-5/2]);
 %     end 
-    %spectroscopy2
+    
+%spectroscopy2
+disp('spectroscopy2');
     use_ACSync = 1;
     
     % Get the initial magnetic field value
@@ -2366,8 +2375,8 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     uWave_opts=struct;
     uWave_opts.Address=28;                       % K uWave ("SRS B");
     uWave_opts.Frequency=1606.75+freq_offset;   % Frequency in MHz
-    uWave_opts.Power= 15;%15                      % Power in dBm
-    uWave_opts.Enable=1;                         % Enable SRS output    
+    uWave_opts.Power= 15;%15                    % Power in dBm
+    uWave_opts.Enable=1;                        % Enable SRS output    
 
     addOutputParam('uwave_pwr',uWave_opts.Power)
     addOutputParam('uwave_frequency',uWave_opts.Frequency);    
@@ -2505,6 +2514,7 @@ curtime = calctime(curtime,100);
 ScopeTriggerPulse(curtime,'Plane Select');
         
         if (sweep_field == 0) %Sweeping frequency of SRS
+            disp('Using SRS to plane select');
 
 %             %Plane select atoms by sweeping frequency
 %             addOutputParam('delta_freq',spect_pars.delta_freq)
@@ -2519,7 +2529,7 @@ ScopeTriggerPulse(curtime,'Plane Select');
 %             
 % curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars); % second sweep (actual plane selection)
         
-    disp('HS1 Sweep Pulse');
+        disp('HS1 Sweep Pulse');
         
         % Calculate the beta parameter
         beta=asech(0.005);   
@@ -2588,15 +2598,13 @@ ScopeTriggerPulse(curtime,'Plane Select');
         % Reset the ACync
         setDigitalChannel(calctime(curtime,10),'ACync Master',0);
         
-% Program the SRS
-programSRS(uWave_opts); 
+        % Program the SRS
+        programSRS(uWave_opts); 
 curtime = calctime(curtime,75);
 
-
-
-
         elseif (sweep_field == 1) %Sweeping field with z Shim, SRS frequency is fixed
-            
+            disp('Using Z shim to plane select');
+
             %SRS in pulsed mode with amplitude modulation
             spect_type = 2;
     
@@ -4817,16 +4825,19 @@ if (Raman_transfers == 1)
 
     %During imaging, generate about a 4.4G horizontal field. Both shims get
     %positive control voltages, but draw from the 'negative' shim supply. 
-    clear('horizontal_plane_select_params')
+    clear('horizontal_plane_select_params');
     F_Pump_List = [0.8];[0.75];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
-    horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power'); %1.4;
+    horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power'); %1.4;
     Raman_Power_List =0.6;[0.45]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
-    horizontal_plane_select_params.Raman_Power1 = getScanParameter(Raman_Power_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Power'); 
+    horizontal_plane_select_params.Raman_Power1 = getScanParameter(Raman_Power_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'Raman_Power'); 
     horizontal_plane_select_params.Raman_Power2 = horizontal_plane_select_params.Raman_Power1;
     horizontal_plane_select_params.Fake_Pulse = 0;
     horizontal_plane_select_params.Use_EIT_Beams = 1;
     uwave_freq_list = [0]/1000;
-    uwave_freq = getScanParameter(uwave_freq_list,seqdata.scancycle,seqdata.randcyclelist,'uwave_freq');
+    uwave_freq = getScanParameter(uwave_freq_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'uwave_freq');
     horizontal_plane_select_params.Selection__Frequency = 1285.8 + 11.025 +uwave_freq; %11.550
     horizontal_plane_select_params.Microwave_Power_For_Selection = 15; %dBm
     
@@ -4869,7 +4880,6 @@ if (Raman_transfers == 1)
     ScopeTriggerPulse(curtime,'Raman Beams On');
       
 curtime = do_horizontal_plane_selection(curtime, horizontal_plane_select_params);
-
 
  dispLineStr('do_horizontal_plane_selection execution finished at',curtime);
 

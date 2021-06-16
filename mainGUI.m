@@ -166,18 +166,41 @@ bPlot.Position(1:2)=[bBrowse.Position(1)+bBrowse.Position(3)+5 ...
         plotgui2;
     end
 
-% Button to open the manual override GUI
-bOver=uicontrol(hpMain,'style','pushbutton','String','override',...
-    'backgroundcolor',cc,'FontSize',10,'units','pixels',...
-    'fontweight','normal','enable','off');
-bOver.Position(3:4)=[60 20];
-bOver.Position(1:2)=[bPlot.Position(1)+bPlot.Position(3)+5 ...
-    bPlot.Position(2)];
-bOver.Callback=@bOverCB;
+% % Button to open the manual override GUI
+% bOver=uicontrol(hpMain,'style','pushbutton','String','override',...
+%     'backgroundcolor',cc,'FontSize',10,'units','pixels',...
+%     'fontweight','normal','enable','off');
+% bOver.Position(3:4)=[60 20];
+% bOver.Position(1:2)=[bPlot.Position(1)+bPlot.Position(3)+5 ...
+%     bPlot.Position(2)];
+% bOver.Callback=@bOverCB;
+% 
+%     function bOverCB(~,~)
+% %        hFGUI.Visible='on'; 
+%     end
 
-    function bOverCB(~,~)
-%        hFGUI.Visible='on'; 
+% Button to recompile seqdata
+bCompile=uicontrol(hpMain,'style','pushbutton','String','compile',...
+    'backgroundcolor',cc,'FontSize',10,'units','pixels',...
+    'fontweight','normal','enable','on');
+bCompile.Position(3:4)=[60 20];
+bCompile.Position(1:2)=[bPlot.Position(1)+bPlot.Position(3)+5 ...
+    bPlot.Position(2)];
+bCompile.Callback=@bCompileCB;
+
+    function bCompileCB(~,~)
+        start_new_sequence;             % Initialize sequence
+        seqdata.scancycle=1;            % 
+        seqdata.randcyclelist=0;    
+        seqdata.doscan=0; 
+        initialize_channels;            % Initialize channels
+
+        fName=eSeq.String;
+        fh = str2func(erase(fName,'@'));     
+        fh(0);                          % Run the sequence / update seqdata  
+        calc_sequence;                  % convert seqdata for AdWin  
     end
+
 
     function browseCB(~,~)
         disp([datestr(now,13) ' Changing the sequence file.']);        
@@ -585,7 +608,9 @@ case 'single'
         rSingle.Enable='on';
         
         bPlot.Enable='on';
-        bOver.Enable='on';
+%         bOver.Enable='on';
+        bCompile.Enable='on';
+
         bBrowse.Enable='on';
         eSeq.Enable='on';
     end
@@ -602,7 +627,8 @@ case 'scan'
             bStop.Enable='off';
 
             bPlot.Enable='on';
-            bOver.Enable='on';
+%             bOver.Enable='on';
+            bCompile.Enable='on';
             bBrowse.Enable='on';
             eSeq.Enable='on';
         else
@@ -626,7 +652,9 @@ case 'scan'
         rSingle.Enable='on';
         bStop.Enable='off';
         bPlot.Enable='on';
-        bOver.Enable='on';
+%         bOver.Enable='on';
+        bCompile.Enable='on';
+
         bBrowse.Enable='on';
         eSeq.Enable='on';
         
@@ -670,7 +698,9 @@ end
         
         
 %         bPlot.Enable='off';
-        bOver.Enable='off';
+%         bOver.Enable='off';
+        bCompile.Enable='off';
+
         bBrowse.Enable='off';
         eSeq.Enable='off';
         
@@ -819,7 +849,9 @@ end
                 rSingle.Enable='on';
 
                 bPlot.Enable='on';
-                bOver.Enable='on';
+%                 bOver.Enable='on';
+                            bCompile.Enable='on';
+
                 bBrowse.Enable='on';
                 eSeq.Enable='on';        
 
@@ -830,7 +862,9 @@ end
                 rSingle.Enable='on';
                 bStop.Enable='off';
                 bPlot.Enable='on';
-                bOver.Enable='on';
+%                 bOver.Enable='on';
+                            bCompile.Enable='on';
+
                 bBrowse.Enable='on';
                 eSeq.Enable='on';
         end  

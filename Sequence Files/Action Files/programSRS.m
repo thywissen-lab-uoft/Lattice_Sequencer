@@ -82,7 +82,7 @@ cmd=sprintf('FREQ %fMHz; AMPR %gdBm; MODL %g; MFNC %g; FDEV %gMHz; DISP 2; ENBR 
     settings.Enable);
 
 
-disp(cmd)
+% disp(cmd)
 addGPIBCommand(settings.Address,cmd);
 end
 

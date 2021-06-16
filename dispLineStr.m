@@ -5,7 +5,7 @@ lNum=line_num(2);
 t=curtime2realtime(curtime);
 
 disp(repmat('-',1,60));
-mystr=[' ' lNum.file ' (' num2str(lNum.line) ') ' str ' (' num2str(t) ' ms)'];
+mystr=[' ' '(' num2str(t) ' ms) ' lNum.file ' (' num2str(lNum.line) ') ' str ];
 disp(mystr);
 
 

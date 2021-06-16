@@ -36,17 +36,12 @@ disp(['     Enable Sweep : ' num2str(settings.EnableSweep)]);
 disp(['     Sweep Range  : ' num2str(settings.SweepRange) ' MHz']);
 
 
-
 % ADDRESSES:
 % See SRS manual on how to change GPIB adress
-    % 27 - SRS A
-    % 28 - SRS B
-    % 29 - SRS RB
+    % 27 - SRS A  (For GM?)
+    % 28 - SRS B  1.3-1.5 GHz uWave
+    % 29 - SRS RB 6.8 GHz
     
-%         SRSAddress = 28;
-%         else
-%         %SRS A
-%         SRSAddress = 27;
 
 % GPIB Command Summary
 %
@@ -61,7 +56,6 @@ disp(['     Sweep Range  : ' num2str(settings.SweepRange) ' MHz']);
     % 4 : Noise
     % 5 : External
 % FDEV(?) Set(query) the modulation range
-
 
 % DISP(?) Set(query) the dispay
 %   0 : Modulation Type

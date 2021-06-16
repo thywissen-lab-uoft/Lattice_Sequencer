@@ -7,7 +7,7 @@
 %           Typically called after evaporation in ODT
 %------
 
-function [timeout, P_dip, P_Xlattice, P_Ylattice, P_Zlattice, P_RotWave] = Load_Lattice(varargin)
+function [timeout,P_dip,P_Xlattice,P_Ylattice,P_Zlattice,P_RotWave] = Load_Lattice(varargin)
 
 timein = varargin{1};
 lattice_flags(timein);
@@ -57,14 +57,14 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     do_RF_spectroscopy = 0;
     
     spin_mixture_in_lattice_after_plane_selection = 0; %keep maybe use for 2D physics
+   
+    
     Dimple_Trap_After_Plane_Selection = 0;  %delete?? %turn on dimple trap %Rhys suggested to delete?
     do_evaporation_after_plane_selection = 0; %delete: QP gradient evaporation in lattice after plane selection did not work
     modulate_XDT_after_dimple = 0;              %delete: used for turning off dimple and do conductivity 
     conductivity_modulation = 0;                %delete
     conductivity_without_dimple = 0;            %keep: the real conductivity experiment happens here 
     
-   
-
     Dimple_Mod = 0;                     %keep: Used to calibrate dimple trap depth
     do_lattice_mod = 0;                 %keep: calibrate lattice depth
     lattice_depth_calibration = 0;      %keep: another lattice calibration method
@@ -74,9 +74,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     Raman_transfers = 1;                %keep  % for fluorescence image
     do_lattice_sweeps = 0;              %delete
     Drop_From_XDT = 0;                  %May need to add code to rotate waveplate back here.
-
-    
-    
+ 
     seqdata.flags.lattice_img_molasses = 0; %delete %1 - Do molasses, 0 - No molasses
     seqdata.flags.plane_selection_after_D1 = 0;%delete
 
@@ -544,34 +542,33 @@ curtime = calctime(curtime,lat_rampup_time(j));
 %RHYS - If the lattice is loaded right from the QP, can call this to turn
 %the QP trap off, otherwise it will be on until the sequence ends.
 if QP_off_after_load
+        FB_init = getChannelValue(seqdata,37,1,0);
+        clear('ramp');
 
-            FB_init = getChannelValue(seqdata,37,1,0);
-            clear('ramp');
-            
-            ramp.xshim_final = seqdata.params. shim_zero(1);% - 0.144; %-0.144
-            ramp.yshim_final = seqdata.params. shim_zero(2);% + 0.34; %0.14
-            ramp.zshim_final = seqdata.params. shim_zero(3);
-            ramp.shim_ramptime = 50;
-            ramp.shim_ramp_delay = -100; % ramp earlier than FB field if FB field is ramped to zero
-            addOutputParam('PSelect_xShim',ramp.xshim_final)
-            addOutputParam('PSelect_yShim',ramp.yshim_final)
+        ramp.xshim_final = seqdata.params. shim_zero(1);% - 0.144; %-0.144
+        ramp.yshim_final = seqdata.params. shim_zero(2);% + 0.34; %0.14
+        ramp.zshim_final = seqdata.params. shim_zero(3);
+        ramp.shim_ramptime = 50;
+        ramp.shim_ramp_delay = -100; % ramp earlier than FB field if FB field is ramped to zero
+        addOutputParam('PSelect_xShim',ramp.xshim_final)
+        addOutputParam('PSelect_yShim',ramp.yshim_final)
 
-            % FB coil settings for spectroscopy
-            ramp.fesh_ramptime = 50;
-            ramp.fesh_ramp_delay = -100;
-            ramp.fesh_final = 5.2539234;%before 2017-1-6 0.25*22.6; %22.6
-            addOutputParam('PSelect_FB',ramp.fesh_final)
+        % FB coil settings for spectroscopy
+        ramp.fesh_ramptime = 50;
+        ramp.fesh_ramp_delay = -100;
+        ramp.fesh_final = 5.2539234;%before 2017-1-6 0.25*22.6; %22.6
+        addOutputParam('PSelect_FB',ramp.fesh_final)
 
-            % QP coil settings for spectroscopy
-            ramp.QP_ramptime = 50;
-            ramp.QP_ramp_delay = -100;
-            ramp.QP_final =  0*1.78; %7
+        % QP coil settings for spectroscopy
+        ramp.QP_ramptime = 50;
+        ramp.QP_ramp_delay = -100;
+        ramp.QP_final =  0*1.78; %7
 
-            ramp.settling_time = 50; %200
-            
-            for i = [7 8 9:17 22:24 20] 
-                setAnalogChannel(calctime(curtime,0),i,0,1);
-            end
+        ramp.settling_time = 50; %200
+
+        for i = [7 8 9:17 22:24 20] 
+            setAnalogChannel(calctime(curtime,0),i,0,1);
+        end
         
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
 
@@ -3634,10 +3631,10 @@ end
 if do_K_uwave_spectroscopy2
     dispLineStr('Performing K uWave Spectroscopy',curtime);
 
-    uWaveMode='rabi';
+%     uWaveMode='rabi';
 %     uWaveMode='sweep_field';
 %     uWaveMode='sweep_frequency_chirp';
-%      uWaveMode='sweep_frequency_HS1';
+      uWaveMode='sweep_frequency_HS1';
 
     use_ACSync = 1;
     
@@ -3675,11 +3672,9 @@ if do_K_uwave_spectroscopy2
     % RF Switch for K SRS depreciated? (1:B, 0:A)
     setDigitalChannel(calctime(curtime,-20),'K uWave Source',1);  
     
-
     
 switch uWaveMode
     case 'rabi'
-        % THIS HAS NOT BEEN TESTED YET
         disp(' uWave Rabi Oscillations');
         
         % Disable the frquency sweep
@@ -3833,7 +3828,8 @@ switch uWaveMode
 
         % Reset the uWave deviation after a while
         setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);
-   case 'sweep_frequency_HS1'
+        
+    case 'sweep_frequency_HS1'
         disp('HS1 Sweep Pulse');
         
         % Calculate the beta parameter
@@ -3899,6 +3895,7 @@ switch uWaveMode
 
         % Reset the uWave deviation after a while
         setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);
+    
     otherwise
         error('Invalid uwave flag request. (you fucked up)');    
 end
@@ -4080,16 +4077,12 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars); % ch
 %% uWave single shot spectroscopy
 if ( do_singleshot_spectroscopy ) % does an rf pulse or sweep for spectroscopy
         dispLineStr('singleshot_spectroscopy.',curtime);
-
 %     addGPIBCommand(2,sprintf(['FUNC PULS; PULS:PER %g; FUNG:PULS:WIDT %g; VOLT:HIGH 4.5V; VOLT:LOW 0V; BURS:MODE TRIG; BURS:NCYC 1; ' ...
 %         'AMPR %gdBm; MODL 1; DISP 2; ENBR
 %         %g;'],SRSfreq,SRSmod_dev,SRSpower,rf_on));
-
-
 curtime = uwave_singleshot_spectroscopy(calctime(curtime,0));
-
 end       
-    %}
+    
 %% RF Spectroscopy
 
     if do_RF_spectroscopy
@@ -4128,17 +4121,19 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
     
     end
     
-%% Do field ramp back down after spectroscopy
-% % 
+%% Field Ramps after uWave/RF Spectroscopy
+
 % Shim values for zero field found via spectroscopy
 %          x_Bzero = 0.115; %0.03 minimizes field
 %          y_Bzero = -0.0925; %-0.075  -0.07 minimizes field
 %          z_Bzero = -0.145;% Z BIPOLAR PARAM, -0.075 minimizes the field
 %          (May 20th, 2013)
 
-if ( do_K_uwave_spectroscopy2 || do_K_uwave_spectroscopy || do_Rb_uwave_spectroscopy || do_RF_spectroscopy || do_singleshot_spectroscopy )
-    dispLineStr('Ramping fields after spectroscopy.',curtime);
-
+if ( do_K_uwave_spectroscopy2 || do_K_uwave_spectroscopy || ...
+        do_Rb_uwave_spectroscopy || do_RF_spectroscopy || ...
+        do_singleshot_spectroscopy )
+    
+    dispLineStr('Ramping down fields after spectroscopy.',curtime);
     ramp_fields = 1; % do a field ramp for spectroscopy
     
     if ramp_fields
@@ -4185,9 +4180,7 @@ end
         dip_2 = 0.18; %1.5
         dip_ramptime = 100; %1000
         dip_rampstart = 0;
-        dip_waittime = 100;
-        
-        
+        dip_waittime = 100; 
         AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_1);
         AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_2);
 curtime = calctime(curtime,dip_rampstart+dip_ramptime+dip_waittime);

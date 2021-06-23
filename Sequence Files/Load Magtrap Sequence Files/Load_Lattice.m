@@ -2279,8 +2279,8 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
 % % % %         ramp.xshim_final = seqdata.params. shim_zero(1)+(0.46-0.008-.05-0.75)*1-0.3-2-0.15+0.25; % -0.7 @ 40/7, (0.46-0.008-.05-0.75)*1+0.25 @ 40/14
 % % % %         ramp.yshim_final = seqdata.params. shim_zero(2)+(-1.625-.001+0.6)*1+0.75;
 % % % %         ramp.zshim_final = seqdata.params. shim_zero(3)+0;
-        xshimdlist = [-.75 -.5 -.25 .25 .5];[-0.88] ; -0.5;-0.5;2.1; 
-        yshimdlist = [3];[0.27];
+        xshimdlist = [-0.28];[-0.88] ; -0.5;-0.5;2.1; 
+        yshimdlist = [0.462];[0.27];
         zshimd = -1; -1;
         
         xshimd = getScanParameter(xshimdlist,seqdata.scancycle,...
@@ -2375,7 +2375,7 @@ disp('spectroscopy2');
     use_ACSync = 1;
 
     % Define the SRS frequency
-    freq_list = [-500:100:100];       
+    freq_list = [-500];       
     
     % Use this when Xshimd=3, zshimd=-1 and you vary yshimd
 %     freq_list=interp1([-3 0.27 3],[100 -200 -500],yshimd);
@@ -2558,7 +2558,7 @@ if (sweep_field == 0) %Sweeping frequency of SRS
 
 
         % Determine the range of the sweep
-        uWave_delta_freq_list=[7]/1000;
+        uWave_delta_freq_list=[14]/1000;
         uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq');
         

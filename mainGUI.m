@@ -985,10 +985,13 @@ end
         % output both outparams and params
         save(filenamemat,'outparams','params');        
         %% Save new output mat
-        outputparams=seqdata.outputparams2;
-        outputparams.ExecutionDate(1)=datestr(tExecute);
-        outputparams.ExecutionDate(2)='str';
-        save(filenamemat2,'outputparams');        
+        vals=seqdata.output_vars_vals;
+        units=seqdata.output_vars_units;        
+        
+        vals.ExecutionDate=datestr(tExecute);        
+        units.ExecutionDate='str';
+        
+        save(filenamemat2,'vals','units');        
         
     end
 

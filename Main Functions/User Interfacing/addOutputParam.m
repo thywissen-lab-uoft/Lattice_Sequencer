@@ -39,7 +39,7 @@ end
 % Add the parameter value as the first array list and the the paramter unit
 % as the second array list
 
-seqdata.outputparams2(1).(paramname)=paramval;
-seqdata.outputparams2(2).(paramname)=paramunit;    
+seqdata.output_vars_vals.(paramname)=paramval;
+seqdata.output_vars_units.(paramname)=paramunit;    
 
 end

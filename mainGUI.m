@@ -799,8 +799,8 @@ end
         tC4=now;                         % compile end time
         loadTime=(tC4-tC3)*(24*60*60);   % Build time in seconds   
 %         disp([' Adwin load time ' num2str(round(loadTime,2))]);
-       disp(repmat('-',1,60));
-   
+        disp(repmat('-',1,60));
+
         makeControlFile;
 
         
@@ -935,21 +935,18 @@ end
 %             %the first element is a string and the second element is a number
 %             fprintf(1,'%s: %g \n',seqdata.outputparams{n}{1},seqdata.outputparams{n}{2});
 %         end        
-%         disp('----------------------------------------');        
-%         
+%         disp('----------------------------------------');     
         
-        
+        tExecute=now;
         seqdata.outputfilepath=compath;
         filenametxt = fullfile(seqdata.outputfilepath, 'control.txt');
         filenamemat=fullfile(seqdata.outputfilepath, 'control.mat');  
-%         disp(' ')
-
-
+        filenamemat2=fullfile(seqdata.outputfilepath, 'control2.mat');  
+        
 
         disp(['Saving sequence parameters to ' seqdata.outputfilepath filesep 'control']);
-%         disp(['     ' filenametxt]);
-%         disp(['     ' filenamemat]);
         [path,~,~] = fileparts(filenametxt);
+        
         % If the location of the control file doesnt exist, make it
         if ~exist(path,'dir')
             try
@@ -962,7 +959,7 @@ end
         %output the header (date/time,function handle,cycle)
         fprintf(fid,'Lattice Sequencer Output Parameters \n');
         fprintf(fid,'------------------------------------\n');
-        fprintf(fid,'Execution Date: %s \n',datestr(now));
+        fprintf(fid,'Execution Date: %s \n',datestr(tExecute));
         fprintf(fid,'Function Handle: %s \n',erase(eSeq.String,'@'));
         fprintf(fid,'Cycle: %g \n', seqdata.cycle);
         fprintf(fid,'------------------------------------\n');    
@@ -977,9 +974,7 @@ end
         end
         fclose(fid);     % close the file   
         %% Making a mat file with the parameters
-        outparams=struct;
-        
-        
+        outparams=struct;       
         for kk=1:length(seqdata.outputparams)
             a=seqdata.outputparams{kk};
             outparams.(a{1})=a{2};
@@ -988,7 +983,16 @@ end
 
         params=seqdata.params;        
         % output both outparams and params
-        save(filenamemat,'outparams','params');
+        save(filenamemat,'outparams','params');        
+        %% Save new output mat
+        vals=seqdata.output_vars_vals;
+        units=seqdata.output_vars_units;        
+        
+        vals.ExecutionDate=datestr(tExecute);        
+        units.ExecutionDate='str';
+        
+        save(filenamemat2,'vals','units');        
+        
     end
 
 

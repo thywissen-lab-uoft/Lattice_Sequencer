@@ -39,6 +39,7 @@ function out = getScanParameter(scanlist,cycle,randlist,name,unit)
         out = scanlist(1+mod(cycle-1,length(scanlist)));
     end
     
-    addOutputParam(name,out); % write automatically to output parameters
+    % Write to output parameters
+    addOutputParam(name,out,unit);
 
 end

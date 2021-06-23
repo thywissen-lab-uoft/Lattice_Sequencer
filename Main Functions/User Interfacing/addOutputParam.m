@@ -32,8 +32,11 @@ end
 % and also for units)
 
 % Make the structure if it doesn't exist
-if ~isfield(seqdata,'outputparams2')
-    seqdata.outputparams2=struct;
+if ~isfield(seqdata,'output_vars_vals')
+    seqdata.output_vars_vals=struct;
+end
+if ~isfield(seqdata,'output_vars_units')
+    seqdata.output_vars_units=struct;
 end
 
 % Add the parameter value as the first array list and the the paramter unit

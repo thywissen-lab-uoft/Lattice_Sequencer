@@ -2377,6 +2377,7 @@ disp('spectroscopy2');
     % Define the SRS frequency
     freq_list = [-500];       
     
+    % 2021/06/22 CF
     % Use this when Xshimd=3, zshimd=-1 and you vary yshimd
 %     freq_list=interp1([-3 0.27 3],[100 -200 -500],yshimd);
 
@@ -2384,7 +2385,7 @@ disp('spectroscopy2');
     % freq_list=interp1([-3 0 3],[-200 -400 -500],xshimd);
 
     freq_offset = getScanParameter(freq_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'uwave_freq_offset');
+        seqdata.randcyclelist,'uwave_freq_offset','kHz from 1606.75 MHz');
     
     disp(['     Freq Offset  : ' num2str(freq_offset) ' kHz']);
     

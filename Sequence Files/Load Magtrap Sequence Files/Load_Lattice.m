@@ -2270,15 +2270,24 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
     ramp_fields = 1;
     FB_init = getChannelValue(seqdata,37,1,0);
     if ramp_fields
+        % Ramp the SHIMs, QP, and FB to the appropriate level
+        
+        
         disp('Ramping fields');
         clear('ramp');
 %%%%%%%         before 2018-02-22
 % % % %         ramp.xshim_final = seqdata.params. shim_zero(1)+(0.46-0.008-.05-0.75)*1-0.3-2-0.15+0.25; % -0.7 @ 40/7, (0.46-0.008-.05-0.75)*1+0.25 @ 40/14
 % % % %         ramp.yshim_final = seqdata.params. shim_zero(2)+(-1.625-.001+0.6)*1+0.75;
 % % % %         ramp.zshim_final = seqdata.params. shim_zero(3)+0;
-        xshimd = -0.5;2.1; 
-        yshimd = 2.5;0.3;
-        zshimd = -1;-1;
+        xshimdlist = [-.75 -.5 -.25 .25 .5];[-0.88] ; -0.5;-0.5;2.1; 
+        yshimdlist = [3];[0.27];
+        zshimd = -1; -1;
+        
+        xshimd = getScanParameter(xshimdlist,seqdata.scancycle,...
+            seqdata.randcyclelist,'xshimd');
+        yshimd = getScanParameter(yshimdlist,seqdata.scancycle,...
+            seqdata.randcyclelist,'yshimd');
+        
         %Both these x and y values can be large and negative. Draw from the
         %'positive' shim supply when negative. Just don't fry the shim.
         ramp.xshim_final = seqdata.params. shim_zero(1)-2.548 + xshimd;% -0.7 @ 40/7, (0.46-0.008-.05-0.75)*1+0.25 @ 40/14
@@ -2286,8 +2295,11 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         ramp.zshim_final = seqdata.params. shim_zero(3)+zshimd; %Plane selection uses this shim to sweep... make its value larger?
         ramp.shim_ramptime = 100;
         ramp.shim_ramp_delay = -10; % ramp earlier than FB field if FB field is ramped to zero
-        addOutputParam('PSelect_xShim',ramp.xshim_final-(seqdata.params. shim_zero(1)+(0.46-0.008-.05-0.75)*1-0.3-2-0.15))
+        
+        addOutputParam('PSelect_xShim',ramp.xshim_final)
         addOutputParam('PSelect_yShim',ramp.yshim_final)
+        addOutputParam('PSelect_zShim',ramp.zshim_final)
+
         addOutputParam('xshimd',xshimd);
         addOutputParam('yshimd',yshimd);
         addOutputParam('zshimd',zshimd);
@@ -2296,7 +2308,8 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         ramp.fesh_ramptime = 100;
         ramp.fesh_ramp_delay = -0;
         fb_shift_list = [0.60];[0.56];%0.2 for 0.7xdt power
-        fb_shift = getScanParameter(fb_shift_list,seqdata.scancycle,seqdata.randcyclelist,'fb_shift');
+        fb_shift = getScanParameter(fb_shift_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'fb_shift');
         ramp.fesh_final = 128-fb_shift;125.829-fb_shift; %before 2017-1-6 6*22.6; %22.6% smaller b field means farther away from the window
         %default value of ramp.fesh_final is 6*22.6, for plane
         %selection
@@ -2316,7 +2329,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 %     if sweep_field ==1
                 
         %Do you want to fake the plane selection sweep?
-        fake_the_plane_selection_sweep = 0; %0=No, 1=Yes, no plane selection but remove all atoms.
+        fake_the_plane_selection_sweep = 1; %0=No, 1=Yes, no plane selection but remove all atoms.
 
         % When cloud moves up, field is smaller, so frequency goes down (|9/2,-9/2>)
 %         freq_list = [-490]/1000;
@@ -2360,23 +2373,27 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 %spectroscopy2
 disp('spectroscopy2');
     use_ACSync = 1;
-    
-    % Get the initial magnetic field value
-    Bzc = getChannelValue(seqdata,'Z Shim',1,0);
 
     % Define the SRS frequency
-    freq_list = [0]/1000;
+    freq_list = [-500:100:100];       
+    
+    % Use this when Xshimd=3, zshimd=-1 and you vary yshimd
+%     freq_list=interp1([-3 0.27 3],[100 -200 -500],yshimd);
+
+    % use this when yshimd=3, zshim3=-1 an dyou vary xshimd
+    % freq_list=interp1([-3 0 3],[-200 -400 -500],xshimd);
+
     freq_offset = getScanParameter(freq_list,seqdata.scancycle,...
         seqdata.randcyclelist,'uwave_freq_offset');
     
-    disp(['     Freq Offset  : ' num2str(freq_offset*1000) ' kHz']);
+    disp(['     Freq Offset  : ' num2str(freq_offset) ' kHz']);
     
     % SRS settings (may be overwritten later)
     uWave_opts=struct;
-    uWave_opts.Address=28;                       % K uWave ("SRS B");
-    uWave_opts.Frequency=1606.75+freq_offset;   % Frequency in MHz
-    uWave_opts.Power= 15;%15                    % Power in dBm
-    uWave_opts.Enable=1;                        % Enable SRS output    
+    uWave_opts.Address=28;                        % K uWave ("SRS B");
+    uWave_opts.Frequency=1606.75+freq_offset*1E-3;% Frequency in MHz
+    uWave_opts.Power= 15;%15                      % Power in dBm
+    uWave_opts.Enable=1;                          % Enable SRS output    
 
     addOutputParam('uwave_pwr',uWave_opts.Power)
     addOutputParam('uwave_frequency',uWave_opts.Frequency);    
@@ -2397,7 +2414,7 @@ disp('spectroscopy2');
  
 
 %% Transfer atoms to |7/2,-7/2> initially.
-
+% CORA - Is this historical, can we delete it? Accroding to VV
         initial_transfer = 0;
         
         if initial_transfer
@@ -2513,10 +2530,10 @@ curtime = calctime(curtime,100);
 %% Actual plane selection happens here.
 ScopeTriggerPulse(curtime,'Plane Select');
         
-        if (sweep_field == 0) %Sweeping frequency of SRS
+if (sweep_field == 0) %Sweeping frequency of SRS
             disp('Using SRS to plane select');
 
-%             %Plane select atoms by sweeping frequency
+%             %Plane sel ect atoms by sweeping frequency
 %             addOutputParam('delta_freq',spect_pars.delta_freq)
 %             spect_pars.fake_pulse = 0;
 %             spect_pars.SRS_select = 0; %0: Use SRS A, 1: Use SRS B
@@ -2541,7 +2558,7 @@ ScopeTriggerPulse(curtime,'Plane Select');
 
 
         % Determine the range of the sweep
-        uWave_delta_freq_list=[10]/1000;
+        uWave_delta_freq_list=[7]/1000;
         uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq');
         
@@ -2596,7 +2613,7 @@ ScopeTriggerPulse(curtime,'Plane Select');
         setAnalogChannel(calctime(curtime,10),'uWave FM/AM',0);-1;
         
         % Reset the ACync
-        setDigitalChannel(calctime(curtime,10),'ACync Master',0);
+        setDigitalChannel(calctime(curtime,100),'ACync Master',0);
         
         % Program the SRS
         programSRS(uWave_opts); 
@@ -2690,7 +2707,7 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
 
         Downwards_D2 = 1;% turn on the kill beam
         if Downwards_D2            
-
+        % Vertical *upwards* D2 kill beam to kill untransfered atoms            
             %Should be plenty of time to do optical removal without
             %updating curtime, due to the shim field settling time above
             
@@ -2699,7 +2716,7 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
 
             %Resonant light pulse to remove any untransferred atoms from
             %F=9/2
-            kill_time_list = [1];
+            kill_time_list = [2];
             kill_time = getScanParameter(kill_time_list,seqdata.scancycle,...
                 seqdata.randcyclelist,'kill_time'); %10 
             kill_detuning_list = [42.7];[54];40;39;
@@ -2799,6 +2816,10 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
         
         transfer_back_to_9half = 0;% transfer back to -9/2
         if transfer_back_to_9half
+            % Transfer the |7,-7> back to |9,-9>.  This sweep can be broad
+            % because everything else is dead (nominally). This step is
+            % also somewhat uncessary because the Raman beams during
+            % imaging Rabi oscillates between the two
             
             % wait time (code related -- need to accomodate for AnalogFuncTo
             % calls to the past in rf_uwave_spectroscopy)

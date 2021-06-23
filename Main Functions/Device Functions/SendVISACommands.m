@@ -4,6 +4,10 @@ function out = SendVISACommands(cmds, talk)
 %Created: January 2015
 %Summary: Sends commands to VISA devices.
 %-----
+
+disp(repmat('-',1,60));
+disp(['Sending VISA commands (' num2str(length(cmds)) ')']);
+
 if ischar(cmds) % convert a single string to a cell array
     cmds = {cmds};
 end

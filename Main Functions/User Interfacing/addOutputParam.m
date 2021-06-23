@@ -13,12 +13,12 @@ global seqdata;
 
 found = 0;
 if length(seqdata.outputparams)>0
-for j=1:length(seqdata.outputparams)
-        if strcmp(paramname,seqdata.outputparams{j}{1})
-        seqdata.outputparams{j} = {paramname,paramval};
-        found=1;
+    for j=1:length(seqdata.outputparams)
+            if strcmp(paramname,seqdata.outputparams{j}{1})
+            seqdata.outputparams{j} = {paramname,paramval};
+            found=1;
+        end
     end
-end
 end
 
 if (~found)

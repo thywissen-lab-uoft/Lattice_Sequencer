@@ -1997,19 +1997,35 @@ global seqdata;
 % setAnalogChannel(curtime,46,0.0,1);
 
 %% uWave
-setAnalogChannel(calctime(curtime,100),62,0);
-AnalogFunc(calctime(curtime,100),'z shim',@(t,tt,y2,y1)(ramp_linear(t,tt,y2,y1)),2,2,-1,1,1);
-AnalogFunc(calctime(curtime,110),'z shim',@(t,tt,y2,y1)(ramp_linear(t,tt,y2,y1)),2,2,1,-1,1);
+% Preset analog channel
+setAnalogChannel(calctime(curtime,0),57,-1);
+
+% Enable ACync
+curtime=setDigitalChannel(calctime(curtime,10),56,1);
+
+
+% AnalogFunc(calctime(curtime,15),57,@(t,tt,y2,y1)(ramp_linear(t,tt,y2,y1)),2,2,-1,1,1);
+% 
+% AnalogFunc(calctime(curtime,20),57,@(t,tt,y2,y1)(ramp_linear(t,tt,y2,y1)),2,2,1,-1,1);
+
+% setAnalogChannel(calctime(curtime,100),62,0);
+
 % setAnalogChannel(calctime(curtime,100),'z shim',-1,1);
 % setAnalogChannel(calctime(curtime,110),'z shim',9,1);
-% 
-setDigitalChannel(calctime(curtime,100),39,1);
-setDigitalChannel(calctime(curtime,110),39,0);
+
+sweep_time=10;
+beta=asech(0.01);
+         AnalogFunc(calctime(curtime,0),57,...
+            @(t,T,beta) tanh(2*beta*(t-0.5*sweep_time)/sweep_time),...
+            sweep_time,sweep_time,beta,1);
+        
+% setDigitalChannel(calctime(curtime,100),39,1);
+% setDigitalChannel(calctime(curtime,110),39,0);
 
 
-setDigitalChannel(calctime(curtime,0),56,1);
-setDigitalChannel(calctime(curtime,200),56,0);
+setDigitalChannel(calctime(curtime,25),56,0);
 
+curtime = calctime(curtime, 2000)
 % 
 % setDigitalChannel(calctime(curtime,1300),14,0);
 %% Test Objective piezo
@@ -4848,6 +4864,26 @@ end
 
 tnow=now;
 addOutputParam('now',(tnow-floor(tnow))*24*60*60);
+
+%% kill test
+mod_freq =  (120)*1E6;
+mod_amp =1;
+mod_offset =0;
+str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
+addVISACommand(6, str);
+
+
+
+
+% Set trap AOM detuning to change probe
+setAnalogChannel(calctime(curtime,0),'K Trap FM',42.7); %54.5
+
+% open K probe shutter
+setDigitalChannel(calctime(curtime,0),'Downwards D2 Shutter',1); %0=closed, 1=open
+
+% Set TTL 
+setDigitalChannel(calctime(curtime,0),'Kill TTL',1);%0= off, 1=on
+
 
 
 

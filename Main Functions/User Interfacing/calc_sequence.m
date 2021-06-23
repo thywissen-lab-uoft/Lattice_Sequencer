@@ -16,7 +16,8 @@ dodds = 1;
 
 %% Process DDS Sweeps to the Rabbits
 if dodds
-
+disp(repmat('-',1,60));
+disp('Sending DDS commands...');
 %     disp(seqdata.numDDSsweeps);
     
     if seqdata.numDDSsweeps ~= 0
@@ -28,9 +29,9 @@ if dodds
         t(2) = udp('192.168.1.156', 37829, 'LocalPort', 4630); %4 Pass AOM 192.168.1.156
         t(3) = udp('192.168.1.157', 37829, 'LocalPort', 4631); %350MHz for TA lock 192.168.1.157
         
-%                 t(1) = udp('192.168.1.155', 37829, 'LocalPort', 4629); %350MHz for TA lock 192.168.1.156"
-%         t(2) = udp('192.168.1.156', 37829, 'LocalPort', 4630); %6.8GHz  
-%         t(3) = udp('192.168.1.157', 37829, 'LocalPort', 4631); %RF %192.168.1.157
+%       t(1) = udp('192.168.1.155', 37829, 'LocalPort', 4629); %350MHz for TA lock 192.168.1.156"
+%       t(2) = udp('192.168.1.156', 37829, 'LocalPort', 4630); %6.8GHz  
+%       t(3) = udp('192.168.1.157', 37829, 'LocalPort', 4631); %RF %192.168.1.157
 %       
         
         %NOTE: If this process is interrupted (i.e. fopen runs, but not fclose)
@@ -108,16 +109,11 @@ if dodds
             %fwrite(t(i),cmd_string{i},'sync')
             
              % Disconnect and clean up the server connection. 
-            fclose(t(i)); 
-            
+            fclose(t(i));             
         end
-
         delete(t); 
-        clear t 
-            
-        
-    end
-    
+        clear t      
+    end    
 end
 %% Program GPIB devices
 
@@ -139,6 +135,8 @@ if isfield(seqdata,'visa')
 end
 
 %% Convert Analog values into 16 bit
+disp(repmat('-',1,60));
+disp('Converting analog voltages to b16 ...');
 
 %Used to be in the ADWIN, but moved here so that we can use a long for the
 %ADWIN data array
@@ -159,7 +157,8 @@ analogAdwin(:,3) = (seqdata.analogadwinlist(:,3)+10)/20*2^(16);
 %Change the digital update array into an array of update words
 
 if (~isempty(seqdata.digadwinlist))
-    
+disp('Processing digital calls ...');
+
     %pre-allocate, can be no bigger than the current update list
     new_digarray = zeros(length(seqdata.digadwinlist(:,1)),3);
 
@@ -436,11 +435,16 @@ seqdata.numDDSsweeps = 0;
 %the sequence has been calculated
 seqdata.seqcalculated = 1;
 
-%Run the mercurial backup
+%% Run the mercurial backup
+% Commenting out because we don't use this server anymore
+%{
 seq_dir = fullfile(fileparts(fileparts(mfilename('fullpath'))),'Sequence Files');
 func_dir = fullfile(fileparts(fileparts(mfilename('fullpath'))),'Main Functions');
 %winopen(fullfile(fileparts(fileparts(mfilename)),'run_backup.bat'));
 dos(['CD ' seq_dir  ' && hg add && hg commit -m "Automatic Update" -u "LatticeSequencer"']);
 dos(['CD ' func_dir  ' && hg add && hg commit -m "Automatic Update" -u "LatticeSequencer"']);
+%}
 
+%% Done
+disp('Sequence calculated.');
 end

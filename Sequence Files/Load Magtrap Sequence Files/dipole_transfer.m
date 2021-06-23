@@ -82,9 +82,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     Raman_in_XDT = 0;
     do_D1OP_before_evap=0;
     mix_at_beginning = 0;           % second RF sweep/pulse to make a spin mixture before XDT evap
+    do_D1OP_post_evap = 1;          % Optically pump afer evap
     mix_at_end = 0;               % Make a spin mixture at the end of evap
-    do_D1OP_post_evap = 0;          % Optically pump afer evap
-    
     
     ramp_Feshbach_B_in_CDT_evap = 0; %ramp up Feshbach field during CDT evap, try to create a colder sample
     ramp_Feshbach_B_after_CDT_evap = 0; %ramp up Feshbach field after CDT evap, try to create a colder sample

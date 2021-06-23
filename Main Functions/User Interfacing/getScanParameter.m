@@ -1,4 +1,4 @@
-function out = getScanParameter(scanlist,cycle,randlist,name)
+function out = getScanParameter(scanlist,cycle,randlist,name,unit)
 % Picks a parameter from a #scanlist for a given #cycle in a scan. A
 % #randlist may be specified that contains a randomized order of scanlist
 % indices. Will restart iteration when #cycle > length(#scanlist). Set
@@ -27,6 +27,8 @@ function out = getScanParameter(scanlist,cycle,randlist,name)
 % I think this if statement is meant to handle if the number of input
     % arugments is incorrect. Ie. getScanParameter(scanlist,cycle,name)
     if ischar(randlist); name=randlist; randlist = 0; end
+    
+    if ~exist('unit','var'); unit='??'; end
     
     
     if (randlist(1)~=0) 

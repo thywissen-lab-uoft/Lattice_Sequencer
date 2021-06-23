@@ -4,6 +4,10 @@ function out = SendGPIBCommands(cmds, talk)
 %Created: February 2014
 %Summary: Sends GPIB commands to devices.
 %-----
+
+disp(repmat('-',1,60));
+disp(['Sending GPIB commands (' num2str(length(cmds)) ')']);
+
 brd = 0; % Board index (can use NI VISA to check -- should see GPIB$::INTFC for brd = $)
 
 
@@ -34,7 +38,10 @@ for j=1:length(cmds)
     fprintf(obj, cmd);
     if ~isempty(qry)
         qry = query(obj, qry);
-        if (talk); disp(sprintf(['GPIB device #%g: ' qry],pa)); end
+        if (talk)            
+            str=strrep(strrep(qry,newline,''),char(13),'');
+            disp(sprintf(['GPIB device #%g: ' str],pa));
+        end
     end
     fclose(obj);
     delete(obj);

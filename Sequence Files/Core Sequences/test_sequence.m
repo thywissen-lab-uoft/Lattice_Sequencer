@@ -2827,7 +2827,7 @@ setAnalogChannel(calctime(curtime,0),64,0.0);
 % DigitalPulse(calctime(curtime,-150),'Raman TTL',150,0);
 % DigitalPulse(calctime(curtime,-100),'Raman Shutter',Pulse_Length+3100,0);
 % DigitalPulse(calctime(curtime,Pulse_Length),'Raman TTL',3050,0);
-setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',0);
+setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1);
 %% Test Dimple Trap
 % 
 %  setDigitalChannel(calctime(curtime,0),'Dimple TTL',0);
@@ -3499,72 +3499,32 @@ setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',0);
 % % % end
 % % %         curtime = calctime(curtime,500);
 %% test kill beam
-% % % % 
-% % % %         curtime = calctime(curtime,500);
-% % % %             %set trap AOM detuning to change probe
-% % % %             setAnalogChannel(calctime(curtime,-50),'K Trap FM',45); %54.5
-% % % %             %open K probe shutter
-% % % %             setDigitalChannel(calctime(curtime,-10),'Downwards D2 Shutter',1); %0=closed, 1=open
-% % % %             %set TTL off initially
-% % % %             setDigitalChannel(calctime(curtime,-20),'Kill TTL',0);%0= off, 1=on
-% % % % 
-% % % %             %turn on AOM TTL
-% % % %             setDigitalChannel(calctime(curtime,0),'Kill TTL',1);%0= off, 1=on
-% % % %             curtime = calctime(curtime,1);
-% % % % %             setDigitalChannel(calctime(curtime,1),'Kill TTL',0);%0= off, 1=on
-% % % % %             setDigitalChannel(calctime(curtime,300),'Kill TTL',0);%0= off, 1=on
-% % % % %             %close K probe shutter
-% % % % %             setDigitalChannel(calctime(curtime,0),'Downwards D2 Shutter',0); %0=closed, 1=open
-% % % % %             setDigitalChannel(calctime(curtime,0),'ScopeTrigger',1);
-% % % % %             setDigitalChannel(calctime(curtime,100),'ScopeTrigger',0);
-% % % % % 
-% % % % %             %set kill AOM back on
-% % % % %             setDigitalChannel(calctime(curtime,1000),'Kill TTL',1);           
-% % % %          curtime = calctime(curtime,5000);
-% -----------------------------------------------
-% % %          curtime = calctime(curtime,5000);
-% % % %Resonant light pulse to remove any untransferred atoms from F=9/2
-% % %             kill_probe_pwr = 0.1;
-% % %             kill_time_list = [0.01]; %10
-% % %             kill_time = getScanParameter(kill_time_list,seqdata.scancycle,seqdata.randcyclelist,'kill_time');
-% % %             kill_detuning = 39; %27 for 80G
-% % %             addOutputParam('kill_detuning',kill_detuning);
-% % % %             addOutputParam('kill_time',kill_time);
-% % % 
-% % %             pulse_offset_time = -5; %Need to step back in time a bit to do the kill pulse
-% % %                                       % directly after transfer, not after the subsequent wait times
-% % % 
-% % % %             %set probe detuning
-% % % %             setAnalogChannel(calctime(curtime,pulse_offset_time-50),'K Probe/OP FM',170); %195
-% % %             %set trap AOM detuning to change probe
-% % %             setAnalogChannel(calctime(curtime,pulse_offset_time-50),'K Trap FM',kill_detuning); %54.5
-% % % 
-% % %             %open K probe shutter
-% % %             setDigitalChannel(calctime(curtime,pulse_offset_time-10),'Downwards D2 Shutter',1); %0=closed, 1=open
-% % %             %turn up analog
-% % % %             setAnalogChannel(calctime(curtime,pulse_offset_time-10),29,kill_probe_pwr);
-% % %             %set TTL off initially
-% % %             setDigitalChannel(calctime(curtime,pulse_offset_time-20),'Kill TTL',0);
-% % % % ScopeTriggerPulse(calctime(curtime,pulse_offset_time+kill_time),'kill_test_pulse');
-% % %             %pulse beam with TTL
-% % % %             DigitalPulse(calctime(curtime,pulse_offset_time),'Kill TTL',kill_time,1);
-% % %             setDigitalChannel(calctime(curtime,pulse_offset_time),12,1);
-% % %             setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time),12,0);
-% % %             setDigitalChannel(calctime(curtime,pulse_offset_time),'Kill TTL',1);
-% % %             setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time),'Kill TTL',0);
-% % %             %close K probe shutter
-% % %             setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time + 2),'Downwards D2 Shutter',0);%1: On; 0: OFF
-% % % 
-% % %             %set kill AOM back on
-% % %             setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time + 500),'Kill TTL',1);
-% % %             kill_w_time_list=[150];
-% % %             kill_w_time = getScanParameter(kill_w_time_list,seqdata.scancycle,seqdata.randcyclelist,'kill_w_time');
-% % %             curtime = calctime(curtime,kill_time+kill_w_time);
-% % %          curtime = calctime(curtime,200);
-% % % % scope_trigger = 'kill_test_pulse';
 
-% setAnalogChannel(calctime(curtime,0),'K Trap FM',54);
-% setDigitalChannel(calctime(curtime,0),'Kill TTL',1);
+            kill_probe_pwr = 0.1;
+%             kill_time_list = [0.01]; %10
+%             kill_time = getScanParameter(kill_time_list,seqdata.scancycle,seqdata.randcyclelist,'kill_time');
+            kill_detuning = 42.7; %27 for 80G
+            
+            %Kill SP AOM 
+            mod_freq =  (120)*1E6;
+            mod_amp = 1;0.1;
+            mod_offset =0;
+            str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
+            addVISACommand(6, str);
+            % Set trap AOM detuning to change probe
+            setAnalogChannel(calctime(curtime,0),'K Trap FM',kill_detuning); %54.5
+
+            % open K probe shutter
+            setDigitalChannel(calctime(curtime,10),'Downwards D2 Shutter',1); %0=closed, 1=open
+            
+            % Set TTL off initially
+            setDigitalChannel(calctime(curtime,20),'Kill TTL',1);%0= off, 1=on
+            
+%             kill_lat_ramp_time = 3;
+%             AnalogFuncTo(calctime(curtime,pulse_offset_time-kill_lat_ramp_time),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), kill_lat_ramp_time, kill_lat_ramp_time, 60/atomscale); %30?                                      
+            
+            %pulse beam with TTL
+%             DigitalPulse(calctime(curtime,pulse_offset_time),'Kill TTL',kill_time,1);
 
 
 %% test PZT mirror displacement
@@ -4900,7 +4860,7 @@ end
 %     str=sprintf(':SOUR2:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
 %     addVISACommand(6, str);
 % 
-% 
+
 
 timeout = curtime;
 

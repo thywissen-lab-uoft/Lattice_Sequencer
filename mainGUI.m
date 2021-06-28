@@ -987,11 +987,12 @@ end
         %% Save new output mat
         vals=seqdata.output_vars_vals;
         units=seqdata.output_vars_units;        
+        flags=seqdata.flags;
         
         vals.ExecutionDate=datestr(tExecute);        
         units.ExecutionDate='str';
         
-        save(filenamemat2,'vals','units');        
+        save(filenamemat2,'vals','units','flags');        
         
     end
 

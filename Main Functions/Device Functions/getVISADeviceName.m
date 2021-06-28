@@ -13,14 +13,16 @@ devices = {'USB0::0x1AB1::0x0641::DG4E180900374::INSTR', ...
            'USB0::0x1AB1::0x0641::DG4E191700649::INSTR', ...
            'USB0::0x1AB1::0x0641::DG4E221100174::INSTR', ...
            'USB0::0x1AB1::0x0641::DG4E221600305::INSTR', ...
+           'USB0::0x1AB1::0x0641::DG4E221100173::INSTR', ...
            'getVISADeviceName::AddNewDevice'};
        
        
        
-       % devices(1) is the Raman Rigol
-       % devices(2) is the Rigol for conductivity modulation
-       % devices(3) is for high field imaging
-       % devices (6) is for kill beam 
+% devices(1) DG4E180900374 is the Raman Rigol
+% devices(2) DG4E160900481 is the Rigol for conductivity modulation
+% devices(5) DG4E221100174 is the Rigol for AM spec and Z lattice regulation
+% devices(6) DG4E221600305 is for kill beam and high field imaging
+% devices(7) DG4E221100173 is for Raman 3 and D1 lock EOM
       
 out = '';
 

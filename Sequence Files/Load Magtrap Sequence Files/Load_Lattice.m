@@ -68,7 +68,6 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     
     Dimple_Mod = 0;                     %keep: Used to calibrate dimple trap depth
     do_lattice_mod = 0;                 %keep: calibrate lattice depth
-    lattice_depth_calibration = 0;      %keep: another lattice calibration method
     rotate_waveplate_after_ramp = 1;    %keep:  Turn Rotating Waveplate to Shift Power to Lattice Beams
     do_lattice_ramp_after_spectroscopy = 1; %keep: Ramp lattices on or off after doing spectroscopy, must be on for fluorescence image
     do_shear_mode_mod = 0;              %delete: used to be a way modulate XDT using shear mode aom
@@ -4228,7 +4227,63 @@ if do_K_raman_spectroscopy
             ramp.use_fesh_switch = 1; %Don't actually want to close the FB switch to avoid current spikes
             ramp.settling_time = 200;200;     
             curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
-        end
+    end
+        
+    Device_id = 7; %Rigol for D1 lock(Ch. 1) and Raman 3(Ch. 2). Do not change any Ch. 1 settings here. 
+    Raman_AOM3_freq =  (60)*1E6;
+    Raman_AOM3_pwr = 0.3;
+    RamanspecMode = 'sweep'
+%     RamanspecMode = 'pulse'
+
+    
+    %R3 beam settings
+    switch RamanspecMode
+        case 'sweep'
+            Sweep_Range = 100/1000;  %in MHz
+            Sweep_Time = 50; %in ms
+            str = sprintf('SOURce2:SWEep:STATe ON;SOURce2:SWEep:TRIGger:SOURce: EXTernal;SOURce2:SWEep:TIME %gMS;SOURce2:FREQuency:CENTer %gMHZ;SOURce2:FREQuency:SPAN %gMHZ;SOURce2:VOLT %g;', ...
+                Sweep_Time, Raman_AOM3_freq, Sweep_Range, Raman_AOM3_pwr);
+            Raman_on_time = Sweep_Time;
+        
+        case 'pulse'
+            Raman_on_time = 50; %ms
+            str = sprintf('SOURce2:SWEep:STATe OFF;SOURce2:MOD:STATe OFF; SOURce2:FREQuency %gMHZ;SOURce2:VOLT %gVPP;', ...
+                Raman_AOM3_freq, Raman_AOM3_pwr);
+    end 
+    addVISACommand(Device_id, str);
+
+    %R2 beam settings
+    if ~Raman_transfers     %Rigol cannot be programmed more than once in a sequence
+    Device_id = 1
+    Raman_AOM2_freq = 80*1E6;
+    Raman_AOM2_pwr = 0.6;
+    Raman_AOM2_offset = 0;
+    str=sprintf(':SOUR2:APPL:SIN %f,%f,%f;',Raman_AOM2_freq,Raman_AOM2_pwr,Raman_AOM2_offset);
+    
+    addVISACommand(Device_id, str);
+
+    end 
+    
+    
+    
+    %Raman spectroscopy AOM-shutter sequence
+    %we have three TTLs to independatly control R1, R2 and R3
+            
+    setDigitalChannel(calctime(curtime,-150),'Raman TTL 1',0); %turn off R1
+    DigitalPulse(calctime(curtime,-150),'Raman TTL 2',150,0); %turn off R2 temporarily for shutter
+    DigitalPulse(calctime(curtime,-150),'Raman TTL 3',150,0); %turn off R3 temporarily for shutter
+
+    
+    DigitalPulse(calctime(curtime,-100),'Raman Shutter',Raman_on_time+100+100,1);% open shutter 100ms before and close 100ms after the sweep
+
+    DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 2',150,0); %turn off R2 after the sweep and turn on 150ms later
+    DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 3',150,0); %turn off R3 after the sweep and turn on 150ms later
+    setDigitalChannel(calctime(curtime,Raman_on_time+ 150),'Raman TTL 1',1); %turn on R1 150ms after the sweep has ended
+
+
+    
+          
+
 
 end
 
@@ -4887,11 +4942,11 @@ if (Raman_transfers == 1)
     F_Pump_List = [0.7];[0.75];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,...
         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V'); %1.4;
-    Raman_Power_List =[0.4];[0.45]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
+    Raman_Power_List =[0.4];[0.4];[0.45]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
     horizontal_plane_select_params.Raman_Power1 = getScanParameter(Raman_Power_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_Power1','V'); 
     
-    Raman_Power2_List =[0.7];horizontal_plane_select_params.Raman_Power1;
+    Raman_Power2_List =[0.6];horizontal_plane_select_params.Raman_Power1;
     horizontal_plane_select_params.Raman_Power2 = getScanParameter(Raman_Power2_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_Power2','V');
 %     horizontal_plane_select_params.Raman_Power2 = horizontal_plane_select_params.Raman_Power1;
@@ -5003,9 +5058,10 @@ curtime = calctime(curtime,lattice_holdtime);
 
 
 
-%% lattice_depth_calibration by amplitude modulation
+%% old lattice_depth_calibration by amplitude modulation using conductivity Rigol?
 %RHYS - Another lattice depth calibration code. Might work, not sure if it
 %is better than do_lattice_mod.
+lattice_depth_calibration = 0;
 if lattice_depth_calibration == 1        
         freq_list = [87.5:1:93];freq_list=freq_list*1000;        
         mod_freq = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'lat_mod_freq');

@@ -310,12 +310,17 @@ end
     %RHYS - Setting some specific parameters for DDS and objective
     %position. Silly that this is here. 
 
-    obj_piezo_V_List = 5.9;
+    obj_piezo_V_List = [5.4];
     % 0.1V = 700 nm, must be larger than  larger value means farther away from the window.
-    obj_piezo_V = getScanParameter(obj_piezo_V_List, seqdata.scancycle, 1, 'Objective_Piezo_Z');%5
+%     obj_piezo_V = getScanParameter(obj_piezo_V_List, ...
+%     seqdata.scancycle, 1, 'Objective_Piezo_Z','V');%5
+
+    obj_piezo_V = getScanParameter(obj_piezo_V_List, ...
+    seqdata.scancycle, 1:length(obj_piezo_V_List), 'Objective_Piezo_Z','V');%5
+
     % obj_piezo_V = 6.8;
     setAnalogChannel(calctime(curtime,0),'objective Piezo Z',obj_piezo_V,1);
-    addOutputParam('objpzt',obj_piezo_V);
+    addOutputParam('objpzt',obj_piezo_V,'V');
     
     %VV - I plan to puth the below line of code into a seperate code just
     %for the purpose of initialization of the experiment. I don't think it
@@ -414,6 +419,8 @@ end
     setDigitalChannel(calctime(curtime,5),'Raman Shutter',0); %2021/03/30 new shutter
 
     setDigitalChannel(calctime(curtime,0),'Raman TTL',1);
+    setDigitalChannel(calctime(curtime,0),'Raman TTL 2',1);
+
     
     %Set 'D1' Raman AOMs to open, shutter closed.
     setDigitalChannel(calctime(curtime,0),'D1 TTL',1);

@@ -43,8 +43,8 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     do_optical_pumping = 1;                 %keep: useful
     
     remove_one_spin_state = 0;              % keep: An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
-    do_plane_selection = 1;     
-    kill_pulses = 1;  %                     Kill Pulses only active if do_plane_selection=1
+    do_plane_selection = 0;     
+    kill_pulses = 0;  %                     Kill Pulses only active if do_plane_selection=1
     second_plane_selection = 0;             % copy 
     fast_plane_selection = 0;               % keep: could be the future of plane selection code for cleaner control
     eliminate_planes_with_QP = 0;           %keep: QP vacuum cleaner. In 2nd time plane selection section
@@ -56,6 +56,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     do_Rb_uwave_spectroscopy = 0;
     do_singleshot_spectroscopy = 0;
     do_RF_spectroscopy = 0;
+    do_K_raman_spectroscopy = 0;%new under development
     
     spin_mixture_in_lattice_after_plane_selection = 0; %keep maybe use for 2D physics   
     
@@ -74,7 +75,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     Raman_transfers = 1;                %keep  % for fluorescence image
     do_lattice_sweeps = 0;              %delete
     Drop_From_XDT = 0;                  %May need to add code to rotate waveplate back here.
- 
+    
     seqdata.flags.lattice_img_molasses = 0; %delete %1 - Do molasses, 0 - No molasses
     seqdata.flags.plane_selection_after_D1 = 0;%delete
 
@@ -261,7 +262,7 @@ lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycl
 %             
 % end
 
-%%
+%% What happens to ODT after lattice loading
 
 % Check that number of times and depths match up
     if (length(lat_rampup_time) ~= size(lat_rampup_depth,2)) || ...
@@ -1491,7 +1492,7 @@ curtime = calctime(curtime,holdtime);
     
 end
 
-%% Do Plane Selection
+%% Do Plane Selection (not used)
 %RHYS - Graham started to condense some of the plane selection code here.
 %Not sure if it works. Probably a good starting point for making a
 %more-organized plane-selection module.
@@ -1608,12 +1609,15 @@ curtime= AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(
     
 curtime = calctime(curtime,10);%10 ms for the system to be stablized
 
-  op_time_list = [3];
-    optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle, seqdata.randcyclelist, 'op_time'); %optical pumping pulse length
-    repump_power_list = [0.5];
-    repump_power =getScanParameter(repump_power_list, seqdata.scancycle, seqdata.randcyclelist, 'op_repump_pwr'); %optical pumping repump power
+  op_time_list = [3];3
+    optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle,...
+        seqdata.randcyclelist, 'op_time','ms'); %optical pumping pulse length
+    repump_power_list = [0.5];0.5
+    repump_power =getScanParameter(repump_power_list, seqdata.scancycle,...
+        seqdata.randcyclelist, 'op_repump_pwr'); %optical pumping repump power
     D1op_pwr_list = [5]; %min: 0, max:10
-    D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle, seqdata.randcyclelist, 'D1op_pwr'); %optical power
+    D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle,...
+        seqdata.randcyclelist, 'D1op_pwr'); %optical power
 
     
     %Determine the requested frequency offset from zero-field resonance
@@ -2279,14 +2283,14 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
 % % % %         ramp.xshim_final = seqdata.params. shim_zero(1)+(0.46-0.008-.05-0.75)*1-0.3-2-0.15+0.25; % -0.7 @ 40/7, (0.46-0.008-.05-0.75)*1+0.25 @ 40/14
 % % % %         ramp.yshim_final = seqdata.params. shim_zero(2)+(-1.625-.001+0.6)*1+0.75;
 % % % %         ramp.zshim_final = seqdata.params. shim_zero(3)+0;
-        xshimdlist = [-0.28];[-0.88] ; -0.5;-0.5;2.1; 
-        yshimdlist = [0.462];[0.27];
-        zshimd = -1; -1;
+        xshimdlist = -0.257;
+        yshimdlist = 0.125;
+        zshimd = -1;
         
         xshimd = getScanParameter(xshimdlist,seqdata.scancycle,...
-            seqdata.randcyclelist,'xshimd');
+            seqdata.randcyclelist,'xshimd','A');
         yshimd = getScanParameter(yshimdlist,seqdata.scancycle,...
-            seqdata.randcyclelist,'yshimd');
+            seqdata.randcyclelist,'yshimd','A');
         
         %Both these x and y values can be large and negative. Draw from the
         %'positive' shim supply when negative. Just don't fry the shim.
@@ -2300,9 +2304,9 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         addOutputParam('PSelect_yShim',ramp.yshim_final)
         addOutputParam('PSelect_zShim',ramp.zshim_final)
 
-        addOutputParam('xshimd',xshimd);
-        addOutputParam('yshimd',yshimd);
-        addOutputParam('zshimd',zshimd);
+%         addOutputParam('xshimd',xshimd);
+%         addOutputParam('yshimd',yshimd);
+        addOutputParam('zshimd',zshimd,'A');
 
         % FB coil settings for spectroscopy
         ramp.fesh_ramptime = 100;
@@ -2341,7 +2345,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 %         planeselect_freq = 1364.658; %select atoms in |9/2,-7/2> to |7/2,-5/2>
         spect_pars.freq = planeselect_freq;   % |9/2,-9/2>
         spect_pars.power = 15;15;%6.5; %-15 %uncalibrated "gain" for rf
-        ffscan_list = [14]/1000;%frequency sweep width
+        ffscan_list = [7]/1000;%frequency sweep width
         ffscan = getScanParameter(ffscan_list,seqdata.scancycle,seqdata.randcyclelist,'ffscan');
         planeselect_sweep_width = ffscan;%500/1000;
         spect_pars.delta_freq = planeselect_sweep_width; %300
@@ -2375,7 +2379,7 @@ disp('spectroscopy2');
     use_ACSync = 1;
 
     % Define the SRS frequency
-    freq_list = [-500];       
+    freq_list = [-98];       
     
     % 2021/06/22 CF
     % Use this when Xshimd=3, zshimd=-1 and you vary yshimd
@@ -2717,9 +2721,9 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
 
             %Resonant light pulse to remove any untransferred atoms from
             %F=9/2
-            kill_time_list = [2];
+            kill_time_list = [2];2
             kill_time = getScanParameter(kill_time_list,seqdata.scancycle,...
-                seqdata.randcyclelist,'kill_time'); %10 
+                seqdata.randcyclelist,'kill_time','ms'); %10 
             kill_detuning_list = [42.7];[54];40;39;
             kill_detuning = getScanParameter(kill_detuning_list,...
                 seqdata.scancycle,seqdata.randcyclelist,'kill_det');
@@ -4195,7 +4199,40 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
         end
     
-    end
+end
+    
+%% K Raman Spectroscopy
+if do_K_raman_spectroscopy
+
+%ramp fields
+    ramp_fields = 0;
+    if ramp_fields
+            clear('ramp');
+            %First, ramp on a quantizing shim.
+            ramp.shim_ramptime = 50;
+            ramp.shim_ramp_delay = -0;
+
+            ramp.xshim_final = 0.1585; getChannelValue(seqdata,27,1,0);
+            ramp.yshim_final = -0.0432; getChannelValue(seqdata,19,1,0);%1.61;
+            ramp.zshim_final = -0.0865; getChannelValue(seqdata,28,1,0);%getChannelValue(seqdata,28,1,0); %0.065 for -1MHz   getChannelValue(seqdata,28,1,0)
+            addOutputParam('shim_value',ramp.zshim_final - getChannelValue(seqdata,28,1,0))
+           
+            % FB coil settings for spectroscopy
+            ramp.fesh_ramptime = 50;
+            ramp.fesh_ramp_delay = -0;
+            ramp.fesh_off_delay = 0;
+            B_List = [195];
+            B = getScanParameter(B_List,seqdata.scancycle,seqdata.randcyclelist,'B_Field');
+
+            ramp.fesh_final = B;
+            ramp.use_fesh_switch = 1; %Don't actually want to close the FB switch to avoid current spikes
+            ramp.settling_time = 200;200;     
+            curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
+        end
+
+end
+
+
     
 %% Field Ramps AFTER uWave/RF Spectroscopy
 
@@ -4272,7 +4309,6 @@ curtime = ramp_bias_fields(calctime(curtime,0), rampdown); % check ramp_bias_fie
         end
     end
 end
-    
 
 %% Dimple on later
 %RHYS - More dimple stuff that will never be used. Delete.
@@ -4838,7 +4874,7 @@ curtime=calctime(curtime,deep_latt_holdtime);
 end
 
 
-%% Horizontal magnetic field Raman transfers, flag = 
+%% Horizontal magnetic field Raman transfers (aka fluorescence imaging)
 %turn on raman beams for side band cooling
 %RHYS - Important code for Raman/EIT cooling. Probably should not be a
 %branch off horizontal plane selection though.
@@ -4848,13 +4884,18 @@ if (Raman_transfers == 1)
     %During imaging, generate about a 4.4G horizontal field. Both shims get
     %positive control voltages, but draw from the 'negative' shim supply. 
     clear('horizontal_plane_select_params');
-    F_Pump_List = [0.8];[0.75];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
+    F_Pump_List = [0.7];[0.75];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power'); %1.4;
-    Raman_Power_List =0.6;[0.45]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
+        seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V'); %1.4;
+    Raman_Power_List =[0.4];[0.45]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
     horizontal_plane_select_params.Raman_Power1 = getScanParameter(Raman_Power_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'Raman_Power'); 
-    horizontal_plane_select_params.Raman_Power2 = horizontal_plane_select_params.Raman_Power1;
+        seqdata.scancycle,seqdata.randcyclelist,'Raman_Power1','V'); 
+    
+    Raman_Power2_List =[0.7];horizontal_plane_select_params.Raman_Power1;
+    horizontal_plane_select_params.Raman_Power2 = getScanParameter(Raman_Power2_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'Raman_Power2','V');
+%     horizontal_plane_select_params.Raman_Power2 = horizontal_plane_select_params.Raman_Power1;
+    
     horizontal_plane_select_params.Fake_Pulse = 0;
     horizontal_plane_select_params.Use_EIT_Beams = 1;
     uwave_freq_list = [0]/1000;
@@ -4885,8 +4926,8 @@ if (Raman_transfers == 1)
     horizontal_plane_select_params.QP_Selection_Gradient = 0;
     horizontal_plane_select_params.Ramp_Fields_Up = 1; % ramp B field down in the begining
     horizontal_plane_select_params.Ramp_Fields_Down = 0; 
-    Field_Shift_List = [0.155];[0.134]; %unit G 
-    horizontal_plane_select_params.Field_Shift = getScanParameter(Field_Shift_List,seqdata.scancycle,seqdata.randcyclelist,'Field_Shift');
+    Field_Shift_List = [0.155]; %unit G 
+    horizontal_plane_select_params.Field_Shift = getScanParameter(Field_Shift_List,seqdata.scancycle,seqdata.randcyclelist,'Field_Shift','G');
     horizontal_plane_select_params.X_Shim_Offset = 0;
     horizontal_plane_select_params.Y_Shim_Offset = 0;
     horizontal_plane_select_params.Z_Shim_Offset = 0.055;0.055;%b4:0.05;
@@ -4985,6 +5026,37 @@ if lattice_depth_calibration == 1
 curtime = calctime(curtime,mod_time);
         setDigitalChannel(calctime(curtime,0),'Lattice FM',0);   
 end
+
+%% High Field Imaging In lattice 
+
+if seqdata.flags.High_Field_Imaging
+
+    if do_plane_selection   %NOT A GOOD IDEA TO DO HF IMAGING IF PLANE SELECTED
+        error('PLANE SELECTION AND HF IMAGING MAY MAKE THE FB COIL TOO HOT')
+    end
+
+    time_in_HF_imaging = curtime;
+    
+    clear('ramp');
+        % FB coil settings for spectroscopy
+        ramp.FeshRampTime = 150;
+        ramp.FeshRampDelay = -0;
+        HF_FeshValue_Initial_List = 195;[202.78];
+        HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
+        ramp.FeshValue = HF_FeshValue_Initial;
+        ramp.SettlingTime = 50;    
+curtime = rampMagneticFields(calctime(curtime,0), ramp);
+        ScopeTriggerPulse(curtime,'FB_ramp');
+        
+        
+        
+        
+        time_out_HF_imaging = curtime;
+        if (((time_out_HF_imaging - time_in_HF_imaging)*(seqdata.deltat/seqdata.timeunit))>3000)
+            error('CHECK TIME FESHBACH IS ON! MAY BE TOO LONG')
+        end
+
+    end
 %% Turn off lattices and dipole traps for ToF imaging, flag name: Drop from XDT
 
 %RHYS - Definitely change this. Fudong's addition here was useful

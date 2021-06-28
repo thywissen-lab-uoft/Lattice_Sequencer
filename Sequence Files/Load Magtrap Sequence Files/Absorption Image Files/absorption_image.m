@@ -217,10 +217,14 @@ else
     %set trap detuning
     setAnalogChannel(calctime(curtime,params.timings.tof-params.timings.k_detuning_shift_time),'K Trap FM',detuning);
     
-    HF_prob_freq_list = [0];%3.75
-    HF_prob_freq = getScanParameter(HF_prob_freq_list,seqdata.scancycle,seqdata.randcyclelist,'HF_prob_freq')+ 1.4*(seqdata.HF_FeshValue_final-205)/2; %3.75 for 205G;
-    mod_freq =  (110+HF_prob_freq)*1E6;
-    mod_amp = 1.5;
+    HF_prob_freq_list = [-7.5];%3.75
+%     HF_prob_freq = getScanParameter(HF_prob_freq_list,seqdata.scancycle,seqdata.randcyclelist,'HF_prob_freq')+ 1.4*(1-205)/2; %3.75 for 205G;
+    HF_prob_freq = getScanParameter(HF_prob_freq_list,seqdata.scancycle,seqdata.randcyclelist,'HF_prob_freq','MHz');
+
+    mod_freq =  (120+HF_prob_freq)*1E6;
+    HF_prob_pwr_list = [1];
+    HF_prob_pwr = getScanParameter(HF_prob_pwr_list,seqdata.scancycle,seqdata.randcyclelist,'HF_prob_pwr','V');
+    mod_amp = HF_prob_pwr;
     mod_offset =0;
     str=sprintf(':SOUR2:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
     addVISACommand(6, str);

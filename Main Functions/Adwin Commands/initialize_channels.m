@@ -113,8 +113,8 @@ seqdata.digchannels(63).name = 'XDT Direct Control'; %0: off, 1:on
 seqdata.digchannels(64).name = 'K Sci Repump'; %K repump in science chamber 
 seqdata.digchannels(65).name = 'K D1 GM Shutter 2'; % Second D1 GM shutter
 seqdata.digchannels(66).name = 'Transport LabJack Trigger'; %unused
-seqdata.digchannels(67).name = 'Channel 67'; %unused
-seqdata.digchannels(68).name = 'Channel 68'; %unused
+seqdata.digchannels(67).name = 'Raman TTL 3'; %unused
+seqdata.digchannels(68).name = 'Raman TTL 2'; %unused
 seqdata.digchannels(69).name = 'Channel 69'; %unused
 seqdata.digchannels(70).name = 'Channel 70'; %unused
 seqdata.digchannels(71).name = 'Channel 71'; %unused
@@ -512,13 +512,12 @@ end
     seqdata.analogchannels(32).voltagefunc{2} = @(a)max(min((20*a-10),10),-10);%@(a)((log10(a) + 1) * (-5/2)); %Roughly linearizing.
     seqdata.analogchannels(32).voltagefunc{3} = @(a)((a-151.64)/8.2101);
     
-    % channel 33 (Plug beam AOM control)
-    seqdata.analogchannels(33).name = 'Plug Beam';
+    % channel 33 (unused)
+    seqdata.analogchannels(33).name = 'Channel 33';
     seqdata.analogchannels(33).minvoltage = -10;
     seqdata.analogchannels(33).maxvoltage = 10;
     seqdata.analogchannels(33).defaultvoltagefunc = 2; 
-    seqdata.analogchannels(33).voltagefunc{2} = @(a)((a+2.99906)/32.91976);%a = power (mW), calibration 2017-2-8
-    %seqdata.analogchannels(33).voltagefunc{2} = @(a)((a+3.04231)/33.0940);%a = power (mW), calibration 2017-1-24
+    seqdata.analogchannels(33).voltagefunc{2} = @(a)(a);%
 
 %channel 34 (Rb Offset frequency)
 seqdata.analogchannels(34).name = 'Rb Beat Note FM';
@@ -691,14 +690,12 @@ seqdata.analogchannels(47).minvoltage = 0;
 seqdata.analogchannels(47).maxvoltage = 10;
 
 
-%channel 48 (D1 FM Control)
-seqdata.analogchannels(48).name = 'D1 FM';
+%channel 48 (Unused)
+seqdata.analogchannels(48).name = 'Channel 48';
 seqdata.analogchannels(48).minvoltage = 0;
 seqdata.analogchannels(48).maxvoltage = 10;
-K_D1_freq_offset = 0/1000;
 seqdata.analogchannels(48).defaultvoltagefunc = 2; 
-% seqdata.analogchannels(48).voltagefunc{2} = @(a)((a+K_D1_freq_offset)*0.05226-7.16102); 
-seqdata.analogchannels(48).voltagefunc{2} = @(a)((a+K_D1_freq_offset)-129.326)/21.222; %2020-03-12 
+seqdata.analogchannels(48).voltagefunc{2} = @(a)(a);
 
 % bipolar
     %A voltage of 0.4V gives best diffraction, higher voltages overdrive

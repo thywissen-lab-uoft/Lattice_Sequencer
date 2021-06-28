@@ -44,6 +44,10 @@ function flags = Load_Absorption_Image_Flags()
     
     %Special flags
     flags.iXon = 0; %Use iXon camera to take an absorption image (only vertical)
-    flags.High_Field_Imaging = 0; %Set to image the atoms at a field near the FB resonance (near 202.1G)
     
+    if seqdata.flags.High_Field_Imaging == 1
+        flags.High_Field_Imaging = 1; %Set to image the atoms at a field near the FB resonance (near 202.1G)
+    else
+        flags.High_Field_Imaging = 0;
+    end 
 end

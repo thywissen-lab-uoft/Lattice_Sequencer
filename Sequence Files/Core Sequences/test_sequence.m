@@ -2809,7 +2809,7 @@ curtime = calctime(curtime, 2000)
 
 
 %% Test Raman Beams
-% setAnalogChannel(calctime(curtime,0),64,0.0);
+setAnalogChannel(calctime(curtime,0),64,0.0);
 
 % curtime = calctime(curtime, 1000);
 % setAnalogChannel(calctime(curtime,0),64,0);
@@ -2827,7 +2827,7 @@ curtime = calctime(curtime, 2000)
 % DigitalPulse(calctime(curtime,-150),'Raman TTL',150,0);
 % DigitalPulse(calctime(curtime,-100),'Raman Shutter',Pulse_Length+3100,0);
 % DigitalPulse(calctime(curtime,Pulse_Length),'Raman TTL',3050,0);
-% setDigitalChannel(calctime(curtime,0),'DMD AOM TLL',0);
+setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',0);
 %% Test Dimple Trap
 % 
 %  setDigitalChannel(calctime(curtime,0),'Dimple TTL',0);
@@ -4861,31 +4861,46 @@ end
 % %OP test
 % curtime =  setDigitalChannel(calctime(curtime,0),'D1 OP TTL',1);    
 % setAnalogChannel(calctime(curtime,0),'D1 AM',10); 
+% 
+% tnow=now;
+% addOutputParam('now',(tnow-floor(tnow))*24*60*60);
+% 
+% %% kill test
+% mod_freq =  (120)*1E6;
+% mod_amp =1;
+% mod_offset =0;
+% str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
+% addVISACommand(6, str);
+% 
+% 
+% 
+% 
+% % Set trap AOM detuning to change probe
+% setAnalogChannel(calctime(curtime,0),'K Trap FM',42.7); %54.5
+% 
+% % open K probe shutter
+% setDigitalChannel(calctime(curtime,0),'Downwards D2 Shutter',1); %0=closed, 1=open
+% 
+%% Test HF Imaging 
+% setDigitalChannel(calctime(curtime,0),'High Field Shutter',0); %0: off 1:on
+% setDigitalChannel(calctime(curtime,0),'K High Field Probe',1); %1: off 0:on
+% setAnalogChannel(calctime(curtime,0),63,0); 
+% 
+% setDigitalChannel(calctime(curtime,0),67,1); %0: off 1:on
 
-tnow=now;
-addOutputParam('now',(tnow-floor(tnow))*24*60*60);
-
-%% kill test
-mod_freq =  (120)*1E6;
-mod_amp =1;
-mod_offset =0;
-str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
-addVISACommand(6, str);
-
-
-
-
-% Set trap AOM detuning to change probe
-setAnalogChannel(calctime(curtime,0),'K Trap FM',42.7); %54.5
-
-% open K probe shutter
-setDigitalChannel(calctime(curtime,0),'Downwards D2 Shutter',1); %0=closed, 1=open
-
-% Set TTL 
-setDigitalChannel(calctime(curtime,0),'Kill TTL',1);%0= off, 1=on
-
-
-
+%  HF_prob_freq_list = [-7.5];%3.75
+% %     HF_prob_freq = getScanParameter(HF_prob_freq_list,seqdata.scancycle,seqdata.randcyclelist,'HF_prob_freq')+ 1.4*(1-205)/2; %3.75 for 205G;
+%     HF_prob_freq = getScanParameter(HF_prob_freq_list,seqdata.scancycle,seqdata.randcyclelist,'HF_prob_freq','MHz');
+% % 
+%     mod_freq =  (120+HF_prob_freq)*1E6;
+%     HF_prob_pwr_list = [1];
+%     HF_prob_pwr = getScanParameter(HF_prob_pwr_list,seqdata.scancycle,seqdata.randcyclelist,'HF_prob_pwr','V');
+%     mod_amp = HF_prob_pwr;
+%     mod_offset =0;
+%     str=sprintf(':SOUR2:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
+%     addVISACommand(6, str);
+% 
+% 
 
 timeout = curtime;
 

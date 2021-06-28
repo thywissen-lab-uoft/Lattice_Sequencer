@@ -20,6 +20,7 @@ devices = {'USB0::0x1AB1::0x0641::DG4E180900374::INSTR', ...
        % devices(1) is the Raman Rigol
        % devices(2) is the Rigol for conductivity modulation
        % devices(3) is for high field imaging
+       % devices (6) is for kill beam 
       
 out = '';
 

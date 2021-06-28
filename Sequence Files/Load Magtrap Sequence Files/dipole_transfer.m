@@ -3793,10 +3793,10 @@ curtime = rampMagneticFields(calctime(curtime,0), ramp);
 
     end
 
-    %% Ramp FB field up to 200G for High Field Imaging
-    if (seqdata.flags.High_Field_Imaging)
+    %% Ramp FB field up to 200G for High Field Imaging after ODT
+    if (seqdata.flags.High_Field_Imaging && ~seqdata.flags.load_lattice )
         time_in_HF_imaging = curtime;
-        spin_flip_for_HF_imaging_FB = 1;
+        spin_flip_for_HF_imaging_FB = 0;
 
         %Flip -7/2 to -5/2 before field ramp up.
         if spin_flip_for_HF_imaging_FB
@@ -3817,7 +3817,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
         % FB coil settings for spectroscopy
         ramp.FeshRampTime = 150;
         ramp.FeshRampDelay = -0;
-        HF_FeshValue_Initial_List = [202.78];
+        HF_FeshValue_Initial_List = 195;[202.78];
         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
         ramp.FeshValue = HF_FeshValue_Initial;
         ramp.SettlingTime = 50;    
@@ -3840,15 +3840,15 @@ curtime = rampMagneticFields(calctime(curtime,0), ramp);
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
         end
 
-        clear('ramp');
-        % FB coil settings for spectroscopy
-        ramp.FeshRampTime = 7;
-        ramp.FeshRampDelay = -0;
-        FeshValue_Drop_List = 201.67; [199:0.5:204];
-        FeshValue_Drop = getScanParameter(FeshValue_Drop_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Final');
-        ramp.FeshValue = FeshValue_Drop;
-        ramp.SettlingTime = 0;    
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
+%         clear('ramp');
+%         % FB coil settings for spectroscopy
+%         ramp.FeshRampTime = 7;
+%         ramp.FeshRampDelay = -0;
+%         FeshValue_Drop_List = 201.67; [199:0.5:204];
+%         FeshValue_Drop = getScanParameter(FeshValue_Drop_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Final');
+%         ramp.FeshValue = FeshValue_Drop;
+%         ramp.SettlingTime = 0;    
+% curtime = rampMagneticFields(calctime(curtime,0), ramp);
 
         %turn off dipole trap  
         setAnalogChannel(calctime(curtime,0),'dipoleTrap1',0,1);
@@ -3856,15 +3856,15 @@ curtime = rampMagneticFields(calctime(curtime,0), ramp);
         setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
         setDigitalChannel(calctime(curtime,0),'XDT Direct Control',1);
 
-        clear('ramp');
-        %FB coil settings for spectroscopy
-        ramp.FeshRampTime = 3;
-        ramp.FeshRampDelay = -0;
-        FeshValue_Drop_List = 200.5;[199:0.5:204];
-        FeshValue_Drop = getScanParameter(FeshValue_Drop_List,seqdata.scancycle,seqdata.randcyclelist,'B_Drop');
-        ramp.FeshValue = FeshValue_Drop;
-        ramp.SettlingTime = 2;    
-curtime = rampMagneticFields(calctime(curtime,0), ramp);    
+%         clear('ramp');
+%         %FB coil settings for spectroscopy
+%         ramp.FeshRampTime = 3;
+%         ramp.FeshRampDelay = -0;
+%         FeshValue_Drop_List = 200.5;[199:0.5:204];
+%         FeshValue_Drop = getScanParameter(FeshValue_Drop_List,seqdata.scancycle,seqdata.randcyclelist,'B_Drop');
+%         ramp.FeshValue = FeshValue_Drop;
+%         ramp.SettlingTime = 2;    
+% curtime = rampMagneticFields(calctime(curtime,0), ramp);    
 
 
         %%Dissociate molecules to form -9/2 and -5/2
@@ -3901,16 +3901,16 @@ curtime = rampMagneticFields(calctime(curtime,0), ramp);
 
 %curtime = calctime(curtime,8);
 
-        clear('ramp');
-        %FB coil settings for spectroscopy
-        ramp.FeshRampTime = 5;
-        ramp.FeshRampDelay = 0;
-        HF_FeshValue_final_list = [195];
-        seqdata.HF_FeshValue_final = getScanParameter(HF_FeshValue_final_list,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_final');
-        ramp.FeshValue = seqdata.HF_FeshValue_final;%before 2017-1-6 100*1.08962; %22.6
-        ramp.SettlingTime = 0;
-
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
+%         clear('ramp');
+%         %FB coil settings for spectroscopy
+%         ramp.FeshRampTime = 5;
+%         ramp.FeshRampDelay = 0;
+%         HF_FeshValue_final_list = [195];
+%         seqdata.HF_FeshValue_final = getScanParameter(HF_FeshValue_final_list,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_final');
+%         ramp.FeshValue = seqdata.HF_FeshValue_final;%before 2017-1-6 100*1.08962; %22.6
+%         ramp.SettlingTime = 0;
+% 
+% curtime = rampMagneticFields(calctime(curtime,0), ramp);
 
         time_out_HF_imaging = curtime;
         if (((time_out_HF_imaging - time_in_HF_imaging)*(seqdata.deltat/seqdata.timeunit))>3000)
@@ -3918,6 +3918,38 @@ curtime = rampMagneticFields(calctime(curtime,0), ramp);
         end
 
     end
+ 
+    
+%% Ramp HF and back
+ramp_HF_and_back = 0;
+if ramp_HF_and_back
+
+        clear('ramp');
+        % FB coil settings for spectroscopy
+        ramp.FeshRampTime = 150;
+        ramp.FeshRampDelay = -0;
+        HF_FeshValue_Initial_List =[195];[202.78];
+        HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
+        ramp.FeshValue = HF_FeshValue_Initial;
+        ramp.SettlingTime = 50;    
+curtime = rampMagneticFields(calctime(curtime,0), ramp);
+
+wait_time = 50;
+curtime = calctime(curtime,wait_time);
+
+
+clear('ramp');
+        %FB coil settings for spectroscopy
+        ramp.FeshRampTime = 150;
+        ramp.FeshRampDelay = 0;
+        HF_FeshValue_final_list = [10];
+        seqdata.HF_FeshValue_final = getScanParameter(HF_FeshValue_final_list,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_final');
+        ramp.FeshValue = seqdata.HF_FeshValue_final;%before 2017-1-6 100*1.08962; %22.6
+        ramp.SettlingTime = 50;
+        curtime = rampMagneticFields(calctime(curtime,0), ramp);
+
+end
+
 
 %% END OF HIGH-FIELD IMAGING SECTION
 %RHYS - Here ends the high-field imaging section. Everything before this

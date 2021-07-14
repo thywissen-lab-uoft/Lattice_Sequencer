@@ -35,6 +35,19 @@ function params = Load_Absorption_Image_Parameters()
     % Rubidium - MOT
     params.detunings.Rb.MOT.positive.normal = 6590 - 240;
     
+    
+    %% HF imaging
+%     % Potassium -HF -Xcam : settting the DP HF imaging AOM freq
+    kHFdet_shift_list = [0];%-1
+    kHFdet_shift = getScanParameter(kHFdet_shift_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'HF_kdet_shift');
+
+
+    params.detunings.K.X.negative9.HF.normal = -7-0.147; -6.654;
+    params.detunings.K.X.negative9.HF.SG = -4.5; %
+    params.detunings.K.X.negative7.HF.normal = 9.25 + 0.531;%8.8;params.detunings.K.X.negative9.HF.normal+(0.154*(seqdata.params.HF_fb-190)+31.851)/2; %9.5 for imaging from ODT, 8 for band mapping
+    params.detunings.K.X.negative7.HF.SG = 12.5;
+        
     %% Other detunings
     
     params.k_OP_detuning.positive = 24;
@@ -60,12 +73,12 @@ function params = Load_Absorption_Image_Parameters()
     params.SG.SG_shim_rampdelay = 0; %0 with respect to pulse start
     params.SG.SG_fesh_ramptime = 1;
     params.SG.SG_fesh_rampdelay = 0; % with respect to pulse start
-    SG_QP_val_list = [5];%5[6];
+    SG_QP_val_list = [7.5];%5
     SG_QP_val = getScanParameter(SG_QP_val_list,seqdata.scancycle,seqdata.randcyclelist,'SG_QP_val');
     params.SG.SG_QP_val = SG_QP_val*1.78;
     params.SG.SG_QP_pulsetime = 5; 2;%5
     params.SG.SG_QP_ramptime =2; 1;%2
-    params.SG.SG_QP_FF = 23*(params.SG.SG_QP_val/30); % voltage FF on delta supply
+    params.SG.SG_QP_FF = 23*(params.SG.SG_QP_val/30); % voltage FF on delta supplySS
     params.SG.SG_wait_TOF = 1;
 
     
@@ -75,11 +88,15 @@ function params = Load_Absorption_Image_Parameters()
     %% Timing parameters
     params.timings.tof = seqdata.params.tof;
     params.timings.pulse_length = 0.3;
+    params.timings.time_diff_two_absorp_pulses = 0.05; % time delay for the 2nd light pulse
     params.timings.K_OP_time = 0.3;
     params.timings.k_detuning_shift_time = 0.5;
     params.timings.rb_detuning_shift_time.MOT = 4;
     params.timings.rb_detuning_shift_time.X = 50;1500;
     params.timings.rb_detuning_shift_time.Y = 50;
+    wait_time_list = [0.03];
+    params.timings.wait_time = getScanParameter(wait_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'imaging_wait_time');
     
     %% Quantization field timings
     %RHYS - These have to be last right now due to mathematics... kind of silly

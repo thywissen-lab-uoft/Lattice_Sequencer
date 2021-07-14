@@ -618,7 +618,8 @@ case 'single'
     % What to do if the sequener is in scan mode.
 case 'scan'                
     if seqdata.doscan
-        if isequal(cScanFinite.Enable,'on') && tblMaxScan.Data<=seqdata.scancycle
+        if isequal(cScanFinite.Enable,'on') && tblMaxScan.Data<=seqdata.scancycle ...
+                && cScanFinite.Value
             % The scan is complete
             disp(['Scan complete at ' num2str(seqdata.scancycle) ' cycles']);
             bRun.Enable='on';
@@ -985,6 +986,7 @@ end
         % output both outparams and params
         save(filenamemat,'outparams','params');        
         %% Save new output mat
+        try
         vals=seqdata.output_vars_vals;
         units=seqdata.output_vars_units;        
         flags=seqdata.flags;
@@ -993,7 +995,7 @@ end
         units.ExecutionDate='str';
         
         save(filenamemat2,'vals','units','flags');        
-        
+        end
     end
 
 

@@ -24,7 +24,7 @@ transfer_switch_delay = -50;
 %not already in the correct position
 [val, lasttime] = getChannelValue(seqdata,17,0);
 if (val ~= 0)
-    if lasttime >= calctime(curtime,transfer_switch_delay);
+    if lasttime >= calctime(curtime,transfer_switch_delay)
         buildWarning('do_rf_pulse','Not enough time to switch transfer switch!',1)
     else
         setDigitalChannel(calctime(curtime,transfer_switch_delay),17,0);
@@ -42,7 +42,8 @@ else
     %annoying changes of frequency for previous RF pulse during
     %spectroscopy. Drop this. 
     % set DDS frequency; setting freq to a value <= 0 can be used to leave DDS where it is at the moment
-    if ( freq > 0 );
+    
+    if ( freq > 0 )
         DDS_sweep(calctime(curtime,0),1,freq,freq,5); %-5ms
     end
 
@@ -50,8 +51,6 @@ else
     setAnalogChannel(calctime(curtime,0), 'RF Gain', pulse_pwr ,1); %7 %-5ms
     
     %turn rf switch on:
-    %Added 1ms here to give gain and frequency time to adjust. RHYS October
-    %30, 2018
 curtime = setDigitalChannel(calctime(curtime,1),'RF TTL',1); 
     
     % advance in time by pulse_length
@@ -61,7 +60,7 @@ curtime = calctime(curtime,pulse_time);
     setDigitalChannel(calctime(curtime,0),'RF TTL',0);
 
     % set RF gain to minimum once done
-    setAnalogChannel(calctime(curtime,0), 'RF Gain', -10 ,1);
+    setAnalogChannel(calctime(curtime,1), 'RF Gain', -10 ,1);
         
 end
 

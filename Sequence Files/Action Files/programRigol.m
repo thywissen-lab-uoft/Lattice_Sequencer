@@ -90,8 +90,8 @@ cmds=struct;
 
 cmds.CLOCK_SOURCE=':SYSTEM:ROSCILLATOR:SOURCE';         % Technically a global command
 
-cmds.LOAD=':OUTPUT<n>:LOAD';
-cmds.STATE=':OUTPUT<n>:STATE';
+cmds.LOAD=':OUTPUT<n>:LOAD';                                    % INF, 50 OHM
+cmds.STATE=':OUTPUT<n>:STATE';                                  % ON, OFF
 
 cmds.FREQUENCY=':SOURCE<n>:FREQUENCY';                               % Hz
 cmds.AMPLITUDE_UNIT=':SOURCE<n>:VOLTAGE:UNIT';                  % 
@@ -159,12 +159,12 @@ try
     % Read channe 1 and channel 2 settings.
     if ~isempty(ch1_set)    
         ch1_get=readRigol(1);
-        disp(ch1_get)
+%         disp(ch1_get)
     end
     
     if ~isempty(ch2_set)
         ch2_get=readRigol(2);
-        disp(ch2_get)
+%         disp(ch2_get)
     end
 catch ME    
     warning('Unable to read from Rigol. Closing connection safely');

@@ -41,13 +41,22 @@ function flags = Load_Absorption_Image_Flags()
     flags.use_K_OP = 1; %Usually useful. Must enable repump as well.
     flags.use_K_repump = 1; % 1:turn on K repump beam for imaging F=7/2
     flags.K_repump_during_image = 0; %Not sure this is useful.
+
     
     %Special flags
     flags.iXon = 0; %Use iXon camera to take an absorption image (only vertical)
+
     
+%% flags for HF imaging
     if seqdata.flags.High_Field_Imaging == 1
         flags.High_Field_Imaging = 1; %Set to image the atoms at a field near the FB resonance (near 202.1G)
     else
         flags.High_Field_Imaging = 0;
-    end 
+    end
+    
+
+    flags.Two_Imaging_Pulses = 1;
+    flags.Image_Negative9 = 0;
+    flags.Image_Both97 = 1;
+    
 end

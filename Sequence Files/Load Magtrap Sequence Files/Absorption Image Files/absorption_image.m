@@ -215,19 +215,68 @@ if(~flags.High_Field_Imaging)
 else
   if strcmp(flags.image_atomtype, 'K')
     %set trap detuning
-    setAnalogChannel(calctime(curtime,params.timings.tof-params.timings.k_detuning_shift_time),'K Trap FM',detuning);
+%     setAnalogChannel(calctime(curtime,params.timings.tof-params.timings.k_detuning_shift_time),'K Trap FM',detuning);
     
-    HF_prob_freq_list = [-7.5];%3.75
-%     HF_prob_freq = getScanParameter(HF_prob_freq_list,seqdata.scancycle,seqdata.randcyclelist,'HF_prob_freq')+ 1.4*(1-205)/2; %3.75 for 205G;
-    HF_prob_freq = getScanParameter(HF_prob_freq_list,seqdata.scancycle,seqdata.randcyclelist,'HF_prob_freq','MHz');
+%     V_adwin = getChannelValue(seqdata,'K Trap FM');
+%     current_detuning =2* (134 -  ((V_adwin*6.03+30.8)/11.83+5.04)/0.0829)+1;
+    setAnalogChannel(calctime(curtime,params.timings.tof-params.timings.k_detuning_shift_time),...
+            'K Trap FM',detuning+(seqdata.params.HF_fb-190)*0.675*2);
+    
+    if flags.Image_Both97
+        
+        HF_prob_freq9 =  params.detunings.K.X.negative9.HF.normal;
+        HF_prob_freq7 =  params.detunings.K.X.negative7.HF.normal;
+        
+        ch1=struct;
+        ch2=struct;
+        addr=6; % This is the internal Adwin address for the Rigol
+        
+        freq1 = (120+HF_prob_freq7)*1E6;
+        pow1_list = [0.85];[0.7];
+        pow1 = getScanParameter(pow1_list,seqdata.scancycle,seqdata.randcyclelist,...
+            'HF_prob_pwr1','V');
+%         pow1 = 1.1;
 
-    mod_freq =  (120+HF_prob_freq)*1E6;
-    HF_prob_pwr_list = [1];
-    HF_prob_pwr = getScanParameter(HF_prob_pwr_list,seqdata.scancycle,seqdata.randcyclelist,'HF_prob_pwr','V');
-    mod_amp = HF_prob_pwr;
-    mod_offset =0;
-    str=sprintf(':SOUR2:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
-    addVISACommand(6, str);
+        freq2 = (120+HF_prob_freq9)*1E6;
+        pow2 = 1;
+        
+        
+        ch1.STATE='ON';
+        ch1.AMPLITUDE=pow1;
+        ch1.FREQUENCY=freq1;
+        
+        ch2.STATE='ON';
+        ch2.AMPLITUDE=pow2;
+        ch2.FREQUENCY=freq2;
+        
+        programRigol(addr,ch1,ch2);
+        
+        
+
+    else    
+    
+%         HF_prob_freq_list = [12.5];
+    %     HF_prob_freq = getScanParameter(HF_prob_freq_list,seqdata.scancycle,seqdata.randcyclelist,'HF_prob_freq')+ 1.4*(1-205)/2; %3.75 for 205G;
+        if flags.Image_Negative9 == 1
+            HF_prob_freq =  params.detunings.K.X.negative9.HF.normal
+            if strcmp(flags.condition, 'SG')
+                HF_prob_freq =  params.detunings.K.X.negative9.HF.SG
+            end
+        else
+            HF_prob_freq =  params.detunings.K.X.negative7.HF.normal
+            if strcmp(flags.condition, 'SG')
+                HF_prob_freq =  params.detunings.K.X.negative7.HF.SG
+            end
+        end
+
+        mod_freq =  (120+HF_prob_freq)*1E6;
+        HF_prob_pwr_list = 1;[0.7];
+        HF_prob_pwr = getScanParameter(HF_prob_pwr_list,seqdata.scancycle,seqdata.randcyclelist,'HF_prob_pwr','V');
+        mod_amp = HF_prob_pwr;
+        mod_offset =0;
+        str=sprintf(':SOUR2:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
+        addVISACommand(6, str);    
+    end
   end
   
   
@@ -279,14 +328,14 @@ end
 curtime = calctime(curtime,params.timings.tof);
 
 % Take the first absorption image.
-do_abs_pulse(curtime,params.timings.pulse_length,power,flags);
+do_abs_pulse(curtime,params,power,flags);
 
 % Wait 200 ms for all traces of atoms to be gone 
 % RHYS - could be shorter
 curtime = calctime(curtime,200); 
 
 % Take the second absorption image
-do_abs_pulse(curtime,params.timings.pulse_length,power,flags);
+do_abs_pulse(curtime,params,power,flags);
 
 %% Turn Probe and Repump off
 

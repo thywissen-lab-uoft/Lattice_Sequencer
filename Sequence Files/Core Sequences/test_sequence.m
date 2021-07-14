@@ -3500,31 +3500,31 @@ setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1);
 % % %         curtime = calctime(curtime,500);
 %% test kill beam
 
-            kill_probe_pwr = 0.1;
-%             kill_time_list = [0.01]; %10
-%             kill_time = getScanParameter(kill_time_list,seqdata.scancycle,seqdata.randcyclelist,'kill_time');
-            kill_detuning = 42.7; %27 for 80G
-            
-            %Kill SP AOM 
-            mod_freq =  (120)*1E6;
-            mod_amp = 1;0.1;
-            mod_offset =0;
-            str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
-            addVISACommand(6, str);
-            % Set trap AOM detuning to change probe
-            setAnalogChannel(calctime(curtime,0),'K Trap FM',kill_detuning); %54.5
-
-            % open K probe shutter
-            setDigitalChannel(calctime(curtime,10),'Downwards D2 Shutter',1); %0=closed, 1=open
-            
-            % Set TTL off initially
-            setDigitalChannel(calctime(curtime,20),'Kill TTL',1);%0= off, 1=on
-            
-%             kill_lat_ramp_time = 3;
-%             AnalogFuncTo(calctime(curtime,pulse_offset_time-kill_lat_ramp_time),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), kill_lat_ramp_time, kill_lat_ramp_time, 60/atomscale); %30?                                      
-            
-            %pulse beam with TTL
-%             DigitalPulse(calctime(curtime,pulse_offset_time),'Kill TTL',kill_time,1);
+%             kill_probe_pwr = 0.1;
+% %             kill_time_list = [0.01]; %10
+% %             kill_time = getScanParameter(kill_time_list,seqdata.scancycle,seqdata.randcyclelist,'kill_time');
+%             kill_detuning = 42.7; %27 for 80G
+%             
+%             %Kill SP AOM 
+%             mod_freq =  (120)*1E6;
+%             mod_amp = 1;0.1;
+%             mod_offset =0;
+%             str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
+%             addVISACommand(6, str);
+%             % Set trap AOM detuning to change probe
+%             setAnalogChannel(calctime(curtime,0),'K Trap FM',kill_detuning); %54.5
+% 
+%             % open K probe shutter
+%             setDigitalChannel(calctime(curtime,10),'Downwards D2 Shutter',1); %0=closed, 1=open
+%             
+%             % Set TTL off initially
+%             setDigitalChannel(calctime(curtime,20),'Kill TTL',1);%0= off, 1=on
+%             
+% %             kill_lat_ramp_time = 3;
+% %             AnalogFuncTo(calctime(curtime,pulse_offset_time-kill_lat_ramp_time),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), kill_lat_ramp_time, kill_lat_ramp_time, 60/atomscale); %30?                                      
+%             
+%             %pulse beam with TTL
+% %             DigitalPulse(calctime(curtime,pulse_offset_time),'Kill TTL',kill_time,1);
 
 
 %% test PZT mirror displacement
@@ -4842,10 +4842,11 @@ end
 % setDigitalChannel(calctime(curtime,0),'Downwards D2 Shutter',1); %0=closed, 1=open
 % 
 %% Test HF Imaging 
-% setDigitalChannel(calctime(curtime,0),'High Field Shutter',0); %0: off 1:on
+% setDigitalChannel(calctime(curtime,0),'High Field Shutter',1); %0: off 1:on
 % setDigitalChannel(calctime(curtime,0),'K High Field Probe',1); %1: off 0:on
-% setAnalogChannel(calctime(curtime,0),63,0); 
-% 
+setAnalogChannel(calctime(curtime,0),63,0); 
+
+
 % setDigitalChannel(calctime(curtime,0),67,1); %0: off 1:on
 
 %  HF_prob_freq_list = [-7.5];%3.75
@@ -4862,8 +4863,84 @@ end
 % 
 
 
+%% HF Testing timing double shutter
+% 
+% tp=.3; % Imaging pulse duration
+% 
+%  % Pre trigger of camera trigger to imaging light
+% t1_list=[.03];
+% t1=getScanParameter(t1_list,seqdata.scancycle,seqdata.randcyclelist,'cam_pretrigger');
+% 
+% td_list=[0.04];
+% td=getScanParameter(td_list,seqdata.scancycle,seqdata.randcyclelist,'light2_delay');
+% 
+% 
+% 
+% setDigitalChannel(calctime(curtime,0),'HF freq source',1); % 0: Rigol Ch1, 1: Rigol Ch2
+% 
+% setDigitalChannel(calctime(curtime,0),'High Field Shutter',1); %0: off 1:on
+% setDigitalChannel(calctime(curtime,0),'K High Field Probe',1); %1: off 0:on
+% setDigitalChannel(calctime(curtime,0),'PixelFly Trigger',0);
+% setDigitalChannel(calctime(curtime,0),30,0); %1: off 0:on
+% 
+% % Wait for 100 ms
+% curtime=calctime(curtime,100);
+% 
+% % Light pulse
+% setDigitalChannel(calctime(curtime,-t1),'PixelFly Trigger',1);
+% setDigitalChannel(calctime(curtime,0),'K High Field Probe',0); %1: off 0:on
+% setDigitalChannel(calctime(curtime,tp),'K High Field Probe',1); %1: off 0:on
+% 
+% setDigitalChannel(calctime(curtime,tp+td),'K High Field Probe',0); %1: off 0:on
+% setDigitalChannel(calctime(curtime,tp+td+tp),'K High Field Probe',1); %1: off 0:on
+% 
+% setDigitalChannel(calctime(curtime,tp+10),'PixelFly Trigger',0);
+% 
+% % Wait for 100 ms
+% curtime=calctime(curtime,500);
+% % Trigger camera
+% 
+% % Light pulse
+% setDigitalChannel(calctime(curtime,-t1),'PixelFly Trigger',1);
+% setDigitalChannel(calctime(curtime,0),'K High Field Probe',0); %1: off 0:on
+% setDigitalChannel(calctime(curtime,tp),'K High Field Probe',1); %1: off 0:on
+% 
+% % Second light
+% setDigitalChannel(calctime(curtime,tp+td),'K High Field Probe',0); %1: off 0:on
+% setDigitalChannel(calctime(curtime,tp+td+tp),'K High Field Probe',1); %1: off 0:on
+% 
+% setDigitalChannel(calctime(curtime,tp+10),'PixelFly Trigger',0);
+% 
+
+curtime=calctime(curtime,1000);
+%% Feshbach field test
+% 
+%  clear('ramp');
+%         % FB coil settings for spectroscopy
+%         ramp.FeshRampTime = 150;
+%         ramp.FeshRampDelay = -0;
+%         HF_FeshValue_Initial_List = 215;[202.78];
+%         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
+%         ramp.FeshValue = HF_FeshValue_Initial;
+%         ramp.SettlingTime = 50;    
+% curtime = rampMagneticFields(calctime(curtime,0), ramp);
+%         
+% curtime = calctime(curtime,200);
+% 
+% 
+%         clear('ramp');
+%         % FB coil settings for spectroscopy
+%         ramp.FeshRampTime = 150;
+%         ramp.FeshRampDelay = -0;
+%         HF_FeshValue_Initial_List = 0;[202.78];
+%         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
+%         ramp.FeshValue = HF_FeshValue_Initial;
+%         ramp.SettlingTime = 50;    
+% curtime = rampMagneticFields(calctime(curtime,0), ramp);
+
 timeout = curtime;
 
 
 
+seqdata.flags = struct;
 

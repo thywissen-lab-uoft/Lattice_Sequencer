@@ -41,8 +41,9 @@ else
 
     %turn DDS (Rf) off:
     
-    setAnalogChannel(curtime, 39, 0, 1);
-    
+%     setAnalogChannel(curtime, 39, 0, 1);
+        setAnalogChannel(curtime, 39, -10, 1);
+
 end
 
 timeout = curtime;

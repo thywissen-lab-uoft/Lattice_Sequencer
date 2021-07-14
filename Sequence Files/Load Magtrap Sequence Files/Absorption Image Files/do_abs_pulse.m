@@ -1,8 +1,12 @@
 % Absorption pulse function -- triggers cameras and pulses probe/repump
 % RHYS - It would be reasonable to call this as a method of an absorption image class.
-function do_abs_pulse(curtime,pulse_length,power,flags)
+function do_abs_pulse(curtime,params,power,flags)
+
+pulse_length = params.timings.pulse_length;
+
 %This is where the cameras are triggered.
 ScopeTriggerPulse(curtime,'Camera triggers',pulse_length);
+
 %Trigger the iXon versus the PixelFlys.
 if (flags.iXon)
   DigitalPulse(curtime,'iXon Trigger',pulse_length,1);
@@ -32,7 +36,18 @@ elseif strcmp(flags.image_atomtype, 'K')
     setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',power);
     setAnalogChannel(calctime(curtime,pulse_length),'K Probe/OP AM',0,1);
   elseif flags.High_Field_Imaging
-    DigitalPulse(calctime(curtime,0),'K High Field Probe',pulse_length,0);
+    extra_wait_time = params.timings.wait_time;
+    DigitalPulse(calctime(curtime,extra_wait_time),'K High Field Probe',pulse_length,0);
+    if flags.Two_Imaging_Pulses
+        DigitalPulse(calctime(curtime,params.timings.time_diff_two_absorp_pulses+pulse_length+extra_wait_time),...
+            'K High Field Probe',pulse_length,0);
+        if flags.Image_Both97
+            buffer_time = 0.01;
+            DigitalPulse(calctime(curtime,...
+                params.timings.time_diff_two_absorp_pulses+pulse_length+extra_wait_time-buffer_time),...
+            'HF freq source',pulse_length+buffer_time+buffer_time,0);
+        end
+    end
   end
   %Repump on during the image pulse
   if flags.K_repump_during_image

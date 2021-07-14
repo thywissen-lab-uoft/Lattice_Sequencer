@@ -177,7 +177,7 @@ seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now.
 
 %RHYS - params should be defined in a separate location from flags. 
 seqdata.flags.In_Trap_imaging = 0;
-tof_list = [25];
+tof_list = [15];
 seqdata.params.tof = getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof');
 % seqdata.params.tof = 5;  % 45 for rough alignment, 20 for K-D diffraction
 
@@ -246,7 +246,7 @@ seqdata.flags.init_K_RF_sweep2 = 0;
 
 
 % Optical lattice
-seqdata.flags.load_lattice = 1; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
+seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
 seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
 seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 
@@ -310,7 +310,7 @@ end
     %RHYS - Setting some specific parameters for DDS and objective
     %position. Silly that this is here. 
 
-    obj_piezo_V_List = [5.4];
+    obj_piezo_V_List = [5.3];
     % 0.1V = 700 nm, must be larger than  larger value means farther away from the window.
 %     obj_piezo_V = getScanParameter(obj_piezo_V_List, ...
 %     seqdata.scancycle, 1, 'Objective_Piezo_Z','V');%5
@@ -413,13 +413,15 @@ end
     %Pulsed beams on to keep warm.
     setDigitalChannel(calctime(curtime,0),'D1 OP TTL',1);
     
-    %Set Raman AOM TTL to open.
+    %Set Raman AOM TTL to open for AOM to stay warmed up
     %Turn off Raman shutter with TTL.
 %     setDigitalChannel(calctime(curtime,5),'Raman Shutter',1);
     setDigitalChannel(calctime(curtime,5),'Raman Shutter',0); %2021/03/30 new shutter
 
-    setDigitalChannel(calctime(curtime,0),'Raman TTL',1);
+    setDigitalChannel(calctime(curtime,0),'Raman TTL 1',1);
     setDigitalChannel(calctime(curtime,0),'Raman TTL 2',1);
+    setDigitalChannel(calctime(curtime,0),'Raman TTL 3',1);
+
 
     
     %Set 'D1' Raman AOMs to open, shutter closed.

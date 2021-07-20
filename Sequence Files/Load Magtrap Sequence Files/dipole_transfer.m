@@ -618,9 +618,7 @@ curtime = calctime(curtime,70);70;
 %% Rb uWave transfer 2
 % This section of code transfer the Rb cloud from the |2,2> to the |1,1>
 % state.
-% 
-%
-% This works but haven't gotten it to work well with K
+
 if ( seqdata.flags.do_Rb_uwave_transfer_in_ODT2 )
     dispLineStr('uWave Rb 2-->1',curtime);
     Rb_SRS=struct;
@@ -735,7 +733,148 @@ if ( seqdata.flags.do_Rb_uwave_transfer_in_ODT2 )
     curtime = calctime(curtime,T_hold);
 
 end 
+%% Rb uWave transfer 3 - Sweep the uWave to transfer Rb
+% This section of code transfer the Rb cloud from the |2,2> to the |1,1>
+% state.
 
+if ( seqdata.flags.do_Rb_uwave_transfer_in_ODT3)
+    % Ramp the field to the desired value
+    dispLineStr('Field Ramp for RF/uWave Transfer');        
+
+    % F=2 Rb Blow Away
+    do_F2_blowaway=0;
+    
+    %%%%%%%%%%%%%%%%%%%%
+    % Field Ramp 
+    %%%%%%%%%%%%%%%%%%%%
+    
+    mean_field_list = 19.432;
+    mean_field = getScanParameter(mean_field_list,seqdata.scancycle,seqdata.randcyclelist,'Rb_Transfer_Field');
+       
+    shim_ramptime_list = [2];
+    shim_ramptime = getScanParameter(shim_ramptime_list,seqdata.scancycle,seqdata.randcyclelist,'shim_ramptime');
+  
+    % Initialzie Field Ramp
+    clear('ramp');
+    ramp=struct;
+    
+    % Shim ramp settings
+    ramp.xshim_final = seqdata.params.shim_zero(1); %0.146
+    ramp.yshim_final = seqdata.params.shim_zero(2);
+    ramp.zshim_final = seqdata.params.shim_zero(3);    
+    ramp.shim_ramptime = shim_ramptime;
+    ramp.shim_ramp_delay = 0; % ramp earlier than FB field if FB field is ramped to zero
+   
+    % Feshbach Ramp settings
+    ramp.fesh_ramptime = 50;
+    ramp.fesh_ramp_delay = 0;
+    ramp.fesh_final = mean_field;
+
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
+       
+
+    %%%%%%%%%%%%%%%%%%%%
+    % uWave Sweeep Prepare
+    %%%%%%%%%%%%%%%%%%%%
+    use_ACSync=0;
+    
+    dispLineStr('Sweeping uWave Rb 2-->1',curtime);   
+    
+    % uWave Center Frequency
+    freq_list = [10]/1000;
+    freq_offset = getScanParameter(freq_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'rb_uwave_freq_offset');    
+    
+    uWave_delta_freq_list=[200]/1000;
+    uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'rb_uwave_delta_freq');
+        
+    uwave_sweep_time_list =[50]; 
+    sweep_time = getScanParameter(uwave_sweep_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'rb_uwave_sweep_time');   
+     
+    Rb_SRS=struct;
+    Rb_SRS.Address=29;        % GPIB address of the Rb SRS    
+    Rb_SRS.Frequency=6.87560+freq_offset*1E-3; % Frequency in GHz (20G)% 
+    Rb_SRS.Power=8;           % Power in dBm (Don't go too high)
+    Rb_SRS.Enable=1;          % Whether to enable 
+    Rb_SRS.EnableSweep=1;                    
+    Rb_SRS.SweepRange=uWave_delta_freq;   
+             
+    addOutputParam('rb_uwave_pwr',uWave_opts.Power)
+    addOutputParam('rb_uwave_frequency',uWave_opts.Frequency);            
+    
+    disp(['     Sweep Time   : ' num2str(sweep_time) ' ms']);
+    disp(['     Sweep Range   : ' num2str(sweep_time) ' ms']);
+    disp(['     Freq Offset  : ' num2str(freq_offset*1000) ' kHz']);     
+    
+    % Program the SRS    
+    programSRS_Rb(Rb_SRS);      
+    
+    % Make sure RF, Rb uWave, K uWave are all off for safety
+    setDigitalChannel(calctime(curtime,-35),'RF TTL',0);
+    setDigitalChannel(calctime(curtime,-35),'Rb uWave TTL',0);
+    setDigitalChannel(calctime(curtime,-35),'K uWave TTL',0);
+
+    % Switch antenna to uWaves (0: RF, 1: uWave)
+    setDigitalChannel(calctime(curtime,-30),'RF/uWave Transfer',1); 
+    
+    % Switch uWave source to the K sources (0: K, 1: Rb);
+    setDigitalChannel(calctime(curtime,-30),'K/Rb uWave Transfer',1); 
+    
+    % Set initial modulation
+    setAnalogChannel(calctime(curtime,-35),'uWave FM/AM',-1);    
+    
+    %?????
+    setDigitalChannel(calctime(curtime,5),'Rb Source Transfer',1); %0 = Anritsu, 1 = Sextupler
+
+    %%%%%%%%%%%%%%%%%%%%
+    % uWave Sweeep 
+    %%%%%%%%%%%%%%%%%%%%           
+    disp('Sweeping on uWave');
+
+%     if use_ACSync
+%         setDigitalChannel(calctime(curtime,-5),'ACync Master',1);
+%     end    
+    
+    % Turn on uWave
+    setDigitalChannel(calctime(curtime,0),'Rb uWave TTL',1);       
+
+    % Ramp the SRS modulation 
+    % At +-1V input for +- full deviation
+    AnalogFunc(calctime(curtime,0),'uWave FM/AM',@(t,T) -1+2*t/T,sweep_time,sweep_time);
+
+    % Wait
+    curtime = calctime(curtime,sweep_time);
+
+    % Turn off uWave
+    setDigitalChannel(calctime(curtime,0),'Rb uWave TTL',0);     
+    
+%     if use_ACSync
+%         curtime=setDigitalChannel(calctime(curtime,35),'ACync Master',1);
+%     end    
+
+    % Reset the uWave deviation after a while
+    setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);  
+    
+    % optical pulse resonant with transition from F=2 to clean out remaining population
+    if do_F2_blowaway
+        disp('Blowing the F=2 away');
+        %wait a bit before pulse
+        setAnalogChannel(calctime(curtime,-10),4,0.0); % set amplitude   0.7
+        AnalogFuncTo(calctime(curtime,-15),34,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,6590-237); % Ramp Rb trap laser to resonance   237
+        AnalogFuncTo(calctime(curtime,-15),35,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,1.2,1); % Ramp FF to Rb trap beat-lock 
+        setDigitalChannel(calctime(curtime,-10),25,1); % open Rb probe shutter
+        setDigitalChannel(calctime(curtime,-10),24,1); % disable AOM rf (TTL), just to be sure
+        RbF2_kill_time_list =[1]; 3;
+        pulse_time = getScanParameter(RbF2_kill_time_list,seqdata.scancycle,seqdata.randcyclelist,'RbF2_kill_time');
+        curtime = DigitalPulse(calctime(curtime,0),24,pulse_time,0); % pulse beam with TTL   15
+        setDigitalChannel(calctime(curtime,0),25,0); % close shutter
+    end 
+    
+    % Wait a little bit
+    curtime = calctime(curtime,5);
+end 
 %% 40K RF Sweep Init2
 %Sweep 40K to |9/2,-9/2> before optical evaporation   
 % EXPERIMENTAL

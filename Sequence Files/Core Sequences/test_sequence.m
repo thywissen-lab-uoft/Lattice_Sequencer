@@ -4702,11 +4702,11 @@ end
 % % % % % setAnalogChannel(calctime(curtime,0),'X Shim',1); %0.15
 % % % % % setAnalogChannel(calctime(curtime,0),'Z Shim',3);%0.0 
 % % % % 
-% setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',190);%202.5); %200
-% setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',3); 
-% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
-% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
-% setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
+setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',200);%202.5); %200
+setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',3); 
+setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
+setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
+setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
 % % % % 
 % % 
 % setAnalogChannel(calctime(curtime,0),59,0); %0.11
@@ -4843,24 +4843,27 @@ end
 % 
 %% Test HF Imaging 
 % setDigitalChannel(calctime(curtime,0),'High Field Shutter',1); %0: off 1:on
-% setDigitalChannel(calctime(curtime,0),'K High Field Probe',1); %1: off 0:on
-setAnalogChannel(calctime(curtime,0),63,0); 
-
-
-% setDigitalChannel(calctime(curtime,0),67,1); %0: off 1:on
-
-%  HF_prob_freq_list = [-7.5];%3.75
-% %     HF_prob_freq = getScanParameter(HF_prob_freq_list,seqdata.scancycle,seqdata.randcyclelist,'HF_prob_freq')+ 1.4*(1-205)/2; %3.75 for 205G;
+% setDigitalChannel(calctime(curtime,0),'K High Field Probe',0); %1: off 0:on
+% % setAnalogChannel(calctime(curtime,0),63,0); 
+% 
+% 
+% % setDigitalChannel(calctime(curtime,0),67,1); %0: off 1:on
+% 
+%  HF_prob_freq_list = [0];%3.75
+% % %     HF_prob_freq = getScanParameter(HF_prob_freq_list,seqdata.scancycle,seqdata.randcyclelist,'HF_prob_freq')+ 1.4*(1-205)/2; %3.75 for 205G;
 %     HF_prob_freq = getScanParameter(HF_prob_freq_list,seqdata.scancycle,seqdata.randcyclelist,'HF_prob_freq','MHz');
-% % 
+% % % 
 %     mod_freq =  (120+HF_prob_freq)*1E6;
-%     HF_prob_pwr_list = [1];
+%     HF_prob_pwr_list = [1.5];
 %     HF_prob_pwr = getScanParameter(HF_prob_pwr_list,seqdata.scancycle,seqdata.randcyclelist,'HF_prob_pwr','V');
 %     mod_amp = HF_prob_pwr;
 %     mod_offset =0;
 %     str=sprintf(':SOUR2:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
 %     addVISACommand(6, str);
-% 
+ 
+curtime = calctime(curtime,1000);
+setDigitalChannel(calctime(curtime,0),'Kill TTL',0);
+setAnalogChannel(calctime(curtime,0),63,0);
 
 
 %% HF Testing timing double shutter

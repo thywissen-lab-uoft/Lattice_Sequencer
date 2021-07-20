@@ -68,22 +68,23 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     
     Dimple_Mod = 0;                     %keep: Used to calibrate dimple trap depth
     do_lattice_mod = 0;                 %keep: calibrate lattice depth
-    rotate_waveplate = 1;               %keep:  Turn Rotating Waveplate to Shift Power to Lattice Beams
+    rotate_waveplate_init=1;             %initially rotate the WP to put 90% the power to the lattice
+    rotate_waveplate = 0;               %keep:  Turn Rotating Waveplate to Shift Power to Lattice Beams
     do_lattice_ramp_after_spectroscopy = 0; %keep: Ramp lattices on or off after doing spectroscopy, must be on for fluorescence image
     do_shear_mode_mod = 0;              %delete: used to be a way modulate XDT using shear mode aom
     Raman_transfers = 0;                %keep  % for fluorescence image
     
     
     do_lattice_sweeps = 0;              %delete
-    Drop_From_XDT = 0;                  %May need to add code to rotate waveplate back here.
+    Drop_From_XDT = 1;                  %May need to add code to rotate waveplate back here.
     
     seqdata.flags.lattice_img_molasses = 0; %delete %1 - Do molasses, 0 - No molasses
     seqdata.flags.plane_selection_after_D1 = 0;%delete
 
     %RHYS - Some confusing parameters defined here. Consolidate.
     
-    lattice_holdtime_list =[0]; [100 200 500 1000 1500 2000 2500 3000 3500 4000 4500 5000 6000 7500 8000 10000 12000 15000]; %150 sept28
-    lattice_holdtime = getScanParameter(lattice_holdtime_list,seqdata.scancycle,seqdata.randcyclelist,'latt_holdtime');%maximum is 4
+    lattice_holdtime_list =[0]; [0]; %150 sept28
+    lattice_holdtime = getScanParameter(lattice_holdtime_list,seqdata.scancycle,seqdata.randcyclelist,'latt_holdtime','ms');%maximum is 4
     
     if Drop_From_XDT
         lattice_rampdown = 50;
@@ -95,7 +96,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
    
 % Parameters for lattice loading, section used for lattice alignment
 %     lat_rampup_common_depths = [200 200]/atomscale;
-    Depth_List = [200];
+    Depth_List = [60];
 %     ZLD = getmultiScanParameter(Depth_List,seqdata.scancycle,'x_lattice_depth',1,2);
     ZLD = getScanParameter(Depth_List,seqdata.scancycle,seqdata.randcyclelist,'zld');
 % ZLD = getmultiScanParameter(Depth_List,seqdata.scancycle,'ylattice_depth',1,2);
@@ -104,27 +105,22 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 %again, perhaps store in an external file a load in.
 
 
-%%%LOADING SEQ BELOW CAN BE USED FOR SIMPLE LATTICE LOADING
-% lattice_rampup_time_list =[250];
-% lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycle,seqdata.randcyclelist,'lattice_rampup_time');
-%     lat_rampup_depth = 1*[1*[ZLD    ZLD];
-%                           1*[ZLD    ZLD];                
-%                           1*[ZLD    ZLD];]/atomscale;
-%     lat_rampup_time = 1*[lattice_rampup_time    lattice_rampup_time]; 
+%LOADING SEQ BELOW CAN BE USED FOR SIMPLE LATTICE LOADING
+lattice_rampup_time_list =[50 100 150 200 250 350 500];
+lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycle,seqdata.randcyclelist,'lattice_rampup_time','ms');
+    lat_rampup_depth = 1*[1*[ZLD    ZLD];
+                          1*[ZLD    ZLD];                
+                          1*[ZLD    ZLD];]/atomscale;
+    lat_rampup_time = 1*[lattice_rampup_time    50]; 
     
-
-lattice_rampup_time_list =[200];
-lattice_rampup_time = getScanParameter(lattice_rampup_time_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'lattice_rampup_time');
-
-
-init_depth_list =[30];
-init_depth = getScanParameter(init_depth_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'init_depth');
-    lat_rampup_depth = 1*[1*[init_depth  init_depth  ZLD    ZLD];
-                          1*[init_depth  init_depth  ZLD    ZLD];                
-                          1*[init_depth  init_depth  ZLD    ZLD];]/atomscale;
-    lat_rampup_time = 1*[50  50  50  50]; 
+% % 
+% init_depth_list =[30];
+% init_depth = getScanParameter(init_depth_list,...
+%     seqdata.scancycle,seqdata.randcyclelist,'init_depth');
+%     lat_rampup_depth = 1*[1*[init_depth  init_depth  ZLD    ZLD];
+%                           1*[init_depth  init_depth  ZLD    ZLD];                
+%                           1*[init_depth  init_depth  ZLD    ZLD];]/atomscale;
+%     lat_rampup_time = 1*[50  50  50  50]; 
 
 
 %% LOADING SEQ BELOW CAN BE USED FOR DIRECT LATTICE LOADING FROM QP
@@ -308,8 +304,7 @@ init_depth = getScanParameter(init_depth_list,...
 %% Rotate waveplate to shift power to lattice beams
 % This piece of code rotates the rotatable wavepalte to shift the optical
 % power to the lattices.
-
-if rotate_waveplate
+if rotate_waveplate_init
     dispLineStr('Rotating waveplate',curtime);
     %Start with a little power towards lattice beams, and increase power to
     %max only after ramping on the lattice
@@ -319,7 +314,7 @@ if rotate_waveplate
     wp_Trot2 = 150; % gets added as a wait time after lattice rampup
         
     P_RotWave_I = 0.6;
-    P_RotWave_II = 0.98;    
+    P_RotWave_II = 0.90;    
     
     disp(['     Rotation Time 1 : ' num2str(wp_Trot1) ' ms']);
     disp(['     Rotation Time 2 : ' num2str(wp_Trot1) ' ms']);
@@ -329,16 +324,16 @@ if rotate_waveplate
     P_RotWave = P_RotWave_II; %output argument    
     curtime = AnalogFunc(calctime(curtime,-100-wp_Trot1),'latticeWaveplate',...
         @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
-        wp_Trot1,wp_Trot1,P_RotWave_I);
-else
-    %Start with all power towards lattice beams
-    rotation_time = 1000;   % The time to rotate the waveplate
-    P_RotWave = 0.5;%0.9       % The fraction of power that will be transmitted 
-                            % through the PBS to lattice beams
-                            % 0 = dipole, 1 = lattice
-    curtime = AnalogFunc(calctime(curtime,-100-rotation_time),'latticeWaveplate',...
-        @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
-        rotation_time,rotation_time,P_RotWave);    
+        wp_Trot1,wp_Trot1,P_RotWave);
+% % else
+%     %Start with all power towards lattice beams
+%     rotation_time = 1000;   % The time to rotate the waveplate
+%     P_RotWave = 0.5;%0.9       % The fraction of power that will be transmitted 
+%                             % through the PBS to lattice beams
+%                             % 0 = dipole, 1 = lattice
+%     curtime = AnalogFunc(calctime(curtime,-100-rotation_time),'latticeWaveplate',...
+%         @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
+%         rotation_time,rotation_time,P_RotWave);    
 end
 
 %% Ramp up lattice
@@ -1612,17 +1607,19 @@ end
 %RHYS - This code works and is useful.
 
 if ( do_optical_pumping == 1)
-    OP_lat_depth_list = [60];
+    OP_lat_depth_list = ZLD;[100];
     OP_lat_depth =getScanParameter(OP_lat_depth_list, seqdata.scancycle,...
         seqdata.randcyclelist, 'OP_lat_depth'); %optical pumping lattice depth
-    
+
+  if (OP_lat_depth~= ZLD)
     %ramp up lattice beams for optical pumping
     AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, OP_lat_depth/atomscale); 
     AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, OP_lat_depth/atomscale);
 curtime= AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, OP_lat_depth/atomscale);
+  curtime = calctime(curtime,10);%10 ms for the system to be stablized
 
+  end
     
-curtime = calctime(curtime,10);%10 ms for the system to be stablized
 
   op_time_list = [3];%3
     optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle,...
@@ -2406,7 +2403,7 @@ disp('spectroscopy2');
     use_ACSync = 1;
 
     % Define the SRS frequency
-    freq_list = [-75];       
+    freq_list = [-90];       
     
     % 2021/06/22 CF
     % Use this when Xshimd=3, zshimd=-1 and you vary yshimd
@@ -2590,7 +2587,7 @@ if (sweep_field == 0) %Sweeping frequency of SRS
 
 
         % Determine the range of the sweep
-        uWave_delta_freq_list=[14]/1000;
+        uWave_delta_freq_list=[50]/1000;
         uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq');
         
@@ -4797,16 +4794,16 @@ if do_lattice_mod
 curtime = calctime (curtime,50);
     end    
     
-    freq_list = [160:2.5:170]*1e3;
+    freq_list = [247.5:5:267.5]*1e3;
 %     freq_list = [35:5:125]*1e3; %560
 
-    mod_freq = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'lat_mod_freq');
-    mod_time = 1;%0.2; %Closer to 100ms to kill atoms, 3ms for band excitations only.    
+    mod_freq = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'lat_mod_freq','Hz');
+    mod_time = 3;%0.2; %Closer to 100ms to kill atoms, 3ms for band excitations only.    
     % For Z Lattice
-%     mod_amp =  (1.1E-5)*(mod_freq/1000)^2-0.00092*(mod_freq/1000)+0.04;0.2;    
+    mod_amp =  2*((1.1E-5)*(mod_freq/1000)^2-0.00092*(mod_freq/1000)+0.04);0.2;    
     % For Y Lattice
 %     mod_amp =  (1.1E-5)*(80+mod_freq/1000)^2-0.00092*(80+mod_freq/1000)+0.04;    
-    mod_amp =  (1.1E-5)*(60+mod_freq/1000)^2-0.00092*(60+mod_freq/1000)+0.04;   
+%     mod_amp = ((1.1E-5)*(250+mod_freq/1000)^2-0.00092*(60+mod_freq/1000)+0.04);   
     
     addOutputParam('mod_amp',mod_amp);
   
@@ -4818,10 +4815,15 @@ curtime = calctime (curtime,50);
     ch2.FREQUENCY=mod_freq;     % Modulation Frequency
     ch2.AMPLITUDE_UNIT='VPP';   % Unit of modulation (Volts PP)
     ch2.AMPLITUDE=mod_amp;      % Modulation amplitude
+    ch2.SWEEP='OFF';
+    ch2.MOD='OFF';
     ch2.BURST='ON';             % Burst MODE 
     ch2.BURST_MODE='GATED';     % Trig via the gate
     ch2.BURST_TRIGGER_SLOPE='POS';% Positive trigger slope
     ch2.BURST_TRIGGER='EXT';    % External trigger.
+    
+    
+    
     programRigol(addr,[],ch2);
     
     % We leave the feedback on as it cannot keep up. This + the VVA will
@@ -4967,7 +4969,7 @@ if (Raman_transfers == 1)
     %During imaging, generate about a 4.4G horizontal field. Both shims get
     %positive control voltages, but draw from the 'negative' shim supply. 
     clear('horizontal_plane_select_params');
-    F_Pump_List = [0.7];[0.75];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
+    F_Pump_List = [1];[0.75];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,...
         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V'); %1.4;
     Raman_Power_List =[0.4];[0.4];[0.45]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
@@ -5121,7 +5123,7 @@ if seqdata.flags.High_Field_Imaging
 
     time_in_HF_imaging = curtime;
     spin_flip_9_7 = 0;
-    rabi_manual = 1;
+    rabi_manual = 0;
     spin_flip_7_5 = 0;
     do_rf_spectroscopy= 0; % Spectrocopy vary rabi
     shift_reg_at_HF = 0;
@@ -5129,7 +5131,7 @@ if seqdata.flags.High_Field_Imaging
 
 
     % Fesahbach Field ramp
-    HF_FeshValue_Initial_List = 200;[202.78];
+    HF_FeshValue_Initial_List = 202;[202.78];
     HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
         seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
  
@@ -5173,7 +5175,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
             rabi=struct;          
             
             B = HF_FeshValue_Initial; 
-            rf_list = [0:.005:.1] +...
+            rf_list = [0.01] +...
                 (BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6;
             rabi.freq = getScanParameter(rf_list,seqdata.scancycle,...
                 seqdata.randcyclelist,'rf_rabi_freq_HF','MHz');[0.0151];
@@ -5181,7 +5183,9 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
             rabi.power = getScanParameter(power_list,...
                 seqdata.scancycle,seqdata.randcyclelist,'rf_rabi_power_HF','V');            
 %             rf_pulse_length_list = [0.5]/15;
-            rf_pulse_length_list = [0.120];      
+
+            rf_pulse_length_list = [0.025:0.05:0.625]; 
+            
             rabi.pulse_length = getScanParameter(rf_pulse_length_list,...
                 seqdata.scancycle,seqdata.randcyclelist,'rf_rabi_time_HF','ms');  % also is sweep length  0.5               
                         
@@ -5416,9 +5420,9 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,15),3,sweep_pars);%3: sweeps, 4
         end
 
             % Hold time in lattice before any RF
-     HF_wait_time_list = [0];
+     HF_wait_time_list = [1000];
      HF_wait_time = getScanParameter(HF_wait_time_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'HF_wait_time');
+        seqdata.scancycle,seqdata.randcyclelist,'HF_wait_time','ms');
 
 curtime = calctime(curtime,HF_wait_time);
 
@@ -5488,9 +5492,9 @@ lattice_off_delay = 10;
         AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,seqdata.params. XDT_area_ratio*dip_endpower);
         setDigitalChannel(calctime(curtime,dip_rampstart+dip_ramptime),'XDT TTL',1) %cut lattice power for bandmapping?    
     else
-        power_list = [0.2]; %0.2 sept28 0.15 sep29
+        power_list = [0.1]; %0.2 sept28 0.15 sep29
         DT1_power = getScanParameter(power_list,seqdata.scancycle,seqdata.randcyclelist,'lat_power_val');
-        DT2_power = (((sqrt(DT1_power)*83.07717-0.8481)+3.54799)/159.3128)^2; %sept28
+        DT2_power = DT1_power;(((sqrt(DT1_power)*83.07717-0.8481)+3.54799)/159.3128)^2; %sept28
         dipole_ramp_up_time = 50;
         
         %TURNED THIS OFF SINCE NO XDT RAMPS    sept28    
@@ -5538,7 +5542,7 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minje
     setDigitalChannel(calctime(curtime,0),34,1);  %0: ON / 1: OFF,yLatticeOFF
     setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1); % Added 2014-03-06 in order to avoid integrator wind-up
     
-    XDT_Holding_time_list = [50];%holding time in XDT
+    XDT_Holding_time_list = [150];%holding time in XDT
     XDT_Holding_time = getScanParameter(XDT_Holding_time_list,seqdata.scancycle,seqdata.randcyclelist,'xdtht');%maximum is 4
       
     if ( Drop_From_XDT )%loaded back into XDT

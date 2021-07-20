@@ -21,7 +21,7 @@ optime = getScanParameter(optime_list,seqdata.scancycle,seqdata.randcyclelist,'o
 
 % K
 k_op_am_list = [0.3];[0.25]; [1];[0.6];
-k_op_am = getScanParameter(k_op_am_list,seqdata.scancycle,seqdata.randcyclelist,'k_op_am');
+k_op_am = getScanParameter(k_op_am_list,seqdata.scancycle,seqdata.randcyclelist,'k_op_am','V');
 k_op_offset = 0.0;
 k_op_time = optime;
 k_op_detuning_list = [3];3;[31];  32;29; 

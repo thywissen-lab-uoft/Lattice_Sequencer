@@ -2,15 +2,16 @@ function params = Load_Absorption_Image_Parameters()
     global seqdata;
     %% Set imaging detunings
     % Potassium - X-cam
-    kdet_shift_list = [0];%-1
-    kdet_shift = getScanParameter(kdet_shift_list,seqdata.scancycle,seqdata.randcyclelist,'kdet_shift');
+    kdet_shift_list = [32.5];%-1
+    kdet_shift = getScanParameter(kdet_shift_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'kdet_shift','MHz');
     params.detunings.K.X.positive.normal = 21.5;
     params.detunings.K.X.positive.in_trap = 23.5;
     params.detunings.K.X.positive.QP_imaging = 21.5+2.5;
     params.detunings.K.X.positive.SG = 24.5;
     params.detunings.K.X.positive.short_tof = 24.5;
     params.detunings.K.X.negative.normal = 30.5+2;
-    params.detunings.K.X.negative.SG = 32.5;32.5;
+    params.detunings.K.X.negative.SG = kdet_shift;32.5;32.5;
     % Potassium - Y-cam
     params.detunings.K.Y.positive.normal = 21.5;
     params.detunings.K.Y.negative.normal = 31.5+0;
@@ -43,9 +44,14 @@ function params = Load_Absorption_Image_Parameters()
         seqdata.randcyclelist,'HF_kdet_shift');
 
 
-    params.detunings.K.X.negative9.HF.normal = -7-0.147; -6.654;
+    params.detunings.K.X.negative9.HF.normal = -7 + -0.2;-0.147; 
+%     params.detunings.K.X.negative9.HF.normal = -7 + kHFdet_shift;
+    
     params.detunings.K.X.negative9.HF.SG = -4.5; %
-    params.detunings.K.X.negative7.HF.normal = 9.25 + 0.531;%8.8;params.detunings.K.X.negative9.HF.normal+(0.154*(seqdata.params.HF_fb-190)+31.851)/2; %9.5 for imaging from ODT, 8 for band mapping
+    
+    params.detunings.K.X.negative7.HF.normal = 9.25 + 0.3; + 0.531;%8.8;params.detunings.K.X.negative9.HF.normal+(0.154*(seqdata.params.HF_fb-190)+31.851)/2; %9.5 for imaging from ODT, 8 for band mapping
+%     params.detunings.K.X.negative7.HF.normal = 9.25 + kHFdet_shift; + 0.531;%8.8;params.detunings.K.X.negative9.HF.normal+(0.154*(seqdata.params.HF_fb-190)+31.851)/2; %9.5 for imaging from ODT, 8 for band mapping
+
     params.detunings.K.X.negative7.HF.SG = 12.5;
         
     %% Other detunings
@@ -55,7 +61,11 @@ function params = Load_Absorption_Image_Parameters()
     params.k_repump_shift.positive = 28;
     params.k_repump_shift.negative = 21;
     %% Probe beam powers
-    params.powers.K.X = 0.12;0.09;
+    K_probe_pwr_list = [0.5];[0.1];%-1
+    K_probe_pwr = getScanParameter(K_probe_pwr_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'K_probe_pwr','V');
+    
+    params.powers.K.X = K_probe_pwr;0.12;0.09;
     params.powers.K.Y = 0.12;
     params.powers.K.MOT = 0.8;
     Rb_probe_pwr_list = [0.025];[0.1];%-1

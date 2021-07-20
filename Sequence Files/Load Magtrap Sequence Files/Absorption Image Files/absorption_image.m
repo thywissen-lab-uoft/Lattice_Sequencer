@@ -232,7 +232,7 @@ else
         addr=6; % This is the internal Adwin address for the Rigol
         
         freq1 = (120+HF_prob_freq7)*1E6;
-        pow1_list = [0.85];[0.7];
+        pow1_list = [0.8];[0.7];
         pow1 = getScanParameter(pow1_list,seqdata.scancycle,seqdata.randcyclelist,...
             'HF_prob_pwr1','V');
 %         pow1 = 1.1;

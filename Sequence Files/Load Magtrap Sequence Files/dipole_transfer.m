@@ -49,9 +49,10 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     %RHYS - A very important parameter. Pass these from elsewhere.
     Evap_End_Power_List =[0.095];[0.085];[.065];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
     
-   Evap_End_Power_List = [.15 .25 .2:.1:1.5 .14 .13 .12 .11 .1];
+%    Evap_End_Power_List = [0.12 0.13 0.15 0.17 0.25];
     
-    exp_end_pwr = getScanParameter(Evap_End_Power_List,seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power');
+    exp_end_pwr = getScanParameter(Evap_End_Power_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');
     Second_Evaporation_Stage = 0;
     %exp_end_pwr =  0.3; %0.36  
 
@@ -142,7 +143,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     Time_List =  [15000];[15000]; %[500] for fast evap, for sparse image, [15000] for normal experiment
     Evap_time = getScanParameter(Time_List,seqdata.scancycle,seqdata.randcyclelist,'evap_time');   
     exp_evap_time = Evap_time;         
-    Tau_List = [5.2];[4];   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
+    Tau_List = [5];[4];   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
     exp_tau_frac = getScanParameter(Tau_List,seqdata.scancycle,seqdata.randcyclelist,'Evap_Tau_frac');
     exp_tau=Evap_time/exp_tau_frac;
 

@@ -30,9 +30,7 @@ disp(['     Address      : ' num2str(settings.Address)]);
 disp(['     Frequency    : ' num2str(settings.Frequency) ' MHz']);
 disp(['     Power        : ' num2str(settings.Power) ' dBm']);
 disp(['     Enable       : ' num2str(settings.Enable)]);
-
 disp(['     Enable Sweep : ' num2str(settings.EnableSweep)]);
-
 disp(['     Sweep Range  : ' num2str(settings.SweepRange) ' MHz']);
 
 

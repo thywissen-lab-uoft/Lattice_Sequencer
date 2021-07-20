@@ -23,7 +23,6 @@ if nargin==0
    settings.Power=15;             % Power (dBM);
    settings.Enable=1;
 end
-
 % ADDRESSES:
 % See SRS manual on how to change GPIB adress
     % 29 - SRS RB
@@ -54,14 +53,38 @@ end
 
 % MODL 1(0) enables (disables) modulation
 
+if ~isfield(settings,'EnableSweep')
+   settings.EnableSweep=0; 
+end
+
+if ~isfield(settings,'SweepRange')
+   settings.SweepRange=0; 
+end
 
 disp('Programming Rb uWave Source ');
-disp(['     Address   : ' num2str(settings.Address)]);
-disp(['     Frequency : ' num2str(settings.Frequency) ' GHz']);
-disp(['     Power     : ' num2str(settings.Power) ' dBm']);
-disp(['     Enable    : ' num2str(settings.Enable)]);
-cmd=sprintf('FREQ %fGHz; AMPH %gdBm; MODL 0; DISP 2; ENBH %g; FREQ?',...
-    settings.Frequency,settings.Power,settings.Enable);
+disp(['     Address      : ' num2str(settings.Address)]);
+disp(['     Frequency    : ' num2str(settings.Frequency) ' GHz']);
+disp(['     Power        : ' num2str(settings.Power) ' dBm']);
+disp(['     Enable       : ' num2str(settings.Enable)]);
+disp(['     Enable Sweep : ' num2str(settings.EnableSweep)]);
+disp(['     Sweep Range  : ' num2str(settings.SweepRange) ' MHz']);
+
+
+
+% cmd=sprintf('FREQ %fGHz; AMPH %gdBm; MODL 0; DISP 2; ENBH %g; FREQ?',...
+%     settings.Frequency,settings.Power,settings.Enable);
+% addGPIBCommand(settings.Address,cmd);
+
+
+
+cmd=sprintf('FREQ %fGHz; AMPR %gdBm; MODL %g; MFNC %g; FDEV %gMHz; DISP 2; ENBR %g; FREQ?',...
+    settings.Frequency,...
+    settings.Power,...
+    settings.EnableSweep,...
+    5, ...      % Modulating function is always external [-1V,1V]
+    settings.SweepRange,...
+    settings.Enable);% disp(cmd)
 
 addGPIBCommand(settings.Address,cmd);
+
 end

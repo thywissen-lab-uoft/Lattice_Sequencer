@@ -68,6 +68,7 @@ curtime = timein;
             end
         end
     end
+    disp(p)
     
     %If QP ramp time is defined, match the FF ramp
     p.QP_FF_ramp_delay = p.QP_ramp_delay;

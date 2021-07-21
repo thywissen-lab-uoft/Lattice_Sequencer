@@ -84,7 +84,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
  
     k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
     
-    
+    % FB Field and evaporation
+    ramp_Feshbach_B_before_CDT_evap = 1;
     ramp_Feshbach_B_in_CDT_evap = 0; %ramp up Feshbach field during CDT evap, try to create a colder sample
     ramp_Feshbach_B_after_CDT_evap = 0; %ramp up Feshbach field after CDT evap, try to create a colder sample
     
@@ -942,8 +943,7 @@ end
 if seqdata.flags.mix_at_beginning
     dispLineStr('RF K Sweeps for -7,-9 mixture.',curtime);  
 
-    do_ramp_field=0;
-    if do_ramp_field
+    if ~seqdata.flags.do_D1OP_before_evap
         disp(' Ramping the magnetic field');
         % FB coil settings
         ramp=struct;
@@ -1010,36 +1010,6 @@ if seqdata.flags.mix_at_beginning
         setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
         setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
     end
-
-                    %%%%%%%%%% Manual specification %%%%%%%%%%%%%%
-                            % DDS Trigger Settings
-            %         dTP=0.1;        % Pulse duration
-            %         DDS_ID=1;       % DDS ID
-                    % Pre-set RF gain and TTL state
-            %         setAnalogChannel(calctime(curtime,-35),'RF Gain',sweep_pars.power); 
-            %         setDigitalChannel(calctime(curtime,-35),'RF TTL',0);        
-            %         for kk=1:n_sweeps_mix        
-            %             disp([' Sweep Number ' num2str(kk) ]);
-            % 
-            %             % Define a frequency sweep        
-            %             sweep=[DDS_ID 1E6*f1 1E6*f2 sweep_pars.pulse_length];     
-            %             seqdata.numDDSsweeps=seqdata.numDDSsweeps+1;               
-            %             seqdata.DDSsweeps(seqdata.numDDSsweeps,:)=sweep;          
-            %             
-            %             % Trigger DDS
-            %             DigitalPulse(curtime,'DDS ADWIN Trigger',dTP,1);  
-            %             
-            %             % Enable the RF
-            %             DigitalPulse(curtime,'RF TTL',sweep_pars.pulse_length,1);  
-            % 
-            %             % Advance time by 60 Hz period
-            %             curtime=calctime(curtime,T60);        
-            %         end        
-            %         setAnalogChannel(calctime(curtime,1),'RF Gain',-10); 
-
-
-
-                    %%%%%%%%%% Automatic specification %%%%%%%%%%%%%%
     % Perform any additional sweeps
     for kk=1:n_sweeps_mix
         disp([' Sweep Number ' num2str(kk) ]);
@@ -1050,33 +1020,35 @@ curtime = calctime(curtime,50);
 
 end
 
-%% Ramp Magnetic Fields for Optical Evaporation
+%% Ramp Magnetic Fields before Optical Evaporation
 
-dispLineStr('Ramping FB field prior to optical evaporation',curtime);
-Evap_FB_field_list = [1:25];
-Evap_FB_field = getScanParameter(Evap_FB_field_list,seqdata.scancycle,...
-            seqdata.randcyclelist,'Evap_FB_field','G');
+if ramp_Feshbach_B_before_CDT_evap
 
-clear('ramp');
+    dispLineStr('Ramping FB field prior to optical evaporation',curtime);
+    Evap_FB_field_list = [15];
+    Evap_FB_field = getScanParameter(Evap_FB_field_list,seqdata.scancycle,...
+                seqdata.randcyclelist,'Evap_FB_field','G');
 
-%  FB coil settings
-ramp.fesh_ramptime = 50;
-ramp.fesh_ramp_delay = 0;
-ramp.fesh_final = Evap_FB_field;
+    clear('ramp');
 
-if seqdata.flags.CDT_evap
-    ramp.settling_time = 0;
-else
-    ramp.settling_time = 50;
+    %  FB coil settings
+    ramp.fesh_ramptime = 50;
+    ramp.fesh_ramp_delay = 0;
+    ramp.fesh_final = Evap_FB_field;
+
+    if seqdata.flags.CDT_evap
+        ramp.settling_time = 0;
+    else
+        ramp.settling_time = 50;
+    end
+
+    disp(['     Field             (G) : ' num2str(ramp.fesh_final)]);
+    disp(['     Ramp Time        (ms) : ' num2str(ramp.fesh_ramptime)]);
+    disp(['     Settling Time    (ms) : ' num2str(ramp.settling_time)]);
+
+    % Ramp the bias fields
+    curtime = ramp_bias_fields(calctime(curtime,0), ramp); 
 end
-
-disp(['     Field             (G) : ' num2str(ramp.fesh_final)]);
-disp(['     Ramp Time        (ms) : ' num2str(ramp.fesh_ramptime)]);
-disp(['     Settling Time    (ms) : ' num2str(ramp.settling_time)]);
-
-% Ramp the bias fields
-curtime = ramp_bias_fields(calctime(curtime,0), ramp);              
-
     %% Sweep Rb to |1,-1>
     %RHYS - Could keep the parameters around for use in a generalized function,
     %but this is never itself used.
@@ -2930,8 +2902,7 @@ end
 
 if (seqdata.flags.mix_at_end==1 && seqdata.flags.CDT_evap==1)      
 
-    do_ramp_field=0;
-    if do_ramp_field
+    if ~seqdata.flags.do_D1OP_post_evap
         disp(' Ramping the magnetic field');
         % FB coil settings
         ramp=struct;

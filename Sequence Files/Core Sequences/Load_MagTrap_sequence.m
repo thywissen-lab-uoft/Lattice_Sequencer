@@ -213,17 +213,21 @@ seqdata.flags.compress_QP = 1; % compress QP after transport
 seqdata.flags.RF_evap_stages = [1, 1, 1]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
 
 
-%RHYS - Here be parameters.
+% RF1A and RF1B timescales
 RF_1B_time_scale_list = [0.9];
-RF_1B_time_scale = getScanParameter(RF_1B_time_scale_list,seqdata.scancycle,seqdata.randcyclelist,'RF1B_time_scale');
+RF_1B_time_scale = getScanParameter(RF_1B_time_scale_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'RF1B_time_scale');
 rf_evap_time_scale = [0.6 RF_1B_time_scale];[0.6 .9];[0.7 0.9];[1.0 1.5];[0.8 1.2];[1.00 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
+
+% RF1A Ending Frequency
 RF_1A_Final_Frequency_list = [16];%16
-RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1A_finalfreq');
+RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'RF1A_finalfreq','MHz');
 
-
-% RF_1B_Final_Frequency = 0.8;
+% RF1B Final Frequency
 RF_1B_Final_Frequency_list = [.4:.05:1.4];%0.8,0.4
-RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq','MHz');
+RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq','MHz');
 
 
 seqdata.flags.do_plug = 1;   % ramp on plug after transfer to window

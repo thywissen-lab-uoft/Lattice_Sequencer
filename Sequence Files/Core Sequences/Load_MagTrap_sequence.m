@@ -227,7 +227,6 @@ RF_1B_Final_Frequency_list = [0.8];%0.8,0.4
 RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq','MHz');
 
 
-
 seqdata.flags.do_plug = 1;   % ramp on plug after transfer to window
 seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get clean TOF signal
 
@@ -235,15 +234,15 @@ seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get cl
 
 % Dipole trap
 seqdata.flags.do_dipole_trap = 1; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
+seqdata.flags.do_Rb_uwave_transfer_in_ODT = 0;  % Field Sweep Rb 2-->1
+seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 1; % uWave Frequency sweep Rb 2-->1
+seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
+seqdata.flags.do_D1OP_before_evap= 1;           % K D1 pump to purify
+seqdata.flags.mix_at_beginning = 1;             % RF Freq Mixing -9-->-9+-7
 seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
-seqdata.flags.K_RF_sweep = 0;    %sweep 40K into |9/2,-9/2>; %create mixture in XDT, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1    
-seqdata.flags.init_K_RF_sweep = 1; %sweep 40K into |9/2,-9/2>; %create mixture in XDT before evap, go to dipole-transfer,  40K RF Sweep, set second_sweep to 1  
 
-% Alternative flags for uWave and RF transfer of Rb and K
-seqdata.flags.do_Rb_uwave_transfer_in_ODT = 0;  % Field Sweep, TYPICAL
-seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 0; % Experiemntal field sweep
-seqdata.flags.do_Rb_uwave_transfer_in_ODT3 = 1; % uWave Frequency sweep
-seqdata.flags.init_K_RF_sweep2 = 0;
+
+
 
 
 

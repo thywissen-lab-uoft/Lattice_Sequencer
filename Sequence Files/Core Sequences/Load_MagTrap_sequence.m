@@ -210,7 +210,6 @@ seqdata.flags.ver_transport_type = 3;
 % Use stage1  = 2 to evaporate fast for transport benchmarking 
 % Use stage1b = 2 to do microwave evaporation in the plugged QP trap
 seqdata.flags.compress_QP = 1; % compress QP after transport
-
 seqdata.flags.RF_evap_stages = [1, 1, 1]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
 
 

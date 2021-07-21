@@ -83,17 +83,17 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     mix_at_beginning = 0;% (obsolete)second RF sweep/pulse to make a spin mixture before XDT evap
     
     do_D1OP_before_evap= 1;
-    mix_at_beginning2 = 1;           %this flag in combination with D1OP makes a spin mixture before evaporation
+    mix_at_beginning2 = 1;              %this flag in combination with D1OP makes a spin mixture before evaporation
     
-    do_D1OP_post_evap = 0;          % Optically pump afer evap
-    mix_at_end = 0;               % Make a spin mixture at the end of evap    
-    k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
+    do_D1OP_post_evap = 0;               % Optically pump afer evap
+    mix_at_end = 0;                     % Make a spin mixture at the end of evap    
+    k_rf_rabi_oscillation=0;            % RF rabi oscillations after evap
     
     
-    ramp_Feshbach_B_in_CDT_evap = 0; %ramp up Feshbach field during CDT evap, try to create a colder sample
+    ramp_Feshbach_B_in_CDT_evap = 0;    %ramp up Feshbach field during CDT evap, try to create a colder sample
     ramp_Feshbach_B_after_CDT_evap = 0; %ramp up Feshbach field after CDT evap, try to create a colder sample
     
-    load_lat_in_xdt_loading = 0;    %ramp up and ramp down lattice beams in the dipole transfer code;
+    load_lat_in_xdt_loading = 0;        %ramp up and ramp down lattice beams in the dipole transfer code;
 
     if qp_ramp_down_start_time<0
         error('QP ramp must happen after time zero');

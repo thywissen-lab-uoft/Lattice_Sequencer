@@ -19,6 +19,10 @@ for kk=1:length(aTraces)
     inds=find(seqdata.analogadwinlist(:,2)==chnum);  
     aTraces(kk).data=[seqdata.analogadwinlist(inds,1) ...
         seqdata.analogadwinlist(inds,3)];
+    
+    [~,inds]=sort(aTraces(kk).data(:,1));    
+    aTraces(kk).data=aTraces(kk).data(inds,:);
+    
 end
 
 for kk=1:length(dTraces)
@@ -26,6 +30,9 @@ for kk=1:length(dTraces)
     inds=find(seqdata.digadwinlist(:,2)==chnum);
     dTraces(kk).data=[seqdata.digadwinlist(inds,1) ...
         seqdata.digadwinlist(inds,3)];
+    
+    [~,inds]=sort(dTraces(kk).data(:,1));    
+    dTraces(kk).data=dTraces(kk).data(inds,:);
 end
 
 end

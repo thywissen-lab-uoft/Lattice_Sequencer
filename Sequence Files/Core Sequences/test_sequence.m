@@ -3782,6 +3782,11 @@ setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1);
 
 % setAnalogChannel(curtime,'Modulation Ramp',-10)
 % setDigitalChannel(calctime(curtime,0),'Lattice FM',0);
+
+setDigitalChannel(calctime(curtime,0),'DMD TTL',0);
+setDigitalChannel(calctime(curtime,50),'DMD TTL',1);
+
+
 %  
 % mod_freq  = 60;
 % mod_dev_chn1 = 0;
@@ -3830,8 +3835,11 @@ setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1);
 % lat_rampup_time = 1*[DMD_Ramp_Time,DMD_On_Time,Lat_Ramp_Time,Lat_Hold_Time,Lat_Pin_Time,Pin_Hold_Time]; 
 % Turn off DMD
 % setAnalogChannel(calctime(curtime,Total_Time+1000),'DMD Power',-5);
-% setDigitalChannel(calctime(curtime,Total_Time+1000),'DMD AOM TTL',0);%0 off 1 on
+% setDigitalChannel(calctime(curtime,Total_Time+1000),'DMD AOM TTL',1);%0 off 1 on
 % 
+
+% setAnalogChannel(calctime(curtime,20),'DMD Power',1.5);
+% setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1);%0 off 1 on
 
 %% Rb beat note FM test
 
@@ -4861,11 +4869,11 @@ setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
 %     str=sprintf(':SOUR2:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
 %     addVISACommand(6, str);
  
-curtime = calctime(curtime,1000);
-% setDigitalChannel(calctime(curtime,0),'Kill TTL',0);
-setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1);
-
-setAnalogChannel(calctime(curtime,0),63,0);
+% curtime = calctime(curtime,1000);
+% % setDigitalChannel(calctime(curtime,0),'Kill TTL',0);
+% setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1);
+% 
+% setAnalogChannel(calctime(curtime,0),63,0);
 
 
 %% HF Testing timing double shutter
@@ -4916,6 +4924,22 @@ setAnalogChannel(calctime(curtime,0),63,0);
 % 
 % setDigitalChannel(calctime(curtime,tp+10),'PixelFly Trigger',0);
 % 
+%% LF Double SHutter KRB
+% seqdata.flags.image_type = 0; 
+% seqdata.flags.MOT_flour_image = 0;
+% seqdata.flags.image_atomtype = 2;%  0:Rb; 1:K; 2: K+Rb (double shutter)
+% seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
+% seqdata.flags.img_direction = 0; 
+% seqdata.flags.do_stern_gerlach = 0; %1: Do a gradient pulse at the beginning of ToF
+% seqdata.flags.iXon = 0; % use iXon camera to take an absorption image (only vertical)
+% seqdata.flags.do_F1_pulse = 0; % repump Rb F=1 before/during imaging
+% seqdata.flags.High_Field_Imaging = 0;
+% seqdata.flags.In_Trap_imaging = 0;
+% seqdata.flags.QP_imaging = 1;
+% seqdata.flags.init_K_RF_sweep=0;
+% 
+%         curtime = absorption_image2(calctime(curtime,0.0)); 
+
 
 curtime=calctime(curtime,1000);
 %% Feshbach field test

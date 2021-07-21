@@ -700,7 +700,7 @@ end
         
 %         bPlot.Enable='off';
 %         bOver.Enable='off';
-        bCompile.Enable='off';
+%         bCompile.Enable='off';
 
         bBrowse.Enable='off';
         eSeq.Enable='off';

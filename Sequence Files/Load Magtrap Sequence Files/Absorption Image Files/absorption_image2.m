@@ -1,46 +1,38 @@
-%------
-%Function call: timeout = absorption_image(timein, image_loc)
-%Author: DJ
-%Created: Sep 2009
-%Summary: This function calls an absorption imaging sequence for a certain
-%   image locatin (image_loc = 0 for MOT cell; 1 for science cell). Time of
-%   flight is currently defined via seqdata.params.tof.
-%------
-
 %Note: curtime is only updated to tof in this code just before the first
 %absorption image. Thus, all times before this are referenced to the
 %presumed drop time.
-function timeout = absorption_image(timein)
 
-%% Loading in parameters times and flags
+function timeout = absorption_image2(timein)
 
-global seqdata; %Not sure why it is necessary to declare seqdata global at the top of each structure, but should probably stop.
-curtime = timein; %Declare the current time reference
+global seqdata; 
+curtime = timein; 
+
+
 ScopeTriggerPulse(curtime,'Start TOF',0.2); %Trigger the scope right at the start of the TOF
 
 %Populate the relevant structures
 seqdata.times.tof_start = curtime; %Forms a list of useful time references.
+
 seqdata.flags.absorption_image = Load_Absorption_Image_Flags(); %Load in the flags.
 seqdata.params.absorption_image = Load_Absorption_Image_Parameters(); %Load in the parameters.
+
 seqdata.times.tof_end = calctime(curtime,seqdata.params.absorption_image.timings.tof); %Also append the time that the image is actually taken to the time list
 
 %% Override default values for parameters based on conditions
-%RHYS - Perhaps these should trigger warning messages that can be overridden rather than a
-%change in the flags/parameters set? Not sure what is best.
-
-%Set tof negative if taking an in trap image
+% Set TOF to -2 ms for in trap image (ignore TOF time)
 if strcmp(seqdata.flags.absorption_image.condition, 'in_trap')
   seqdata.params.absorption_image.timings.tof = -2;
 end
 
-%Disable the optical pumping during HF imaging
+% Disable the optical pumping during HF imaging
 if seqdata.flags.absorption_image.High_Field_Imaging==1
   seqdata.flags.absorption_image.use_K_OP = 0;
 end
 
-%If 40K is definitely in a negative mF state, flip the quantizing shim
+% If 40K is definitely in a negative mF state, flip the quantizing shim
 if ((seqdata.flags.init_K_RF_sweep == 1) && ...
-    strcmp(seqdata.flags.absorption_image.image_atomtype,'K'))
+    (strcmp(seqdata.flags.absorption_image.image_atomtype,'K') || ...
+    strcmp(seqdata.flags.absorption_image.image_atomtype,'KRb')))
   seqdata.flags.absorption_image.negative_imaging_shim = 'negative'; 
 end
 
@@ -56,22 +48,28 @@ str=['Absorption Imaging : ' flags.image_atomtype ' ' flags.img_direction ...
 % disp(str)
 disp(flags)
 
-
 % Grab the relevant parameters
-detuning = params.detunings.(flags.image_atomtype).(flags.img_direction) ...
+% detuning = params.detunings.(flags.image_atomtype).(flags.img_direction) ...
+%   .(flags.negative_imaging_shim).(flags.condition);
+% power = params.powers.(flags.image_atomtype).(flags.img_direction);
+
+% Rb Settings
+Rb_detuning = params.detunings.Rb.(flags.img_direction) ...
   .(flags.negative_imaging_shim).(flags.condition);
-
-power = params.powers.(flags.image_atomtype).(flags.img_direction);
-
+Rb_power = params.powers.Rb.(flags.img_direction);
 rb_detuning_shift_time = params.timings.rb_detuning_shift_time.(flags.img_direction);
 
+% K Settings
+K_detuning = params.detunings.K.(flags.img_direction) ...
+  .(flags.negative_imaging_shim).(flags.condition);
+K_power = params.powers.K.(flags.img_direction);
 k_OP_detuning = params.k_OP_detuning.(flags.negative_imaging_shim);
-
 k_repump_shift = params.k_repump_shift.(flags.negative_imaging_shim);
 
+% Quantization axis settings
 quant_timings = params.quant_timings.(flags.condition); %This one is a structure.
-
 quant_shim_val = params.quant_shim_val.(flags.img_direction).(flags.negative_imaging_shim);
+
 
 %% Pulse QP to do SG imaging (uses first several ms of ToF depending on the parameters chosen)
 %Do a special set of magnetic field maninpulations if doing
@@ -168,49 +166,54 @@ if (~flags.High_Field_Imaging)
   
   if flags.use_K_OP
     %set probe detuning
-    setAnalogChannel(calctime(curtime,params.timings.tof - params.timings.k_detuning_shift_time - params.timings.K_OP_time),'K Probe/OP FM',190.0); %202.5 for 2G shim
+    setAnalogChannel(calctime(curtime,params.timings.tof - ...
+        params.timings.k_detuning_shift_time - params.timings.K_OP_time),'K Probe/OP FM',190.0); %202.5 for 2G shim
     %SET trap AOM detuning to change probe
-    setAnalogChannel(calctime(curtime,params.timings.tof - params.timings.k_detuning_shift_time - params.timings.K_OP_time),'K Trap FM',k_OP_detuning); %40 for 2G shim
+    setAnalogChannel(calctime(curtime,params.timings.tof - ...
+        params.timings.k_detuning_shift_time - params.timings.K_OP_time),'K Trap FM',k_OP_detuning); %40 for 2G shim
     %Set AM for Optical Pumping
-    setAnalogChannel(calctime(curtime,params.timings.tof - params.timings.k_detuning_shift_time - params.timings.K_OP_time),'K Probe/OP AM',power);%0.65
+    setAnalogChannel(calctime(curtime,params.timings.tof - ...
+        params.timings.k_detuning_shift_time - params.timings.K_OP_time),'K Probe/OP AM',K_power);%0.65
     %TTL
-    DigitalPulse(calctime(curtime,params.timings.tof - params.timings.k_detuning_shift_time - params.timings.K_OP_time),'K Probe/OP TTL',params.timings.K_OP_time,1); %0.3
+    DigitalPulse(calctime(curtime,params.timings.tof - ...
+        params.timings.k_detuning_shift_time - params.timings.K_OP_time),'K Probe/OP TTL',params.timings.K_OP_time,1); %0.3
+    
+    
     %Turn off AM
-    setAnalogChannel(calctime(curtime,params.timings.tof - params.timings.k_detuning_shift_time),'K Probe/OP AM',0,1);   
+     setAnalogChannel(calctime(curtime,params.timings.tof - ...
+         params.timings.k_detuning_shift_time),'K Probe/OP AM',0,1);   
   end
 end
 
 
 %% Prepare detuning, repump, and probe for the actual image
 if(~flags.High_Field_Imaging)
-  %K - Set frequency for imaging just before actual image.
-  if strcmp(flags.image_atomtype,'K')
-    %set probe detuning
-    setAnalogChannel(calctime(curtime,params.timings.tof-params.timings.k_detuning_shift_time),'K Probe/OP FM',180);
-    %SET trap AOM detuning to change probe
-    setAnalogChannel(calctime(curtime,params.timings.tof-params.timings.k_detuning_shift_time),'K Trap FM',detuning);
-  end
+    
+  % Set K probe Detuning for pump and probe
+  setAnalogChannel(calctime(curtime,...
+        params.timings.tof-params.timings.k_detuning_shift_time),'K Probe/OP FM',180);
+  setAnalogChannel(calctime(curtime,...
+        params.timings.tof-params.timings.k_detuning_shift_time),'K Trap FM',K_detuning);  
   
-  %Rb - Set frequency for imaging just before actual image. Need more
-  %time to set Rb detuning with offset lock.
-  if strcmp(flags.image_atomtype,'Rb')
-    %offset FF
-%     setAnalogChannel(calctime(curtime,params.timings.tof - rb_detuning_shift_time),'Rb Beat Note FF',params.others.RB_FF,1);
-%     setAnalogChannel(calctime(curtime,params.timings.tof - rb_detuning_shift_time+2200),'Rb Beat Note FF',10,1);
-%     setAnalogChannel(calctime(curtime,params.timings.tof - rb_detuning_shift_time),'Rb Beat Note FM',detuning);
-    AnalogFuncTo(calctime(curtime,params.timings.tof - rb_detuning_shift_time),'Rb Beat Note FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),rb_detuning_shift_time,rb_detuning_shift_time, detuning);
-    AnalogFuncTo(calctime(curtime,params.timings.tof + 500),'Rb Beat Note FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),1000,1000, 6590+32);
-  end
+  % Set Rb probe detuning via offset lock
+  AnalogFuncTo(calctime(curtime,...
+      params.timings.tof - rb_detuning_shift_time),'Rb Beat Note FM',...
+      @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+      rb_detuning_shift_time,rb_detuning_shift_time, Rb_detuning);
+  
+  % Set Rb probe back to "original" value much later
+  AnalogFuncTo(calctime(curtime,...
+      params.timings.tof + 500),'Rb Beat Note FM',...
+      @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+      1000,1000, 6590+32);
 
-  %K - Set power, make sure probe is TTL'd off before image.
-  if strcmp(flags.image_atomtype, 'K')
-    setAnalogChannel(calctime(curtime,-1+params.timings.tof),'K Probe/OP AM',power); 
-  end
-  
-  %Rb - Set power, make sure probe is TTL'd off before image.
-  if strcmp(flags.image_atomtype, 'Rb')
-    setAnalogChannel(calctime(curtime,-5+params.timings.tof),'Rb Probe/OP AM',power);
-  end
+  % Set K probe/OP power 
+  setAnalogChannel(calctime(curtime,-1+params.timings.tof),...
+      'K Probe/OP AM',K_power); 
+
+  % Set Rb probe/OP power
+  setAnalogChannel(calctime(curtime,-5+params.timings.tof),...
+      'Rb Probe/OP AM',Rb_power);  
   
 else
   if strcmp(flags.image_atomtype, 'K')
@@ -262,7 +265,9 @@ end
 %K - Open shutter for probe. 
 %RHYS - This is ok, just get rid of blue_image/D1_image and simplify.
 if ~(flags.High_Field_Imaging)
-  if strcmp(flags.image_atomtype, 'K')
+    
+  % Open K shutter
+  if strcmp(flags.image_atomtype, 'K') || strcmp(flags.image_atomtype, 'KRb')
     setDigitalChannel(calctime(curtime, -5+params.timings.tof),'K Probe/OP shutter',1);
     if (flags.use_K_repump || flags.K_repump_during_image)
       %Open science cell K repump shutter
@@ -279,6 +284,13 @@ if ~(flags.High_Field_Imaging)
       end
     end
   end
+  
+  % Open Rb shutter
+  if strcmp(flags.image_atomtype, 'Rb') || strcmp(flags.image_atomtype, 'KRb')
+    setDigitalChannel(calctime(curtime,-5+params.timings.tof),'Rb Probe/OP shutter',1); %-10
+  end
+  
+  
 elseif flags.High_Field_Imaging
   %open shutter
   setDigitalChannel(calctime(curtime,-5 + params.timings.tof),'High Field Shutter',1);
@@ -286,10 +298,7 @@ elseif flags.High_Field_Imaging
   setDigitalChannel(calctime(curtime,500),'High Field Shutter',0);
 end
 
-%Rb (Open the shutters just before the imaging pulse)
-if strcmp(flags.image_atomtype, 'Rb')
-  setDigitalChannel(calctime(curtime,-5+params.timings.tof),'Rb Probe/OP shutter',1); %-10
-end
+
 
 %% Take the absorption images
 
@@ -303,14 +312,15 @@ end
 curtime = calctime(curtime,params.timings.tof);
 
 % Take the first absorption image.
-do_abs_pulse(curtime,params,power,flags);
+tof_krb_diff=seqdata.params.tof_krb_diff;
+do_abs_pulse2(curtime,params,flags,K_power,tof_krb_diff);
 
 % Wait 200 ms for all traces of atoms to be gone 
 % RHYS - could be shorter
 curtime = calctime(curtime,200); 
 
 % Take the second absorption image
-do_abs_pulse(curtime,params,power,flags);
+do_abs_pulse2(curtime,params,flags,K_power,tof_krb_diff);
 
 %% Turn Probe and Repump off
 
@@ -326,11 +336,132 @@ addOutputParam('qqfield1',quant_shim_val(1));
 addOutputParam('qqfield2',quant_shim_val(2));
 addOutputParam('qqfield3',quant_shim_val(3));
 addOutputParam('OP_Detuning', k_OP_detuning)
-addOutputParam('kdet',detuning);
-addOutputParam('rbdet',6590-detuning);
+addOutputParam('kdet',K_detuning);
+addOutputParam('rbdet',6590-Rb_detuning);
 
 timeout=curtime;
+end
+
+% Absorption pulse function -- triggers cameras and pulses probe/repump
+% RHYS - It would be reasonable to call this as a method of an absorption image class.
+function do_abs_pulse2(curtime,params,flags,K_power,tof_krb_diff)
+
+pulse_length = params.timings.pulse_length;
+
+%This is where the cameras are triggered.
+ScopeTriggerPulse(curtime,'Camera triggers',pulse_length);
+
+%Trigger the iXon versus the PixelFlys.
+if (flags.iXon)
+  DigitalPulse(curtime,'iXon Trigger',pulse_length,1);
+else
+  DigitalPulse(curtime,'PixelFly Trigger',pulse_length,1);
+end
 
 
+switch flags.image_atomtype
+    case 'Rb'
+      %Pulse the Rb probe with tthe TTL.
+      DigitalPulse(curtime,'Rb Probe/OP TTL',pulse_length,0);      
+      if flags.do_F1_pulse == 1
+        % Pulse repump with AOM AM
+        setDigitalChannel(calctime(curtime,-5),'Rb Sci Repump',1);
+        setAnalogChannel(calctime(curtime,-0.1),'Rb Repump AM',0.3);
+        % All switching of the RP pulse is currently done with the shutter/AM.
+        % Need TTL off for this AOM to get better timing.
+        setAnalogChannel(calctime(curtime,pulse_length),'Rb Repump AM',0);
+        setDigitalChannel(calctime(curtime,pulse_length),'Rb Sci Repump',0);
+      end
+    case 'K'
+        if ~(flags.High_Field_Imaging)
+            DigitalPulse(calctime(curtime,0),'K Probe/OP TTL',pulse_length,1);
+            
+            
+             % Open and close shutter
+             setDigitalChannel(calctime(curtime, -5),'K Probe/OP shutter',1);
+             setDigitalChannel(calctime(curtime, pulse_length+.5),'K Probe/OP shutter',0);
+            
+            % Turn AM on and off if need
+               setAnalogChannel(calctime(curtime,-.5),'K Probe/OP AM',K_power);
+              setAnalogChannel(calctime(curtime,pulse_length+.5),'K Probe/OP AM',0,1);
+        elseif flags.High_Field_Imaging
+            extra_wait_time = params.timings.wait_time;
+            % Pulse the imaging beam
+            DigitalPulse(calctime(curtime,extra_wait_time),'K High Field Probe',pulse_length,0);
+            if flags.Two_Imaging_Pulses
+                % Pulse the imaging beam again
+                DigitalPulse(calctime(curtime,params.timings.time_diff_two_absorp_pulses+pulse_length+extra_wait_time),...
+                    'K High Field Probe',pulse_length,0);
+                if flags.Image_Both97
+                    % Switch RF source if imaging both
+                    buffer_time = 0.01;
+                    DigitalPulse(calctime(curtime,...
+                        params.timings.time_diff_two_absorp_pulses+pulse_length+extra_wait_time-buffer_time),...
+                    'HF freq source',pulse_length+buffer_time+buffer_time,0);               
+   
+                end
+            end
+        end      
+        %Repump on during the image pulse
+        if flags.K_repump_during_image
+            DigitalPulse(curtime,'K Repump TTL',pulse_length,0);
+        end
+    case 'KRb'
+        % Something doesn't make 100% sense with teh timings, may need to
+        % do reanalysis of timings, but we're talking 10us here, so it's
+        % okay qualitatively
+        
+        % Time to start first exposure
+        Tstart1 = params.timings.wait_time;        
+        buffer_time = 0.01;
+        
+        % Time to start second exposure
+        % (initial delay, pulse time, time diff between exposures)
+        Tstart2=params.timings.wait_time+pulse_length+...
+            params.timings.time_diff_two_absorp_pulses-buffer_time+tof_krb_diff;
+                        
+
+        % K Probe pulse
+         DigitalPulse(calctime(curtime,Tstart1),...
+             'K Probe/OP TTL',pulse_length,1);
+         
+         % Turn AM on and off if needed
+         setAnalogChannel(calctime(curtime,Tstart1-.5),'K Probe/OP AM',K_power);
+         setAnalogChannel(calctime(curtime,Tstart1+pulse_length+.5),'K Probe/OP AM',0,1);
+      
+         % Open and close shutter
+         setDigitalChannel(calctime(curtime, Tstart1-5),'K Probe/OP shutter',1);
+         setDigitalChannel(calctime(curtime, Tstart1+pulse_length+.5),'K Probe/OP shutter',0);
+
+        %Repump on during the image pulse
+         if flags.K_repump_during_image
+             DigitalPulse(calctime(curtime,Tstart1),...
+                'K Repump TTL',pulse_length,0);
+         end
+        
+        % Rb Probe Pulse
+        DigitalPulse(calctime(curtime,Tstart2),'Rb Probe/OP TTL',...
+            pulse_length+2*buffer_time,0);        
+       
+        
+        % Open and close shutter
+            setDigitalChannel(calctime(curtime, Tstart2-5),'Rb Probe/OP shutter',1);
+            setDigitalChannel(calctime(curtime, Tstart2+pulse_length+.5),'Rb Probe/OP shutter',0);
+
+        if flags.do_F1_pulse == 1
+            % Pulse repump with AOM AM
+            setDigitalChannel(calctime(curtime,Tstart2-5),'Rb Sci Repump',1);
+            setAnalogChannel(calctime(curtime,Tstart2-0.1),'Rb Repump AM',0.3);
+           
+            
+            % All switching of the RP pulse is currently done with the shutter/AM.
+            % Need TTL off for this AOM to get better timing.
+            setAnalogChannel(calctime(curtime,Tstart2+pulse_length),'Rb Repump AM',0);
+            setDigitalChannel(calctime(curtime,Tstart2+pulse_length),'Rb Sci Repump',0);
+        end        
+    otherwise
+        error('YOU FUCKED UP NO ATOM CHOSEN');        
+end
+        
 
 end

@@ -158,7 +158,7 @@ seqdata.flags.image_type = 0;
 seqdata.flags.MOT_flour_image = 0;
 
 iXon_movie = 1; %Take a multiple frame movie?
-seqdata.flags.image_atomtype = 1;%  0= Rb, 1 = K, 2 = Rb+K
+seqdata.flags.image_atomtype =2;%  0:Rb; 1:K; 2: K+Rb (double shutter)
 seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.img_direction = 0; 
 %1 = x direction (Sci) / MOT, 2 = y direction (Sci), 
@@ -178,8 +178,14 @@ seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now.
 %RHYS - params should be defined in a separate location from flags. 
 seqdata.flags.In_Trap_imaging = 0;
 tof_list = [25];
-seqdata.params.tof = getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof');
-% seqdata.params.tof = 5;  % 45 for rough alignment, 20 for K-D diffraction
+seqdata.params.tof = getScanParameter(tof_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
+
+tof_krb_diff_list=[0];
+seqdata.params.tof_krb_diff = getScanParameter(tof_krb_diff_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'tof_krb_diff','ms');
+
+
 
 seqdata.params.UV_on_time = 10000; %UV on time + savingtime + wait time = real wait time between cycles%
 % usually 15s for non XDT
@@ -225,7 +231,7 @@ RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1A_finalfreq','MHz');
 
 % RF1B Final Frequency
-RF_1B_Final_Frequency_list = [.4:.05:1.4];%0.8,0.4
+RF_1B_Final_Frequency_list = [.8];%0.8,0.4
 RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq','MHz');
 
@@ -248,9 +254,6 @@ seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test
 % After optical evaporation
 seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
 seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
-
-
-
 
 % Optical lattice
 seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
@@ -276,6 +279,10 @@ seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / ali
 %RHYS - Useful! Where to trigger scope. Should be more apparent.     
 scope_trigger = 'Lattice_Mod'; 
 
+
+
+setDigitalChannel(calctime(curtime,0),'DMD TTL',0);
+setDigitalChannel(calctime(curtime,100),'DMD TTL',1);
 %% Set switches for predefined scenarios
 
 %RHYS - the predefined scenarios described before. These have not been
@@ -1071,13 +1078,14 @@ dispLineStr('Turning off coils and traps.',curtime);
 
 
 %% Imaging
-dispLineStr('Absoprtion Imaging.',curtime);
 
     %RHYS - Imporant code, but could delete the scenarios that are no longer
     %used. Also, the iXon movie option under 8 could use some cleaning. 
     if seqdata.flags.image_type == 0 % Absorption Image
+        dispLineStr('Absorption Imaging.',curtime);
 
-        curtime = absorption_image(calctime(curtime,0.0)); 
+%         curtime = absorption_image(calctime(curtime,0.0)); 
+        curtime = absorption_image2(calctime(curtime,0.0)); 
 
     elseif seqdata.flags.image_type == 8 %Try to use the iXon and a Pixelfly camera simultaneously for absorption and fluorescence imaging.
     

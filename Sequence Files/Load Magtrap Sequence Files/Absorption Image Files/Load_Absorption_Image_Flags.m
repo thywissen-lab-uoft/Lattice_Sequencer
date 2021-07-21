@@ -14,6 +14,8 @@ function flags = Load_Absorption_Image_Flags()
         flags.image_atomtype = 'Rb';
       case 1
         flags.image_atomtype = 'K';
+      case 2
+        flags.image_atomtype = 'KRb';      
     end
     
     switch seqdata.flags.img_direction
@@ -48,15 +50,19 @@ function flags = Load_Absorption_Image_Flags()
 
     
 %% flags for HF imaging
-    if seqdata.flags.High_Field_Imaging == 1
-        flags.High_Field_Imaging = 1; %Set to image the atoms at a field near the FB resonance (near 202.1G)
-    else
-        flags.High_Field_Imaging = 0;
-    end
-    
+% Setting for high field imaging
+flags.High_Field_Imaging=seqdata.flags.High_Field_Imaging;
 
-    flags.Two_Imaging_Pulses = 1;
-    flags.Image_Negative9 = 0;
-    flags.Image_Both97 = 1;
+% In high field imaging, we can image either -9,-7, or -9 and -7 together
+% using the double shutter
+% 0 : Image -9 and -7 in double shutter
+% 1 : Image -9 in single shutter
+% 2 : Image -7 in single shutter
+flags.HighFieldType=0; 
+
+flags.Two_Imaging_Pulses = 1;
+flags.Image_Negative9 = 0;
+flags.Image_Both97 = 1;
+
     
 end

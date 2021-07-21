@@ -81,9 +81,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
     Raman_in_XDT = 0;
     
-  
-    do_D1OP_post_evap = 0;          % Optically pump afer evap
-    mix_at_end = 0;               % Make a spin mixture at the end of evap    
+ 
     k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
     
     
@@ -2836,7 +2834,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'DMD Power',@(t,tt,y1,y2)(ramp_linear
 % FC+CF 2021/05/12
 
 % @VV AND PX FEEL FREE TO DELETE THIS IF THIS IS CRAP CODE
-if (do_D1OP_post_evap==1 && seqdata.flags.CDT_evap==1)
+if (seqdata.flags.do_D1OP_post_evap==1 && seqdata.flags.CDT_evap==1)
         dispLineStr('D1 Optical Pumping post op evap',curtime);  
 
         
@@ -2930,7 +2928,7 @@ end
     
 %% Remix at end: Ensure a 50/50 mixture after spin-mixture evaporation
 
-if (mix_at_end==1 && seqdata.flags.CDT_evap==1)      
+if (seqdata.flags.mix_at_end==1 && seqdata.flags.CDT_evap==1)      
 
     do_ramp_field=0;
     if do_ramp_field

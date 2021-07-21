@@ -39,7 +39,7 @@ if seqdata.flags.absorption_image.High_Field_Imaging==1
 end
 
 %If 40K is definitely in a negative mF state, flip the quantizing shim
-if ((seqdata.flags.K_RF_sweep == 1 || seqdata.flags.init_K_RF_sweep == 1) && ...
+if ((seqdata.flags.init_K_RF_sweep == 1) && ...
     strcmp(seqdata.flags.absorption_image.image_atomtype,'K'))
   seqdata.flags.absorption_image.negative_imaging_shim = 'negative'; 
 end

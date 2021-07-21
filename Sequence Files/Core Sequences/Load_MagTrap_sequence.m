@@ -158,7 +158,7 @@ seqdata.flags.image_type = 0;
 seqdata.flags.MOT_flour_image = 0;
 
 iXon_movie = 1; %Take a multiple frame movie?
-seqdata.flags.image_atomtype = 0;%  0= Rb, 1 = K, 2 = Rb+K
+seqdata.flags.image_atomtype = 1;%  0= Rb, 1 = K, 2 = Rb+K
 seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.img_direction = 0; 
 %1 = x direction (Sci) / MOT, 2 = y direction (Sci), 
@@ -177,7 +177,7 @@ seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now.
 
 %RHYS - params should be defined in a separate location from flags. 
 seqdata.flags.In_Trap_imaging = 0;
-tof_list = [15];
+tof_list = [25];
 seqdata.params.tof = getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof');
 % seqdata.params.tof = 5;  % 45 for rough alignment, 20 for K-D diffraction
 

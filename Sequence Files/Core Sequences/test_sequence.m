@@ -4862,7 +4862,9 @@ setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
 %     addVISACommand(6, str);
  
 curtime = calctime(curtime,1000);
-setDigitalChannel(calctime(curtime,0),'Kill TTL',0);
+% setDigitalChannel(calctime(curtime,0),'Kill TTL',0);
+setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1);
+
 setAnalogChannel(calctime(curtime,0),63,0);
 
 

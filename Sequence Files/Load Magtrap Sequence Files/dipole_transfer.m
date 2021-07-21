@@ -49,7 +49,6 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     %RHYS - A very important parameter. Pass these from elsewhere.
     Evap_End_Power_List =[0.095];[0.085];[.065];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
     
-   Evap_End_Power_List = [0.1];
     
     exp_end_pwr = getScanParameter(Evap_End_Power_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');
@@ -83,8 +82,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     Raman_in_XDT = 0;
     mix_at_beginning = 0;% (obsolete)second RF sweep/pulse to make a spin mixture before XDT evap
     
-    do_D1OP_before_evap= 0;
-    mix_at_beginning2 = 0;           %this flag in combination with D1OP makes a spin mixture before evaporation
+    do_D1OP_before_evap= 1;
+    mix_at_beginning2 = 1;           %this flag in combination with D1OP makes a spin mixture before evaporation
     
     do_D1OP_post_evap = 0;          % Optically pump afer evap
     mix_at_end = 0;               % Make a spin mixture at the end of evap    
@@ -851,15 +850,17 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
         setDigitalChannel(calctime(curtime,-10),24,1); % disable AOM rf (TTL), just to be sure
         RbF2_kill_time_list =[1]; 3;
         pulse_time = getScanParameter(RbF2_kill_time_list,seqdata.scancycle,seqdata.randcyclelist,'RbF2_kill_time');
-        curtime = DigitalPulse(calctime(curtime,0),24,pulse_time,0); % pulse beam with TTL   15
+curtime = DigitalPulse(calctime(curtime,0),24,pulse_time,0); % pulse beam with TTL   15
         setDigitalChannel(calctime(curtime,0),25,0); % close shutter
+        
+        disp(['     Pulse Time (ms) : ' num2str(pulse_time)]);
     end 
     
-    % Wait a little bit
-    time_list = [5];
+    % Extra wait a little bit
+    time_list = [0];
     wait_time =  getScanParameter(time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'uwave_rf_hold_time','ms');
-    curtime = calctime(curtime,wait_time);
+curtime = calctime(curtime,wait_time);
 end 
     %% 40K RF Sweep Init2
 %Sweep 40K to |9/2,-9/2> before optical evaporation   

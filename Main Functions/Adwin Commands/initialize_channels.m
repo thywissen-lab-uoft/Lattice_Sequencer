@@ -117,8 +117,10 @@ seqdata.digchannels(67).name = 'Raman TTL 3'; %Raman Spectroscopy beam TTL(R3)
 seqdata.digchannels(68).name = 'Raman TTL 2'; %Vertical Raman Beam TTL (R2)
 seqdata.digchannels(69).name = 'HF freq source'; % 0: Rigol Ch1, 1: Rigol Ch2
 seqdata.digchannels(69).resetvalue = 1;
-seqdata.digchannels(70).name = 'Channel 70'; %unused
-seqdata.digchannels(71).name = 'Channel 71'; %unused
+seqdata.digchannels(70).name = 'DMD shutter'; %0 on 1 off
+seqdata.digchannels(71).name = 'DMD PID holder'; %unused
+seqdata.digchannels(71).resetvalue = 0;
+
 seqdata.digchannels(72).name = 'Channel 72'; %unused
 seqdata.digchannels(73).name = 'Channel 73'; %unused
 seqdata.digchannels(74).name = 'Channel 74'; %unused

@@ -1997,37 +1997,37 @@ global seqdata;
 % setAnalogChannel(curtime,46,0.0,1);
 
 %% uWave
-% Preset analog channel
-setAnalogChannel(calctime(curtime,0),57,-1);
-
-% Enable ACync
-curtime=setDigitalChannel(calctime(curtime,10),56,1);
-
-
-% AnalogFunc(calctime(curtime,15),57,@(t,tt,y2,y1)(ramp_linear(t,tt,y2,y1)),2,2,-1,1,1);
+% % Preset analog channel
+% setAnalogChannel(calctime(curtime,0),57,-1);
 % 
-% AnalogFunc(calctime(curtime,20),57,@(t,tt,y2,y1)(ramp_linear(t,tt,y2,y1)),2,2,1,-1,1);
-
-% setAnalogChannel(calctime(curtime,100),62,0);
-
-% setAnalogChannel(calctime(curtime,100),'z shim',-1,1);
-% setAnalogChannel(calctime(curtime,110),'z shim',9,1);
-
-sweep_time=10;
-beta=asech(0.01);
-         AnalogFunc(calctime(curtime,0),57,...
-            @(t,T,beta) tanh(2*beta*(t-0.5*sweep_time)/sweep_time),...
-            sweep_time,sweep_time,beta,1);
-        
-% setDigitalChannel(calctime(curtime,100),39,1);
-% setDigitalChannel(calctime(curtime,110),39,0);
-
-
-setDigitalChannel(calctime(curtime,25),56,0);
-
-curtime = calctime(curtime, 2000)
+% % Enable ACync
+% curtime=setDigitalChannel(calctime(curtime,10),56,1);
 % 
-% setDigitalChannel(calctime(curtime,1300),14,0);
+% 
+% % AnalogFunc(calctime(curtime,15),57,@(t,tt,y2,y1)(ramp_linear(t,tt,y2,y1)),2,2,-1,1,1);
+% % 
+% % AnalogFunc(calctime(curtime,20),57,@(t,tt,y2,y1)(ramp_linear(t,tt,y2,y1)),2,2,1,-1,1);
+% 
+% % setAnalogChannel(calctime(curtime,100),62,0);
+% 
+% % setAnalogChannel(calctime(curtime,100),'z shim',-1,1);
+% % setAnalogChannel(calctime(curtime,110),'z shim',9,1);
+% 
+% sweep_time=10;
+% beta=asech(0.01);
+%          AnalogFunc(calctime(curtime,0),57,...
+%             @(t,T,beta) tanh(2*beta*(t-0.5*sweep_time)/sweep_time),...
+%             sweep_time,sweep_time,beta,1);
+%         
+% % setDigitalChannel(calctime(curtime,100),39,1);
+% % setDigitalChannel(calctime(curtime,110),39,0);
+% 
+% 
+% setDigitalChannel(calctime(curtime,25),56,0);
+% 
+% curtime = calctime(curtime, 2000)
+% % 
+% % setDigitalChannel(calctime(curtime,1300),14,0);
 %% Test Objective piezo
 
 % obj_piezo_V = 0;
@@ -2809,7 +2809,7 @@ curtime = calctime(curtime, 2000)
 
 
 %% Test Raman Beams
-setAnalogChannel(calctime(curtime,0),64,0.0);
+% setAnalogChannel(calctime(curtime,0),64,0.0);
 
 % curtime = calctime(curtime, 1000);
 % setAnalogChannel(calctime(curtime,0),64,0);
@@ -2827,7 +2827,7 @@ setAnalogChannel(calctime(curtime,0),64,0.0);
 % DigitalPulse(calctime(curtime,-150),'Raman TTL',150,0);
 % DigitalPulse(calctime(curtime,-100),'Raman Shutter',Pulse_Length+3100,0);
 % DigitalPulse(calctime(curtime,Pulse_Length),'Raman TTL',3050,0);
-setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1);
+% setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1);
 %% Test Dimple Trap
 % 
 %  setDigitalChannel(calctime(curtime,0),'Dimple TTL',0);
@@ -3783,8 +3783,70 @@ setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1);
 % setAnalogChannel(curtime,'Modulation Ramp',-10)
 % setDigitalChannel(calctime(curtime,0),'Lattice FM',0);
 
-setDigitalChannel(calctime(curtime,0),'DMD TTL',0);
-setDigitalChannel(calctime(curtime,50),'DMD TTL',1);
+% curtime = calctime(curtime,100);
+% 
+% % Power is high, shutter is closed, PID is on
+% setAnalogChannel(calctime(curtime,-100),'DMD Power',1.8);
+% setDigitalChannel(calctime(curtime,-100),'DMD AOM TTL',1);
+% 
+% % "Slowly" ramp down the power before opening the shutter (1.8V to "0V")
+% % THis woudl allow PID to settle to correcty output ahead of time
+% 
+% 
+% 
+% setDigitalChannel(calctime(curtime,-10),'DMD Shutter',0); % 0 shutter light on
+% setDigitalChannel(calctime(curtime,-100),'DMD TTL',1);    % 
+% setDigitalChannel(calctime(curtime,0),'DMD TTL',0);
+%  
+%  
+% setDigitalChannel(calctime(curtime,-20),'DMD AOM TTL',0);
+% setDigitalChannel(calctime(curtime,-20),71,1);
+% % setAnalogChannel(calctime(curtime,-20),'DMD Power',0);
+% AnalogFuncTo(calctime(curtime,-30),'DMD Power',...
+%     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 1, 1, 0);
+% setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1); %ON
+% setDigitalChannel(calctime(curtime,0),71,0);
+% 
+% dmd_pow_list=[0.5];
+% DMD_power_val = getScanParameter(dmd_pow_list,seqdata.scancycle,...
+%     seqdata.randcyclelist,'DMD_power_val');
+% 
+% curtime = AnalogFuncTo(calctime(curtime,0),'DMD Power',...
+%     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 10, 10, DMD_power_val);
+% % setDigitalChannel(calctime(curtime,-10),'DMD TTL.',1);     
+% 
+% curtime = calctime(curtime,500);
+% % setDigitalChannel(calctime(curtime,0),'DMD TTL',0);     
+% 
+% curtime = AnalogFuncTo(calctime(curtime,0),'DMD Power',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 10, 10, 0);
+% setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',0);
+% % setDigitalChannel(calctime(curtime,10),71,1);
+% setDigitalChannel(calctime(curtime,10),'DMD Shutter',1);
+% setDigitalChannel(calctime(curtime,20),'DMD AOM TTL',1);
+% 
+% 
+% 
+% 
+% setAnalogChannel(calctime(curtime,20),'DMD Power',1.8);
+% setAnalogChannel(calctime(curtime,2000),'DMD Power',1.8);
+% 
+% setDigitalChannel(calctime(curtime,1000),71,1);
+
+% 
+% 
+% curtime = calctime(curtime,1000);
+% 
+% 
+% setDigitalChannel(calctime(curtime,-10),'DMD Shutter',1);
+% setDigitalChannel(calctime(curtime,-20),'DMD AOM TTL',1);
+
+
+
+
+
+
+
+
 
 
 %  
@@ -4704,18 +4766,18 @@ end
 % % 
 % setDigitalChannel(calctime(curtime,-2),'Rb Repump Shutter',1); 
 % setDigitalChannel(calctime(curtime,-2),'Rb Trap Shutter',1); 
-% % % 
+% % 
 % % % % % % 
 % % % % % setAnalogChannel(calctime(curtime,0),'Y Shim',2); %0.15
 % % % % % setAnalogChannel(calctime(curtime,0),'X Shim',1); %0.15
 % % % % % setAnalogChannel(calctime(curtime,0),'Z Shim',3);%0.0 
 % % % % 
-setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',200);%202.5); %200
-setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',3); 
-setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
-setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
-setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
-% % % % 
+% setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',200);%202.5); %200
+% setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',3); 
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
+% setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
+% % % % % 
 % % 
 % setAnalogChannel(calctime(curtime,0),59,0); %0.11
 
@@ -4941,7 +5003,6 @@ setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
 %         curtime = absorption_image2(calctime(curtime,0.0)); 
 
 
-curtime=calctime(curtime,1000);
 %% Feshbach field test
 % 
 %  clear('ramp');
@@ -4966,6 +5027,27 @@ curtime=calctime(curtime,1000);
 %         ramp.FeshValue = HF_FeshValue_Initial;
 %         ramp.SettlingTime = 50;    
 % curtime = rampMagneticFields(calctime(curtime,0), ramp);
+
+%% Test Acync
+
+curtime = calctime(curtime,100);
+setDigitalChannel(calctime(curtime,-35),72,1);
+
+setAnalogChannel(calctime(curtime,-5),57,-10);
+
+AnalogFuncTo(calctime(curtime,0),57,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2,2,10);
+setAnalogChannel(calctime(curtime,10),57,-10);
+
+setDigitalChannel(calctime(curtime,0),71,1);
+setDigitalChannel(calctime(curtime,10),71,0);
+
+
+
+setDigitalChannel(calctime(curtime,30),72,0);
+
+curtime=calctime(curtime,1000);
+
+
 
 timeout = curtime;
 

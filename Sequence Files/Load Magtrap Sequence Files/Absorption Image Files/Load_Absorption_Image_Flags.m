@@ -58,7 +58,7 @@ flags.High_Field_Imaging=seqdata.flags.High_Field_Imaging;
 % 0 : Image -9 and -7 in double shutter
 % 1 : Image -9 in single shutter
 % 2 : Image -7 in single shutter
-flags.HighFieldType=0; 
+flags.HighFieldType=0; % Not implemented yet
 
 flags.Two_Imaging_Pulses = 1;
 flags.Image_Negative9 = 0;

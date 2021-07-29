@@ -40,7 +40,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     Dimple_Trap_Before_Plane_Selection = 0; % keep: turn on the dimple, leave this option: note that the turning off code was deleted
     
     do_raman_optical_pumping = 0;           %keep: for an option, normal D1 OP should be fine 
-    do_optical_pumping = 0;                 %keep: useful
+    do_optical_pumping = 1;                 %keep: useful
     
     remove_one_spin_state = 0;              % keep: An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
     do_plane_selection = 0;     
@@ -76,7 +76,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     
     
     do_lattice_sweeps = 0;              %delete
-    Drop_From_XDT = 1;                  %May need to add code to rotate waveplate back here.
+    Drop_From_XDT = 0;                  %May need to add code to rotate waveplate back here.
     
     seqdata.flags.lattice_img_molasses = 0; %delete %1 - Do molasses, 0 - No molasses
     seqdata.flags.plane_selection_after_D1 = 0;%delete
@@ -106,12 +106,12 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 
 
 %LOADING SEQ BELOW CAN BE USED FOR SIMPLE LATTICE LOADING
-lattice_rampup_time_list =[50 100 150 200 250 350 500];
-lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycle,seqdata.randcyclelist,'lattice_rampup_time','ms');
-    lat_rampup_depth = 1*[1*[ZLD    ZLD];
-                          1*[ZLD    ZLD];                
-                          1*[ZLD    ZLD];]/atomscale;
-    lat_rampup_time = 1*[lattice_rampup_time    50]; 
+% lattice_rampup_time_list =[250];
+% lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycle,seqdata.randcyclelist,'lattice_rampup_time','ms');
+%     lat_rampup_depth = 1*[1*[ZLD    ZLD];
+%                           1*[ZLD    ZLD];                
+%                           1*[ZLD    ZLD];]/atomscale;
+%     lat_rampup_time = 1*[lattice_rampup_time    50]; 
     
 % % 
 % init_depth_list =[30];
@@ -120,7 +120,7 @@ lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycl
 %     lat_rampup_depth = 1*[1*[init_depth  init_depth  ZLD    ZLD];
 %                           1*[init_depth  init_depth  ZLD    ZLD];                
 %                           1*[init_depth  init_depth  ZLD    ZLD];]/atomscale;
-%     lat_rampup_time = 1*[50  50  50  50]; 
+%     lat_rampup_time = 1*[200  50  50  50]; 
 
 
 %% LOADING SEQ BELOW CAN BE USED FOR DIRECT LATTICE LOADING FROM QP
@@ -142,30 +142,66 @@ lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycl
 %                           1*[2 2 50 50 ZLD  ZLD]]/atomscale;   
 %     lat_rampup_time = 1*[50,10,50,10,50,10]; 
     
-% % % % %%%LOADING SEQ BELOW CAN BE USED FOR DMD rough alignment
-%     lat_rampup_depth = 1*[1*[2 2 50 50 ZLD  ZLD];
-%                           1*[2 2 50 50 ZLD  ZLD];
-%                           1*[2 2 50 50 ZLD  ZLD]]/atomscale;   
+%% LOADING SEQ BELOW CAN BE USED FOR DMD rough alignment
+    lat_rampup_depth = 1*[1*[-20 -20 30 30 ZLD  ZLD];
+                          1*[-20 -20 30 30 ZLD  ZLD];
+                          1*[-3 -3 30 30 ZLD  ZLD]]/atomscale;   
+%     lat_rampup_depth = 1*[1*[0 0 30 30 ZLD  ZLD];
+%                           1*[0 0 30 30 ZLD  ZLD];
+%                           1*[0 0 30 30 ZLD  ZLD]]/atomscale;   
+
+    DMD_on_time_list = [200];
+    DMD_on_time = getScanParameter(DMD_on_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'DMD_on_time','ms');
+%     
+    DMD_ramp_time = 100; %10
+    lat_hold_time_list = 50;%50 sept28
+    lat_hold_time = getScanParameter(lat_hold_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'lattice_hold_time');%maximum is 4
 % 
-%     DMD_on_time_list = [80];
-%     DMD_on_time = getScanParameter(DMD_on_time_list,seqdata.scancycle,seqdata.randcyclelist,'DMD_on_time');
-%     DMD_ramp_time = 10; %10
-%     lat_hold_time_list = 50;%50 sept28
-%     lat_hold_time = getScanParameter(lat_hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'lattice_hold_time');%maximum is 4
-% % % %     lat_rampup_time = 1*[50,2+DMD_on_time+DMD_ramp_time,50,2,50,lat_hold_time]; 
-% % % %     lat_rampup_time = 1*[50,2+DMD_on_time+DMD_ramp_time,10,2,50,lat_hold_time];
+    lat_rampup_time = 1*[50,DMD_on_time+DMD_ramp_time-70,100,2,50,lat_hold_time]; 
+% % %     lat_rampup_time = 1*[50,2+DMD_on_time+DMD_ramp_time,10,2,50,lat_hold_time];
 %     lat_rampup_time = 1*[20,30,30,10,50,lat_hold_time]; 
-% % % % %     
-% % % % % % % % % % %     
-% DMD_power_val_list = 3.5; 
-% DMD_power_val = getScanParameter(DMD_power_val_list,seqdata.scancycle,seqdata.randcyclelist,'DMD_power_val');
+% % % %     
+% % % % % % % % % %     
+do_DMD=1;
+if do_DMD
+offset_time = 40;
+DMD_power_val_list = [0.1:0.1:1.9]; %2V is roughly the max now 
+DMD_power_val = getScanParameter(DMD_power_val_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'DMD_power_val','V');
 % setDigitalChannel(calctime(curtime,-220),'DMD TTL',0);%1 off 0 on
 % setDigitalChannel(calctime(curtime,-220+100),'DMD TTL',1); %pulse time does not matter
 % setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1);
 % % setAnalogChannel(calctime(curtime,0),'DMD Power',3.5);
-% AnalogFuncTo(calctime(curtime,0),'DMD Power',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, DMD_power_val);
+% AnalogFuncTo(calctime(curtime,0),'DMD Power',...
+%     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, DMD_power_val);
 % setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time),'DMD Power',-5);
 % setDigitalChannel(calctime(curtime,0+DMD_on_time+ DMD_ramp_time),'DMD AOM TTL',0);%0 off 1 on
+
+        setAnalogChannel(calctime(curtime,-1000),'DMD Power',2);
+
+setDigitalChannel(calctime(curtime,-10 +offset_time),'DMD Shutter',0);%0 on 1 off
+setDigitalChannel(calctime(curtime,-200+offset_time),'DMD TTL',1);
+setDigitalChannel(calctime(curtime,-100+offset_time),'DMD TTL',0);
+setDigitalChannel(calctime(curtime,-20+offset_time),'DMD AOM TTL',0);
+setDigitalChannel(calctime(curtime,-20+offset_time),'DMD PID holder',1);
+AnalogFuncTo(calctime(curtime,-30+offset_time),'DMD Power',...
+    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 1, 1, 0);
+setDigitalChannel(calctime(curtime,0+offset_time),'DMD AOM TTL',1);%1 on 0 off
+setDigitalChannel(calctime(curtime,0+offset_time),'DMD PID holder',0);
+AnalogFuncTo(calctime(curtime,0+offset_time),'DMD Power',...
+    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, DMD_power_val);
+
+% curtime = calctime(curtime,DMD_on_time + DMD_ramp_time);
+% curtime = AnalogFuncTo(calctime(curtime,0),'DMD Power',...
+%     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, -0.1);
+setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+offset_time),'DMD Power',-0.1);
+setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+offset_time),'DMD AOM TTL',0);
+setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+10+offset_time),'DMD Shutter',1);
+setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+20+offset_time),'DMD AOM TTL',1);
+setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+20+offset_time),'DMD Power',2);
+end
 % % % % %%%%%%%%%%%%%     
 
 
@@ -314,7 +350,7 @@ if rotate_waveplate_init
     wp_Trot2 = 150; % gets added as a wait time after lattice rampup
         
     P_RotWave_I = 0.6;
-    P_RotWave_II = 0.90;    
+    P_RotWave_II = 0.95;    
     
     disp(['     Rotation Time 1 : ' num2str(wp_Trot1) ' ms']);
     disp(['     Rotation Time 2 : ' num2str(wp_Trot1) ' ms']);
@@ -322,7 +358,7 @@ if rotate_waveplate_init
     disp(['     Power 2         : ' num2str(100*P_RotWave_II) '%']);
 
     P_RotWave = P_RotWave_II; %output argument    
-    curtime = AnalogFunc(calctime(curtime,-100-wp_Trot1),'latticeWaveplate',...
+    AnalogFunc(calctime(curtime,-100-wp_Trot1),'latticeWaveplate',...
         @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
         wp_Trot1,wp_Trot1,P_RotWave);
 % % else
@@ -2400,7 +2436,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     
 %spectroscopy2
 disp('spectroscopy2');
-    use_ACSync = 1;
+    use_ACSync = 0;
 
     % Define the SRS frequency
     freq_list = [-90];       
@@ -2587,7 +2623,7 @@ if (sweep_field == 0) %Sweeping frequency of SRS
 
 
         % Determine the range of the sweep
-        uWave_delta_freq_list=[50]/1000;
+        uWave_delta_freq_list= [50] /1000;
         uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq');
         
@@ -5123,7 +5159,7 @@ if seqdata.flags.High_Field_Imaging
 
     time_in_HF_imaging = curtime;
     spin_flip_9_7 = 0;
-    rabi_manual = 0;
+    rabi_manual = 1;
     spin_flip_7_5 = 0;
     do_rf_spectroscopy= 0; % Spectrocopy vary rabi
     shift_reg_at_HF = 0;
@@ -5131,7 +5167,7 @@ if seqdata.flags.High_Field_Imaging
 
 
     % Fesahbach Field ramp
-    HF_FeshValue_Initial_List = 202;[202.78];
+    HF_FeshValue_Initial_List = 201;[202.78];
     HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
         seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
  
@@ -5175,16 +5211,16 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
             rabi=struct;          
             
             B = HF_FeshValue_Initial; 
-            rf_list = [0.01] +...
+            rf_list =[-0.155:0.012:0.12]+...
                 (BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6;
             rabi.freq = getScanParameter(rf_list,seqdata.scancycle,...
                 seqdata.randcyclelist,'rf_rabi_freq_HF','MHz');[0.0151];
-            power_list =  [-7.5];
+            power_list =  [0];
             rabi.power = getScanParameter(power_list,...
                 seqdata.scancycle,seqdata.randcyclelist,'rf_rabi_power_HF','V');            
 %             rf_pulse_length_list = [0.5]/15;
 
-            rf_pulse_length_list = [0.025:0.05:0.625]; 
+            rf_pulse_length_list = [0.03]; 
             
             rabi.pulse_length = getScanParameter(rf_pulse_length_list,...
                 seqdata.scancycle,seqdata.randcyclelist,'rf_rabi_time_HF','ms');  % also is sweep length  0.5               
@@ -5265,7 +5301,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
             
             % Get the center frequency
             B = HF_FeshValue_Initial; 
-            rf_list =  [0.055:0.01:0.155] +...
+            rf_list =  [-0.155:0.012:0.12] +...
                 abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
             rf_freq_HF = getScanParameter(rf_list,seqdata.scancycle,...
                 seqdata.randcyclelist,'rf_freq_HF','MHz');

@@ -30,6 +30,11 @@ function params = Load_Absorption_Image_Parameters()
     params.detunings.Rb.X.positive.QP_imaging = 6590 - 238.5 + rbdet_shift;       % QP TOF
     params.detunings.Rb.X.positive.SG = 6590 - 241.8 +2;            % Stern Gerlach
     params.detunings.Rb.X.negative.normal = 6590 - 232;
+    
+    % This is not calibrated; only to prevent code frmo crashing
+    params.detunings.Rb.X.negative.SG = 6590 - 241.8 +2;            
+
+    
     % Rubidium - Y-cam
     params.detunings.Rb.Y.positive.normal = 6590 - 230.7;
     params.detunings.Rb.Y.positive.in_trap = 6590 - 243;

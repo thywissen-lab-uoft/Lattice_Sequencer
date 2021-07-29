@@ -745,7 +745,7 @@ end
             fh(0);                                 
         catch ME     
             disp(' ');
-            warning('Exception caught on compling sequence!');
+            warning('Exception caught on compling sequence!');            
             disp(' ');
             for kk=length(ME.stack):-1:1
                disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);

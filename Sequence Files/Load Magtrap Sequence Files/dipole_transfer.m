@@ -47,7 +47,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     tilt_evaporation = 0;
     dipole_holdtime_before_evap = 0;
     %RHYS - A very important parameter. Pass these from elsewhere.
-    Evap_End_Power_List =[0.085 0.09 0.095 0.1:0.01:0.2 0.22 0.25 0.3 0.35 0.4];[0.085];[.065];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
+    Evap_End_Power_List =[0.1];[0.085];[.065];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
     
     
     exp_end_pwr = getScanParameter(Evap_End_Power_List,...
@@ -976,7 +976,7 @@ if seqdata.flags.mix_at_beginning
         seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_freq_post_evap');
 
     sweep_pars.freq=rf_k_sweep_center;        
-    sweep_pars.power = -9.1;-9.2;   
+    sweep_pars.power = -9.10;-9.2;   
 
     delta_freq_list =.01;[0.0040];%0.006; 0.01
     sweep_pars.delta_freq = getScanParameter(delta_freq_list,...
@@ -2713,7 +2713,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
         dispLineStr('Ramping XDTs back on.',curtime);
        
        
-        power_list = [0.1];
+        power_list = [0.15];
         power_val = getScanParameter(power_list,seqdata.scancycle,...
             seqdata.randcyclelist,'power_val','W');
 
@@ -2785,21 +2785,85 @@ curtime = calctime(curtime,dip_waittime);
 %% DMD in XDT 
     %RHYS - Is this desirable?
     if DMD_in_XDT
-        DMD_power_val_list =[3]; %Do not exceed 3.5 here
-        DMD_power_val = getScanParameter(DMD_power_val_list,seqdata.scancycle,seqdata.randcyclelist,'DMD_power_val');
+        ScopeTriggerPulse(curtime,'DMD pulse');
+
+        offset_time=-200;-400;
+        DMD_power_val_list = [1]; %Do not exceed 2 here
+        DMD_power_val = getScanParameter(DMD_power_val_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'DMD_power_val');
         DMD_ramp_time = 100;
-        DMD_on_time_list = [0 20 40 60 100 150 200 250 300 400 500];
+        DMD_on_time_list = [300];
         DMD_on_time = getScanParameter(DMD_on_time_list,seqdata.scancycle,seqdata.randcyclelist,'DMD_on_time');
-        setAnalogChannel(calctime(curtime,-1),'DMD Power',0);
-        setDigitalChannel(calctime(curtime,-200),'DMD TTL',0);%1 off 0 on
-        setDigitalChannel(calctime(curtime,-100),'DMD TTL',1); %pulse time does not matter
-        setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1); %1 on 0 off 
-curtime = AnalogFuncTo(calctime(curtime,0),'DMD Power',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, DMD_power_val);
-curtime = calctime(curtime,DMD_on_time)
+%         setAnalogChannel(calctime(curtime,-1000),'DMD Power',2);
+        setDigitalChannel(calctime(curtime,-10+offset_time),'DMD Shutter',0);%0 on 1 off
+        setDigitalChannel(calctime(curtime,-100+offset_time),'DMD TTL',0);%1 off 0 on
+        setDigitalChannel(calctime(curtime,0+offset_time),'DMD TTL',1); %pulse time does not matter
+        setDigitalChannel(calctime(curtime,-20+offset_time),'DMD AOM TTL',0);
+        setDigitalChannel(calctime(curtime,-20+offset_time),'DMD PID holder',1);
+%         setAnalogChannel(calctime(curtime,-20+offset_time),'DMD Power',0);
+        AnalogFuncTo(calctime(curtime,-30+offset_time),'DMD Power',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 1, 1, 0);
+        setDigitalChannel(calctime(curtime,0+offset_time),'DMD AOM TTL',1); %1 on 0 off 
+        setDigitalChannel(calctime(curtime,0+offset_time),'DMD PID holder',0);
+curtime = AnalogFuncTo(calctime(curtime,0+offset_time),'DMD Power',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), ...
+    DMD_ramp_time, DMD_ramp_time, DMD_power_val);
+% curtime = calctime(curtime,DMD_on_time)
 %curtime = AnalogFuncTo(calctime(curtime,0),'DMD Power',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, 0.3);
-        %setAnalogChannel(calctime(curtime,0),'DMD Power',0);
-curtime = AnalogFuncTo(calctime(curtime,0),'DMD Power',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, 0);
-        setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',0); %1 on 0 off
+%         setAnalogChannel(calctime(curtime,DMD_on_time+DMD_ramp_time),'DMD Power',-0.1);
+% curtime = AnalogFuncTo(calctime(curtime,0),'DMD Power',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, 0);
+        AnalogFuncTo(calctime(curtime,DMD_on_time),'DMD Power',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+            DMD_ramp_time, DMD_ramp_time, -0.1);
+        setDigitalChannel(calctime(curtime,DMD_on_time+DMD_ramp_time),'DMD AOM TTL',0); %1 on 0 off
+        setDigitalChannel(calctime(curtime,DMD_on_time+DMD_ramp_time+10),'DMD Shutter',1);
+        setDigitalChannel(calctime(curtime,DMD_on_time+DMD_ramp_time+20),'DMD AOM TTL',1);
+        setAnalogChannel(calctime(curtime,DMD_on_time+DMD_ramp_time+20),'DMD Power',2);
+% curtime = calctime(curtime,DMD_on_time)
+curtime = calctime(curtime,DMD_on_time-100); -50;
+        
+%         DMD_on_time_list = [80];
+%     DMD_on_time = getScanParameter(DMD_on_time_list,...
+%         seqdata.scancycle,seqdata.randcyclelist,'DMD_on_time','ms');
+%     
+%     DMD_ramp_time = 20; %10
+%     lat_hold_time_list = 50;%50 sept28
+%     lat_hold_time = getScanParameter(lat_hold_time_list,...
+%         seqdata.scancycle,seqdata.randcyclelist,'lattice_hold_time');%maximum is 4
+%     lat_rampup_time = 1*[50,DMD_on_time+DMD_ramp_time-20,50,2,50,lat_hold_time]; 
+% % % %     lat_rampup_time = 1*[50,2+DMD_on_time+DMD_ramp_time,10,2,50,lat_hold_time];
+% %     lat_rampup_time = 1*[20,30,30,10,50,lat_hold_time]; 
+% % % % %     
+% % % % % % % % % % %     
+%     offset_time = 40;
+%     DMD_power_val_list = 2; %2V is roughly the max now 
+%     DMD_power_val = getScanParameter(DMD_power_val_list,...
+%         seqdata.scancycle,seqdata.randcyclelist,'DMD_power_val');
+%     % setDigitalChannel(calctime(curtime,-220),'DMD TTL',0);%1 off 0 on
+%     % setDigitalChannel(calctime(curtime,-220+100),'DMD TTL',1); %pulse time does not matter
+%     % setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1);
+%     % % setAnalogChannel(calctime(curtime,0),'DMD Power',3.5);
+%     % AnalogFuncTo(calctime(curtime,0),'DMD Power',...
+%     %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, DMD_power_val);
+%     % setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time),'DMD Power',-5);
+%     % setDigitalChannel(calctime(curtime,0+DMD_on_time+ DMD_ramp_time),'DMD AOM TTL',0);%0 off 1 on
+% 
+% 
+%     setDigitalChannel(calctime(curtime,-10 +offset_time),'DMD Shutter',0);%0 on 1 off
+%     setDigitalChannel(calctime(curtime,-100+offset_time),'DMD TTL',0);
+%     setDigitalChannel(calctime(curtime,0+offset_time),'DMD TTL',1);
+%     setDigitalChannel(calctime(curtime,-20+offset_time),'DMD AOM TTL',0);
+%     setAnalogChannel(calctime(curtime,-20+offset_time),'DMD Power',-0.1);
+%     setDigitalChannel(calctime(curtime,0+offset_time),'DMD AOM TTL',1);%1 on 0 off
+%     AnalogFuncTo(calctime(curtime,0+offset_time),'DMD Power',...
+%         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, DMD_power_val);
+% 
+%     % curtime = calctime(curtime,DMD_on_time + DMD_ramp_time);
+%     % curtime = AnalogFuncTo(calctime(curtime,0),'DMD Power',...
+%     %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, -0.1);
+%     setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+offset_time),'DMD Power',-0.1);
+%     setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+offset_time),'DMD AOM TTL',0);
+%     setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+10+offset_time),'DMD Shutter',1);
+%     setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+20+offset_time),'DMD AOM TTL',1);
+%     setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+20+offset_time),'DMD Power',3);
     end 
 %% D1 Optical Pumping in ODT
 % After optical evaporation, ensure mF spin polarization via D1 optical
@@ -3108,18 +3172,40 @@ end
     %RHYS - Another opportunity to ramp up the FB field before lattice loading.
     %This exists a bit higher up in the code too, so maybe only keep one.
     if (ramp_Feshbach_B_after_CDT_evap == 1)
-        ramp_up_time = 50;
-        ramp_down_time=50;
+        % Ttotal=1000 ms;
+        % Wait for Total-Thold;
+        % Ramp up in 100 down, 100 ms settl, 100 ms down
+        % Wait Thold
+        % Thold goes from 0 to 700
+%         
+%         T_total = 1000;
+%         hold_time_list = [0:50:600];
+%         T_hold = getScanParameter(hold_time_list,...
+%         seqdata.scancycle,seqdata.randcyclelist,'hold_time_post_field_ramp','ms');        
+%         
+         fb_field_list=[195 15];
+         fb_field = getScanParameter(fb_field_list,...
+         seqdata.scancycle,seqdata.randcyclelist,'fb_field_ramp_up','G');     
+
+        ramp_time_list = [200];
+        ramp_time = getScanParameter(ramp_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'test_FB_ramp_time','ms');
+        ramp_up_time = ramp_time;
+        ramp_down_time = ramp_time;
+        
+% curtime = calctime(curtime, T_total-T_hold -ramp_time*2-50*2-100);
         % ramp up Feshbach field
         clear('ramp');
 
         ramp.fesh_ramptime = ramp_up_time;
         ramp.fesh_ramp_delay = -0;
-        ramp.fesh_final = 180;
-        ramp.settling_time = 10;
+        
+        
+        ramp.fesh_final = fb_field;
+        ramp.settling_time = 50;
 curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 
-        hold_time = 2000;
+        hold_time = 100;
 curtime = calctime(curtime, hold_time);
 
         % ramp down Feshbach field
@@ -3127,8 +3213,8 @@ curtime = calctime(curtime, hold_time);
 
         ramp.fesh_ramptime = ramp_down_time;
         ramp.fesh_ramp_delay = -0;
-        ramp.fesh_final = 20;
-        ramp.settling_time = 10;
+        ramp.fesh_final = 15;
+        ramp.settling_time = 100;
 curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 
     end

@@ -12,7 +12,7 @@ curtime = calctime(curtime, 1000);
 scope_trigger =  'lattice control test';'Rampup ODT';
 %%
       rotation_time = 1000;   % The time to rotate the waveplate
-      P_lattice = 0.3; %0.5/0.9        % The fraction of power that will be transmitted 
+      P_lattice = 1.0; %0.5/0.9        % The fraction of power that will be transmitted 
       curtime = AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),rotation_time,rotation_time,P_lattice);
       curtime = calctime(curtime,1000);
         atomscale = 0.2;0.4;

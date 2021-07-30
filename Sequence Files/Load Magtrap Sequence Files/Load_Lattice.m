@@ -37,8 +37,8 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     do_optical_pumping = 1;                 % keep: useful
     
     remove_one_spin_state = 0;              % keep: An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
-    do_plane_selection = 0;     
-    kill_pulses = 0;                        % Kill Pulses only active if do_plane_selection=1
+    do_plane_selection = 1;     
+    kill_pulses = 1;                        % Kill Pulses only active if do_plane_selection=1
     second_plane_selection = 0;             % copy 
     fast_plane_selection = 0;               % keep: could be the future of plane selection code for cleaner control
     eliminate_planes_with_QP = 0;           % keep: QP vacuum cleaner. In 2nd time plane selection section
@@ -2324,7 +2324,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
 % % % %         ramp.yshim_final = seqdata.params. shim_zero(2)+(-1.625-.001+0.6)*1+0.75;
 % % % %         ramp.zshim_final = seqdata.params. shim_zero(3)+0;
         xshimdlist = -0.257;
-        yshimdlist = 0.125;
+        yshimdlist = 5;0.125;
         zshimd = -1;
         
         xshimd = getScanParameter(xshimdlist,seqdata.scancycle,...
@@ -2419,7 +2419,7 @@ disp('spectroscopy2');
     use_ACSync = 1;
 
     % Define the SRS frequency
-    freq_list = [-150:7:-10];-90       
+    freq_list = [-40];-90       
     
     % 2021/06/22 CF
     % Use this when Xshimd=3, zshimd=-1 and you vary yshimd
@@ -2603,7 +2603,7 @@ if (sweep_field == 0) %Sweeping frequency of SRS
 
 
         % Determine the range of the sweep
-        uWave_delta_freq_list= [14] /1000;
+        uWave_delta_freq_list= [7] /1000;
         uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq');
         

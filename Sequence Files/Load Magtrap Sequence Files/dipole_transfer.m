@@ -49,14 +49,14 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     %RHYS - A very important parameter. Pass these from elsewhere.
     Evap_End_Power_List =[0.1];[0.085];[.065];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
     
-    
+    % Ending optical evaporation
     exp_end_pwr = getScanParameter(Evap_End_Power_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');
     Second_Evaporation_Stage = 0;
-    %exp_end_pwr =  0.3; %0.36  
 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
     %After Evaporation (unless CDT_evap = 0)
-    %--------------------
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
     ramp_dipole_for_spect = 0;      % Ramp dipole back up before any further physics 
     do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscillations for temperature measurement
     do_end_uwave_transfer = 0;      % transfer Rb atoms from F=1 to F=2, then blow them away with probe pulse
@@ -89,7 +89,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     ramp_Feshbach_B_in_CDT_evap = 0; %ramp up Feshbach field during CDT evap, try to create a colder sample
     ramp_Feshbach_B_after_CDT_evap = 0; %ramp up Feshbach field after CDT evap, try to create a colder sample
    
-    
+    % CF : Why is this in existence?
     load_lat_in_xdt_loading = 0;        %ramp up and ramp down lattice beams in the dipole transfer code;
 
     if qp_ramp_down_start_time<0

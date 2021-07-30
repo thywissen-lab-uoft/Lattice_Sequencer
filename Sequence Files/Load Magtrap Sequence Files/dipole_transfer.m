@@ -57,38 +57,38 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
 
     %After Evaporation (unless CDT_evap = 0)
     %--------------------
-    ramp_dipole_for_spect = 0;      %Ramp dipole back up before any further physics 
-    do_dipole_trap_kick = 0;        %Kick the dipole trap, inducing coherent oscillations for temperature measurement
-    do_end_uwave_transfer = 0;      %transfer Rb atoms from F=1 to F=2, then blow them away with probe pulse
-    Rb_RF_sweep = 0;                %sweep atoms from |2,2> into |2,-2>
-    Rb_repump = 0;                  %repump atoms back into F = 2
-    seqdata.flags.get_rid_of_Rb = 0;%Get rid of Rb at end of evap (only happens when CDT_evap = 1
-    do_RF_sweep_before_uWave = 0;   %Do an mF sweep before uWave spectroscopy
-    do_K_uwave_spectroscopy = 0;    %do uWave Spectroscopy of 40K
-    do_K_uwave_multi_sweeps = 0;    %do multiple uWave sweeps of 40K
-    do_Rb_uwave_spectroscopy = 0;   %do uWave Spectroscopy of 87Rb
-    do_RF_spectroscopy = 0;         %do spectroscopy with DDS 
-    do_singleshot_spectroscopy = 0; %do uwave spectroscopy using mF states to shelve population
-    do_field_ramps = 0;             %Ramp shim and FB fields without spectroscopy
-    K_repump_pulse = 0;             %Get rid of F = 7/2 Potassium
-    K_probe_pulse = 0;              %Get rid of F = 9/2 Potassium
-    D1_repump_pulse = 0;            %D1 repump instead of D2
+    ramp_dipole_for_spect = 0;      % Ramp dipole back up before any further physics 
+    do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscillations for temperature measurement
+    do_end_uwave_transfer = 0;      % transfer Rb atoms from F=1 to F=2, then blow them away with probe pulse
+    Rb_RF_sweep = 0;                % sweep atoms from |2,2> into |2,-2>
+    Rb_repump = 0;                  % repump atoms back into F = 2
+    seqdata.flags.get_rid_of_Rb = 0;% Get rid of Rb at end of evap (only happens when CDT_evap = 1
+    do_RF_sweep_before_uWave = 0;   % Do an mF sweep before uWave spectroscopy
+    do_K_uwave_spectroscopy = 0;    % do uWave Spectroscopy of 40K
+    do_K_uwave_multi_sweeps = 0;    % do multiple uWave sweeps of 40K
+    do_Rb_uwave_spectroscopy = 0;   % do uWave Spectroscopy of 87Rb
+    do_RF_spectroscopy = 0;         % do spectroscopy with DDS 
+    do_singleshot_spectroscopy = 0; % do uwave spectroscopy using mF states to shelve population
+    do_field_ramps = 0;             % Ramp shim and FB fields without spectroscopy
+    K_repump_pulse = 0;             % Get rid of F = 7/2 Potassium
+    K_probe_pulse = 0;              % Get rid of F = 9/2 Potassium
+    D1_repump_pulse = 0;            % D1 repump instead of D2
     Dimple_in_XDT = 0;
     DMD_in_XDT = 0;
     Lattice_in_XDT_Evap = 0;
     ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
     Kill_Beam_Alignment = 0;        %Pulse Kill beam on for whatever needs to be aligned.    
     ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
-    Raman_in_XDT = 0;
+    Raman_in_XDT = 0;    
+    k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap    
     
-   
- 
-    k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
-    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
     % FB Field and evaporation
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
     ramp_Feshbach_B_before_CDT_evap = 1;
     ramp_Feshbach_B_in_CDT_evap = 0; %ramp up Feshbach field during CDT evap, try to create a colder sample
     ramp_Feshbach_B_after_CDT_evap = 0; %ramp up Feshbach field after CDT evap, try to create a colder sample
+   
     
     load_lat_in_xdt_loading = 0;        %ramp up and ramp down lattice beams in the dipole transfer code;
 

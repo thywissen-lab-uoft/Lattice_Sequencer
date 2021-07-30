@@ -8,6 +8,7 @@
 %------
 
 function [timeout,P_dip,P_Xlattice,P_Ylattice,P_Zlattice,P_RotWave] = Load_Lattice(varargin)
+global seqdata;
 
 timein = varargin{1};
 lattice_flags(timein);
@@ -18,45 +19,38 @@ else
     Imaging_Time = 1*5000+50;
 end
 
-
-global seqdata;
-
-curtime = timein;
-
-
-lattices = {'xLattice','yLattice','zLattice'};
+curtime = timein;lattices = {'xLattice','yLattice','zLattice'};
 seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 
 
 %% Sequence parameters    
     
-    ramp_fields_after_lattice_loading = 0; %keep %do a field ramp for spectroscopy %Ramp up feshbach field after 1st lattice ramp. Can ramp the FB field up high here during lattice loading to try to make a Mott-insulator or some such.
-    repump_pulse = 0;                       %delete
+    ramp_fields_after_lattice_loading = 0;  % keep do a field ramp for spectroscopy %Ramp up feshbach field after 1st lattice ramp. Can ramp the FB field up high here during lattice loading to try to make a Mott-insulator or some such.
     QP_off_after_load = 0;                  % keep: used for turning off QP if loaded from QP directly
-    get_rid_of_Rb_in_lattice = 0;           %keep: never seem to be useful tho, for evaporation in lattice
-    load_XY_after_evap = 0;                 %keep: could be used to evaporate in just z-lattice
-    initial_RF_sweep = 0;                   %keep: Sweep 40K to |9/2,-9/2> before plane selection
+    get_rid_of_Rb_in_lattice = 0;           % keep: never seem to be useful tho, for evaporation in lattice
+    load_XY_after_evap = 0;                 % keep: could be used to evaporate in just z-lattice
+    initial_RF_sweep = 0;                   % keep: Sweep 40K to |9/2,-9/2> before plane selection
     spin_mixture_in_lattice_before_plane_selection = 0; % keep: Make a -9/2,-7/2 spin mixture.
     Dimple_Trap_Before_Plane_Selection = 0; % keep: turn on the dimple, leave this option: note that the turning off code was deleted
     
-    do_raman_optical_pumping = 0;           %keep: for an option, normal D1 OP should be fine 
-    do_optical_pumping = 1;                 %keep: useful
+    do_raman_optical_pumping = 0;           % keep: for an option, normal D1 OP should be fine 
+    do_optical_pumping = 1;                 % keep: useful
     
     remove_one_spin_state = 0;              % keep: An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
     do_plane_selection = 0;     
-    kill_pulses = 0;  %                     Kill Pulses only active if do_plane_selection=1
+    kill_pulses = 0;                        % Kill Pulses only active if do_plane_selection=1
     second_plane_selection = 0;             % copy 
     fast_plane_selection = 0;               % keep: could be the future of plane selection code for cleaner control
-    eliminate_planes_with_QP = 0;           %keep: QP vacuum cleaner. In 2nd time plane selection section
-    do_plane_selection_horizontally = 0;     %worth keeping, generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
+    eliminate_planes_with_QP = 0;           % keep: QP vacuum cleaner. In 2nd time plane selection section
+    do_plane_selection_horizontally = 0;    % worth keeping, generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
 
     % RF/uWave Spectroscopy
-    do_K_uwave_spectroscopy = 0; %keep
+    do_K_uwave_spectroscopy = 0;            %keep
     do_K_uwave_spectroscopy2 = 0;
     do_Rb_uwave_spectroscopy = 0;
     do_singleshot_spectroscopy = 0;
     do_RF_spectroscopy = 0;
-    do_K_raman_spectroscopy = 0;%(new) under development
+    do_K_raman_spectroscopy = 0;            %(new) under development
     
     spin_mixture_in_lattice_after_plane_selection = 0; %keep maybe use for 2D physics   
     
@@ -66,17 +60,17 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     conductivity_modulation = 0;                %delete
     conductivity_without_dimple = 0;            %keep: the real conductivity experiment happens here 
     
-    Dimple_Mod = 0;                     %keep: Used to calibrate dimple trap depth
-    do_lattice_mod = 0;                 %keep: calibrate lattice depth
-    rotate_waveplate_init=1;             %initially rotate the WP to put 90% the power to the lattice
-    rotate_waveplate = 0;               %keep:  Turn Rotating Waveplate to Shift Power to Lattice Beams
-    do_lattice_ramp_after_spectroscopy = 0; %keep: Ramp lattices on or off after doing spectroscopy, must be on for fluorescence image
-    do_shear_mode_mod = 0;              %delete: used to be a way modulate XDT using shear mode aom
-    Raman_transfers = 0;                %keep  % for fluorescence image
+    Dimple_Mod = 0;                     % keep: Used to calibrate dimple trap depth
+    do_lattice_mod = 0;                 % keep: calibrate lattice depth
+    rotate_waveplate_init = 1;          % initially rotate the WP to put 90% the power to the lattice
+    rotate_waveplate = 1;               % keep:  Turn Rotating Waveplate to Shift Power to Lattice Beams
+    do_lattice_ramp_after_spectroscopy = 1; %keep: Ramp lattices on or off after doing spectroscopy, must be on for fluorescence image
+    do_shear_mode_mod = 0;              % delete: used to be a way modulate XDT using shear mode aom
+    Raman_transfers = 1;                % keep  % for fluorescence image
     
     
-    do_lattice_sweeps = 0;              %delete
-    Drop_From_XDT = 0;                  %May need to add code to rotate waveplate back here.
+    do_lattice_sweeps = 0;              % delete
+    Drop_From_XDT = 0;                  % May need to add code to rotate waveplate back here.
     
     seqdata.flags.lattice_img_molasses = 0; %delete %1 - Do molasses, 0 - No molasses
     seqdata.flags.plane_selection_after_D1 = 0;%delete
@@ -123,85 +117,71 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 %     lat_rampup_time = 1*[200  50  50  50]; 
 
 
-%% LOADING SEQ BELOW CAN BE USED FOR DIRECT LATTICE LOADING FROM QP
-
-%     lat_rampup_depth = 1*[1*[0 0 ZLD ZLD];
-%                           1*[0 0 ZLD ZLD];
-%                           1*[ZLD ZLD ZLD ZLD]]/atomscale;   
-%     lat_rampup_time = 1*[50 50 50 50];
-
-% %%LOAD FROM STRONG XDT
-%     lat_rampup_depth = 1*[1*[100 100 ZLD  ZLD];
-%                           1*[100 100 ZLD  ZLD];
-%                           1*[100 100 ZLD  ZLD]]/atomscale;   
-%     lat_rampup_time = 1*[50,50,50,50]; 
-    
-% %%LOADING SEQ BELOW CAN BE USED FOR ADIABATIC LATTICE LOADING
-%     lat_rampup_depth = 1*[1*[2 2 50 50 ZLD  ZLD];
-%                           1*[2 2 50 50 ZLD  ZLD];
-%                           1*[2 2 50 50 ZLD  ZLD]]/atomscale;   
-%     lat_rampup_time = 1*[50,10,50,10,50,10]; 
-    
 %% LOADING SEQ BELOW CAN BE USED FOR DMD rough alignment
-    lat_rampup_depth = 1*[1*[-20 -20 30 30 ZLD  ZLD];
-                          1*[-20 -20 30 30 ZLD  ZLD];
-                          1*[-3 -3 30 30 ZLD  ZLD]]/atomscale;   
-%     lat_rampup_depth = 1*[1*[0 0 30 30 ZLD  ZLD];
-%                           1*[0 0 30 30 ZLD  ZLD];
-%                           1*[0 0 30 30 ZLD  ZLD]]/atomscale;   
+     
+% Just need a "0 Er" value
+% flags.plug_shim_zero(1)
 
-    DMD_on_time_list = [200];
-    DMD_on_time = getScanParameter(DMD_on_time_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'DMD_on_time','ms');
-%     
-    DMD_ramp_time = 100; %10
-    lat_hold_time_list = 50;%50 sept28
-    lat_hold_time = getScanParameter(lat_hold_time_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'lattice_hold_time');%maximum is 4
+lat_rampup_depth = 1*[1*[0 0 30 30 ZLD  ZLD];
+                      1*[0 0 30 30 ZLD  ZLD];
+                      1*[0 0 30 30 ZLD  ZLD]]/atomscale;   
+
+% DMD Stuff
+DMD_on_time_list = [200];
+DMD_on_time = getScanParameter(DMD_on_time_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'DMD_on_time','ms');
+    
+DMD_ramp_time = 100; %10
+lat_hold_time_list = 50;%50 sept28
+lat_hold_time = getScanParameter(lat_hold_time_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'lattice_hold_time');%maximum is 4
 % 
-    lat_rampup_time = 1*[50,DMD_on_time+DMD_ramp_time-70,100,2,50,lat_hold_time]; 
+%     lat_rampup_time = 1*[50,DMD_on_time+DMD_ramp_time-70,100,2,50,lat_hold_time]; 
 % % %     lat_rampup_time = 1*[50,2+DMD_on_time+DMD_ramp_time,10,2,50,lat_hold_time];
-%     lat_rampup_time = 1*[20,30,30,10,50,lat_hold_time]; 
+lat_rampup_time = 1*[20,30,30,10,50,lat_hold_time]; 
 % % % %     
 % % % % % % % % % %     
-do_DMD=1;
+do_DMD=0;
 if do_DMD
-offset_time = 40;
-DMD_power_val_list = [0.1:0.1:1.9]; %2V is roughly the max now 
-DMD_power_val = getScanParameter(DMD_power_val_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'DMD_power_val','V');
-% setDigitalChannel(calctime(curtime,-220),'DMD TTL',0);%1 off 0 on
-% setDigitalChannel(calctime(curtime,-220+100),'DMD TTL',1); %pulse time does not matter
-% setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1);
-% % setAnalogChannel(calctime(curtime,0),'DMD Power',3.5);
-% AnalogFuncTo(calctime(curtime,0),'DMD Power',...
-%     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, DMD_power_val);
-% setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time),'DMD Power',-5);
-% setDigitalChannel(calctime(curtime,0+DMD_on_time+ DMD_ramp_time),'DMD AOM TTL',0);%0 off 1 on
+    z_latt_list = [0];
+    z_latt = getScanParameter(z_latt_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'z_latt_init','Er');
+    lat_rampup_depth = 1*[1*[-25*atomscale -25*atomscale 30 30 ZLD  ZLD];
+                          1*[-25*atomscale -25*atomscale 30 30 ZLD  ZLD];
+                          1*[z_latt z_latt 30 30 ZLD  ZLD]]/atomscale;   
+                      
+    lat_rampup_time = 1*[50,DMD_on_time+DMD_ramp_time-70,100,2,50,lat_hold_time]; 
+    offset_time = 40;
+    DMD_power_val_list = [0.1:0.2:1.9]; %2V is roughly the max now 
+    DMD_power_val = getScanParameter(DMD_power_val_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'DMD_power_val','V');
 
-        setAnalogChannel(calctime(curtime,-1000),'DMD Power',2);
+    setAnalogChannel(calctime(curtime,-1000),'DMD Power',2);
+    setDigitalChannel(calctime(curtime,-10 +offset_time),'DMD Shutter',0);%0 on 1 off
+    setDigitalChannel(calctime(curtime,-200+offset_time),'DMD TTL',1);
+    setDigitalChannel(calctime(curtime,-100+offset_time),'DMD TTL',0);
+    setDigitalChannel(calctime(curtime,-20+offset_time),'DMD AOM TTL',0);
+    setDigitalChannel(calctime(curtime,-20+offset_time),'DMD PID holder',1);
+    AnalogFuncTo(calctime(curtime,-30+offset_time),'DMD Power',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 1, 1, 0);
+    setDigitalChannel(calctime(curtime,0+offset_time),'DMD AOM TTL',1);%1 on 0 off
+    setDigitalChannel(calctime(curtime,0+offset_time),'DMD PID holder',0);
+    AnalogFuncTo(calctime(curtime,0+offset_time),'DMD Power',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, DMD_power_val);
 
-setDigitalChannel(calctime(curtime,-10 +offset_time),'DMD Shutter',0);%0 on 1 off
-setDigitalChannel(calctime(curtime,-200+offset_time),'DMD TTL',1);
-setDigitalChannel(calctime(curtime,-100+offset_time),'DMD TTL',0);
-setDigitalChannel(calctime(curtime,-20+offset_time),'DMD AOM TTL',0);
-setDigitalChannel(calctime(curtime,-20+offset_time),'DMD PID holder',1);
-AnalogFuncTo(calctime(curtime,-30+offset_time),'DMD Power',...
-    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 1, 1, 0);
-setDigitalChannel(calctime(curtime,0+offset_time),'DMD AOM TTL',1);%1 on 0 off
-setDigitalChannel(calctime(curtime,0+offset_time),'DMD PID holder',0);
-AnalogFuncTo(calctime(curtime,0+offset_time),'DMD Power',...
-    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, DMD_power_val);
+    % curtime = calctime(curtime,DMD_on_time + DMD_ramp_time);
+    % curtime = AnalogFuncTo(calctime(curtime,0),'DMD Power',...
+    %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, -0.1);
+    % setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+offset_time),'DMD Power',-0.1);
+    AnalogFuncTo(calctime(curtime,0+DMD_on_time+DMD_ramp_time+offset_time),'DMD Power',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, -0.1);
+    setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+offset_time+DMD_ramp_time),'DMD AOM TTL',0);
+    setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+10+offset_time+DMD_ramp_time),'DMD Shutter',1);
+    setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+20+offset_time+DMD_ramp_time),'DMD AOM TTL',1);
+    setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+20+offset_time+DMD_ramp_time),'DMD Power',2);
 
-% curtime = calctime(curtime,DMD_on_time + DMD_ramp_time);
-% curtime = AnalogFuncTo(calctime(curtime,0),'DMD Power',...
-%     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, -0.1);
-setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+offset_time),'DMD Power',-0.1);
-setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+offset_time),'DMD AOM TTL',0);
-setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+10+offset_time),'DMD Shutter',1);
-setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+20+offset_time),'DMD AOM TTL',1);
-setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+20+offset_time),'DMD Power',2);
 end
+
 % % % % %%%%%%%%%%%%%     
 
 
@@ -390,9 +370,9 @@ end
 %     setAnalogChannel(calctime(curtime,-60),'zLattice',-0.1,1);
     
     % Send request powers to low 
-    setAnalogChannel(calctime(curtime,-60),'xLattice',-22);
-    setAnalogChannel(calctime(curtime,-60),'yLattice',-19);
-    setAnalogChannel(calctime(curtime,-60),'zLattice',-19);
+    setAnalogChannel(calctime(curtime,-60),'xLattice',-25);% -22
+    setAnalogChannel(calctime(curtime,-60),'yLattice',-25); % -19
+    setAnalogChannel(calctime(curtime,-60),'zLattice',-19);%-19
     
     % Enable rf output on ALPS3 (fast rf-switch and enable integrator)
     setDigitalChannel(calctime(curtime,-50),'yLatticeOFF',0);
@@ -2436,10 +2416,10 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     
 %spectroscopy2
 disp('spectroscopy2');
-    use_ACSync = 0;
+    use_ACSync = 1;
 
     % Define the SRS frequency
-    freq_list = [-90];       
+    freq_list = [-150:7:-10];-90       
     
     % 2021/06/22 CF
     % Use this when Xshimd=3, zshimd=-1 and you vary yshimd
@@ -2623,7 +2603,7 @@ if (sweep_field == 0) %Sweeping frequency of SRS
 
 
         % Determine the range of the sweep
-        uWave_delta_freq_list= [50] /1000;
+        uWave_delta_freq_list= [14] /1000;
         uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq');
         

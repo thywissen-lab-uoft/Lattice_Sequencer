@@ -44,7 +44,10 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     eliminate_planes_with_QP = 0;           % keep: QP vacuum cleaner. In 2nd time plane selection section
     do_plane_selection_horizontally = 0;    % worth keeping, generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
 
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
     % RF/uWave Spectroscopy
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
     do_K_uwave_spectroscopy = 0;            %keep
     do_K_uwave_spectroscopy2 = 0;
     do_Rb_uwave_spectroscopy = 0;

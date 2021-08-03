@@ -158,7 +158,7 @@ seqdata.flags.image_type = 0;
 seqdata.flags.MOT_flour_image = 0;
 
 iXon_movie = 1; %Take a multiple frame movie?
-seqdata.flags.image_atomtype = 1;%  0:Rb; 1:K; 2: K+Rb (double shutter)
+seqdata.flags.image_atomtype = 0;%  0:Rb; 1:K; 2: K+Rb (double shutter)
 seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.img_direction = 0; 
 %1 = x direction (Sci) / MOT, 2 = y direction (Sci), 
@@ -241,22 +241,22 @@ seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get cl
 
  
 % Dipole trap
-seqdata.flags.do_dipole_trap = 1; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
+seqdata.flags.do_dipole_trap = 0; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
 seqdata.flags.do_Rb_uwave_transfer_in_ODT = 0;  % Field Sweep Rb 2-->1
-seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 1; % uWave Frequency sweep Rb 2-->1
-seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
-seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
+seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 0; % uWave Frequency sweep Rb 2-->1
+seqdata.flags.init_K_RF_sweep = 0;              % RF Freq Sweep K 9-->-9  
+seqdata.flags.do_D1OP_before_evap= 0;           % D1 pump to purify
 seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
     
 % Optical Evaporation
-seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
+seqdata.flags.CDT_evap = 0;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
 
 % After optical evaporation
-seqdata.flags.do_D1OP_post_evap = 1;            % D1 pump
+seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
 seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 
 % Optical lattice
-seqdata.flags.load_lattice = 1; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
+seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
 seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
 seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 

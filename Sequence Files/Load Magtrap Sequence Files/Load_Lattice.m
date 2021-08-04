@@ -81,7 +81,7 @@ Dimple_Mod = 0;                     % (4185) keep: Used to calibrate dimple trap
 do_plane_selection = 0;                             % (2082-3285) Primary Flag    
 
 fast_plane_selection = 0;                           % (1406)            keep : under development; could be the future of plane selection code for cleaner control
-kill_pulses = 1;                                    % (1917,2561,2847)  keep :D2 Kill F=9/2
+kill_pulses = 0;                                    % (1917,2561,2847)  keep :D2 Kill F=9/2
 second_plane_selection = 0;                         % (2755)            copy 
 eliminate_planes_with_QP = 0;                       % (2933)            keep : QP vacuum cleaner. In 2nd time plane selection section
 do_plane_selection_horizontally = 0;                % (3077,3111,3144)  keep : generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
@@ -104,7 +104,7 @@ lattice_holdtime = getScanParameter(lattice_holdtime_list,seqdata.scancycle,seqd
 if Drop_From_XDT
     lattice_rampdown = 50;
 else
-    lattice_rampdown = 0;1; %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
+    lattice_rampdown = 1; %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
 end
 
 
@@ -116,12 +116,12 @@ ZLD = getScanParameter(Depth_List,seqdata.scancycle,seqdata.randcyclelist,'zld')
 %again, perhaps store in an external file a load in.
 
 %LOADING SEQ BELOW CAN BE USED FOR SIMPLE LATTICE LOADING
-lattice_rampup_time_list =[250];
-lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycle,seqdata.randcyclelist,'lattice_rampup_time','ms');
-lat_rampup_depth = 1*[-1*[ZLD    ZLD];
-                      1*[ZLD    ZLD];                
-                      -1*[ZLD    ZLD];]/atomscale;
-lat_rampup_time = 1*[lattice_rampup_time    50]; 
+% lattice_rampup_time_list =[250];
+% lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycle,seqdata.randcyclelist,'lattice_rampup_time','ms');
+% lat_rampup_depth = 1*[-1*[ZLD    ZLD];
+%                       1*[ZLD    ZLD];                
+%                       -1*[ZLD    ZLD];]/atomscale;
+% lat_rampup_time = 1*[lattice_rampup_time    50]; 
     
 % % 
 % init_depth_list =[30];
@@ -132,30 +132,41 @@ lat_rampup_time = 1*[lattice_rampup_time    50];
 %                           1*[init_depth  init_depth  ZLD    ZLD];]/atomscale;
 %     lat_rampup_time = 1*[200  50  50  50]; 
 
+%% Random CF Thoughts :
+% What should the lattie/XDT ramp up look like?
+%
+% (1) ramp XDT + DMD to initial power after opevap for trap shaping
+% (2) Ramp up lattice to 0 value
+% (3) Ramp up lattice
+% (4) Ramp down XDT + DMD
+% (5) lattice stuff
+% (6) pinning lattice
+% (7) fluoresence imaging 
+% (8) Band map
 
 %% LOADING SEQ BELOW CAN BE USED FOR DMD rough alignment
 
 
 % % Lattice Ramp up depths
-% lat_rampup_depth = 1*[1*[10 10 30 30 ZLD  ZLD];
-%                       1*[10 10 30 30 ZLD  ZLD];
-%                       1*[10 10 30 30 ZLD  ZLD]]/atomscale;   
-% 
-% % DMD Stuff
-% DMD_on_time_list = [200];
-% DMD_on_time = getScanParameter(DMD_on_time_list,...
-%     seqdata.scancycle,seqdata.randcyclelist,'DMD_on_time','ms');
-%     
-% DMD_ramp_time = 100; %10
-% lat_hold_time_list = 50;%50 sept28
-% lat_hold_time = getScanParameter(lat_hold_time_list,...
-%     seqdata.scancycle,seqdata.randcyclelist,'lattice_hold_time');%maximum is 4
+lat_rampup_depth = 1*[1*[10 10 30 30 ZLD  ZLD];
+                      1*[10 10 30 30 ZLD  ZLD];
+                      1*[10 10 30 30 ZLD  ZLD]]/atomscale;   
+
+% DMD Stuff
+DMD_on_time_list = [200];
+DMD_on_time = getScanParameter(DMD_on_time_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'DMD_on_time','ms');
+    
+DMD_ramp_time = 100; %10
+lat_hold_time_list = 50;%50 sept28
+lat_hold_time = getScanParameter(lat_hold_time_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'lattice_hold_time');%maximum is 4
 % 
 % %     lat_rampup_time = 1*[50,DMD_on_time+DMD_ramp_time-70,100,2,50,lat_hold_time]; 
 % % % %     lat_rampup_time = 1*[50,2+DMD_on_time+DMD_ramp_time,10,2,50,lat_hold_time];
 % 
 % 
-% lat_rampup_time = 1*[20,30,30,10,50,lat_hold_time]; 
+lat_rampup_time = 1*[20,30,30,10,50,lat_hold_time]; 
 
 % Ramp the DMD power up
 if do_DMD
@@ -388,9 +399,10 @@ end
 %     setAnalogChannel(calctime(curtime,-60),'zLattice',-0.1,1);
     
     % Send request powers to low 
-    setAnalogChannel(calctime(curtime,-60),'xLattice',-25); % -22
-    setAnalogChannel(calctime(curtime,-60),'yLattice',-25); % -19
-    setAnalogChannel(calctime(curtime,-60),'zLattice',-19); %-19
+    
+    setAnalogChannel(calctime(curtime,-60),'xLattice',-25);%-25); % -22
+    setAnalogChannel(calctime(curtime,-60),'yLattice',-25);%-25); % -19
+    setAnalogChannel(calctime(curtime,-60),'zLattice',-19);%-19); %-19
     
     % Enable rf output on ALPS3 (fast rf-switch and enable integrator)
     setDigitalChannel(calctime(curtime,-50),'yLatticeOFF',0); % 0 : All on, 1 : All off

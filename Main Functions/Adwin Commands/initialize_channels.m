@@ -673,7 +673,7 @@ seqdata.analogchannels(45).defaultvoltagefunc = 2;
 % seqdata.analogchannels(45).voltagefunc{2} = @(a)((a-2.7+5.61047)/473.44593);
 
 % seqdata.analogchannels(45).voltagefunc{2} = @(a)((a+1.9553)/555.47);
-% seqdata.analogchannels(45).voltagefunc{2} = @(a)(a*0.4+8.28)/117.3;% 2021/05/04
+seqdata.analogchannels(45).voltagefunc{2} = @(a)(a*0.4+8.28)/117.3;% 2021/05/04
 
 % 2021/08/03 Separate calibration
 % [seqdata.analogchannels(45).voltagefunc{2},~,~] = lattice_calibrations;

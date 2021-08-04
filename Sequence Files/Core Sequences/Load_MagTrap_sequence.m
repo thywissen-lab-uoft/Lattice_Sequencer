@@ -174,7 +174,7 @@ seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now.
 
 %RHYS - params should be defined in a separate location from flags. 
 seqdata.flags.In_Trap_imaging = 0;
-tof_list = [0.15];
+tof_list = [15];
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 

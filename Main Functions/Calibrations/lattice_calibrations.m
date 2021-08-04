@@ -12,17 +12,17 @@ xLattice0_list = [-1];
 xLattice0 = getScanParameter(xLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'xLatt0');
 
-yLattice0_list = [-1]*1E-3;
+yLattice0_list = [-1];
 yLattice0 = getScanParameter(yLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'yLatt0');
 
-zLattice0_list = [-1]*1E-3;
+zLattice0_list = [-1];
 zLattice0 = getScanParameter(zLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'zLatt0');
 
 seqdata.params.lattice_zero = [xLattice0 yLattice0 zLattice0];
 
-%% AM spectroscopy for low lattice depths
+%% Low lattice depth calibration
 % This is the low lattice depth calibration function.  This will be most
 % useful for science lattices and lattice turn on.
 
@@ -62,7 +62,7 @@ zLattice = @(U) ...
     zLatticeL(U).*0.5.*(erfc((U-U0(3))/dU(3)))+ ...    
     zLatticeH(U).*0.5.*(erf((U-U0(3))/dU(3))+1);
 
-doDebug=1;
+doDebug=0;
 if doDebug
     hF=figure;
     hF.Position=[100 100 1200 300];

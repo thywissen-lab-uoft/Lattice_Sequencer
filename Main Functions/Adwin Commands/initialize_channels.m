@@ -676,7 +676,7 @@ seqdata.analogchannels(45).defaultvoltagefunc = 2;
 seqdata.analogchannels(45).voltagefunc{2} = @(a)(a*0.4+8.28)/117.3;% 2021/05/04
 
 % 2021/08/03 Separate calibration
-% [seqdata.analogchannels(45).voltagefunc{2},~,~] = lattice_calibrations;
+%[seqdata.analogchannels(45).voltagefunc{2},~,~] = lattice_calibrations;
 
 
 % seqdata.analogchannels(45).voltagefunc{2} = @(a)(max(2.21374*log10(max((a),1E-9))-2.59682,-10)); %June 28, 2017.

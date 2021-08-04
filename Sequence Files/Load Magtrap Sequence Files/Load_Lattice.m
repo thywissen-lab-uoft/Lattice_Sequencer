@@ -26,11 +26,10 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 %% Lattice Flags    
 % These are the lattice flags sorted roughly chronologically.
 
-    ramp_fields_after_lattice_loading = 0;  % (417,504)     keep : Ramp on the fesbhach field after lattice load
-    get_rid_of_Rb_in_lattice = 0;           % (524)         keep : Blow away Rb after lattice load
-    spin_mixture_in_lattice_before_plane_selection = 0; % (801)             keep : Make a -9/2,-7/2 spin mixture.   
-    Dimple_Trap_Before_Plane_Selection = 0; % (849)         keep : turn on the dimple, leave this option: note that the turning off code was deleted
-    do_raman_optical_pumping = 0;           % (1559,1825)   keep : for an option, normal D1 OP should be fine 
+    ramp_fields_after_lattice_loading = 0;  % (416,503)     keep : Ramp on the fesbhach field after lattice load
+    get_rid_of_Rb_in_lattice = 0;           % (523)         keep : Blow away Rb after lattice load
+    spin_mixture_in_lattice_before_plane_selection = 0; % (668)             keep : Make a -9/2,-7/2 spin mixture.   
+    Dimple_Trap_Before_Plane_Selection = 0; % (716)         keep : turn on the dimple, leave this option: note that the turning off code was deleted
     do_optical_pumping = 1;                 % (1639,1642,1825) keep : optical pumping in lattice    
     remove_one_spin_state = 0;              % (1871)        keep : An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
     
@@ -340,7 +339,7 @@ end
 % This piece of code rotates the rotatable wavepalte to shift the optical
 % power to the lattices.
 %
-% CF : Shouldn't this appear int he beginning of the sequence?
+% CF : Shouldn't this appear int he beginning of the code?
 if rotate_waveplate_init
     dispLineStr('Rotating waveplate',curtime);
     %Start with a little power towards lattice beams, and increase power to
@@ -1609,7 +1608,7 @@ end
 %
 % Is this uncessary? Because the lattice depth shouldn't matter here unless
 % the atoms aren't pinned.
-if(do_raman_optical_pumping || do_optical_pumping)
+if(do_optical_pumping)
 
      %Define ramp parameters BUG WITH ANALOGFUNCTO? CANNOT BE THE SAME
      %VALUES AS BEFORE THE 1ST RAMP?

@@ -39,6 +39,7 @@ remove_one_spin_state = 0;              % (1657)        keep : An attempt to rem
 
 oldLoad=0;
 newLoad=1;
+rampDip=1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Waveplate
@@ -137,7 +138,7 @@ ZLD = getScanParameter(Depth_List,seqdata.scancycle,seqdata.randcyclelist,'zld')
 %     lat_rampup_time = 1*[200  50  50  50]; 
 
 %% Load Lattice from XDT Settings
-newLoad=1;
+
 if newLoad
     latt_hold_time_list = 50;
     latt_hold_time = getScanParameter(latt_hold_time_list,...
@@ -157,14 +158,19 @@ if newLoad
     dip_endpower = 1.0*getChannelValue(seqdata,'dipoleTrap1',1,0);
 
     % XDT Power and ramp times
-    dip_pow=[.25 .25 0];
-    dip_times=[100 50 50];
+    if rampDip
+        dip_pow=[.25 .25 0];
+        dip_times=[100 50 50];   
+    else
+       dip_pow=dip_endpower;
+       dip_times=[1];
+    end
     T_dip=sum(dip_times);
 
     % DMD power and ramp times
     dmd_pow=[1 1 0];
     dmd_times=[100 50 50];
-    T_dmd=sum(dip_times);
+    T_dmd=sum(dmd_times);
     
     % Add output
     addOutputParam('latt_depth_load',latt_depth*atomscale);
@@ -173,7 +179,7 @@ if newLoad
     addOutputParam('latt_dip_pow_load',dip_pow);
     addOutputParam('latt_dip_pow_times',dip_times);
     
-    seqdata.flags.dmd_enable=do_dmd;
+    seqdata.flags.dmd_enable=do_DMD;
     addOutputParam('latt_dmd_pow_load',dmd_pow);
     addOutputParam('latt_dmd_pow_times',dmd_times);
     
@@ -489,8 +495,7 @@ if newLoad
         AnalogFuncTo(calctime(curtime,T0),'zLattice',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
             latt_times(jj), latt_times(jj), latt_depth(3,jj));    
-        T0=T0+latt_times(jj);
-        
+        T0=T0+latt_times(jj);        
     end  
     %%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%% XDT Ramps %%%%%%%%%
@@ -516,8 +521,7 @@ if newLoad
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
             dip_times(jj), dip_times(jj), dip_pow(jj));
         T0=T0+dip_times(jj);
-    end  
-    
+    end      
         
     % Stupid error handling
     dipole_trap_off_after_lattice_on=0;

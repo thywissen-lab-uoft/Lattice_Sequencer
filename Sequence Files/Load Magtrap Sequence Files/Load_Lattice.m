@@ -22,104 +22,106 @@ end
 curtime = timein;lattices = {'xLattice','yLattice','zLattice'};
 seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 
+% This sets whether you want Er for Rb (1) or K (0.4). GET RID OF IT
+atomscale = 0.4;
 
 %% Lattice Flags    
 % These are the lattice flags sorted roughly chronologically.
 
 
-    ramp_fields_after_lattice_loading = 0;  % (416,503)     keep : Ramp on the fesbhach field after lattice load
-    get_rid_of_Rb_in_lattice = 0;           % (523)         keep : Blow away Rb after lattice load
-    spin_mixture_in_lattice_before_plane_selection = 0; % (668)             keep : Make a -9/2,-7/2 spin mixture.   
-    Dimple_Trap_Before_Plane_Selection = 0; % (716)         keep : turn on the dimple, leave this option: note that the turning off code was deleted
-    do_optical_pumping = 0;                 % (1426) keep : optical pumping in lattice    
-    remove_one_spin_state = 0;              % (1657)        keep : An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Waveplate
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % These flags control how the XDT/Lattice waveplate behaves.
-    rotate_waveplate_init = 1;              % (345) initially rotate the WP to put 90% the power to the lattice
-    rotate_waveplate = 0;                   % (4637):  Turn Rotating Waveplate to Shift Power to Lattice Beams
-        
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Other
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
-    Drop_From_XDT = 0;                      %  (97,5187,5257) May need to add code to rotate waveplate back here.
-    do_lattice_mod = 0;                     %  (4547)        apply AM Spectroscopy                 
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Conductivity
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % These flags are associated with the conducitivity experiment
-    conductivity_without_dimple = 0;       % (747-1536) keep: the real conductivity experiment happens here 
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % RF/uWave Spectroscopy
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    do_K_uwave_spectroscopy2 = 0;           % (3497)
-    do_K_uwave_spectroscopy = 0;            % (3786) keep
-    do_Rb_uwave_spectroscopy = 0;           % (3929)
-    do_RF_spectroscopy = 0;                 % (3952,4970)
-    do_K_raman_spectroscopy = 0;            % (3989) under development
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Dimple Beam
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % These flags are associated with the now defunct dimple beam
-    Dimple_Mod = 0;                     % (4185) keep: Used to calibrate dimple trap depth
+ramp_fields_after_lattice_loading = 0;  % (416,503)     keep : Ramp on the fesbhach field after lattice load
+get_rid_of_Rb_in_lattice = 0;           % (523)         keep : Blow away Rb after lattice load
+spin_mixture_in_lattice_before_plane_selection = 0; % (668)             keep : Make a -9/2,-7/2 spin mixture.   
+Dimple_Trap_Before_Plane_Selection = 0; % (716)         keep : turn on the dimple, leave this option: note that the turning off code was deleted
+do_optical_pumping = 0;                 % (1426) keep : optical pumping in lattice    
+remove_one_spin_state = 0;              % (1657)        keep : An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Plane Selection, Raman Transfers, and Fluorescence Imaging
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-    do_plane_selection = 0;                             % (2082-3285) Primary Flag    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Waveplate
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% These flags control how the XDT/Lattice waveplate behaves.
+rotate_waveplate_init = 1;              % (345) initially rotate the WP to put 90% the power to the lattice
+rotate_waveplate = 0;                   % (4637):  Turn Rotating Waveplate to Shift Power to Lattice Beams
 
-    fast_plane_selection = 0;                           % (1406)            keep : under development; could be the future of plane selection code for cleaner control
-    kill_pulses = 1;                                    % (1917,2561,2847)  keep :D2 Kill F=9/2
-    second_plane_selection = 0;                         % (2755)            copy 
-    eliminate_planes_with_QP = 0;                       % (2933)            keep : QP vacuum cleaner. In 2nd time plane selection section
-    do_plane_selection_horizontally = 0;                % (3077,3111,3144)  keep : generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
-    Dimple_Trap_After_Plane_Selection = 0;              % (4155,4209)       delete (?) : turn on dimple trap %Rhys suggested to delete?
-    do_lattice_ramp_after_spectroscopy = 0;             % (4658)            keep : Ramp lattice for fluorescence image
-    
-    % Actual fluorsence image flag
-    Raman_transfers = 0;                                % (4727)            keep : apply fluorescence imaging light
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Other
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+Drop_From_XDT = 0;                      %  (97,5187,5257) May need to add code to rotate waveplate back here.
+do_lattice_mod = 0;                     %  (4547)        apply AM Spectroscopy                 
 
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Other Parameters
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Conductivity
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% These flags are associated with the conducitivity experiment
+conductivity_without_dimple = 0;       % (747-1536) keep: the real conductivity experiment happens here 
 
-    %RHYS - Some confusing parameters defined here. Consolidate.
-    
-    lattice_holdtime_list =[0]; [0]; %150 sept28
-    lattice_holdtime = getScanParameter(lattice_holdtime_list,seqdata.scancycle,seqdata.randcyclelist,'latt_holdtime','ms');%maximum is 4
-    
-    if Drop_From_XDT
-        lattice_rampdown = 50;
-    else
-        lattice_rampdown = 0;1; %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
-    end
-    atomscale = 0.4;%0.4045; %0.4 for 40K, 1.0 for Rb
-      
-   
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% RF/uWave Spectroscopy
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+do_K_uwave_spectroscopy2 = 0;           % (3497)
+do_K_uwave_spectroscopy = 0;            % (3786) keep
+do_Rb_uwave_spectroscopy = 0;           % (3929)
+do_RF_spectroscopy = 0;                 % (3952,4970)
+do_K_raman_spectroscopy = 0;            % (3989) under development
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% DMD
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+do_DMD=0;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Dimple Beam
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% These flags are associated with the now defunct dimple beam
+Dimple_Mod = 0;                     % (4185) keep: Used to calibrate dimple trap depth
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Plane Selection, Raman Transfers, and Fluorescence Imaging
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+do_plane_selection = 0;                             % (2082-3285) Primary Flag    
+
+fast_plane_selection = 0;                           % (1406)            keep : under development; could be the future of plane selection code for cleaner control
+kill_pulses = 1;                                    % (1917,2561,2847)  keep :D2 Kill F=9/2
+second_plane_selection = 0;                         % (2755)            copy 
+eliminate_planes_with_QP = 0;                       % (2933)            keep : QP vacuum cleaner. In 2nd time plane selection section
+do_plane_selection_horizontally = 0;                % (3077,3111,3144)  keep : generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
+Dimple_Trap_After_Plane_Selection = 0;              % (4155,4209)       delete (?) : turn on dimple trap %Rhys suggested to delete?
+do_lattice_ramp_after_spectroscopy = 0;             % (4658)            keep : Ramp lattice for fluorescence image
+
+% Actual fluorsence image flag
+Raman_transfers = 0;                                % (4727)            keep : apply fluorescence imaging light
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Other Parameters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
+
+%RHYS - Some confusing parameters defined here. Consolidate.
+
+% Lattice Hold. This should be removed and/or made simpler.
+lattice_holdtime_list =[0]; [0]; %150 sept28
+lattice_holdtime = getScanParameter(lattice_holdtime_list,seqdata.scancycle,seqdata.randcyclelist,'latt_holdtime','ms');%maximum is 4
+
+if Drop_From_XDT
+    lattice_rampdown = 50;
+else
+    lattice_rampdown = 0;1; %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
+end
+
+
 % Parameters for lattice loading, section used for lattice alignment
-%     lat_rampup_common_depths = [200 200]/atomscale;
-    Depth_List = [100];
-%     ZLD = getmultiScanParameter(Depth_List,seqdata.scancycle,'x_lattice_depth',1,2);
-    ZLD = getScanParameter(Depth_List,seqdata.scancycle,seqdata.randcyclelist,'zld');
-% ZLD = getmultiScanParameter(Depth_List,seqdata.scancycle,'ylattice_depth',1,2);
+Depth_List = [100];
+ZLD = getScanParameter(Depth_List,seqdata.scancycle,seqdata.randcyclelist,'zld');
 
 %RHYS - Is there a better way to switch between lattice ramp sequences? Or,
 %again, perhaps store in an external file a load in.
 
-
 %LOADING SEQ BELOW CAN BE USED FOR SIMPLE LATTICE LOADING
 lattice_rampup_time_list =[250];
 lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycle,seqdata.randcyclelist,'lattice_rampup_time','ms');
-    lat_rampup_depth = 1*[-1*[ZLD    ZLD];
-                          1*[ZLD    ZLD];                
-                          -1*[ZLD    ZLD];]/atomscale;
-    lat_rampup_time = 1*[lattice_rampup_time    50]; 
+lat_rampup_depth = 1*[-1*[ZLD    ZLD];
+                      1*[ZLD    ZLD];                
+                      -1*[ZLD    ZLD];]/atomscale;
+lat_rampup_time = 1*[lattice_rampup_time    50]; 
     
 % % 
 % init_depth_list =[30];
@@ -155,8 +157,6 @@ lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycl
 % 
 % lat_rampup_time = 1*[20,30,30,10,50,lat_hold_time]; 
 
-% Is the DMD active?
-do_DMD=0;
 % Ramp the DMD power up
 if do_DMD
     z_latt_list = [0];
@@ -204,9 +204,8 @@ if (length(lat_rampup_time) ~= size(lat_rampup_depth,2)) || ...
     error('Invalid ramp specification for lattice loading!');
 end
     
-
-% % % % %%%%%%%%%%%%%     
-
+%% Other DMD stuff
+% % % % %%%%%%%%%%%%%   
 
 %RHYS - DMD stuff above and below. Write a module rather than commenting
 %out70
@@ -307,7 +306,6 @@ end
 % end
 
 %% What happens to ODT after lattice loading
-
 
     %Additional parameters and flags for this sequence    
     %RHYS - Parameter determining how dipole trap behaves should be with

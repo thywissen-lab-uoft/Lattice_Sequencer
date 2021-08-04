@@ -1,7 +1,4 @@
 function [xLattice,yLattice,zLattice] = lattice_calibrations
-ascale=0.4; % Atom scale
-% 0.4 is for atomscale; This is to be changed because we don't study
-% Rubidium in the lattice
 
 global seqdata
 
@@ -27,22 +24,22 @@ seqdata.params.lattice_zero = [xLattice0 yLattice0 zLattice0];
 % useful for science lattices and lattice turn on.
 
 % X Lattice
-xLatticeL = @(U_Er) (U_Er*ascale)/134.58-2.6*1E-3;      % 2021/08/03
+xLatticeL = @(U_Er) (U_Er)/134.58-2.6*1E-3;      % 2021/08/03
 % Y Lattice
-yLatticeL = @(U_Er) (U_Er*ascale)/151.32+15.5*1E-3;     % 2021/08/03
+yLatticeL = @(U_Er) (U_Er)/151.32+15.5*1E-3;     % 2021/08/03
 % Z Lattice
-zLatticeL = @(U_Er) (U_Er*ascale)/95.66+2.6E-3;         % 2021/08/03 
+zLatticeL = @(U_Er) (U_Er)/95.66+2.6E-3;         % 2021/08/03 
 
 %% High lattice depth calibration
 % This is the high lattice depth calibration function.  This will be most
 % useful for fluorescence imaging
 
 % X Lattice
-xLatticeH = @(U_Er)(U_Er*ascale+8.28)/117.3;            % 2021/05/04
+xLatticeH = @(U_Er)(U_Er+8.28)/117.3;            % 2021/05/04
 % Y Lattice
-yLatticeH = @(U_Er)(U_Er*ascale+8.6812)/141.2965;       % 2021/04/23
+yLatticeH = @(U_Er)(U_Er+8.6812)/141.2965;       % 2021/04/23
 % Z Lattice
-zLatticeH = @(U_Er)((U_Er*ascale+8.5772)/89.2457);      % 2021/04/23 
+zLatticeH = @(U_Er)((U_Er+8.5772)/89.2457);      % 2021/04/23 
 
 %% Combine the calibrations
 

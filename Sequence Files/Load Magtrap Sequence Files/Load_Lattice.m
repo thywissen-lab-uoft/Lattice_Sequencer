@@ -22,8 +22,6 @@ end
 curtime = timein;lattices = {'xLattice','yLattice','zLattice'};
 seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 
-% This sets whether you want Er for Rb (1) or K (0.4). GET RID OF IT
-atomscale = 0.4;
 
 %% Lattice Flags    
 % These are the lattice flags sorted roughly chronologically.
@@ -150,7 +148,7 @@ if newLoad
         [100 100;     % X lattice
          100 100;     % Y lattice
          100 100];    % Z Lattice 
-    latt_depth=latt_depth/atomscale;
+    latt_depth=latt_depth;
     latt_times=[250 latt_hold_time];
     T_latt=sum(latt_times);
 
@@ -173,7 +171,7 @@ if newLoad
     T_dmd=sum(dmd_times);
     
     % Add output
-    addOutputParam('latt_depth_load',latt_depth*atomscale);
+    addOutputParam('latt_depth_load',latt_depth);
     addOutputParam('latt_depth_times',latt_times);
     
     addOutputParam('latt_dip_pow_load',dip_pow);
@@ -205,7 +203,7 @@ if oldLoad
     % % Lattice Ramp up depths
     lat_rampup_depth = 1*[1*[10 10 30 30 ZLD  ZLD];
                           1*[10 10 30 30 ZLD  ZLD];
-                          1*[10 10 30 30 ZLD  ZLD]]/atomscale;   
+                          1*[10 10 30 30 ZLD  ZLD]];   
 
     % DMD Stuff
     DMD_on_time_list = [200];

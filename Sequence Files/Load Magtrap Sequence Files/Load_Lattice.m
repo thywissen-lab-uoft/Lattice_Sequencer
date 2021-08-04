@@ -132,87 +132,125 @@ ZLD = getScanParameter(Depth_List,seqdata.scancycle,seqdata.randcyclelist,'zld')
 %                           1*[init_depth  init_depth  ZLD    ZLD];]/atomscale;
 %     lat_rampup_time = 1*[200  50  50  50]; 
 
-%% Random CF Thoughts :
-% What should the lattie/XDT ramp up look like?
-%
-% (1) ramp XDT + DMD to initial power after opevap for trap shaping
-% (2) Ramp up lattice to 0 value
-% (3) Ramp up lattice
-% (4) Ramp down XDT + DMD
-% (5) lattice stuff
-% (6) pinning lattice
-% (7) fluoresence imaging 
-% (8) Band map
+%% Load Lattice from XDT Settings
+newLoad=1;
+if newLoad
+    latt_hold_time_list = 50;
+    latt_hold_time = getScanParameter(latt_hold_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'lattice_hold_time');%maximum is 4
+
+    % Lattice depth and ramp times
+    L0=seqdata.params.lattice_zero;
+    latt_depth=...
+        [L0(1) 10 20 20;     % X lattice
+         L0(2) 10 20 20;     % Y lattice
+         L0(3) 10 20 20];    % Z Lattice 
+    latt_depth=latt_depth/atomscale;
+    latt_times=[50 50 75 latt_hold_time];
+    T_latt=sum(latt_times);
+
+    % Get the optical evaporation ending power
+    dip_endpower = 1.0*getChannelValue(seqdata,'dipoleTrap1',1,0);
+
+    % XDT Power and ramp times
+    dip_pow=[.25 .25 0];
+    dip_times=[100 50 50];
+    T_dip=sum(dip_times);
+
+    % DMD power and ramp times
+    dmd_pow=[1 1 0];
+    dmd_times=[100 50 50];
+    T_dmd=sum(dip_times);
+    
+    % Error checking
+    if (length(latt_times) ~= size(latt_depth,2)) || ...
+            (size(latt_depth,1)~=3)
+        error('Invalid ramp specification for lattice loading!');
+    end
+    if (length(dip_times) ~= size(dip_pow,2))
+        error('Invalid ramp specification for xdt lattice loading!');
+    end
+    if (length(dmd_times) ~= size(dmd_pow,2))
+        error('Invalid ramp specification for dmd lattice loading!');
+    end
+
+    
+    % Ending time of all ramps
+    T_load_tot = max([T_latt T_dip do_DMD*T_dmd]);
+end
 
 %% LOADING SEQ BELOW CAN BE USED FOR DMD rough alignment
 
 
-% % Lattice Ramp up depths
-lat_rampup_depth = 1*[1*[10 10 30 30 ZLD  ZLD];
-                      1*[10 10 30 30 ZLD  ZLD];
-                      1*[10 10 30 30 ZLD  ZLD]]/atomscale;   
 
-% DMD Stuff
-DMD_on_time_list = [200];
-DMD_on_time = getScanParameter(DMD_on_time_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'DMD_on_time','ms');
-    
-DMD_ramp_time = 100; %10
-lat_hold_time_list = 50;%50 sept28
-lat_hold_time = getScanParameter(lat_hold_time_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'lattice_hold_time');%maximum is 4
-% 
-% %     lat_rampup_time = 1*[50,DMD_on_time+DMD_ramp_time-70,100,2,50,lat_hold_time]; 
-% % % %     lat_rampup_time = 1*[50,2+DMD_on_time+DMD_ramp_time,10,2,50,lat_hold_time];
-% 
-% 
-lat_rampup_time = 1*[20,30,30,10,50,lat_hold_time]; 
+if oldLoad
+    % % Lattice Ramp up depths
+    lat_rampup_depth = 1*[1*[10 10 30 30 ZLD  ZLD];
+                          1*[10 10 30 30 ZLD  ZLD];
+                          1*[10 10 30 30 ZLD  ZLD]]/atomscale;   
 
-% Ramp the DMD power up
-if do_DMD
-    z_latt_list = [0];
-    z_latt = getScanParameter(z_latt_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'z_latt_init','Er');
-    lat_rampup_depth = 1*[1*[-25*atomscale -25*atomscale 30 30 ZLD  ZLD];
-                          1*[-25*atomscale -25*atomscale 30 30 ZLD  ZLD];
-                          1*[z_latt z_latt 30 30 ZLD  ZLD]]/atomscale;   
-                      
-    lat_rampup_time = 1*[50,DMD_on_time+DMD_ramp_time-70,100,2,50,lat_hold_time]; 
-    offset_time = 40;
-    DMD_power_val_list = [0.1:0.2:1.9]; %2V is roughly the max now 
-    DMD_power_val = getScanParameter(DMD_power_val_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'DMD_power_val','V');
+    % DMD Stuff
+    DMD_on_time_list = [200];
+    DMD_on_time = getScanParameter(DMD_on_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'DMD_on_time','ms');
 
-    setAnalogChannel(calctime(curtime,-1000),'DMD Power',2);
-    setDigitalChannel(calctime(curtime,-10 +offset_time),'DMD Shutter',0);%0 on 1 off
-    setDigitalChannel(calctime(curtime,-200+offset_time),'DMD TTL',1);
-    setDigitalChannel(calctime(curtime,-100+offset_time),'DMD TTL',0);
-    setDigitalChannel(calctime(curtime,-20+offset_time),'DMD AOM TTL',0);
-    setDigitalChannel(calctime(curtime,-20+offset_time),'DMD PID holder',1);
-    AnalogFuncTo(calctime(curtime,-30+offset_time),'DMD Power',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 1, 1, 0);
-    setDigitalChannel(calctime(curtime,0+offset_time),'DMD AOM TTL',1);%1 on 0 off
-    setDigitalChannel(calctime(curtime,0+offset_time),'DMD PID holder',0);
-    AnalogFuncTo(calctime(curtime,0+offset_time),'DMD Power',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, DMD_power_val);
+    DMD_ramp_time = 100; %10
+    lat_hold_time_list = 50;%50 sept28
+    lat_hold_time = getScanParameter(lat_hold_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'lattice_hold_time');%maximum is 4
+    % 
+    % %     lat_rampup_time = 1*[50,DMD_on_time+DMD_ramp_time-70,100,2,50,lat_hold_time]; 
+    % % % %     lat_rampup_time = 1*[50,2+DMD_on_time+DMD_ramp_time,10,2,50,lat_hold_time];
+    % 
+    % 
+    lat_rampup_time = 1*[20,30,30,10,50,lat_hold_time]; 
 
-    % curtime = calctime(curtime,DMD_on_time + DMD_ramp_time);
-    % curtime = AnalogFuncTo(calctime(curtime,0),'DMD Power',...
-    %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, -0.1);
-    % setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+offset_time),'DMD Power',-0.1);
-    AnalogFuncTo(calctime(curtime,0+DMD_on_time+DMD_ramp_time+offset_time),'DMD Power',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, -0.1);
-    setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+offset_time+DMD_ramp_time),'DMD AOM TTL',0);
-    setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+10+offset_time+DMD_ramp_time),'DMD Shutter',1);
-    setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+20+offset_time+DMD_ramp_time),'DMD AOM TTL',1);
-    setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+20+offset_time+DMD_ramp_time),'DMD Power',2);
+    % Ramp the DMD power up
+    if do_DMD
+        z_latt_list = [0];
+        z_latt = getScanParameter(z_latt_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'z_latt_init','Er');
+        lat_rampup_depth = 1*[1*[-25*atomscale -25*atomscale 30 30 ZLD  ZLD];
+                              1*[-25*atomscale -25*atomscale 30 30 ZLD  ZLD];
+                              1*[z_latt z_latt 30 30 ZLD  ZLD]]/atomscale;   
 
-end
+        lat_rampup_time = 1*[50,DMD_on_time+DMD_ramp_time-70,100,2,50,lat_hold_time]; 
+        offset_time = 40;
+        DMD_power_val_list = [0.1:0.2:1.9]; %2V is roughly the max now 
+        DMD_power_val = getScanParameter(DMD_power_val_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'DMD_power_val','V');
 
-% Check that number of times and depths match up
-if (length(lat_rampup_time) ~= size(lat_rampup_depth,2)) || ...
-        (size(lat_rampup_depth,1)~=length(lattices))
-    error('Invalid ramp specification for lattice loading!');
+        setAnalogChannel(calctime(curtime,-1000),'DMD Power',2);
+        setDigitalChannel(calctime(curtime,-10 +offset_time),'DMD Shutter',0);%0 on 1 off
+        setDigitalChannel(calctime(curtime,-200+offset_time),'DMD TTL',1);
+        setDigitalChannel(calctime(curtime,-100+offset_time),'DMD TTL',0);
+        setDigitalChannel(calctime(curtime,-20+offset_time),'DMD AOM TTL',0);
+        setDigitalChannel(calctime(curtime,-20+offset_time),'DMD PID holder',1);
+        AnalogFuncTo(calctime(curtime,-30+offset_time),'DMD Power',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 1, 1, 0);
+        setDigitalChannel(calctime(curtime,0+offset_time),'DMD AOM TTL',1);%1 on 0 off
+        setDigitalChannel(calctime(curtime,0+offset_time),'DMD PID holder',0);
+        AnalogFuncTo(calctime(curtime,0+offset_time),'DMD Power',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, DMD_power_val);
+
+        % curtime = calctime(curtime,DMD_on_time + DMD_ramp_time);
+        % curtime = AnalogFuncTo(calctime(curtime,0),'DMD Power',...
+        %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, -0.1);
+        % setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+offset_time),'DMD Power',-0.1);
+        AnalogFuncTo(calctime(curtime,0+DMD_on_time+DMD_ramp_time+offset_time),'DMD Power',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, -0.1);
+        setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+offset_time+DMD_ramp_time),'DMD AOM TTL',0);
+        setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+10+offset_time+DMD_ramp_time),'DMD Shutter',1);
+        setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+20+offset_time+DMD_ramp_time),'DMD AOM TTL',1);
+        setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+20+offset_time+DMD_ramp_time),'DMD Power',2);
+
+    end
+
+    % Check that number of times and depths match up
+    if (length(lat_rampup_time) ~= size(lat_rampup_depth,2)) || ...
+            (size(lat_rampup_depth,1)~=length(lattices))
+        error('Invalid ramp specification for lattice loading!');
+    end
 end
     
 %% Other DMD stuff
@@ -317,6 +355,7 @@ end
 % end
 
 %% What happens to ODT after lattice loading
+if oldLoad
 
     %Additional parameters and flags for this sequence    
     %RHYS - Parameter determining how dipole trap behaves should be with
@@ -343,7 +382,7 @@ end
 %     addOutputParam('lattice_holdtime',lattice_holdtime);
 %     addOutputParam('lattice_ramptime',lat_rampup_time(2));
     addOutputParam('lattice_depth',lat_rampup_depth(1,end)*atomscale);
-    
+end
 %% Rotate waveplate to shift power to lattice beams
 % This piece of code rotates the rotatable wavepalte to shift the optical
 % power to the lattices.
@@ -381,8 +420,111 @@ if rotate_waveplate_init
 %         rotation_time,rotation_time,P_RotWave);    
 end
 
+%% Load Lattice from XDT Ramps
+if newLoad
+    seqdata.times.lattice_start_time = curtime;
+    ScopeTriggerPulse(curtime,'Load lattices');
+    
+    dispLineStr('Ramping lattices.',curtime);
+    disp(['     Ramp Times      (ms) : ' mat2str(latt_times) ]);
+    disp(['     xLattice       (ErK) : ' mat2str(atomscale*latt_depth(1,:))]);
+    disp(['     yLattice       (ErK) : ' mat2str(atomscale*latt_depth(2,:))]);
+    disp(['     zLattice       (ErK) : ' mat2str(atomscale*latt_depth(3,:))]);
+    disp(' ');
+    disp(['     Dip Ramp Times  (ms) : ' mat2str(dip_times)]);
+    disp(['     Dip Power        (W) : ' mat2str(dip_pow)]);
+    disp(' ');
+    disp(['     doDMD                : ' mat2str(do_DMD)]);
+    disp(['     DMD Ramp Times  (ms) : ' mat2str(dmd_times)]);
+    disp(['     DMD Dipole Power (V) : ' mat2str(dmd_pow)]);
+    disp(['     Total Load Time (ms) : ' num2str(T_load_tot)]);       
+
+    % Send request powers to low (if not already set)
+    setAnalogChannel(calctime(curtime,-60),'xLattice',L0(1)/atomscale);
+    setAnalogChannel(calctime(curtime,-60),'yLattice',L0(2)/atomscale);
+    setAnalogChannel(calctime(curtime,-60),'zLattice',L0(3)/atomscale);
+
+    % Enable rf output on ALPS3 (fast rf-switch and enable integrator)
+    setDigitalChannel(calctime(curtime,-50),'yLatticeOFF',0); % 0 : All on, 1 : All off
+    setDigitalChannel(calctime(curtime,-100),'Lattice Direct Control',0); % 0 : Int on; 1 : int hold    
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%% Lattice Ramps %%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % First ramp from zero value to first value
+    T0=0;
+    AnalogFuncTo(calctime(curtime,T0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        latt_times(1), latt_times(1), latt_depth(1,1));   
+    AnalogFuncTo(calctime(curtime,T0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        latt_times(1), latt_times(1), latt_depth(2,1));   
+    AnalogFuncTo(calctime(curtime,T0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        latt_times(1), latt_times(1), latt_depth(3,1));   
+    T0=latt_times(1);
+
+    % Rest of ramps
+    for jj=2:length(latt_times)        
+        AnalogFuncTo(calctime(curtime,T0),'xLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            latt_times(jj), latt_times(jj), latt_depth(1,jj)); 
+        AnalogFuncTo(calctime(curtime,T0),'yLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            latt_times(jj), latt_times(jj), latt_depth(2,jj));
+        AnalogFuncTo(calctime(curtime,T0),'zLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            latt_times(jj), latt_times(jj), latt_depth(3,jj));    
+        T0=T0+latt_times(jj);
+        
+    end  
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%% XDT Ramps %%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % First ramp from zero value to first value
+    T0=0;
+    AnalogFuncTo(calctime(curtime,T0),'dipoleTrap1',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        dip_times(1), dip_times(1), dip_pow(1));   
+    T0=0;
+    AnalogFuncTo(calctime(curtime,T0),'dipoleTrap2',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        dip_times(1), dip_times(1), dip_pow(1));   
+    T0=dip_times(1);
+
+    % Rest of ramp
+    for jj=2:length(dip_times)        
+        AnalogFuncTo(calctime(curtime,T0),'dipoleTrap1',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            dip_times(jj), dip_times(jj), dip_pow(jj)); 
+        AnalogFuncTo(calctime(curtime,T0),'dipoleTrap2',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            dip_times(jj), dip_times(jj), dip_pow(jj));
+        T0=T0+dip_times(jj);
+    end  
+    
+        
+    % Stupid error handling
+    dipole_trap_off_after_lattice_on=0;
+    dip_endpower=dip_pow(end);
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%% DMD Ramps %%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    if do_DMD
+        % Perhaps PX can code this
+    end
+
+    curtime=calctime(curtime,T_load_tot);   
+end
+
 %% Ramp up lattice
 %Ramp up the lattices     
+
+if oldLoad
 
     dispLineStr('Ramping up lattices.',curtime);
     disp(['     Ramp Times    (ms) : ' mat2str(lat_rampup_time) ]);
@@ -521,7 +663,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,tau,y2)(evap_
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); 
     end
 
-    
+end
 %% Get rid of Rb by doing repump and probe pulse
     %Only do this if evaporation has happened
 %RHYS - If attempting to evaporate in lattice with Rb as well. Never been useful, could delete.    

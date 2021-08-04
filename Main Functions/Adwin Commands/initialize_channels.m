@@ -648,7 +648,7 @@ seqdata.analogchannels(43).voltagefunc{2} = @(a)((a*0.4+8.5772)/89.2457); % 2021
 % seqdata.analogchannels(43).voltagefunc{2} = @(a)((a+7.9551)/244.94);
 
 % 2021/08/03 Separate calibration
-% [~,~,seqdata.analogchannels(43).voltagefunc{2}] = lattice_calibrations;
+[~,~,seqdata.analogchannels(43).voltagefunc{2}] = lattice_calibrations;
 
 %channel 44 (Y lattice AM control)
 seqdata.analogchannels(44).name = 'yLattice';
@@ -656,10 +656,10 @@ seqdata.analogchannels(44).minvoltage = -10;
 seqdata.analogchannels(44).maxvoltage = 10;
 seqdata.analogchannels(44).resetvalue = [-0.1,1]; %Issue in the circuit when asking for -10V, causes siren
 seqdata.analogchannels(44).defaultvoltagefunc = 2;
-seqdata.analogchannels(44).voltagefunc{2} = @(a)(a*0.4+8.6812)/141.2965;% 2021/04/23
+% seqdata.analogchannels(44).voltagefunc{2} = @(a)(a*0.4+8.6812)/141.2965;% 2021/04/23
 
 % 2021/08/03 Separate calibration
-% [~,seqdata.analogchannels(44).voltagefunc{2},~] = lattice_calibrations;
+[~,seqdata.analogchannels(44).voltagefunc{2},~] = lattice_calibrations;
 
 % seqdata.analogchannels(44).voltagefunc{2} = @(a)(a-5.0878)/432.98;%28 June, 2017
 % seqdata.analogchannels(44).voltagefunc{2} = @(a)(max(2.27178*log10(max(a,1E-9))-2.77493,-10));%28 June, 2017
@@ -673,10 +673,10 @@ seqdata.analogchannels(45).defaultvoltagefunc = 2;
 % seqdata.analogchannels(45).voltagefunc{2} = @(a)((a-2.7+5.61047)/473.44593);
 
 % seqdata.analogchannels(45).voltagefunc{2} = @(a)((a+1.9553)/555.47);
-seqdata.analogchannels(45).voltagefunc{2} = @(a)(a*0.4+8.28)/117.3;% 2021/05/04
+% seqdata.analogchannels(45).voltagefunc{2} = @(a)(a*0.4+8.28)/117.3;% 2021/05/04
 
 % 2021/08/03 Separate calibration
-%[seqdata.analogchannels(45).voltagefunc{2},~,~] = lattice_calibrations;
+[seqdata.analogchannels(45).voltagefunc{2},~,~] = lattice_calibrations;
 
 
 % seqdata.analogchannels(45).voltagefunc{2} = @(a)(max(2.21374*log10(max((a),1E-9))-2.59682,-10)); %June 28, 2017.

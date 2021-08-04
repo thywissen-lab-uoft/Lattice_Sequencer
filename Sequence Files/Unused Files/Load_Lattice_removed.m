@@ -5,6 +5,7 @@ QP_off_after_load = 0;                  % (607)         keep : Ramp off QP after
     spin_mixture_in_lattice_after_plane_selection = 0; 	% (3290)            keep : maybe use for 2D physics  
     initial_RF_sweep = 0;                               % (3589)            keep (delete?) : Sweep 40K to |9/2,-9/2> before plane selection
     do_raman_optical_pumping = 0;           % ()            unsused 
+    do_singleshot_spectroscopy = 0;         % (4215, 4360,4406)
 
 
 %% Load X/Y lattices after evaporation.

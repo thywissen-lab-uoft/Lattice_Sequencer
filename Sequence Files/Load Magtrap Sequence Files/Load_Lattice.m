@@ -30,59 +30,58 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     get_rid_of_Rb_in_lattice = 0;           % (523)         keep : Blow away Rb after lattice load
     spin_mixture_in_lattice_before_plane_selection = 0; % (668)             keep : Make a -9/2,-7/2 spin mixture.   
     Dimple_Trap_Before_Plane_Selection = 0; % (716)         keep : turn on the dimple, leave this option: note that the turning off code was deleted
-    do_optical_pumping = 1;                 % (1639,1642,1825) keep : optical pumping in lattice    
-    remove_one_spin_state = 0;              % (1871)        keep : An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
+    do_optical_pumping = 1;                 % (1426) keep : optical pumping in lattice    
+    remove_one_spin_state = 0;              % (1657)        keep : An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Waveplate
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % These flags control how the XDT/Lattice waveplate behaves.
     rotate_waveplate_init = 1;              % (345) initially rotate the WP to put 90% the power to the lattice
-    rotate_waveplate = 1;                   % (4909):  Turn Rotating Waveplate to Shift Power to Lattice Beams
+    rotate_waveplate = 1;                   % (4637):  Turn Rotating Waveplate to Shift Power to Lattice Beams
         
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Other
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
-    Drop_From_XDT = 0;                      %  (99,5511,5581) May need to add code to rotate waveplate back here.
-    do_lattice_mod = 0;                     %  (4183)        apply AM Spectroscopy                 
+    Drop_From_XDT = 0;                      %  (97,5187,5257) May need to add code to rotate waveplate back here.
+    do_lattice_mod = 0;                     %  (4547)        apply AM Spectroscopy                 
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Conductivity
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % These flags are associated with the conducitivity experiment
-    conductivity_without_dimple = 0;       % (881-1536) keep: the real conductivity experiment happens here 
+    conductivity_without_dimple = 0;       % (747-1536) keep: the real conductivity experiment happens here 
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % RF/uWave Spectroscopy
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    do_K_uwave_spectroscopy2 = 0;           % (3760)
-    do_K_uwave_spectroscopy = 0;            % (4049) keep
-    do_Rb_uwave_spectroscopy = 0;           % (4192)
-    do_singleshot_spectroscopy = 0;         % (4215, 4360,4406)
-    do_RF_spectroscopy = 0;                 % (4225,5295)
-    do_K_raman_spectroscopy = 0;            % (4262) under development
+    do_K_uwave_spectroscopy2 = 0;           % (3497)
+    do_K_uwave_spectroscopy = 0;            % (3786) keep
+    do_Rb_uwave_spectroscopy = 0;           % (3929)
+    do_RF_spectroscopy = 0;                 % (3952,4970)
+    do_K_raman_spectroscopy = 0;            % (3989) under development
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Dimple Beam
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % These flags are associated with the now defunct dimple beam
-    Dimple_Mod = 0;                     % (4458) keep: Used to calibrate dimple trap depth
+    Dimple_Mod = 0;                     % (4185) keep: Used to calibrate dimple trap depth
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Plane Selection, Raman Transfers, and Fluorescence Imaging
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-    do_plane_selection = 1;                             % (2297-3285) Primary Flag    
+    do_plane_selection = 1;                             % (2082-3285) Primary Flag    
 
-    fast_plane_selection = 0;                           % (1551)            keep : under development; could be the future of plane selection code for cleaner control
-    kill_pulses = 1;                                    % (2132,2776,3062)  keep :D2 Kill F=9/2
-    second_plane_selection = 0;                         % (2970)            copy 
-    eliminate_planes_with_QP = 0;                       % (3148)            keep : QP vacuum cleaner. In 2nd time plane selection section
-    do_plane_selection_horizontally = 0;                % (3341,3375,3408)  keep : generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
-    Dimple_Trap_After_Plane_Selection = 0;              % (4428,4482)       delete (?) : turn on dimple trap %Rhys suggested to delete?
-    do_lattice_ramp_after_spectroscopy = 1;             % (4931)            keep : Ramp lattice for fluorescence image
+    fast_plane_selection = 0;                           % (1406)            keep : under development; could be the future of plane selection code for cleaner control
+    kill_pulses = 1;                                    % (1917,2561,2847)  keep :D2 Kill F=9/2
+    second_plane_selection = 0;                         % (2755)            copy 
+    eliminate_planes_with_QP = 0;                       % (2933)            keep : QP vacuum cleaner. In 2nd time plane selection section
+    do_plane_selection_horizontally = 0;                % (3077,3111,3144)  keep : generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
+    Dimple_Trap_After_Plane_Selection = 0;              % (4155,4209)       delete (?) : turn on dimple trap %Rhys suggested to delete?
+    do_lattice_ramp_after_spectroscopy = 1;             % (4658)            keep : Ramp lattice for fluorescence image
     
     % Actual fluorsence image flag
-    Raman_transfers = 1;                                % (4999)            keep : apply fluorescence imaging light
+    Raman_transfers = 1;                                % (4727)            keep : apply fluorescence imaging light
 
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3422,7 +3421,7 @@ end
 %generality from dipole_transfer apply here too: clean and generalize!
 
 if ( do_K_uwave_spectroscopy2 || do_K_uwave_spectroscopy || ...
-        do_Rb_uwave_spectroscopy || do_RF_spectroscopy || do_singleshot_spectroscopy )
+        do_Rb_uwave_spectroscopy || do_RF_spectroscopy)
     dispLineStr('Ramping magnetic fields BEFORE RF/uwave spectroscopy',curtime);
     ramp_fields = 1; % do a field ramp for spectroscopy
     
@@ -4084,8 +4083,8 @@ end
 %          (May 20th, 2013)
 
 if ( do_K_uwave_spectroscopy2 || do_K_uwave_spectroscopy || ...
-        do_Rb_uwave_spectroscopy || do_RF_spectroscopy || ...
-        do_singleshot_spectroscopy )
+        do_Rb_uwave_spectroscopy || do_RF_spectroscopy ...
+        )
     
     dispLineStr('Ramping magnetic fields AFTER RF/uwave spectroscopy',curtime);
     ramp_fields = 1; % do a field ramp for spectroscopy
@@ -4130,8 +4129,8 @@ end
 %should just be contained to each spectroscopy module.
 
 if (do_K_uwave_spectroscopy2 ||do_K_uwave_spectroscopy || ...
-        do_Rb_uwave_spectroscopy || do_RF_spectroscopy || ...
-        do_singleshot_spectroscopy )
+        do_Rb_uwave_spectroscopy || do_RF_spectroscopy  ...
+        )
     
     if isfield(ramp,'QP_final')
         if ramp.QP_final ~=0

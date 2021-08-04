@@ -103,7 +103,6 @@ GHz = 1E9;
 
 
 %% Initialize channes
-
 initialize_channels();
 
 %% Switches

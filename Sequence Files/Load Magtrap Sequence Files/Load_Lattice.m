@@ -26,74 +26,74 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 %% Lattice Flags    
 % These are the lattice flags sorted roughly chronologically.
 
-    ramp_fields_after_lattice_loading = 0;  % keep do a field ramp for spectroscopy %Ramp up feshbach field after 1st lattice ramp. Can ramp the FB field up high here during lattice loading to try to make a Mott-insulator or some such.
-    QP_off_after_load = 0;                  % keep: used for turning off QP if loaded from QP directly
-    get_rid_of_Rb_in_lattice = 0;           % keep: never seem to be useful tho, for evaporation in lattice
-    load_XY_after_evap = 0;                 % keep: could be used to evaporate in just z-lattice
-    initial_RF_sweep = 0;                   % keep: Sweep 40K to |9/2,-9/2> before plane selection
-    spin_mixture_in_lattice_before_plane_selection = 0; % keep: Make a -9/2,-7/2 spin mixture.
-    Dimple_Trap_Before_Plane_Selection = 0; % keep: turn on the dimple, leave this option: note that the turning off code was deleted
-        
-    do_raman_optical_pumping = 0;           % keep: for an option, normal D1 OP should be fine 
-    do_optical_pumping = 1;                 % keep: useful
-    
-    remove_one_spin_state = 0;              % keep: An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
-    do_plane_selection = 1;     
-    kill_pulses = 1;                        % Kill Pulses only active if do_plane_selection=1
-    second_plane_selection = 0;             % copy 
-    fast_plane_selection = 0;               % keep: could be the future of plane selection code for cleaner control
-    eliminate_planes_with_QP = 0;           % keep: QP vacuum cleaner. In 2nd time plane selection section
-    do_plane_selection_horizontally = 0;    % worth keeping, generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
-    
-     
-    do_lattice_mod = 0;                 % keep: calibrate lattice depth
-    
+    ramp_fields_after_lattice_loading = 0;  % (417,504)     keep : Ramp on the fesbhach field after lattice load
+    get_rid_of_Rb_in_lattice = 0;           % (524)         keep : Blow away Rb after lattice load
+    QP_off_after_load = 0;                  % (607)         keep : Ramp off QP after lattice Load
+    load_XY_after_evap = 0;                 % (568)         keep : could be used to evaporate in just z-lattice
+    spin_mixture_in_lattice_before_plane_selection = 0; % (801)             keep : Make a -9/2,-7/2 spin mixture.   
+    Dimple_Trap_Before_Plane_Selection = 0; % (849)         keep : turn on the dimple, leave this option: note that the turning off code was deleted
+    do_raman_optical_pumping = 0;           % (1559,1825)   keep : for an option, normal D1 OP should be fine 
+    do_optical_pumping = 1;                 % (1639,1642,1825) keep : optical pumping in lattice    
+    remove_one_spin_state = 0;              % (1871)        keep : An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Waveplate
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % These flags control how the XDT/Lattice waveplate behaves.
-    rotate_waveplate_init = 1;          % initially rotate the WP to put 90% the power to the lattice
-    rotate_waveplate = 1;               % keep:  Turn Rotating Waveplate to Shift Power to Lattice Beams
+    rotate_waveplate_init = 1;              % (345) initially rotate the WP to put 90% the power to the lattice
+    rotate_waveplate = 1;                   % (4909):  Turn Rotating Waveplate to Shift Power to Lattice Beams
+        
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Other
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+    Drop_From_XDT = 0;                      %  (99,5511,5581) May need to add code to rotate waveplate back here.
+    do_lattice_mod = 0;                     %  (4183)        apply AM Spectroscopy                 
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Conductivity
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % These flags are associated with the conducitivity experiment
-    conductivity_without_dimple = 0;       %keep: the real conductivity experiment happens here 
+    conductivity_without_dimple = 0;       % (881-1536) keep: the real conductivity experiment happens here 
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % RF/uWave Spectroscopy
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    do_K_uwave_spectroscopy = 0;            %keep
-    do_K_uwave_spectroscopy2 = 0;
-    do_Rb_uwave_spectroscopy = 0;
-    do_singleshot_spectroscopy = 0;
-    do_RF_spectroscopy = 0;
-    do_K_raman_spectroscopy = 0;            %(new) under development
+    do_K_uwave_spectroscopy2 = 0;           % (3760)
+    do_K_uwave_spectroscopy = 0;            % (4049) keep
+    do_Rb_uwave_spectroscopy = 0;           % (4192)
+    do_singleshot_spectroscopy = 0;         % (4215, 4360,4406)
+    do_RF_spectroscopy = 0;                 % (4225,5295)
+    do_K_raman_spectroscopy = 0;            % (4262) under development
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Dimple Beam
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    Dimple_Mod = 0;                     % keep: Used to calibrate dimple trap depth
+    % These flags are associated with the now defunct dimple beam
+    Dimple_Mod = 0;                     % (4458) keep: Used to calibrate dimple trap depth
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Plane Selection, Raman Transfers, and Fluorescence Imaging
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-    spin_mixture_in_lattice_after_plane_selection = 0; 	% Keep       : maybe use for 2D physics       
-    Dimple_Trap_After_Plane_Selection = 0;              % delete (?) : turn on dimple trap %Rhys suggested to delete?
-    do_lattice_ramp_after_spectroscopy = 1;             % keep       : Ramp lattices on or off after doing spectroscopy, must be on for fluorescence image
-    Raman_transfers = 1;                                % keep       : for fluorescence image
+    do_plane_selection = 1;                             % (2297-3285) Primary Flag    
+
+    fast_plane_selection = 0;                           % (1551)            keep : under development; could be the future of plane selection code for cleaner control
+    kill_pulses = 1;                                    % (2132,2776,3062)  keep :D2 Kill F=9/2
+    second_plane_selection = 0;                         % (2970)            copy 
+    eliminate_planes_with_QP = 0;                       % (3148)            keep : QP vacuum cleaner. In 2nd time plane selection section
+    spin_mixture_in_lattice_after_plane_selection = 0; 	% (3290)            keep : maybe use for 2D physics  
+    do_plane_selection_horizontally = 0;                % (3341,3375,3408)  keep : generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
+   
+    initial_RF_sweep = 0;                               % (3589)            keep (delete?) : Sweep 40K to |9/2,-9/2> before plane selection
+    Dimple_Trap_After_Plane_Selection = 0;              % (4428,4482)       delete (?) : turn on dimple trap %Rhys suggested to delete?
+    do_lattice_ramp_after_spectroscopy = 1;             % (4931)            keep : Ramp lattice for fluorescence image
     
-    
-    Drop_From_XDT = 0;                  % May need to add code to rotate waveplate back here.
-    
-           
-    
+    % Actual fluorsence image flag
+    Raman_transfers = 1;                                % (4999)            keep : apply fluorescence imaging light
 
     
-    %%
-    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Other Parameters
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
 
     %RHYS - Some confusing parameters defined here. Consolidate.
     
@@ -1559,6 +1559,8 @@ end
 %% Use Raman/EIT beams to optically pump the atoms.
 %RHYS - This should work, but is kind of pointless. Normal D1 optical
 %pumping works. Delete?
+
+% CF : What does Raman pump even mean? I think this can be deleted.
 
 if do_raman_optical_pumping
     

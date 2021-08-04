@@ -36,6 +36,10 @@ Dimple_Trap_Before_Plane_Selection = 0; % (716)         keep : turn on the dimpl
 do_optical_pumping = 0;                 % (1426) keep : optical pumping in lattice    
 remove_one_spin_state = 0;              % (1657)        keep : An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
 
+
+oldLoad=0;
+newLoad=1;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Waveplate
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -162,6 +166,17 @@ if newLoad
     dmd_times=[100 50 50];
     T_dmd=sum(dip_times);
     
+    % Add output
+    addOutputParam('latt_depth_load',latt_depth*atomscale);
+    addOutputParam('latt_depth_times',latt_times);
+    
+    addOutputParam('latt_dip_pow_load',dip_pow);
+    addOutputParam('latt_dip_pow_times',dip_times);
+    
+    seqdata.flags.dmd_enable=do_dmd;
+    addOutputParam('latt_dmd_pow_load',dmd_pow);
+    addOutputParam('latt_dmd_pow_times',dmd_times);
+    
     % Error checking
     if (length(latt_times) ~= size(latt_depth,2)) || ...
             (size(latt_depth,1)~=3)
@@ -173,15 +188,12 @@ if newLoad
     if (length(dmd_times) ~= size(dmd_pow,2))
         error('Invalid ramp specification for dmd lattice loading!');
     end
-
     
     % Ending time of all ramps
     T_load_tot = max([T_latt T_dip do_DMD*T_dmd]);
 end
 
 %% LOADING SEQ BELOW CAN BE USED FOR DMD rough alignment
-
-
 
 if oldLoad
     % % Lattice Ramp up depths
@@ -203,6 +215,7 @@ if oldLoad
     % % % %     lat_rampup_time = 1*[50,2+DMD_on_time+DMD_ramp_time,10,2,50,lat_hold_time];
     % 
     % 
+    
     lat_rampup_time = 1*[20,30,30,10,50,lat_hold_time]; 
 
     % Ramp the DMD power up

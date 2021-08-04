@@ -29,7 +29,7 @@ function [timeout, varargout] = applyLatticeModulation(timein, frequency, amplit
 
 global seqdata;
 curtime = timein;
-atomscale = 0.4;
+
 
 % the number of necessary input arguments (including timein)
 narginfix = 4;

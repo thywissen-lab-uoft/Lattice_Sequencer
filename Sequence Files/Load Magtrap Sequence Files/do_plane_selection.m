@@ -344,7 +344,7 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
             
             QP_kill_time = 80; % time with lowered lattices and strong gradient
 
-            lat_psel_ramp_depth = [[0 0 20 20];[0 0 20 20];[10 10 20 20]]/atomscale; % lattice depths in Er
+            lat_psel_ramp_depth = [[0 0 20 20];[0 0 20 20];[10 10 20 20]]; % lattice depths in Er
             lat_psel_ramp_time = [150 NaN 150 50]; % sum of the last two ramp times is effectively the field settling time
             
             clear('ramp');

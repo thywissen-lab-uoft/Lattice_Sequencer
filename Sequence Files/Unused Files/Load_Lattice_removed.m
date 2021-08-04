@@ -23,7 +23,7 @@ QP_off_after_load = 0;                  % (607)         keep : Ramp off QP after
         %Load xy.
         lat_rampup_depth = 1*[[0.02 0.02 0.10 0.10 0.4 0.4]*100;
                               [0.02 0.02 0.10 0.10 0.4 0.4]*100;
-                              [0.02 0.02 0.10 0.10 0.4 0.4]*100]/atomscale;
+                              [0.02 0.02 0.10 0.10 0.4 0.4]*100];
 
         lat_rampup_time = 1*[50,10,50,10,50,10]; 
                       % further lattice rampup segments
@@ -95,7 +95,7 @@ end
 
 if initial_RF_sweep
     
-curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 8*33/atomscale);
+curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 8*33);
 
     
     %Ramp FB Field
@@ -156,7 +156,7 @@ if do_raman_optical_pumping
      addOutputParam('yLatDepth',yLatDepth);
      addOutputParam('zLatDepth',zLatDepth);
      
-     lat_rampup_imaging_depth = [xLatDepth xLatDepth; yLatDepth yLatDepth; zLatDepth zLatDepth]*100/atomscale;  %[100 650 650;100 650 650;100 900 900]
+     lat_rampup_imaging_depth = [xLatDepth xLatDepth; yLatDepth yLatDepth; zLatDepth zLatDepth]*100;  %[100 650 650;100 650 650;100 900 900]
      lat_rampup_imaging_time = [50 10];
 
     if (length(lat_rampup_imaging_time) ~= size(lat_rampup_imaging_depth,2)) || ...

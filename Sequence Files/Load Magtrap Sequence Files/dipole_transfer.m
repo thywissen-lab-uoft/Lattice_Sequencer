@@ -78,7 +78,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     Lattice_in_XDT_Evap = 0;
     ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
     Kill_Beam_Alignment = 0;        %Pulse Kill beam on for whatever needs to be aligned.    
-    ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
+    ramp_XDT_after_evap = 1;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
     Raman_in_XDT = 0;    
     k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap    
     
@@ -2713,7 +2713,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
         dispLineStr('Ramping XDTs back on.',curtime);
        
        
-        power_list = [0.15];
+        power_list = [0.2];
         power_val = getScanParameter(power_list,seqdata.scancycle,...
             seqdata.randcyclelist,'power_val','W');
 

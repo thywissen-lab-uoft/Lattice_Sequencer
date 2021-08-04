@@ -31,7 +31,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     spin_mixture_in_lattice_before_plane_selection = 0; % (801)             keep : Make a -9/2,-7/2 spin mixture.   
     Dimple_Trap_Before_Plane_Selection = 0; % (849)         keep : turn on the dimple, leave this option: note that the turning off code was deleted
     do_raman_optical_pumping = 0;           % (1559,1825)   keep : for an option, normal D1 OP should be fine 
-    do_optical_pumping = 1;                 % (1639,1642,1825) keep : optical pumping in lattice    
+    do_optical_pumping = 0;                 % (1639,1642,1825) keep : optical pumping in lattice    
     remove_one_spin_state = 0;              % (1871)        keep : An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -39,7 +39,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % These flags control how the XDT/Lattice waveplate behaves.
     rotate_waveplate_init = 1;              % (345) initially rotate the WP to put 90% the power to the lattice
-    rotate_waveplate = 1;                   % (4909):  Turn Rotating Waveplate to Shift Power to Lattice Beams
+    rotate_waveplate = 0;                   % (4909):  Turn Rotating Waveplate to Shift Power to Lattice Beams
         
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Other
@@ -72,18 +72,18 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Plane Selection, Raman Transfers, and Fluorescence Imaging
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-    do_plane_selection = 1;                             % (2297-3285) Primary Flag    
+    do_plane_selection = 0;                             % (2297-3285) Primary Flag    
 
     fast_plane_selection = 0;                           % (1551)            keep : under development; could be the future of plane selection code for cleaner control
-    kill_pulses = 1;                                    % (2132,2776,3062)  keep :D2 Kill F=9/2
+    kill_pulses = 0;                                    % (2132,2776,3062)  keep :D2 Kill F=9/2
     second_plane_selection = 0;                         % (2970)            copy 
     eliminate_planes_with_QP = 0;                       % (3148)            keep : QP vacuum cleaner. In 2nd time plane selection section
     do_plane_selection_horizontally = 0;                % (3341,3375,3408)  keep : generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
     Dimple_Trap_After_Plane_Selection = 0;              % (4428,4482)       delete (?) : turn on dimple trap %Rhys suggested to delete?
-    do_lattice_ramp_after_spectroscopy = 1;             % (4931)            keep : Ramp lattice for fluorescence image
+    do_lattice_ramp_after_spectroscopy = 0;             % (4931)            keep : Ramp lattice for fluorescence image
     
     % Actual fluorsence image flag
-    Raman_transfers = 1;                                % (4999)            keep : apply fluorescence imaging light
+    Raman_transfers = 0;                                % (4999)            keep : apply fluorescence imaging light
 
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -98,14 +98,14 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
     if Drop_From_XDT
         lattice_rampdown = 50;
     else
-        lattice_rampdown = 1; %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
+        lattice_rampdown = 0;1; %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
     end
     atomscale = 0.4;%0.4045; %0.4 for 40K, 1.0 for Rb
       
    
 % Parameters for lattice loading, section used for lattice alignment
 %     lat_rampup_common_depths = [200 200]/atomscale;
-    Depth_List = [60];
+    Depth_List = [100];
 %     ZLD = getmultiScanParameter(Depth_List,seqdata.scancycle,'x_lattice_depth',1,2);
     ZLD = getScanParameter(Depth_List,seqdata.scancycle,seqdata.randcyclelist,'zld');
 % ZLD = getmultiScanParameter(Depth_List,seqdata.scancycle,'ylattice_depth',1,2);
@@ -115,12 +115,12 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 
 
 %LOADING SEQ BELOW CAN BE USED FOR SIMPLE LATTICE LOADING
-% lattice_rampup_time_list =[250];
-% lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycle,seqdata.randcyclelist,'lattice_rampup_time','ms');
-%     lat_rampup_depth = 1*[1*[ZLD    ZLD];
-%                           1*[ZLD    ZLD];                
-%                           1*[ZLD    ZLD];]/atomscale;
-%     lat_rampup_time = 1*[lattice_rampup_time    50]; 
+lattice_rampup_time_list =[250];
+lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycle,seqdata.randcyclelist,'lattice_rampup_time','ms');
+    lat_rampup_depth = 1*[-1*[ZLD    ZLD];
+                          1*[ZLD    ZLD];                
+                          -1*[ZLD    ZLD];]/atomscale;
+    lat_rampup_time = 1*[lattice_rampup_time    50]; 
     
 % % 
 % init_depth_list =[30];
@@ -135,26 +135,26 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 %% LOADING SEQ BELOW CAN BE USED FOR DMD rough alignment
 
 
-% Lattice Ramp up depths
-lat_rampup_depth = 1*[1*[0 0 30 30 ZLD  ZLD];
-                      1*[0 0 30 30 ZLD  ZLD];
-                      1*[0 0 30 30 ZLD  ZLD]]/atomscale;   
-
-% DMD Stuff
-DMD_on_time_list = [200];
-DMD_on_time = getScanParameter(DMD_on_time_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'DMD_on_time','ms');
-    
-DMD_ramp_time = 100; %10
-lat_hold_time_list = 50;%50 sept28
-lat_hold_time = getScanParameter(lat_hold_time_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'lattice_hold_time');%maximum is 4
-
-%     lat_rampup_time = 1*[50,DMD_on_time+DMD_ramp_time-70,100,2,50,lat_hold_time]; 
-% % %     lat_rampup_time = 1*[50,2+DMD_on_time+DMD_ramp_time,10,2,50,lat_hold_time];
-
-
-lat_rampup_time = 1*[20,30,30,10,50,lat_hold_time]; 
+% % Lattice Ramp up depths
+% lat_rampup_depth = 1*[1*[10 10 30 30 ZLD  ZLD];
+%                       1*[10 10 30 30 ZLD  ZLD];
+%                       1*[10 10 30 30 ZLD  ZLD]]/atomscale;   
+% 
+% % DMD Stuff
+% DMD_on_time_list = [200];
+% DMD_on_time = getScanParameter(DMD_on_time_list,...
+%     seqdata.scancycle,seqdata.randcyclelist,'DMD_on_time','ms');
+%     
+% DMD_ramp_time = 100; %10
+% lat_hold_time_list = 50;%50 sept28
+% lat_hold_time = getScanParameter(lat_hold_time_list,...
+%     seqdata.scancycle,seqdata.randcyclelist,'lattice_hold_time');%maximum is 4
+% 
+% %     lat_rampup_time = 1*[50,DMD_on_time+DMD_ramp_time-70,100,2,50,lat_hold_time]; 
+% % % %     lat_rampup_time = 1*[50,2+DMD_on_time+DMD_ramp_time,10,2,50,lat_hold_time];
+% 
+% 
+% lat_rampup_time = 1*[20,30,30,10,50,lat_hold_time]; 
 
 % Is the DMD active?
 do_DMD=0;
@@ -351,7 +351,7 @@ if rotate_waveplate_init
     wp_Trot2 = 150; % gets added as a wait time after lattice rampup
         
     P_RotWave_I = 0.6;
-    P_RotWave_II = 0.95;    
+    P_RotWave_II = 0.9;    
     
     disp(['     Rotation Time 1 : ' num2str(wp_Trot1) ' ms']);
     disp(['     Rotation Time 2 : ' num2str(wp_Trot1) ' ms']);

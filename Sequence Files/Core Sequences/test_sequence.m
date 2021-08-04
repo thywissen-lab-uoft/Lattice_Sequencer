@@ -4772,12 +4772,13 @@ end
 % % % % % setAnalogChannel(calctime(curtime,0),'X Shim',1); %0.15
 % % % % % setAnalogChannel(calctime(curtime,0),'Z Shim',3);%0.0 
 % % % % 
-% setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',200);%202.5); %200
-% setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',3); 
-% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
-% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
-% setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
-% % % % % 
+curtime = calctime(curtime,1000);
+setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',200);%202.5); %200
+setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',3); 
+setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
+setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
+setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',0);
+% % % % 
 % % 
 % setAnalogChannel(calctime(curtime,0),59,0); %0.11
 
@@ -5030,20 +5031,20 @@ end
 
 %% Test Acync
 
-curtime = calctime(curtime,100);
-setDigitalChannel(calctime(curtime,-35),72,1);
-
-setAnalogChannel(calctime(curtime,-5),57,-10);
-
-AnalogFuncTo(calctime(curtime,0),57,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2,2,10);
-setAnalogChannel(calctime(curtime,10),57,-10);
-
-setDigitalChannel(calctime(curtime,0),71,1);
-setDigitalChannel(calctime(curtime,10),71,0);
-
-
-
-setDigitalChannel(calctime(curtime,30),72,0);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,-35),72,1);
+% 
+% setAnalogChannel(calctime(curtime,-5),57,-10);
+% 
+% AnalogFuncTo(calctime(curtime,0),57,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2,2,10);
+% setAnalogChannel(calctime(curtime,10),57,-10);
+% 
+% setDigitalChannel(calctime(curtime,0),71,1);
+% setDigitalChannel(calctime(curtime,10),71,0);
+% 
+% 
+% 
+% setDigitalChannel(calctime(curtime,30),72,0);
 
 curtime=calctime(curtime,1000);
 

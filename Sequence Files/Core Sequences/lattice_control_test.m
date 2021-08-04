@@ -15,8 +15,8 @@ scope_trigger =  'lattice control test';'Rampup ODT';
       P_lattice = 1.0; %0.5/0.9        % The fraction of power that will be transmitted 
       curtime = AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),rotation_time,rotation_time,P_lattice);
       curtime = calctime(curtime,1000);
-        atomscale = 0.2;0.4;
-        lattice_depth = [-10 -10 -10]/atomscale;  [1.1 1.17 1.24]/atomscale;[3 2.33 800]; %[0 0.82 0.87]
+        
+        lattice_depth = [-10 -10 -10];  [1.1 1.17 1.24];[3 2.33 800]; %[0 0.82 0.87]
         ramp_time = 50;
         voltage_func = 2;
         zero = [-9.99,0];

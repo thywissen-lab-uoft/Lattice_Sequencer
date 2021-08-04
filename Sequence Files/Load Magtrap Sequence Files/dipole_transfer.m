@@ -1434,20 +1434,20 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_li
                 X_Lattice_Depth = 2.5;
                 Y_Lattice_Depth = 2.5;
                 Z_Lattice_Depth = 0;
-                atomscale = 0.4;    %0.4 : K40;  1: Rb
+              
 
                 %ramp up
-                AnalogFuncTo(calctime(curtime,Lattice_On_Time),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,X_Lattice_Depth/atomscale);
-                AnalogFuncTo(calctime(curtime,Lattice_On_Time),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Y_Lattice_Depth/atomscale);
-                AnalogFuncTo(calctime(curtime,Lattice_On_Time),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Z_Lattice_Depth/atomscale);
+                AnalogFuncTo(calctime(curtime,Lattice_On_Time),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,X_Lattice_Depth);
+                AnalogFuncTo(calctime(curtime,Lattice_On_Time),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Y_Lattice_Depth);
+                AnalogFuncTo(calctime(curtime,Lattice_On_Time),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Z_Lattice_Depth);
 
                 X_Lattice_Depth = 0;
                 Y_Lattice_Depth = 0;
                 Z_Lattice_Depth = 0;    
                 %ramp down
-                AnalogFuncTo(calctime(curtime,exp_evap_time-lat_ramp_time),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,X_Lattice_Depth/atomscale);
-                AnalogFuncTo(calctime(curtime,exp_evap_time-lat_ramp_time),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Y_Lattice_Depth/atomscale);
-                AnalogFuncTo(calctime(curtime,exp_evap_time-lat_ramp_time),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Z_Lattice_Depth/atomscale);
+                AnalogFuncTo(calctime(curtime,exp_evap_time-lat_ramp_time),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,X_Lattice_Depth);
+                AnalogFuncTo(calctime(curtime,exp_evap_time-lat_ramp_time),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Y_Lattice_Depth);
+                AnalogFuncTo(calctime(curtime,exp_evap_time-lat_ramp_time),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Z_Lattice_Depth);
 
                 %---------------------------------------------------------
                 %turn off TTLs
@@ -3237,13 +3237,13 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
         X_Lattice_Depth = 1;
         Y_Lattice_Depth = 1;
         Z_Lattice_Depth = 1;
-        atomscale = 0.4;    %0.4 : K40;  1: Rb
+        
         lat_hold_time_list = [0,5,15,10,20,30]*1000;
         lat_hold_time = getScanParameter(lat_hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'lat_hold_time');
         %ramp up
-        AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,X_Lattice_Depth/atomscale);
-        AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Y_Lattice_Depth/atomscale);
-curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Z_Lattice_Depth/atomscale);
+        AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,X_Lattice_Depth);
+        AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Y_Lattice_Depth);
+curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Z_Lattice_Depth);
 curtime = calctime(curtime,lat_hold_time);%holding
 
         lat_ramp_time = 200;
@@ -3252,9 +3252,9 @@ curtime = calctime(curtime,lat_hold_time);%holding
         Y_Lattice_Depth = 0;
         Z_Lattice_Depth = 0;    
         %ramp down
-        AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,X_Lattice_Depth/atomscale);
-        AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Y_Lattice_Depth/atomscale);
-curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Z_Lattice_Depth/atomscale);
+        AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,X_Lattice_Depth);
+        AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Y_Lattice_Depth);
+curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Z_Lattice_Depth);
 %curtime = calctime(curtime,10);%holding for 10 ms
 
         %---------------------------------------------------------

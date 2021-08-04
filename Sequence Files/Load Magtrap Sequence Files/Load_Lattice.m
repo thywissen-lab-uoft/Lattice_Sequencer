@@ -227,9 +227,9 @@ if oldLoad
         z_latt_list = [0];
         z_latt = getScanParameter(z_latt_list,...
             seqdata.scancycle,seqdata.randcyclelist,'z_latt_init','Er');
-        lat_rampup_depth = 1*[1*[-25*atomscale -25*atomscale 30 30 ZLD  ZLD];
-                              1*[-25*atomscale -25*atomscale 30 30 ZLD  ZLD];
-                              1*[z_latt z_latt 30 30 ZLD  ZLD]]/atomscale;   
+        lat_rampup_depth = 1*[1*[-25 -25 30 30 ZLD  ZLD];
+                              1*[-25 -25 30 30 ZLD  ZLD];
+                              1*[z_latt z_latt 30 30 ZLD  ZLD]];   
 
         lat_rampup_time = 1*[50,DMD_on_time+DMD_ramp_time-70,100,2,50,lat_hold_time]; 
         offset_time = 40;
@@ -398,7 +398,7 @@ if oldLoad
 % add ouput parameters to save along with images    
 %     addOutputParam('lattice_holdtime',lattice_holdtime);
 %     addOutputParam('lattice_ramptime',lat_rampup_time(2));
-    addOutputParam('lattice_depth',lat_rampup_depth(1,end)*atomscale);
+    addOutputParam('lattice_depth',lat_rampup_depth(1,end));
 end
 %% Rotate waveplate to shift power to lattice beams
 % This piece of code rotates the rotatable wavepalte to shift the optical
@@ -444,9 +444,9 @@ if newLoad
     
     dispLineStr('Ramping lattices.',curtime);
     disp(['     Ramp Times      (ms) : ' mat2str(latt_times) ]);
-    disp(['     xLattice       (ErK) : ' mat2str(atomscale*latt_depth(1,:))]);
-    disp(['     yLattice       (ErK) : ' mat2str(atomscale*latt_depth(2,:))]);
-    disp(['     zLattice       (ErK) : ' mat2str(atomscale*latt_depth(3,:))]);
+    disp(['     xLattice       (ErK) : ' mat2str(latt_depth(1,:))]);
+    disp(['     yLattice       (ErK) : ' mat2str(latt_depth(2,:))]);
+    disp(['     zLattice       (ErK) : ' mat2str(latt_depth(3,:))]);
     disp(' ');
     disp(['     Dip Ramp Times  (ms) : ' mat2str(dip_times)]);
     disp(['     Dip Power        (W) : ' mat2str(dip_pow)]);
@@ -543,9 +543,9 @@ if oldLoad
 
     dispLineStr('Ramping up lattices.',curtime);
     disp(['     Ramp Times    (ms) : ' mat2str(lat_rampup_time) ]);
-    disp(['     xLattice     (ErK) : ' mat2str(atomscale*lat_rampup_depth(1,:))]);
-    disp(['     yLattice     (ErK) : ' mat2str(atomscale*lat_rampup_depth(2,:))]);
-    disp(['     zLattice     (ErK) : ' mat2str(atomscale*lat_rampup_depth(3,:))]);
+    disp(['     xLattice     (ErK) : ' mat2str(lat_rampup_depth(1,:))]);
+    disp(['     yLattice     (ErK) : ' mat2str(lat_rampup_depth(2,:))]);
+    disp(['     zLattice     (ErK) : ' mat2str(lat_rampup_depth(3,:))]);
 
     seqdata.times.lattice_start_time = curtime;
     ScopeTriggerPulse(curtime,'Load lattices');
@@ -800,9 +800,9 @@ curtime=calctime(curtime,2);
         %Define ramp parameters
         xLatDepth = 15; %380
         yLatDepth = 15; %500
-        zLatDepth = lat_rampup_depth(3)*atomscale; %270
+        zLatDepth = lat_rampup_depth(3); %270
         
-        lat_rampupII_depth = [xLatDepth; yLatDepth; zLatDepth]/atomscale;  %[100 650 650;100 650 650;100 900 900]
+        lat_rampupII_depth = [xLatDepth; yLatDepth; zLatDepth];  %[100 650 650;100 650 650;100 900 900]
         lat_rampupII_time = [200];
 
         if (length(lat_rampupII_time) ~= size(lat_rampupII_depth,2)) || ...
@@ -1054,7 +1054,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 if (kick_lattice == 1)
     temp_kick_latdepth_list = [5.5];
     temp_kick_latdepth = getScanParameter(temp_kick_latdepth_list,seqdata.scancycle,seqdata.randcyclelist,'temp_kick_latdepth');
-    temp_kick_latdepth=temp_kick_latdepth/atomscale;
+    temp_kick_latdepth=temp_kick_latdepth;
     AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),0.1,0.1,temp_kick_latdepth); 
     AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1,0.1,temp_kick_latdepth)
 curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),0.1,0.1,temp_kick_latdepth);
@@ -1065,9 +1065,9 @@ curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk
 curtime=calctime(curtime,100);    
 end
 
-    AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Z_Lattice_Depth/atomscale);
-    AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,X_Lattice_Depth/atomscale);
-    AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Y_Lattice_Depth/atomscale);
+    AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Z_Lattice_Depth);
+    AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,X_Lattice_Depth);
+    AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Y_Lattice_Depth);
     AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), xdt_ramp_time, xdt_ramp_time, XDT1_Power);
 curtime =  AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), xdt_ramp_time, xdt_ramp_time, XDT2_Power);
 curtime=calctime(curtime,5);    
@@ -1382,9 +1382,9 @@ curtime = calctime(curtime,3000-2*lat_ramp_time);
     AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), xdt_ramp_time, xdt_ramp_time, 0.15);
 curtime =  AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), xdt_ramp_time, xdt_ramp_time, 0.062);
 
-    AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,0/atomscale);      
-    AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,0/atomscale);
-curtime = AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,0/atomscale);
+    AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,0);      
+    AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,0);
+curtime = AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,0);
 
 curtime = calctime(curtime,100);
         end
@@ -1435,21 +1435,21 @@ end
 
 
     if Post_Mod_Lat_Ramp
-        AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,0/atomscale);
-        AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,0/atomscale);
-curtime=AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,0/atomscale);    
-        AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,15/atomscale);
-        AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,15/atomscale);
-curtime=AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,15/atomscale);    
+        AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,0);
+        AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,0);
+curtime=AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,0);    
+        AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,15);
+        AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,15);
+curtime=AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,15);    
 curtime = calctime(curtime,1);
     end
 
 % % 	ramp up pin lattice
     if Lattices_to_Pin
         setDigitalChannel(calctime(curtime,-0.5),'yLatticeOFF',0);%0: ON
-        AnalogFuncTo(calctime(curtime,-0.1),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60/atomscale); 
-        AnalogFuncTo(calctime(curtime,-0.1),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60/atomscale)
-curtime = AnalogFuncTo(calctime(curtime,-0.1),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60/atomscale);
+        AnalogFuncTo(calctime(curtime,-0.1),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60); 
+        AnalogFuncTo(calctime(curtime,-0.1),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60)
+curtime = AnalogFuncTo(calctime(curtime,-0.1),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60);
 %     ramp down xdt
        AnalogFuncTo(calctime(curtime,50),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 50, 50, -0.2);
        AnalogFuncTo(calctime(curtime,50),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 50, 50, -0.2);
@@ -1597,9 +1597,9 @@ if ( do_optical_pumping == 1)
 
   if (OP_lat_depth~= ZLD)
     %ramp up lattice beams for optical pumping
-    AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, OP_lat_depth/atomscale); 
-    AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, OP_lat_depth/atomscale);
-curtime= AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, OP_lat_depth/atomscale);
+    AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, OP_lat_depth); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, OP_lat_depth);
+curtime= AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, OP_lat_depth);
   curtime = calctime(curtime,10);%10 ms for the system to be stablized
 
   end
@@ -1787,7 +1787,7 @@ if(do_optical_pumping)
      addOutputParam('yLatDepth',yLatDepth);
      addOutputParam('zLatDepth',zLatDepth);
      
-     lat_rampup_imaging_depth = [xLatDepth xLatDepth; yLatDepth yLatDepth; zLatDepth zLatDepth]*100/atomscale;  %[100 650 650;100 650 650;100 900 900]
+     lat_rampup_imaging_depth = [xLatDepth xLatDepth; yLatDepth yLatDepth; zLatDepth zLatDepth]*100;  %[100 650 650;100 650 650;100 900 900]
      lat_rampup_imaging_time = [50 10];
 
     if (length(lat_rampup_imaging_time) ~= size(lat_rampup_imaging_depth,2)) || ...
@@ -2211,9 +2211,9 @@ curtime = calctime(curtime,100);
    %Lattices to pin.  
    pin_lattice_on = 0;
    if pin_lattice_on == 1
-        AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.5, 0.5, 40/atomscale); 
-        AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.5, 0.5, 40/atomscale)
-curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.5, 0.5, 40/atomscale);
+        AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.5, 0.5, 40); 
+        AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.5, 0.5, 40)
+curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.5, 0.5, 40);
    end % if pin_lattice_on
     
     % Ramp gradient and FB back down
@@ -2263,11 +2263,11 @@ Lattices_to_Pin_plane_selection = 1;
         
         % Ramp Lattices
         AnalogFuncTo(calctime(curtime,0),'xLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60/atomscale); 
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60); 
         AnalogFuncTo(calctime(curtime,0),'yLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60/atomscale);
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60);
 curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60/atomscale); %30?
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60); %30?
         
         % Ramp dipole traps
         AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
@@ -3121,7 +3121,7 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
        
             QP_kill_time = 80; % time with lowered lattices and strong gradient
 
-            lat_psel_ramp_depth = [[0 0 20 20];[0 0 20 20];[20 20 20 20]]/atomscale; % lattice depths in Er
+            lat_psel_ramp_depth = [[0 0 20 20];[0 0 20 20];[20 20 20 20]]; % lattice depths in Er
             lat_psel_ramp_time = [150 NaN 50 50]; % sum of the last two ramp times is effectively the field settling time
             
             clear('ramp');
@@ -3370,7 +3370,7 @@ curtime = applyMicrowave(curtime,sweep_freq,-20,sweep_duration,...
 
                 %Go to tubes oriented perpendicular to the horizontal gradient to maintin atom distribution
                 % !!! Note that "Y" shim points along X Lattice currently, so X<->Y Switch !!!
-                lat_psel_ramp_depth = [[0 0 20 20];[10 10 20 20];[10 10 20 20]]/atomscale; % lattice depths in Er
+                lat_psel_ramp_depth = [[0 0 20 20];[10 10 20 20];[10 10 20 20]]; % lattice depths in Er
                 lat_psel_ramp_time = [150 NaN 150 50]; % sum of the last two ramp times is effectively the field settling time
 
                 clear('ramp');
@@ -3464,7 +3464,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 
                 %Go to tubes oriented perpendicular to the horizontal gradient to maintin atom distribution
                 % !!! Note that "Y" shim points along X Lattice currently, so X<->Y Switch !!!
-                lat_psel_ramp_depth = [[0 0 20 20];[30 30 20 20];[30 30 20 20]]/atomscale; % lattice depths in Er
+                lat_psel_ramp_depth = [[0 0 20 20];[30 30 20 20];[30 30 20 20]]; % lattice depths in Er
                 lat_psel_ramp_time = [150 tube_kill_time 150 50]; % sum of the last two ramp times is effectively the field settling time
 
                 if (length(lat_psel_ramp_time) ~= size(lat_psel_ramp_depth,2)) || ...
@@ -4335,13 +4335,13 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Dimple Pwr',@(t,tt,y1,y2)(ramp_minje
     
 %     Next, go to 1D z-lattice, with 2 steps
 %     1st step, goes to 2 Er
-    AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 2/atomscale); 
-    AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 2/atomscale);
-curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 10/atomscale);    
+    AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 2); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 2);
+curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 10);    
 %     2nd step, goes to 0 Er    
-    AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0/atomscale); 
-    AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0/atomscale);
-curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 10/atomscale);
+    AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0);
+curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 10);
 %   
 curtime = calctime(curtime, Dimple_Wait_Time);
 
@@ -4363,9 +4363,9 @@ if (Dimple_Mod)
     
     AnalogFuncTo(calctime(curtime,0),'Dimple Pwr',@(t,tt,y1,y2)(ramp_minjerk_mod(t,tt,y1,y2,A_mod/2,f_mod)),Dimple_Sweeptime,Dimple_Sweeptime,Dimple_Power+Dimple_Power_Sweep/2);
        %Lattices back to 60Er.    
-%     AnalogFuncTo(calctime(curtime,Dimple_Sweeptime),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0.6*111/atomscale); 
-%     AnalogFuncTo(calctime(curtime,Dimple_Sweeptime),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0.6*80/atomscale)
-curtime = AnalogFuncTo(calctime(curtime,Dimple_Sweeptime),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0.6*20/atomscale);
+%     AnalogFuncTo(calctime(curtime,Dimple_Sweeptime),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0.6*111); 
+%     AnalogFuncTo(calctime(curtime,Dimple_Sweeptime),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0.6*80)
+curtime = AnalogFuncTo(calctime(curtime,Dimple_Sweeptime),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0.6*20);
 
 
 end
@@ -4385,15 +4385,15 @@ if (Dimple_Trap_After_Plane_Selection)
     Trap_Ramp_Time = 50;
     XY_Lattice_Depth = 3;
     Z_Lattice_Depth = 3;
-    AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Trap_Ramp_Time, Trap_Ramp_Time, XY_Lattice_Depth/atomscale); 
-    AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Trap_Ramp_Time, Trap_Ramp_Time, XY_Lattice_Depth/atomscale);
-    AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Trap_Ramp_Time, Trap_Ramp_Time, Z_Lattice_Depth/atomscale);
+    AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Trap_Ramp_Time, Trap_Ramp_Time, XY_Lattice_Depth); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Trap_Ramp_Time, Trap_Ramp_Time, XY_Lattice_Depth);
+    AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Trap_Ramp_Time, Trap_Ramp_Time, Z_Lattice_Depth);
     AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Trap_Ramp_Time, Trap_Ramp_Time, XDT1_Power);
 curtime = AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Trap_Ramp_Time, Trap_Ramp_Time, XDT2_Power);
-%     AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Trap_Ramp_Time, Trap_Ramp_Time, XY_Lattice_Depth/atomscale); 
-%     AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Trap_Ramp_Time, Trap_Ramp_Time, XY_Lattice_Depth/atomscale);
+%     AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Trap_Ramp_Time, Trap_Ramp_Time, XY_Lattice_Depth); 
+%     AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Trap_Ramp_Time, Trap_Ramp_Time, XY_Lattice_Depth);
 % curtime =
-% AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Trap_Ramp_Time, Trap_Ramp_Time, Z_Lattice_Depth/atomscale);
+% AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Trap_Ramp_Time, Trap_Ramp_Time, Z_Lattice_Depth);
 curtime = calctime(curtime,50);
 
     Dimple_Ramp_Time = 100;%50
@@ -4564,9 +4564,9 @@ curtime = calctime(curtime,post_mod_wait_time);
     
 %Lattices to pin. 
     if Lattices_to_Pin
-        AnalogFuncTo(calctime(curtime,-0.1),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60/atomscale); 
-        AnalogFuncTo(calctime(curtime,-0.1),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60/atomscale)
-curtime = AnalogFuncTo(calctime(curtime,-0.1),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60/atomscale);
+        AnalogFuncTo(calctime(curtime,-0.1),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60); 
+        AnalogFuncTo(calctime(curtime,-0.1),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60)
+curtime = AnalogFuncTo(calctime(curtime,-0.1),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60);
     
 %     ramp down xdt
        AnalogFuncTo(calctime(curtime,50),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, -0.2);
@@ -4778,21 +4778,21 @@ curtime = calctime (curtime,50);
         Vz = getScanParameter(Vz_list,seqdata.scancycle,seqdata.randcyclelist,'Vz_swap');
         ramptime = getScanParameter(ramptime_list,seqdata.scancycle,seqdata.randcyclelist,'ramptime');
         
-curtime = AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.2, 0.2, Vz/atomscale);            
+curtime = AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.2, 0.2, Vz);            
         if(raman_coupling)
             pulse_time_list = [ramptime];
             pulse_time = getScanParameter(pulse_time_list,seqdata.scancycle,seqdata.randcyclelist,'pulse_time');
             Pulse_RamanBeams(curtime,pulse_time,'MOTLightSource',2)
         end
-curtime = AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), ramptime, ramptime, 400/atomscale);    
+curtime = AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), ramptime, ramptime, 400);    
 
 curtime = calctime(curtime,ramptime);
     end
 % curtime = calctime(curtime,50);
 %     %Ramp lattices back to some constant value.
-%     AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60/atomscale); 
-%     AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60/atomscale)
-% curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60/atomscale);
+%     AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60); 
+%     AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60)
+% curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60);
 
 curtime = calctime(curtime,1);
 
@@ -4840,12 +4840,12 @@ if do_lattice_ramp_after_spectroscopy
      
 %      lat_rampup_imaging_depth = 1*[1*[60 60 xLatDepth xLatDepth];
 %                                    1*[60 60 yLatDepth yLatDepth];
-%                                    1*[60 60 zLatDepth zLatDepth]]/atomscale;  %[100 650 650;100 650 650;100 900 900]
+%                                    1*[60 60 zLatDepth zLatDepth]];  %[100 650 650;100 650 650;100 900 900]
 %      lat_rampup_imaging_time =       [5  5  20         5        ];
 
 lat_rampup_imaging_depth = 1*[1*[xLatDepth xLatDepth];
                                1*[yLatDepth yLatDepth];
-                               1*[zLatDepth zLatDepth]]/atomscale;  %[100 650 650;100 650 650;100 900 900]
+                               1*[zLatDepth zLatDepth]];  %[100 650 650;100 650 650;100 900 900]
      lat_rampup_imaging_time =       [20         5        ];
      
 %      lat_rampup_imaging_depth = 1*[[0.00 0.00 0.02 0.02 0.10 0.10 0.60 0.60 xLatDepth xLatDepth];

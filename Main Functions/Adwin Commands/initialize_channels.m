@@ -643,7 +643,7 @@ seqdata.analogchannels(43).minvoltage = -10;
 seqdata.analogchannels(43).maxvoltage = 10;
 seqdata.analogchannels(43).resetvalue = [-0.1,1];
 seqdata.analogchannels(43).defaultvoltagefunc = 2;
-seqdata.analogchannels(43).voltagefunc{2} = @(a)((a*0.4+8.5772)/89.2457); % 2021/04/23 0.4 is for atom scale to be changed
+% seqdata.analogchannels(43).voltagefunc{2} = @(a)((a*0.4+8.5772)/89.2457); % 2021/04/23 0.4 is for atom scale to be changed
 % seqdata.analogchannels(43).voltagefunc{2} = @(a)((a*0.4+7.9602)/88.725); % 2021/04/23 0.4 is for atom scale to be changed
 % seqdata.analogchannels(43).voltagefunc{2} = @(a)((a+7.9551)/244.94);
 

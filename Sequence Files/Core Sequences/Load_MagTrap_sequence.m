@@ -392,9 +392,9 @@ end
     setDigitalChannel(calctime(curtime,0),'XDT Direct Control',1);
     
     %turn off lattice beams
-    setAnalogChannel(calctime(curtime,0),'xLattice',-0.1,1);
-    setAnalogChannel(calctime(curtime,0),'yLattice',-0.1,1);
-    setAnalogChannel(calctime(curtime,0),'zLattice',-0.1,1);
+    setAnalogChannel(calctime(curtime,0),'xLattice',seqdata.params.lattice_zero(1));%-0.1,1);
+    setAnalogChannel(calctime(curtime,0),'yLattice',seqdata.params.lattice_zero(2));%-0.1,1);
+    setAnalogChannel(calctime(curtime,0),'zLattice',seqdata.params.lattice_zero(3));%-0.1,1);
     
     setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);
     setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1);% Added 2014-03-06 in order to avoid integrator wind-up
@@ -1061,11 +1061,11 @@ dispLineStr('Turning off coils and traps.',curtime);
         %turn lattice beams off (leave a bit of time for the rotating waveplate to get back to zero)
 
         %Z lattice
-        setAnalogChannel(calctime(curtime,0),'zLattice',-0.1,1);%0
+        setAnalogChannel(calctime(curtime,0),'zLattice',seqdata.params.lattice_zero(3));%-0.1,1);%0
         %Y lattice
-        setAnalogChannel(calctime(curtime,0),'yLattice',-0.1,1);%0
+        setAnalogChannel(calctime(curtime,0),'yLattice',seqdata.params.lattice_zero(2));%-0.1,1);%0
         %X lattice
-        setAnalogChannel(calctime(curtime,0),'xLattice',-0.1,1);%0
+        setAnalogChannel(calctime(curtime,0),'xLattice',seqdata.params.lattice_zero(1));%-0.1,1);%0
     
     end
 

@@ -39,7 +39,7 @@ remove_one_spin_state = 0;              % (1657)        keep : An attempt to rem
 
 oldLoad=0;
 newLoad=1;
-rampDip=1;
+rampDip=0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Waveplate
@@ -147,11 +147,11 @@ if newLoad
     % Lattice depth and ramp times
     L0=seqdata.params.lattice_zero;
     latt_depth=...
-        [L0(1) 10 20 20;     % X lattice
-         L0(2) 10 20 20;     % Y lattice
-         L0(3) 10 20 20];    % Z Lattice 
+        [100 100;     % X lattice
+         100 100;     % Y lattice
+         100 100];    % Z Lattice 
     latt_depth=latt_depth/atomscale;
-    latt_times=[50 50 75 latt_hold_time];
+    latt_times=[250 latt_hold_time];
     T_latt=sum(latt_times);
 
     % Get the optical evaporation ending power
@@ -459,9 +459,9 @@ if newLoad
     disp(['     Total Load Time (ms) : ' num2str(T_load_tot)]);       
 
     % Send request powers to low (if not already set)
-    setAnalogChannel(calctime(curtime,-60),'xLattice',L0(1)/atomscale);
-    setAnalogChannel(calctime(curtime,-60),'yLattice',L0(2)/atomscale);
-    setAnalogChannel(calctime(curtime,-60),'zLattice',L0(3)/atomscale);
+    setAnalogChannel(calctime(curtime,-60),'xLattice',L0(1));
+    setAnalogChannel(calctime(curtime,-60),'yLattice',L0(2));
+    setAnalogChannel(calctime(curtime,-60),'zLattice',L0(3));
 
     % Enable rf output on ALPS3 (fast rf-switch and enable integrator)
     setDigitalChannel(calctime(curtime,-50),'yLatticeOFF',0); % 0 : All on, 1 : All off
@@ -5346,9 +5346,9 @@ lattice_off_delay = 10;
  if ( seqdata.flags.load_lattice == 1 ) %shut off lattice, keep dipole trap on
     
     % Parameters for ramping down the lattice (after things have been done)
-    zlat_endpower = -19;-0.2;       % where to end the ramp
-    ylat_endpower = -20;-0.2;       % where to end the ramp
-    xlat_endpower = -22; -0.2;       % where to end the ramp
+    zlat_endpower = L0(3);-19;-0.2;       % where to end the ramp
+    ylat_endpower = L0(2);-20;-0.2;       % where to end the ramp
+    xlat_endpower = L0(1);-22; -0.2;       % where to end the ramp
     lat_rampdowntime =lattice_rampdown*1; % how long to ramp (0: switch off)   %1ms
     lat_rampdowntau = 1*lattice_rampdown/5;    % time-constant for exponential rampdown (0: min-jerk)
     lat_post_waittime = 0*10 ;% whether to add a waittime after the lattice rampdown (adds to timeout)
@@ -5411,9 +5411,9 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minje
     end
     
     % Finish turning off lattices and dipole traps
-    setAnalogChannel(calctime(curtime,0),'xLattice',-0.1,1);
-    setAnalogChannel(calctime(curtime,0),'yLattice',-0.1,1);
-    setAnalogChannel(calctime(curtime,0),'zLattice',-0.1,1);
+%     setAnalogChannel(calctime(curtime,0),'xLattice',-0.1,1);
+%     setAnalogChannel(calctime(curtime,0),'yLattice',-0.1,1);
+%     setAnalogChannel(calctime(curtime,0),'zLattice',-0.1,1);
     
     %TTLs
     setDigitalChannel(calctime(curtime,0),11,1);  %0: ON / 1: OFF, XLatticeOFF         

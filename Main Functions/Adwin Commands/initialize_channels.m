@@ -643,8 +643,8 @@ seqdata.analogchannels(43).minvoltage = -10;
 seqdata.analogchannels(43).maxvoltage = 10;
 seqdata.analogchannels(43).resetvalue = [-0.1,1];
 seqdata.analogchannels(43).defaultvoltagefunc = 2;
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)((a*0.4+8.5772)/89.2457); % 2021/04/23 0.4 is for atom scale to be changed
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)((a*0.4+7.9602)/88.725); % 2021/04/23 0.4 is for atom scale to be changed
+% seqdata.analogchannels(43).voltagefunc{2} = @(a)((a+8.5772)/89.2457); % 2021/04/23 0.4 is for atom scale to be changed
+% seqdata.analogchannels(43).voltagefunc{2} = @(a)((a+7.9602)/88.725); % 2021/04/23 0.4 is for atom scale to be changed
 % seqdata.analogchannels(43).voltagefunc{2} = @(a)((a+7.9551)/244.94);
 
 % 2021/08/03 Separate calibration
@@ -656,7 +656,7 @@ seqdata.analogchannels(44).minvoltage = -10;
 seqdata.analogchannels(44).maxvoltage = 10;
 seqdata.analogchannels(44).resetvalue = [-0.1,1]; %Issue in the circuit when asking for -10V, causes siren
 seqdata.analogchannels(44).defaultvoltagefunc = 2;
-% seqdata.analogchannels(44).voltagefunc{2} = @(a)(a*0.4+8.6812)/141.2965;% 2021/04/23
+% seqdata.analogchannels(44).voltagefunc{2} = @(a)(a+8.6812)/141.2965;% 2021/04/23
 
 % 2021/08/03 Separate calibration
 [~,seqdata.analogchannels(44).voltagefunc{2},~] = lattice_calibrations;
@@ -673,7 +673,7 @@ seqdata.analogchannels(45).defaultvoltagefunc = 2;
 % seqdata.analogchannels(45).voltagefunc{2} = @(a)((a-2.7+5.61047)/473.44593);
 
 % seqdata.analogchannels(45).voltagefunc{2} = @(a)((a+1.9553)/555.47);
-% seqdata.analogchannels(45).voltagefunc{2} = @(a)(a*0.4+8.28)/117.3;% 2021/05/04
+% seqdata.analogchannels(45).voltagefunc{2} = @(a)(a+8.28)/117.3;% 2021/05/04
 
 % 2021/08/03 Separate calibration
 [seqdata.analogchannels(45).voltagefunc{2},~,~] = lattice_calibrations;

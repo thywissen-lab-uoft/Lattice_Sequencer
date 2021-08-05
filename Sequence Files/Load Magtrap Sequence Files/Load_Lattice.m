@@ -79,9 +79,9 @@ Dimple_Mod = 0;                     % (4185) keep: Used to calibrate dimple trap
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-do_plane_selection = 1;                             % (2082-3285) Primary Flag    
+do_plane_selection = 0;                             % (2082-3285) Primary Flag    
 fast_plane_selection = 0;                           % (1406)            keep : under development; could be the future of plane selection code for cleaner control
-kill_pulses = 1;                                    % (1917,2561,2847)  keep :D2 Kill F=9/2
+kill_pulses = 0;                                    % (1917,2561,2847)  keep :D2 Kill F=9/2
 second_plane_selection = 0;                         % (2755)            copy 
 eliminate_planes_with_QP = 0;                       % (2933)            keep : QP vacuum cleaner. In 2nd time plane selection section
 do_plane_selection_horizontally = 0;                % (3077,3111,3144)  keep : generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
@@ -4877,7 +4877,7 @@ if (Raman_transfers == 1)
     %During imaging, generate about a 4.4G horizontal field. Both shims get
     %positive control voltages, but draw from the 'negative' shim supply. 
     clear('horizontal_plane_select_params');
-    F_Pump_List = [1];[0.75];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
+    F_Pump_List = [0.1:0.1:1.3];[0.75];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,...
         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V'); %1.4;
     Raman_Power_List =[0.4];[0.4];[0.45]; [0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
@@ -5343,21 +5343,30 @@ lattice_off_delay = 10;
         disp([' End Power   (W) : ' num2str(dip_endpower)]);
         
         
-        AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_endpower);
-        AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,seqdata.params. XDT_area_ratio*dip_endpower);
-        setDigitalChannel(calctime(curtime,dip_rampstart+dip_ramptime),'XDT TTL',1) %cut lattice power for bandmapping?    
+        AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            dip_ramptime,dip_ramptime,dip_endpower);
+        AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            dip_ramptime,dip_ramptime,seqdata.params.XDT_area_ratio*dip_endpower);
+        setDigitalChannel(calctime(curtime,dip_rampstart+dip_ramptime),'XDT TTL',1); %cut lattice power for bandmapping?    
     else
         power_list = [0.1]; %0.2 sept28 0.15 sep29
-        DT1_power = getScanParameter(power_list,seqdata.scancycle,seqdata.randcyclelist,'lat_power_val');
+        DT1_power = getScanParameter(power_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'lat_power_val');
         DT2_power = DT1_power;(((sqrt(DT1_power)*83.07717-0.8481)+3.54799)/159.3128)^2; %sept28
         dipole_ramp_up_time = 50;
         
         %TURNED THIS OFF SINCE NO XDT RAMPS    sept28    
         setDigitalChannel(calctime(curtime,0),'XDT TTL',0);
         %ramp dipole 1 trap on
-        AnalogFuncTo(calctime(curtime,0),40,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_ramp_up_time,dipole_ramp_up_time,DT1_power);
+        AnalogFuncTo(calctime(curtime,0),40,@(t,tt,y1,y2) ...
+            (ramp_linear(t,tt,y1,y2)),...
+            dipole_ramp_up_time,dipole_ramp_up_time,DT1_power);
         %ramp dipole 2 trap on
-curtime = AnalogFuncTo(calctime(curtime,0),38,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_ramp_up_time,dipole_ramp_up_time,DT2_power);
+curtime = AnalogFuncTo(calctime(curtime,0),38,@(t,tt,y1,y2) ...
+        (ramp_linear(t,tt,y1,y2)),...
+        dipole_ramp_up_time,dipole_ramp_up_time,DT2_power);
     end    
         
     if ( lat_rampdowntime > 0 )
@@ -5372,9 +5381,15 @@ curtime = AnalogFuncTo(calctime(curtime,0),38,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,
         % ramp down lattice (min-jerk or exponential)
         if ( lat_rampdowntau == 0 )
             % Min-jerk ramp-down of lattices
-            AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),lat_rampdowntime,lat_rampdowntime,xlat_endpower);
-            AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),lat_rampdowntime,lat_rampdowntime,ylat_endpower);
-curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),lat_rampdowntime,lat_rampdowntime,zlat_endpower);
+            AnalogFuncTo(calctime(curtime,0),'xLattice',...
+                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+                lat_rampdowntime,lat_rampdowntime,xlat_endpower);
+            AnalogFuncTo(calctime(curtime,0),'yLattice',...
+                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+                lat_rampdowntime,lat_rampdowntime,ylat_endpower);
+curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice', ...
+                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+                lat_rampdowntime,lat_rampdowntime,zlat_endpower);
         else
             AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),lat_rampdowntime,lat_rampdowntime,xlat_endpower);
             AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),lat_rampdowntime,lat_rampdowntime,ylat_endpower);

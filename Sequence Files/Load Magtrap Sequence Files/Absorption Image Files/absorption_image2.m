@@ -46,7 +46,7 @@ params = seqdata.params.absorption_image;
 str=['Absorption Imaging : ' flags.image_atomtype ' ' flags.img_direction ...
     ' ' flags.negative_imaging_shim ' ' flags.condition];
 % disp(str)
-disp(flags)
+% disp(flags)
 
 % Grab the relevant parameters
 % detuning = params.detunings.(flags.image_atomtype).(flags.img_direction) ...

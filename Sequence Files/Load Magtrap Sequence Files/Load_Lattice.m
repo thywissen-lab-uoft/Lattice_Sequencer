@@ -26,7 +26,6 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 %% Lattice Flags    
 % These are the lattice flags sorted roughly chronologically.
 
-
 ramp_fields_after_lattice_loading = 0;  % (416,503)     keep : Ramp on the fesbhach field after lattice load
 get_rid_of_Rb_in_lattice = 0;           % (523)         keep : Blow away Rb after lattice load
 spin_mixture_in_lattice_before_plane_selection = 0; % (668)             keep : Make a -9/2,-7/2 spin mixture.   
@@ -34,10 +33,8 @@ Dimple_Trap_Before_Plane_Selection = 0; % (716)         keep : turn on the dimpl
 do_optical_pumping = 0;                 % (1426) keep : optical pumping in lattice    
 remove_one_spin_state = 0;              % (1657)        keep : An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
 
-
 oldLoad=0;
 newLoad=1;
-rampDip=0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Waveplate
@@ -115,26 +112,6 @@ end
 Depth_List = [100];
 ZLD = getScanParameter(Depth_List,seqdata.scancycle,seqdata.randcyclelist,'zld');
 
-%RHYS - Is there a better way to switch between lattice ramp sequences? Or,
-%again, perhaps store in an external file a load in.
-
-%LOADING SEQ BELOW CAN BE USED FOR SIMPLE LATTICE LOADING
-% lattice_rampup_time_list =[250];
-% lattice_rampup_time = getScanParameter(lattice_rampup_time_list,seqdata.scancycle,seqdata.randcyclelist,'lattice_rampup_time','ms');
-% lat_rampup_depth = 1*[-1*[ZLD    ZLD];
-%                       1*[ZLD    ZLD];                
-%                       -1*[ZLD    ZLD];]/atomscale;
-% lat_rampup_time = 1*[lattice_rampup_time    50]; 
-    
-% % 
-% init_depth_list =[30];
-% init_depth = getScanParameter(init_depth_list,...
-%     seqdata.scancycle,seqdata.randcyclelist,'init_depth');
-%     lat_rampup_depth = 1*[1*[init_depth  init_depth  ZLD    ZLD];
-%                           1*[init_depth  init_depth  ZLD    ZLD];                
-%                           1*[init_depth  init_depth  ZLD    ZLD];]/atomscale;
-%     lat_rampup_time = 1*[200  50  50  50]; 
-
 %% Load Lattice from XDT Settings
 
 if newLoad
@@ -144,43 +121,65 @@ if newLoad
 
     % Lattice depth and ramp times
     L0=seqdata.params.lattice_zero;
-    latt_depth=...
-        [100 100;     % X lattice
-         100 100;     % Y lattice
-         100 100];    % Z Lattice 
-    latt_depth=latt_depth;
-    latt_times=[250 latt_hold_time];
-    T_latt=sum(latt_times);
-
+    
     % Get the optical evaporation ending power
     dip_endpower = 1.0*getChannelValue(seqdata,'dipoleTrap1',1,0);
+    
+    % Ramp Mode
+    rampMode=1;
+    %
+    % 0 : Ramp only the lattice
+    % 1 : Ramp lattice,XDT,and DMD
+    % Feel free to add more if you want
+    switch rampMode
+        case 0 % Ramp only the lattice
+            %%% Lattice %%%
+            latt_depth=...
+                [100 100;     % X lattice
+                 100 100;     % Y lattice
+                 100 100];    % Z Lattice 
+            latt_times=[250 latt_hold_time];
+            
+            %%% XDT %%%
+            dip_pow=dip_endpower;
+            dip_times=[1];
 
-    % XDT Power and ramp times
-    if rampDip
-        dip_pow=[.25 .25 0];
-        dip_times=[100 50 50];   
-    else
-       dip_pow=dip_endpower;
-       dip_times=[1];
+            %%% DMD %%%
+            dmd_pow=0;
+            dmd_times=[1];
+        case 1 % Ramp everything
+            %%% Lattice %%%
+            latt_depth=...
+                [100 100;     % X lattice
+                 100 100;     % Y lattice
+                 100 100];    % Z Lattice 
+            latt_times=[250 latt_hold_time];
+            
+            %%% XDT %%%
+            dip_pow=[.25 .25 0];
+            dip_times=[100 50 50];   
+     
+            %%% DMD %%%
+            dmd_pow=[1 1 0];
+            dmd_times=[100 50 50];
     end
+    
+    % Duration of each ramp
+    T_latt=sum(latt_times);
     T_dip=sum(dip_times);
-
-    % DMD power and ramp times
-    dmd_pow=[1 1 0];
-    dmd_times=[100 50 50];
     T_dmd=sum(dmd_times);
+    T_load_tot = max([T_latt T_dip do_DMD*T_dmd]);
     
-    % Add output
+    %%%% Add output params %%%
     addOutputParam('latt_depth_load',latt_depth);
-    addOutputParam('latt_depth_times',latt_times);
-    
+    addOutputParam('latt_depth_times',latt_times);    
     addOutputParam('latt_dip_pow_load',dip_pow);
-    addOutputParam('latt_dip_pow_times',dip_times);
-    
-    seqdata.flags.dmd_enable=do_DMD;
+    addOutputParam('latt_dip_pow_times',dip_times);    
     addOutputParam('latt_dmd_pow_load',dmd_pow);
     addOutputParam('latt_dmd_pow_times',dmd_times);
-    
+    seqdata.flags.dmd_enable=do_DMD;
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
+
     % Error checking
     if (length(latt_times) ~= size(latt_depth,2)) || ...
             (size(latt_depth,1)~=3)
@@ -189,12 +188,12 @@ if newLoad
     if (length(dip_times) ~= size(dip_pow,2))
         error('Invalid ramp specification for xdt lattice loading!');
     end
+    
     if (length(dmd_times) ~= size(dmd_pow,2))
         error('Invalid ramp specification for dmd lattice loading!');
     end
     
-    % Ending time of all ramps
-    T_load_tot = max([T_latt T_dip do_DMD*T_dmd]);
+
 end
 
 %% LOADING SEQ BELOW CAN BE USED FOR DMD rough alignment

@@ -79,9 +79,9 @@ Dimple_Mod = 0;                     % (4185) keep: Used to calibrate dimple trap
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-do_plane_selection = 0;                             % (2082-3285) Primary Flag    
+do_plane_selection = 1;                             % (2082-3285) Primary Flag    
 fast_plane_selection = 0;                           % (1406)            keep : under development; could be the future of plane selection code for cleaner control
-kill_pulses = 0;                                    % (1917,2561,2847)  keep :D2 Kill F=9/2
+kill_pulses = 1;                                    % (1917,2561,2847)  keep :D2 Kill F=9/2
 second_plane_selection = 0;                         % (2755)            copy 
 eliminate_planes_with_QP = 0;                       % (2933)            keep : QP vacuum cleaner. In 2nd time plane selection section
 do_plane_selection_horizontally = 0;                % (3077,3111,3144)  keep : generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
@@ -125,7 +125,7 @@ if newLoad
     dip_endpower = 1.0*getChannelValue(seqdata,'dipoleTrap1',1,0);
     
     % Ramp Mode
-    rampMode=1;
+    rampMode=0;
     %
     % 0 : Ramp only the lattice
     % 1 : Ramp lattice,XDT,and DMD
@@ -134,16 +134,16 @@ if newLoad
         case 0 % Ramp only the lattice
             %%% Lattice %%%
             latt_depth=...
-                [100 100;     % X lattice
-                 100 100;     % Y lattice
-                 100 100];    % Z Lattice 
-            latt_times=[250 latt_hold_time];
+                [5 5 100 100;     % X lattice
+                 5 5 100 100;     % Y lattice
+                 5 5 100 100];    % Z Lattice 
+            latt_times=[50 50 200 latt_hold_time];
             
-            %%% XDT %%%
+            %%% XDT is fixed%%%
             dip_pow=dip_endpower;
             dip_times=[1];
 
-            %%% DMD %%%
+            %%% DMD is fixed %%%
             dmd_pow=0;
             dmd_times=[1];
         case 1 % Ramp everything
@@ -155,7 +155,7 @@ if newLoad
             latt_times=[250 latt_hold_time];
             
             %%% XDT %%%
-            dip_pow=[.1 .1 .1];
+            dip_pow=[.15 .15 .15];
             dip_times=[100 50 50];   
      
             %%% DMD %%%
@@ -439,6 +439,8 @@ if newLoad
     ScopeTriggerPulse(curtime,'Load lattices');
     
     dispLineStr('Ramping lattices.',curtime);
+    disp(['     Ramp Mode            : ' num2str(rampMode)]);
+    disp(' ');
     disp(['     Ramp Times      (ms) : ' mat2str(latt_times) ]);
     disp(['     xLattice       (ErK) : ' mat2str(latt_depth(1,:))]);
     disp(['     yLattice       (ErK) : ' mat2str(latt_depth(2,:))]);
@@ -1622,18 +1624,13 @@ end
 %RHYS - This code works and is useful.
 
 if ( do_optical_pumping == 1)
-    OP_lat_depth_list = ZLD;[100];
-    OP_lat_depth =getScanParameter(OP_lat_depth_list, seqdata.scancycle,...
-        seqdata.randcyclelist, 'OP_lat_depth'); %optical pumping lattice depth
 
-  if (OP_lat_depth~= ZLD)
     %ramp up lattice beams for optical pumping
-    AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, OP_lat_depth); 
-    AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, OP_lat_depth);
-curtime= AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, OP_lat_depth);
-  curtime = calctime(curtime,10);%10 ms for the system to be stablized
+    AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, latt_depth(1,end)); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, latt_depth(2,end));
+    curtime= AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, latt_depth(3,end));
+    curtime = calctime(curtime,10);%10 ms for the system to be stablized
 
-  end
     
 
   op_time_list = [3];%3
@@ -1799,49 +1796,6 @@ curtime = calctime(curtime,50);
 % 
 % curtime =  setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);    
     
-end
-
-%% Ramp lattices back down for plane selection after optical pumping.
-% RHYS - Kind of pointless. Delete.
-%
-% Is this uncessary? Because the lattice depth shouldn't matter here unless
-% the atoms aren't pinned.
-if(do_optical_pumping)
-
-%      %Define ramp parameters BUG WITH ANALOGFUNCTO? CANNOT BE THE SAME
-%      %VALUES AS BEFORE THE 1ST RAMP?
-%      xLatDepth = 60/100; 
-%      yLatDepth = 60/100; 
-%      zLatDepth = 60/100; 
-%      
-%      addOutputParam('xLatDepth',xLatDepth);
-%      addOutputParam('yLatDepth',yLatDepth);
-%      addOutputParam('zLatDepth',zLatDepth);
-%      
-%      lat_rampup_imaging_depth = [xLatDepth xLatDepth; yLatDepth yLatDepth; zLatDepth zLatDepth]*100;  %[100 650 650;100 650 650;100 900 900]
-%      lat_rampup_imaging_time = [50 10];
-% 
-%     if (length(lat_rampup_imaging_time) ~= size(lat_rampup_imaging_depth,2)) || ...
-%             (size(lat_rampup_imaging_depth,1)~=length(lattices))
-%         error('Invalid ramp specification for lattice loading!');
-%     end
-%      
-%     %lattice rampup segments
-%     for j = 1:length(lat_rampup_imaging_time)
-%         for k = 1:length(lattices)
-%             if j==1
-%                 if lat_rampup_imaging_depth(k,j) ~= lat_rampup_depth(k,end) % only do a minjerk ramp if there is a change in depth
-%                     AnalogFuncTo(calctime(curtime,0),lattices{k},@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_imaging_time(j), lat_rampup_imaging_time(j), lat_rampup_imaging_depth(k,j));
-%                 end
-%             else
-%                 if lat_rampup_imaging_depth(k,j) ~= lat_rampup_imaging_depth(k,j-1) % only do a minjerk ramp if there is a change in depth
-%                     AnalogFuncTo(calctime(curtime,0),lattices{k},@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_imaging_time(j), lat_rampup_imaging_time(j), lat_rampup_imaging_depth(k,j));
-%                 end
-%             end
-%         end
-% curtime =   calctime(curtime,lat_rampup_imaging_time(j));
-%     end    
-%     
 end
 
 %% Remove |9/2,-9/2> atoms from the lattice prior to selecting a plane.
@@ -2294,11 +2248,11 @@ Lattices_to_Pin_plane_selection = 1;
         
         % Ramp Lattices
         AnalogFuncTo(calctime(curtime,0),'xLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60); 
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5,latt_depth(1,end)); 
         AnalogFuncTo(calctime(curtime,0),'yLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60);
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, latt_depth(2,end));
 curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60); %30?
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, latt_depth(3,end)); %30?
         
         % Ramp dipole traps
         AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
@@ -2325,7 +2279,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
 % % % %         ramp.yshim_final = seqdata.params. shim_zero(2)+(-1.625-.001+0.6)*1+0.75;
 % % % %         ramp.zshim_final = seqdata.params. shim_zero(3)+0;
         xshimdlist = -0.257;
-        yshimdlist = 5;0.125;
+        yshimdlist = 0.125;
         zshimd = -1;
         
         xshimd = getScanParameter(xshimdlist,seqdata.scancycle,...
@@ -2420,7 +2374,7 @@ disp('spectroscopy2');
     use_ACSync = 1;
 
     % Define the SRS frequency
-    freq_list = [-40];-90       
+    freq_list = [-90];-90       
     
     % 2021/06/22 CF
     % Use this when Xshimd=3, zshimd=-1 and you vary yshimd
@@ -2604,7 +2558,7 @@ if (sweep_field == 0) %Sweeping frequency of SRS
 
 
         % Determine the range of the sweep
-        uWave_delta_freq_list= [7] /1000;
+        uWave_delta_freq_list= [14] /1000;
         uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq');
         
@@ -4856,23 +4810,19 @@ curtime = AnalogFunc(calctime(curtime,0),41,...
 %RHYS - Important, keep and clean.
 if do_lattice_ramp_after_spectroscopy
 
+    
+imaging_depth_list = [700]; 
+imaging_depth = getScanParameter(imaging_depth_list,seqdata.scancycle,seqdata.randcyclelist,'FI_latt_depth','Er'); 
+
     %Define ramp parameters
-     xLatDepth = 700;
-     yLatDepth = 700;
-     zLatDepth = 700; 
+     xLatDepth = imaging_depth;
+     yLatDepth = imaging_depth;
+     zLatDepth = imaging_depth; 
      
      addOutputParam('xLatDepth',xLatDepth);
      addOutputParam('yLatDepth',yLatDepth);
      addOutputParam('zLatDepth',zLatDepth);
-     
-     z_lattice_depth_for_xy_loading = 5;
-     ZLD2 = z_lattice_depth_for_xy_loading;
-     
-     
-%      lat_rampup_imaging_depth = 1*[1*[60 60 xLatDepth xLatDepth];
-%                                    1*[60 60 yLatDepth yLatDepth];
-%                                    1*[60 60 zLatDepth zLatDepth]];  %[100 650 650;100 650 650;100 900 900]
-%      lat_rampup_imaging_time =       [5  5  20         5        ];
+
 
 lat_rampup_imaging_depth = 1*[1*[xLatDepth xLatDepth];
                                1*[yLatDepth yLatDepth];

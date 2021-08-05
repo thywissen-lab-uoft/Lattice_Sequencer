@@ -115,13 +115,12 @@ ZLD = getScanParameter(Depth_List,seqdata.scancycle,seqdata.randcyclelist,'zld')
 %% Load Lattice from XDT Settings
 
 if newLoad
+    % Hold in lattice
     latt_hold_time_list = 50;
     latt_hold_time = getScanParameter(latt_hold_time_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'lattice_hold_time');%maximum is 4
-
+        seqdata.scancycle,seqdata.randcyclelist,'lattice_hold_time');
     % Lattice depth and ramp times
-    L0=seqdata.params.lattice_zero;
-    
+    L0=seqdata.params.lattice_zero;    
     % Get the optical evaporation ending power
     dip_endpower = 1.0*getChannelValue(seqdata,'dipoleTrap1',1,0);
     
@@ -192,8 +191,6 @@ if newLoad
     if (length(dmd_times) ~= size(dmd_pow,2))
         error('Invalid ramp specification for dmd lattice loading!');
     end
-    
-
 end
 
 %% LOADING SEQ BELOW CAN BE USED FOR DMD rough alignment

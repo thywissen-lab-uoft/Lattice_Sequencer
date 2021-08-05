@@ -19,7 +19,8 @@ else
     Imaging_Time = 1*5000+50;
 end
 
-curtime = timein;lattices = {'xLattice','yLattice','zLattice'};
+curtime = timein;
+lattices = {'xLattice','yLattice','zLattice'};
 seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 
 
@@ -30,7 +31,7 @@ ramp_fields_after_lattice_loading = 0;  % (416,503)     keep : Ramp on the fesbh
 get_rid_of_Rb_in_lattice = 0;           % (523)         keep : Blow away Rb after lattice load
 spin_mixture_in_lattice_before_plane_selection = 0; % (668)             keep : Make a -9/2,-7/2 spin mixture.   
 Dimple_Trap_Before_Plane_Selection = 0; % (716)         keep : turn on the dimple, leave this option: note that the turning off code was deleted
-do_optical_pumping = 0;                 % (1426) keep : optical pumping in lattice    
+do_optical_pumping = 1;                 % (1426) keep : optical pumping in lattice    
 remove_one_spin_state = 0;              % (1657)        keep : An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
 
 oldLoad=0;
@@ -79,17 +80,16 @@ Dimple_Mod = 0;                     % (4185) keep: Used to calibrate dimple trap
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 do_plane_selection = 0;                             % (2082-3285) Primary Flag    
-
 fast_plane_selection = 0;                           % (1406)            keep : under development; could be the future of plane selection code for cleaner control
 kill_pulses = 0;                                    % (1917,2561,2847)  keep :D2 Kill F=9/2
 second_plane_selection = 0;                         % (2755)            copy 
 eliminate_planes_with_QP = 0;                       % (2933)            keep : QP vacuum cleaner. In 2nd time plane selection section
 do_plane_selection_horizontally = 0;                % (3077,3111,3144)  keep : generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
 Dimple_Trap_After_Plane_Selection = 0;              % (4155,4209)       delete (?) : turn on dimple trap %Rhys suggested to delete?
-do_lattice_ramp_after_spectroscopy = 0;             % (4658)            keep : Ramp lattice for fluorescence image
+do_lattice_ramp_after_spectroscopy = 1;             % (4658)            keep : Ramp lattice for fluorescence image
 
 % Actual fluorsence image flag
-Raman_transfers = 0;                                % (4727)            keep : apply fluorescence imaging light
+Raman_transfers = 1;                                % (4727)            keep : apply fluorescence imaging light
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other Parameters
@@ -155,7 +155,7 @@ if newLoad
             latt_times=[250 latt_hold_time];
             
             %%% XDT %%%
-            dip_pow=[.25 .25 0];
+            dip_pow=[.1 .1 .1];
             dip_times=[100 50 50];   
      
             %%% DMD %%%
@@ -411,7 +411,7 @@ if rotate_waveplate_init
     wp_Trot2 = 150; % gets added as a wait time after lattice rampup
         
     P_RotWave_I = 0.6;
-    P_RotWave_II = 0.9;    
+    P_RotWave_II = 0.95;    
     
     disp(['     Rotation Time 1 : ' num2str(wp_Trot1) ' ms']);
     disp(['     Rotation Time 2 : ' num2str(wp_Trot1) ' ms']);
@@ -1773,40 +1773,40 @@ end
 % the atoms aren't pinned.
 if(do_optical_pumping)
 
-     %Define ramp parameters BUG WITH ANALOGFUNCTO? CANNOT BE THE SAME
-     %VALUES AS BEFORE THE 1ST RAMP?
-     xLatDepth = 60/100; 
-     yLatDepth = 60/100; 
-     zLatDepth = 60/100; 
-     
-     addOutputParam('xLatDepth',xLatDepth);
-     addOutputParam('yLatDepth',yLatDepth);
-     addOutputParam('zLatDepth',zLatDepth);
-     
-     lat_rampup_imaging_depth = [xLatDepth xLatDepth; yLatDepth yLatDepth; zLatDepth zLatDepth]*100;  %[100 650 650;100 650 650;100 900 900]
-     lat_rampup_imaging_time = [50 10];
-
-    if (length(lat_rampup_imaging_time) ~= size(lat_rampup_imaging_depth,2)) || ...
-            (size(lat_rampup_imaging_depth,1)~=length(lattices))
-        error('Invalid ramp specification for lattice loading!');
-    end
-     
-    %lattice rampup segments
-    for j = 1:length(lat_rampup_imaging_time)
-        for k = 1:length(lattices)
-            if j==1
-                if lat_rampup_imaging_depth(k,j) ~= lat_rampup_depth(k,end) % only do a minjerk ramp if there is a change in depth
-                    AnalogFuncTo(calctime(curtime,0),lattices{k},@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_imaging_time(j), lat_rampup_imaging_time(j), lat_rampup_imaging_depth(k,j));
-                end
-            else
-                if lat_rampup_imaging_depth(k,j) ~= lat_rampup_imaging_depth(k,j-1) % only do a minjerk ramp if there is a change in depth
-                    AnalogFuncTo(calctime(curtime,0),lattices{k},@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_imaging_time(j), lat_rampup_imaging_time(j), lat_rampup_imaging_depth(k,j));
-                end
-            end
-        end
-curtime =   calctime(curtime,lat_rampup_imaging_time(j));
-    end    
-    
+%      %Define ramp parameters BUG WITH ANALOGFUNCTO? CANNOT BE THE SAME
+%      %VALUES AS BEFORE THE 1ST RAMP?
+%      xLatDepth = 60/100; 
+%      yLatDepth = 60/100; 
+%      zLatDepth = 60/100; 
+%      
+%      addOutputParam('xLatDepth',xLatDepth);
+%      addOutputParam('yLatDepth',yLatDepth);
+%      addOutputParam('zLatDepth',zLatDepth);
+%      
+%      lat_rampup_imaging_depth = [xLatDepth xLatDepth; yLatDepth yLatDepth; zLatDepth zLatDepth]*100;  %[100 650 650;100 650 650;100 900 900]
+%      lat_rampup_imaging_time = [50 10];
+% 
+%     if (length(lat_rampup_imaging_time) ~= size(lat_rampup_imaging_depth,2)) || ...
+%             (size(lat_rampup_imaging_depth,1)~=length(lattices))
+%         error('Invalid ramp specification for lattice loading!');
+%     end
+%      
+%     %lattice rampup segments
+%     for j = 1:length(lat_rampup_imaging_time)
+%         for k = 1:length(lattices)
+%             if j==1
+%                 if lat_rampup_imaging_depth(k,j) ~= lat_rampup_depth(k,end) % only do a minjerk ramp if there is a change in depth
+%                     AnalogFuncTo(calctime(curtime,0),lattices{k},@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_imaging_time(j), lat_rampup_imaging_time(j), lat_rampup_imaging_depth(k,j));
+%                 end
+%             else
+%                 if lat_rampup_imaging_depth(k,j) ~= lat_rampup_imaging_depth(k,j-1) % only do a minjerk ramp if there is a change in depth
+%                     AnalogFuncTo(calctime(curtime,0),lattices{k},@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_imaging_time(j), lat_rampup_imaging_time(j), lat_rampup_imaging_depth(k,j));
+%                 end
+%             end
+%         end
+% curtime =   calctime(curtime,lat_rampup_imaging_time(j));
+%     end    
+%     
 end
 
 %% Remove |9/2,-9/2> atoms from the lattice prior to selecting a plane.
@@ -4858,7 +4858,7 @@ lat_rampup_imaging_depth = 1*[1*[xLatDepth xLatDepth];
     for j = 1:length(lat_rampup_imaging_time)
         for k = 1:length(lattices)
             if j==1
-                if lat_rampup_imaging_depth(k,j) ~= lat_rampup_depth(k,end) % only do a minjerk ramp if there is a change in depth
+                if lat_rampup_imaging_depth(k,j) ~= latt_depth(k,end) % only do a minjerk ramp if there is a change in depth
                     AnalogFuncTo(calctime(curtime,0),lattices{k},@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_imaging_time(j), lat_rampup_imaging_time(j), lat_rampup_imaging_depth(k,j));
                 end
             else

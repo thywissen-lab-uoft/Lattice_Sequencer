@@ -458,11 +458,16 @@ bStop.Tooltip='Compile and run the currently selected sequence.';
 
 defaultSequence=['1'];
 tCycleLbl=uicontrol(hpMain,'style','text','string',defaultSequence,...
-    'backgroundcolor','w','fontsize',16,'units','pixels',...
+    'backgroundcolor','w','fontsize',14,'units','pixels',...
     'fontweight','bold','visible','off','horizontalalignment','center');
 tCycleLbl.Position(3:4)=[60 35];
-tCycleLbl.Position(1:2)=[bStop.Position(1)+bStop.Position(3) 3];
+tCycleLbl.Position(1:2)=[bStop.Position(1)+bStop.Position(3) 15];
 
+tStatus=uicontrol(hpMain,'style','text','string','HELLO',...
+    'backgroundcolor','w','fontsize',12,'units','pixels',...
+    'fontweight','bold','visible','on','horizontalalignment','center');
+tStatus.Position(3:4)=[60 15];
+tStatus.Position(1:2)=[bStop.Position(1)+bStop.Position(3) 1];
 
 %% TIMERS
 %%%%% Adwin progress timer %%%

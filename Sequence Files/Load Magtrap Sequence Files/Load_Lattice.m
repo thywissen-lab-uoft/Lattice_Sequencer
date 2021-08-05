@@ -4809,7 +4809,7 @@ curtime = AnalogFunc(calctime(curtime,0),41,...
 if do_lattice_ramp_after_spectroscopy
 
     
-imaging_depth_list = [700]; 
+imaging_depth_list = [500]; 
 imaging_depth = getScanParameter(imaging_depth_list,seqdata.scancycle,seqdata.randcyclelist,'FI_latt_depth','Er'); 
 
     %Define ramp parameters
@@ -4870,6 +4870,24 @@ end
 %turn on raman beams for side band cooling
 %RHYS - Important code for Raman/EIT cooling. Probably should not be a
 %branch off horizontal plane selection though.
+%
+
+% Plane Selection (earlier)
+%   - Apply FB + vertical gradient for selection
+%   - Shelve a plane in the 7/2 manifold
+%   - Kill untransfered 9/2 atoms
+%   - Transfer shelved 7/2 back to 9/2
+
+% Fluoresence Imaging
+%   - Set quantiazation axis along FPUMP
+%   - Set field for EIT condition and Raman detuning
+%   - Apply EIT Pump (FPUMP) light, EIT probe light, Raman light
+%   - Expose the Camera
+
+% Raman/UWave Transfers
+%   - Set quantiazation axis along FPUMP
+%   - Set field for EIT condition, Raman detuning, uWave detuning
+%   - Apply Raman/uWave light and sweep freq
 
 if (Raman_transfers == 1)
     dispLineStr('Raman Transfer',curtime);
@@ -4878,8 +4896,12 @@ if (Raman_transfers == 1)
     %positive control voltages, but draw from the 'negative' shim supply. 
     clear('horizontal_plane_select_params');
     
+    %%% Flags %%%
+    horizontal_plane_select_params.Fake_Pulse = 0;
+    horizontal_plane_select_params.Use_EIT_Beams = 1;    
+    
     %%%% F Pump Power %%%
-    F_Pump_List = [0.1:0.1:1.3];[0.75];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
+    F_Pump_List = [0.55 0.65 0.85];[0.75];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,...
         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V'); %1.4;
     
@@ -4893,25 +4915,33 @@ if (Raman_transfers == 1)
     horizontal_plane_select_params.Raman_Power2 = getScanParameter(Raman_Power2_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_Power2','V');
 %     horizontal_plane_select_params.Raman_Power2 = horizontal_plane_select_params.Raman_Power1;
+        
+    %%% Raman 1/2 (?) Frequency %%%
+    Raman_List = [0];0;   %-30% : in kHz;
+    horizontal_plane_select_params.Raman_AOM_Frequency = 110 + getScanParameter(Raman_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Freq')/1000;
+
+    Raman_On_Time_List = [2000];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
+
     
-    horizontal_plane_select_params.Fake_Pulse = 0;
-    horizontal_plane_select_params.Use_EIT_Beams = 1;
+    %%% uWave %%%
+    % uWave settings (if Microwave_or_Raman==1)
     uwave_freq_list = [0]/1000;
     uwave_freq = getScanParameter(uwave_freq_list,...
         seqdata.scancycle,seqdata.randcyclelist,'uwave_freq');
     horizontal_plane_select_params.Selection__Frequency = 1285.8 + 11.025 +uwave_freq; %11.550
     horizontal_plane_select_params.Microwave_Power_For_Selection = 15; %dBm
-    
-    Raman_List = [0];0;   %-30% : in kHz;
-    horizontal_plane_select_params.Raman_AOM_Frequency = 110 + getScanParameter(Raman_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Freq')/1000;
+    horizontal_plane_select_params.Microwave_Pulse_Length = ...
+        getScanParameter(Raman_On_Time_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'Raman_Time'); 
+
     
     %CHECK PERFORMANCE OF SWEEP IN BURST MODE. CURRENTLY USING BURST MODE
     %SINCE REMOVING ZASWA SWITCHES.
     horizontal_plane_select_params.Rigol_Mode = 'Pulse';  %'Sweep', 'Pulse', 'Modulate'
     Range_List = [50];%in kHz
     horizontal_plane_select_params.Selection_Range = getScanParameter(Range_List,seqdata.scancycle,seqdata.randcyclelist,'Sweep_Range')/1000; 
-    Raman_On_Time_List = [2000];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
-    horizontal_plane_select_params.Microwave_Pulse_Length = getScanParameter(Raman_On_Time_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Time'); 
+    
+     
     horizontal_plane_select_params.Fluorescence_Image = 1;
     horizontal_plane_select_params.Num_Frames = 1; % 2 for 2 images
     Modulation_List = Raman_On_Time_List;

@@ -95,7 +95,9 @@ Raman_transfers = 1;                                % (4727)            keep : a
 % Other Parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
 
-%RHYS - Some confusing parameters defined here. Consolidate.
+
+%% Other parameters
+% To be consolidated and simplified.
 
 % Lattice Hold. This should be removed and/or made simpler.
 lattice_holdtime_list =[0]; [0]; %150 sept28
@@ -106,7 +108,6 @@ if Drop_From_XDT
 else
     lattice_rampdown = 1; %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
 end
-
 
 % Parameters for lattice loading, section used for lattice alignment
 Depth_List = [100];
@@ -540,11 +541,12 @@ if newLoad
             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 1, 1, 0);
         setDigitalChannel(calctime(curtime,T0),'DMD AOM TTL',1);%1 on 0 off
         setDigitalChannel(calctime(curtime,T0),'DMD PID holder',0);
+        
 %         AnalogFuncTo(calctime(curtime,T0+offset_time),'DMD Power',...
 %             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, DMD_power_val);
 
         
-        
+        % First DMD Power ramp
         AnalogFuncTo(calctime(curtime,T0),'DMD Power',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
             dmd_times(1), dmd_times(1), dmd_pow(1));   
@@ -558,7 +560,7 @@ if newLoad
             T0=T0+dmd_times(jj);        
         end
         
-        
+        % Turn DMD off and reset it's power to high for thermalization
         setDigitalChannel(calctime(curtime,T0),'DMD AOM TTL',0);
         setDigitalChannel(calctime(curtime,T0+10),'DMD Shutter',1);
         setDigitalChannel(calctime(curtime,T0+20),'DMD AOM TTL',1);
@@ -1624,32 +1626,33 @@ end
 %RHYS - This code works and is useful.
 
 if ( do_optical_pumping == 1)
-
     
- Lattices_to_Pin_for_OP = 0;
- 
-    if Lattices_to_Pin_for_OP
- 
+    doPinForOP = 0; 
+    if doPinForOP 
         %ramp up lattice beams for optical pumping
-        AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60); 
-        AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60);
-        curtime= AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60);
+        AnalogFuncTo(calctime(curtime,0),'xLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60); 
+        AnalogFuncTo(calctime(curtime,0),'yLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60);
+        curtime= AnalogFuncTo(calctime(curtime,0),'zLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60);
         curtime = calctime(curtime,10);%10 ms for the system to be stablized
     end
     
-
-  op_time_list = [3];%3
+    % OP pulse length
+    op_time_list = [3];%3
     optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle,...
-        seqdata.randcyclelist, 'op_time','ms'); %optical pumping pulse length
-    repump_power_list = [0.5];0.5
+        seqdata.randcyclelist, 'op_time','ms');
+    % OP repump power
+    repump_power_list = [0.5];
     repump_power =getScanParameter(repump_power_list, seqdata.scancycle,...
-        seqdata.randcyclelist, 'op_repump_pwr'); %optical pumping repump power
+        seqdata.randcyclelist, 'op_repump_pwr');     
+    % OP power
     D1op_pwr_list = [5]; %min: 0, max:10 %5
     D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle,...
-        seqdata.randcyclelist, 'D1op_pwr'); %optical power
-
+        seqdata.randcyclelist, 'D1op_pwr'); 
     
-    %Determine the requested frequency offset from zero-field resonance
+    % Determine the requested frequency offset from zero-field resonance
     frequency_shift = (4)*2.4889;(4)*2.4889;
     Selection_Angle = 62.0;
     addOutputParam('Selection_Angle',Selection_Angle)
@@ -2269,12 +2272,9 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
     ramp_fields = 1;
     FB_init = getChannelValue(seqdata,37,1,0);
     if ramp_fields
-        % Ramp the SHIMs, QP, and FB to the appropriate level
-        
-        
+        % Ramp the SHIMs, QP, and FB to the appropriate level  
         disp('Ramping fields');
-        clear('ramp');
-        
+        clear('ramp');       
         
         xshimdlist = -0.257;
         yshimdlist = 0.125;

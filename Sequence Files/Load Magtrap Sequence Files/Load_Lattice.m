@@ -68,7 +68,7 @@ do_K_raman_spectroscopy = 0;            % (3989) under development
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % DMD
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-do_DMD=0;
+do_DMD=1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Dimple Beam
@@ -160,7 +160,7 @@ if newLoad
      
             %%% DMD %%%
             dmd_pow=[1 1 0];
-            dmd_times=[100 50 50];
+            dmd_times=[50 50 50];
     end
     
     % Duration of each ramp
@@ -526,7 +526,42 @@ if newLoad
     %%%%%%%%%%%%%%%%%%%%%%%%%%
     
     if do_DMD
-        % Perhaps PX can code this
+        T0=0;
+        
+        setAnalogChannel(calctime(curtime,-1000),'DMD Power',2);
+        setDigitalChannel(calctime(curtime,-10 +T0),'DMD Shutter',0);%0 on 1 off
+        setDigitalChannel(calctime(curtime,-200+T0),'DMD TTL',1);
+        setDigitalChannel(calctime(curtime,-100+T0),'DMD TTL',0);
+        setDigitalChannel(calctime(curtime,-20+T0),'DMD AOM TTL',0);
+        setDigitalChannel(calctime(curtime,-20+T0),'DMD PID holder',1);
+        AnalogFuncTo(calctime(curtime,-30+T0),'DMD Power',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 1, 1, 0);
+        setDigitalChannel(calctime(curtime,T0),'DMD AOM TTL',1);%1 on 0 off
+        setDigitalChannel(calctime(curtime,T0),'DMD PID holder',0);
+%         AnalogFuncTo(calctime(curtime,T0+offset_time),'DMD Power',...
+%             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, DMD_power_val);
+
+        
+        
+        AnalogFuncTo(calctime(curtime,T0),'DMD Power',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            dmd_times(1), dmd_times(1), dmd_pow(1));   
+        T0= dmd_times(1);
+
+        % Rest of ramps
+        for jj=2:length(dmd_times)        
+            AnalogFuncTo(calctime(curtime,T0),'DMD Power',...
+                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+                dmd_times(jj), dmd_times(jj), dmd_pow(jj));   
+            T0=T0+dmd_times(jj);        
+        end
+        
+        
+        setDigitalChannel(calctime(curtime,T0),'DMD AOM TTL',0);
+        setDigitalChannel(calctime(curtime,T0+10),'DMD Shutter',1);
+        setDigitalChannel(calctime(curtime,T0+20),'DMD AOM TTL',1);
+        setAnalogChannel(calctime(curtime,T0+20),'DMD Power',2);
+
     end
 
     curtime=calctime(curtime,T_load_tot);   

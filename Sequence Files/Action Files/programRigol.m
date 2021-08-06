@@ -112,7 +112,7 @@ cmds.SWEEP_HOLDTIME_START='SOURCE<n>:SWEEP:HTIME:START';    % seconds
 
 % Specific to BURST MODE
 cmds.BURST_MODE=':SOURCE<n>:BURST:MODE';                    % TRIG, GAT, INF
-cmds.BURST_TRIGGER=':SOURCE<n>:BURST:TRIGGER:SOURCE';              % INT, EXT, MAN
+cmds.BURST_TRIGGER=':SOURCE<n>:BURST:TRIGGER:SOURCE';       % INT, EXT, MAN
 cmds.BURST_TRIGGER_SLOPE=':SOURCE<n>:BURST:TRIGGER:SLOPE';  % POS, NEG
 cmds.BURST_PHASE=':SOURCE<n>:BURST:PHASE';                  % degress (also be 0?)
 cmds.BURST_NCYCLES=':SOURCE<n>:BURST:NCYCLES';              % Number of cycles

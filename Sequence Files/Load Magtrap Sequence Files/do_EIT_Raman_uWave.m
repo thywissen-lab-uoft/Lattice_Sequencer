@@ -62,7 +62,7 @@ if nargin==1
 %     uWave.Mode              = 'pulse';
     uWave.Freq              = 1285.8 + 11.025;
     uWave.Power             = 15;   % dBm
-    uWave.Addr              = 27;
+    uWave.Addr              = 28;
     uWave.DeltaFreq         = 100;  % kHz
     uWave.PulseTime         = 2000; % ms
 
@@ -142,14 +142,50 @@ if BField.RampUp
 curtime = rampMagneticFields(calctime(curtime,0), newramp);
 end
 
-%% uWave
-
 %% Raman
 
 if Raman.Enable
-
     % Program the Rigol
+    addr=1;
+    ch1=struct;
+    
+    ch1.FREQUENCY=Raman.Freq1*1E6;
+    ch1.AMPLITUDE=Raman.Pow1;
+    ch1.AMPLITUDE_UNIT='VPP';
+    ch1.STATE='ON';
+    ch1.LOAD='INF';
+    ch1.SWEEP='OFF';
+    ch1.SWEEP_TIME=Raman.PulseTime*1e-3;
+    ch1.SWEEP_TRIGGER='EXT';
+    ch1.SWEEP_TRIGGER_SLOPE='POS';    
+    ch1.BURST='OFF';
+    ch1.MOD='OFF';
+    
+    ch2.FREQUENCY=Raman.Freq2*1E6;
+    ch2.AMPLITUDE=Raman.Pow2;
+    ch2.AMPLITUDE_UNIT='VPP';
+    ch2.STATE='ON';
+    ch2.LOAD='INF';
+    ch2.SWEEP='OFF';
+    ch2.SWEEP_TIME=Raman.PulseTime*1e-3;
+    ch2.SWEEP_TRIGGER='EXT';
+    ch2.SWEEP_TRIGGER_SLOPE='POS';
+    ch2.BURST='OFF';
+    ch2.MOD='OFF';
 
+    if Raman.extClock
+        ch1.CLOCK_SOURCE='EXT';
+        ch2.CLOCK_SOURCE='EXT';
+    else
+        ch1.CLOCK_SOURCE='INT';
+        ch2.CLOCK_SOURCE='INT';
+    end
+    
+    if Raman.doSweep
+       ch1.SWEEP='ON';       
+    end        
+
+    programRigol(addr,ch1,ch2)
     
     DigitalPulse(calctime(curtime,-100),'Raman Shutter',Raman.PulseTime+3100,1);% CF 2021/03/30 new shutter
 
@@ -157,9 +193,6 @@ if Raman.Enable
     DigitalPulse(calctime(curtime,-150),'Raman TTL 1',150,0);
     DigitalPulse(calctime(curtime,-150),'Raman TTL 2',150,0);
     DigitalPulse(calctime(curtime,-150),'Raman TTL 3',5200,0);
-
-
-
 
     DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL 1',3050,0);
     DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL 2',3050,0);

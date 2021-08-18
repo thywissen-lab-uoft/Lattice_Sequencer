@@ -219,7 +219,7 @@ else
       
     % Set Trap FM detuning for FB field
     setAnalogChannel(calctime(curtime,params.timings.tof-params.timings.k_detuning_shift_time),...
-            'K Trap FM',detuning+(seqdata.params.HF_fb-190)*0.675*2);
+            'K Trap FM',detuning+(seqdata.params.HF_probe_fb-190)*0.675*2);
 
     HF_prob_freq9 =  params.detunings.K.X.negative9.HF.normal;
     HF_prob_freq7 =  params.detunings.K.X.negative7.HF.normal;

@@ -5031,21 +5031,19 @@ setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',0);
 
 %% Test Acync
 
-% curtime = calctime(curtime,100);
-% setDigitalChannel(calctime(curtime,-35),72,1);
+curtime = calctime(curtime,100);
+setDigitalChannel(calctime(curtime,-35),'ACync Master',1);
 % 
-% setAnalogChannel(calctime(curtime,-5),57,-10);
+setAnalogChannel(calctime(curtime,-5),57,00);
 % 
 % AnalogFuncTo(calctime(curtime,0),57,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2,2,10);
 % setAnalogChannel(calctime(curtime,10),57,-10);
+% % 
+setDigitalChannel(calctime(curtime,0),72,1);
+setDigitalChannel(calctime(curtime,15),72,0);
 % 
-% setDigitalChannel(calctime(curtime,0),71,1);
-% setDigitalChannel(calctime(curtime,10),71,0);
-% 
-% 
-% 
-% setDigitalChannel(calctime(curtime,30),72,0);
 
+setDigitalChannel(calctime(curtime,30),'ACync Master',0);
 curtime=calctime(curtime,1000);
 
 

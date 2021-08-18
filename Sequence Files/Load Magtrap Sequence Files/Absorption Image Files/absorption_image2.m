@@ -222,7 +222,7 @@ else
       
     % Set Trap FM detuning for FB field
     setAnalogChannel(calctime(curtime,params.timings.tof-params.timings.k_detuning_shift_time),...
-            'K Trap FM',K_detuning+(seqdata.params.HF_fb-190)*0.675*2);
+            'K Trap FM',K_detuning+(seqdata.params.HF_probe_fb-190)*0.675*2);
 
     HF_prob_freq9 =  params.detunings.K.X.negative9.HF.normal;
     HF_prob_freq7 =  params.detunings.K.X.negative7.HF.normal;
@@ -232,12 +232,12 @@ else
     freq2 = (120+HF_prob_freq9)*1E6;
 
     % Power in -7 beam
-    pow1_list = [0.8];[0.7];
+    pow1_list = [1];[0.8];
     pow1 = getScanParameter(pow1_list,seqdata.scancycle,seqdata.randcyclelist,...
         'HF_prob_pwr1','V');
 
     % Power in -9 beam
-    pow2_list = [1];        
+    pow2_list = [pow1];        
     pow2 = getScanParameter(pow2_list,seqdata.scancycle,seqdata.randcyclelist,...
         'HF_prob_pwr2','V');
 

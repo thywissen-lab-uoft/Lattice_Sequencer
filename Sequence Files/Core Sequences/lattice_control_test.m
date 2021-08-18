@@ -12,11 +12,11 @@ curtime = calctime(curtime, 1000);
 scope_trigger =  'lattice control test';'Rampup ODT';
 %%
       rotation_time = 1000;   % The time to rotate the waveplate
-      P_lattice = 1.0; %0.5/0.9        % The fraction of power that will be transmitted 
+      P_lattice = 0.5; %0.5/0.9        % The fraction of power that will be transmitted 
       curtime = AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),rotation_time,rotation_time,P_lattice);
       curtime = calctime(curtime,1000);
         
-        lattice_depth = [-10 -10 -10];  [1.1 1.17 1.24];[3 2.33 800]; %[0 0.82 0.87]
+        lattice_depth = [60 60 60];  [1.1 1.17 1.24];[3 2.33 800]; %[0 0.82 0.87]
         ramp_time = 50;
         voltage_func = 2;
         zero = [-9.99,0];
@@ -93,14 +93,14 @@ scope_trigger =  'lattice control test';'Rampup ODT';
 
     % Turn lattices RF off
 %     setDigitalChannel(calctime(curtime,5),'xLatticeOFF',1);%0: ON
-%     setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);%0: ON
+    setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);%0: ON
 %     setDigitalChannel(calctime(curtime,5),'Z Lattice TTL',1);%0: ON
 % %     
 %     curtime = calctime(curtime,5000);
-%     P_End = 1.0;
+%     P_End = 0;
 %     AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),200,200,P_lattice,P_End); 
 %     curtime = calctime(curtime,500);
-%     setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',0);
+    setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',0);
 
 
 

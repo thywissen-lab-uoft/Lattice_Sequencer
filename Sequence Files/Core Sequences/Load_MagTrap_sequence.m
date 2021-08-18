@@ -167,7 +167,7 @@ seqdata.flags.do_F1_pulse = 0; % repump Rb F=1 before/during imaging
 %RHYS - thse two should be fixed by the circumstance of the sequence,
 %not separately defined. 
 
-seqdata.flags.High_Field_Imaging = 0;
+seqdata.flags.High_Field_Imaging = 1;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
 seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now. 
@@ -321,7 +321,7 @@ end
     %RHYS - Setting some specific parameters for DDS and objective
     %position. Silly that this is here. 
 
-    obj_piezo_V_List = [5.1];[4.6];
+    obj_piezo_V_List = [4.9];[4.6];
     % 0.1V = 700 nm, must be larger than  larger value means farther away from the window.
 %     obj_piezo_V = getScanParameter(obj_piezo_V_List, ...
 %     seqdata.scancycle, 1, 'Objective_Piezo_Z','V');%5

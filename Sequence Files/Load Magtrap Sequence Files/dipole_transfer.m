@@ -851,11 +851,11 @@ if (seqdata.flags.do_D1OP_before_evap==1)
     dispLineStr('D1 Optical Pumping pre op evap',curtime);  
 
     op_time_list = [1];
-    optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle, seqdata.randcyclelist, 'op_time'); %optical pumping pulse length
+    optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_op_time1','ms'); %optical pumping pulse length
     repump_power_list = [0.2];
-    repump_power =getScanParameter(repump_power_list, seqdata.scancycle, seqdata.randcyclelist, 'op_repump_pwr'); %optical pumping repump power
+    repump_power =getScanParameter(repump_power_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_op_repump_pwr1','V'); %optical pumping repump power
     D1op_pwr_list = [5]; %min: 0, max:10
-    D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle, seqdata.randcyclelist, 'D1op_pwr'); %optical power
+    D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_D1op_pwr1','V'); %optical power
 
     
     %Determine the requested frequency offset from zero-field resonance
@@ -978,7 +978,7 @@ if seqdata.flags.mix_at_beginning
     sweep_pars.freq=rf_k_sweep_center;        
     sweep_pars.power = -9.10;-9.2;   
 
-    delta_freq_list =.01;[0.0040];%0.006; 0.01
+    delta_freq_list = 0.01;[0.0040];%0.006; 0.01
     sweep_pars.delta_freq = getScanParameter(delta_freq_list,...
         seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_range_post_evap');
     pulse_length_list = 1.25;[0.75];%0.4ms for mixing 2ms for 80% transfer remove further sweeps
@@ -2876,11 +2876,11 @@ if (seqdata.flags.do_D1OP_post_evap==1 && seqdata.flags.CDT_evap==1)
 
         
     op_time_list = [1]; %1
-    optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle, seqdata.randcyclelist, 'op_time'); %optical pumping pulse length
+    optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_op_time2','ms'); %optical pumping pulse length
     repump_power_list = [0.2];
-    repump_power =getScanParameter(repump_power_list, seqdata.scancycle, seqdata.randcyclelist, 'op_repump_pwr'); %optical pumping repump power
-    D1op_pwr_list = [5]; %min: 0, max:10 %5
-    D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle, seqdata.randcyclelist, 'D1op_pwr'); %optical power
+    repump_power =getScanParameter(repump_power_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_op_repump_pwr2','V'); %optical pumping repump power
+    D1op_pwr_list = [2]; %min: 0, max:10 %5
+    D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_D1op_pwr2','V'); %optical power
 
     
     %Determine the requested frequency offset from zero-field resonance
@@ -3408,7 +3408,7 @@ curtime=calctime(curtime,kill_time);
 %         exxdthold_list=1000;[1000];[1000];+500; %necessory for loading lattice => give some time for waveplate to rotate 
         
         exxdthold_list= [100];
-        exxdthold = getScanParameter(exxdthold_list,seqdata.scancycle,seqdata.randcyclelist,'exxdthold');
+        exxdthold = getScanParameter(exxdthold_list,seqdata.scancycle,seqdata.randcyclelist,'exxdthold','ms');
         curtime=calctime(curtime,exxdthold);%for sparse image
 
     end

@@ -4771,15 +4771,15 @@ end
 % % % % % setAnalogChannel(calctime(curtime,0),'Y Shim',2); %0.15
 % % % % % setAnalogChannel(calctime(curtime,0),'X Shim',1); %0.15
 % % % % % setAnalogChannel(calctime(curtime,0),'Z Shim',3);%0.0 
-% % % % 
-curtime = calctime(curtime,1000);
-setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',200);%202.5); %200
-setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',3); 
-setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
-setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
-setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',0);
-% % % % 
-% % 
+% % % % % 
+% curtime = calctime(curtime,1000);
+% setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',200);%202.5); %200
+% setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',3); 
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
+% setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',0);
+% % % % % 
+% % % 
 % setAnalogChannel(calctime(curtime,0),59,0); %0.11
 
 % % ODT test
@@ -5003,6 +5003,39 @@ setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',0);
 % 
 %         curtime = absorption_image2(calctime(curtime,0.0)); 
 
+%% R3 beam
+
+% 
+%         Device_id = 7; %Rigol for D1 lock(Ch. 1) and Raman 3(Ch. 2). Do not change any Ch. 1 settings here. 
+%         Raman_AOM3_freq =  60;
+%         Raman_AOM3_pwr = 1;
+% %         RamanspecMode = 'sweep'
+%         RamanspecMode = 'pulse'
+% 
+% 
+%         %R3 beam settings
+%         switch RamanspecMode
+%             case 'sweep'
+%                 Sweep_Range = 1;  %in MHz
+%                 Sweep_Time = 10; %in ms
+%                 str = sprintf('SOURce2:SWEep:STATe ON;SOURce2:SWEep:TRIGger:SOURce: EXTernal;SOURce2:SWEep:TIME %gMS;SOURce2:FREQuency:CENTer %gMHZ;SOURce2:FREQuency:SPAN %gMHZ;SOURce2:VOLT %g;', ...
+%                     Sweep_Time, Raman_AOM3_freq, Sweep_Range, Raman_AOM3_pwr);
+%                 Raman_on_time = Sweep_Time;
+% 
+%             case 'pulse'
+%                 Raman_on_time = 50; %ms
+%                 str = sprintf('SOURce2:SWEep:STATe OFF;SOURce2:MOD:STATe OFF; SOURce2:FREQuency %gMHZ;SOURce2:VOLT %gVPP;', ...
+%                     Raman_AOM3_freq, Raman_AOM3_pwr);
+%         end 
+%         addVISACommand(Device_id, str);
+%         
+% curtime = calctime(curtime,200);
+% 
+% setAnalogChannel(calctime(curtime,0),57,00);
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 1',1);
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 2',1);
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 3',1);
+
 
 %% Feshbach field test
 % 
@@ -5031,19 +5064,19 @@ setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',0);
 
 %% Test Acync
 
-curtime = calctime(curtime,100);
-setDigitalChannel(calctime(curtime,-35),'ACync Master',1);
-% 
-setAnalogChannel(calctime(curtime,-5),57,00);
-% 
-% AnalogFuncTo(calctime(curtime,0),57,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2,2,10);
-% setAnalogChannel(calctime(curtime,10),57,-10);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,-35),'ACync Master',1);
 % % 
-setDigitalChannel(calctime(curtime,0),72,1);
-setDigitalChannel(calctime(curtime,15),72,0);
+% setAnalogChannel(calctime(curtime,-5),57,00);
+% % 
+% % AnalogFuncTo(calctime(curtime,0),57,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2,2,10);
+% % setAnalogChannel(calctime(curtime,10),57,-10);
+% % % 
+% setDigitalChannel(calctime(curtime,0),72,1);
+% setDigitalChannel(calctime(curtime,15),72,0);
+% % 
 % 
-
-setDigitalChannel(calctime(curtime,30),'ACync Master',0);
+% setDigitalChannel(calctime(curtime,30),'ACync Master',0);
 curtime=calctime(curtime,1000);
 
 

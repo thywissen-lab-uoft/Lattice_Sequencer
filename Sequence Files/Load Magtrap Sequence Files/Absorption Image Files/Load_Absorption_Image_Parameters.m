@@ -44,12 +44,12 @@ function params = Load_Absorption_Image_Parameters()
     
     %% HF imaging
 %     % Potassium -HF -Xcam : settting the DP HF imaging AOM freq
-    kHFdet_shift_list = [-1:0.2:1];%-1
-    kHFdet_shift = getScanParameter(kHFdet_shift_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'HF_kdet_shift');
+%     kHFdet_shift_list = [-1:0.2:1];%-1
+%     kHFdet_shift = getScanParameter(kHFdet_shift_list,seqdata.scancycle,...
+%         seqdata.randcyclelist,'HF_kdet_shift');
 
 
-    params.detunings.K.X.negative9.HF.normal = -7 + -0.4;-0.147; 
+    params.detunings.K.X.negative9.HF.normal = -7 + -0.5;-0.147; 
 %     params.detunings.K.X.negative9.HF.normal = -7 + kHFdet_shift;
     
     params.detunings.K.X.negative9.HF.SG = -4.5; %

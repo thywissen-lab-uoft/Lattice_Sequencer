@@ -243,7 +243,7 @@ seqdata.flags.do_Rb_uwave_transfer_in_ODT = 0;  % Field Sweep Rb 2-->1
 seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 1; % uWave Frequency sweep Rb 2-->1
 seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
 seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
-seqdata.flags.mix_at_beginning = 1;             % RF Mixing -9-->-9+-7
+seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
     
 % Optical Evaporation
 seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 

@@ -232,12 +232,12 @@ else
     freq2 = (120+HF_prob_freq9)*1E6;
 
     % Power in -7 beam
-    pow1_list = [1];[0.8];
+    pow1_list = [0.8];[0.8];
     pow1 = getScanParameter(pow1_list,seqdata.scancycle,seqdata.randcyclelist,...
         'HF_prob_pwr1','V');
 
     % Power in -9 beam
-    pow2_list = [pow1];        
+    pow2_list = [1];        
     pow2 = getScanParameter(pow2_list,seqdata.scancycle,seqdata.randcyclelist,...
         'HF_prob_pwr2','V');
 

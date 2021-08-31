@@ -5028,13 +5028,39 @@ end
 %                     Raman_AOM3_freq, Raman_AOM3_pwr);
 %         end 
 %         addVISACommand(Device_id, str);
-%         
+%         Raman Shutter
 % curtime = calctime(curtime,200);
 % 
-% setAnalogChannel(calctime(curtime,0),57,00);
-% setDigitalChannel(calctime(curtime,0),'Raman TTL 1',1);
-% setDigitalChannel(calctime(curtime,0),'Raman TTL 2',1);
-% setDigitalChannel(calctime(curtime,0),'Raman TTL 3',1);
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 1',0);
+setAnalogChannel(calctime(curtime,0),57,00);
+setDigitalChannel(calctime(curtime,0),'Raman TTL 1',1);
+setDigitalChannel(calctime(curtime,0),'Raman TTL 2',1);
+setDigitalChannel(calctime(curtime,0),'Raman TTL 3',1);
+% 
+% setDigitalChannel(calctime(curtime,5),'Raman Shutter',1);
+% setDigitalChannel(calctime(curtime,30),'Raman TTL 2',1);
+% setDigitalChannel(calctime(curtime,30),'Raman TTL 3',1);
+% 
+% Raman_time = 10;
+% setDigitalChannel(calctime(curtime,30+Raman_time),'Raman TTL 2',0);
+% setDigitalChannel(calctime(curtime,30+Raman_time),'Raman TTL 3',0);
+% 
+% setDigitalChannel(calctime(curtime,30+Raman_time+5),'Raman Shutter',0);
+% 
+% setDigitalChannel(calctime(curtime,30+Raman_time+10),'Raman TTL 2',1);
+% setDigitalChannel(calctime(curtime,30+Raman_time+10),'Raman TTL 3',1);
+% 
+% 
+% do_ACync = 0;
+% 
+% if do_ACync
+% ACync_start_time = calctime(curtime,20);
+% ACync_end_time = calctime(curtime,Raman_time+30+20);
+% setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
+% setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0)
+% 
+% end
+
 
 
 %% Feshbach field test

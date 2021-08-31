@@ -117,7 +117,7 @@ ZLD = getScanParameter(Depth_List,seqdata.scancycle,seqdata.randcyclelist,'zld')
 
 if newLoad
     % Hold in lattice
-    latt_hold_time_list = [100];
+    latt_hold_time_list = [150];
     latt_hold_time = getScanParameter(latt_hold_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'lattice_hold_time','ms');
     % Lattice depth and ramp times
@@ -155,16 +155,16 @@ if newLoad
         case 1 % Ramp everything
             %%% Lattice %%%
             latt_depth=...
-                 [60 60;     % X lattice
-                 60 60;     % Y lattice
-                 60 60];    % Z Lattice
+                 [L0(1) L0(1);     % X lattice
+                 L0(2) L0(2)     % Y lattice
+                 100 100];    % Z Lattice
             latt_times=[100 latt_hold_time];
             
             latt_XDT_pow_list = [0.1];
             latt_XDT_pow = getScanParameter(latt_XDT_pow_list,...
                 seqdata.scancycle,seqdata.randcyclelist,'latt_XDT_pow','V');
             %%% XDT %%%
-            dip_pow=[latt_XDT_pow 0];
+            dip_pow=[latt_XDT_pow latt_XDT_pow];
             dip_times=[150 50];   
      
             %%% DMD %%%
@@ -5037,13 +5037,16 @@ curtime = calctime(curtime,lattice_holdtime);
 
 
 
-%% High Field
+%% High Field transfers + Imaging
 if seqdata.flags.High_Field_Imaging
     dispLineStr('Ramping High Field in Lattice',curtime);
 
     if do_plane_selection   %NOT A GOOD IDEA TO DO HF IMAGING IF PLANE SELECTED
         error('PLANE SELECTION AND HF IMAGING MAY MAKE THE FB COIL TOO HOT')
     end
+
+    
+    ScopeTriggerPulse(curtime,'Lattice HF');
 
     time_in_HF_imaging = curtime;
     
@@ -5068,17 +5071,17 @@ if seqdata.flags.High_Field_Imaging
         seqdata.scancycle,seqdata.randcyclelist,'HF_latt_ramptime','ms');
     AnalogFuncTo(calctime(curtime,T0),'xLattice',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        HF_latt_ramptime, HF_latt_ramptime, HF_latt_depth);   
+        HF_latt_ramptime, HF_latt_ramptime, 600);   
     AnalogFuncTo(calctime(curtime,T0),'yLattice',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        HF_latt_ramptime, HF_latt_ramptime, HF_latt_depth);    
+        HF_latt_ramptime, HF_latt_ramptime, 600);    
 curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         HF_latt_ramptime, HF_latt_ramptime, HF_latt_depth); 
     
 
     % Fesahbach Field ramp
-    HF_FeshValue_Initial_List =[200.0];
+    HF_FeshValue_Initial_List =[200];
     HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
         seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial','G');
  
@@ -5111,7 +5114,8 @@ curtime = rampMagneticFields(calctime(curtime,0), ramp);
             rf_pulse_length_list = 100;5;20;
             sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5               
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-            do_ACync_rf = 0;
+
+            do_ACync_rf = 1;
             if do_ACync_rf
                 ACync_start_time = calctime(curtime,-80);
                 ACync_end_time = calctime(curtime,2*sweep_pars.pulse_length+50);
@@ -5153,8 +5157,8 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
         Device_id = 7; %Rigol for D1 lock(Ch. 1) and Raman 3(Ch. 2). Do not change any Ch. 1 settings here. 
         B = HF_FeshValue_Initial;
         
-        Raman_AOM3_freq_list =  [-0.14239]/2+(80+...
-            abs((BreitRabiK(B,9/2,-7/2) - BreitRabiK(B,9/2,-9/2))/6.6260755e-34/1E6))/2;
+        Raman_AOM3_freq_list =  [0.012]/2+(80+...
+            abs((BreitRabiK(B,9/2,-7/2) - BreitRabiK(B,9/2,-9/2))/6.6260755e-34/1E6))/2; %-0.14239
         
         Raman_AOM3_freq = getScanParameter(Raman_AOM3_freq_list,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM3_freq','MHz');
@@ -5162,7 +5166,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
         Raman_AOM3_pwr = getScanParameter(Raman_AOM3_pwr_list,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM3_pwr','MHz');
 %         RamanspecMode = 'sweep';
-        RamanspecMode = 'pulse'
+        RamanspecMode = 'pulse';
 
 
         %R3 beam settings
@@ -5180,7 +5184,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
                 Raman_on_time = Sweep_Time;
 
             case 'pulse'
-                Pulse_Time_list = [0.025:0.05:0.5];
+                Pulse_Time_list = [0.005:0.01:0.205];
                 Pulse_Time = getScanParameter(Pulse_Time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'Pulse_Time','ms');
                 Raman_on_time = Pulse_Time; %ms
@@ -5207,17 +5211,9 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
 
         %Raman spectroscopy AOM-shutter sequence
         %we have three TTLs to independatly control R1, R2 and R3
-        
-        do_ACync_Raman = 1;
-            if do_ACync_Raman
-                ACync_start_time = calctime(curtime,-30);
-                ACync_end_time = calctime(curtime,Raman_on_time+30);
-                setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
-                setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
-            end
-        
         raman_buffer_time = 10;
         shutter_buffer_time = 5;
+
         setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman TTL 1',0); %turn off R1
         DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 2',raman_buffer_time,0); %turn off R2 temporarily for shutter
         DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3',raman_buffer_time,0); %turn off R3 temporarily for shutter
@@ -5570,6 +5566,60 @@ end
         end
 
 end
+
+%% Ramp HF and back
+ramp_HF_and_back = 0;
+if ramp_HF_and_back
+
+    %lattice ramp
+    HF_latt_depth_list = [300];
+    HF_latt_depth = getScanParameter(HF_latt_depth_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'HF_latt_depth','Er');
+    
+    
+    HF_latt_ramptime_list = [50];
+    HF_latt_ramptime = getScanParameter(HF_latt_ramptime_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'HF_latt_ramptime','ms');
+    AnalogFuncTo(calctime(curtime,T0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        HF_latt_ramptime, HF_latt_ramptime, HF_latt_depth);   
+    AnalogFuncTo(calctime(curtime,T0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        HF_latt_ramptime, HF_latt_ramptime, HF_latt_depth);    
+curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        HF_latt_ramptime, HF_latt_ramptime, HF_latt_depth); 
+    
+    
+    
+    
+        clear('ramp');
+        % FB coil settings for spectroscopy
+        ramp.FeshRampTime = 150;
+        ramp.FeshRampDelay = -0;
+        HF_FeshValue_Initial_List =[201];[202.78];
+        HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
+        ramp.FeshValue = HF_FeshValue_Initial;
+        ramp.SettlingTime = 50;    
+curtime = rampMagneticFields(calctime(curtime,0), ramp);
+
+wait_time = 50;
+curtime = calctime(curtime,wait_time);
+
+
+clear('ramp');
+        %FB coil settings for spectroscopy
+        ramp.FeshRampTime = 150;
+        ramp.FeshRampDelay = 0;
+        HF_FeshValue_final_list = [15];
+        seqdata.HF_FeshValue_final = getScanParameter(HF_FeshValue_final_list,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_final');
+        ramp.FeshValue = seqdata.HF_FeshValue_final;%before 2017-1-6 100*1.08962; %22.6
+        ramp.SettlingTime = 150;
+        curtime = rampMagneticFields(calctime(curtime,0), ramp);
+
+end
+
+
 %% Turn off lattices and dipole traps for ToF imaging, flag name: Drop from XDT
 
 %RHYS - Definitely change this. Fudong's addition here was useful

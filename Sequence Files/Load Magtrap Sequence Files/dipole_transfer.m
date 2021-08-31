@@ -3812,12 +3812,13 @@ curtime = rampMagneticFields(calctime(curtime,0), ramp);
         dispLineStr('Ramping High Field in XDT',curtime);
         time_in_HF_imaging = curtime;
         
-        spin_flip_9_7 = 0;
+        spin_flip_9_7 = 1;
+        do_raman_spectroscopy = 0;
         spin_flip_7_5 = 0;        
         rabi_manual=0;
         do_rf_spectroscopy= 0; % Spectrocopy vary rabi
         shift_reg_at_HF = 0;
-        ramp_field_for_imaging = 1;
+        ramp_field_for_imaging = 0;
 
 
  % Fesahbach Field ramp
@@ -3852,7 +3853,7 @@ curtime = rampMagneticFields(calctime(curtime,0), ramp);
             sweep_pars.delta_freq = delta_freq;
             rf_pulse_length_list = 100;5;20;
             sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5               
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
+% curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
             do_ACync_rf = 1;
             if do_ACync_rf
                 ACync_start_time = calctime(curtime,-80);
@@ -3862,7 +3863,114 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
             end
         end
           
+        if do_raman_spectroscopy
+
+    %ramp fields
+        ramp_fields = 0;
+        if ramp_fields
+                clear('ramp');
+                %First, ramp on a quantizing shim.
+                ramp.shim_ramptime = 50;
+                ramp.shim_ramp_delay = -0;
+
+                ramp.xshim_final = 0.1585; getChannelValue(seqdata,27,1,0);
+                ramp.yshim_final = -0.0432; getChannelValue(seqdata,19,1,0);%1.61;
+                ramp.zshim_final = -0.0865; getChannelValue(seqdata,28,1,0);%getChannelValue(seqdata,28,1,0); %0.065 for -1MHz   getChannelValue(seqdata,28,1,0)
+                addOutputParam('shim_value',ramp.zshim_final - getChannelValue(seqdata,28,1,0))
+
+                % FB coil settings for spectroscopy
+                ramp.fesh_ramptime = 50;
+                ramp.fesh_ramp_delay = -0;
+                ramp.fesh_off_delay = 0;
+                B_List = [195];
+                B = getScanParameter(B_List,seqdata.scancycle,seqdata.randcyclelist,'B_Field');
+
+                ramp.fesh_final = B;
+                ramp.use_fesh_switch = 1; %Don't actually want to close the FB switch to avoid current spikes
+                ramp.settling_time = 200;200;     
+                curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
+        end
+
+        Device_id = 7; %Rigol for D1 lock(Ch. 1) and Raman 3(Ch. 2). Do not change any Ch. 1 settings here. 
+        B = HF_FeshValue_Initial;
         
+        Raman_AOM3_freq_list =  [-0.025:0.005:0.025]/2+(80+...
+            abs((BreitRabiK(B,9/2,-7/2) - BreitRabiK(B,9/2,-9/2))/6.6260755e-34/1E6))/2; %-0.14239
+        
+        Raman_AOM3_freq = getScanParameter(Raman_AOM3_freq_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM3_freq','MHz');
+        Raman_AOM3_pwr_list = [0.4];
+        Raman_AOM3_pwr = getScanParameter(Raman_AOM3_pwr_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM3_pwr','MHz');
+        RamanspecMode = 'sweep';
+%         RamanspecMode = 'pulse';
+
+
+        %R3 beam settings
+        switch RamanspecMode
+            case 'sweep'
+                Sweep_Range_list = [5]/1000;  %in MHz
+                Sweep_Range = getScanParameter(Sweep_Range_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'HF_Raman_sweep_range','MHz');
+                Sweep_Time_list = [1]; %1 in ms
+                Sweep_Time = getScanParameter(Sweep_Time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'HF_Raman_sweep_time','ms');
+    
+                str = sprintf('SOURce2:SWEep:STATe ON;SOURce2:SWEep:TRIGger:SOURce: EXTernal;SOURce2:SWEep:TIME %gMS;SOURce2:FREQuency:CENTer %gMHZ;SOURce2:FREQuency:SPAN %gMHZ;SOURce2:VOLT %g;', ...
+                    Sweep_Time, Raman_AOM3_freq, Sweep_Range, Raman_AOM3_pwr);
+                Raman_on_time = Sweep_Time;
+
+            case 'pulse'
+                Pulse_Time_list = [0.005:0.01:0.205];
+                Pulse_Time = getScanParameter(Pulse_Time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'Pulse_Time','ms');
+                Raman_on_time = Pulse_Time; %ms
+                str = sprintf('SOURce2:SWEep:STATe OFF;SOURce2:MOD:STATe OFF; SOURce2:FREQuency %gMHZ;SOURce2:VOLT %gVPP;', ...
+                    Raman_AOM3_freq, Raman_AOM3_pwr);
+        end 
+        addVISACommand(Device_id, str);
+
+        %R2 beam settings
+        if ~Raman_transfers     %Rigol cannot be programmed more than once in a sequence
+        Device_id = 1;
+        Raman_AOM2_freq = 80*1E6;
+        
+        Raman_AOM2_pwr_list = 0.3;
+        Raman_AOM2_pwr = getScanParameter(Raman_AOM2_pwr_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM2_pwr','MHz');
+        
+        Raman_AOM2_offset = 0;
+        str=sprintf(':SOUR2:APPL:SIN %f,%f,%f;',Raman_AOM2_freq,Raman_AOM2_pwr,Raman_AOM2_offset);
+
+        addVISACommand(Device_id, str);
+
+        end 
+
+        %Raman spectroscopy AOM-shutter sequence
+        %we have three TTLs to independatly control R1, R2 and R3
+        raman_buffer_time = 10;
+        shutter_buffer_time = 5;
+
+        setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman TTL 1',0); %turn off R1
+        DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 2',raman_buffer_time,0); %turn off R2 temporarily for shutter
+        DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3',raman_buffer_time,0); %turn off R3 temporarily for shutter
+
+
+        DigitalPulse(calctime(curtime,-shutter_buffer_time),'Raman Shutter',...
+            Raman_on_time+shutter_buffer_time*2,1);% open shutter 100ms before and close 100ms after the sweep
+
+        DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 2',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
+        DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 3',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
+        setDigitalChannel(calctime(curtime,Raman_on_time+ ...
+            raman_buffer_time),'Raman TTL 1',1); %turn on R1 150ms after the sweep has ended
+
+curtime = calctime(curtime, Raman_on_time+(raman_buffer_time)*2);
+
+
+
+
+        end   
+    
         
         %Do rf transfer from -7/2 to -5/2
         if spin_flip_7_5

@@ -44,17 +44,18 @@ function params = Load_Absorption_Image_Parameters()
     
     %% HF imaging
 %     % Potassium -HF -Xcam : settting the DP HF imaging AOM freq
-%     kHFdet_shift_list = [-1:0.2:1];%-1
-%     kHFdet_shift = getScanParameter(kHFdet_shift_list,seqdata.scancycle,...
-%         seqdata.randcyclelist,'HF_kdet_shift');
+    kHFdet_shift_list = [-1:0.2:1];%-1
+    kHFdet_shift = getScanParameter(kHFdet_shift_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'HF_kdet_shift');
 
 
-    params.detunings.K.X.negative9.HF.normal = -7 + -0.5;-0.147; 
+    params.detunings.K.X.negative9.HF.normal = -7 + -0.5;-0.147;
+%     %201G:-0.5 %190G: -0.25
 %     params.detunings.K.X.negative9.HF.normal = -7 + kHFdet_shift;
     
     params.detunings.K.X.negative9.HF.SG = -4.5; %
     
-    params.detunings.K.X.negative7.HF.normal = 9.25 + 0.3; %8.8;params.detunings.K.X.negative9.HF.normal+(0.154*(seqdata.params.HF_fb-190)+31.851)/2; %9.5 for imaging from ODT, 8 for band mapping
+    params.detunings.K.X.negative7.HF.normal = 9.25 + 0.3; %201G:+0.3 %190G: -0.25
 %     params.detunings.K.X.negative7.HF.normal = 9.25 + kHFdet_shift; + 0.531;%8.8;params.detunings.K.X.negative9.HF.normal+(0.154*(seqdata.params.HF_fb-190)+31.851)/2; %9.5 for imaging from ODT, 8 for band mapping
 
     params.detunings.K.X.negative7.HF.SG = 12.5;

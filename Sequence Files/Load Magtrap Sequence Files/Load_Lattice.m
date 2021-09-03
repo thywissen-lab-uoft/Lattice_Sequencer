@@ -140,10 +140,11 @@ if newLoad
                 [10 10 zld zld;     % X lattice
                  10 10 zld zld;     % Y lattice
                  10 10 zld zld];    % Z Lattice 
-             latt_ramp_time_list = [10];
+             latt_ramp_time_list = [0.5];
              latt_ramp_time = getScanParameter(latt_ramp_time_list,...
                 seqdata.scancycle,seqdata.randcyclelist,'latt_ramp_time','ms');
-            latt_times=[150 50 0.2 50];
+%             latt_times=[150 50 0.2 50];
+            latt_times=[latt_ramp_time 20 0.2 50];
             
             %%% XDT is fixed%%%
             dip_pow=dip_endpower;
@@ -5051,7 +5052,7 @@ if seqdata.flags.High_Field_Imaging
     time_in_HF_imaging = curtime;
     
     spin_flip_9_7_pre_raman = 1;
-    do_raman_spectroscopy = 1;
+    do_raman_spectroscopy = 0;
     spin_flip_9_7_post_raman = 0;    
     rabi_manual = 0;
     spin_flip_7_5 = 0;
@@ -5061,7 +5062,7 @@ if seqdata.flags.High_Field_Imaging
     ramp_field_for_imaging = 1;
 
     %lattice ramp
-    HF_latt_depth_list = [300];
+    HF_latt_depth_list = [100];
     HF_latt_depth = getScanParameter(HF_latt_depth_list,...
         seqdata.scancycle,seqdata.randcyclelist,'HF_latt_depth','Er');
     
@@ -5071,30 +5072,36 @@ if seqdata.flags.High_Field_Imaging
         seqdata.scancycle,seqdata.randcyclelist,'HF_latt_ramptime','ms');
     AnalogFuncTo(calctime(curtime,T0),'xLattice',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        HF_latt_ramptime, HF_latt_ramptime, 600);   
+        HF_latt_ramptime, HF_latt_ramptime, HF_latt_depth);   
     AnalogFuncTo(calctime(curtime,T0),'yLattice',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        HF_latt_ramptime, HF_latt_ramptime, 600);    
+        HF_latt_ramptime, HF_latt_ramptime, HF_latt_depth);    
 curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         HF_latt_ramptime, HF_latt_ramptime, HF_latt_depth); 
     
 
     % Fesahbach Field ramp
-    HF_FeshValue_Initial_List =[200];
+    HF_FeshValue_Initial_List =[197:0.3:203];
     HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
         seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial','G');
  
-    % Define the ramp structure
-    ramp=struct;
-    ramp.FeshRampTime = 150;
-    ramp.FeshRampDelay = -0;
-    ramp.FeshValue = HF_FeshValue_Initial;
-    ramp.SettlingTime = 50; 50;    
-    
-    % Ramp the magnetic Fields
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
-    ScopeTriggerPulse(curtime,'FB_ramp');
+              % Define the ramp structure
+            ramp=struct;
+            ramp.shim_ramptime = 150;
+            ramp.shim_ramp_delay = 0; % ramp earlier than FB field if needed
+            ramp.xshim_final = seqdata.params.shim_zero(1); 
+            ramp.yshim_final = seqdata.params.shim_zero(2);
+            ramp.zshim_final = seqdata.params.shim_zero(3);
+            % FB coil 
+            ramp.fesh_ramptime = 150;
+            ramp.fesh_ramp_delay = 0;
+            ramp.fesh_final = HF_FeshValue_Initial; %22.6
+            ramp.settling_time = 50;    
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+        ScopeTriggerPulse(curtime,'FB_ramp');
+        
+        
 
     seqdata.params.HF_fb = HF_FeshValue_Initial;
     
@@ -5114,8 +5121,10 @@ curtime = rampMagneticFields(calctime(curtime,0), ramp);
             rf_pulse_length_list = 100;5;20;
             sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5               
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
+% curtime = calctime(curtime, 500);
+% curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
 
-            do_ACync_rf = 1;
+            do_ACync_rf = 0;
             if do_ACync_rf
                 ACync_start_time = calctime(curtime,-80);
                 ACync_end_time = calctime(curtime,2*sweep_pars.pulse_length+50);

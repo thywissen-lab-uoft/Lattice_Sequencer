@@ -243,13 +243,13 @@ seqdata.flags.do_Rb_uwave_transfer_in_ODT = 0;  % Field Sweep Rb 2-->1
 seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 1; % uWave Frequency sweep Rb 2-->1
 seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
 seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
-seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
+seqdata.flags.mix_at_beginning = 1;             % RF Mixing -9-->-9+-7
     
 % Optical Evaporation
 seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
 
 % After optical evaporation
-seqdata.flags.do_D1OP_post_evap = 1;            % D1 pump
+seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
 seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 
 % Optical lattice
@@ -275,7 +275,7 @@ seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / ali
 
 %RHYS - Useful! Where to trigger scope. Should be more apparent.     
 % scope_trigger = 'DMD pulse'; 
-scope_trigger = 'Lattice HF'; 
+scope_trigger = 'Load lattices'; 
 
 % 
 % setDigitalChannel(calctime(curtime,0),'DMD TTL',0);
@@ -321,7 +321,7 @@ end
     %RHYS - Setting some specific parameters for DDS and objective
     %position. Silly that this is here. 
 
-    obj_piezo_V_List = [4.0];[4.6];
+    obj_piezo_V_List = 4.6;[5.4];[4.6];
     % 0.1V = 700 nm, must be larger than  larger value means farther away from the window.
 %     obj_piezo_V = getScanParameter(obj_piezo_V_List, ...
 %     seqdata.scancycle, 1, 'Objective_Piezo_Z','V');%5

@@ -46,6 +46,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     %--------------------
     tilt_evaporation = 0;
     dipole_holdtime_before_evap = 0;
+    ramp_Feshbach_B_before_CDT_evap = 0;
+
     %RHYS - A very important parameter. Pass these from elsewhere.
     Evap_End_Power_List =[0.1];[0.085];[.065];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
     
@@ -73,24 +75,18 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     K_repump_pulse = 0;             % Get rid of F = 7/2 Potassium
     K_probe_pulse = 0;              % Get rid of F = 9/2 Potassium
     D1_repump_pulse = 0;            % D1 repump instead of D2
-    Dimple_in_XDT = 0;
     DMD_in_XDT = 0;
     Lattice_in_XDT_Evap = 0;
-    ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
     Kill_Beam_Alignment = 0;        %Pulse Kill beam on for whatever needs to be aligned.    
     ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
-    Raman_in_XDT = 0;    
-    k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap    
+    k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
+    seqdata.flags.ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
+
+    
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%
     % FB Field and evaporation
     %%%%%%%%%%%%%%%%%%%%%%%%%%
-    ramp_Feshbach_B_before_CDT_evap = 1;
-    ramp_Feshbach_B_in_CDT_evap = 0; %ramp up Feshbach field during CDT evap, try to create a colder sample
-    ramp_Feshbach_B_after_CDT_evap = 0; %ramp up Feshbach field after CDT evap, try to create a colder sample
-   
-    % CF : Why is this in existence?
-    load_lat_in_xdt_loading = 0;        %ramp up and ramp down lattice beams in the dipole transfer code;
 
     if qp_ramp_down_start_time<0
         error('QP ramp must happen after time zero');
@@ -2627,78 +2623,6 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
     end
 
 
-    %% Ramp FB field up to 20G before loading lattice
-    %RHYS - Useful for tuning interaction strength when loading lattice.
-    if ramp_up_FB_for_lattice
-
-        % Turn the FB up to 20G before loading the lattice, so that large field
-        % ramps in the lattice can be done more quickly
-        clear('ramp');
-
-        % FB coil settings for spectroscopy
-        ramp.fesh_ramptime = 150;
-        ramp.fesh_ramp_delay = -0;
-        ramp.fesh_final = 20;%before 2017-1-6 100*1.08962; %22.6
-        ramp.settling_time = 100;
-
-        addOutputParam('FB_Scale',ramp.fesh_final/22.6)
-
-
-
-curtime = ramp_bias_fields(calctime(curtime,0), ramp);
-
-    end
-    %RHYS - Can be deleted.
-    %% ramp up compensation beam
-    %Comp_Ramptime = 50;
-    %Comp_Power = 2;%unit is mW
-    %if seqdata.flags.compensation_in_modulation == 1
-        %%AOM direct control off
-        %setDigitalChannel(calctime(curtime,-50),'Compensation Direct',0); %0: off, 1: on
-        %%turn off compensation AOM initailly
-        %setDigitalChannel(calctime(curtime,-20),'Plug TTL',1); %0: on, 1: off
-        %set compensation AOM power to 0
-        %setAnalogChannel(calctime(curtime,-10),'Compensation Power',-1);
-        %%turn On compensation Shutter
-        %setDigitalChannel(calctime(curtime,-5),'Compensation Shutter',0); %0: on, 1: off
-        %%turn on compensation AOM
-        %setDigitalChannel(calctime(curtime,0),'Plug TTL',0); %0: on, 1: off       
-        %%ramp up compensation beam
-        %AnalogFuncTo(calctime(curtime,100),'Compensation Power',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), Comp_Ramptime, Comp_Ramptime, Comp_Power);
-    %end  %compensation_in_modulation == 1
-
-    %% ramp up Feshbach field for crossed dipole trap evaporative cooling
-    %RHYS - Tried ramping up interactions near end of XDT evap. This needs to
-    %be done carefully, as the FB coils can heat while large currents are being
-    %driven through them, and also, there is a gradient formed that can easily
-    %rip atoms out of a weak XDT.
-    if (ramp_Feshbach_B_in_CDT_evap == 1)
-        ramp_start_time=calctime(curtime,-6000);
-        ramp_up_time = 500;
-        ramp_down_time=500;
-        % ramp up Feshbach field
-        clear('ramp');
-
-        ramp.fesh_ramptime = ramp_up_time;
-        ramp.fesh_ramp_delay = -0;
-        ramp.fesh_final = 180;
-        ramp.settling_time = 10;
-        ramp_time = ramp_bias_fields(calctime(ramp_start_time,0), ramp);
-
-        hold_time = 2000;
-        ramp_time = calctime(ramp_time, hold_time);
-
-        % ramp down Feshbach field
-        clear('ramp');
-
-        ramp.fesh_ramptime = ramp_down_time;
-        ramp.fesh_ramp_delay = -0;
-        ramp.fesh_final = 20;
-        ramp.settling_time = 10;
-        ramp_time = ramp_bias_fields(calctime(ramp_time,0), ramp);
-
-    end
-
     %% Ramp XDT Up for Lattice Alignment
     %RHYS - This usually gets used. Can clean. Also contains options for
     %assessing XDT trap frequency, which should be separated back out into one
@@ -3168,101 +3092,6 @@ curtime=calctime(curtime,rabi_pars.pulse_length);
 %     curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
 %     curtime = calctime(curtime,30);
 end
-%% ramp up Feshbach field after crossed dipole trap evaporative cooling
-    %RHYS - Another opportunity to ramp up the FB field before lattice loading.
-    %This exists a bit higher up in the code too, so maybe only keep one.
-    if (ramp_Feshbach_B_after_CDT_evap == 1)
-        % Ttotal=1000 ms;
-        % Wait for Total-Thold;
-        % Ramp up in 100 down, 100 ms settl, 100 ms down
-        % Wait Thold
-        % Thold goes from 0 to 700
-%         
-%         T_total = 1000;
-%         hold_time_list = [0:50:600];
-%         T_hold = getScanParameter(hold_time_list,...
-%         seqdata.scancycle,seqdata.randcyclelist,'hold_time_post_field_ramp','ms');        
-%         
-         fb_field_list=[195 15];
-         fb_field = getScanParameter(fb_field_list,...
-         seqdata.scancycle,seqdata.randcyclelist,'fb_field_ramp_up','G');     
-
-        ramp_time_list = [200];
-        ramp_time = getScanParameter(ramp_time_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'test_FB_ramp_time','ms');
-        ramp_up_time = ramp_time;
-        ramp_down_time = ramp_time;
-        
-% curtime = calctime(curtime, T_total-T_hold -ramp_time*2-50*2-100);
-        % ramp up Feshbach field
-        clear('ramp');
-
-        ramp.fesh_ramptime = ramp_up_time;
-        ramp.fesh_ramp_delay = -0;
-        
-        
-        ramp.fesh_final = fb_field;
-        ramp.settling_time = 50;
-curtime = ramp_bias_fields(calctime(curtime,0), ramp);
-
-        hold_time = 100;
-curtime = calctime(curtime, hold_time);
-
-        % ramp down Feshbach field
-        clear('ramp');
-
-        ramp.fesh_ramptime = ramp_down_time;
-        ramp.fesh_ramp_delay = -0;
-        ramp.fesh_final = 15;
-        ramp.settling_time = 100;
-curtime = ramp_bias_fields(calctime(curtime,0), ramp);
-
-    end
-    %% ramp up and ramp down lattice beams
-    %RHYS - Potentially useful option. 
-    if (load_lat_in_xdt_loading == 1)
-        %set intital value and set digital channel value
-        setAnalogChannel(calctime(curtime,-60),'xLattice',-10,1);
-        setAnalogChannel(calctime(curtime,-60),'yLattice',-10,1);
-        setAnalogChannel(calctime(curtime,-60),'zLattice',-10,1);
-
-        % Enable rf output on ALPS3 (fast rf-switch and enable integrator)
-        setDigitalChannel(calctime(curtime,-50),34,0);
-        setDigitalChannel(calctime(curtime,-25),'Lattice Direct Control',0);
-        setDigitalChannel(calctime(curtime,0),'ScopeTrigger',1);
-        setDigitalChannel(calctime(curtime,1),'ScopeTrigger',0);
-        %---------------------------------------------------------
-        lat_ramp_time = 200;
-        lat_ramp_tau = 50;
-        X_Lattice_Depth = 1;
-        Y_Lattice_Depth = 1;
-        Z_Lattice_Depth = 1;
-        
-        lat_hold_time_list = [0,5,15,10,20,30]*1000;
-        lat_hold_time = getScanParameter(lat_hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'lat_hold_time');
-        %ramp up
-        AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,X_Lattice_Depth);
-        AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Y_Lattice_Depth);
-curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Z_Lattice_Depth);
-curtime = calctime(curtime,lat_hold_time);%holding
-
-        lat_ramp_time = 200;
-        lat_ramp_tau = 50;
-        X_Lattice_Depth = 0;
-        Y_Lattice_Depth = 0;
-        Z_Lattice_Depth = 0;    
-        %ramp down
-        AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,X_Lattice_Depth);
-        AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Y_Lattice_Depth);
-curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Z_Lattice_Depth);
-%curtime = calctime(curtime,10);%holding for 10 ms
-
-        %---------------------------------------------------------
-        %turn off TTLs
-        setDigitalChannel(calctime(curtime,lat_ramp_time+0.1),34,1);
-curtime = calctime(curtime,100);
-    end
-    
     %% Get Rid of Rb at the Very Very End
     get_rid_of_Rb_at_the_end = 0;
     %RHYS - Not sure why this would be useful.
@@ -3334,18 +3163,6 @@ curtime=calctime(curtime,50);
         %Piezo mirror is reset to 0 at the beginning of Load_MagTrap_Sequence
     end
 
-
-    %% Pulse Raman beams in XDT.
-    %RHYS - Probably deprecated. Was used to check alignment of Raman beams
-    %through diffraction if beams are the same frequency (make a lattice).
-    if Raman_in_XDT
-curtime = calctime(curtime, 0.3);
-        time_list = [0.25]; 
-        Raman_On_Time = getScanParameter(time_list,seqdata.scancycle,seqdata.randcyclelist,'Raman_Time');
-        DigitalPulse(calctime(curtime,-5),'D1 Shutter',Raman_On_Time+10,1);
-curtime = DigitalPulse(calctime(curtime,0),'F Pump TTL',Raman_On_Time,1);
-
-    end
 
     %% Pulse kill beam for alignment
     %RHYS - Can be useful. Pretty sure it exists in lattice too though.
@@ -3508,305 +3325,45 @@ curtime=calctime(curtime,kill_time);
 
     %end
     
+%% Ramp FB field up to 20G before loading lattice
+%Useful for tuning interaction strength when loading lattice.
+if seqdata.flags.ramp_up_FB_for_lattice 
 
-    %% Temperature Measurment for High Field Ramps
-
-    %%flip the spin from -7 to -5   
-    %clear('sweep');
-    %rf_list = [6.3371]; 
-    %sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,seqdata.randcyclelist,'rf_freq');
-    %rf_power_list = [-9.0];
-    %sweep_pars.power = getScanParameter(rf_power_list,seqdata.scancycle,seqdata.randcyclelist,'rf_transfer_power');  -5.7; %-7.7
-    %delta_freq = 0.02;
-    %sweep_pars.delta_freq = delta_freq;
-    %rf_pulse_length_list = [5];
-    %sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5           
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-
-    HF_ramp_temp_measurement = 0;
-    %RHYS - More high field stuff. 
-    if HF_ramp_temp_measurement
-        time_in_HF_imaging = curtime;
-
-        ScopeTriggerPulse(curtime,'FB_ramp');
-
-        %FB ramp up
-        clear('ramp');
-        % FB coil settings for spectroscopy
-        FeshRampTime_list = [150];
-        ramp.FeshRampTime = getScanParameter(FeshRampTime_list,seqdata.scancycle,seqdata.randcyclelist,'HF_RampTime');
-        rampup_time = ramp.FeshRampTime;
-        ramp.FeshRampDelay = -0;
-        ramp.FeshValue = 205;%before 2017-1-6 100*1.08962; %22.6
-        ramp.SettlingTime = 50; 
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
+    %ramp 1
+    
+    seqdata.params.time_in_HF = curtime;
+    Lattice_loading_field_list =[207];
+    Lattice_loading_field = getScanParameter(Lattice_loading_field_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'Lattice_loading_field','G');
 
 
-        %FB ramp down
-        clear('ramp');
-        % FB coil settings for spectroscopy
-        ramp.FeshRampTime = rampup_time;
-        ramp.FeshRampDelay = -0;
-        ramp.FeshValue = 20.98111;%before 2017-1-6 100*1.08962; %22.6
-        ramp.SettlingTime = 50;
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
+    % Turn the FB up to 20G before loading the lattice, so that large field
+    % ramps in the lattice can be done more quickly
+    clear('ramp');
 
-        %flip the spin from -5 to -7   
-        clear('sweep');
-        rf_list = [6.3571]; 
-        sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,seqdata.randcyclelist,'rf_freq');
-        rf_power_list = [-9.0];
-        sweep_pars.power = getScanParameter(rf_power_list,seqdata.scancycle,seqdata.randcyclelist,'rf_transfer_power');  -5.7; %-7.7
-        delta_freq = 0.02;
-        sweep_pars.delta_freq = delta_freq;
-        rf_pulse_length_list = [5];
-        sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5           
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
+    % FB coil settings for spectroscopy
+    ramp.fesh_ramptime = 150;
+    ramp.fesh_ramp_delay = -0;
+    ramp.fesh_final = 195;
+    ramp.settling_time = 100;
+curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 
-        %Do RF Sweep
-        clear('sweep');
+    %ramp 2
+    
+    % Turn the FB up to 20G before loading the lattice, so that large field
+    % ramps in the lattice can be done more quickly
+    clear('ramp');
 
-        sweep_pars.freq = 6.3075;6.255;% May 14 2018 6.275; %6.07 MHz
-        sweep_pars.power = -9;0;   %-7.7
-        sweep_pars.delta_freq = 0.02; % end_frequency - start_frequency   0.01
-        sweep_pars.pulse_length = 5;%0.2 
+    % FB coil settings for spectroscopy
+    ramp.fesh_ramptime = 2;
+    ramp.fesh_ramp_delay = -0;
+    ramp.fesh_final = Lattice_loading_field;
+    ramp.settling_time = 50;
+    
+curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
-
-        %Multiple sweeps to drive the mixture towards 50/50
-curtime = rf_uwave_spectroscopy(calctime(curtime,20),3,sweep_pars);
-curtime = calctime(curtime,2);
-curtime = rf_uwave_spectroscopy(calctime(curtime,10),3,sweep_pars);
-curtime = calctime(curtime,2);
-curtime = rf_uwave_spectroscopy(calctime(curtime,10),3,sweep_pars);
-curtime = calctime(curtime,2);
-curtime = rf_uwave_spectroscopy(calctime(curtime,10),3,sweep_pars);
-curtime = calctime(curtime,2);
-
-curtime = calctime(curtime,50);
-     
-        time_out_HF_imaging = curtime;
-
-        if (((time_out_HF_imaging - time_in_HF_imaging)*(seqdata.deltat/seqdata.timeunit))>3000)
-            error('CHECK TIME FESHBACH IS ON! MAY BE TOO LONG')
-        end
-    end    
-
-    %% RF Test Transfer at high field for field calibrations
-    rf_test_at_HF = 0;
-    if (rf_test_at_HF && seqdata.flags.High_Field_Imaging==0)
-        time_in_HF_imaging = curtime;
-        spin_flip_for_HF_imaging_FB = 1;
-
-
-        clear('ramp');
-        %FB coil settings for spectroscopy
-        ramp.FeshRampTime = 150;
-        ramp.FeshRampDelay = -0;
-        HF_FeshValue_Initial_List =[201.6:0.15:202.5];
-        HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
-        ramp.FeshValue = HF_FeshValue_Initial;
-        ramp.SettlingTime = 50;    
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
-        ScopeTriggerPulse(curtime,'FB_ramp');
-
-        if spin_flip_for_HF_imaging_FB
-            clear('sweep');
-            B = 202.1; 
-            rf_list = [0];
-            %rf_list = 48.3758; %@209G  [6.3371]; 
-            sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,seqdata.randcyclelist,'rf_freq')+(BreitRabiK(B,9/2,-7/2) - BreitRabiK(B,9/2,-9/2))/6.6260755e-34/1E6;
-            sweep_pars.power =  [0];
-            delta_freq = 0.05;0.02;
-            sweep_pars.delta_freq = delta_freq;
-            rf_pulse_length_list = 2;[5];
-            sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5               
-    curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        end
-
-        clear('ramp');
-        % FB coil settings for spectroscopy
-        ramp.FeshRampTime = 150;
-        ramp.FeshRampDelay = -0;
-        ramp.FeshValue = 20.98111;
-        ramp.SettlingTime = 50;   
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
-
-
-
-
-        time_out_HF_imaging = curtime;
-        if (((time_out_HF_imaging - time_in_HF_imaging)*(seqdata.deltat/seqdata.timeunit))>3000)
-            error('CHECK TIME FESHBACH IS ON! MAY BE TOO LONG')
-        end
-    end
-
-
-    %% RF Transfer at high field
-
-    rf_transfer_at_HF = 0;
-
-    if (rf_transfer_at_HF && seqdata.flags.High_Field_Imaging==0)
-        time_in_HF_imaging = curtime;
-        spin_flip_for_HF_imaging_FB = 1;
-
-        %Flip -7/2 to -5/2 before field ramp up.
-        if spin_flip_for_HF_imaging_FB
-            clear('sweep');
-            rf_list = [6.3371]; 
-            sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,seqdata.randcyclelist,'rf_freq');
-            rf_power_list = [-9.0];
-            sweep_pars.power = getScanParameter(rf_power_list,seqdata.scancycle,seqdata.randcyclelist,'rf_transfer_power');  -5.7; %-7.7
-            delta_freq = 0.02;
-            sweep_pars.delta_freq = delta_freq;
-            rf_pulse_length_list = [5];
-            sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5           
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        end
-
-
-        clear('ramp');
-        %FB coil settings for spectroscopy
-        ramp.FeshRampTime = 150;
-        ramp.FeshRampDelay = -0;
-        HF_FeshValue_Initial_List = [200.5];
-        HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
-        ramp.FeshValue = HF_FeshValue_Initial;
-        ramp.SettlingTime = 50;    
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
-        ScopeTriggerPulse(curtime,'FB_ramp');
-
-        %Associate molecules 
-        if spin_flip_for_HF_imaging_FB
-            clear('sweep');
-            B = HF_FeshValue_Initial; 
-            rf_list = [.13 .14 .15 .16];
-            %rf_list = 48.3758; %@209G  [6.3371]; 
-            sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,seqdata.randcyclelist,'rf_freq1')+(BreitRabiK(B,9/2,-5/2) - BreitRabiK(B,9/2,-7/2))/6.6260755e-34/1E6;
-            sweep_pars.power =  [10];
-            delta_freq = -0.02;+0.02;0.02;
-            sweep_pars.delta_freq = delta_freq;
-            rf_pulse_length_list = 5;[5];
-            sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5               
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        end
-
-
-curtime = calctime(curtime,150);
-
-
-
-        %Flip Free -7/2 back to -5/2.
-        if spin_flip_for_HF_imaging_FB
-            clear('sweep');
-            B = HF_FeshValue_Initial; 
-            rf_list = [0.0];
-            %rf_list = 48.3758; %@209G  [6.3371]; 
-            sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,seqdata.randcyclelist,'rf_freq')+(BreitRabiK(B,9/2,-5/2) - BreitRabiK(B,9/2,-7/2))/6.6260755e-34/1E6;
-            sweep_pars.power =  [5];
-            delta_freq = 0.1;0.02;
-            sweep_pars.delta_freq = delta_freq;
-            rf_pulse_length_list = 20;[5];
-            sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5               
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        end
-
-
-        clear('ramp');
-        % FB coil settings for spectroscopy
-        ramp.FeshRampTime = 150;
-        ramp.FeshRampDelay = -0;
-        ramp.FeshValue = 20.98111;
-        ramp.SettlingTime = 50;   
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
-
-
-
-        time_out_HF_imaging = curtime;
-        if (((time_out_HF_imaging - time_in_HF_imaging)*(seqdata.deltat/seqdata.timeunit))>3000)
-            error('CHECK TIME FESHBACH IS ON! MAY BE TOO LONG')
-        end
-    end
-
-    %% CDT Evaporation at High Field
-    CDT_evap_at_HF = 0;
-
-    if (CDT_evap_at_HF && ~ramp_XDT_after_evap)
-        time_in_HF_imaging = curtime;
-
-        spin_flip_for_HF_imaging_FB = 0;
-
-        %Flip -7/2 to -5/2 before field ramp up.
-        if spin_flip_for_HF_imaging_FB
-            clear('sweep');
-            rf_list = [6.3371]; 
-            sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,seqdata.randcyclelist,'rf_freq');
-            rf_power_list = [-9.0];
-            sweep_pars.power = getScanParameter(rf_power_list,seqdata.scancycle,seqdata.randcyclelist,'rf_transfer_power');  -5.7; %-7.7
-            delta_freq = 0.02;
-            sweep_pars.delta_freq = delta_freq;
-            rf_pulse_length_list = [5];
-            sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5           
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        end   
-
-        clear('ramp');
-        %FB coil settings for spectroscopy
-        ramp.FeshRampTime = 150;
-        ramp.FeshRampDelay = -0;
-        HF_FeshValue_Initial_List = [195];
-        HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
-        ramp.FeshValue = HF_FeshValue_Initial;
-        ramp.SettlingTime = 50;    
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
-        ScopeTriggerPulse(curtime,'FB_ramp');
-
-
-%curtime = calctime(curtime,500);
-
-        HF_evap_time_list = [1000];
-        HF_evap_time = getScanParameter(HF_evap_time_list,seqdata.scancycle,seqdata.randcyclelist,'HF_evap_time');
-
-        exp_tau_HF = HF_evap_time/4;
-        HF_evap_end_power_list = [0.14];
-
-        HF_evap_end_power = getScanParameter(HF_evap_end_power_list,seqdata.scancycle,seqdata.randcyclelist,'HF_evap_end_power');
-
-        %exponential evaporation ramps (ramping down XDT beams)
-        AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),HF_evap_time,HF_evap_time,exp_tau_HF,HF_evap_end_power);
-curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),HF_evap_time,HF_evap_time,exp_tau_HF,seqdata.params.XDT_area_ratio*HF_evap_end_power);
-
-        ramp_after_evap_in_HF = 1;
-
-        if ramp_after_evap_in_HF
-            dip_ramptime = 500;
-            dip1_final_HF = 0.2;
-            dip_rampstart = 0;
-            AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip1_final_HF);
-curtime = AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,seqdata.params.XDT_area_ratio*dip1_final_HF);
-        end
-
-
-        clear('ramp');
-        %FB coil settings for spectroscopy
-        ramp.FeshRampTime = 150;
-        ramp.FeshRampDelay = -0;
-        HF_FeshValue_Initial_List = [20];
-        HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Final');
-        ramp.FeshValue = HF_FeshValue_Initial;
-        SettlingTime_list = [50];
-        ramp.SettlingTime = getScanParameter(SettlingTime_list,seqdata.scancycle,seqdata.randcyclelist,'HF_rampdown_settle_time');;    
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
-
-
-
-        time_out_HF_imaging = curtime;
-        if (((time_out_HF_imaging - time_in_HF_imaging)*(seqdata.deltat/seqdata.timeunit))>3000)
-            error('CHECK TIME FESHBACH IS ON! MAY BE TOO LONG')
-        end
-
-    end
-
+end
+    
     %% Ramp FB field up to 200G for High Field Imaging after ODT
     if (seqdata.flags.High_Field_Imaging && ~seqdata.flags.load_lattice )
         dispLineStr('Ramping High Field in XDT',curtime);

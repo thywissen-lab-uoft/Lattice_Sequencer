@@ -1,4 +1,4 @@
-function out = paramGet(name)
+function [out,varargout] = paramGet(name)
 
 global seqdata;
 global scan_params;
@@ -24,7 +24,6 @@ pnames_scan = fieldnames(params_scan);
 V = {};
 V2 = {};
 
-
 for nn = 1:length(pnames_scan)
     pname = pnames_scan{nn};
     V{nn} = 1:size(params_scan.(pname),2);    
@@ -49,31 +48,38 @@ inds_order = cyclelist(1+mod(0:(N-1),N));
 scan_inds = scan_inds(inds_order,:);
 scan_params = scan_params(inds_order,:);
 
-%%
+%% Grab this Cycle's Value
+
+scancycle = seqdata.scancycle;
+ind       = 1 + mod(scancycle-1,N);
+
+pinds = scan_inds(ind,:);
+
+params_scan_out     = struct;
+params_out          = params;
+for kk=1:length(pnames_scan)    
+    valList = params_scan.(pnames_scan{kk});
+    params_scan_out.(pnames_scan{kk}) = valList(pinds(kk));    
+    params_out.(pnames_scan{kk}) = valList(pinds(kk));
+end
 
 if nargin == 1
-    if ismember(name,pnames_scan)
-        for kk = 1:length(pnames_scan)
-           if isequal(pnames_scan{kk},name)
-              ind = kk;
-           end
-        end
-        scancycle=seqdata.scancycle;
-        val = scan_params(1+mod(scancycle-1,N),ind);
+    if isfield(params_out,name)
+        val = params_out.(name);
         unit = punits.(name);
-        addOutputParam(name,val,unit)
+        addOutputParam(name,val,unit);
         out = val;  
+        varargout{1} = unit;
+
     else
-        if ismember(name,pnames)
-            val = params.(name);
-            unit = punits.(name);
-            addOutputParam(name,val,unit)
-            out = val;     
-        else
-            error('This parameter is not stored');
-        end   
-        
+        error(['Parameter ''' name ''' is not recognized.']);
     end
+end
+
+if nargin == 0
+    out = params_scan_out;
+    varargout{1} = params_out;
+    varargout{2} = punits;
 end
 
 %%

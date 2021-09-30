@@ -13,7 +13,7 @@ params.Freq = [-30:10:100];
 punits.Freq = 'kHz';
 
 params.Bfield = [203 204 205];
-punits.Bfield = 'seconds';
+punits.Bfield = 'Gauss';
 
 params.obj_piezo_V = [5];
 punits.obj_piezo_V = 'V';

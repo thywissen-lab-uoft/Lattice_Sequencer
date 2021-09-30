@@ -304,9 +304,7 @@ bgRun.Position(1:2)=[1 1];
         switch evnt.NewValue.String
             case 'single'
                 disp('Changing run mode to single iteration');
-%                 cScanFinite.Enable='off';
-%                 tblMaxScan.Enable='off';
-%                 tCycle.Enable='off';
+
                 bRunIter.String = 'Run Cycle #1';
          
                 bRunIter.Enable = 'on';
@@ -322,11 +320,7 @@ bgRun.Position(1:2)=[1 1];
                 cycleTbl.ColumnEditable = false;
             case 'scan'
                 disp('Changing run mode to scan mode.');
-%                 cScanFinite.Enable='on';
-%                 tblMaxScan.Enable='on';
-%                 tCycle.Enable='on';
                 bRunIter.String = 'Run Cycle';
-
                 
                 bRunIter.Enable = 'on';
                 bRunIter.Visible='on';
@@ -354,27 +348,6 @@ rScan=uicontrol(bgRun,'Style','radiobutton','String','scan',...
     'Position',[75 85 100 30],'Backgroundcolor',cc,'UserData',1,...
     'FontSize',12);
 rScan.Position(2) = rSingle.Position(2);
-
-% Checkbox for running scan finite number of times
-% cScanFinite=uicontrol(bgRun,'style','checkbox','string','stop scan afer',...
-%     'backgroundcolor',cc,'Fontsize',8,'units','pixels','enable','off');
-% cScanFinite.Position(3:4)=[92 cScanFinite.Extent(4)];
-% cScanFinite.Position(1:2)=[140 rScan.Position(2)+4];
-
-% Table that stores the iteration to run
-% tblMaxScan=uitable(bgRun,'RowName','','ColumnName','','Data',100,...
-%     'ColumnWidth',{30},'ColumnEditable',true,'ColumnFormat',{'numeric'},...
-%     'fontsize',6,'enable','off');
-% tblMaxScan.Position(3:4)=tblMaxScan.Extent(3:4);
-% tblMaxScan.Position(1:2)=[cScanFinite.Position(3)+cScanFinite.Position(1) ...
-%     cScanFinite.Position(2)-2];
-
-% Extra text label for the cycles
-% tCycle=uicontrol(bgRun,'style','text','String','cycles','fontsize',8,...
-%     'backgroundcolor',cc,'units','pixels','enable','off');
-% tCycle.Position(3:4)=tCycle.Extent(3:4);
-% tCycle.Position(1:2)=[tblMaxScan.Position(1)+tblMaxScan.Position(3)+1 tblMaxScan.Position(2)];
-% 
 
 %%%%%%%%%%%%%%%%%%%%% ADWIN PROGRESS BAR  %%%%%%%%%%%%%%%%%%%%%%%%%%%
 

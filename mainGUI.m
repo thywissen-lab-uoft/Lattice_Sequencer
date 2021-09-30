@@ -172,19 +172,6 @@ bPlot.Position(1:2)=[bBrowse.Position(1)+bBrowse.Position(3)+5 ...
         plotgui2;
     end
 
-% % Button to open the manual override GUI
-% bOver=uicontrol(hpMain,'style','pushbutton','String','override',...
-%     'backgroundcolor',cc,'FontSize',10,'units','pixels',...
-%     'fontweight','normal','enable','off');
-% bOver.Position(3:4)=[60 20];
-% bOver.Position(1:2)=[bPlot.Position(1)+bPlot.Position(3)+5 ...
-%     bPlot.Position(2)];
-% bOver.Callback=@bOverCB;
-% 
-%     function bOverCB(~,~)
-% %        hFGUI.Visible='on'; 
-%     end
-
 % Button to recompile seqdata
 bCompile=uicontrol(hpMain,'style','pushbutton','String','compile',...
     'backgroundcolor',cc,'FontSize',10,'units','pixels',...
@@ -330,7 +317,6 @@ bgRun.Position(1:2)=[1 1];
                 bStop.Visible='off';
                 bContinue.Visible='off';
 
-                tCycleLbl.Visible='off';
             case 'scan'
                 disp('Changing run mode to scan mode.');
                 cScanFinite.Enable='on';
@@ -430,7 +416,7 @@ bRunIter=uicontrol(bgRun,'style','pushbutton','String','Run Cycle',...
     'fontweight','bold');
 bRunIter.Position(3:4)=[100 30];
 bRunIter.Position(1:2)=[5 40];
-bRunIter.Callback=@bRunCB;
+bRunIter.Callback={@bRunCB 0};
 bRunIter.Tooltip='Run the current sequence.';
 
 % Button to run the cycle
@@ -439,9 +425,8 @@ bStartScan=uicontrol(bgRun,'style','pushbutton','String','Start Scan',...
     'fontweight','bold','Visible','off','enable','off');
 bStartScan.Position(3:4)=[100 30];
 bStartScan.Position(1:2)=[5 5];
-bStartScan.Callback=@bRunCB;
+bStartScan.Callback={@bRunCB 1};
 bStartScan.Tooltip='Start the scan.';
-
 
 % Button to run the cycle
 bContinue=uicontrol(bgRun,'style','pushbutton','String','Continue Scan',...
@@ -449,7 +434,7 @@ bContinue=uicontrol(bgRun,'style','pushbutton','String','Continue Scan',...
     'fontweight','bold','Visible','off','enable','off');
 bContinue.Position(3:4)=[110 30];
 bContinue.Position(1:2)=[110 5];
-bContinue.Callback=@bContinueCB;
+bContinue.Callback={@bRunCB 2};
 bContinue.Tooltip='Continue the scan from current iteration.';
 
 % Button to stop
@@ -463,11 +448,6 @@ bStop.Tooltip='Compile and run the currently selected sequence.';
 
 
 defaultSequence=['1'];
-tCycleLbl=uicontrol(bgRun,'style','text','string',defaultSequence,...
-    'backgroundcolor','w','fontsize',14,'units','pixels',...
-    'fontweight','bold','visible','off','horizontalalignment','center');
-tCycleLbl.Position(3:4)=[60 35];
-tCycleLbl.Position(1:2)=[bStop.Position(1)+bStop.Position(3) 15];
 
 cycleTbl=uitable(bgRun,'RowName','Cycle #','ColumnName',{},...
     'ColumnEditable',[true],'Data',[1],'units','pixels',...
@@ -700,7 +680,6 @@ case 'scan'
             disp(['Incrementing the scan ' num2str(seqdata.scancycle) ...
                 ' --> ' num2str(seqdata.scancycle+1)]);
             seqdata.scancycle=seqdata.scancycle+1;   
-            tCycleLbl.String=[num2str(seqdata.scancycle)];           
             runSequence;
         end                  
     else
@@ -729,41 +708,76 @@ end
 end
 
 % Run button callback.
-    function bRunCB(~,~)    
+    function bRunCB(~,~,run_mode)    
         % Initialize the sequence if seqdata is not defined
         % Should this just happen every single time?
         if isempty(seqdata)
             LatticeSequencerInitialize();
         end
         
+                
         % Am I allowed to run the sequene?
         if ~safeToRun
            return 
         end    
         
         start_new_sequence;   
-        seqdata.scancycle=1;      
-
-        % Check the run mode
-        switch bgRun.SelectedObject.String
-            case 'single'
-                seqdata.randcyclelist=0;    
-                seqdata.doscan=0;    
-                rScan.Enable='off';                
-            case 'scan'                
-                tCycleLbl.String='1';           
-                seqdata.randcyclelist=uint16(randperm(1000));    
-                seqdata.doscan=1; 
+        
+        switch run_mode
+            % Run a single iteration
+            case 0 
+                seqdata.doscan = 0;
+                if isequal(bgRun.SelectedObject.String,'single')
+                    seqdata.scancycle = 1;
+                    rSingle.Enable='off';
+                else
+                    rScan.Enable='off';
+                end      
+            case 1
+            % Start the scan
+                seqdata.doscan = 1;
+                seqdata.scancycle = 1;    
+                seqdata.randcyclelist=uint16(randperm(1000));   
                 bStop.Enable='on';
                 rSingle.Enable='off';
-        end  
+            case 2
+            % Continue the scan
+                seqdata.doscan = 1;
+                seqdata.scancycle = 1;  
+                bStop.Enable='on';
+                if ~exist(seqdata.randcyclelist) || isempty(seqdata.randrandcyclelist)
+                    seqdata.randcyclelist=uint16(randperm(1000)); 
+                end
+                bStop.Enable='on';
+                rSingle.Enable='off';
+        end
+        
+
+%         % Check the run mode
+%         switch bgRun.SelectedObject.String
+%             case 'single'
+%                 seqdata.randcyclelist=0;    
+%                 seqdata.doscan=0;    
+%                 rScan.Enable='off';                
+%             case 'scan'                
+%                 seqdata.randcyclelist=uint16(randperm(1000));    
+%                 seqdata.doscan=1; 
+%                 bStop.Enable='on';
+%                 rSingle.Enable='off';
+%         end  
 
         bBrowse.Enable='off';
         eSeq.Enable='off';
         
         bRunIter.Enable='off';
+        bContinue.Enable='off';
+        bStartScan.Enable='off';
+
         runSequence;        
     end
+
+
+
 
     function bStopCB(~,~)
         switch bgRun.SelectedObject.String
@@ -775,10 +789,6 @@ end
         end  
     end
 
-    function bContinueCB(~,~)
-       disp('hi'); 
-    end
-
     function runSequence        
         
         % Reinitialize the sequence
@@ -786,7 +796,8 @@ end
         start_new_sequence;
         initialize_channels;
         set(tStatus,'String','Sequence initialized.');drawnow;
-        
+        cycleTbl.Data=seqdata.scancycle;
+
         % Grab the sequence function
         fName=eSeq.String;
         fh = str2func(erase(fName,'@'));  

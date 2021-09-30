@@ -1794,6 +1794,8 @@ global seqdata;
 %     setDigitalChannel(calctime(curtime,0),'FB Integrator off',0);
 %     setDigitalChannel(calctime(curtime,0),'fast FB switch',0);
 %     setAnalogChannel(calctime(curtime,0),'FB current',-0.5);
+ 
+
 
 
 %% Test Feshbach Field Stability
@@ -5064,29 +5066,32 @@ setDigitalChannel(calctime(curtime,0),'Raman TTL 3',1);
 
 
 %% Feshbach field test
-% 
-%  clear('ramp');
-%         % FB coil settings for spectroscopy
-%         ramp.FeshRampTime = 150;
-%         ramp.FeshRampDelay = -0;
-%         HF_FeshValue_Initial_List = 215;[202.78];
-%         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
-%         ramp.FeshValue = HF_FeshValue_Initial;
-%         ramp.SettlingTime = 50;    
-% curtime = rampMagneticFields(calctime(curtime,0), ramp);
-%         
-% curtime = calctime(curtime,200);
-% 
-% 
-%         clear('ramp');
-%         % FB coil settings for spectroscopy
-%         ramp.FeshRampTime = 150;
-%         ramp.FeshRampDelay = -0;
-%         HF_FeshValue_Initial_List = 0;[202.78];
-%         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
-%         ramp.FeshValue = HF_FeshValue_Initial;
-%         ramp.SettlingTime = 50;    
-% curtime = rampMagneticFields(calctime(curtime,0), ramp);
+
+curtime = calctime(curtime,500);
+
+
+ clear('ramp');
+        % FB coil settings for spectroscopy
+        ramp.FeshRampTime = 150;
+        ramp.FeshRampDelay = -0;
+        HF_FeshValue_Initial_List = 212;[202.78];
+        HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
+        ramp.FeshValue = HF_FeshValue_Initial;
+        ramp.SettlingTime = 50;    
+curtime = rampMagneticFields(calctime(curtime,0), ramp);
+        
+curtime = calctime(curtime,200);
+
+
+        clear('ramp');
+        % FB coil settings for spectroscopy
+        ramp.FeshRampTime = 150;
+        ramp.FeshRampDelay = -0;
+        HF_FeshValue_Initial_List = 0;[202.78];
+        HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
+        ramp.FeshValue = HF_FeshValue_Initial;
+        ramp.SettlingTime = 50;    
+curtime = rampMagneticFields(calctime(curtime,0), ramp);
 
 %% Test Acync
 

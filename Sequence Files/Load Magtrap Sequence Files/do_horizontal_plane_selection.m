@@ -374,7 +374,11 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
         %Raman excitation beam AOM-shutter sequence.
         DigitalPulse(calctime(curtime,-150),'Raman TTL 1',150,0);
         DigitalPulse(calctime(curtime,-150),'Raman TTL 2',150,0);
+        DigitalPulse(calctime(curtime,-150),'Raman TTL 2a',150,0);
+
         DigitalPulse(calctime(curtime,-150),'Raman TTL 3',5200,0);
+        DigitalPulse(calctime(curtime,-150),'Raman TTL 3a',5200,0);
+
 
 
         
@@ -383,6 +387,8 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
 
         DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL 1',3050,0);
         DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL 2',3050,0);
+        DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL 2a',3050,0);
+
 
         if opt.Use_EIT_Beams
             %Turn off EIT beams.
@@ -475,6 +481,8 @@ curtime =   calctime(curtime,opt.Microwave_Pulse_Length);
         %Raman excitation beam AOM-shutter sequence.
         DigitalPulse(calctime(curtime,-150),'Raman TTL 1',150,0);
         DigitalPulse(calctime(curtime,-150),'Raman TTL 2',150,0);
+        DigitalPulse(calctime(curtime,-150),'Raman TTL 2a',150,0);
+
 
         
 %         DigitalPulse(calctime(curtime,-100),'Raman Shutter',opt.Microwave_Pulse_Length+3100,0);
@@ -482,6 +490,8 @@ curtime =   calctime(curtime,opt.Microwave_Pulse_Length);
 
         DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL 1',3050,0);
         DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL 2',3050,0);
+        DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL 2a',3050,0);
+
 
         
         % add some wait time for the shims to ramp back

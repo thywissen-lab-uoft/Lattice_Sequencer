@@ -122,8 +122,8 @@ seqdata.digchannels(70).resetvalue = 1;
 seqdata.digchannels(71).name = 'DMD PID holder'; %unused
 seqdata.digchannels(71).resetvalue = 0;
 
-seqdata.digchannels(72).name = 'Channel 72'; %unused
-seqdata.digchannels(73).name = 'Channel 73'; %unused
+seqdata.digchannels(72).name = 'Raman TTL 3a'; %unused
+seqdata.digchannels(73).name = 'Raman TTL 2a'; %unused
 seqdata.digchannels(74).name = 'Channel 74'; %unused
 seqdata.digchannels(75).name = 'Channel 75'; %unused
 seqdata.digchannels(76).name = 'Channel 76'; %unused

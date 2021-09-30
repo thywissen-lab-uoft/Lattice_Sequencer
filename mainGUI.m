@@ -65,7 +65,7 @@ for i = 1:length(figs)
 end
 % Figure color and size settings
 cc='w';
-w=350;h=350;
+w=350;h=400;
 
 % Initialize the figure graphics objects
 hF=figure('toolbar','none','Name',figName,'color',cc,'NumberTitle','off',...
@@ -310,8 +310,8 @@ tWaitTime2.Position=[axWaitBar.Position(3) 24];
 % Run sequence mode
 bgRun = uibuttongroup('Parent',hpMain,'units','pixels','Title','run mode',...
     'backgroundcolor',cc,'UserData',0,'SelectionChangedFcn',@runModeCB);
-bgRun.Position(3:4)=[w 130];
-bgRun.Position(1:2)=[1 50];
+bgRun.Position(3:4)=[w bgWait.Position(2)];
+bgRun.Position(1:2)=[1 1];
         
     function runModeCB(~,evnt)
         switch evnt.NewValue.String
@@ -321,9 +321,13 @@ bgRun.Position(1:2)=[1 50];
                 tblMaxScan.Enable='off';
                 cRpt.Enable='on';
                 tCycle.Enable='off';
-                bRun.String='Run Sequence';
+                bRunIter.String='Run';
                 bStop.String='Stop Sequence';
                 bStop.Visible='off';
+                bContinue.Visible='off';
+                bContinue.Enable='off';
+                
+
                 tCycleLbl.Visible='off';
             case 'scan'
                 disp('Changing run mode to scan mode.');
@@ -331,10 +335,11 @@ bgRun.Position(1:2)=[1 50];
                 tblMaxScan.Enable='on';
                 cRpt.Enable='off';
                 tCycle.Enable='on';
-                bRun.String='Scan Sequence';
+                bRunIter.String='Start Scan';
                 bStop.String='Stop Scan';
                 bStop.Visible='on';
                 tCycleLbl.Visible='on';
+                bContinue.Visible='on';
         end
         
     end
@@ -343,6 +348,7 @@ bgRun.Position(1:2)=[1 50];
 rSingle=uicontrol(bgRun,'Style','radiobutton', 'String','single',...
     'Position',[5 85 65 30],'Backgroundcolor',cc,'UserData',0,...
     'fontsize',12);  
+rSingle.Position(2) = bgRun.Position(4)-rSingle.Position(4)-15;
 
 % Checkbox for repeat cycle
 cRpt=uicontrol(bgRun,'style','checkbox','string','repeat?','fontsize',8,...
@@ -365,6 +371,7 @@ cRpt.Tooltip='Enable or disable automatic repitition of the sequence.';
 rScan=uicontrol(bgRun,'Style','radiobutton','String','scan',...
     'Position',[5 60 100 20],'Backgroundcolor',cc,'UserData',1,...
     'FontSize',12);
+rScan.Position(2) = rSingle.Position(2)-rScan.Position(4);
 
 % Checkbox for running scan finite number of times
 cScanFinite=uicontrol(bgRun,'style','checkbox','string','stop scan afer',...
@@ -394,7 +401,7 @@ adwinbarcolor=[0.67578 1 0.18359];
 axAdWinBar=axes('parent',bgRun,'units','pixels','XTick',[],...
     'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
 axAdWinBar.Position=[10 10 bgRun.Position(3)-20 20];
-
+axAdWinBar.Position(2) = rScan.Position(2)-axAdWinBar.Position(4)-30;
 % Plot the patch of color for the bar
 pAdWinBar = patch(axAdWinBar,[0 0 0 0],[0 0 1 1], adwinbarcolor);
 
@@ -410,6 +417,60 @@ tAdWinTime2.Position=[axAdWinBar.Position(3) 21];
 tAdWinLabel=text(.5,1.05,'adwin progress','fontsize',10,...
     'horizontalalignment','center','verticalalignment','bottom','fontweight','bold');
 
+%% Run Controls
+
+% Button to run the cycle
+bRunIter=uicontrol(bgRun,'style','pushbutton','String','Run',...
+    'backgroundcolor',[152 251 152]/255,'FontSize',10,'units','pixels',...
+    'fontweight','bold');
+bRunIter.Position(3:4)=[100 30];
+bRunIter.Position(1:2)=[5 40];
+bRunIter.Callback=@bRunCB;
+bRunIter.Tooltip='Run the current sequence.';
+
+% Button to run the cycle
+bStartScan=uicontrol(bgRun,'style','pushbutton','String','Start Scan',...
+    'backgroundcolor',[152 251 152]/255,'FontSize',10,'units','pixels',...
+    'fontweight','bold','Visible','off','enable','off');
+bStartScan.Position(3:4)=[100 30];
+bStartScan.Position(1:2)=[5 5];
+bStartScan.Callback=@bRunCB;
+bStartScan.Tooltip='Start the scan.';
+
+
+% Button to run the cycle
+bContinue=uicontrol(bgRun,'style','pushbutton','String','Continue Scan',...
+    'backgroundcolor',[173 216 230]/255,'FontSize',10,'units','pixels',...
+    'fontweight','bold','Visible','off','enable','off');
+bContinue.Position(3:4)=[110 30];
+bContinue.Position(1:2)=[110 5];
+bContinue.Callback=@bContinueCB;
+bContinue.Tooltip='Continue the scan from current iteration.';
+
+% Button to stop
+bStop=uicontrol(bgRun,'style','pushbutton','String','Stop',...
+    'backgroundcolor',[255	218	107]/255,'FontSize',10,'units','pixels',...
+    'fontweight','bold','enable','off','visible','off');
+bStop.Position(3:4)=[100 30];
+bStop.Position(1:2)=[225 5];
+bStop.Callback=@bStopCB;
+bStop.Tooltip='Compile and run the currently selected sequence.';
+
+
+defaultSequence=['1'];
+tCycleLbl=uicontrol(bgRun,'style','text','string',defaultSequence,...
+    'backgroundcolor','w','fontsize',14,'units','pixels',...
+    'fontweight','bold','visible','off','horizontalalignment','center');
+tCycleLbl.Position(3:4)=[60 35];
+tCycleLbl.Position(1:2)=[bStop.Position(1)+bStop.Position(3) 15];
+
+tStatus=uicontrol(bgRun,'style','text','string','Sequencer is idle.',...
+    'backgroundcolor','w','fontsize',8,'units','pixels',...
+    'fontweight','normal','visible','on','horizontalalignment','center');
+tStatus.Position(3:4)=[axAdWinBar.Position(3) 15];
+tStatus.Position(1:2)=[bStop.Position(1)+bStop.Position(3) 1];
+tStatus.Position(1) = axAdWinBar.Position(1);
+tStatus.Position(2) = axAdWinBar.Position(2) - 15;
 %% Interrupt buttons
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ABORT  %%%%%%%%%%%%%%%%%%%%%%
@@ -440,41 +501,6 @@ bReset.Callback=@bResetCB;
 jbReset= findjobj(bReset);
 set(jbReset,'Enabled',true);
 set(jbReset,'ToolTipText',ttStr);
-
-%% Start and Stop Buttons
-% Button to run the cycle
-bRun=uicontrol(hpMain,'style','pushbutton','String','Run Sequence',...
-    'backgroundcolor',[152 251 152]/255,'FontSize',10,'units','pixels',...
-    'fontweight','bold');
-bRun.Position(3:4)=[135 40];
-bRun.Position(1:2)=[5 5];
-bRun.Callback=@bRunCB;
-bRun.Tooltip='Compile and run the currently selected sequence.';
-
-
-% Button to stop
-bStop=uicontrol(hpMain,'style','pushbutton','String','Stop',...
-    'backgroundcolor',[255	218	107]/255,'FontSize',10,'units','pixels',...
-    'fontweight','bold','enable','off','visible','off');
-bStop.Position(3:4)=[135 40];
-bStop.Position(1:2)=[bRun.Position(1)+bRun.Position(3)+5 5];
-bStop.Callback=@bStopCB;
-bStop.Tooltip='Compile and run the currently selected sequence.';
-
-
-defaultSequence=['1'];
-tCycleLbl=uicontrol(hpMain,'style','text','string',defaultSequence,...
-    'backgroundcolor','w','fontsize',14,'units','pixels',...
-    'fontweight','bold','visible','off','horizontalalignment','center');
-tCycleLbl.Position(3:4)=[60 35];
-tCycleLbl.Position(1:2)=[bStop.Position(1)+bStop.Position(3) 15];
-
-tStatus=uicontrol(hpMain,'style','text','string','HELLO',...
-    'backgroundcolor','w','fontsize',12,'units','pixels',...
-    'fontweight','bold','visible','on','horizontalalignment','center');
-tStatus.Position(3:4)=[60 15];
-tStatus.Position(1:2)=[bStop.Position(1)+bStop.Position(3) 1];
-
 %% TIMERS
 %%%%% Adwin progress timer %%%
 % After the sequence is run, this timer keeps tracks of the Adwin's
@@ -488,6 +514,7 @@ timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
 
 % Function to run when the adwin starts the sequence.
     function startAdwinTimer(~,~)
+        
         % Notify the user
         disp(['Sequence timer started. ' num2str(seqdata.sequencetime,'%.2f') ...
             ' seconds.']);
@@ -507,6 +534,9 @@ timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
         drawnow;                         % Update graphics
         set(jbAbort,'Enabled',false);
         set(jbReset,'Enabled',true);
+        
+        set(tStatus,'String','Cycle complete.','fontweight','normal',...
+            'foregroundcolor','k');drawnow;
         if bgWait.UserData
            start(timeWait);              % Start wait timer if needed
         else
@@ -547,6 +577,9 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
 
 % Function to run when the wait timer begins
     function startWait(~,~)
+        set(tStatus,'String','waiting ...','fontweight','normal',...
+            'foregroundcolor','k');drawnow;
+        
         % Notify the user
         disp(['Starting the wait timer. ' ...
             num2str(tblWait.Data,'%.2f') ' seconds wait time.']);     
@@ -566,6 +599,9 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
 
 % Function to run when the wait timer is complete.
     function stopWait(~,~)
+        set(tStatus,'String','Inter cycle wait complete.','fontweight','normal',...
+            'foregroundcolor','k');drawnow;
+        
         disp('Inter cycle wait complete.'); % Notify the user
         pWaitBar.XData = [0 1 1 0];         % Fill out the bar
         drawnow;                            % Update graphics        
@@ -606,6 +642,9 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
 % Options - Stop running, run on repeat, continue scanning, stop scanning
 function cycleComplete
     
+    set(tStatus,'String','Sequence Idle.','fontweight','normal',...
+        'foregroundcolor','k');drawnow;
+    
 switch bgRun.SelectedObject.String
     
     % End condition if the sequener is in single mode
@@ -614,7 +653,7 @@ case 'single'
         disp('Repeating the sequence');
         runSequence;
     else
-        bRun.Enable='on';
+        bRunIter.Enable='on';
         rScan.Enable='on';
         rSingle.Enable='on';
         
@@ -633,7 +672,7 @@ case 'scan'
                 && cScanFinite.Value
             % The scan is complete
             disp(['Scan complete at ' num2str(seqdata.scancycle) ' cycles']);
-            bRun.Enable='on';
+            bRunIter.Enable='on';
             rScan.Enable='on';
             rSingle.Enable='on';       
             bStop.Enable='off';
@@ -643,6 +682,7 @@ case 'scan'
             bCompile.Enable='on';
             bBrowse.Enable='on';
             eSeq.Enable='on';
+            bContinue.Enable='on';
         else
             % Increment the scan and run the sequencer again
             disp(['Incrementing the scan ' num2str(seqdata.scancycle) ...
@@ -659,13 +699,14 @@ case 'scan'
             disp(['Scan stopped at ' num2str(seqdata.scancycle) ' cycles']);
         end
         
-        bRun.Enable='on';
+        bRunIter.Enable='on';
         rScan.Enable='on';
         rSingle.Enable='on';
         bStop.Enable='off';
         bPlot.Enable='on';
 %         bOver.Enable='on';
         bCompile.Enable='on';
+        bContinue.Enable='off';
 
         bBrowse.Enable='on';
         eSeq.Enable='on';
@@ -707,16 +748,11 @@ end
                 bStop.Enable='on';
                 rSingle.Enable='off';
         end  
-        
-        
-%         bPlot.Enable='off';
-%         bOver.Enable='off';
-%         bCompile.Enable='off';
 
         bBrowse.Enable='off';
         eSeq.Enable='off';
         
-        bRun.Enable='off';
+        bRunIter.Enable='off';
         runSequence;        
     end
 
@@ -730,19 +766,21 @@ end
         end  
     end
 
+    function bContinueCB(~,~)
+       disp('hi'); 
+    end
+
     function runSequence        
         
         % Reinitialize the sequence
+        set(tStatus,'String','Initializing new sequence ...');drawnow;
         start_new_sequence;
         initialize_channels;
+        set(tStatus,'String','Sequence initialized.');drawnow;
         
         % Grab the sequence function
         fName=eSeq.String;
         fh = str2func(erase(fName,'@'));  
-        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
-        disp(num2str(seqdata.scancycle))
-        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
-        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
 
         % Display new run call
         disp(' ');
@@ -756,23 +794,23 @@ end
         % Compile the code
         disp([' Compiling seqdata from  ' fName]);     
         tC1=now;                         % compile start time
-        if ~doDebug
-            try
-                fh(0);                                 
-            catch ME     
-                disp(' ');
-                warning('Exception caught on compling sequence!');            
-                disp(' ');
-                for kk=length(ME.stack):-1:1
-                   disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
-                end
-                disp(' '); 
-                resetAfterError;
-                return            
+        set(tStatus,'String','Compiling sequence ...');drawnow;
+        try
+            fh(0);           
+        catch ME     
+            disp(' ');
+            warning('Exception caught on compling sequence!');            
+            disp(' ');
+            for kk=length(ME.stack):-1:1
+               disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
             end
-        else
-            disp('DEBUG MODE, NOT COMPILING');
+            disp(' '); 
+            resetAfterError;
+            return            
         end
+
+        set(tStatus,'String','Sequence compiled.');drawnow;
+
         tC2=now;
         compileTime=(tC2-tC1)*24*60*60;
 %         disp([' Compiling sequence took ' num2str(round(compileTime,2)) ' s.']);
@@ -781,6 +819,7 @@ end
         disp(repmat('-',1,60));
         disp(' Converting seqdata into Adwin and hardware calls ...');      
         disp(repmat('-',1,60));
+        set(tStatus,'String','Generating hardware commands ...');drawnow;
         if ~doDebug
             try
                 calc_sequence;                  % convert seqdata for AdWin  
@@ -793,12 +832,13 @@ end
                 end
                 disp(' ');  
                 resetAfterError;
-                return
-                
+                return                
             end
         else
             disp('DEBUG MODE, NOT MAKING HW COMMANDS');        
         end
+        set(tStatus,'String','Hardware commands generated.');drawnow;
+
         tC3=now;
         hwTime=(tC3-tC2)*24*60*60;
 
@@ -808,6 +848,8 @@ end
         disp(repmat('-',1,60));
         disp(' Loading adwin ...');           
         disp(repmat('-',1,60));
+        set(tStatus,'String','Loading the adwin ...');drawnow;
+
         if ~doDebug
             try
                 load_sequence;              % load the sequence onto adwin
@@ -823,7 +865,8 @@ end
                 return
             end  
         end
-        
+        set(tStatus,'String','Adwin loaded.');drawnow;
+
         tC4=now;                         % compile end time
         loadTime=(tC4-tC3)*(24*60*60);   % Build time in seconds   
 %         disp([' Adwin load time ' num2str(round(loadTime,2))]);
@@ -842,6 +885,7 @@ end
         disp('STARTING ADWIN');
         disp(' ');
         
+        set(tStatus,'String','Starting adwin ...');drawnow;
 
         % Run the sequence
         if ~doDebug
@@ -861,11 +905,12 @@ end
         else
             disp('DEBUG MODE, NOT STARTING ADWIN');
         end
+        
+        set(tStatus,'String','adwin is running ...','fontweight','bold',...
+            'foregroundcolor','r');drawnow;
         % Update progress bars
         start(timeAdwin);
                
-        % Seqdata history
-                
 
     end
 
@@ -877,7 +922,7 @@ end
 
             % Renable buttons on single
             case 'single'
-                bRun.Enable='on';
+                bRunIter.Enable='on';
                 rScan.Enable='on';
                 rSingle.Enable='on';
 
@@ -890,9 +935,11 @@ end
 
             % Renable buttons on single
             case 'scan'                
-                bRun.Enable='on';
+                bRunIter.Enable='on';
                 rScan.Enable='on';
                 rSingle.Enable='on';
+                bContinue.Enable='on';
+
                 bStop.Enable='off';
                 bPlot.Enable='on';
 %                 bOver.Enable='on';

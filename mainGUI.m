@@ -12,6 +12,8 @@ function mainGUI
 % code have been "Frakenstein'ed" together. It is the author's desire that
 % this code be optimized and simplified.
 
+doDebug = 1;
+
 %%%%%%%%%%%%%%% Initialize Sequence Data %%%%%%%%%%%%%%%%%
 LatticeSequencerInitialize();
 global seqdata;
@@ -26,7 +28,11 @@ compath='Y:\_communication';
 
 defaultSequence='@test_sequence';
 
-figName='Lattice Sequencer';
+if ~doDebug
+    figName='Lattice Sequencer';
+else
+    figName = 'DEBUG MODE';
+end
 
 disp('Opening Lattice Sequencer...');
 
@@ -733,7 +739,11 @@ end
         % Grab the sequence function
         fName=eSeq.String;
         fh = str2func(erase(fName,'@'));  
-        
+        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+        disp(num2str(seqdata.scancycle))
+        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+
         % Display new run call
         disp(' ');
         disp(repmat('-',1,60));
@@ -746,18 +756,22 @@ end
         % Compile the code
         disp([' Compiling seqdata from  ' fName]);     
         tC1=now;                         % compile start time
-        try
-            fh(0);                                 
-        catch ME     
-            disp(' ');
-            warning('Exception caught on compling sequence!');            
-            disp(' ');
-            for kk=length(ME.stack):-1:1
-               disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
+        if ~doDebug
+            try
+                fh(0);                                 
+            catch ME     
+                disp(' ');
+                warning('Exception caught on compling sequence!');            
+                disp(' ');
+                for kk=length(ME.stack):-1:1
+                   disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
+                end
+                disp(' '); 
+                resetAfterError;
+                return            
             end
-            disp(' '); 
-            resetAfterError;
-            return
+        else
+            disp('DEBUG MODE, NOT COMPILING');
         end
         tC2=now;
         compileTime=(tC2-tC1)*24*60*60;
@@ -767,18 +781,23 @@ end
         disp(repmat('-',1,60));
         disp(' Converting seqdata into Adwin and hardware calls ...');      
         disp(repmat('-',1,60));
-        try
-            calc_sequence;                  % convert seqdata for AdWin  
-        catch ME
-            warning('Unable to generate hardware commands');
-            warning(ME.message);
-            disp(' ');
-            for kk=length(ME.stack):-1:1
-               disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
+        if ~doDebug
+            try
+                calc_sequence;                  % convert seqdata for AdWin  
+            catch ME
+                warning('Unable to generate hardware commands');
+                warning(ME.message);
+                disp(' ');
+                for kk=length(ME.stack):-1:1
+                   disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
+                end
+                disp(' ');  
+                resetAfterError;
+                return
+                
             end
-            disp(' ');  
-            resetAfterError;
-            return
+        else
+            disp('DEBUG MODE, NOT MAKING HW COMMANDS');        
         end
         tC3=now;
         hwTime=(tC3-tC2)*24*60*60;
@@ -789,25 +808,30 @@ end
         disp(repmat('-',1,60));
         disp(' Loading adwin ...');           
         disp(repmat('-',1,60));
-        try
-            load_sequence;              % load the sequence onto adwin
-        catch ME
-            warning('Unable to load sequence onto Adwin');
-            warning(ME.message);
-            disp(' ');
-            for kk=length(ME.stack):-1:1
-               disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
-            end
-            disp(' ');  
-            resetAfterError;
-            return
-        end           
+        if ~doDebug
+            try
+                load_sequence;              % load the sequence onto adwin
+            catch ME
+                warning('Unable to load sequence onto Adwin');
+                warning(ME.message);
+                disp(' ');
+                for kk=length(ME.stack):-1:1
+                   disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
+                end
+                disp(' ');              
+                resetAfterError;
+                return
+            end  
+        end
+        
         tC4=now;                         % compile end time
         loadTime=(tC4-tC3)*(24*60*60);   % Build time in seconds   
 %         disp([' Adwin load time ' num2str(round(loadTime,2))]);
         disp(repmat('-',1,60));
 
-        makeControlFile;
+        if ~doDebug
+            makeControlFile;
+        end
 
         
         % Display compiling results
@@ -820,20 +844,23 @@ end
         
 
         % Run the sequence
-        try
-            Start_Process(adwinprocessnum);
-        catch ME
-            warning('Unable to start the Adwin');
-            warning(ME.message);     
-            disp(' ');
-            for kk=length(ME.stack):-1:1
-               disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
+        if ~doDebug
+            try
+                Start_Process(adwinprocessnum);
+            catch ME
+                warning('Unable to start the Adwin');
+                warning(ME.message);     
+                disp(' ');
+                for kk=length(ME.stack):-1:1
+                   disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
+                end
+                disp(' '); 
+                resetAfterError;
+                return
             end
-            disp(' '); 
-            resetAfterError;
-            return;
+        else
+            disp('DEBUG MODE, NOT STARTING ADWIN');
         end
-
         % Update progress bars
         start(timeAdwin);
                

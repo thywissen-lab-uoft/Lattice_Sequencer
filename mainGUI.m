@@ -321,12 +321,14 @@ bgRun.Position(1:2)=[1 1];
                 tblMaxScan.Enable='off';
                 cRpt.Enable='on';
                 tCycle.Enable='off';
-                bRunIter.String='Run';
-                bStop.String='Stop Sequence';
+                
+                
+                bRunIter.Enable = 'on';
+                bStartScan.Visible='off';
+                bStartScan.Enable='off';    
+                
                 bStop.Visible='off';
                 bContinue.Visible='off';
-                bContinue.Enable='off';
-                
 
                 tCycleLbl.Visible='off';
             case 'scan'
@@ -335,10 +337,13 @@ bgRun.Position(1:2)=[1 1];
                 tblMaxScan.Enable='on';
                 cRpt.Enable='off';
                 tCycle.Enable='on';
-                bRunIter.String='Start Scan';
-                bStop.String='Stop Scan';
+                
+                bRunIter.Enable = 'on';
+                bRunIter.Visible='on';
+                bStartScan.Visible='on';
+                bStartScan.Enable='on';               
+                
                 bStop.Visible='on';
-                tCycleLbl.Visible='on';
                 bContinue.Visible='on';
         end
         
@@ -420,7 +425,7 @@ tAdWinLabel=text(.5,1.05,'adwin progress','fontsize',10,...
 %% Run Controls
 
 % Button to run the cycle
-bRunIter=uicontrol(bgRun,'style','pushbutton','String','Run',...
+bRunIter=uicontrol(bgRun,'style','pushbutton','String','Run Cycle',...
     'backgroundcolor',[152 251 152]/255,'FontSize',10,'units','pixels',...
     'fontweight','bold');
 bRunIter.Position(3:4)=[100 30];
@@ -463,6 +468,13 @@ tCycleLbl=uicontrol(bgRun,'style','text','string',defaultSequence,...
     'fontweight','bold','visible','off','horizontalalignment','center');
 tCycleLbl.Position(3:4)=[60 35];
 tCycleLbl.Position(1:2)=[bStop.Position(1)+bStop.Position(3) 15];
+
+cycleTbl=uitable(bgRun,'RowName','Cycle #','ColumnName',{},...
+    'ColumnEditable',[true],'Data',[1],'units','pixels',...
+    'ColumnWidth',{50},'FontSize',12);
+cycleTbl.Position(3:4)=cycleTbl.Extent(3:4);
+cycleTbl.Position(1:2)=[120 bRunIter.Position(2)];
+
 
 tStatus=uicontrol(bgRun,'style','text','string','Sequencer is idle.',...
     'backgroundcolor','w','fontsize',8,'units','pixels',...
@@ -716,8 +728,6 @@ end
 
 end
 
-
-
 % Run button callback.
     function bRunCB(~,~)    
         % Initialize the sequence if seqdata is not defined
@@ -740,8 +750,7 @@ end
                 seqdata.randcyclelist=0;    
                 seqdata.doscan=0;    
                 rScan.Enable='off';                
-            case 'scan'
-                
+            case 'scan'                
                 tCycleLbl.String='1';           
                 seqdata.randcyclelist=uint16(randperm(1000));    
                 seqdata.doscan=1; 

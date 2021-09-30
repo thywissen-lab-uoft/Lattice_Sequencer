@@ -183,7 +183,7 @@ bCompile.Callback=@bCompileCB;
 
     function bCompileCB(~,~)
         start_new_sequence;             % Initialize sequence
-        seqdata.scancycle=1;            % 
+%         seqdata.scancycle=1;            % 
         seqdata.randcyclelist=0;    
         seqdata.doscan=0; 
         initialize_channels;            % Initialize channels
@@ -304,35 +304,42 @@ bgRun.Position(1:2)=[1 1];
         switch evnt.NewValue.String
             case 'single'
                 disp('Changing run mode to single iteration');
-                cScanFinite.Enable='off';
-                tblMaxScan.Enable='off';
-                cRpt.Enable='on';
-                tCycle.Enable='off';
-                
-                
+%                 cScanFinite.Enable='off';
+%                 tblMaxScan.Enable='off';
+%                 tCycle.Enable='off';
+                bRunIter.String = 'Run Cycle #1';
+         
                 bRunIter.Enable = 'on';
+                bRunIter.Visible = 'on';
+                
                 bStartScan.Visible='off';
                 bStartScan.Enable='off';    
                 
-                bStop.Visible='off';
                 bContinue.Visible='off';
-
+                bContinue.Enable='off';
+                
+                bStop.Visible='off';
+                cycleTbl.ColumnEditable = false;
             case 'scan'
                 disp('Changing run mode to scan mode.');
-                cScanFinite.Enable='on';
-                tblMaxScan.Enable='on';
-                cRpt.Enable='off';
-                tCycle.Enable='on';
+%                 cScanFinite.Enable='on';
+%                 tblMaxScan.Enable='on';
+%                 tCycle.Enable='on';
+                bRunIter.String = 'Run Cycle';
+
                 
                 bRunIter.Enable = 'on';
                 bRunIter.Visible='on';
+                
                 bStartScan.Visible='on';
-                bStartScan.Enable='on';               
+                bStartScan.Enable='on';   
+                
+                bContinue.Visible='on';
+                bContinue.Enable='on';
                 
                 bStop.Visible='on';
-                bContinue.Visible='on';
-        end
-        
+                cycleTbl.ColumnEditable = true;
+        end        
     end
 
 % Radio button for single mode
@@ -341,49 +348,33 @@ rSingle=uicontrol(bgRun,'Style','radiobutton', 'String','single',...
     'fontsize',12);  
 rSingle.Position(2) = bgRun.Position(4)-rSingle.Position(4)-15;
 
-% Checkbox for repeat cycle
-cRpt=uicontrol(bgRun,'style','checkbox','string','repeat?','fontsize',8,...
-    'backgroundcolor',cc,'units','pixels','Callback',@cRptCB);
-cRpt.Position(3:4)=[60 cRpt.Extent(4)];
-cRpt.Position(1:2)=[80 rSingle.Position(2)+4];
-cRpt.Tooltip='Enable or disable automatic repitition of the sequence.';
-
-% Callback for changing the repeat. This simply displays and update
-    function cRptCB(src,~)
-        if src.Value
-            disp(['Enabling sequence repeat. Reminder : The sequence ' ...
-                'recompiles every iteration.']);
-        else
-            disp('Disabling sequence repeat.');
-        end        
-    end
 
 % Radio button for scan mode
 rScan=uicontrol(bgRun,'Style','radiobutton','String','scan',...
-    'Position',[5 60 100 20],'Backgroundcolor',cc,'UserData',1,...
+    'Position',[75 85 100 30],'Backgroundcolor',cc,'UserData',1,...
     'FontSize',12);
-rScan.Position(2) = rSingle.Position(2)-rScan.Position(4);
+rScan.Position(2) = rSingle.Position(2);
 
 % Checkbox for running scan finite number of times
-cScanFinite=uicontrol(bgRun,'style','checkbox','string','stop scan afer',...
-    'backgroundcolor',cc,'Fontsize',8,'units','pixels','enable','off');
-cScanFinite.Position(3:4)=[92 cScanFinite.Extent(4)];
-cScanFinite.Position(1:2)=[80 rScan.Position(2)];
+% cScanFinite=uicontrol(bgRun,'style','checkbox','string','stop scan afer',...
+%     'backgroundcolor',cc,'Fontsize',8,'units','pixels','enable','off');
+% cScanFinite.Position(3:4)=[92 cScanFinite.Extent(4)];
+% cScanFinite.Position(1:2)=[140 rScan.Position(2)+4];
 
 % Table that stores the iteration to run
-tblMaxScan=uitable(bgRun,'RowName','','ColumnName','','Data',100,...
-    'ColumnWidth',{30},'ColumnEditable',true,'ColumnFormat',{'numeric'},...
-    'fontsize',6,'enable','off');
-tblMaxScan.Position(3:4)=tblMaxScan.Extent(3:4);
-tblMaxScan.Position(1:2)=[cScanFinite.Position(3)+cScanFinite.Position(1) ...
-    cScanFinite.Position(2)-2];
+% tblMaxScan=uitable(bgRun,'RowName','','ColumnName','','Data',100,...
+%     'ColumnWidth',{30},'ColumnEditable',true,'ColumnFormat',{'numeric'},...
+%     'fontsize',6,'enable','off');
+% tblMaxScan.Position(3:4)=tblMaxScan.Extent(3:4);
+% tblMaxScan.Position(1:2)=[cScanFinite.Position(3)+cScanFinite.Position(1) ...
+%     cScanFinite.Position(2)-2];
 
 % Extra text label for the cycles
-tCycle=uicontrol(bgRun,'style','text','String','cycles','fontsize',8,...
-    'backgroundcolor',cc,'units','pixels','enable','off');
-tCycle.Position(3:4)=tCycle.Extent(3:4);
-tCycle.Position(1:2)=[tblMaxScan.Position(1)+tblMaxScan.Position(3)+1 tblMaxScan.Position(2)];
-
+% tCycle=uicontrol(bgRun,'style','text','String','cycles','fontsize',8,...
+%     'backgroundcolor',cc,'units','pixels','enable','off');
+% tCycle.Position(3:4)=tCycle.Extent(3:4);
+% tCycle.Position(1:2)=[tblMaxScan.Position(1)+tblMaxScan.Position(3)+1 tblMaxScan.Position(2)];
+% 
 
 %%%%%%%%%%%%%%%%%%%%% ADWIN PROGRESS BAR  %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -411,7 +402,7 @@ tAdWinLabel=text(.5,1.05,'adwin progress','fontsize',10,...
 %% Run Controls
 
 % Button to run the cycle
-bRunIter=uicontrol(bgRun,'style','pushbutton','String','Run Cycle',...
+bRunIter=uicontrol(bgRun,'style','pushbutton','String','Run Cycle #1',...
     'backgroundcolor',[152 251 152]/255,'FontSize',10,'units','pixels',...
     'fontweight','bold');
 bRunIter.Position(3:4)=[100 30];
@@ -438,7 +429,7 @@ bContinue.Callback={@bRunCB 2};
 bContinue.Tooltip='Continue the scan from current iteration.';
 
 % Button to stop
-bStop=uicontrol(bgRun,'style','pushbutton','String','Stop',...
+bStop=uicontrol(bgRun,'style','pushbutton','String','Stop Scan',...
     'backgroundcolor',[255	218	107]/255,'FontSize',10,'units','pixels',...
     'fontweight','bold','enable','off','visible','off');
 bStop.Position(3:4)=[100 30];
@@ -447,13 +438,29 @@ bStop.Callback=@bStopCB;
 bStop.Tooltip='Compile and run the currently selected sequence.';
 
 
-defaultSequence=['1'];
-
 cycleTbl=uitable(bgRun,'RowName','Cycle #','ColumnName',{},...
-    'ColumnEditable',[true],'Data',[1],'units','pixels',...
+    'ColumnEditable',[false],'Data',[1],'units','pixels',...
     'ColumnWidth',{50},'FontSize',12);
 cycleTbl.Position(3:4)=cycleTbl.Extent(3:4);
-cycleTbl.Position(1:2)=[120 bRunIter.Position(2)];
+cycleTbl.Position(1:2)=[110 bRunIter.Position(2)+2];
+
+% Checkbox for repeat cycle
+cRpt=uicontrol(bgRun,'style','checkbox','string','repeat cycle?','fontsize',8,...
+    'backgroundcolor',cc,'units','pixels','Callback',@cRptCB);
+cRpt.Position(3:4)=[100 cRpt.Extent(4)];
+cRpt.Position(1:2)=[cycleTbl.Position(1)+cycleTbl.Position(3)+5 cycleTbl.Position(2)];
+cRpt.Tooltip='Enable or disable automatic repitition of the sequence.';
+
+% Callback for changing the repeat. This simply displays and update
+    function cRptCB(src,~)
+        if src.Value
+            disp(['Enabling sequence repeat. Reminder : The sequence ' ...
+                'recompiles every iteration.']);
+        else
+            disp('Disabling sequence repeat.');
+        end        
+    end
+
 
 
 tStatus=uicontrol(bgRun,'style','text','string','Sequencer is idle.',...
@@ -632,80 +639,108 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
 % end of the wait timer.  It's purpose is to decide what to do after the
 % iteration of the sequence is complete.
 % Options - Stop running, run on repeat, continue scanning, stop scanning
-function cycleComplete
-    
-    set(tStatus,'String','Sequence Idle.','fontweight','normal',...
-        'foregroundcolor','k');drawnow;
-    
-switch bgRun.SelectedObject.String
-    
-    % End condition if the sequener is in single mode
-case 'single'
-    if cRpt.Value
-        disp('Repeating the sequence');
-        runSequence;
-    else
-        bRunIter.Enable='on';
-        rScan.Enable='on';
-        rSingle.Enable='on';
-        
-        bPlot.Enable='on';
-%         bOver.Enable='on';
-        bCompile.Enable='on';
+% function cycleComplete
+%     
+%     set(tStatus,'String','Sequence Idle.','fontweight','normal',...
+%         'foregroundcolor','k');drawnow;
+%     
+% switch bgRun.SelectedObject.String
+%     
+%     % End condition if the sequener is in single mode
+% case 'single'
+%     if cRpt.Value
+%         disp('Repeating the sequence');
+%         runSequence;
+%     else
+%         bRunIter.Enable='on';
+%         rScan.Enable='on';
+%         rSingle.Enable='on';
+%         
+%         bPlot.Enable='on';
+% %         bOver.Enable='on';
+%         bCompile.Enable='on';
+% 
+%         bBrowse.Enable='on';
+%         eSeq.Enable='on';
+%     end
+% 
+%     % What to do if the sequener is in scan mode.
+% case 'scan'                
+%     if seqdata.doscan
+%         if isequal(cScanFinite.Enable,'on') && tblMaxScan.Data<=seqdata.scancycle ...
+%                 && cScanFinite.Value
+%             % The scan is complete
+%             disp(['Scan complete at ' num2str(seqdata.scancycle) ' cycles']);
+%             bRunIter.Enable='on';
+%             rScan.Enable='on';
+%             rSingle.Enable='on';       
+%             bStop.Enable='off';
+% 
+%             bPlot.Enable='on';
+% %             bOver.Enable='on';
+%             bCompile.Enable='on';
+%             bBrowse.Enable='on';
+%             eSeq.Enable='on';
+%             bContinue.Enable='on';
+%         else
+%             % Increment the scan and run the sequencer again
+%             disp(['Incrementing the scan ' num2str(seqdata.scancycle) ...
+%                 ' --> ' num2str(seqdata.scancycle+1)]);
+%             seqdata.scancycle=seqdata.scancycle+1;   
+%             runSequence;
+%         end                  
+%     else
+%         if cScanFinite.Value
+%             disp(['Scan stopped at ' num2str(seqdata.scancycle) ...
+%                 ' cycles of ' num2str(tblMaxScan.Data)]);
+%         else
+%             disp(['Scan stopped at ' num2str(seqdata.scancycle) ' cycles']);
+%         end
+%         
+%         bRunIter.Enable='on';
+%         rScan.Enable='on';
+%         rSingle.Enable='on';
+%         bStop.Enable='off';
+%         bPlot.Enable='on';
+% %         bOver.Enable='on';
+%         bCompile.Enable='on';
+%         bContinue.Enable='off';
+% 
+%         bBrowse.Enable='on';
+%         eSeq.Enable='on';
+%         
+%     end
+% end  
+% 
+% end
 
-        bBrowse.Enable='on';
-        eSeq.Enable='on';
-    end
-
-    % What to do if the sequener is in scan mode.
-case 'scan'                
-    if seqdata.doscan
-        if isequal(cScanFinite.Enable,'on') && tblMaxScan.Data<=seqdata.scancycle ...
-                && cScanFinite.Value
-            % The scan is complete
-            disp(['Scan complete at ' num2str(seqdata.scancycle) ' cycles']);
-            bRunIter.Enable='on';
-            rScan.Enable='on';
-            rSingle.Enable='on';       
-            bStop.Enable='off';
-
-            bPlot.Enable='on';
-%             bOver.Enable='on';
-            bCompile.Enable='on';
-            bBrowse.Enable='on';
-            eSeq.Enable='on';
-            bContinue.Enable='on';
-        else
-            % Increment the scan and run the sequencer again
-            disp(['Incrementing the scan ' num2str(seqdata.scancycle) ...
-                ' --> ' num2str(seqdata.scancycle+1)]);
-            seqdata.scancycle=seqdata.scancycle+1;   
+    function cycleComplete
+        set(tStatus,'String','Cycle completed.','fontweight','normal',...
+            'foregroundcolor','k');drawnow;     
+        if cRpt.Value
+            disp('Repeating the sequence');
             runSequence;
-        end                  
-    else
-        if cScanFinite.Value
-            disp(['Scan stopped at ' num2str(seqdata.scancycle) ...
-                ' cycles of ' num2str(tblMaxScan.Data)]);
         else
-            disp(['Scan stopped at ' num2str(seqdata.scancycle) ' cycles']);
-        end
-        
-        bRunIter.Enable='on';
-        rScan.Enable='on';
-        rSingle.Enable='on';
-        bStop.Enable='off';
-        bPlot.Enable='on';
-%         bOver.Enable='on';
-        bCompile.Enable='on';
-        bContinue.Enable='off';
+            if seqdata.doscan
+                % Increment the scan and run the sequencer again
+                cycleTbl.Data = cycleTbl.Data+1;
+                disp('Incrementing the cycle number.');
+                runSequence;
+            else
+                bRunIter.Enable     = 'on';
+                bStartScan.Enable   = 'on';
+                bContinue.Enable    = 'on';
+                
+                bStop.Enable        = 'off';
 
-        bBrowse.Enable='on';
-        eSeq.Enable='on';
-        
-    end
-end  
+                rScan.Enable        = 'on';
+                rSingle.Enable      = 'on';
+                bBrowse.Enable      = 'on';
+                eSeq.Enable         = 'on';
+            end
+        end   
+    end    
 
-end
 
 % Run button callback.
     function bRunCB(~,~,run_mode)    
@@ -728,24 +763,24 @@ end
             case 0 
                 seqdata.doscan = 0;
                 if isequal(bgRun.SelectedObject.String,'single')
-                    seqdata.scancycle = 1;
-                    rSingle.Enable='off';
-                else
+                    cycleTbl.Data = 1;
                     rScan.Enable='off';
+                else
+                    bStop.Enable='off';
+                    rSingle.Enable='off';
                 end      
             case 1
             % Start the scan
                 seqdata.doscan = 1;
-                seqdata.scancycle = 1;    
+                cycleTbl.Data = 1;
                 seqdata.randcyclelist=uint16(randperm(1000));   
                 bStop.Enable='on';
                 rSingle.Enable='off';
             case 2
             % Continue the scan
                 seqdata.doscan = 1;
-                seqdata.scancycle = 1;  
                 bStop.Enable='on';
-                if ~exist(seqdata.randcyclelist) || isempty(seqdata.randrandcyclelist)
+                if ~isfield(seqdata,'randcyclelist') || isempty(seqdata.randcyclelist)
                     seqdata.randcyclelist=uint16(randperm(1000)); 
                 end
                 bStop.Enable='on';
@@ -796,7 +831,7 @@ end
         start_new_sequence;
         initialize_channels;
         set(tStatus,'String','Sequence initialized.');drawnow;
-        cycleTbl.Data=seqdata.scancycle;
+        seqdata.scancycle = cycleTbl.Data;
 
         % Grab the sequence function
         fName=eSeq.String;

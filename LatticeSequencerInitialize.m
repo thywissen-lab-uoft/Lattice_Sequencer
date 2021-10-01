@@ -22,6 +22,8 @@ addpath(fullfile(curpath,'Main Functions','Device Functions'));
 addpath(fullfile(curpath,'Main Functions','Math Functions'));
 addpath(fullfile(curpath,'Main Functions','AMO Functions'));
 addpath(fullfile(curpath,'Main Functions','User Interfacing'));
+addpath(fullfile(curpath,'Main Functions','Calibrations'));
+
 addpath(fullfile(curpath,'GUI Functions'));
 
 

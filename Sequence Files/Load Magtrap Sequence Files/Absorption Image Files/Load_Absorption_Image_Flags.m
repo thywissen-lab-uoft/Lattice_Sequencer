@@ -63,6 +63,7 @@ flags.HighFieldType=0; % Not implemented yet
 flags.Two_Imaging_Pulses = 1;
 flags.Image_Negative9 = 0;
 flags.Image_Both97 = 1;
+flags.Spin_Flip_79_in_Tof = 1;
 
     
 end

@@ -5111,7 +5111,7 @@ if seqdata.flags.High_Field_Imaging
     rf_97_flip_init                 = 0;
     
     % Raman Spectroscopy
-    do_raman_spectroscopy           = 1; 
+    do_raman_spectroscopy           = 0; 
     raman_short_sweep               = 0;
     do_raman_spectroscopy_post_rf   = 0;
 
@@ -5158,7 +5158,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
     % Feshbach ramp
     if field_ramp_init
         % Feshbach Field ramp
-        HF_FeshValue_Initial_List =[205];
+        HF_FeshValue_Initial_List =[207];
         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_Lattice','G');
 
@@ -5650,7 +5650,7 @@ curtime = calctime(curtime, Raman_on_time);
             (BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6;
         rabi.freq = getScanParameter(rf_list,seqdata.scancycle,...
             seqdata.randcyclelist,'rf_rabi_freq_HF','MHz');[0.0151];
-        power_list =  [-5];
+        power_list =  [2.5];
         rabi.power = getScanParameter(power_list,...
             seqdata.scancycle,seqdata.randcyclelist,'rf_rabi_power_HF','V');            
 %             rf_pulse_length_list = [0.5]/15;
@@ -5659,7 +5659,7 @@ curtime = calctime(curtime, Raman_on_time);
              error('Incorrect RF frequency calculation!! MATLAB IS STUPID! >:(')
         end
 
-        rf_pulse_length_list = [0.005:0.02:0.2]; 
+        rf_pulse_length_list = [0.035]; 
 
         rabi.pulse_length = getScanParameter(rf_pulse_length_list,...
             seqdata.scancycle,seqdata.randcyclelist,'rf_rabi_time_HF','ms');  % also is sweep length  0.5               

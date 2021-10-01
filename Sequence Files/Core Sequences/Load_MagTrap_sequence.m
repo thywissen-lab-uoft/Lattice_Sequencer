@@ -154,7 +154,7 @@ seqdata.flags.image_type = 0;
 %8: iXon fluorescence + Pixelfly absorption
 seqdata.flags.MOT_flour_image = 0;
 
-iXon_movie = 1; %Take a multiple frame movie?
+iXon_movie = 0; %Take a multiple frame movie?
 seqdata.flags.image_atomtype = 1;%  0:Rb; 1:K; 2: K+Rb (double shutter)
 seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.img_direction = 0; 
@@ -250,7 +250,7 @@ seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test
 
 % After optical evaporation
 seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
-seqdata.flags.mix_at_end = 1;                   % RF Mixing -9-->-9+-7
+seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 
 % Optical lattice
 seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
@@ -1131,6 +1131,7 @@ curtime = pulse_Bfield(calctime(curtime,150));
     end
 
     if ramp_fesh_between_cycles
+        if seqdata.flags.High_Field_Imaging
         % This is meant to leave material near the atoms with the same
         % magnetization at the beginning of a new cycle, irrespective whether
         % some strong field was pulsed/snapped off or not during the cycle that
@@ -1144,6 +1145,16 @@ curtime = AnalogFunc(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2
 curtime = calctime(curtime,fesh_ontime);
 curtime = AnalogFuncTo(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),fesh_ramptime,fesh_ramptime,0);
 curtime = setAnalogChannel(calctime(curtime,100),37,0);
+        else 
+        fesh_ramptime = 100;
+        fesh_final = 20;
+        fesh_ontime = 1000;
+        setDigitalChannel(calctime(curtime,0),31,1);
+curtime = AnalogFunc(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),fesh_ramptime,fesh_ramptime,0,fesh_final);
+curtime = calctime(curtime,fesh_ontime);
+curtime = AnalogFuncTo(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),fesh_ramptime,fesh_ramptime,0);
+curtime = setAnalogChannel(calctime(curtime,100),37,0);
+        end
     end
 
 

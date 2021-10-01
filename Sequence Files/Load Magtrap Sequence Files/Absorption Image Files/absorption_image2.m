@@ -345,7 +345,7 @@ end
 % Absorption pulse function -- triggers cameras and pulses probe/repump
 % RHYS - It would be reasonable to call this as a method of an absorption image class.
 function do_abs_pulse2(curtime,params,flags,K_power,tof_krb_diff)
-
+global seqdata
 pulse_length = params.timings.pulse_length;
 
 %This is where the cameras are triggered.
@@ -388,7 +388,7 @@ switch flags.image_atomtype
             extra_wait_time = params.timings.wait_time;
             % Pulse the imaging beam
             DigitalPulse(calctime(curtime,extra_wait_time),'K High Field Probe',pulse_length,0);
-            if flags.Two_Imaging_Pulses
+            if flags.Two_Imaging_Pulses==1 && flags.Spin_Flip_79_in_Tof == 0
                 % Pulse the imaging beam again
                 DigitalPulse(calctime(curtime,params.timings.time_diff_two_absorp_pulses+pulse_length+extra_wait_time),...
                     'K High Field Probe',pulse_length,0);
@@ -401,7 +401,206 @@ switch flags.image_atomtype
    
                 end
             end
-        end      
+            if flags.Two_Imaging_Pulses==1 && flags.Spin_Flip_79_in_Tof == 1
+                % Pulse the imaging beam again
+                DigitalPulse(calctime(curtime,params.timings.time_diff_two_absorp_pulses...
+                    +pulse_length+extra_wait_time),...
+                    'K High Field Probe',pulse_length,0);
+                if flags.Image_Both97
+                    %%%%%%%%%%%%%%%%%%%%%%%%%%rf pulse
+%                     mF1=-9/2;
+%                     mF2=-7/2;    
+% 
+%                     disp(' Rabi Oscillations Manual');
+%                     clear('rabi');
+%                     rabi=struct;          
+% 
+%                     Boff = 0.11;
+%                     B = seqdata.params.HF_probe_fb+ Boff;
+%                     rf_list =[0]+...
+%                         (BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6;
+%                     rabi.freq = getScanParameter(rf_list,seqdata.scancycle,...
+%                         seqdata.randcyclelist,'rf_rabi_freq_HF','MHz');[0.0151];
+%                     power_list =  [8];
+%                     rabi.power = getScanParameter(power_list,...
+%                         seqdata.scancycle,seqdata.randcyclelist,'rf_rabi_power_HF','V');            
+%             %             rf_pulse_length_list = [0.5]/15;
+%                     rabi.wait_time = [0.01];
+% 
+%                     if (rabi.freq < 10)
+%                          error('Incorrect RF frequency calculation!! MATLAB IS STUPID! >:(')
+%                     end
+% 
+%                     rf_pulse_length_list = [0.01:0.01:0.1]; 
+% 
+%                     rabi.pulse_length = getScanParameter(rf_pulse_length_list,...
+%                         seqdata.scancycle,seqdata.randcyclelist,'rf_rabi_time_HF','ms');  % also is sweep length  0.5               
+% 
+%                     % Define the frequency
+%                     dTP=0.1;
+%                     DDS_ID=1; 
+%                     sweep=[DDS_ID 1E6*rabi.freq 1E6*rabi.freq rabi.pulse_length+2];
+% 
+% 
+%                     % Preset RF Power
+%                     setAnalogChannel(calctime(curtime,...
+%                         rabi.wait_time + pulse_length + extra_wait_time-5),'RF Gain',rabi.power);         
+%                     setDigitalChannel(calctime(curtime,rabi.wait_time + pulse_length + extra_wait_time-5),'RF/uWave Transfer',0);             
+% 
+%                     % Enable the ACync
+%                     do_ACync_rf = 0;
+%                     if do_ACync_rf
+%                         ACync_start_time = calctime(curtime,1);
+%                         ACync_end_time = calctime(curtime,1+rabi.pulse_length+35);
+%                         curtime=setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
+%                         setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);                
+%                     end         
+% 
+%                     % Apply the RF
+%                     if rabi.pulse_length>0                
+%                         % Trigger the DDS 1 ms ahead of time
+%                         DigitalPulse(calctime(curtime, ...
+%                             rabi.wait_time + pulse_length + extra_wait_time - 1),'DDS ADWIN Trigger',dTP,1);  
+%                         seqdata.numDDSsweeps=seqdata.numDDSsweeps+1;               
+%                         seqdata.DDSsweeps(seqdata.numDDSsweeps,:)=sweep;     
+% 
+%                         % Turn on RF
+%                         setDigitalChannel(calctime(...
+%                             curtime, rabi.wait_time + pulse_length + extra_wait_time),'RF TTL',1);      
+% 
+%                         % Advance by pulse time
+% %                         curtime=calctime(curtime,rabi.pulse_length);
+% 
+%                         % Turn off RF
+%                         setDigitalChannel(calctime(...
+%                             curtime,rabi.wait_time + ...
+%                             extra_wait_time + pulse_length + rabi.pulse_length),'RF TTL',0);      
+%                     end
+% 
+%                     % Lower the power
+%                     setAnalogChannel(calctime(curtime,...
+%                         rabi.wait_time + pulse_length + extra_wait_time + rabi.pulse_length + 1),'RF Gain',-10); 
+%                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%rf pulse
+                    
+
+                    mF1=-9/2;   % Lower energy spin state
+                    mF2=-7/2;   % Higher energy spin state
+
+                    % Get the center frequency
+                    Boff = 0.11;
+                    B = seqdata.params.HF_probe_fb+ Boff;
+                    rf_list =  [61]*1e-3 +...  %37.5 42.5   12.5 17.5 22.5 0:5:25 30 40:5:60 70
+                        abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
+                    rf_freq_HF = getScanParameter(rf_list,seqdata.scancycle,...
+                        seqdata.randcyclelist,'rf_freq_HF','MHz');
+                    
+                    rf_wait_time = 0.1;
+
+                    if (rf_freq_HF < 1)
+                         error('Incorrect RF frequency calculation!! MATLAB IS STUPID! >:(')
+                    end
+
+                    % Define the sweep parameters
+                    delta_freq= 0.1; %0.02            
+                    addOutputParam('rf_delta_freq_HF',delta_freq,'MHz');
+
+                    % RF Pulse 
+                    rf_pulse_length_list = 0.8;%1
+                    rf_pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,...
+                        seqdata.randcyclelist,'rf_pulse_length');
+
+%                     freq_list=rf_freq_HF+[...
+%                         -0.5*delta_freq ...
+%                         -0.5*delta_freq ...
+%                         0.5*delta_freq ...
+%                         0.5*delta_freq];    
+                    freq_list=rf_freq_HF+[...
+                        -0.5*delta_freq ...
+                        0.5*delta_freq ...
+                        ];       
+                    pulse_list=[rf_pulse_length];
+
+                    % Max rabi frequency in volts (uncalibrated for now)
+                    off_voltage=-10;
+                    peak_voltage=2.5;
+
+                    % Display the sweep settings
+                    disp([' Freq Center    (MHz) : [' num2str(rf_freq_HF) ']']);
+                    disp([' Freq List    (MHz) : [' num2str(freq_list) ']']);
+                    disp([' Time List     (ms) : [' num2str(pulse_list) ']']);
+                    disp([' RF Gain Range  (V) : [' num2str(off_voltage) ' ' num2str(peak_voltage) ']']);
+
+
+                    % Set RF gain to zero a little bit before
+                    setAnalogChannel(calctime(curtime,-40),'RF Gain',off_voltage);   
+
+                    % Turn on RF
+                    setDigitalChannel(calctime(curtime,...
+                        rf_wait_time + pulse_length + extra_wait_time),'RF TTL',1);   
+
+                    % Set to RF
+%                     setDigitalChannel(curtime,'RF/uWave Transfer',0);   
+
+                    do_ACync_rf = 0;
+                    if do_ACync_rf
+                        ACync_start_time = calctime(curtime,-30);
+                        ACync_end_time = calctime(curtime,sum(pulse_list)+30);
+                        setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
+                        setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
+                    end
+
+                    % Trigger pulse duration
+                    dTP=0.1;
+                    DDS_ID=1;
+
+                    % Initialize "Sweep", ramp up power        
+                    sweep=[DDS_ID 1E6*freq_list(1) 1E6*freq_list(2) pulse_list(1)];
+                    DigitalPulse(calctime(curtime,...
+                        rf_wait_time + pulse_length + extra_wait_time),'DDS ADWIN Trigger',dTP,1);               
+                    seqdata.numDDSsweeps=seqdata.numDDSsweeps+1;               
+                    seqdata.DDSsweeps(seqdata.numDDSsweeps,:)=sweep;               
+%                     curtime=AnalogFuncTo(calctime(curtime,0),'RF Gain',...
+%                         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+%                         pulse_list(1),pulse_list(1),peak_voltage); 
+                    setAnalogChannel(calctime(curtime,...
+                        rf_wait_time + pulse_length + extra_wait_time -1),'RF Gain',peak_voltage)
+
+%                     % Primary Sweep, constant power            
+%                     sweep=[DDS_ID 1E6*freq_list(2) 1E6*freq_list(3) pulse_list(2)];
+%                     DigitalPulse(curtime,'DDS ADWIN Trigger',dTP,1);  
+%                     seqdata.numDDSsweeps=seqdata.numDDSsweeps+1;               
+%                     seqdata.DDSsweeps(seqdata.numDDSsweeps,:)=sweep;               
+%                     curtime=calctime(curtime,pulse_list(2));
+% 
+%                     % Final "Sweep", ramp down power
+%                     sweep=[DDS_ID 1E6*freq_list(3) 1E6*freq_list(4) pulse_list(3)];
+%                     DigitalPulse(curtime,'DDS ADWIN Trigger',dTP,1);               
+%                     seqdata.numDDSsweeps=seqdata.numDDSsweeps+1;               
+%                     seqdata.DDSsweeps(seqdata.numDDSsweeps,:)=sweep;               
+%                     curtime=AnalogFuncTo(calctime(curtime,0),'RF Gain',...
+%                         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+%                         pulse_list(1),pulse_list(1),off_voltage); 
+
+                    setAnalogChannel(calctime(curtime,...
+                        rf_wait_time + pulse_length + extra_wait_time ...
+                        + rf_pulse_length +1),'RF Gain',off_voltage)
+
+                    % Turn off RF
+                    setDigitalChannel(calctime(curtime,...
+                      rf_wait_time + pulse_length + extra_wait_time + rf_pulse_length),'RF TTL',0);               
+
+
+
+                      % Switch RF source if imaging both
+%                     buffer_time = 0.01;
+%                     DigitalPulse(calctime(curtime,...
+%                         params.timings.time_diff_two_absorp_pulses+pulse_length+extra_wait_time-buffer_time),...
+%                     'HF freq source',pulse_length+buffer_time+buffer_time,0);               
+   
+                end
+            end
+    
+        end
         %Repump on during the image pulse
         if flags.K_repump_during_image
             DigitalPulse(curtime,'K Repump TTL',pulse_length,0);

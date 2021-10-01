@@ -44,20 +44,20 @@ function params = Load_Absorption_Image_Parameters()
     
     %% HF imaging
 %     % Potassium -HF -Xcam : settting the DP HF imaging AOM freq
-%     kHFdet_shift_list = [0.2 0.6];%-1
-%     kHFdet_shift = getScanParameter(kHFdet_shift_list,seqdata.scancycle,...
-%         seqdata.randcyclelist,'HF_kdet_shift');
+    kHFdet_shift_list = [-2:0.4:2];%-1
+    kHFdet_shift = getScanParameter(kHFdet_shift_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'HF_kdet_shift');
 
 
-    params.detunings.K.X.negative9.HF.normal = -7 -0.4;
+%     params.detunings.K.X.negative9.HF.normal = -7 -0.4;
 %     %201G:-0.5 %190G: -0.25 180G: -1.35 %195G: -0.75 204.5G: -0.5 207G: -0.4
-%     params.detunings.K.X.negative9.HF.normal = -7 + kHFdet_shift;
+    params.detunings.K.X.negative9.HF.normal = -7 + 0.5;
     
     params.detunings.K.X.negative9.HF.SG = -4.5; %
     
-    params.detunings.K.X.negative7.HF.normal = 9.25 + 0.4; 
+%     params.detunings.K.X.negative7.HF.normal = 9.25 + 0.4; 
     %201G:+0.2 %190G: -0.25 %180G: -2.53 %195G: 0 204.5G: 0.5 207G: 0.4
-%     params.detunings.K.X.negative7.HF.normal = 9.25 + kHFdet_shift;%8.8;params.detunings.K.X.negative9.HF.normal+(0.154*(seqdata.params.HF_fb-190)+31.851)/2; %9.5 for imaging from ODT, 8 for band mapping
+    params.detunings.K.X.negative7.HF.normal = 9.25 + 0;%8.8;params.detunings.K.X.negative9.HF.normal+(0.154*(seqdata.params.HF_fb-190)+31.851)/2; %9.5 for imaging from ODT, 8 for band mapping
 
     params.detunings.K.X.negative7.HF.SG = 12.5;
         
@@ -105,7 +105,7 @@ function params = Load_Absorption_Image_Parameters()
     %% Timing parameters
     params.timings.tof = seqdata.params.tof;
     params.timings.pulse_length = 0.3;
-    params.timings.time_diff_two_absorp_pulses = 0.05; % time delay for the 2nd light pulse
+    params.timings.time_diff_two_absorp_pulses = 1;0.05; % time delay for the 2nd light pulse
     params.timings.K_OP_time = 0.3;
     params.timings.k_detuning_shift_time = 0.5;
     params.timings.rb_detuning_shift_time.MOT = 4;

@@ -16,6 +16,9 @@ punits.tof = 'ms';
 
 %% RF 1B
 
+params.RF_1B_time_scale = [0.9 .8 .7 .6];
+punits.RF_1B_time_scale = 'arb';
+
 %% XDT
 
 %% XDT High Field

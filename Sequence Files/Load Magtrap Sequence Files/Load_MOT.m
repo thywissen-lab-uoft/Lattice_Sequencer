@@ -289,7 +289,7 @@ setDigitalChannel(calctime(curtime,UV_On_Time),'UV LED',1); %1 = on; 0, off
 curtime = setAnalogChannel(calctime(curtime,UV_On_Time),'UV Lamp 2',5);
 % setDigitalChannel(calctime(curtime,0),12,1);
 % setDigitalChannel(calctime(curtime,5000),12,0);
-dispLineStr('hello',curtime);
+% dispLineStr('hello',curtime);
 timeout=curtime;
 
     

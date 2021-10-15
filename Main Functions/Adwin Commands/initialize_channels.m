@@ -96,7 +96,7 @@ seqdata.digchannels(49).resetvalue = 0;
 seqdata.digchannels(50).name = 'Gray Molasses switch'; %switch between K D2 gray molasses, 0: MOT; 1: gray molasses
 seqdata.digchannels(51).name = 'Lattice FM'; %Used to gate a frequency source which applies FM to the lattice beams (1 = on, 0 = off)
 seqdata.digchannels(52).name = 'Remote field sensor SR'; % Set/Reset of the field sensor high above
-seqdata.digchannels(53).name = 'K uWave Source'; %Switch to choose between two SRS generators (0: SRS A, 1: SRS B)
+seqdata.digchannels(53).name = 'K uWave Source'; % Diverts SRS to uWave or RF (0: SRS to RF, 1: SRS to uWave)
 seqdata.digchannels(54).name = 'F Pump TTL'; %Seperate TTL for Vertical / Long beams 
 seqdata.digchannels(55).name = 'Downwards D2 Shutter'; %Shutter for Rb and K repump in science cell. (0 = close, 1 = Open).
 seqdata.digchannels(56).name = 'ACync Master'; %Master pulse for ACync Board
@@ -122,9 +122,12 @@ seqdata.digchannels(70).resetvalue = 1;
 seqdata.digchannels(71).name = 'DMD PID holder'; %unused
 seqdata.digchannels(71).resetvalue = 0;
 
-seqdata.digchannels(72).name = 'Raman TTL 3a'; %unused
-seqdata.digchannels(73).name = 'Raman TTL 2a'; %unused
-seqdata.digchannels(74).name = 'Channel 74'; %unused
+seqdata.digchannels(72).name = 'Raman TTL 3a'; %
+seqdata.digchannels(73).name = 'Raman TTL 2a'; %
+
+seqdata.digchannels(74).name = 'RF Source'; % 0 : DDS, 1 : SRS
+seqdata.digchannels(74).resetvalue = 0;
+
 seqdata.digchannels(75).name = 'Channel 75'; %unused
 seqdata.digchannels(76).name = 'Channel 76'; %unused
 seqdata.digchannels(77).name = 'Channel 77'; %unused
@@ -528,13 +531,8 @@ seqdata.analogchannels(34).name = 'Rb Beat Note FM';
 seqdata.analogchannels(34).minvoltage = 0;
 seqdata.analogchannels(34).maxvoltage = 10;
 seqdata.analogchannels(34).defaultvoltagefunc = 2;
-% Rb_Trap_Frequency_Offset_list =[6];
-% Rb_Trap_Frequency_Offset = getScanParameter(Rb_Trap_Frequency_Offset_list,...
-%         seqdata.scancycle,seqdata.randcyclelist,'Rb_Trap_Frequency_Offset');
-% Rb_Trap_Frequency_Offset_list =[6.5];
-% Rb_Trap_Frequency_Offset = getScanParameter(Rb_Trap_Frequency_Offset_list,...
-%         seqdata.scancycle,seqdata.randcyclelist,'Rb_Trap_Frequency_Offset');
-Rb_Trap_Frequency_Offset = 9; %Frequency offset for all Rb trap/probe beams in MHz.
+
+Rb_Trap_Frequency_Offset = 9; %9 Frequency offset for all Rb trap/probe beams in MHz.
 seqdata.analogchannels(34).voltagefunc{2} = @(a)((a*1-4418.47 + Rb_Trap_Frequency_Offset)/541.355);
 
 %channel 35 (Rb Offset FF)

@@ -1098,8 +1098,11 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         units=seqdata.output_vars_units;        
         flags=seqdata.flags;
         
-        vals.ExecutionDate=datestr(tExecute);        
-        units.ExecutionDate='str';
+        vals.ExecutionDateStr=datestr(tExecute);        
+        units.ExecutionDateStr='str';
+        
+        vals.ExecutionDate=tExecute;        
+        units.ExecutionDate='days';
         
         save(filenamemat2,'vals','units','flags');        
         end

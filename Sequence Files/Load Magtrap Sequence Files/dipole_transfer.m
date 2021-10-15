@@ -49,7 +49,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     ramp_Feshbach_B_before_CDT_evap = 0;
 
     %RHYS - A very important parameter. Pass these from elsewhere.
-    Evap_End_Power_List =[0.1];[0.085];[.065];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
+    Evap_End_Power_List =[0.11];[0.085];[.065];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
     
     % Ending optical evaporation
     exp_end_pwr = getScanParameter(Evap_End_Power_List,...
@@ -2637,7 +2637,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
         dispLineStr('Ramping XDTs back on.',curtime);
        
        
-        power_list = [0.4];
+        power_list = [0.15];
         power_val = getScanParameter(power_list,seqdata.scancycle,...
             seqdata.randcyclelist,'power_val','W');
 
@@ -3399,7 +3399,7 @@ end
             ramp.fesh_ramptime = 150;
             ramp.fesh_ramp_delay = 0;
             ramp.fesh_final = HF_FeshValue_Initial; %22.6
-            ramp.settling_time = 50;    
+            ramp.settling_time = 100;    
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
         ScopeTriggerPulse(curtime,'FB_ramp');
 

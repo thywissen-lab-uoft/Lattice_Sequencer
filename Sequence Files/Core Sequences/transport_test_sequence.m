@@ -15,11 +15,11 @@ current = 5;            % Current in amps
 % channel = 21;           % Channel to use
 
 % channel = 1;'Coil 12a';
-channel = 'Coil 15';
+channel = 'Coil 12b';
 
 % Set logic for digital switch FETs
 curtime = calctime(curtime,100);
-setDigitalChannel(curtime,'Kitten Relay',0); %1: OFF, 1: ON
+setDigitalChannel(curtime,'Kitten Relay',1); %1: OFF, 1: ON
 setDigitalChannel(curtime,'15/16 Switch',0); %0: OFF, 1: ON
 setDigitalChannel(curtime,'Coil 16 TTL',1); %1: turns coil off; 0: coil can be on
 curtime = calctime(curtime,500);
@@ -30,7 +30,7 @@ AnalogFuncTo(calctime(curtime,0),8,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),50,50,
 curtime = calctime(curtime,500);
 
 
-is_bipolar = 0;
+is_bipolar = 1;
 
 % Define current ramp function
 ramp_iparabola = @(t,tt,y0,y1) (y1-y0)*(1-(2*t/tt-1).^2)+y0;%(y1-y0)*(1-(tt-t)/tt)+y0;

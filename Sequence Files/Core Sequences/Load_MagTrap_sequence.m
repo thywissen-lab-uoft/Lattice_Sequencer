@@ -167,14 +167,14 @@ seqdata.flags.do_F1_pulse = 0; % repump Rb F=1 before/during imaging
 %RHYS - thse two should be fixed by the circumstance of the sequence,
 %not separately defined. 
 
-seqdata.flags.High_Field_Imaging = 0;
+seqdata.flags.High_Field_Imaging = 1;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
 seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now. 
 
 %RHYS - params should be defined in a separate location from flags. 
 seqdata.flags.In_Trap_imaging = 0;
-tof_list = [25];
+tof_list = [15];
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
@@ -220,6 +220,9 @@ seqdata.flags.RF_evap_stages = [1, 1, 1]; %[stage1, decomp/transport, stage1b] %
 RF_1B_time_scale_list = [0.9];
 RF_1B_time_scale = getScanParameter(RF_1B_time_scale_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1B_time_scale');
+
+% RF_1B_time_scale = getParam('RF1B_time_scale');
+
 rf_evap_time_scale = [0.6 RF_1B_time_scale];[0.6 .9];[0.7 0.9];[1.0 1.5];[0.8 1.2];[1.00 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
 
 % RF1A Ending Frequency
@@ -248,12 +251,14 @@ seqdata.flags.mix_at_beginning = 1;             % RF Mixing -9-->-9+-7
 % Optical Evaporation
 seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
 
+
+
 % After optical evaporation
 seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
 seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 
 % Optical lattice
-seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
+seqdata.flags.load_lattice = 1; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
 seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
 seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 
@@ -546,15 +551,13 @@ curtime = calctime(curtime,1000);
     setAnalogChannel(calctime(curtime,0),'X Shim',0.0,2); %2
     setAnalogChannel(calctime(curtime,0),'Z Shim',0.0,2); %2
 
-    
-
 %% Transport 
 dispLineStr('Magnetic Transport',curtime);
 
     %open kitten relay
 curtime = setDigitalChannel(curtime,'Kitten Relay',1);
 
-    DigitalPulse(calctime(curtime,-500),'Transport LabJack Trigger',100,0)
+    DigitalPulse(calctime(curtime,-500),'Transport LabJack Trigger',100,0);
     
     %Turn shim multiplexer to Science shims
     setDigitalChannel(calctime(curtime,1000),37,1); 
@@ -760,7 +763,7 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     sweep_time = getScanParameter(sweep_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'RF1B_sweep_time');
     sweep_times_1b = [6000 3000 2]*rf_evap_time_scale(2); 2000;
-    evap_end_gradient_factor_list = [0.75];
+    evap_end_gradient_factor_list = [0.9]; %0.75
     evap_end_gradient_factor = getScanParameter(evap_end_gradient_factor_list,...
         seqdata.scancycle,seqdata.randcyclelist,'evap_end_gradient_factor');
     currs_1b = [1 1 evap_end_gradient_factor evap_end_gradient_factor]*I_QP;
@@ -1192,6 +1195,14 @@ curtime = Reset_Channels(calctime(curtime,0));
         setDigitalChannel(calctime(curtime,5002),'XDT Direct Control',1);
     end
 end
+%% Raman Shutter
+%turn on the Raman shutter for frquuency monitoring
+
+setDigitalChannel(calctime(curtime,0),'Raman Shutter',1); 
+
+%This is turned off in line 435 above
+
+
 %% Load MOT
 dispLineStr('Loading MOT.',curtime);
 

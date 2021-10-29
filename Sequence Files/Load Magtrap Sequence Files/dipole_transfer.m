@@ -49,7 +49,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     ramp_Feshbach_B_before_CDT_evap = 0;
 
     %RHYS - A very important parameter. Pass these from elsewhere.
-    Evap_End_Power_List =[0.11];[0.085];[.065];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
+    Evap_End_Power_List =[0.1];[0.085];[.065];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
     
     % Ending optical evaporation
     exp_end_pwr = getScanParameter(Evap_End_Power_List,...
@@ -3365,8 +3365,8 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 end
     
     %% Ramp FB field up to 200G for High Field Imaging after ODT
-%     if (seqdata.flags.High_Field_Imaging && ~seqdata.flags.load_lattice )
-    if (seqdata.flags.High_Field_Imaging)
+    if (seqdata.flags.High_Field_Imaging && ~seqdata.flags.load_lattice )
+%     if (seqdata.flags.High_Field_Imaging)
         dispLineStr('Ramping High Field in XDT',curtime);
         time_in_HF_imaging = curtime;
                 

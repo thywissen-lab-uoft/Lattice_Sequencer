@@ -650,6 +650,8 @@ seqdata.analogchannels(43).defaultvoltagefunc = 2;
 [~,~,seqdata.analogchannels(43).voltagefunc{2}] = lattice_calibrations;
 
 %channel 44 (Y lattice AM control)
+% 2021/10/15 CH 44 .We measured the voltage directlyf rom the adwin, and see 3 mV
+% pk-pk noise on the voltage
 seqdata.analogchannels(44).name = 'yLattice';
 seqdata.analogchannels(44).minvoltage = -10;
 seqdata.analogchannels(44).maxvoltage = 10;
@@ -708,6 +710,9 @@ seqdata.analogchannels(48).minvoltage = 0;
 seqdata.analogchannels(48).maxvoltage = 10;
 seqdata.analogchannels(48).defaultvoltagefunc = 2; 
 seqdata.analogchannels(48).voltagefunc{2} = @(a)(a);
+% 2021/10/15 We measured the voltage directlyf rom the adwin, and see 3 mV
+% pk-pk noise on the voltage
+
 
 % bipolar
     %A voltage of 0.4V gives best diffraction, higher voltages overdrive

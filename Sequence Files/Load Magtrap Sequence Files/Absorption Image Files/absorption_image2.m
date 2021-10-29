@@ -493,7 +493,7 @@ switch flags.image_atomtype
                     rf_tof_freq_list =  [61]*1e-3 +...  %37.5 42.5   12.5 17.5 22.5 0:5:25 30 40:5:60 70
                         abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
                     rf_tof_freq = getScanParameter(rf_tof_freq_list,seqdata.scancycle,...
-                        seqdata.randcyclelist,'rf_tof_freq','MHz');
+                        seqdata.randcyclelist,'rf_tof_freq','MHz'); 61;
                     
 
                     if (rf_tof_freq < 1)

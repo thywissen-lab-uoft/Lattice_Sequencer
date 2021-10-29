@@ -4785,13 +4785,13 @@ end
 % setAnalogChannel(calctime(curtime,0),59,0); %0.11
 
 % % ODT test
-% curtime = calctime(curtime,1000);
+% curtime = calctime(curtime,100);
 % setDigitalChannel(calctime(curtime,-10),'XDT Direct Control',0);
 % setDigitalChannel(calctime(curtime,-10),'XDT TTL',0);
-% 
-% % Choose the power limits
+% % 
+% % % Choose the power limits
 % ODT1powerLOW=0;
-% ODT1powerHIGH = 2;
+% ODT1powerHIGH = 0.1;
 % 
 % ODT2powerLOW=0;
 % ODT2powerHIGH = ODT1powerHIGH;
@@ -4803,7 +4803,7 @@ end
 %     
 % AnalogFunc(calctime(curtime,0),'dipoleTrap2',...
 %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),25,25,ODT2powerLOW,ODT2powerHIGH);
-% 
+% % 
 % curtime = calctime(curtime,500);
 % 
 % setAnalogChannel(curtime,'dipoleTrap1',0); 
@@ -4869,9 +4869,9 @@ end
 % 
 % curtime = calctime(curtime, 1000)
 
-% setAnalogChannel(calctime(curtime,0),59,0); 
-% setDigitalChannel(calctime(curtime,0),'Downwards D2 Shutter',0);
-% setDigitalChannel(calctime(curtime,0),'Kill TTL',0);
+setAnalogChannel(calctime(curtime,0),62,0); 
+setDigitalChannel(calctime(curtime,0),'Downwards D2 Shutter',0);
+setDigitalChannel(calctime(curtime,0),'Kill TTL',0);
 % % setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
 
 % %% Raman check
@@ -5034,10 +5034,10 @@ end
 % curtime = calctime(curtime,200);
 % 
 % setDigitalChannel(calctime(curtime,0),'Raman TTL 1',0);
-setAnalogChannel(calctime(curtime,0),57,00);
-setDigitalChannel(calctime(curtime,0),'Raman TTL 1',1);
-setDigitalChannel(calctime(curtime,0),'Raman TTL 2',1);
-setDigitalChannel(calctime(curtime,0),'Raman TTL 3',1);
+% setAnalogChannel(calctime(curtime,0),57,00);
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 1',1);
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 2',1);
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 3',1);
 % 
 % setDigitalChannel(calctime(curtime,5),'Raman Shutter',1);
 % setDigitalChannel(calctime(curtime,30),'Raman TTL 2',1);
@@ -5067,31 +5067,31 @@ setDigitalChannel(calctime(curtime,0),'Raman TTL 3',1);
 
 %% Feshbach field test
 
-curtime = calctime(curtime,500);
-
-
- clear('ramp');
-        % FB coil settings for spectroscopy
-        ramp.FeshRampTime = 150;
-        ramp.FeshRampDelay = -0;
-        HF_FeshValue_Initial_List = 212;[202.78];
-        HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
-        ramp.FeshValue = HF_FeshValue_Initial;
-        ramp.SettlingTime = 50;    
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
-        
-curtime = calctime(curtime,200);
-
-
-        clear('ramp');
-        % FB coil settings for spectroscopy
-        ramp.FeshRampTime = 150;
-        ramp.FeshRampDelay = -0;
-        HF_FeshValue_Initial_List = 0;[202.78];
-        HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
-        ramp.FeshValue = HF_FeshValue_Initial;
-        ramp.SettlingTime = 50;    
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
+% curtime = calctime(curtime,500);
+% 
+% 
+%  clear('ramp');
+%         % FB coil settings for spectroscopy
+%         ramp.FeshRampTime = 150;
+%         ramp.FeshRampDelay = -0;
+%         HF_FeshValue_Initial_List = 212;[202.78];
+%         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
+%         ramp.FeshValue = HF_FeshValue_Initial;
+%         ramp.SettlingTime = 50;    
+% curtime = rampMagneticFields(calctime(curtime,0), ramp);
+%         
+% curtime = calctime(curtime,200);
+% 
+% 
+%         clear('ramp');
+%         % FB coil settings for spectroscopy
+%         ramp.FeshRampTime = 150;
+%         ramp.FeshRampDelay = -0;
+%         HF_FeshValue_Initial_List = 0;[202.78];
+%         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
+%         ramp.FeshValue = HF_FeshValue_Initial;
+%         ramp.SettlingTime = 50;    
+% curtime = rampMagneticFields(calctime(curtime,0), ramp);
 
 %% Test Acync
 

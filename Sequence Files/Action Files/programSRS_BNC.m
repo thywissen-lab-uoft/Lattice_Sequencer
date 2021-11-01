@@ -1,4 +1,4 @@
-function programSRS(settings)
+function programSRS_BNC(settings)
 % programSRS.m
 %
 % Author      : C Fujiwara
@@ -84,7 +84,46 @@ cmd=sprintf(cmdstr,...
     settings.PowerBNC);
 
 % cmd=sprintf('FREQ?;')
+if ischar(settings.Address)
+    % this cmd is for testing purposes
+%     cmd = sprintf('FREQ %fMHZ; AMPL %gdBm; FREQ?; AMPL?',...
+%         settings.Frequency,...
+%         settings.PowerBNC);
+    sendIPCommand(cmd,settings.Address)
+else
+    % disp(cmd)
+    addGPIBCommand(settings.Address,cmd);
+end
 
-% disp(cmd)
-addGPIBCommand(settings.Address,cmd);
+end
+
+function sendIPCommand(command,addr,port)
+
+% Default port is 5024 for srs 
+if nargin ==2
+   port = 5024; 
+end
+
+% Find a tcpip object.
+obj1 = instrfind('Type', 'tcpip', 'RemoteHost', addr, 'RemotePort', port, 'Tag', '');
+
+% Create the tcpip object if it does not exist
+% otherwise use the object that was found.
+if isempty(obj1)
+    obj1 = tcpip(addr, port);
+else
+    fclose(obj1);
+    obj1 = obj1(1);
+end
+%open tcpip object
+fopen(obj1);
+
+% flush input
+flushinput(obj1);
+% write the string
+query(obj1, command, '%s\n' ,'%s\n') % but with correct commands
+% read the output
+
+fclose(obj1);
+
 end

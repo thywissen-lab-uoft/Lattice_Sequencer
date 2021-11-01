@@ -24,6 +24,7 @@ lattices = {'xLattice','yLattice','zLattice'};
 seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 
 
+
 %% Lattice Flags    
 % These are the lattice flags sorted roughly chronologically.
 
@@ -109,10 +110,14 @@ else
  
 end
 
+lattice_rampdown_list = [3];
+
+
 if Drop_From_XDT
     lattice_rampdown = 50;
 else
-    lattice_rampdown = 2; %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
+    lattice_rampdown = getScanParameter(lattice_rampdown_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'latt_rampdown_time','ms');; %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
 end
 
 % Parameters for lattice loading, section used for lattice alignment
@@ -5109,17 +5114,18 @@ if seqdata.flags.High_Field_Imaging
     % Lattice ramps
     lattice_ramp_init               = 1;       % Initial lattice ramp
     lattice_ramp_2                  = 0;       % Secondary lattice ramp
-    lattice_ramp_3                  = 0;       % between raman and rf spectroscopy
+    lattice_ramp_3                  = 1;       % between raman and rf spectroscopy
 
     % Feshbach field ramps
     field_ramp_init                 = 1;       % Ramp field away from initial  
-    field_ramp_2                    = 0;       % ramp field after raman before rf spectroscopy
+    field_ramp_2                    = 1;       % ramp field after raman before rf spectroscopy
     field_ramp_img                  = 1;       % Ramp field for imaging
 
     % Apply a phatom Raman pulse to kill atoms
     do_raman_phantom                = 0;
 
-    % RF Pre Flip 9<-->7
+    % RF Pre Flip 9<-->7data.params
+    
     rf_97_flip_init                 = 0;
     
     % Raman Spectroscopy
@@ -5131,7 +5137,7 @@ if seqdata.flags.High_Field_Imaging
 
     % RF Spectroscopy
     rf_rabi_manual                  = 0;
-    do_rf_spectroscopy              = 0; 
+    do_rf_spectroscopy              = 1; 
     
     % Other RF Manipulations
     shift_reg_at_HF                 = 0;
@@ -5170,7 +5176,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
     % Feshbach ramp
     if field_ramp_init
         % Feshbach Field ramp
-        HF_FeshValue_Initial_List =[201.1];
+        HF_FeshValue_Initial_List =[197];
         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_Lattice','G');
 
@@ -5369,7 +5375,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
         Boff = 0.11;
         B = HF_FeshValue_Initial+ Boff+ 2.35*zshim;
 
-        Raman_AOM3_freq_list =  [0:5:110]*1e-3/2+(80+...   %-120 -162.5:2.5:-140  -180:5:-120
+        Raman_AOM3_freq_list =  [-80]*1e-3/2+(80+...   %-120 -162.5:2.5:-140  -180:5:-120
             abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6))/2; %-0.14239
 
         if (abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6) < 1)
@@ -5401,7 +5407,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
                 Pulse_Time = Sweep_Time;
 
             case 'pulse'
-                Pulse_Time_list =[0.06];
+                Pulse_Time_list = [0.065];[0:0.015:0.15];
                 Pulse_Time = getScanParameter(Pulse_Time_list,...
                     seqdata.scancycle,seqdata.randcyclelist,'Pulse_Time','ms');
                 Raman_on_time = Pulse_Time; %ms
@@ -5417,7 +5423,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
             Device_id = 1;
             Raman_AOM2_freq = 80*1E6;
 
-            Raman_AOM2_pwr_list =0.50;
+            Raman_AOM2_pwr_list = 0.50;
             Raman_AOM2_pwr = getScanParameter(Raman_AOM2_pwr_list,...
                 seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM2_pwr','MHz');
 
@@ -5514,7 +5520,7 @@ curtime = calctime(curtime, Raman_on_time);
         Device_id = 1;
         Raman_AOM2_freq = 80*1E6;
 
-        Raman_AOM2_pwr_list = 0.3;
+        Raman_AOM2_pwr_list = 0.50;
         Raman_AOM2_pwr = getScanParameter(Raman_AOM2_pwr_list,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM2_pwr','MHz');
 
@@ -5529,21 +5535,21 @@ curtime = calctime(curtime, Raman_on_time);
         Device_id = 7; %Rigol for D1 lock(Ch. 1) and Raman 3(Ch. 2). Do not change any Ch. 1 settings here. 
         B = HF_FeshValue_Initial + 2.35*zshim;
 
-        Raman_AOM3_freq_list =  [-10:5:140]*1e-3/2+(80+...
+        Raman_AOM3_freq_list =  [-63]*1e-3/2+(80+...
             abs((BreitRabiK(B,9/2,-7/2) - BreitRabiK(B,9/2,-9/2))/6.6260755e-34/1E6))/2; %-0.14239
 
         Raman_AOM3_freq = getScanParameter(Raman_AOM3_freq_list,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM3_freq','MHz');
-        Raman_AOM3_pwr_list = [0.3];
+        Raman_AOM3_pwr_list = [0.36];
         Raman_AOM3_pwr = getScanParameter(Raman_AOM3_pwr_list,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM3_pwr','MHz');
 
 
 
-            Sweep_Range_list = [5]/1000;  %in MHz
+            Sweep_Range_list = [10]/1000;  %in MHz
             Sweep_Range = getScanParameter(Sweep_Range_list,...
     seqdata.scancycle,seqdata.randcyclelist,'HF_Raman_sweep_range','MHz');
-            Sweep_Time_list = [0.1]; %in ms, resolution = 10us
+            Sweep_Time_list = [0.1 0.2 0.4 0.5 0.6 0.7 0.8 0.9 1 1.1 1.2 1.3 1.4 1.5]; %in ms, resolution = 10us
             Sweep_Time = getScanParameter(Sweep_Time_list,...
     seqdata.scancycle,seqdata.randcyclelist,'HF_Raman_sweep_time','ms');
 
@@ -5589,7 +5595,7 @@ curtime = calctime(curtime, Raman_on_time);
         else 
             %TTL sequence for shorter sweep
             Rigol_sweep_time = 1;
-            Rigol_sweep_range = Rigol_sweep_time/Sweep_Time*Sweep_Range;
+            Rigol_sweep_range = round(Rigol_sweep_time/Sweep_Time*Sweep_Range,2);
 
            str = sprintf('SOURce2:SWEep:STATe ON;SOURce2:SWEep:TRIGger:SOURce: EXTernal;SOURce2:SWEep:TIME %gMS;SOURce2:FREQuency:CENTer %gMHZ;SOURce2:FREQuency:SPAN %gMHZ;SOURce2:VOLT %g;', ...
                         Rigol_sweep_time, Raman_AOM3_freq, Rigol_sweep_range, Raman_AOM3_pwr);
@@ -5646,11 +5652,92 @@ curtime = calctime(curtime, Raman_on_time);
 
          end
     end
+     
 
+    %Do rf transfer from -7/2 to -5/2
+    if spin_flip_7_5
+        clear('sweep');
+        mF1=-7/2;   % Lower energy spin state
+        mF2=-5/2;   % Higher energy spin state
+
+        Boff = 0.11;
+        B = HF_FeshValue_Initial+ Boff+ 2.35*zshim;
+
+        % Get the center frequency
+        rf_list =  [0] +...
+            abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
+        sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'rf_freq_HF','MHz');
+        disp(sweep_pars.freq)
+
+        sweep_pars.power =  [-7.5];
+        delta_freq = 0.020; 0.025;0.1;
+        sweep_pars.delta_freq = delta_freq;
+        rf_pulse_length_list = 1;5;20;
+        sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5               
+curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
+     HF5_wait_time_list = [5];
+     HF5_wait_time = getScanParameter(HF5_wait_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'HF_wait_time_5','ms');
+     curtime = calctime(curtime,HF5_wait_time);
+%          sweep_pars.delta_freq  = -delta_freq; 0.025;0.1;
+% curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
+    do_ACync_rf = 0;
+        if do_ACync_rf
+            ACync_start_time = calctime(curtime,-80);
+            ACync_end_time = calctime(curtime,2*sweep_pars.pulse_length+50);
+            setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
+            setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
+        end
+    end
+        
+    % Feshbach field ramp Another
+    if field_ramp_2
+        clear('ramp');
+        HF_FeshValue_Spectroscopy_List =[199.8];
+        HF_FeshValue_Spectroscopy = getScanParameter(HF_FeshValue_Spectroscopy_List,...
+            seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Spectroscopy','G');   
+        HF_FeshValue_Initial = HF_FeshValue_Spectroscopy; %For use below in spectroscopy
+        seqdata.params.HF_probe_fb = HF_FeshValue_Spectroscopy; %For imaging
+
+        % Define the ramp structure
+        ramp=struct;
+        ramp.FeshRampTime = 50;
+        ramp.FeshRampDelay = -0;
+        ramp.FeshValue = HF_FeshValue_Spectroscopy;
+        ramp.SettlingTime = 50;   
+
+    % Ramp the magnetic Fields
+curtime = rampMagneticFields(calctime(curtime,0), ramp);
+        
+    end     
+
+    if lattice_ramp_3
+        HF_spec_latt_depth_list = [100];
+        HF_spec_latt_depth = getScanParameter(HF_spec_latt_depth_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'HF_spec_latt_depth','Er');
+
+
+        HF_spec_latt_ramptime_list = [50];
+        HF_spec_latt_ramptime = getScanParameter(HF_spec_latt_ramptime_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'HF_spec_latt_ramptime','ms');
+        AnalogFuncTo(calctime(curtime,T0),'xLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            HF_spec_latt_ramptime, HF_spec_latt_ramptime, 122.5);   
+        AnalogFuncTo(calctime(curtime,T0),'yLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            HF_spec_latt_ramptime, HF_spec_latt_ramptime, HF_spec_latt_depth);    
+curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            HF_spec_latt_ramptime, HF_spec_latt_ramptime, 100);
+
+curtime = calctime(curtime,5);  %extra wait time
+    end
+    
     % RF Rabi Oscillations
     if rf_rabi_manual
         mF1=-7/2;
-        mF2=-5/2;    
+        mF2=-9/2;    
 
         disp(' Rabi Oscillations Manual');
         clear('rabi');
@@ -5658,8 +5745,8 @@ curtime = calctime(curtime, Raman_on_time);
 
         Boff = 0.11;
         B = HF_FeshValue_Initial+ Boff+ 2.35*zshim;            
-        rf_list =[0]+...
-            (BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6;
+        rf_list =  [-55:10:15]*1e-3 +... 
+            abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6); 
         rabi.freq = getScanParameter(rf_list,seqdata.scancycle,...
             seqdata.randcyclelist,'rf_rabi_freq_HF','MHz');[0.0151];
         power_list =  [2.5];
@@ -5671,7 +5758,7 @@ curtime = calctime(curtime, Raman_on_time);
              error('Incorrect RF frequency calculation!! MATLAB IS STUPID! >:(')
         end
 
-        rf_pulse_length_list = [0.035]; 
+        rf_pulse_length_list = [0.030]; 
 
         rabi.pulse_length = getScanParameter(rf_pulse_length_list,...
             seqdata.scancycle,seqdata.randcyclelist,'rf_rabi_time_HF','ms');  % also is sweep length  0.5               
@@ -5717,87 +5804,7 @@ curtime = calctime(curtime, Raman_on_time);
 
         % Extra Wait Time
         curtime=calctime(curtime,35);  
-    end       
-
-    %Do rf transfer from -7/2 to -5/2
-    if spin_flip_7_5
-        clear('sweep');
-        mF1=-7/2;   % Lower energy spin state
-        mF2=-5/2;   % Higher energy spin state
-
-        Boff = 0.11;
-        B = HF_FeshValue_Initial+ Boff+ 2.35*zshim;
-
-        % Get the center frequency
-        rf_list =  [0] +...
-            abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
-        sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,...
-            seqdata.randcyclelist,'rf_freq_HF','MHz');
-        disp(sweep_pars.freq)
-
-        sweep_pars.power =  [-7.5];
-        delta_freq = 0.020; 0.025;0.1;
-        sweep_pars.delta_freq = delta_freq;
-        rf_pulse_length_list = 1;5;20;
-        sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5               
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-     HF5_wait_time_list = [5];
-     HF5_wait_time = getScanParameter(HF5_wait_time_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'HF_wait_time_5','ms');
-     curtime = calctime(curtime,HF5_wait_time);
-%          sweep_pars.delta_freq  = -delta_freq; 0.025;0.1;
-% curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-    do_ACync_rf = 0;
-        if do_ACync_rf
-            ACync_start_time = calctime(curtime,-80);
-            ACync_end_time = calctime(curtime,2*sweep_pars.pulse_length+50);
-            setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
-            setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
-        end
-    end
-        
-    % Feshbach field ramp Another
-    if field_ramp_2
-        clear('ramp');
-        HF_FeshValue_Spectroscopy_List =[199.9];
-        HF_FeshValue_Spectroscopy = getScanParameter(HF_FeshValue_Spectroscopy_List,...
-            seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Spectroscopy','G');   
-        HF_FeshValue_Initial = HF_FeshValue_Spectroscopy; %For use below in spectroscopy
-        seqdata.params.HF_probe_fb = HF_FeshValue_Spectroscopy; %For imaging
-
-        % Define the ramp structure
-        ramp=struct;
-        ramp.FeshRampTime = 50;
-        ramp.FeshRampDelay = -0;
-        ramp.FeshValue = HF_FeshValue_Spectroscopy;
-        ramp.SettlingTime = 50;   
-
-    % Ramp the magnetic Fields
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
-        
-    end     
-
-    if lattice_ramp_3
-        HF_spec_latt_depth_list = [200];
-        HF_spec_latt_depth = getScanParameter(HF_spec_latt_depth_list,...
-            seqdata.scancycle,seqdata.randcyclelist,'HF_spec_latt_depth','Er');
-
-
-        HF_spec_latt_ramptime_list = [50];
-        HF_spec_latt_ramptime = getScanParameter(HF_spec_latt_ramptime_list,...
-            seqdata.scancycle,seqdata.randcyclelist,'HF_spec_latt_ramptime','ms');
-        AnalogFuncTo(calctime(curtime,T0),'xLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-            HF_spec_latt_ramptime, HF_spec_latt_ramptime, 245);   
-        AnalogFuncTo(calctime(curtime,T0),'yLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-            HF_spec_latt_ramptime, HF_spec_latt_ramptime, HF_spec_latt_depth);    
-curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-            HF_spec_latt_ramptime, HF_spec_latt_ramptime, 200);
-
-curtime = calctime(curtime,5);  %extra wait time
-    end
+    end  
 
     % RF Sweep Spectroscopy
     if do_rf_spectroscopy
@@ -5809,7 +5816,7 @@ curtime = calctime(curtime,5);  %extra wait time
         % Get the center frequency
         Boff = 0.11;
         B = HF_FeshValue_Initial +Boff + 2.35*zshim; 
-        rf_list =  [37.5]*1e-3 +... %-5 0 5 10 20 30 35 32.5 37.5 40 45 50 55 35 37.5 40 42.5 45 25
+        rf_list =  [32.5]*1e-3 +... 
             abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
         rf_freq_HF = getScanParameter(rf_list,seqdata.scancycle,...
             seqdata.randcyclelist,'rf_freq_HF','MHz');

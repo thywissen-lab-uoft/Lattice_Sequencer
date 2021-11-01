@@ -9,7 +9,7 @@ xLattice0_list = [-1.5];[-1.64];
 xLattice0 = getScanParameter(xLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'xLatt0');
 
-yLattice0_list = -1.20; -1.05;[-1.15];
+yLattice0_list = -1.18; -1.05;[-1.15];
 yLattice0 = getScanParameter(yLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'yLatt0');
 

@@ -36,7 +36,7 @@ params.rf_freq_HF_shift             = [-50:1:-15 0 1 2 -1 -2 -3 -4 -5  5 -10];
 punits.rf_freq_HF_shift             = 'kHz';
 prands.rf_freq_HF_shift             = true;
 
-params.HF_FeshValue_Spectroscopy    = [199.7 199.7 199.7 199.9 199.9 199.9];
+params.HF_FeshValue_Spectroscopy    = [199.7 199.7 199.7 199.7 199.9 199.9 199.9];
 punits.HF_FeshValue_Spectroscopy    = 'G';
 prands.HF_FeshValue_Spectroscopy     = false;
 

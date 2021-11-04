@@ -5694,9 +5694,12 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
     % Feshbach field ramp Another
     if field_ramp_2
         clear('ramp');
-        HF_FeshValue_Spectroscopy_List =[200.5];
-        HF_FeshValue_Spectroscopy = getScanParameter(HF_FeshValue_Spectroscopy_List,...
-            seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Spectroscopy','G');   
+%         HF_FeshValue_Spectroscopy_List =[200.5];
+%         HF_FeshValue_Spectroscopy = getScanParameter(HF_FeshValue_Spectroscopy_List,...
+%             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Spectroscopy','G');           
+        
+        HF_FeshValue_Spectroscopy = paramGet('HF_FeshValue_Spectroscopy');
+        
         HF_FeshValue_Initial = HF_FeshValue_Spectroscopy; %For use below in spectroscopy
         seqdata.params.HF_probe_fb = HF_FeshValue_Spectroscopy; %For imaging
 
@@ -5826,10 +5829,18 @@ curtime = calctime(curtime,5);  %extra wait time
         % Get the center frequency
         Boff = 0.11;
         B = HF_FeshValue_Initial +Boff + 2.35*zshim; 
-        rf_list =  [-21:2:0]*1e-3 +... 
-            abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
-        rf_freq_HF = getScanParameter(rf_list,seqdata.scancycle,...
-            seqdata.randcyclelist,'rf_freq_HF','MHz');
+        
+%         rf_shift_list = [-20:2:10]*1e-3;        
+%          rf_list =  rf_shift_list +... 
+%             abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
+%         rf_freq_HF = getScanParameter(rf_list,seqdata.scancycle,...
+%             seqdata.randcyclelist,'rf_freq_HF','MHz');
+        
+        rf_shift = paramGet('rf_freq_HF_shift');
+        f0 = abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);
+        
+        rf_freq_HF = f0+rf_shift*1e-3;
+        addOutputParam('rf_freq_HF',rf_freq_HF,'MHz');       
 
         if (rf_freq_HF < 1)
              error('Incorrect RF frequency calculation!! MATLAB IS STUPID! >:(')

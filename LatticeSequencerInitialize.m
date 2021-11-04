@@ -74,7 +74,7 @@ seqdata = struct('analogadwinlist',[],... %adwin list is [time channel value];
     'params', []); %various parameters, recently defined here by FC 07/23/2020
 
 seqdata.scancycle=1;
-seqdata.randcyclelist=1;
+seqdata.randcyclelist=makeRandList;
 
 %ADWIN processor speed
 adwin_processor_speed = 300E6;

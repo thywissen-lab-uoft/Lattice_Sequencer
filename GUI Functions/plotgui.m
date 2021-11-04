@@ -69,7 +69,7 @@ end
 
 seqdata.scancycle = 1;
 seqdata.doscan = 0;
-seqdata.randcyclelist = 1:100;
+% seqdata.randcyclelist = 1:100;
 
 
 %%%%%%%%%%%%%%%%%%%% END TERRIBLE

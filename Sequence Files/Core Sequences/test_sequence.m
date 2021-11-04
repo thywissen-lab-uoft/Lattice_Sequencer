@@ -5108,6 +5108,11 @@ setDigitalChannel(calctime(curtime,0),'Kill TTL',0);
 % % 
 % 
 % setDigitalChannel(calctime(curtime,30),'ACync Master',0);
+
+paramGet('HF_FeshValue_Spectroscopy')
+paramGet('rf_freq_HF')
+
+
 curtime=calctime(curtime,1000);
 
 

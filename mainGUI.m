@@ -12,7 +12,7 @@ function mainGUI
 % code have been "Frakenstein'ed" together. It is the author's desire that
 % this code be optimized and simplified.
 
-doDebug = 0;
+doDebug = 1;
 
 %%%%%%%%%%%%%%% Initialize Sequence Data %%%%%%%%%%%%%%%%%
 LatticeSequencerInitialize();
@@ -35,6 +35,9 @@ else
 end
 
 disp('Opening Lattice Sequencer...');
+
+seqdata.randcyclelist = makeRandList;
+
 
 %% Delete old timer objects
 % The progress of the sequence is tracked using some MATLAB timers. Delete
@@ -184,7 +187,7 @@ bCompile.Callback=@bCompileCB;
     function bCompileCB(~,~)
         start_new_sequence;             % Initialize sequence
 %         seqdata.scancycle=1;            % 
-        seqdata.randcyclelist=0;    
+%         seqdata.randcyclelist=0;    
         seqdata.doscan=0; 
         initialize_channels;            % Initialize channels
 
@@ -192,6 +195,7 @@ bCompile.Callback=@bCompileCB;
         fh = str2func(erase(fName,'@'));     
         fh(0);                          % Run the sequence / update seqdata  
         calc_sequence;                  % convert seqdata for AdWin  
+        updateScanVarText;
     end
 
 
@@ -443,6 +447,38 @@ tStatus.Position(3:4)=[axAdWinBar.Position(3) 15];
 tStatus.Position(1:2)=[bStop.Position(1)+bStop.Position(3) 1];
 tStatus.Position(1) = axAdWinBar.Position(1);
 tStatus.Position(2) = axAdWinBar.Position(2) - 15;
+
+tScanVar=uicontrol(bgRun,'style','text','string','No detected variable scanning with ParamDef/Get.',...
+    'backgroundcolor','w','fontsize',8,'units','pixels',...
+    'fontweight','normal','visible','on','horizontalalignment','center');
+tScanVar.Position(3:4)=[axAdWinBar.Position(3) 15];
+tScanVar.Position(1) = axAdWinBar.Position(1);
+tScanVar.Position(2) = tStatus.Position(2) - 15;
+
+    function updateScanVarText
+        if isfield(seqdata,'ScanVar') && ~isempty(seqdata.ScanVar)
+            str = '';
+            scan_var_names = fieldnames(seqdata.ScanVar);
+            for jj=1:length(scan_var_names)
+                str = [str scan_var_names{jj} ' : ' num2str(seqdata.ScanVar.(scan_var_names{jj})) '; '];
+            end
+            tScanVar.String = str;
+        end        
+    end
+
+% Button to reseed random list
+ttStr=['Reseed random list of scan indeces.'];
+bRandSeed=uicontrol(bgRun,'style','pushbutton','String','reseed random',...
+    'backgroundcolor',[255,165,0]/255,'FontSize',8,'units','pixels',...
+    'fontweight','normal','Tooltip',ttStr);
+bRandSeed.Position(3:4)=[80 20];
+bRandSeed.Position(1:2)=[bgRun.Position(3)-bRandSeed.Position(3)-5  bgRun.Position(4)-bRandSeed.Position(4)-12];
+bRandSeed.Callback=@bReseedRandom;
+
+    function bReseedRandom(~,~)
+       seqdata.randcyclelist = makeRandList ;
+    end
+
 %% Interrupt buttons
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ABORT  %%%%%%%%%%%%%%%%%%%%%%
@@ -746,16 +782,16 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
             % Start the scan
                 seqdata.doscan = 1;
                 cycleTbl.Data = 1;
-                seqdata.randcyclelist=uint16(randperm(1000));   
+%                 seqdata.randcyclelist = makeRandList;
                 bStop.Enable='on';
                 rSingle.Enable='off';
             case 2
             % Continue the scan
                 seqdata.doscan = 1;
                 bStop.Enable='on';
-                if ~isfield(seqdata,'randcyclelist') || isempty(seqdata.randcyclelist)
-                    seqdata.randcyclelist=uint16(randperm(1000)); 
-                end
+%                 if ~isfield(seqdata,'randcyclelist') || isempty(seqdata.randcyclelist)
+%                     seqdata.randcyclelist = makeRandList;
+%                 end
                 bStop.Enable='on';
                 rSingle.Enable='off';
         end
@@ -805,7 +841,8 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         initialize_channels;
         set(tStatus,'String','Sequence initialized.');drawnow;
         seqdata.scancycle = cycleTbl.Data;
-
+        seqdata.ScanVar = [];
+        
         % Grab the sequence function
         fName=eSeq.String;
         fh = str2func(erase(fName,'@'));  
@@ -838,6 +875,10 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         end
 
         set(tStatus,'String','Sequence compiled.');drawnow;
+        
+        updateScanVarText;
+        
+
 
         tC2=now;
         compileTime=(tC2-tC1)*24*60*60;

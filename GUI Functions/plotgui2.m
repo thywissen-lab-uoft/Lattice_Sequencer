@@ -66,7 +66,7 @@ drawnow;
         try        
             start_new_sequence;             % Initialize sequence
             seqdata.scancycle=1;            % 
-            seqdata.randcyclelist=0;    
+%             seqdata.randcyclelist=0;    
             seqdata.doscan=0;    
             initialize_channels;            % Initialize channels
             fh = str2func(erase(funcname,'@'));       % Grab the sequence func

@@ -96,7 +96,7 @@ end
 %% Grab this Cycle's Value
 
 scancycle = seqdata.scancycle;
-ind       = 1 + mod(scancycle-1,N);
+ind       = 1 + mod(scancycle-1,size(scan_inds,1));
 
 pinds = scan_inds(ind,:);
 

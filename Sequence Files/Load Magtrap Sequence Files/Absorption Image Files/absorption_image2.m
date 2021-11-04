@@ -619,7 +619,7 @@ switch flags.image_atomtype
 
                                 disp('HS1 SRS Sweep Pulse');  
 
-                                rf_tof_srs_power_list = [10];
+                                rf_tof_srs_power_list = [9];
                                 rf_tof_srs_power = getScanParameter(rf_tof_srs_power_list,seqdata.scancycle,...
                                     seqdata.randcyclelist,'rf_tof_srs_power','dBm');
 

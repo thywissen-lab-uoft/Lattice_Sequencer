@@ -128,7 +128,9 @@ seqdata.digchannels(73).name = 'Raman TTL 2a'; %
 seqdata.digchannels(74).name = 'RF Source'; % 0 : DDS, 1 : SRS
 seqdata.digchannels(74).resetvalue = 0;
 
-seqdata.digchannels(75).name = 'Channel 75'; %unused
+seqdata.digchannels(75).name = 'SRS Source'; %0: new SRS, 1: imaging SRS
+seqdata.digchannels(75).resetvalue = 1;
+
 seqdata.digchannels(76).name = 'Channel 76'; %unused
 seqdata.digchannels(77).name = 'Channel 77'; %unused
 seqdata.digchannels(78).name = 'Channel 78'; %unused

@@ -39,7 +39,9 @@ else
 
     %sweep 1 
     for i = 1:length(sweep_times)
-        setAnalogChannel(calctime(curtime,0), 39, rf_gains(i),1);
+%         setAnalogChannel(calctime(curtime,0), 39, rf_gains(i),1);
+            setAnalogChannel(calctime(curtime,0), 39, rf_gains(i));
+
         %RHYS - The '1' here means DDSID = 1, which indicates the RF evap
         %DDS in DDS_sweep. This uses digital channel 18 as its trigger for
         %the sweep.
@@ -51,7 +53,9 @@ else
     %are at the last stage of rf, which of course depends on the sequence
     %called.
     if last_rf_stage
-        setAnalogChannel(curtime, 39, -10, 1);% rf gain
+        setAnalogChannel(curtime, 39, -10);% rf gain
+%         setAnalogChannel(curtime, 39, -10, 1);% rf gain
+
     end
     curtime = setDigitalChannel(calctime(curtime,0),19,0);% rf TTL
 

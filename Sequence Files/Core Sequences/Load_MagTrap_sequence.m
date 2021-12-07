@@ -217,7 +217,7 @@ seqdata.flags.RF_evap_stages = [1, 1, 1]; %[stage1, decomp/transport, stage1b] %
 
 
 % RF1A and RF1B timescales
-RF_1B_time_scale_list = [0.9];
+RF_1B_time_scale_list = [0.8];
 RF_1B_time_scale = getScanParameter(RF_1B_time_scale_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1B_time_scale');
 
@@ -231,7 +231,7 @@ RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1A_finalfreq','MHz');
 
 % RF1B Final Frequency
-RF_1B_Final_Frequency_list = [1];%0.8,0.4
+RF_1B_Final_Frequency_list = [1];%0.8,0.4 1
 RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq','MHz');
 
@@ -242,11 +242,11 @@ seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get cl
  
 % Dipole trap
 seqdata.flags.do_dipole_trap = 1; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
-seqdata.flags.do_Rb_uwave_transfer_in_ODT = 0;  % Field Sweep Rb 2-->1
-seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 1; % uWave Frequency sweep Rb 2-->1
+seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
+seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 0; % uWave Frequency sweep Rb 2-->1
 seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
 seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
-seqdata.flags.mix_at_beginning = 1;             % RF Mixing -9-->-9+-7
+seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
     
 % Optical Evaporation
 seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
@@ -254,7 +254,7 @@ seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test
 
 
 % After optical evaporation
-seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
+seqdata.flags.do_D1OP_post_evap = 1;            % D1 pump
 seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 
 % Optical lattice
@@ -277,12 +277,15 @@ seqdata.flags.do_imaging_molasses = 0; % 1: In Lattice or XDT, 2: Free space aft
 seqdata.flags.evap_away_Rb_in_QP = 0; %Evaporate to 0.4MHz in QP+XDT to kill Rb and load lots of K (only works when loading XDT)
 seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / alignment
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SCOPE TRIGGER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Choose which scope trigger to use. This is very useful.
 
-%RHYS - Useful! Where to trigger scope. Should be more apparent.     
 % scope_trigger = 'DMD pulse'; 
-scope_trigger = 'Load lattices'; 
+% scope_trigger = 'Load lattices'; 
+scope_trigger = 'Lattice_Mod';
 
-% 
 % setDigitalChannel(calctime(curtime,0),'DMD TTL',0);
 % setDigitalChannel(calctime(curtime,100),'DMD TTL',1);
 %% Set switches for predefined scenarios
@@ -352,8 +355,8 @@ end
 %     DDS_sweep(calctime(curtime,0),2,DDSFreq,DDSFreq,calctime(curtime,1));
 %     addOutputParam('DDSFreq',DDSFreq);
 % % 
-% 
-%     % %Set the frequency of the first DP AOM 
+
+    % %Set the frequency of the first DP AOM 
 %     D1_FM_List = [222.5];
 %     D1_FM = getScanParameter(D1_FM_List, seqdata.scancycle, seqdata.randcyclelist);%5
 %     setAnalogChannel(calctime(curtime,0),'D1 FM',D1_FM);
@@ -397,7 +400,8 @@ end
     setDigitalChannel(calctime(curtime,0),'XDT Direct Control',1);
     
     %turn off lattice beams
-    setAnalogChannel(calctime(curtime,0),'xLattice',seqdata.params.lattice_zero(1));%-0.1,1);
+%     setAnalogChannel(calctime(curtime,0),'xLattice',seqdata.params.lattice_zero(1));%-0.1,1);
+    setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);%-0.1,1);    
     setAnalogChannel(calctime(curtime,0),'yLattice',seqdata.params.lattice_zero(2));%-0.1,1);
     setAnalogChannel(calctime(curtime,0),'zLattice',seqdata.params.lattice_zero(3));%-0.1,1);
     
@@ -1072,7 +1076,8 @@ dispLineStr('Turning off coils and traps.',curtime);
         %Y lattice
         setAnalogChannel(calctime(curtime,0),'yLattice',seqdata.params.lattice_zero(2));%-0.1,1);%0
         %X lattice
-        setAnalogChannel(calctime(curtime,0),'xLattice',seqdata.params.lattice_zero(1));%-0.1,1);%0
+%         setAnalogChannel(calctime(curtime,0),'xLattice',seqdata.params.lattice_zero(1));%-0.1,1);%0
+        setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);%-0.1,1);%0
     
     end
 

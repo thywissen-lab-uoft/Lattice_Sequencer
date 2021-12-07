@@ -26,7 +26,7 @@ use_kitten_Load_MOT = 2; %0: no kitten, 1: kitten, 2: coil 15 h-bridge
 %trigger dark spot
 %DigitalPulse(calctime(curtime,0),15,10,1)
 
-%% sort out detuning
+%% Sort out detuning
 
 if length(detuning)==1
     rb_detuning = detuning;
@@ -40,27 +40,27 @@ end
 
 ScopeTriggerPulse(calctime(curtime,0),'Load MOT',1);
 
-
 %% Turn shim multiplexer to MOT shims    
-    setDigitalChannel(calctime(curtime,0),37,0); 
-    %Don't close relay for Science Cell Shims because of current spikes
-    setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);
+
+setDigitalChannel(calctime(curtime,0),37,0); 
+%Don't close relay for Science Cell Shims because of current spikes
+setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);
     
 %% Turn on Trap and Repump Light
 curtime = calctime(curtime, load_MOT_tof);
 %MOT stagger
 K_MOT_before_Rb_time=0;
 
-%K
+% Potassium MOT beams turn on
 if (seqdata.atomtype==1 || seqdata.atomtype==2 || seqdata.atomtype==4) && k_detuning~=-100
-    
+    disp(' Turning on K beams');
     k_trap_power = 0.8; %0.25 for ~2000 atom DFG; 0.8 for full power
     k_repump_power = 0.45; %0.25 for ~2000 atom DFG; 0.45 for full power
     
-    %trap
+    % Trap
     turn_on_beam(curtime,1,k_trap_power,1);%0.7
     
-    %repump
+    % Repump
     turn_on_beam(curtime,2,k_repump_power,1); 
 %     setDigitalChannel(calctime(curtime,0),'gray molasses shear mod AOM TLL',0); % 0: turn off shear mod AOM
 %     setDigitalChannel(calctime(curtime,0),'K Repump 0th Shutter',0); %turn on K repump power for MOT
@@ -69,31 +69,33 @@ if (seqdata.atomtype==1 || seqdata.atomtype==2 || seqdata.atomtype==4) && k_detu
 %     setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',0);
 %     setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',Rb_Push_Power);
 %     setDigitalChannel(calctime(curtime,0),'Rb Probe/OP shutter',1);
-
 end
 
-if k_detuning == -100
-    
+% CF : Why turn off beams for a particular detuning?
+if k_detuning == -100    
     %turn off beams
     turn_off_beam(curtime,1,1,1);
     turn_off_beam(curtime,2,1,1);    
 end
     
 
-%Rb
+% Rubidium MOT beams turn on
 if (seqdata.atomtype==3 || seqdata.atomtype==4) && rb_detuning~=-100
-    
-    %trap
+    disp(' Turning on Rb beams');
+
+    % Trap
     turn_on_beam(calctime(curtime,K_MOT_before_Rb_time),1,0.7,3);
     
-    %repump
+    % Repump
     turn_on_beam(calctime(curtime,K_MOT_before_Rb_time),2,0.8,3);
-    rb_repump_power_list = [0.9];
-    rb_repump_power = getScanParameter(rb_repump_power_list,seqdata.scancycle,seqdata.randcyclelist,'mot_rb_repump_power');;
-    setAnalogChannel(calctime(curtime,20),'Rb Repump AM',rb_repump_power);
     
+    rb_repump_power_list = [0.9];
+    rb_repump_power = getScanParameter(rb_repump_power_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'mot_rb_repump_power');;
+    setAnalogChannel(calctime(curtime,20),'Rb Repump AM',rb_repump_power);    
 end
 
+% CF : Why turn off beams for a particular detuning?
 if rb_detuning == -100
     %turn off beams
     turn_off_beam(curtime,1,1,3);
@@ -101,25 +103,29 @@ if rb_detuning == -100
 end
     
 %% Set Frequency 
-        
-if (seqdata.atomtype==1 || seqdata.atomtype==4) && k_detuning~=-100 %K-40
-    
-    %K-40
-    setAnalogChannel(calctime(curtime,load_MOT_tof),'K Trap FM',k_detuning);
-    
+disp(' Setting MOT Detunings ...');
+      
+% K Trap Detuning 40K
+if (seqdata.atomtype==1 || seqdata.atomtype==4) && k_detuning~=-100   
+    setAnalogChannel(calctime(curtime,load_MOT_tof),...
+        'K Trap FM',k_detuning);    
 end
 
+% K Trap Detuning 41K (This seems unecessary)
 if seqdata.atomtype==2 && k_detuning~=-100 %K-41
-   setAnalogChannel(calctime(curtime,load_MOT_tof),5,k_detuning); %15MHz worked best for K-41 %32.8MHz detuning
+   setAnalogChannel(calctime(curtime,load_MOT_tof),...
+       5,k_detuning); %15MHz worked best for K-41 %32.8MHz detuning
 end
 
+% Rubidium Trap Detuning
 if (seqdata.atomtype==3 || seqdata.atomtype==4) && rb_detuning~=-100 %Rb-87
-    setAnalogChannel(calctime(curtime,load_MOT_tof),34,6590+rb_detuning ); %775 is resonance %6585 at room temp
+    setAnalogChannel(calctime(curtime,load_MOT_tof),...
+        34,6590+rb_detuning ); %775 is resonance %6585 at room temp
 end
-
 
 %% Turn on MOT Coil
-   
+   disp(' Setting MOT Coil Gradients');
+
 
 BGrad = 10; %10
 
@@ -159,8 +165,9 @@ BGrad = 10; %10
 %% Turn on Shims
 
 if loc==0
-    
-       %Turn on Shim Supply Relay
+   disp(' Setting MOT Shim values');
+
+    %Turn on Shim Supply Relay
     setDigitalChannel(calctime(curtime,0),33,1);
 
     
@@ -202,41 +209,18 @@ elseif loc==1
     %turn on the Z (top/bottom) shim 
     curtime = setAnalogChannel(calctime(curtime,0),28,0.0);%0.5
     
-else
-    
-    error('Invalid MOT location');
-    
+else    
+    error('Invalid MOT location');    
 end
 
-
-
-    
-    %Shutters
-    %setDigitalChannel(calctime(curtime,5000),2,0);
-    %setDigitalChannel(calctime(curtime,5000),3,0);
-    %curtime = calctime(curtime,1000);
-
-%% Turn on Probe
-%     %analog
-%     setAnalogChannel(calctime(curtime,0),4,.1,1);
-%     %TTL
-%     setDigitalChannel(calctime(curtime,0),8,0);
-%     %shutter
-%     curtime=setDigitalChannel(curtime,4,1);
-
-
 %% MOT fly away
+% CF : I have no idea what this is for. Can we delete it?
 
 flyaway = 0;
-
-if flyaway
-
-    
-    
+if flyaway       
     %Set Frequency 
     curtime = setAnalogChannel(calctime(curtime,3000),5,10); %32.8MHz detuning
     %setAnalogChannel(calctime(curtime,load_MOT_tof),34,6575);
-
     
 %     %turn on the Y (quantizing) shim 
 %     setAnalogChannel(calctime(curtime,-1),19,1.0); %1.0 for molassess
@@ -249,32 +233,24 @@ if flyaway
     curtime = setAnalogChannel(curtime,25,0.4);
     curtime = setAnalogChannel(curtime,26,0.7);
 
-
-        %TTL
-        curtime = setDigitalChannel(curtime,16,0); %MOT TTL
-         %CATS
-        curtime = setAnalogChannel(curtime,8,0); %13.5G/cm
-        
+    %TTL
+    curtime = setDigitalChannel(curtime,16,0); %MOT TTL
+    %CATS
+    curtime = setAnalogChannel(curtime,8,0); %13.5G/cm        
 end
+%% MOT Flicker
+% CF : I have no idea what this is for. Can we delete it?
 
 MOT_flicker = 0;
-
 if MOT_flicker
-
-    for step = 1:1
-    
-    curtime = setAnalogChannel(calctime(curtime,1000),8,0); 
-    curtime = setAnalogChannel(calctime(curtime,2000),8,10); 
- 
-    
+    for step = 1:1    
+        curtime = setAnalogChannel(calctime(curtime,1000),8,0); 
+        curtime = setAnalogChannel(calctime(curtime,2000),8,10); 
     end
-
 %     curtime = calctime(curtime,2000);
 %     setAnalogChannel(curtime,8,0); %13G/cm
 %     curtime = calctime(curtime,1000);
-%     setAnalogChannel(curtime,8,BGrad)
-    
-else    
+%     setAnalogChannel(curtime,8,BGrad)        
 end
 
 % curtime = calctime(curtime,10000);
@@ -283,13 +259,53 @@ end
 
 %curtime = calctime(curtime,-500);
 
+%% MOT PULSE
+doMOTPulse = 1;
+
+if doMOTPulse
+    disp('Pulsing MOT Beams for PD measurements');
+    tW = 500;
+    tP = 100;
+    
+    curtime = calctime(curtime,tW);  % Wait for equilibriation
+    
+    % Turn off K beams
+    setDigitalChannel(calctime(curtime,0),'K Trap Shutter',0);
+    setDigitalChannel(calctime(curtime,0),'K Repump Shutter',0);
+    
+    % Turn on K beams
+    setDigitalChannel(calctime(curtime,tP),'K Trap Shutter',1);
+    setDigitalChannel(calctime(curtime,tP),'K Repump Shutter',1);    
+    curtime = calctime(curtime,tP);
+    
+    % Wait a little bit
+    curtime = calctime(curtime,100);
+    
+    % Turn off Rb Beams    
+    setDigitalChannel(calctime(curtime,0),'Rb Trap Shutter',0);
+    setDigitalChannel(calctime(curtime,0),'Rb Repump Shutter',0);
+    
+    % Turn on Rb Beams
+    setDigitalChannel(calctime(curtime,tP),'Rb Trap Shutter',1);  
+    setDigitalChannel(calctime(curtime,tP),'Rb Repump Shutter',1);    
+    curtime = calctime(curtime,tP);
+    
+end
+%% UV ON
 %Turn on UV cataract-inducing light.
+
+disp('Turning on UV light');
 UV_On_Time = seqdata.params.UV_on_time;
 setDigitalChannel(calctime(curtime,UV_On_Time),'UV LED',1); %1 = on; 0, off
 curtime = setAnalogChannel(calctime(curtime,UV_On_Time),'UV Lamp 2',5);
+
+
 % setDigitalChannel(calctime(curtime,0),12,1);
 % setDigitalChannel(calctime(curtime,5000),12,0);
-% dispLineStr('hello',curtime);
+% dispLineStr('hello',curtime);'
+
+
+%% End it
 timeout=curtime;
 
     

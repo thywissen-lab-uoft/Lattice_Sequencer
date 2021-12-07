@@ -49,7 +49,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     ramp_Feshbach_B_before_CDT_evap = 0;
 
     %RHYS - A very important parameter. Pass these from elsewhere.
-    Evap_End_Power_List =[0.1];[0.085];[.065];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
+    Evap_End_Power_List =[0.10];[0.085];[.065];0.25;   %[0.80 0.6 0.5 0.4 0.3 0.25 0.2 0.35 0.55 0.45];0.1275; %0.119      %0.789;[0.16]0.0797 ; % XDT evaporative cooling final power; 
     
     % Ending optical evaporation
     exp_end_pwr = getScanParameter(Evap_End_Power_List,...
@@ -446,7 +446,7 @@ curtime = calctime(curtime,dipole_holdtime_before_evap);
         Rb_SRS.Enable=1;          % Whether to enable 
         Rb_SRS.EnableSweep=0;
         
-        programSRS_Rb(Rb_SRS);  
+%         programSRS_Rb(Rb_SRS);  
         
         
         %Field about which to do the sweep
@@ -972,9 +972,9 @@ if seqdata.flags.mix_at_beginning
         seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_freq_post_evap');
 
     sweep_pars.freq=rf_k_sweep_center;        
-    sweep_pars.power = -9.10;-9.2;   
+    sweep_pars.power = -9.2;-9.1;   
 
-    delta_freq_list = 0.01;[0.0040];%0.006; 0.01
+    delta_freq_list = 0.01;[0.01];%0.006; 0.01
     sweep_pars.delta_freq = getScanParameter(delta_freq_list,...
         seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_range_post_evap');
     pulse_length_list = 1.25;[0.75];%0.4ms for mixing 2ms for 80% transfer remove further sweeps
@@ -2664,46 +2664,10 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
         dip_waittime_list = [0];
         dip_waittime = getScanParameter(dip_waittime_list,seqdata.scancycle,seqdata.randcyclelist,'dip_hold_time');
         
-        
-        %RHYS - This kind of modulation stuff already exists elsewhere.
-        A_mod = 0;
-        f_mod_list = 0;0.65;[350:10:490]/1000; %Frequency is in kHz.
-        f_mod = getScanParameter(f_mod_list,seqdata.scancycle,seqdata.randcyclelist,'dip_mod_freq');%
-
         AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_1-dip_sweep/2);
 curtime = AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_2-dip_sweep/2);
 curtime = calctime(curtime,dip_waittime);
 
-        %if (Dimple_in_XDT)
-            %AnalogFuncTo(calctime(curtime,0),'Dimple Pwr',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Dimple_Ramp_Time, Dimple_Ramp_Time, 0); %0
-%curtime = setDigitalChannel(calctime(curtime,50),'Dimple TTL',1);
-        %end
-%curtime = calctime(curtime,50);
-        %setAnalogChannel(calctime(curtime,-10),'dipoleTrap1',-3);
-        %setAnalogChannel(calctime(curtime,-10),'dipoleTrap2',-3);
-%curtime = calctime(curtime,0.5);
-        %setAnalogChannel(calctime(curtime,-10),'dipoleTrap1',dip_1);
-        %setAnalogChannel(calctime(curtime,-10),'dipoleTrap2',dip_2);
-%curtime = calctime(curtime,10);
-        %%for measuring the lifetime in XDT
-        %xdt_hold_time_list = [0];
-        %xdt_hold_time = getScanParameter(xdt_hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'XDT_hold');
-%curtime = calctime(curtime,xdt_hold_time);
-
-        %ScopeTriggerPulse(calctime(curtime,dip_rampstart),'ODT Hold');
-         
-%curtime = calctime(curtime,dip_rampstart+dip_ramptime);
-        
-        %AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk_mod(t,tt,y1,y2,A_mod/2,f_mod)), dip_sweeptime,dip_sweeptime,dip_1+dip_sweep/2);
-%curtime = AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk_mod(t,tt,y1,y2,A_mod/2,f_mod)), dip_sweeptime,dip_sweeptime,dip_2+dip_sweep/2);
-%curtime = calctime(curtime,50);
-        %AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_sweeptime,dip_sweeptime,dip_1+dip_sweep/2);
-        %AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_sweeptime,dip_sweeptime,dip_2+dip_sweep/2);
-         
-%curtime = calctime(curtime,dip_waittime+dip_sweeptime);
-        
-        %AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,0.5);
-        %AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,0.5);      
     end
 
 %% DMD in XDT 
@@ -3373,18 +3337,18 @@ end
         spin_flip_9_7 = 0;
 
         do_raman_spectroscopy = 0;
-        spin_flip_7_5 = 1;        
+        spin_flip_7_5 = 0;        
         rabi_manual=0;
         do_rf_spectroscopy= 0; % Spectrocopy vary rabi
         shift_reg_at_HF = 0;
-        ramp_field_for_imaging = 1;
+        ramp_field_for_imaging = 0;
         
         spin_flip_9_7_again = 0;
-        spin_flip_7_5_again= 1;
+        spin_flip_7_5_again= 0;
 
 
  % Fesahbach Field ramp
-    HF_FeshValue_Initial_List =[190];
+    HF_FeshValue_Initial_List =[195];
     HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
         seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_ODT','G');
      
@@ -3421,8 +3385,8 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
             rf_pulse_length_list = 100;5;20;
             sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5               
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-curtime = calctime(curtime, 500);
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
+% curtime = calctime(curtime, 500);
+% curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
 
             
 

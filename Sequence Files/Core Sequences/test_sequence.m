@@ -618,13 +618,13 @@ global seqdata;
 %% test probe
 
 %  DigitalPulse(calctime(curtime,0),12,10,1);
-% 
-%  %turn on trap
+% % 
+% %  %turn on trap
 %  setAnalogChannel(curtime,26,0.7);
 %  
 % %turn on probe shutter
 % setDigitalChannel(calctime(curtime,0),4,1);
-%turn on probe AM
+% % turn on probe AM
 % setAnalogChannel(calctime(curtime,0),4,1,1)
 % %turn on probe TTL
 % setDigitalChannel(calctime(curtime,0),8,0);
@@ -636,7 +636,7 @@ global seqdata;
 % %setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.0005);
 % setAnalogChannel(calctime(curtime,0),64,0);
 % 
-% 
+% % 
 % curtime = calctime(curtime,1000);
 % %curtime = calctime(curtime,1000);
 % wait_time = 5.2;
@@ -3729,15 +3729,11 @@ global seqdata;
 % optical pumping: set to 202.5
 % for the AOM alignment: set to 190; For the optical pumping fiber alignment, set to 202.5; for the probe fiber alignment, set to 180;
 % curtime = calctime(curtime,1000);
-% setAnalogChannel(calctime(curtime,0),'K Trap FM',21.5);
+% setAnalogChannel(calctime(curtime,0),'K Trap FM',21.5+2.5); %
 % setAnalogChannel(calctime(curtime,0),'K Probe/OP FM',180);
 % setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1);
-% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.9);
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
 % setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
-% curtime = calctime(curtime,1000);
-% setDigitalChannel(calctime(curtime,0),'RF TTL',0);
-% setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',0);
-% setAnalogChannel(calctime(curtime,0),'no name',0);
 % 
 % curtime = calctime(curtime,1000);
 % setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',1);
@@ -4495,7 +4491,7 @@ setAnalogChannel(curtime,'Rb Repump AM',rb_mol_repump_power); %0.14
 
 %%%%%%%%%%%% K D1 GM Settings %%%%%%%%%%%%
 % K D1 GM two photon detuning
-SRS_det_list = [0];%0
+SRS_det_list = [-1.5:0.1:0.5];%0
 SRS_det = getScanParameter(SRS_det_list,seqdata.scancycle,seqdata.randcyclelist,'GM_SRS_det');
 
 % K D1 GM two photon sideband power
@@ -4699,7 +4695,7 @@ setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);
 %%%%%%%%%%%% Perform the time of flight %%%%%%%%%%%%
 
 % Set the time of flight
-tof_list = [15];
+tof_list = [10];
 tof =getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof_time'); 
 
 % Increment the time (ie. perform the time of flight)
@@ -4759,28 +4755,31 @@ end
 
 
 %% Optical pumping test
-% curtime = calctime(curtime,1000);
+curtime = calctime(curtime,1000);
 % setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP Shutter',1);    
 % setAnalogChannel(calctime(curtime,-5),'Rb Probe/OP AM',1); %0.11
 % setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',0); % inverted logic
-% setAnalogChannel(calctime(curtime,0.0),'Rb Beat Note FM',6590 - 5);
+% % AnalogFuncTo(curtime,'Rb Beat Note FM',...
+% %       @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+% %       50,50, 6590-20);
+% setAnalogChannel(calctime(curtime,0.0),'Rb Beat Note FM',6590 - 20);
+% % % % 
+% % % 
+% % setDigitalChannel(calctime(curtime,-2),'Rb Repump Shutter',1); 
+% % setDigitalChannel(calctime(curtime,-2),'Rb Trap Shutter',1); 
 % % 
-% % 
-% setDigitalChannel(calctime(curtime,-2),'Rb Repump Shutter',1); 
-% setDigitalChannel(calctime(curtime,-2),'Rb Trap Shutter',1); 
-% % 
+% % % % % % % 
+% % % % % % setAnalogChannel(calctime(curtime,0),'Y Shim',2); %0.15
+% % % % % % setAnalogChannel(calctime(curtime,0),'X Shim',1); %0.15
+% % % % % % setAnalogChannel(calctime(curtime,0),'Z Shim',3);%0.0 
 % % % % % % 
-% % % % % setAnalogChannel(calctime(curtime,0),'Y Shim',2); %0.15
-% % % % % setAnalogChannel(calctime(curtime,0),'X Shim',1); %0.15
-% % % % % setAnalogChannel(calctime(curtime,0),'Z Shim',3);%0.0 
-% % % % % 
 % curtime = calctime(curtime,1000);
-% setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',200);%202.5); %200
-% setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',3); 
-% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
-% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
-% setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',0);
-% % % % % 
+setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',190);%202.5); %200
+setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',27.5); 
+setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
+setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
+setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
+% % % % % % 
 % % % 
 % setAnalogChannel(calctime(curtime,0),59,0); %0.11
 
@@ -4869,9 +4868,9 @@ end
 % 
 % curtime = calctime(curtime, 1000)
 
-setAnalogChannel(calctime(curtime,0),62,0); 
-setDigitalChannel(calctime(curtime,0),'Downwards D2 Shutter',0);
-setDigitalChannel(calctime(curtime,0),'Kill TTL',0);
+% setAnalogChannel(calctime(curtime,0),62,0); 
+% setDigitalChannel(calctime(curtime,0),'Downwards D2 Shutter',0);
+% setDigitalChannel(calctime(curtime,0),'Kill TTL',0);
 % % setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
 
 % %% Raman check
@@ -4939,7 +4938,54 @@ setDigitalChannel(calctime(curtime,0),'Kill TTL',0);
 % setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1);
 % 
 % setAnalogChannel(calctime(curtime,0),63,0);
+%% Test HF Imaging/Specctroscopy SRS
 
+% curtime = calctime(curtime,1000);                       % Wait
+% 
+% 
+% % Turn off the uWave
+% setDigitalChannel(calctime(curtime,-100),'RF TTL',0); 
+% 
+% % Turn off VVA
+% setAnalogChannel(calctime(curtime,-100),'RF Gain',-10);
+% 
+% 
+% rf_tof_srs_power_list = [9];
+% rf_tof_srs_power = getScanParameter(rf_tof_srs_power_list,seqdata.scancycle,...
+%     seqdata.randcyclelist,'rf_tof_srs_power','dBm');
+% 
+% sweep_time = 5000;
+% 
+% rf_srs_opts = struct;
+% rf_srs_opts.Address='192.168.1.120'; %28:HF Imaging    '192.168.1.120':RF
+% spec
+% rf_srs_opts.EnableBNC=1;                         % Enable SRS output 
+% rf_srs_opts.PowerBNC = rf_tof_srs_power;                           
+% rf_srs_opts.Frequency = 50;
+% % Calculate the beta parameter
+% beta=asech(0.005);   
+% 
+% 
+% % Enable uwave frequency sweep
+% rf_srs_opts.EnableSweep=1;
+% rf_tof_delta_freq = [20]*1e-3;
+% rf_srs_opts.SweepRange=abs(rf_tof_delta_freq);  
+% 
+% 
+% % Set initial modulation
+% setAnalogChannel(calctime(curtime,-5),'uWave FM/AM',1);
+%    
+% 
+% % Ramp the SRS modulation using a TANH
+% % At +-1V input for +- full deviation
+% % The last argument means which votlage fucntion to use
+% AnalogFunc(calctime(curtime,0),'uWave FM/AM',...
+%     @(t,T,beta) -tanh(2*beta*(t-0.5*sweep_time)/sweep_time),...
+%     sweep_time,sweep_time,beta,1);
+% 
+% % Program the SRS
+% programSRS_BNC(rf_srs_opts); 
+% params.isProgrammedSRS = 1;
 
 %% HF Testing timing double shutter
 % 
@@ -5109,12 +5155,145 @@ setDigitalChannel(calctime(curtime,0),'Kill TTL',0);
 % 
 % setDigitalChannel(calctime(curtime,30),'ACync Master',0);
 
-paramGet('HF_FeshValue_Spectroscopy')
-paramGet('rf_freq_HF')
+% paramGet('HF_FeshValue_Spectroscopy')
+% paramGet('rf_freq_HF')
+% 
+%% Test RF gain
+% 
+% 
+% 
+% curtime=calctime(curtime,1000); 
+% setAnalogChannel(calctime(curtime,0),'RF Gain',-2);
+% curtime=calctime(curtime,50); 
+% 
 
 
-curtime=calctime(curtime,1000);
+%% Test Rb uwave sweep
+% curtime = calctime(curtime,1000);
+%  % uWave Sweeep Prepare
+%     %%%%%%%%%%%%%%%%%%%%
+% %     use_ACSync=0;    
+%     dispLineStr('Sweeping uWave Rb 2-->1',curtime);   
+%     
+%     % uWave Center Frequency
+%     freq_list = [-0.125];
+%     freq_offset = getScanParameter(freq_list,seqdata.scancycle,...
+%         seqdata.randcyclelist,'rb_uwave_freq_offset','MHz');    
+%     
+%     uWave_delta_freq_list=[10];
+%     uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
+%         seqdata.scancycle,seqdata.randcyclelist,'rb_uwave_delta_freq','MHz');
+%         
+%     uwave_sweep_time_list =[5000]; 
+%     sweep_time = getScanParameter(uwave_sweep_time_list,...
+%         seqdata.scancycle,seqdata.randcyclelist,'rb_uwave_sweep_time','ms');   
+%      
+%     Rb_SRS=struct;
+%     Rb_SRS.Address=29;        % GPIB address of the Rb SRS    
+% %     Rb_SRS.Frequency=0.5+freq_offset*1E-3; % Frequency in GHz
+%     Rb_SRS.Frequency=1; % Frequency in GHz 
+% 
+%     Rb_SRS.Power=9;           % Power in dBm 
+%     Rb_SRS.Enable=1;          % Power on
+%     Rb_SRS.EnableSweep=0;     % Sweep on     
+%     Rb_SRS.SweepRange=uWave_delta_freq; % Sweep range in MHz   
+%              
+%     addOutputParam('rb_uwave_pwr',Rb_SRS.Power,'dBm')
+%     addOutputParam('rb_uwave_frequency',Rb_SRS.Frequency,'GHz');            
+%     
+%     disp(['     Sweep Time   : ' num2str(sweep_time) ' ms']);
+%     disp(['     Sweep Range  : ' num2str(uWave_delta_freq) ' MHz']);
+%     disp(['     Freq Offset  : ' num2str(freq_offset) ' MHz']);     
+%     
+%     % Program the SRS    
+%     programSRS_Rb(Rb_SRS);      
+%     
+%     % Make sure RF, Rb uWave, K uWave are all off for safety
+%     setDigitalChannel(calctime(curtime,-35),'RF TTL',0);
+%     setDigitalChannel(calctime(curtime,-35),'Rb uWave TTL',0);
+%     setDigitalChannel(calctime(curtime,-35),'K uWave TTL',0);
+% 
+%     % Switch antenna to uWaves (0: RF, 1: uWave) for Rb (1)
+%     setDigitalChannel(calctime(curtime,-30),'RF/uWave Transfer',1); 
+%     setDigitalChannel(calctime(curtime,-30),'K/Rb uWave Transfer',1); 
+%     setDigitalChannel(calctime(curtime,-35),'Rb Source Transfer',0); %0 = SRS, 1 = Sextupler
+% 
+%     % Set initial modulation
+%     setAnalogChannel(calctime(curtime,-35),'uWave FM/AM',-1);    
+%     
+%     %%%%%%%%%%%%%%%%%%%%
+%     % uWave Sweeep 
+%     %%%%%%%%%%%%%%%%%%%%           
+%     setDigitalChannel(calctime(curtime,0),'Rb uWave TTL',1);      % Turn on uWave 
+% %     AnalogFunc(calctime(curtime,0),'uWave FM/AM',...              % Ramp +-1V
+% %         @(t,T) -1+2*t/T,sweep_time,sweep_time);
+% % setAnalogChannel(calctime(curtime,0),'uWave FM/AM',1,1)
+% %     curtime = calctime(curtime,sweep_time);                       % Wait
+%     setDigitalChannel(calctime(curtime,0),'Rb uWave TTL',0);      % Turn off uWave
+% %     
+% %     % Reset the uWave deviation after a while
+%     setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);  
+ 
 
+
+      rotation_time = 1000;   % The time to rotate the waveplate
+      P_lattice = 0.8; %0.5/0.9        % The fraction of power that will be transmitted 
+      curtime = AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),rotation_time,rotation_time,P_lattice);
+
+      
+      
+      
+      
+      ylow = -0.26;
+      ylow = -0.9;
+    yoff = -9.8;
+    yask = 10;
+    setAnalogChannel(calctime(curtime,0-250),48,yoff,1);
+    setAnalogChannel(calctime(curtime,-200),'xLattice',-10,1);
+
+%     setAnalogChannel(calctime(curtime,0),'xLattice',ylow);
+    setDigitalChannel(calctime(curtime,-5),'Lattice Direct Control',0); % 0 : Int on; 1 : int hold    
+    curtime = calctime(curtime,1000);    
+    setDigitalChannel(calctime(curtime,0),'yLatticeOFF',0); % 0 : All on, 1 : All off
+%     setAnalogChannel(calctime(curtime,-20),'xLattice',ylow);
+%     
+
+
+     AnalogFunc(calctime(curtime,0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50,-0.9, yask);
+    
+    
+     AnalogFunc(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50,-0.9, yask);
+    
+    setAnalogChannel(calctime(curtime,-20),'xLattice',ylow);
+    
+    curtime = AnalogFuncTo(calctime(curtime,0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        150, 150, yask);
+    
+    
+    curtime = calctime(curtime,1000)
+    
+    
+    AnalogFuncTo(calctime(curtime,0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 3, 3, ylow-1);
+    
+    AnalogFuncTo(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 3, 3, ylow-1);
+    
+     curtime = AnalogFunc(calctime(curtime,0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 3, 3,yask, -0.9-1);
+    setDigitalChannel(calctime(curtime,1),'yLatticeOFF',0); % 0 : All on, 1 : All off
+   
+%     setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',0); % 0 : Int on; 1 : int hold    
+
+    setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);
+
+    
+    
+%     setAnalogChannel(calctime(curtime,200),'xLattice',-10 ,1);
+%     setDigitalChannel(calctime(curtime,400),'yLatticeOFF',1); % 0 : All on, 1 : All off
 
 
 timeout = curtime;
@@ -5122,4 +5301,3 @@ timeout = curtime;
 
 
 seqdata.flags = struct;
-

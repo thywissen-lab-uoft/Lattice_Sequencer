@@ -77,14 +77,17 @@ disp(['     Sweep Range  : ' num2str(settings.SweepRange) ' MHz']);
 
 
 
-cmd=sprintf('FREQ %fGHz; AMPR %gdBm; MODL %g; MFNC %g; FDEV %gMHz; DISP 2; ENBR %g; FREQ?',...
+cmd=sprintf('FREQ %f GHz; AMPR %g dBm; MODL %g; MFNC %g; FDEV %g MHz; DISP 2; ENBR %g; FREQ?; LERR?; FDEV?',...
     settings.Frequency,...
     settings.Power,...
     settings.EnableSweep,...
     5, ...      % Modulating function is always external [-1V,1V]
     settings.SweepRange,...
-    settings.Enable);% disp(cmd)
+    settings.Enable); disp(cmd)
 
 addGPIBCommand(settings.Address,cmd);
 
+% addGPIBCommand(settings.Address,'LERR?');
+
 end
+

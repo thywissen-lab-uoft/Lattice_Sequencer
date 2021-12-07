@@ -75,7 +75,8 @@ for kk=1:length(opts.SweepTimes)
     
     % Set the RF Gain
     G=opts.Gains(kk);           % RF gain in voltage    
-    setAnalogChannel(curtime,'RF Gain',G,1); 
+%     setAnalogChannel(curtime,'RF Gain',G,1); 
+    setAnalogChannel(curtime,'RF Gain',G); 
 
     % New QP Currents
     I_QP = opts.QPCurrents(kk+1);

@@ -27,12 +27,16 @@ if fake_sweep
 
 else
     % setAnalogChannel(calctime(curtime,-20), 'RF Gain', rf_gains(1),1);
-    setAnalogChannel(calctime(curtime,-0.1), 'RF Gain', rf_gains(1),1);
+%     setAnalogChannel(calctime(curtime,-0.1), 'RF Gain', rf_gains(1),1);
+        setAnalogChannel(calctime(curtime,-0.1), 'RF Gain', rf_gains(1));
+
    
     %sweep 1 %This code adds 1ms delays before and after RF sweeps. Also,
     %turns off the RF after each sweep.
     for i = 1:length(sweep_times)
-        setAnalogChannel(calctime(curtime,0), 'RF Gain', rf_gains(i),1);
+%         setAnalogChannel(calctime(curtime,0), 'RF Gain', rf_gains(i),1);
+          setAnalogChannel(calctime(curtime,0), 'RF Gain', rf_gains(i));
+
         %turn RF on:
         setDigitalChannel(calctime(curtime,0.1),'RF TTL',1);
         curtime = DDS_sweep(calctime(curtime,1),1,freqs(i),freqs(i+1),sweep_times(i));
@@ -42,7 +46,9 @@ else
     %turn DDS (Rf) off:
     
 %     setAnalogChannel(curtime, 39, 0, 1);
-        setAnalogChannel(curtime, 39, -10, 1);
+%         setAnalogChannel(curtime, 'RF Gain', -10, 1);
+        setAnalogChannel(curtime, 'RF Gain', -10);
+
 
 end
 

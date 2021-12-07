@@ -131,7 +131,9 @@ seqdata.digchannels(74).resetvalue = 0;
 seqdata.digchannels(75).name = 'SRS Source'; %0: new SRS, 1: imaging SRS
 seqdata.digchannels(75).resetvalue = 1;
 
-seqdata.digchannels(76).name = 'Channel 76'; %unused
+seqdata.digchannels(76).name = 'SRS Source post spec'; %0:K new SRS 1:Rb SRS
+seqdata.digchannels(76).resetvalue = 0;
+
 seqdata.digchannels(77).name = 'Channel 77'; %unused
 seqdata.digchannels(78).name = 'Channel 78'; %unused
 seqdata.digchannels(79).name = 'Channel 79'; %unused
@@ -534,7 +536,7 @@ seqdata.analogchannels(34).minvoltage = 0;
 seqdata.analogchannels(34).maxvoltage = 10;
 seqdata.analogchannels(34).defaultvoltagefunc = 2;
 
-Rb_Trap_Frequency_Offset = 9; %9 Frequency offset for all Rb trap/probe beams in MHz.
+Rb_Trap_Frequency_Offset = 7; %9 Frequency offset for all Rb trap/probe beams in MHz.
 seqdata.analogchannels(34).voltagefunc{2} = @(a)((a*1-4418.47 + Rb_Trap_Frequency_Offset)/541.355);
 
 %channel 35 (Rb Offset FF)
@@ -595,6 +597,9 @@ seqdata.analogchannels(38).voltagefunc{4} = @(a)((0.2713+a)/3.2189); %2020-02-23
 seqdata.analogchannels(39).name = 'RF Gain';
 seqdata.analogchannels(39).minvoltage = -10;
 seqdata.analogchannels(39).maxvoltage = 10;
+seqdata.analogchannels(39).defaultvoltagefunc = 2;
+seqdata.analogchannels(39).voltagefunc{2} = @(a)(a);
+% seqdata.analogchannels(39).voltagefunc{2} = @(a) (a--10)/20*10;
 
     
 %channel 40 (dipole 1 trap power)
@@ -671,7 +676,7 @@ seqdata.analogchannels(44).defaultvoltagefunc = 2;
 seqdata.analogchannels(45).name = 'xLattice';
 seqdata.analogchannels(45).minvoltage = -10;
 seqdata.analogchannels(45).maxvoltage = 10;
-seqdata.analogchannels(45).resetvalue = [-0.1,1];
+seqdata.analogchannels(45).resetvalue = [-10,1];
 seqdata.analogchannels(45).defaultvoltagefunc = 2;
 % seqdata.analogchannels(45).voltagefunc{2} = @(a)((a-2.7+5.61047)/473.44593);
 
@@ -707,10 +712,11 @@ seqdata.analogchannels(47).maxvoltage = 10;
 
 
 %channel 48 (Unused)
-seqdata.analogchannels(48).name = 'Channel 48';
-seqdata.analogchannels(48).minvoltage = 0;
+seqdata.analogchannels(48).name = 'Lattice Feedback Offset';
+seqdata.analogchannels(48).minvoltage = -10;
 seqdata.analogchannels(48).maxvoltage = 10;
 seqdata.analogchannels(48).defaultvoltagefunc = 2; 
+% seqdata.analogchannels(48).resetvalue = [-9.8,1];
 seqdata.analogchannels(48).voltagefunc{2} = @(a)(a);
 % 2021/10/15 We measured the voltage directlyf rom the adwin, and see 3 mV
 % pk-pk noise on the voltage

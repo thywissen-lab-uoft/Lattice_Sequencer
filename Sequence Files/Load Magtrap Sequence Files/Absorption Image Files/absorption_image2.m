@@ -494,10 +494,10 @@ switch flags.image_atomtype
                     % Get the center frequency
                     Boff = 0.11;
                     B = seqdata.params.HF_probe_fb+ Boff;
-                    rf_tof_freq_list =  [57]*1e-3 +...  %37.5 42.5   12.5 17.5 22.5 0:5:25 30 40:5:60 70
+                    rf_tof_freq_list =  [57]*1e-3 +...  %57
                         abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
                     rf_tof_freq = getScanParameter(rf_tof_freq_list,seqdata.scancycle,...
-                        seqdata.randcyclelist,'rf_tof_freq','MHz'); 61;
+                        seqdata.randcyclelist,'rf_tof_freq','MHz'); 57;61;
                     
 
                     if (rf_tof_freq < 1)

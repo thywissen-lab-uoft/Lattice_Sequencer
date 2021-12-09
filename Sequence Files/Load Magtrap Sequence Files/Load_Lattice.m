@@ -5177,11 +5177,11 @@ if seqdata.flags.High_Field_Imaging
     % Lattice ramps
     lattice_ramp_init               = 1;       % Initial lattice ramp
     lattice_ramp_2                  = 0;       % Secondary lattice ramp
-    lattice_ramp_3                  = 0;       % between raman and rf spectroscopy
+    lattice_ramp_3                  = 1;       % between raman and rf spectroscopy
 
     % Feshbach field ramps
     field_ramp_init                 = 1;       % Ramp field away from initial  
-    field_ramp_2                    = 0;       % ramp field after raman before rf spectroscopy
+    field_ramp_2                    = 1;       % ramp field after raman before rf spectroscopy
     field_ramp_img                  = 1;       % Ramp field for imaging
 
     % Apply a phatom Raman pulse to kill atoms
@@ -5200,8 +5200,8 @@ if seqdata.flags.High_Field_Imaging
 
     % RF Spectroscopy
     rf_rabi_manual                  = 0;
-    do_rf_spectroscopy              = 0; 
-    do_rf_post_spectroscopy         = 0;
+    do_rf_spectroscopy              = 1; 
+    do_rf_post_spectroscopy         = 1;
     
     % Other RF Manipulations
     shift_reg_at_HF                 = 0;
@@ -5446,7 +5446,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
              error('Incorrect RF frequency calculation!! MATLAB IS STUPID! >:(')
         end      
         
-        Raman_AOM3_freq_list =  [-77]*1e-3/2+(80+...   %-120 -162.5:2.5:-140  -180:5:-120
+        Raman_AOM3_freq_list =  [-76]*1e-3/2+(80+...   %-88 for 300Er, -76 for 200Er
             abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6))/2; %-0.14239
         Raman_AOM3_freq = getScanParameter(Raman_AOM3_freq_list,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM3_freq','MHz');
@@ -5455,12 +5455,12 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
 %            Raman_AOM3_freq = freq*1e-3/2+(80+...   
 %             abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6))/2; 
         
-        Raman_AOM3_pwr_list = 0.65; %0.65
+        Raman_AOM3_pwr_list = 0.66; %0.65
         Raman_AOM3_pwr = getScanParameter(Raman_AOM3_pwr_list,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM3_pwr','MHz');
     
 %           RamanspecMode = 'sweep';
-         RamanspecMode = 'pulse';
+        RamanspecMode = 'pulse';
         
         % R3 beam settings
         switch RamanspecMode
@@ -5478,7 +5478,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
                 Pulse_Time = Sweep_Time;
 
             case 'pulse'
-                Pulse_Time_list = [0.065];[0:0.015:0.15];
+                Pulse_Time_list = [0.06];[0:0.015:0.15];
                 Pulse_Time = getScanParameter(Pulse_Time_list,...
                     seqdata.scancycle,seqdata.randcyclelist,'Pulse_Time','ms');
                 Raman_on_time = Pulse_Time; %ms
@@ -5494,7 +5494,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
             Device_id = 1;
             Raman_AOM2_freq = 80*1E6;
 
-            Raman_AOM2_pwr_list = 0.50; %0.5
+            Raman_AOM2_pwr_list = 0.51; %0.5
             Raman_AOM2_pwr = getScanParameter(Raman_AOM2_pwr_list,...
                 seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM2_pwr','MHz');
 
@@ -5851,9 +5851,11 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
 %         HF_FeshValue_Spectroscopy = getScanParameter(HF_FeshValue_Spectroscopy_List,...
 %             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Spectroscopy','G');           
         
-        HF_FeshValue_Spectroscopy = paramGet('HF_FeshValue_Spectroscopy');
-%         HF_FeshValue_Spectroscopy = 199.8;
-        
+%          HF_FeshValue_Spectroscopy = paramGet('HF_FeshValue_Spectroscopy');
+       
+        HF_FeshValue_Spectroscopy = 199.1;
+        addOutputParam('HF_FeshValue_Spectroscopy',HF_FeshValue_Spectroscopy,'G');
+
         HF_FeshValue_Initial = HF_FeshValue_Spectroscopy; %For use below in spectroscopy
         seqdata.params.HF_probe_fb = HF_FeshValue_Spectroscopy; %For imaging
 
@@ -5913,33 +5915,9 @@ curtime = calctime(curtime,5);  %extra wait time
 %         rf_freq_HF = getScanParameter(rf_list,seqdata.scancycle,...
 %             seqdata.randcyclelist,'rf_freq_HF','MHz');
         
-        rf_shift = paramGet('rf_freq_HF_shift');
-%         rf_shift = 10;
-%         switch HF_FeshValue_Spectroscopy
-%             case 198.6
-%                 rf_shift = 0;
-%                 delta_freq = 0.02;
-% 
-%             case 198.8
-%                 rf_shift = 5;
-%                 delta_freq = 0.025;
-% 
-%             case 200
-%                 rf_shift = 5;
-%                 delta_freq = 0.025;
-% 
-%             case 200.3
-%                 rf_shift = 15;
-%                 delta_freq = 0.035;
-% 
-%             case 200.6
-%                 rf_shift = 20;
-%                 delta_freq = 0.030;
-%         end
+%         rf_shift = paramGet('rf_freq_HF_shift');
+        rf_shift = 5;
         
-        
-        
-
         f0 = abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);
         rf_freq_HF = f0+rf_shift*1e-3;
         addOutputParam('rf_freq_HF',rf_freq_HF,'MHz');       
@@ -5949,11 +5927,11 @@ curtime = calctime(curtime,5);  %extra wait time
         end
 
         % Define the sweep parameters
-        delta_freq= .0025; %in MHz            
+        delta_freq= 0.015; %.0025;  in MHz            
         addOutputParam('rf_delta_freq_HF',delta_freq,'MHz');
 
         % RF Pulse 
-        rf_pulse_length_list =1; 1;%1
+        rf_pulse_length_list = 1; %ms
         rf_pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,...
             seqdata.randcyclelist,'rf_pulse_length');
         
@@ -6041,7 +6019,7 @@ curtime = calctime(curtime,5);  %extra wait time
 
                 disp('HS1 SRS Sweep Pulse');  
 
-                rf_srs_power_list = [4];[10];
+                rf_srs_power_list = [6];[10];
                 rf_srs_power = getScanParameter(rf_srs_power_list,seqdata.scancycle,...
                     seqdata.randcyclelist,'rf_srs_power','dBm');
 
@@ -6123,7 +6101,7 @@ curtime = calctime(curtime,5);  %extra wait time
                 
                  % Extra Wait Time
                  
-                HF_hold_time_list = [35];
+                HF_hold_time_list = [1 1.5 2 2.5 3 4 5 6 7 9 10 12 15 17 20 30 40 50 60 70 90 100 150];
                 HF_hold_time = getScanParameter(HF_hold_time_list,seqdata.scancycle,...
                     seqdata.randcyclelist,'HF_hold_time','ms');
 %                 
@@ -6139,6 +6117,11 @@ curtime = calctime(curtime,5);  %extra wait time
                 
         end  
     end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%% Post Spectropscy Operations %%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     if do_rf_post_spectroscopy
         dispLineStr('RF Sweep Spectroscopy',curtime);
@@ -6159,9 +6142,9 @@ curtime = calctime(curtime,5);  %extra wait time
         end
 
         % RF Pulse 
-        rf_pulse_length_list =1;%1
-        rf_pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,...
-            seqdata.randcyclelist,'rf_pulse_length');
+%         rf_pulse_length_list =1;%1
+%         rf_pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,...
+%             seqdata.randcyclelist,'rf_pulse_length');
         
 %         sweep_type = 'DDS';
         sweep_type = 'SRS_HS1';
@@ -6247,7 +6230,7 @@ curtime = calctime(curtime,5);  %extra wait time
 
                 disp('HS1 SRS Sweep Pulse');  
 
-                rf_srs_power_list = [4];[10];
+                rf_srs_power_list = [6];[10];
                 rf_srs_power = getScanParameter(rf_srs_power_list,seqdata.scancycle,...
                     seqdata.randcyclelist,'rf_srs_power','dBm');
 
@@ -6342,8 +6325,6 @@ curtime = calctime(curtime,5);  %extra wait time
                 
         end  
     end
-
-
                
     if do_raman_spectroscopy_post_rf
         reset_rigol=0;
@@ -6460,10 +6441,6 @@ curtime=calctime(curtime,35);
            
     end   
 
-   
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%% Post Spectropscy Operations %%%%%%%%%%%%%%%%%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     % RF shift register
     if shift_reg_at_HF

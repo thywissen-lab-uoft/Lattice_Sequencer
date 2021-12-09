@@ -51,9 +51,13 @@ prands.tof                   = true;
 % punits.latt_depth = 'Er';
 % prands.latt_depth = false;
 
-params.rf_freq_HF_shift             = [-50 -50];
+params.rf_freq_HF_shift             = [-1 1 3 5 -1 1 3 5];
 punits.rf_freq_HF_shift             = 'kHz';
 prands.rf_freq_HF_shift             = true;
+
+params.HF_FeshValue_Spectroscopy             = [199.2 199.2];
+punits.HF_FeshValue_Spectroscopy             = 'G'; 
+prands.HF_FeshValue_Spectroscopy             = false;
 
 % params.HF_hold_time              = [1 1.1 1.5 2 2.5 3 3.5 4 5 6 7 8 9 10 12 15 20 25 30 35 40 50 60 75 90 100 150 200];
 % punits.HF_hold_time = 'ms';

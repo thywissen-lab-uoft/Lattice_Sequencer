@@ -1,79 +1,35 @@
-% %------
-%Author: David McKay
-%Created: July 2009
-%Summary: This turns on the MOT
-%------
-%RHYS - the main file for the sequence. Can we give it another name?
-%RHYS - the file is basically some initializations defining which parts of
-%the sequence to call, plus initialization of some parameters. Then,
-%functions for different sequences (dipole trap loading, lattice, imaging,
-%etc...) are called from if statements. Also, this main function itself
-%contains a lot of the magnetic trap evaporation sequence, making it not
-%really a 'main' file perse. 
-%RHYS - an improved organization would be for this to simply be a 'main'
-%file that loads parameters. It could then call various class methods for
-%different parts of the sequence (i.e. Mag_Trap.Load(x,y,z),
-%XDT.Evaporate(p,q,r), etc...)
-%
-% CORA - Some rambling thoughts: I'm not quite sure if object oriented 
-% programming is the ideal coding framework for this system. (this is not
-% in direct opposition to your comment rhys, but on the benefits of OOO for
-% us
-% 1) MATLAB is not inherently object
-% oriented, though you can define classes.  While structure object (which
-% is what seqdata is), may resemble classes, they don't really have the
-% same inherent architecture (ie. constructors, inheretence, etc).
-% 2) we don't really make multiple instances of 'class objects'.   
-% 
-% Global variables are powerful and very dangerous tools in my experience.
-% Perhaps another solution would be to remove the globalness of this
-% variable. For example, seqdata could be a locally passed structure that
-% is operated on : (not a real example below)
-%   seqdata = magtrap(seqdata) % adds the magtrap to the sequence
-%
-% The experiment is inherently "timelike and sequential". Ie. The MOT is
-% loaded, then we do some CMOT/molasses, then we do transport.  
-% And I think if possible, it would be helpful if the code structure
-% better reflected the causal and sequential nature of the experiment.
-%
-
-
-
 function timeout = Load_MagTrap_sequence(timein)
+% Load_MagTrap_sequence
+% 
+% This is main sequence file of the experiment
 
 curtime = timein;
 
 %% Initialize seqdata
 global seqdata;
-
-
+initialize_channels();
 seqdata.numDDSsweeps = 0;
 seqdata.scanindex = -1;
 
-%RHYS - which parameters should be sequence parameters and which should
-%not? An answer is that perhaps all parameters could be sequence
-%parameters... but seqdata is a global variable, and this could lead to
-%local conflicts (ramp_time is probably used in many different local
-%contexts as a variable, for instance). Two solutions come to mind: 1) more
-%layers to the seqdata structure (easy) or 2) switching to class-based
-%sequencer with local properties defined (e.g. XDT.ramp_time, 
-%Lattice.ramp_time, etc...) (harder, but better)
+% "Useful" constants
+kHz = 1E3;
+MHz = 1E6;
+GHz = 1E9;
+
+%% Constants and Parameters
+% These are properties of the machine that are not changed. 
 
 %Ambient field cancelling values (ramp to these at end of XDT loading)
 seqdata.params. shim_zero = [(0.1585-0.0160), (-0.0432-0.022), (-0.0865-0.015)];
 
-%RHYS - Global comment: remove things like this where old values have been
-%commented out for years. Let's use version control (i.e. git) for this
-%purpose. 
-
 %Shim values that align the plugged-QP trap (these are non-zero, since the
 %centre of the imaging window is different from the natural QP centre)
-seqdata.params. plug_shims = [(seqdata.params. shim_zero(1)-1-0.04-0.3),...%-0.3
-(seqdata.params. shim_zero(2)+0.125), ...
-(seqdata.params. shim_zero(3)+ 0.35)];%0.35 + 0.55)];
+seqdata.params.plug_shims = [(seqdata.params. shim_zero(1)-1-0.04-0.3),...
+    (seqdata.params. shim_zero(2)+0.125), ...
+    (seqdata.params. shim_zero(3)+ 0.35)];%0.35 + 0.55)];
 
-
-seqdata.params. shim_val = [0 0 0]; %Current shim values (x,y,z)- reset to zero
+%Current shim values (x,y,z)- reset to zero
+seqdata.params.shim_val = [0 0 0]; 
 
 hold_list = [500];
 seqdata.params. molasses_time = getScanParameter(hold_list,...
@@ -84,23 +40,14 @@ addOutputParam('molasses_hold_list',seqdata.params. molasses_time);
 seqdata.params. XDT_area_ratio = 1; % DT2 with respect to DT1
 
 
-
 % Rb Probe Beam AOM Order
 seqdata.flags.Rb_Probe_Order = 1;   %1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
                                 %2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
 seqdata.flags.in_trap_OP = 0; 
 seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been programmed via GPIB
 
-kHz = 1E3;
-MHz = 1E6;
-GHz = 1E9;
-
-%% Initialize channes
-initialize_channels();
 
 %% Switches
-
-%RHYS - please fix indenting in whole code, it is awful. 
 
 %RHYS - these can be switched on for certain predefined sequences. It's
 %a good idea, but I have never used them (except MOT_abs_image). They
@@ -159,12 +106,13 @@ seqdata.flags.do_stern_gerlach = 0; %1: Do a gradient pulse at the beginning of 
 seqdata.flags.iXon = 0; % use iXon camera to take an absorption image (only vertical)
 seqdata.flags.do_F1_pulse = 0; % repump Rb F=1 before/during imaging
 
-%RHYS - thse two should be fixed by the circumstance of the sequence,
-%not separately defined. 
+
 
 seqdata.flags.High_Field_Imaging = 0;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
+
+% CF : D2 Gray molasses is worse than D1, we should delete this
 seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now. 
 
 %RHYS - params should be defined in a separate location from flags. 
@@ -212,9 +160,7 @@ RF_1B_time_scale_list = [0.8];
 RF_1B_time_scale = getScanParameter(RF_1B_time_scale_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1B_time_scale');
 
-% RF_1B_time_scale = getParam('RF1B_time_scale');
-
-rf_evap_time_scale = [0.6 RF_1B_time_scale];[0.6 .9];[0.7 0.9];[1.0 1.5];[0.8 1.2];[1.00 1.2]; %[0.9 1] little improvement; [0.2 1.2] small clouds but fast [0.7, 1.6]
+rf_evap_time_scale = [0.6 RF_1B_time_scale];[0.6 .9];[0.7 0.9];
 
 % RF1A Ending Frequency
 RF_1A_Final_Frequency_list = [16];%16
@@ -271,12 +217,10 @@ seqdata.flags.evap_away_Rb_in_QP = 0; %Evaporate to 0.4MHz in QP+XDT to kill Rb 
 seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / alignment
 
 %% Scope Trigger
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% SCOPE TRIGGER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Choose which scope trigger to use. This is very useful.
+% Choose which scope trigger to use.
 % scope_trigger = 'Load lattices'; 
 scope_trigger = 'Lattice_Mod';
+
 %% Set switches for predefined scenarios
 
 %RHYS - the predefined scenarios described before. These have not been

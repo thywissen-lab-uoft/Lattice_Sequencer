@@ -117,7 +117,7 @@ seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now.
 
 %RHYS - params should be defined in a separate location from flags. 
 seqdata.flags.In_Trap_imaging = 0;
-tof_list = [15];
+tof_list = [10];
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
@@ -397,6 +397,18 @@ end
     %High-field imaging
     setDigitalChannel(calctime(curtime,0),'High Field Shutter',0);
     setDigitalChannel(calctime(curtime,0),'K High Field Probe',1);
+    
+    % Turn off Rigol modulation
+    addr_mod_xy = 9; % ch1 x mod, ch2 y mod
+    addr_z = 5; %ch1 z lat, ch2 z mod  
+    ch_off = struct;
+    ch_off.STATE = 'OFF';
+    ch_off.AMPLITUDE = 0;
+    ch_off.FREQUENCY = 1;
+    
+    programRigol(addr_mod_xy,ch_off,ch_off);   % Turn off xy mod
+    programRigol(addr_z,[],ch_off);             % Turn off z mod
+
     
 %% Make sure Shim supply relay is on
 

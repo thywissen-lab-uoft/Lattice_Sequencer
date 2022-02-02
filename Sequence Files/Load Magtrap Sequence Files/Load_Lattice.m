@@ -4786,6 +4786,8 @@ end
 % Newport regulation boxes.
 
 if do_lattice_mod
+    dispLineStr('Amplitude Modulation Spectroscopy',curtime)
+    
     lattice_ramp = 1; %if we need to ramp up the lattice for am spec
     if lattice_ramp
 %         AM_spec_latt_depth_list = [60];
@@ -4793,6 +4795,7 @@ if do_lattice_mod
 %             seqdata.scancycle,seqdata.randcyclelist,'AM_spec_latt_depth','Er');
 
         AM_spec_latt_depth = paramGet('AM_spec_depth');
+        AM_spec_direction = paramGet('AM_direction');
 
 
         AM_spec_latt_ramptime_list = [50];
@@ -4851,131 +4854,176 @@ curtime = calctime(curtime,5);  %extra wait time
 curtime = calctime (curtime,50);
     end    
     
-%     freq_list = [300]*1e3;
-% 
-%     mod_freq = getScanParameter(freq_list,seqdata.scancycle,...
-%         seqdata.randcyclelist,'lat_mod_freq','Hz');
-%     
-        mod_freq = paramGet('AM_spec_freq');
-%         mod_freq = 235*1e3
 
-    
+    mod_freq = paramGet('AM_spec_freq');    
     mod_time = 3;%0.2; %Closer to 100ms to kill atoms, 3ms for band excitations only. 
-   
-%% For X Lattice
-%        switch AM_spec_latt_depth
-%            case 40
-%                 mod_prefactor = 0.3;
-%            case 60
-%                 mod_prefactor = 0.3;
-%            case 100
-%                 mod_prefactor = 0.35; 
-%            case 200
-%                 mod_prefactor = 0.30;
-%            case 250
-%                 mod_prefactor = 0.25;
-%            case 300
-%                 mod_prefactor = 0.20;
-%         end
-%%    
+
+    % OFF Channel settings
+    ch_off = struct;
+    ch_off.STATE = 'OFF';
+    ch_off.AMPLITUDE = 0;
+    ch_off.FREQUENCY = 1;
+
+    % ON Channel Settings
+    ch_on=struct;
+    ch_on.FREQUENCY=mod_freq;     % Modulation Frequency
+    ch_on.AMPLITUDE_UNIT='VPP';   % Unit of modulation (Volts PP)
+    ch_on.SWEEP='OFF';
+    ch_on.MOD='OFF';
+    ch_on.BURST='ON';             % Burst MODE 
+    ch_on.BURST_MODE='GATED';     % Trig via the gate
+    ch_on.BURST_TRIGGER_SLOPE='POS';% Positive trigger slope
+    ch_on.BURST_TRIGGER='EXT';    % External trigger.    
+    ch_on.STATE = 'ON';
     
-% %%     % For Y Lattice
-%        switch AM_spec_latt_depth
-%            case 40
-%                 mod_prefactor = 0.20;
-%            case 60
-%                 mod_prefactor = 0.50;
-%             case 100
-%                 mod_prefactor = 0.4;
-%             case 200
-%                 mod_prefactor = 0.40;
-%             case 250
-%                 mod_prefactor = 0.80;
-%             case 300
-%                 mod_prefactor = 0.35;
-%         end
+    addr_mod_xy = 9; % ch1 x mod, ch2 y mod
+    addr_z = 5; %ch1 z lat, ch2 z mod  
+    switch AM_spec_direction    
+        case 'X'            
+            m_slope = 0.05; % Per 100 kHz increase the amplitude by this amount
 
-%    % For Z Lattice
-       switch AM_spec_latt_depth
-           case 60
-                mod_prefactor = 0.07;
-           case 100
-                mod_prefactor = 0.7;
-           case 200
-                mod_prefactor = 1.5;
-           case 300
-                mod_prefactor = 0.70;
-        end
-%%
-%%   
-    % For X Lattice
-%      mod_amp = mod_prefactor*((1.1E-5)*(80+mod_freq/1000)^2-0.00092*(60+mod_freq/1000)+0.04);   
+%            % Lattice depth, resonant frequency, modulation amplitude
+            X_prefactors =[
+                50 112  0.17;
+                100 165 0.275;
+                200 240 0.44;
+                300 297 0.52;];
+            
+            
 
-    % For Z Lattice
-    mod_amp = mod_prefactor*((1.1E-5)*(mod_freq/1000)^2-0.00092*(mod_freq/1000)+0.04);0.2;    
+            % Approximate resonant frequency
+            freq_c_approx = (2*4.49*sqrt(4*AM_spec_latt_depth)-3*4.49)*1e3;
+
+            % Frequency distance from resonance
+            dfreq = (mod_freq-freq_c_approx)*1e-3/100;            
+
+            % Amount to increase amplitude by
+            d_amp = dfreq*m_slope;
+
+            % Find the base depth
+            mod_amp = interp1(X_prefactors(:,1),X_prefactors(:,3),AM_spec_latt_depth);
+
+            % Shift for frequency dependence
+            mod_amp = mod_amp+d_amp;            
+
   
+            % Program the Rigols for modulation
+            ch_on.AMPLITUDE = mod_amp;
+            programRigol(addr_mod_xy,ch_on,ch_off); % turn on x mod, turn off y mod
+            programRigol(addr_z,[],ch_off);         % Turn off z mod
+        case 'Y'     
+             m_slope = 0.05; % Per 100 kHz increase the amplitude by this amount
+
+%            % Lattice depth, resonant frequency, modulation amplitude
+            Y_prefactors =[
+                50 112  0.17;
+                100 165 0.275;
+                200 240 0.44;
+                300 297 0.52;];
+
+            % Approximate resonant frequency
+            freq_c_approx = (2*4.49*sqrt(4*AM_spec_latt_depth)-3*4.49)*1e3;
+
+            % Frequency distance from resonance
+            dfreq = (mod_freq-freq_c_approx)*1e-3/100;            
+
+            % Amount to increase amplitude by
+            d_amp = dfreq*m_slope;
+
+            % Find the base depth
+            mod_amp = interp1(Y_prefactors(:,1),Y_prefactors(:,3),AM_spec_latt_depth);
+
+            % Shift for frequency dependence
+            mod_amp = mod_amp+d_amp;
+            
+            
+            ch_on.AMPLITUDE = mod_amp;
+            % Program the Rigols for modulation
+            programRigol(addr_mod_xy,ch_off,ch_on);  % Turn off x mod, turn on y mod
+            programRigol(addr_z,[],ch_off);          % Turn off z mod        
+        case 'Z'
+
+%            % Lattice depth, resonant frequency, modulation amplitude
+            Z_prefactors =[
+                50 112  1;
+                100 165 1.6;
+                200 240 3.5;
+                300 297 8];
+
+            % Find the base depth
+            mod_amp = interp1(Z_prefactors(:,1),Z_prefactors(:,3),AM_spec_latt_depth);
+
+            % Shift for frequency dependence
+            mod_amp = mod_amp*(7e-6*(mod_freq*1e-3)^2-0.0006*(mod_freq*1e-3)+0.035);
+
+
+            ch_on.AMPLITUDE = mod_amp;
+            % Program the Rigols for modulation
+            programRigol(addr_mod_xy,ch_off,ch_off);  % Turn off xy mod
+            programRigol(addr_z,[],ch_on);            % Turn off z mod
+%         case 'X'            
+%             % Amplitude Prefactors
+%             x_pre_factors = [40 0.3;
+%                 60 0.3;
+%                 100 0.35;
+%                 200 0.30;
+%                 250 0.25;
+%                 300 0.20];
+%             mod_prefactor = interp1(x_pre_factors(:,1),x_pre_factors(:,2),AM_spec_latt_depth);            
+%             % Drive strength depends on frequency
+%             mod_amp = ((1.1E-5)*(80+mod_freq/1000)^2-0.00092*(60+mod_freq/1000)+0.04); 
+%             
+% 
+%             mod_amp = mod_amp*mod_prefactor; % Total amplitude (V)    
+%             % Program the Rigols for modulation
+%             ch_on.AMPLITUDE = mod_amp;
+%             programRigol(addr_mod_xy,ch_on,ch_off); % turn on x mod, turn off y mod
+%             programRigol(addr_z,[],ch_off);         % Turn off z mod
+%         case 'Y'
+%             % Amplitude Prefactors
+%             y_pre_factors = [
+%                 40 0.2;
+%                 60 0.5;
+%                 100 0.4;
+%                 200 0.40;
+%                 250 0.80;
+%                 300 0.35];
+%             mod_prefactor = interp1(y_pre_factors(:,1),y_pre_factors(:,2),AM_spec_latt_depth);                            
+% 
+%             % Drive strength depends on frequency
+%             mod_amp = ((1.1E-5)*(80+mod_freq/1000)^2-0.00092*(60+mod_freq/1000)+0.04);            
+%             mod_amp = mod_amp*mod_prefactor; % Total amplitude (V)               
+%             ch_on.AMPLITUDE = 0.5;
+%             % Program the Rigols for modulation
+%             programRigol(addr_mod_xy,ch_off,ch_on);  % Turn off x mod, turn on y mod
+%             programRigol(addr_z,[],ch_off);          % Turn off z mod        
+%         case 'Z'
+%             % Amplitude Prefactors
+%             z_pre_factors = [
+%                 60 0.07;
+%                 100 0.7;
+%                 200 1.5;
+%                 300 4];            
+%             mod_prefactor = interp1(z_pre_factors(:,1),z_pre_factors(:,2),AM_spec_latt_depth);           
+% 
+%             % Drive strength depends on frequency
+%             mod_amp = ((1.1E-5)*(mod_freq/1000)^2-0.00092*(mod_freq/1000)+0.04);    
+%             mod_amp = mod_amp*mod_prefactor; % Total amplitude (V)               
+%             ch_on.AMPLITUDE = 0.5;
+%             % Program the Rigols for modulation
+%             programRigol(addr_mod_xy,ch_off,ch_off);  % Turn off xy mod
+%             programRigol(addr_z,[],ch_on);            % Turn off z mod
+    end
     
     addOutputParam('mod_amp',mod_amp);
-  
-    % We manually select which channel is modulatig via the Rigol channel
-    % to the newport box
-    % Program the Rigol
-    addr=5;                     % Lattice modulation Rigol channel 2
-    ch2=struct;
-    ch2.FREQUENCY=mod_freq;     % Modulation Frequency
-    ch2.AMPLITUDE_UNIT='VPP';   % Unit of modulation (Volts PP)
-    ch2.AMPLITUDE=mod_amp;      % Modulation amplitude
-    ch2.SWEEP='OFF';
-    ch2.MOD='OFF';
-    ch2.BURST='ON';             % Burst MODE 
-    ch2.BURST_MODE='GATED';     % Trig via the gate
-    ch2.BURST_TRIGGER_SLOPE='POS';% Positive trigger slope
-    ch2.BURST_TRIGGER='EXT';    % External trigger.    
-    ch2.STATE = 'ON';
-    
-    disp([' Amplitude : ' num2str(mod_amp) ' V']);
-    
-    programRigol(addr,[],ch2);
-    
+   
     % We leave the feedback on as it cannot keep up. This + the VVA will
     % make a frequency dependent drive.
     % Trigger and wait
     ScopeTriggerPulse(calctime(curtime,0),'Lattice_Mod');
     setDigitalChannel(calctime(curtime,0),'Lattice FM',1); 
     curtime = setDigitalChannel(calctime(curtime,mod_time),'Lattice FM',0);
-
-
-    % OLD MODULATION
-%       mod_wait_time = -50;
-%     mod_offset = 0;
-% Apply the lattice modulation   
-% applyLatticeModulation(calctime(curtime,0), mod_freq, mod_amp, mod_offset, mod_time, ...
-%     'Lattice', 'zlattice', 'RampLatticeDelta', 0, 'ScopeTrigger', 'Lattice_Mod');
-% Wait for some time
-% curtime = calctime(curtime,mod_time+mod_wait_time+50);
-
-    do_excitation_swap = 0;
-    if do_excitation_swap
-        Vz_list = [600];
-        ramptime_list = [0.01:0.01:0.09 0.25:0.5:2.75];
-        Vz = getScanParameter(Vz_list,seqdata.scancycle,seqdata.randcyclelist,'Vz_swap');
-        ramptime = getScanParameter(ramptime_list,seqdata.scancycle,seqdata.randcyclelist,'ramptime');
-        
-curtime = AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.2, 0.2, Vz);            
-        if(raman_coupling)
-            pulse_time_list = [ramptime];
-            pulse_time = getScanParameter(pulse_time_list,seqdata.scancycle,seqdata.randcyclelist,'pulse_time');
-            Pulse_RamanBeams(curtime,pulse_time,'MOTLightSource',2)
-        end
-curtime = AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), ramptime, ramptime, 400);    
-
-curtime = calctime(curtime,ramptime);
-    end
-% curtime = calctime(curtime,50);
-%     %Ramp lattices back to some constant value.
-%     AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60); 
-%     AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60)
-% curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60);
+    
 
 curtime = calctime(curtime,1);
 

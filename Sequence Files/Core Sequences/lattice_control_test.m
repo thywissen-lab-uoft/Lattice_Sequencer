@@ -5,6 +5,7 @@
 %------
 
 function timeout = lattice_control_test(timein)
+global seqdata
 
 curtime = timein;
 curtime = calctime(curtime, 1000);
@@ -24,18 +25,17 @@ scope_trigger =  'lattice control test';'Rampup ODT';
  
 %     % Initialize lattice depths to zero
 %     curtime = calctime(curtime,100);   
-%     setAnalogChannel(calctime(curtime,-70),'yLattice',-1.15);
-%     setAnalogChannel(calctime(curtime,-70),'zLattice',-1.5);
-%     setAnalogChannel(calctime(curtime,-70),'xLattice',0.39);
+    setAnalogChannel(calctime(curtime,-70),'yLattice',-1.15);
+    setAnalogChannel(calctime(curtime,-70),'zLattice',-1.5);
+    setAnalogChannel(calctime(curtime,-70),'xLattice',0.39);
 %     
 %     % Turn on Lattice RF
-% %     setDigitalChannel(calctime(curtime,-5),'xLatticeOFF',0);%0: ON
+%     setDigitalChannel(calctime(curtime,-5),'xLatticeOFF',0);%0: ON
     setDigitalChannel(calctime(curtime,-3),'yLatticeOFF',0);%0: ON
-% %     setDigitalChannel(calctime(curtime,-5),'Z Lattice TTL',0);%0:  ON
+%     setDigitalChannel(calctime(curtime,-5),'Z Lattice TTL',0);%0:  ON
 % 
 %     % Enable lattice integrator feedback
-%     setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',0);% 0: Enable Feedback
-%     
+    setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',0);% 0: Enable Feedback%     
 % 
 %     
 % 
@@ -49,24 +49,196 @@ scope_trigger =  'lattice control test';'Rampup ODT';
 % %     AnalogFunc(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, zero(voltage_func),lattice_depth(1),voltage_func);
 %     AnalogFunc(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, 0,lattice_depth(1));
 % %     
-    curtime = AnalogFunc(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, -0.7,lattice_depth(2));
-% %     curtime = AnalogFunc(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, zero(voltage_func),lattice_depth(3),voltage_func);
-% % %     curtime = AnalogFunc(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, zero(voltage_func),0,1);
+%     curtime = AnalogFunc(calctime(curtime,0),'yLattice',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, -0.7,lattice_depth(2));
+%     curtime = AnalogFunc(calctime(curtime,0),'zLattice',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, zero(voltage_func),lattice_depth(3),voltage_func);
+%     curtime = AnalogFunc(calctime(curtime,0),'zLattice',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, zero(voltage_func),0,1);
 % % 
     curtime = calctime(curtime,100);
 %     
 % %     setAnalogChannel(calctime(curtime,0),44,0.05,1);
 % 
+
+do_lattice_mod = 1;
+if do_lattice_mod
+    dispLineStr('Amplitude Modulation Spectroscopy',curtime)
+    
+    mod_freq = 250e3;    
+    mod_time = 10;%0.2; %Closer to 100ms to kill atoms, 3ms for band excitations only. 
+    mod_amp = .1;
+    
+    AM_spec_latt_depth = 150;
+    AM_spec_direction = 'Z';
+   lattice_ramp = 1; %if we need to ramp up the lattice for am spec
+    if lattice_ramp
+        T0 = 0;
+
+        AM_spec_latt_ramptime_list = [50];
+        AM_spec_latt_ramptime = getScanParameter(AM_spec_latt_ramptime_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'AM_spec_latt_ramptime','ms');
+
+
+        AnalogFuncTo(calctime(curtime,T0),'xLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            AM_spec_latt_ramptime, AM_spec_latt_ramptime, AM_spec_latt_depth);   
+        AnalogFuncTo(calctime(curtime,T0),'yLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            AM_spec_latt_ramptime, AM_spec_latt_ramptime, AM_spec_latt_depth);    
+curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            AM_spec_latt_ramptime, AM_spec_latt_ramptime, AM_spec_latt_depth); 
+    
+
+curtime = calctime(curtime,100);  %extra wait time
+    end    
+
+    
+    % OFF Channel settings
+    ch_off = struct;
+    ch_off.STATE = 'OFF';
+    ch_off.AMPLITUDE = 0;
+    ch_off.FREQUENCY = 1;
+
+    % ON Channel Settings
+    ch_on=struct;
+    ch_on.FREQUENCY=mod_freq;     % Modulation Frequency
+    ch_on.AMPLITUDE_UNIT='VPP';   % Unit of modulation (Volts PP)
+    ch_on.SWEEP='OFF';
+    ch_on.MOD='OFF';
+    ch_on.BURST='ON';             % Burst MODE 
+    ch_on.BURST_MODE='GATED';     % Trig via the gate
+    ch_on.BURST_TRIGGER_SLOPE='POS';% Positive trigger slope
+    ch_on.BURST_TRIGGER='EXT';    % External trigger.    
+    ch_on.STATE = 'ON';
+    
+    addr_mod_xy = 9; % ch1 x mod, ch2 y mod
+    addr_z = 5; %ch1 z lat, ch2 z mod  
+
+
+    switch AM_spec_direction        
+        case 'X'            
+            m_slope = 0.05; % Per 100 kHz increase the amplitude by this amount
+
+%            % Lattice depth, resonant frequency, modulation amplitude
+            X_prefactors =[
+                50 112  0.17;
+                100 165 0.275;
+                200 240 0.44;
+                300 297 0.52;];
+            
+            
+
+            % Approximate resonant frequency
+            freq_c_approx = (2*4.49*sqrt(4*AM_spec_latt_depth)-3*4.49)*1e3;
+
+            % Frequency distance from resonance
+            dfreq = (mod_freq-freq_c_approx)*1e-3/100;            
+
+            % Amount to increase amplitude by
+            d_amp = dfreq*m_slope;
+
+            % Find the base depth
+            mod_amp = interp1(X_prefactors(:,1),X_prefactors(:,3),AM_spec_latt_depth);
+
+            % Shift for frequency dependence
+            mod_amp = mod_amp+d_amp;            
+
+  
+            % Program the Rigols for modulation
+            ch_on.AMPLITUDE = mod_amp;
+            programRigol(addr_mod_xy,ch_on,ch_off); % turn on x mod, turn off y mod
+            programRigol(addr_z,[],ch_off);         % Turn off z mod
+        case 'Y'     
+             m_slope = 0.05; % Per 100 kHz increase the amplitude by this amount
+
+%            % Lattice depth, resonant frequency, modulation amplitude
+            Y_prefactors =[
+                50 112  0.17;
+                100 165 0.275;
+                200 240 0.44;
+                300 297 0.52;];
+
+            % Approximate resonant frequency
+            freq_c_approx = (2*4.49*sqrt(4*AM_spec_latt_depth)-3*4.49)*1e3;
+
+            % Frequency distance from resonance
+            dfreq = (mod_freq-freq_c_approx)*1e-3/100;            
+
+            % Amount to increase amplitude by
+            d_amp = dfreq*m_slope;
+
+            % Find the base depth
+            mod_amp = interp1(Y_prefactors(:,1),Y_prefactors(:,3),AM_spec_latt_depth);
+
+            % Shift for frequency dependence
+            mod_amp = mod_amp+d_amp;
+            
+            
+            ch_on.AMPLITUDE = mod_amp;
+            % Program the Rigols for modulation
+            programRigol(addr_mod_xy,ch_off,ch_on);  % Turn off x mod, turn on y mod
+            programRigol(addr_z,[],ch_off);          % Turn off z mod        
+        case 'Z'
+
+%            % Lattice depth, resonant frequency, modulation amplitude
+            Z_prefactors =[
+                50 112  1;
+                100 165 1.6;
+                200 240 3.5;
+                300 297 8];
+
+            % Find the base depth
+            mod_amp = interp1(Z_prefactors(:,1),Z_prefactors(:,3),AM_spec_latt_depth);
+
+            % Shift for frequency dependence
+            mod_amp = mod_amp*(7e-6*(mod_freq*1e-3)^2-0.0006*(mod_freq*1e-3)+0.035);
+
+
+            ch_on.AMPLITUDE = mod_amp;
+            % Program the Rigols for modulation
+            programRigol(addr_mod_xy,ch_off,ch_off);  % Turn off xy mod
+            programRigol(addr_z,[],ch_on);            % Turn off z mod
+    end
+    
+    addOutputParam('mod_amp',mod_amp);
+   
+    % We leave the feedback on as it cannot keep up. This + the VVA will
+    % make a frequency dependent drive.
+    % Trigger and wait
+    ScopeTriggerPulse(calctime(curtime,0),'Lattice_Mod');
+    setDigitalChannel(calctime(curtime,0),'Lattice FM',1); 
+    curtime = setDigitalChannel(calctime(curtime,mod_time),'Lattice FM',0);    
+
+curtime = calctime(curtime,1000);
+
+        % Ramp down lattices
+        AnalogFuncTo(calctime(curtime,T0),'xLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            AM_spec_latt_ramptime, AM_spec_latt_ramptime, 0);   
+        AnalogFuncTo(calctime(curtime,T0),'yLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            AM_spec_latt_ramptime, AM_spec_latt_ramptime, 0);    
+curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            AM_spec_latt_ramptime, AM_spec_latt_ramptime, 0); 
+
+end
+
+
+
+
 %     
 % %     ramp down lattice
 %     AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time,-1,1);
 %     AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time,-10,1);
-    curtime = AnalogFunc(calctime(curtime,50),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, lattice_depth(2),-0.7);
+%     curtime = AnalogFunc(calctime(curtime,50),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, lattice_depth(2),-0.7);
 %     AnalogFunc(calctime(curtime,50),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, lattice_depth(1),0);
 
 %     curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time,zero(2),1);
 % % %     setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);
-    setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);
+%     setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);
 % % %     setAnalogChannel(calctime(curtime,0),'zLattice',-10,1);
 
 %     setDigitalChannel(calctime(curtime,3),'yLatticeOFF',0);%0: ON

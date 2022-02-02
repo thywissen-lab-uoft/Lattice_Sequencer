@@ -12,60 +12,64 @@ curtime = calctime(curtime, 1000);
 scope_trigger =  'lattice control test';'Rampup ODT';
 %%
       rotation_time = 1000;   % The time to rotate the waveplate
-      P_lattice = 0.8; %0.5/0.9        % The fraction of power that will be transmitted 
+      P_lattice = 1; %0.5/0.9        % The fraction of power that will be transmitted 
       curtime = AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),rotation_time,rotation_time,P_lattice);
       curtime = calctime(curtime,1000);
         
-        lattice_depth = [5 5 5]; %[0 0.82 0.87]
+        lattice_depth = [100 100 0]; %[0 0.82 0.87]
         ramp_time = 50;
         voltage_func = 2;
         zero = [-9.99,0];
 
  
-    % Initialize lattice depths to zero
-    curtime = calctime(curtime,100);   
-    setAnalogChannel(calctime(curtime,-70),'yLattice',-1.15);
-    setAnalogChannel(calctime(curtime,-70),'zLattice',-1.5);
-    setAnalogChannel(calctime(curtime,-70),'xLattice',0.39);
-    
-    % Turn on Lattice RF
-%     setDigitalChannel(calctime(curtime,-5),'xLatticeOFF',0);%0: ON
+%     % Initialize lattice depths to zero
+%     curtime = calctime(curtime,100);   
+%     setAnalogChannel(calctime(curtime,-70),'yLattice',-1.15);
+%     setAnalogChannel(calctime(curtime,-70),'zLattice',-1.5);
+%     setAnalogChannel(calctime(curtime,-70),'xLattice',0.39);
+%     
+%     % Turn on Lattice RF
+% %     setDigitalChannel(calctime(curtime,-5),'xLatticeOFF',0);%0: ON
     setDigitalChannel(calctime(curtime,-3),'yLatticeOFF',0);%0: ON
-%     setDigitalChannel(calctime(curtime,-5),'Z Lattice TTL',0);%0:  ON
-
-    % Enable lattice integrator feedback
-    setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',0);% 0: Enable Feedback
-    
-
-    
-
+% %     setDigitalChannel(calctime(curtime,-5),'Z Lattice TTL',0);%0:  ON
+% 
+%     % Enable lattice integrator feedback
+%     setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',0);% 0: Enable Feedback
+%     
+% 
+%     
+% 
 % Ramp up lattices
-    curtime = calctime(curtime,1000);
-    
+%     curtime = calctime(curtime,1000);
+%     
         % Trigger the scope
-    setDigitalChannel(calctime(curtime,0),'ScopeTrigger',0);
-    setDigitalChannel(calctime(curtime,1),'ScopeTrigger',1);
-    
-    AnalogFunc(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, zero(voltage_func),lattice_depth(1),voltage_func);
-%     AnalogFunc(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, zero(voltage_func),7.5,1);
-    
-    AnalogFunc(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, zero(voltage_func),lattice_depth(2),voltage_func);
-    curtime = AnalogFunc(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, zero(voltage_func),lattice_depth(3),voltage_func);
-%     curtime = AnalogFunc(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, zero(voltage_func),0,1);
-
-    curtime = calctime(curtime,200);
-    
-%     setAnalogChannel(calctime(curtime,0),44,0.05,1);
-
-    
-    %ramp down lattice
+%     setDigitalChannel(calctime(curtime,0),'ScopeTrigger',0);
+%     setDigitalChannel(calctime(curtime,1),'ScopeTrigger',1);
+% %     
+% %     AnalogFunc(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, zero(voltage_func),lattice_depth(1),voltage_func);
+%     AnalogFunc(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, 0,lattice_depth(1));
+% %     
+    curtime = AnalogFunc(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, -0.7,lattice_depth(2));
+% %     curtime = AnalogFunc(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, zero(voltage_func),lattice_depth(3),voltage_func);
+% % %     curtime = AnalogFunc(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, zero(voltage_func),0,1);
+% % 
+    curtime = calctime(curtime,100);
+%     
+% %     setAnalogChannel(calctime(curtime,0),44,0.05,1);
+% 
+%     
+% %     ramp down lattice
 %     AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time,-1,1);
-%     AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time,zero(1),1);
+%     AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time,-10,1);
+    curtime = AnalogFunc(calctime(curtime,50),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, lattice_depth(2),-0.7);
+%     AnalogFunc(calctime(curtime,50),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, lattice_depth(1),0);
+
 %     curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time,zero(2),1);
 % % %     setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);
-% % %     setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);
+    setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);
 % % %     setAnalogChannel(calctime(curtime,0),'zLattice',-10,1);
 
+%     setDigitalChannel(calctime(curtime,3),'yLatticeOFF',0);%0: ON
 
 %     % Lattice mode test    
 %     ch2=struct;

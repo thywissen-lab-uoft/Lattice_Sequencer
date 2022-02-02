@@ -167,7 +167,7 @@ seqdata.flags.do_F1_pulse = 0; % repump Rb F=1 before/during imaging
 %RHYS - thse two should be fixed by the circumstance of the sequence,
 %not separately defined. 
 
-seqdata.flags.High_Field_Imaging = 1;
+seqdata.flags.High_Field_Imaging = 0;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
 seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now. 
@@ -186,13 +186,6 @@ seqdata.params.tof_krb_diff = getScanParameter(tof_krb_diff_list,...
 
 seqdata.params.UV_on_time = 10000; %UV on time + savingtime + wait time = real wait time between cycles%
 % usually 15s for non XDT
-
-%RHYS - Global comment: All of these flags and parameters could be
-%defined in an text file and loaded on sequence run, rather than
-%hardcoded. Should make for better organization. 
-
-%RHYS - These have been fixed for years. Other options could be
-%compared.
 
 % Transport curves
 seqdata.flags.hor_transport_type = 1; 
@@ -242,11 +235,12 @@ seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get cl
  
 % Dipole trap
 seqdata.flags.do_dipole_trap = 1; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
+seqdata.params.ODT_zeros = [-0.04,-0.04];
 seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
 seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 0; % uWave Frequency sweep Rb 2-->1
 seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
 seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
-seqdata.flags.mix_at_beginning = 1;             % RF Mixing -9-->-9+-7
+seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
     
 % Optical Evaporation
 seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
@@ -254,7 +248,7 @@ seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test
 
 
 % After optical evaporation
-seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
+seqdata.flags.do_D1OP_post_evap = 1;            % D1 pump
 seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 
 % Optical lattice
@@ -281,13 +275,8 @@ seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / ali
 % SCOPE TRIGGER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Choose which scope trigger to use. This is very useful.
-
-% scope_trigger = 'DMD pulse'; 
 % scope_trigger = 'Load lattices'; 
 scope_trigger = 'Lattice_Mod';
-
-% setDigitalChannel(calctime(curtime,0),'DMD TTL',0);
-% setDigitalChannel(calctime(curtime,100),'DMD TTL',1);
 %% Set switches for predefined scenarios
 
 %RHYS - the predefined scenarios described before. These have not been
@@ -394,15 +383,19 @@ end
     setDigitalChannel(calctime(curtime,0),'FB offset select',0);        %No offset voltage
     
     %turn off dipole trap beams
-    setAnalogChannel(calctime(curtime,0),'dipoleTrap1',-0.5,1);
-    setAnalogChannel(calctime(curtime,0),'dipoleTrap2',-1,1);
+%     setAnalogChannel(calctime(curtime,0),'dipoleTrap1',-0.5,1);
+    setAnalogChannel(calctime(curtime,0),'dipoleTrap1',seqdata.params.ODT_zeros(1));
+%     setAnalogChannel(calctime(curtime,0),'dipoleTrap2',-1,1);
+    setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));
     setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
     setDigitalChannel(calctime(curtime,0),'XDT Direct Control',1);
     
     %turn off lattice beams
 %     setAnalogChannel(calctime(curtime,0),'xLattice',seqdata.params.lattice_zero(1));%-0.1,1);
     setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);%-0.1,1);    
-    setAnalogChannel(calctime(curtime,0),'yLattice',seqdata.params.lattice_zero(2));%-0.1,1);
+%     setAnalogChannel(calctime(curtime,0),'yLattice',seqdata.params.lattice_zero(2));%-0.1,1);
+    setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);%-0.1,1);
+
     setAnalogChannel(calctime(curtime,0),'zLattice',seqdata.params.lattice_zero(3));%-0.1,1);
     
     setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);
@@ -1051,9 +1044,10 @@ dispLineStr('Turning off coils and traps.',curtime);
         if seqdata.flags. do_dipole_trap == 1
             setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
             %turn off dipole trap 1
-            setAnalogChannel(calctime(curtime,0),40,-0.060);
+            setAnalogChannel(calctime(curtime,0),'dipoleTrap1',seqdata.params.ODT_zeros(1));
             %turn off dipole trap 2
-            setAnalogChannel(calctime(curtime,0),38,0,1);
+%             setAnalogChannel(calctime(curtime,0),'dipoleTrap2',0,1);
+            setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));
             setDigitalChannel(calctime(curtime,-1),'XDT Direct Control',1);
         end
     
@@ -1074,7 +1068,9 @@ dispLineStr('Turning off coils and traps.',curtime);
         %Z lattice
         setAnalogChannel(calctime(curtime,0),'zLattice',seqdata.params.lattice_zero(3));%-0.1,1);%0
         %Y lattice
-        setAnalogChannel(calctime(curtime,0),'yLattice',seqdata.params.lattice_zero(2));%-0.1,1);%0
+%         setAnalogChannel(calctime(curtime,0),'yLattice',seqdata.params.lattice_zero(2));%-0.1,1);%0
+        setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);%-0.1,1);%0
+
         %X lattice
 %         setAnalogChannel(calctime(curtime,0),'xLattice',seqdata.params.lattice_zero(1));%-0.1,1);%0
         setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);%-0.1,1);%0

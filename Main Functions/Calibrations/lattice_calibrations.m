@@ -5,15 +5,15 @@ global seqdata
 %% Zero optical power calibration
 % These voltages are the "zero" lattice levels.  Use these values when
 % ramping up the lattice from totally zero power to smooth out ramps.
-xLattice0_list = [-0.83];[-1.64];
+xLattice0_list = [-0.85];[-1.64];
 xLattice0 = getScanParameter(xLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'xLatt0');
 
-yLattice0_list = -0.96; -1.05;[-1.15];
+yLattice0_list =  -0.58;%-0.955;-1.05;[-1.15];
 yLattice0 = getScanParameter(yLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'yLatt0');
 
-zLattice0_list = 0.37;0.35;0.26;0.46;[0.40];0.44;
+zLattice0_list = 0.38;0.35;0.26;0.46;[0.40];0.44;
 zLattice0 = getScanParameter(zLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'zLatt0');  
 % These parameters could be super sensitive to cause spikes and kill atoms
@@ -110,5 +110,15 @@ x_ErPerW = 346;
 
 % x_lattice2voltage = @(U) x_power2voltage(U/x_ErPerW); 
 xLattice = @(U) x_power2voltage(U/x_ErPerW);
+
+%% Y Lattice new
+y_power2voltage = @(P) (P*54.731069 - 9.655506).*(P < 0.213147) + ...
+    (P*4.166124 + 1.122266).*(P >= 0.213147);
+% y_power2voltage = @(P) (P*54.73 - 9.66).*(P < 0.21) + ...
+%     (P*4.17 + 1.12).*(P >= 0.21);
+y_ErPerW = 346;346;
+
+% x_lattice2voltage = @(U) x_power2voltage(U/x_ErPerW); 
+yLattice = @(U) y_power2voltage(U/y_ErPerW);
 end
 

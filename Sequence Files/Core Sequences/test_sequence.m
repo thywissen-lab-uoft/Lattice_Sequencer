@@ -4533,65 +4533,6 @@ setDigitalChannel(calctime(curtime,0),'K D1 GM Shutter',0);     % close this shu
 
 end
 
-%% Combined Molasses - K D2 GM and Rb D2 Mol
-% This code is for running the D1 Grey Molasses for K and the D2 Optical
-% Molasses for Rb at the same time from the CMOT phase
-doMol2 = 0;
-if doMol2
-
-%%%%%%%%%%%% Shift the fields %%%%%%%%%%%%
-% Set field gradient and shim values (ideally) to zero
-
-% Turn off field gradients
-setAnalogChannel(calctime(curtime,0),'MOT Coil',0,1);   
-
-% Set the shims
-setAnalogChannel(calctime(curtime,0),'X Shim',0.15,2); %0.15
-setAnalogChannel(calctime(curtime,0),'Y Shim',0.15,2); %0.15
-setAnalogChannel(calctime(curtime,0),'Z Shim',0.00,2); %0.00
-
-% Wait for fields to turn off (testing)
-curtime=calctime(curtime,0);  
-
-%%%%%%%%%%%% Shift D2  %%%%%%%%%%%%
-% setAnalogChannel(calctime(curtime,0),'K Trap FM',15); 
-% setAnalogChannel(calctime(curtime,0),'K Repump FM',-50,2); %765
-% setAnalogChannel(calctime(curtime,0),'K Repump AM',0.025); %0.5
-% setAnalogChannel(calctime(curtime,0),'K Trap AM',0.7); %0.7 Oct 30, 2015
-
-%%%%%%%%%%%% Rb D2 Molasses Settings %%%%%%%%%%%%
-
-% Rb Mol detuning setting
-rb_molasses_detuning_list = 110;
-rb_molasses_detuning = getScanParameter(rb_molasses_detuning_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'Rb_molasses_det');  
-
-% Rb Mol trap power setting
-rb_mol_trap_power_list = 0.15;
-rb_mol_trap_power = getScanParameter(rb_mol_trap_power_list,seqdata.scancycle,seqdata.randcyclelist,'rb_mol_trap_power');
-% Rb Mol repump power settings
-rb_mol_repump_power_list = 0.08;[0.01:0.01:0.15];
-rb_mol_repump_power = getScanParameter(rb_mol_repump_power_list,seqdata.scancycle,seqdata.randcyclelist,'Rb_mol_repump_power');
-   
-% Set the power and detunings
-setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',6590+rb_molasses_detuning);
-setAnalogChannel(curtime,'Rb Trap AM',rb_mol_trap_power); %0.7
-setAnalogChannel(curtime,'Rb Repump AM',rb_mol_repump_power); %0.14 
-
-%%%%%%%%%%%% Total Molasses Time %%%%%%%%%%%%
-% Total Molasses Time
-molasses_time_list = [8];
-molasses_time =getScanParameter(molasses_time_list,seqdata.scancycle,seqdata.randcyclelist,'molasses_time'); 
-
-%%%%%%%%%%%% advance time during molasses  %%%%%%%%%%%%
-curtime = calctime(curtime,molasses_time);
-
-
-end
-
-
-
-
 %% Optical Pumping
 % setDigitalChannel(calctime(curtime,0),'ScopeTrigger',1);
 % setDigitalChannel(calctime(curtime,1),'ScopeTrigger',0); 
@@ -4755,7 +4696,7 @@ end
 
 
 %% Optical pumping test
-curtime = calctime(curtime,1000);
+% curtime = calctime(curtime,1000);
 % setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP Shutter',1);    
 % setAnalogChannel(calctime(curtime,-5),'Rb Probe/OP AM',1); %0.11
 % setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',0); % inverted logic
@@ -4773,40 +4714,39 @@ curtime = calctime(curtime,1000);
 % % % % % % setAnalogChannel(calctime(curtime,0),'X Shim',1); %0.15
 % % % % % % setAnalogChannel(calctime(curtime,0),'Z Shim',3);%0.0 
 % % % % % % 
-% curtime = calctime(curtime,1000);
-setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',190);%202.5); %200
-setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',27.5); 
-setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
-setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
-setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
+% % curtime = calctime(curtime,1000);
+% setAnalogChannel(calctime(curtime,-0.5),'K Probe/OP FM',190);%202.5); %200
+% setAnalogChannel(calctime(curtime,-0.5),'K Trap FM',27.5); 
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 is off
+% setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
 % % % % % % 
 % % % 
 % setAnalogChannel(calctime(curtime,0),59,0); %0.11
 
-% % ODT test
-% curtime = calctime(curtime,100);
-% setDigitalChannel(calctime(curtime,-10),'XDT Direct Control',0);
-% setDigitalChannel(calctime(curtime,-10),'XDT TTL',0);
-% % 
+%% ODT test
+curtime = calctime(curtime,100);
+setDigitalChannel(calctime(curtime,-10),'XDT Direct Control',0);
+setDigitalChannel(calctime(curtime,-10),'XDT TTL',0);
+setAnalogChannel(calctime(curtime,0),'ZeroVolts',0); 
 % % % Choose the power limits
-% ODT1powerLOW=0;
-% ODT1powerHIGH = 0.1;
+ODT1powerLOW=-0.05;
+ODT1powerHIGH = 1.4;
 % 
-% ODT2powerLOW=0;
-% ODT2powerHIGH = ODT1powerHIGH;
-% 
+ODT2powerLOW=-0.05;
+ODT2powerHIGH = 1.4;
 % 
 % % % setAnalogChannel(curtime,'dipoleTrap1',-0.025); 
-% AnalogFunc(calctime(curtime,0),'dipoleTrap1',...
-%     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),25,25,ODT1powerLOW,ODT1powerHIGH);
-%     
-% AnalogFunc(calctime(curtime,0),'dipoleTrap2',...
-%     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),25,25,ODT2powerLOW,ODT2powerHIGH);
-% % 
-% curtime = calctime(curtime,500);
+AnalogFunc(calctime(curtime,0),'dipoleTrap1',...
+    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),100,100,ODT1powerLOW,ODT1powerHIGH);
+    
+AnalogFunc(calctime(curtime,0),'dipoleTrap2',...
+    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),100,100,ODT2powerLOW,ODT2powerHIGH);
 % 
-% setAnalogChannel(curtime,'dipoleTrap1',0); 
-% setAnalogChannel(curtime,'dipoleTrap2',0);
+curtime = calctime(curtime,1000);
+% 
+setAnalogChannel(curtime,'dipoleTrap1',ODT1powerLOW); 
+setAnalogChannel(curtime,'dipoleTrap2',ODT2powerLOW);
 % setDigitalChannel(calctime(curtime,10),'XDT TTL',1);
 % setDigitalChannel(calctime(curtime,.5),'XDT Direct Control',1);
 
@@ -4816,7 +4756,10 @@ setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
 % curtime = calctime(curtime,5000);
 % setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
 
-%FB test
+ 
+% setAnalogChannel(curtime,57,0);
+
+%% FB test
 % setDigitalChannel(calctime(curtime,0),'fast FB Switch',1);
 % setAnalogChannel(calctime(curtime,0),'FB current',0,2);
 % 
@@ -5235,60 +5178,60 @@ setDigitalChannel(calctime(curtime,2),'K Probe/OP Shutter',1);
 %     setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);  
  
 
-
-      rotation_time = 1000;   % The time to rotate the waveplate
-      P_lattice = 0.8; %0.5/0.9        % The fraction of power that will be transmitted 
-      curtime = AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),rotation_time,rotation_time,P_lattice);
-
-      
-      
-      
-      
-      ylow = -0.26;
-      ylow = -0.9;
-    yoff = -9.8;
-    yask = 10;
-    setAnalogChannel(calctime(curtime,0-250),48,yoff,1);
-    setAnalogChannel(calctime(curtime,-200),'xLattice',-10,1);
-
-%     setAnalogChannel(calctime(curtime,0),'xLattice',ylow);
-    setDigitalChannel(calctime(curtime,-5),'Lattice Direct Control',0); % 0 : Int on; 1 : int hold    
-    curtime = calctime(curtime,1000);    
-    setDigitalChannel(calctime(curtime,0),'yLatticeOFF',0); % 0 : All on, 1 : All off
+% 
+%       rotation_time = 1000;   % The time to rotate the waveplate
+%       P_lattice = 0.8; %0.5/0.9        % The fraction of power that will be transmitted 
+%       curtime = AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),rotation_time,rotation_time,P_lattice);
+% 
+%       
+%       
+%       
+%       
+%       ylow = -0.26;
+%       ylow = -0.9;
+%     yoff = -9.8;
+%     yask = 10;
+%     setAnalogChannel(calctime(curtime,0-250),48,yoff,1);
+%     setAnalogChannel(calctime(curtime,-200),'xLattice',-10,1);
+% 
+% %     setAnalogChannel(calctime(curtime,0),'xLattice',ylow);
+%     setDigitalChannel(calctime(curtime,-5),'Lattice Direct Control',0); % 0 : Int on; 1 : int hold    
+%     curtime = calctime(curtime,1000);    
+%     setDigitalChannel(calctime(curtime,0),'yLatticeOFF',0); % 0 : All on, 1 : All off
+% %     setAnalogChannel(calctime(curtime,-20),'xLattice',ylow);
+% %     
+% 
+% 
+%      AnalogFunc(calctime(curtime,0),'yLattice',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50,-0.9, yask);
+%     
+%     
+%      AnalogFunc(calctime(curtime,0),'zLattice',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50,-0.9, yask);
+%     
 %     setAnalogChannel(calctime(curtime,-20),'xLattice',ylow);
 %     
-
-
-     AnalogFunc(calctime(curtime,0),'yLattice',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50,-0.9, yask);
-    
-    
-     AnalogFunc(calctime(curtime,0),'zLattice',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50,-0.9, yask);
-    
-    setAnalogChannel(calctime(curtime,-20),'xLattice',ylow);
-    
-    curtime = AnalogFuncTo(calctime(curtime,0),'xLattice',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        150, 150, yask);
-    
-    
-    curtime = calctime(curtime,1000)
-    
-    
-    AnalogFuncTo(calctime(curtime,0),'xLattice',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 3, 3, ylow-1);
-    
-    AnalogFuncTo(calctime(curtime,0),'zLattice',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 3, 3, ylow-1);
-    
-     curtime = AnalogFunc(calctime(curtime,0),'yLattice',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 3, 3,yask, -0.9-1);
-    setDigitalChannel(calctime(curtime,1),'yLatticeOFF',0); % 0 : All on, 1 : All off
-   
-%     setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',0); % 0 : Int on; 1 : int hold    
-
-    setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);
+%     curtime = AnalogFuncTo(calctime(curtime,0),'xLattice',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+%         150, 150, yask);
+%     
+%     
+%     curtime = calctime(curtime,1000)
+%     
+%     
+%     AnalogFuncTo(calctime(curtime,0),'xLattice',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 3, 3, ylow-1);
+%     
+%     AnalogFuncTo(calctime(curtime,0),'zLattice',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 3, 3, ylow-1);
+%     
+%      curtime = AnalogFunc(calctime(curtime,0),'yLattice',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 3, 3,yask, -0.9-1);
+%     setDigitalChannel(calctime(curtime,1),'yLatticeOFF',0); % 0 : All on, 1 : All off
+%    
+% %     setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',0); % 0 : Int on; 1 : int hold    
+% 
+%     setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);
 
     
     

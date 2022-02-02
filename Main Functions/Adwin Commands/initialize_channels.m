@@ -575,23 +575,16 @@ seqdata.analogchannels(37).voltagefunc{6} = @(a)(a*0.0333*7+0.00); % use when in
 seqdata.analogchannels(38).name = 'dipoleTrap2';
 seqdata.analogchannels(38).minvoltage = -10;
 seqdata.analogchannels(38).maxvoltage = 10; 
-seqdata.analogchannels(38).resetvalue = [-0.0,1];
+% seqdata.analogchannels(38).resetvalue = [-0.0,1];
 seqdata.analogchannels(38).defaultvoltagefunc = 4;
 %seqdata.analogchannels(38).voltagefunc{2} = @(a)(a*0.2831-0.0);
 % seqdata.analogchannels(38).voltagefunc{3} = @(a)((a-0.001)/2.845);  % calibrated: 2013-11-28 ; Power in Watts
 % seqdata.analogchannels(38).voltagefunc{2} = @(a)(a./2.98 + 0.0191);  % calibrated: 2014-04-16; P in W (after telescope); Monitor PD: P/mW = 2.356 V/mV + 0.1
 % seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.2043)/2.2396); %2020-06-8
 % seqdata.analogchannels(38).voltagefunc{4} = @(a)(0.445169*a+0.0863101); %2020-01-26
-seqdata.analogchannels(38).voltagefunc{4} = @(a)((0.2713+a)/3.2189); %2020-02-23
 % seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.22626)/2.86651); %2020-01-28 1V/W
-% seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.038098)/0.65312); %2017-04-06 P in W.
-% seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.025229)/0.63677);%@(a)((a+0.03789111)/0.6599042); % calibrated 2017-02-23
-% seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.03174855)/0.5196055); % calibrated 2017-02-17
-% seqdata.analogchannels(38).voltagefunc{4} = @(a)(sqrt(max((a+.04389).^2-0.00165,0)/.39132)); % calibrated 2016-12-21; P in W (before telescope) (Low Gain FB)
-% seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+.043)./0.6284); % calibrated 2016-12-21; P in W (before telescope) (Low Gain FB)
-% seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+.00594)./0.67339); % calibrated 2016-12-20; P in W (before telescope) (High Gain FB)
-% seqdata.analogchannels(38).voltagefunc{4} = @(a)(a./0.5597 - 0.0212); % calibrated 2016-02-29; P in W (before telescope); 
-   
+% seqdata.analogchannels(38).voltagefunc{4} = @(a)((0.2713+a)/3.2189); %2020-02-23
+seqdata.analogchannels(38).voltagefunc{4} = @(a)(5.9026*a + 0.1953); %2022-01-12
 
 %channel 39 (RF Gain control)
 seqdata.analogchannels(39).name = 'RF Gain';
@@ -600,30 +593,19 @@ seqdata.analogchannels(39).maxvoltage = 10;
 seqdata.analogchannels(39).defaultvoltagefunc = 2;
 seqdata.analogchannels(39).voltagefunc{2} = @(a)(a);
 % seqdata.analogchannels(39).voltagefunc{2} = @(a) (a--10)/20*10;
-
     
 %channel 40 (dipole 1 trap power)
 seqdata.analogchannels(40).name = 'dipoleTrap1';
 seqdata.analogchannels(40).minvoltage = -10;
 seqdata.analogchannels(40).maxvoltage = 10;
-seqdata.analogchannels(40).resetvalue = [-0.0,1];
+% seqdata.analogchannels(40).resetvalue = [-0.0,1];
 seqdata.analogchannels(40).defaultvoltagefunc = 4;
 % seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.00226)/0.60811); %calibrated 2019-07-27
 % seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.08475)/0.54452); %calibrated 2020-01-28 2V/W
 % seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.0813)/0.5425); %calibrated 2020-06-8
 % seqdata.analogchannels(40).voltagefunc{4} = @(a)(2.06636*a+0.144332); %calibrated 2021-01-26
-seqdata.analogchannels(40).voltagefunc{4} = @(a)(a-0.0031)/0.5272; %calibrated 2021-02-23
-% % seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.0275821)./0.325018); %2017-06-19 P in W.
-% seqdata.analogchannels(40).voltagefunc{4} = @(a)((0.05955 + a)/0.61664);%calibrated 2019-02-27
-% % seqdata.analogchannels(40).voltagefunc{4} = @(a)((0.02489614 + a)/0.2892920);%calibrated 2018-07-11
-% % seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.025483)./0.29704);
-% %2017-04-06 P in W.
-% seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.0584191)./0.641079);%@(a)((a+0.04824701)./0.6628841); %2017-02-23:
-% seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.0537331)./0.65677); %2017-02-09:  P in W after shear mode AOM and prisms.
-% seqdata.analogchannels(40).voltagefunc{4} = @(a)(sqrt(max((a+.0883).^2-0.00672,0)/.59068)); % calibrated 2016-12-21; P in W (before telescope) (Low Gain FB)
-% seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.0724)./0.7618); % calibrated 2016-12-21; P in W (before telescope) (Low Gain FB)
-% seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.007)./0.80953); % calibrated 2016-12-20; P in W (before telescope) (High Gain FB)
-% seqdata.analogchannels(40).voltagefunc{4} = @(a)(a./0.7806 - 0.0535); % calibrated 2016-02-29; P in W (before telescope); 
+% seqdata.analogchannels(40).voltagefunc{4} = @(a)(a-0.0031)/0.5272; %calibrated 2021-02-23
+seqdata.analogchannels(40).voltagefunc{4} = @(a)(5.2592*a + 0.1741); %2022-01-12
 
 %Channel 41 (motorized waveplate for dipole/lattice power dist)
 seqdata.analogchannels(41).name = 'latticeWaveplate';
@@ -662,7 +644,7 @@ seqdata.analogchannels(43).defaultvoltagefunc = 2;
 seqdata.analogchannels(44).name = 'yLattice';
 seqdata.analogchannels(44).minvoltage = -10;
 seqdata.analogchannels(44).maxvoltage = 10;
-seqdata.analogchannels(44).resetvalue = [-0.1,1]; %Issue in the circuit when asking for -10V, causes siren
+seqdata.analogchannels(44).resetvalue = [-10,1]; %Issue in the circuit when asking for -10V, causes siren
 seqdata.analogchannels(44).defaultvoltagefunc = 2;
 % seqdata.analogchannels(44).voltagefunc{2} = @(a)(a+8.6812)/141.2965;% 2021/04/23
 
@@ -817,14 +799,14 @@ seqdata.analogchannels(60).minvoltage = -10;
 seqdata.analogchannels(60).maxvoltage = 10;
 seqdata.analogchannels(60).defaultvoltagefunc = 2; 
 seqdata.analogchannels(60).voltagefunc{2} = @(a)(a);% 
-% % % % 
-% % % % %channel 61 (MOT to Grey Molasses switch (temporary)) # This is supposed to
-% % % % %be a digital channel. 
-% % % % seqdata.analogchannels(61).name = 'Grey Molasses switch'; %0: MOT; 1: Gray Molasses
-% % % % seqdata.analogchannels(61).minvoltage = -10;
-% % % % seqdata.analogchannels(61).maxvoltage = 10;
-% % % % seqdata.analogchannels(61).defaultvoltagefunc = 1; 
-% % % % seqdata.analogchannels(61).voltagefunc{2} = @(a)(a);% 
+
+%channel 61 ((0V noise cancelling channel for ODTs)
+seqdata.analogchannels(61).name = 'ZeroVolts'; %0: MOT; 1: Gray Molasses
+seqdata.analogchannels(61).minvoltage = -10;
+seqdata.analogchannels(61).maxvoltage = 10;
+seqdata.analogchannels(61).resetvalue = [0,1];
+seqdata.analogchannels(61).defaultvoltagefunc = 1; 
+seqdata.analogchannels(61).voltagefunc{2} = @(a)(a);% 
 
 % create cell arrays with channel names for lookup
 for i = 1:length(seqdata.digchannels)

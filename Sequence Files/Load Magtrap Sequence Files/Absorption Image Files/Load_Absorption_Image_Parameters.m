@@ -2,12 +2,12 @@ function params = Load_Absorption_Image_Parameters()
     global seqdata;
     %% Set imaging detunings
     % Potassium - X-cam
-%     kdet_shift_list = [-3:0.2:-2.2];%-1
-%     kdet_shift = getScanParameter(kdet_shift_list,...
-%         seqdata.scancycle,seqdata.randcyclelist,'kdet_shift','MHz');
+    kdet_shift_list = [2];%-1
+    kdet_shift = getScanParameter(kdet_shift_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'kdet_shift','MHz');
     params.detunings.K.X.positive.normal = 21.5;
     params.detunings.K.X.positive.in_trap = 23.5;
-    params.detunings.K.X.positive.QP_imaging = 21.5 + 1; -3.67;
+    params.detunings.K.X.positive.QP_imaging = 21.5 +kdet_shift;+ 1; -3.67;
     params.detunings.K.X.positive.SG = 24.5;
     params.detunings.K.X.positive.short_tof = 24.5;
     params.detunings.K.X.negative.normal = 33.5-0.8; %32.5-2.72 for XDT loading , 32.5-4.76 DFG?
@@ -44,9 +44,9 @@ function params = Load_Absorption_Image_Parameters()
     
     %% HF imaging
 %     % Potassium -HF -Xcam : settting the DP HF imaging AOM freq
-    kHFdet_shift_list = [0.3];%-1
-    kHFdet_shift = getScanParameter(kHFdet_shift_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'HF_kdet_shift');
+%     kHFdet_shift_list = [-0.6];%-1
+%     kHFdet_shift = getScanParameter(kHFdet_shift_list,seqdata.scancycle,...
+%         seqdata.randcyclelist,'HF_kdet_shift');
 
 
 %     params.detunings.K.X.negative9.HF.normal = -7 -0.4;
@@ -57,8 +57,7 @@ function params = Load_Absorption_Image_Parameters()
     
 %     params.detunings.K.X.negative7.HF.normal = 9.25 + 0.4; 
     %201G:+0.2 %190G: -0.25 %180G: -2.53 %195G: 0 204.5G: 0.5 207G: 0.4
-    params.detunings.K.X.negative7.HF.normal = 9.25 + 0;%8.8;params.detunings.K.X.negative9.HF.normal+(0.154*(seqdata.params.HF_fb-190)+31.851)/2; %9.5 for imaging from ODT, 8 for band mapping
-
+    params.detunings.K.X.negative7.HF.normal = 9.25-0.6;
     params.detunings.K.X.negative7.HF.SG = 12.5;
         
     %% Other detunings

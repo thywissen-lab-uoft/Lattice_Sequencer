@@ -116,7 +116,7 @@ y_power2voltage = @(P) (P*54.731069 - 9.655506).*(P < 0.213147) + ...
     (P*4.166124 + 1.122266).*(P >= 0.213147);
 % y_power2voltage = @(P) (P*54.73 - 9.66).*(P < 0.21) + ...
 %     (P*4.17 + 1.12).*(P >= 0.21);
-y_ErPerW = 346;346;
+y_ErPerW = 346;
 
 % x_lattice2voltage = @(U) x_power2voltage(U/x_ErPerW); 
 yLattice = @(U) y_power2voltage(U/y_ErPerW);

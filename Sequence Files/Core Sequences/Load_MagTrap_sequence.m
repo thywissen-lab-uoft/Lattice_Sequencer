@@ -83,24 +83,17 @@ addOutputParam('molasses_hold_list',seqdata.params. molasses_time);
 % Dipole trap and lattice beam parameters 
 seqdata.params. XDT_area_ratio = 1; % DT2 with respect to DT1
 
-%RHYS - the ordering here is odd. Why do these flags happen before other
-%flags? Should collate.
+
 
 % Rb Probe Beam AOM Order
 seqdata.flags.Rb_Probe_Order = 1;   %1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
                                 %2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
-
 seqdata.flags.in_trap_OP = 0; 
 seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been programmed via GPIB
 
 kHz = 1E3;
 MHz = 1E6;
 GHz = 1E9;
-
-% %% Fake
-% lenspos = [2.8];
-% getScanParameter(lenspos,seqdata.scancycle,seqdata.randcyclelist,'lens_pos');
-
 
 %% Initialize channes
 initialize_channels();
@@ -142,7 +135,9 @@ controlled_load_time = 20000;
 %permanent, and thus should no longer be considered 'flags', but more
 %like 'fixed properties'. 
 
-% Imaging
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% IMAGING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %RHYS - really don't need so many image types, and why is iXon_movie
 %its own thing?
@@ -183,9 +178,12 @@ seqdata.params.tof_krb_diff = getScanParameter(tof_krb_diff_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof_krb_diff','ms');
 
 
-
 seqdata.params.UV_on_time = 10000; %UV on time + savingtime + wait time = real wait time between cycles%
 % usually 15s for non XDT
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% TRANSPORT, RF1A, and RF1B %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Transport curves
 seqdata.flags.hor_transport_type = 1; 
@@ -231,8 +229,11 @@ RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
 
 seqdata.flags.do_plug = 1;   % ramp on plug after transfer to window
 seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get clean TOF signal
-
  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% DIPOLE TRAP AND LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Dipole trap
 seqdata.flags.do_dipole_trap = 1; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
 seqdata.params.ODT_zeros = [-0.04,-0.04];
@@ -244,8 +245,6 @@ seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
     
 % Optical Evaporation
 seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
-
-
 
 % After optical evaporation
 seqdata.flags.do_D1OP_post_evap = 1;            % D1 pump
@@ -271,6 +270,7 @@ seqdata.flags.do_imaging_molasses = 0; % 1: In Lattice or XDT, 2: Free space aft
 seqdata.flags.evap_away_Rb_in_QP = 0; %Evaporate to 0.4MHz in QP+XDT to kill Rb and load lots of K (only works when loading XDT)
 seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / alignment
 
+%% Scope Trigger
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SCOPE TRIGGER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -438,9 +438,6 @@ end
     setDigitalChannel(calctime(curtime,0),'Raman TTL 3',1);
     setDigitalChannel(calctime(curtime,0),'Raman TTL 3a',1);
 
-
-
-    
     %Set 'D1' Raman AOMs to open, shutter closed.
     setDigitalChannel(calctime(curtime,0),'D1 TTL',1);
     setDigitalChannel(calctime(curtime,0),'D1 Shutter',0);
@@ -456,7 +453,6 @@ end
     %High-field imaging
     setDigitalChannel(calctime(curtime,0),'High Field Shutter',0);
     setDigitalChannel(calctime(curtime,0),'K High Field Probe',1);
-
     
 %% Make sure Shim supply relay is on
 
@@ -578,10 +574,7 @@ curtime = setDigitalChannel(curtime,'Kitten Relay',1);
     
 curtime = Transport_Cloud(curtime, seqdata.flags.hor_transport_type,...
     seqdata.flags.ver_transport_type, seqdata.flags.image_loc);
-    disp('End Calculating Transport')
-    
-
-
+    disp('End Calculating Transport')  
 
 %% Ramp up QP
 dispLineStr('Compression stage after transport to science cell.',curtime);
@@ -1125,13 +1118,13 @@ curtime = iXon_FluorescenceImage(curtime,'ExposureOffsetTime',molasses_offset,'E
     end
 
 %% Post-sequence -- e.g. do controlled field ramps, heating pulses, etc.
+% CF: This is probably not helpful and should just be removed.
+
     do_demag_pulses = 0;
     ramp_fesh_between_cycles = 1;
 
-    if do_demag_pulses
-    
+    if do_demag_pulses    
 curtime = pulse_Bfield(calctime(curtime,150));
-
     end
 
     if ramp_fesh_between_cycles
@@ -1175,6 +1168,9 @@ curtime = DigitalPulse(calctime(curtime,0),'Remote field sensor SR',50,1);
 curtime = Reset_Channels(calctime(curtime,0));
 
 %% Pulse on XDTs for 100ms and trigger pyKraken for measurement
+% CF : This portion of code is obsolete and we have no plans to implement
+% it.  Delete it as it can be easily rewritten int eh future.
+
     %RHYS - triggering the pyKraken before MOT loading is useful. Measuring the
     %XDT pointing is not done right now, since we removed the QPDs, but is in
     %theory useful (the idea of using QPDs to keep our critical beams aligned
@@ -1196,17 +1192,19 @@ curtime = Reset_Channels(calctime(curtime,0));
         setDigitalChannel(calctime(curtime,5002),'XDT Direct Control',1);
     end
 end
+
 %% Raman Shutter
 %turn on the Raman shutter for frquuency monitoring
 
-setDigitalChannel(calctime(curtime,0),'Raman Shutter',1); 
+setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
 
 %This is turned off in line 435 above
 
 
 %% Load MOT
+% CF : This should be it's own subfunction. No need to put it in the main
+% code
 dispLineStr('Loading MOT.',curtime);
-
 
     %RHYS - a lot of parameters and cleaning to do here. I've also always
     %thought it was odd that MOT loading happened at the end of the sequence,
@@ -1243,28 +1241,21 @@ dispLineStr('Loading MOT.',curtime);
         curtime = calctime(curtime,1*500);%25000
     end
 
-
     %set relay back
 curtime = setDigitalChannel(calctime(curtime,10),28,0);
-
-
 
     %RHYS - Following is some irrelevant stuff and some quality of life stuff,
     %including an important check on overall cycle time. 
     
 %% Scope trigger selection
-
-    SelectScopeTrigger(scope_trigger);
-
-%% Create a time-stamp (serial date number without the year); 
-    addOutputParam('timestamp',datenum(datevec(now).*[0 1 1 1 1 1]));
+SelectScopeTrigger(scope_trigger);
 
 %% Timeout
 timeout = curtime;
 
-    if (((timeout - timein)*(seqdata.deltat/seqdata.timeunit))>100000)
+if (((timeout - timein)*(seqdata.deltat/seqdata.timeunit))>100000)
     error('Cycle time greater than 100s! Is this correct?')
-    end
+end
     
 disp(repmat('-',1,60));
 dispLineStr('Sequence Complete.',curtime);

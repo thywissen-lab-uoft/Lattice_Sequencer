@@ -32,7 +32,7 @@ ptypes.tof                   = 'random';
 
 %% Lattice High Field
 
-params.AM_spec_depth                   = [60];
+params.AM_spec_depth                   = [300];
 punits.AM_spec_depth = 'Er';
 ptypes.AM_spec_depth = 'ordered';
 
@@ -45,7 +45,7 @@ ptypes.AM_direction = 'ordered';
 % % %     100 = [100:10:180 140:1:165]*1e3; 43 points
 % % %     60 = [70:5:150 110:1:145]*1e3; 53 points
 % % %     250 [220:5:320 260:1:285]*1e3
-params.AM_spec_freq                   = [90:10:160]*1e3;
+params.AM_spec_freq                   = [280:1:290 260:2:278]*1e3;
 punits.AM_spec_freq = 'Hz';
 ptypes.AM_spec_freq = 'random';
 % 

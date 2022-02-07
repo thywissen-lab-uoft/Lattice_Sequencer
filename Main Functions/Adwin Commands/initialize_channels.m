@@ -629,7 +629,7 @@ seqdata.analogchannels(42).maxvoltage = 10;
 seqdata.analogchannels(43).name = 'zLattice';
 seqdata.analogchannels(43).minvoltage = -10;
 seqdata.analogchannels(43).maxvoltage = 10;
-seqdata.analogchannels(43).resetvalue = [-0.1,1];
+seqdata.analogchannels(43).resetvalue = [-10,1];
 seqdata.analogchannels(43).defaultvoltagefunc = 2;
 % seqdata.analogchannels(43).voltagefunc{2} = @(a)((a+8.5772)/89.2457); % 2021/04/23 0.4 is for atom scale to be changed
 % seqdata.analogchannels(43).voltagefunc{2} = @(a)((a+7.9602)/88.725); % 2021/04/23 0.4 is for atom scale to be changed
@@ -639,7 +639,7 @@ seqdata.analogchannels(43).defaultvoltagefunc = 2;
 [~,~,seqdata.analogchannels(43).voltagefunc{2}] = lattice_calibrations;
 
 %channel 44 (Y lattice AM control)
-% 2021/10/15 CH 44 .We measured the voltage directlyf rom the adwin, and see 3 mV
+% 2021/10/15 CH 44 .We measured the voltage directly rom the adwin, and see 3 mV
 % pk-pk noise on the voltage
 seqdata.analogchannels(44).name = 'yLattice';
 seqdata.analogchannels(44).minvoltage = -10;

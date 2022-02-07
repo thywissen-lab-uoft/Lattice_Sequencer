@@ -13,7 +13,7 @@ yLattice0_list =  -0.58;%-0.955;-1.05;[-1.15];
 yLattice0 = getScanParameter(yLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'yLatt0');
 
-zLattice0_list = 0.39;0.35;0.26;0.46;[0.40];0.44;
+zLattice0_list = -0.45;0.35;0.26;0.46;[0.40];0.44;
 zLattice0 = getScanParameter(zLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'zLatt0');  
 % These parameters could be super sensitive to cause spikes and kill atoms
@@ -103,13 +103,24 @@ if doDebug
     set(gca,'xgrid','on','ygrid','on','box','on','linewidth',1);
 end
 
+%% Create Lattice Calibration Structure
+latt_calib = struct;
+
 %% X Lattice new
-x_power2voltage = @(P) (P*48.2126 - 9.6744).*(P < 0.24467) + ...
-    (P*4.0806 + 1.1235).*(P >= 0.24467);
+
+x_p_threshold = 0.24467;
 x_ErPerW = 346;
+
+x_power2voltage = @(P) (P*48.2126 - 9.6744).*(P < x_p_threshold) + ...
+    (P*4.0806 + 1.1235).*(P >= x_p_threshold);
 
 % x_lattice2voltage = @(U) x_power2voltage(U/x_ErPerW); 
 xLattice = @(U) x_power2voltage(U/x_ErPerW);
+
+% latt_calib.x_ErPerW = x_ErPerW;
+% latt_calib.x_power2voltage = x_power2voltage;
+% latt_calib.x_Er2V 
+
 
 %% Y Lattice new
 y_power2voltage = @(P) (P*54.731069 - 9.655506).*(P < 0.213147) + ...
@@ -120,5 +131,14 @@ y_ErPerW = 346;
 
 % x_lattice2voltage = @(U) x_power2voltage(U/x_ErPerW); 
 yLattice = @(U) y_power2voltage(U/y_ErPerW);
+
+%% Z Lattice new
+z_power2voltage = @(P) (P*22.724471 - 9.74512).*(P < 0.527164) + ...
+    (P*1.696746 + 1.339949).*(P >= 0.527164);
+
+z_ErPerW = 186; %to be confirmed
+
+% x_lattice2voltage = @(U) x_power2voltage(U/x_ErPerW); 
+zLattice = @(U) z_power2voltage(U/z_ErPerW);
 end
 

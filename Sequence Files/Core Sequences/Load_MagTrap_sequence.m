@@ -117,7 +117,7 @@ seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now.
 
 %RHYS - params should be defined in a separate location from flags. 
 seqdata.flags.In_Trap_imaging = 0;
-tof_list = [25];
+tof_list = [0.15];
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
@@ -340,7 +340,7 @@ end
 %     setAnalogChannel(calctime(curtime,0),'yLattice',seqdata.params.lattice_zero(2));%-0.1,1);
     setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);%-0.1,1);
 
-    setAnalogChannel(calctime(curtime,0),'zLattice',seqdata.params.lattice_zero(3));%-0.1,1);
+    setAnalogChannel(calctime(curtime,0),'zLattice',-10,1);%-0.1,1);
     
     setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);
     setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1);% Added 2014-03-06 in order to avoid integrator wind-up
@@ -433,16 +433,10 @@ curtime = Load_MOT(calctime(curtime,500),30);
 curtime = calctime(curtime,controlled_load_time);
 
     else
-
-        %RHYS - which historic reasons? Is it important?
-        
+        %RHYS - which historic reasons? Is it important?        
         %this has been here for historic reasons
         curtime = calctime(curtime,1500);
-
-    end
-    
-    %RHYS - The first important code that is called. Applies
-    %CMOT/molasses/optical pumping to MOT. 
+    end   
 
 curtime = Prepare_MOT_for_MagTrap(curtime);
     %RHYS - Should integrate the following lines into the above function. 
@@ -1015,7 +1009,7 @@ dispLineStr('Turning off coils and traps.',curtime);
         %turn lattice beams off (leave a bit of time for the rotating waveplate to get back to zero)
 
         %Z lattice
-        setAnalogChannel(calctime(curtime,0),'zLattice',seqdata.params.lattice_zero(3));%-0.1,1);%0
+        setAnalogChannel(calctime(curtime,0),'zLattice',-10,1);%-0.1,1);%0
         %Y lattice
 %         setAnalogChannel(calctime(curtime,0),'yLattice',seqdata.params.lattice_zero(2));%-0.1,1);%0
         setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);%-0.1,1);%0

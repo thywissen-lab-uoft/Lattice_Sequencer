@@ -202,8 +202,8 @@ if newLoad
 %                  L0(3) L0(3)];    % Z Lattice
              latt_depth=...
                  [L0(1) L0(1); % X lattice
-                 100 100;  % Y lattice
-                 L0(3) L0(3)];    % Z Lattice
+                 L0(2) L0(2);  % Y lattice
+                 60 60];    % Z Lattice
 %             latt_times=[1 latt_hold_time];
             latt_ramp_time_list = [150];
              latt_ramp_time = getScanParameter(latt_ramp_time_list,...
@@ -523,7 +523,7 @@ if newLoad
     setAnalogChannel(calctime(curtime,-60),'xLattice',-10,1);
     setAnalogChannel(calctime(curtime,-60),'yLattice',-10,1);
 %     setAnalogChannel(calctime(curtime,-60),'yLattice',0);
-    setAnalogChannel(calctime(curtime,-60),'zLattice',L0(3));
+    setAnalogChannel(calctime(curtime,-60),'zLattice',-10,1);
 
     % Enable rf output on ALPS3 (fast rf-switch and enable integrator)
     setDigitalChannel(calctime(curtime,-50),'yLatticeOFF',0); % 0 : All on, 1 : All off
@@ -547,6 +547,7 @@ if newLoad
     AnalogFuncTo(calctime(curtime,T0),'yLattice',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         latt_times(1), latt_times(1), latt_depth(2,1));   
+    setAnalogChannel(calctime(curtime,T0-20),'zLattice',L0(3));
     AnalogFuncTo(calctime(curtime,T0),'zLattice',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         latt_times(1), latt_times(1), latt_depth(3,1));   
@@ -4888,8 +4889,6 @@ curtime = calctime (curtime,50);
                 100 165 0.275;
                 200 240 0.44;
                 300 297 0.52;];
-            
-            
 
             % Approximate resonant frequency
             freq_c_approx = (2*4.49*sqrt(4*AM_spec_latt_depth)-3*4.49)*1e3;
@@ -4942,77 +4941,33 @@ curtime = calctime (curtime,50);
             programRigol(addr_mod_xy,ch_off,ch_on);  % Turn off x mod, turn on y mod
             programRigol(addr_z,[],ch_off);          % Turn off z mod        
         case 'Z'
+             m_slope = 0.05; % Per 100 kHz increase the amplitude by this amount
 
 %            % Lattice depth, resonant frequency, modulation amplitude
             Z_prefactors =[
-                50 112  1;
-                100 165 1.6;
-                200 240 3.5;
-                300 297 8];
+                50 112  0.3;
+                100 165 0.5;
+                200 240 0.7;
+                300 297 1.05];
+        
+            % Approximate resonant frequency
+            freq_c_approx = (2*4.49*sqrt(4*AM_spec_latt_depth)-3*4.49)*1e3;
+
+            % Frequency distance from resonance in 100kHz
+            dfreq = (mod_freq-freq_c_approx)*1e-3/100;            
+
+            % Amount to increase amplitude by
+            d_amp = dfreq*m_slope;
 
             % Find the base depth
             mod_amp = interp1(Z_prefactors(:,1),Z_prefactors(:,3),AM_spec_latt_depth);
-
-            % Shift for frequency dependence
-            mod_amp = mod_amp*(7e-6*(mod_freq*1e-3)^2-0.0006*(mod_freq*1e-3)+0.035);
-
-
+                        
+            mod_amp = mod_amp+d_amp;
+            
             ch_on.AMPLITUDE = mod_amp;
             % Program the Rigols for modulation
             programRigol(addr_mod_xy,ch_off,ch_off);  % Turn off xy mod
             programRigol(addr_z,[],ch_on);            % Turn off z mod
-%         case 'X'            
-%             % Amplitude Prefactors
-%             x_pre_factors = [40 0.3;
-%                 60 0.3;
-%                 100 0.35;
-%                 200 0.30;
-%                 250 0.25;
-%                 300 0.20];
-%             mod_prefactor = interp1(x_pre_factors(:,1),x_pre_factors(:,2),AM_spec_latt_depth);            
-%             % Drive strength depends on frequency
-%             mod_amp = ((1.1E-5)*(80+mod_freq/1000)^2-0.00092*(60+mod_freq/1000)+0.04); 
-%             
-% 
-%             mod_amp = mod_amp*mod_prefactor; % Total amplitude (V)    
-%             % Program the Rigols for modulation
-%             ch_on.AMPLITUDE = mod_amp;
-%             programRigol(addr_mod_xy,ch_on,ch_off); % turn on x mod, turn off y mod
-%             programRigol(addr_z,[],ch_off);         % Turn off z mod
-%         case 'Y'
-%             % Amplitude Prefactors
-%             y_pre_factors = [
-%                 40 0.2;
-%                 60 0.5;
-%                 100 0.4;
-%                 200 0.40;
-%                 250 0.80;
-%                 300 0.35];
-%             mod_prefactor = interp1(y_pre_factors(:,1),y_pre_factors(:,2),AM_spec_latt_depth);                            
-% 
-%             % Drive strength depends on frequency
-%             mod_amp = ((1.1E-5)*(80+mod_freq/1000)^2-0.00092*(60+mod_freq/1000)+0.04);            
-%             mod_amp = mod_amp*mod_prefactor; % Total amplitude (V)               
-%             ch_on.AMPLITUDE = 0.5;
-%             % Program the Rigols for modulation
-%             programRigol(addr_mod_xy,ch_off,ch_on);  % Turn off x mod, turn on y mod
-%             programRigol(addr_z,[],ch_off);          % Turn off z mod        
-%         case 'Z'
-%             % Amplitude Prefactors
-%             z_pre_factors = [
-%                 60 0.07;
-%                 100 0.7;
-%                 200 1.5;
-%                 300 4];            
-%             mod_prefactor = interp1(z_pre_factors(:,1),z_pre_factors(:,2),AM_spec_latt_depth);           
-% 
-%             % Drive strength depends on frequency
-%             mod_amp = ((1.1E-5)*(mod_freq/1000)^2-0.00092*(mod_freq/1000)+0.04);    
-%             mod_amp = mod_amp*mod_prefactor; % Total amplitude (V)               
-%             ch_on.AMPLITUDE = 0.5;
-%             % Program the Rigols for modulation
-%             programRigol(addr_mod_xy,ch_off,ch_off);  % Turn off xy mod
-%             programRigol(addr_z,[],ch_on);            % Turn off z mod
     end
     
     addOutputParam('mod_amp',mod_amp);
@@ -5146,7 +5101,7 @@ if (Raman_transfers == 1)
     
     %%% Flags %%%
     horizontal_plane_select_params.Fake_Pulse = 0;
-    horizontal_plane_select_params.Use_EIT_Beams = 0;    
+    horizontal_plane_select_params.Use_EIT_Beams = 1;    
     
     %%%% F Pump Power %%%
     F_Pump_List = [0.8];[1];[0.75];[1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
@@ -5168,7 +5123,7 @@ if (Raman_transfers == 1)
     Raman_List = [0];0;   %-30% : in kHz;
     horizontal_plane_select_params.Raman_AOM_Frequency = 110 + getScanParameter(Raman_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Freq')/1000;
 
-    Raman_On_Time_List =[1];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
+    Raman_On_Time_List =[2000];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
 
     
     %%% uWave %%%

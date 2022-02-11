@@ -20,125 +20,65 @@ zLattice0 = getScanParameter(zLattice0_list,...
 
 seqdata.params.lattice_zero = [xLattice0 yLattice0 zLattice0];
 
-%% Low lattice depth calibration
-% This is the low lattice depth calibration function.  This will be most
-% useful for science lattices and lattice turn on.
-
-% X Lattice
-xLatticeL = @(U_Er) (U_Er)/134.58-2.6*1E-3;      % 2021/08/03
-% Y Lattice
-yLatticeL = @(U_Er) (U_Er)/151.32+15.5*1E-3;     % 2021/08/03
-% Z Lattice
-zLatticeL = @(U_Er) (U_Er)/95.66+2.6E-3;         % 2021/08/03 
-
-%% High lattice depth calibration
-% This is the high lattice depth calibration function.  This will be most
-% useful for fluorescence imaging
-
-% X Lattice
-xLatticeH = @(U_Er)(U_Er+8.28)/117.3;            % 2021/05/04
-% Y Lattice
-yLatticeH = @(U_Er)(U_Er+8.6812)/141.2965;       % 2021/04/23
-% Z Lattice
-zLatticeH = @(U_Er)((U_Er+8.5772)/89.2457);      % 2021/04/23 
-
-%% Combine the calibrations
-
-% Threshold lattice depth to connect different calibrations
-U0 = [150 150 150]; % Merge location in Er
-dU = [20 20 20];    % Merging radius
-
-xLattice = @(U) ...
-    xLatticeL(U).*0.5.*(erfc((U-U0(1))/dU(1)))+ ...    
-    xLatticeH(U).*0.5.*(erf((U-U0(1))/dU(1))+1); 
-
-yLattice = @(U) ...
-    yLatticeL(U).*0.5.*(erfc((U-U0(2))/dU(2)))+ ...    
-    yLatticeH(U).*0.5.*(erf((U-U0(2))/dU(2))+1);
-
-zLattice = @(U) ...
-    zLatticeL(U).*0.5.*(erfc((U-U0(3))/dU(3)))+ ...    
-    zLatticeH(U).*0.5.*(erf((U-U0(3))/dU(3))+1);
-
-doDebug=0;
-if doDebug
-    hF=figure;
-    hF.Position=[100 100 1200 300];
-    hF.Color='w';
-    
-    % Sample points
-    Uvec=linspace(-100,1300,1E4);
-    
-    subplot(131)
-    plot(Uvec,xLatticeL(Uvec),'linewidth',3);
-    hold on
-    plot(Uvec,xLatticeH(Uvec),'linewidth',3);
-    plot(Uvec,xLattice(Uvec),'k-','linewidth',1);
-    legend({'low','high','merge'},'location','southeast');
-    xlim([0 800]);
-    xlabel('x lattice (E_R)');
-    ylabel('voltage output (V)');
-    set(gca,'xgrid','on','ygrid','on','box','on','linewidth',1);
-    
-    subplot(132)
-    plot(Uvec,yLatticeL(Uvec),'linewidth',3);
-    hold on
-    plot(Uvec,yLatticeH(Uvec),'linewidth',3);
-    plot(Uvec,yLattice(Uvec),'k-','linewidth',1);
-    legend({'low','high','merge'},'location','southeast');
-    xlim([0 800]);
-    xlabel('y lattice (E_R)');
-    ylabel('voltage output (V)');
-    set(gca,'xgrid','on','ygrid','on','box','on','linewidth',1);
-
-    subplot(133)
-    plot(Uvec,zLatticeL(Uvec),'linewidth',3);
-    hold on
-    plot(Uvec,zLatticeH(Uvec),'linewidth',3);
-    plot(Uvec,zLattice(Uvec),'k-','linewidth',1);
-    legend({'low','high','merge'},'location','southeast');
-    xlim([0 800]);
-    xlabel('z lattice (E_R)');
-    ylabel('voltage output (V)');
-    set(gca,'xgrid','on','ygrid','on','box','on','linewidth',1);
-end
-
 %% Create Lattice Calibration Structure
 latt_calib = struct;
 
 %% X Lattice new
-
+% X Lattice calibration
 x_p_threshold = 0.24467;
+x_m1 = 48.2126;
+x_b1 = -9.6744;
+x_m2 = 4.0806;
+x_b2 = 1.1235;
 x_ErPerW = 346;
 
-x_power2voltage = @(P) (P*48.2126 - 9.6744).*(P < x_p_threshold) + ...
-    (P*4.0806 + 1.1235).*(P >= x_p_threshold);
-
-% x_lattice2voltage = @(U) x_power2voltage(U/x_ErPerW); 
+x_power2voltage = @(P) (P*x_m1 + x_b1).*(P < x_p_threshold) + ...
+    (P*x_m2 + x_b2).*(P >= x_p_threshold);
 xLattice = @(U) x_power2voltage(U/x_ErPerW);
 
-% latt_calib.x_ErPerW = x_ErPerW;
-% latt_calib.x_power2voltage = x_power2voltage;
-% latt_calib.x_Er2V 
-
+latt_calib(1).Name = 'X Lattice';
+latt_calib(1).ErPerW = x_ErPerW;
+latt_calib(1).power2voltage = @(P) x_power2voltage(P);
+latt_calib(1).depth2voltage = @(U) xLattice(U);
+latt_calib(1).m1 = x_m1;
+latt_calib(1).b1 = x_b1;
+latt_calib(1).m2 = x_m2;
+latt_calib(1).b2 = x_b2;
+latt_calib(1).P_threshold = x_p_threshold;
 
 %% Y Lattice new
-y_power2voltage = @(P) (P*54.731069 - 9.655506).*(P < 0.213147) + ...
-    (P*4.166124 + 1.122266).*(P >= 0.213147);
-% y_power2voltage = @(P) (P*54.73 - 9.66).*(P < 0.21) + ...
-%     (P*4.17 + 1.12).*(P >= 0.21);
+% Y Lattice calibration
+y_p_threshold = 0.213147;
+y_m1 = 54.731069;
+y_b1 = - 9.655506;
+y_m2 = 4.166124;
+y_b2 = 1.122266;
 y_ErPerW = 346;
 
-% x_lattice2voltage = @(U) x_power2voltage(U/x_ErPerW); 
+y_power2voltage = @(P) (P*y_m1 + y_b1).*(P < y_p_threshold) + ...
+    (P*y_m2 + y_b2).*(P >= y_p_threshold);
 yLattice = @(U) y_power2voltage(U/y_ErPerW);
+
+latt_calib(2).Name = 'Y Lattice';
+latt_calib(2).ErPerW = y_ErPerW;
+latt_calib(2).power2voltage = @y_power2voltage;
+latt_calib(2).depth2voltage = @yLattice;
+latt_calib(2).m1 = y_m1;
+latt_calib(2).b1 = y_b1;
+latt_calib(2).m2 = y_m2;
+latt_calib(2).b2 = y_b2;
+latt_calib(2).P_threshold = y_p_threshold;
 
 %% Z Lattice new
 z_power2voltage = @(P) (P*22.724471 - 9.74512).*(P < 0.527164) + ...
     (P*1.696746 + 1.339949).*(P >= 0.527164);
 
-z_ErPerW = 186; %to be confirmed
+z_ErPerW = 186; 
 
 % x_lattice2voltage = @(U) x_power2voltage(U/x_ErPerW); 
 zLattice = @(U) z_power2voltage(U/z_ErPerW);
+
+%% Output Calibration
+seqdata.lattice_calibration = latt_calib;
 end
 

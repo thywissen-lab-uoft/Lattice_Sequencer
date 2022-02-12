@@ -49,7 +49,7 @@ rotate_waveplate = 0;                   % (4637):  Turn Rotating Waveplate to Sh
 % Other
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 Drop_From_XDT = 0;                      %  (97,5187,5257) May need to add code to rotate waveplate back here.
-do_lattice_mod = 1;                     %  (4547)        apply AM Spectroscopy                 
+do_lattice_mod = 0;                     %  (4547)        apply AM Spectroscopy                 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Conductivity
@@ -4974,7 +4974,7 @@ curtime = calctime (curtime,50);
                         
             mod_amp = mod_amp+d_amp;
             
-            mod_amp = .5*mod_amp;
+            mod_amp = mod_amp/2;
             
             ch_on.AMPLITUDE = mod_amp;
             % Program the Rigols for modulation
@@ -5257,10 +5257,10 @@ if seqdata.flags.High_Field_Imaging
 
     % RF Pre Flip 9<-->7data.params
     
-    rf_97_flip_init                 = 1;
+    rf_97_flip_init                 = 0;
     
     % Raman Spectroscopy
-    do_raman_spectroscopy           = 1; 
+    do_raman_spectroscopy           = 0; 
     raman_short_sweep               = 0;
     do_raman_spectroscopy_post_rf   = 0;
 
@@ -5268,7 +5268,7 @@ if seqdata.flags.High_Field_Imaging
 
     % RF Spectroscopy
     rf_rabi_manual                  = 0;
-    do_rf_spectroscopy              = 0; 
+    do_rf_spectroscopy              = 1; 
     do_rf_post_spectroscopy         = 0;
     
     % Other RF Manipulations
@@ -5284,7 +5284,7 @@ if seqdata.flags.High_Field_Imaging
     if lattice_ramp_init        
         
         % Select the depth to ramp
-        HF_latt_depth_list = [200];
+        HF_latt_depth_list = [100];
         HF_latt_depth = getScanParameter(HF_latt_depth_list,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_latt_depth','Er');
 %         HF_latt_depth = paramGet('latt_depth');
@@ -5337,7 +5337,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
     % Feshbach ramp
     if field_ramp_init
         % Feshbach Field ramp
-        HF_FeshValue_Initial_List =[197];
+        HF_FeshValue_Initial_List =[198];
         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_Lattice','G');
 
@@ -5544,7 +5544,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
              error('Incorrect RF frequency calculation!! MATLAB IS STUPID! >:(')
         end      
         
-        Raman_AOM3_freq_list =  [-5]*1e-3/2+(80+...   %-88 for 300Er, -76 for 200Er
+        Raman_AOM3_freq_list =  [-76]*1e-3/2+(80+...   %-88 for 300Er, -76 for 200Er
             abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6))/2; %-0.14239
         Raman_AOM3_freq = getScanParameter(Raman_AOM3_freq_list,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM3_freq','MHz');
@@ -5576,7 +5576,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
                 Pulse_Time = Sweep_Time;
 
             case 'pulse'
-                Pulse_Time_list = [0.2];
+                Pulse_Time_list = [0.065];
                 Pulse_Time = getScanParameter(Pulse_Time_list,...
                     seqdata.scancycle,seqdata.randcyclelist,'Pulse_Time','ms');
                 Raman_on_time = Pulse_Time; %ms
@@ -6045,7 +6045,7 @@ curtime = calctime(curtime,5);  %extra wait time
         Boff = 0.11;
         B = HF_FeshValue_Initial +Boff + 2.35*zshim; 
         
-         rf_shift_list = [-5];       
+         rf_shift_list = [-22];       
         rf_shift = getScanParameter(rf_shift_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_freq_HF_shift','kHz');
          

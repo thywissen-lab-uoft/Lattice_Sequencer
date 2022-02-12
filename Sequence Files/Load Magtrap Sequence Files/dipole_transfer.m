@@ -3342,7 +3342,6 @@ end
         time_in_HF_imaging = curtime;
                 
         spin_flip_9_7 = 0;
-
         do_raman_spectroscopy = 0;
         spin_flip_7_5 = 0;        
         rabi_manual=0;
@@ -3350,6 +3349,8 @@ end
         do_rf_spectroscopy= 0; % 
         do_rf_post_spectroscopy =0;
         shift_reg_at_HF = 0;
+        ramp_field_2 = 0;
+
         ramp_field_for_imaging = 0;
         
         spin_flip_9_7_again = 0;
@@ -3357,7 +3358,7 @@ end
 
 
  % Fesahbach Field ramp
-    HF_FeshValue_Initial_List =[195]; %200.5 201 201.5
+    HF_FeshValue_Initial_List =[190]; %200.5 201 201.5
     HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
         seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_ODT','G');
      
@@ -4331,18 +4332,17 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
             
         end
 
-seqdata.params.HF_probe_fb = HF_FeshValue_Initial;
-        
- if ramp_field_for_imaging
+seqdata.params.HF_probe_fb = HF_FeshValue_Initial;  
 
+   if ramp_field_2
     % Fesahbach Field ramp
-    HF_FeshValue_Final_List = [195]; % 206 207 208 209 210 211
+    HF_FeshValue_Final_List = [209]; % 206 207 208 209 210 211
     HF_FeshValue_Final = getScanParameter(HF_FeshValue_Final_List,...
     seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Final_ODT','G');
  
     % Define the ramp structure
     ramp=struct;
-    ramp.FeshRampTime = 50;
+    ramp.FeshRampTime = 100;
     ramp.FeshRampDelay = -0;
     ramp.FeshValue = HF_FeshValue_Final;
     ramp.SettlingTime = 50; 50;    
@@ -4353,7 +4353,7 @@ curtime = rampMagneticFields(calctime(curtime,0), ramp);
     seqdata.params.HF_probe_fb = HF_FeshValue_Final;
 
  end
-  
+
  
  if spin_flip_9_7_again
             clear('sweep');
@@ -4416,7 +4416,29 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
                 setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
                 setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
             end
+  end
+ 
+   if ramp_field_for_imaging
+
+    % Fesahbach Field ramp
+    HF_FeshValue_Final_List = [195]; % 206 207 208 209 210 211
+    HF_FeshValue_Final = getScanParameter(HF_FeshValue_Final_List,...
+    seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Imaging_ODT','G');
+ 
+    % Define the ramp structure
+    ramp=struct;
+    ramp.FeshRampTime = 50;
+    ramp.FeshRampDelay = -0;
+    ramp.FeshValue = HF_FeshValue_Final;
+    ramp.SettlingTime = 50; 50;    
+    
+    % Ramp the magnetic Fields
+curtime = rampMagneticFields(calctime(curtime,0), ramp);
+    
+    seqdata.params.HF_probe_fb = HF_FeshValue_Final;
+
  end
+
 
  HF5_wait_time_list = [35];
  HF5_wait_time = getScanParameter(HF5_wait_time_list,...

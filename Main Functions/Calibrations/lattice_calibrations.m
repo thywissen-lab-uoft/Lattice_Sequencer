@@ -13,7 +13,7 @@ yLattice0_list =  -0.58;%-0.955;-1.05;[-1.15];
 yLattice0 = getScanParameter(yLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'yLatt0');
 
-zLattice0_list = -0.45;0.35;0.26;0.46;[0.40];0.44;
+zLattice0_list = -0.42;0.35;0.26;0.46;[0.40];0.44;
 zLattice0 = getScanParameter(zLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'zLatt0');  
 % These parameters could be super sensitive to cause spikes and kill atoms
@@ -57,6 +57,7 @@ y_ErPerW = 346;
 
 y_power2voltage = @(P) (P*y_m1 + y_b1).*(P < y_p_threshold) + ...
     (P*y_m2 + y_b2).*(P >= y_p_threshold);
+
 yLattice = @(U) y_power2voltage(U/y_ErPerW);
 
 latt_calib(2).Name = 'Y Lattice';

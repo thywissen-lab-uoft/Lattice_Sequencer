@@ -24,7 +24,6 @@ lattices = {'xLattice','yLattice','zLattice'};
 seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 
 
-
 %% Lattice Flags    
 % These are the lattice flags sorted roughly chronologically.
 
@@ -126,6 +125,9 @@ end
 %% Load Lattice from XDT Settings
 
 if newLoad
+    dispLineStr('Defining initial lattice and DMD ramps.',curtime);
+
+    
     % Hold in lattice
     latt_hold_time_list = [50];
     latt_hold_time = getScanParameter(latt_hold_time_list,...
@@ -516,44 +518,57 @@ if newLoad
     disp(['     DMD Ramp Times  (ms) : ' mat2str(dmd_times)]);
     disp(['     DMD Dipole Power (V) : ' mat2str(dmd_pow)]);
     disp(['     Total Load Time (ms) : ' num2str(T_load_tot)]);       
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%% Initialize PID Settings %%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Preset analog and digital channels to prepare for lattice turn on
+    
 
-    % Send request powers to low (if not already set)
+    % Set lattice feedback offset (double PD configuration)
     setAnalogChannel(calctime(curtime,-60),'Lattice Feedback Offset', -9.8,1);
-%     setAnalogChannel(calctime(curtime,-60),'xLattice',L0(1));
+    
+    % Send request powers to -10V to rail the PID at the lower end
     setAnalogChannel(calctime(curtime,-60),'xLattice',-10,1);
     setAnalogChannel(calctime(curtime,-60),'yLattice',-10,1);
-%     setAnalogChannel(calctime(curtime,-60),'yLattice',0);
     setAnalogChannel(calctime(curtime,-60),'zLattice',-10,1);
 
-    % Enable rf output on ALPS3 (fast rf-switch and enable integrator)
+    % Enable AOMs on the lattice beams
     setDigitalChannel(calctime(curtime,-50),'yLatticeOFF',0); % 0 : All on, 1 : All off
+    
+    % Integrator hold is depreciated now?
     setDigitalChannel(calctime(curtime,-100),'Lattice Direct Control',0); % 0 : Int on; 1 : int hold    
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%% Lattice Ramps %%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%
-
+    % The first ramp bring the lattices to an acceptable 0Er level which
+    % the PID regulates in the first 20 ms
+    
     % First ramp from zero value to first value
     T0=0;
-%     AnalogFuncTo(calctime(curtime,T0),'xLattice',...
-%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-%         latt_times(1), latt_times(1), latt_depth(1,1));   
+
+    % Ramp xLattice to the first value ("0Er")
     setAnalogChannel(calctime(curtime,T0-20),'xLattice',L0(1));
     AnalogFuncTo(calctime(curtime,T0),'xLattice',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         latt_times(1), latt_times(1), latt_depth(1,1));
-        
+      
+    % Ramp yLattice to the first value ("0Er")
     setAnalogChannel(calctime(curtime,T0-20),'yLattice',L0(2));
     AnalogFuncTo(calctime(curtime,T0),'yLattice',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         latt_times(1), latt_times(1), latt_depth(2,1));   
+    
+    % Ramp zLattice to the first value ("0Er")
     setAnalogChannel(calctime(curtime,T0-20),'zLattice',L0(3));
     AnalogFuncTo(calctime(curtime,T0),'zLattice',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         latt_times(1), latt_times(1), latt_depth(3,1));   
+    
     T0=latt_times(1);
-
-    % Rest of ramps
+    
+    % Perform the rest of the lattice ramps
     for jj=2:length(latt_times)        
         AnalogFuncTo(calctime(curtime,T0),'xLattice',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
@@ -570,7 +585,8 @@ if newLoad
     %%%%%% XDT Ramps %%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    % First ramp from zero value to first value
+    % Perform first dipole trap framp
+    
     T0=0;
     AnalogFuncTo(calctime(curtime,T0),'dipoleTrap1',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
@@ -4791,47 +4807,13 @@ if do_lattice_mod
     
     lattice_ramp = 1; %if we need to ramp up the lattice for am spec
     if lattice_ramp
-%         AM_spec_latt_depth_list = [60];
-%         AM_spec_latt_depth = getScanParameter(AM_spec_latt_depth_list,...
-%             seqdata.scancycle,seqdata.randcyclelist,'AM_spec_latt_depth','Er');
-
         AM_spec_latt_depth = paramGet('AM_spec_depth');
         AM_spec_direction = paramGet('AM_direction');
         
-
-
-
         AM_spec_latt_ramptime_list = [50];
         AM_spec_latt_ramptime = getScanParameter(AM_spec_latt_ramptime_list,...
             seqdata.scancycle,seqdata.randcyclelist,'AM_spec_latt_ramptime','ms');
  
- 
- %Pre Dec 22,2021
-%         AnalogFuncTo(calctime(curtime,0),'xLattice',...
-%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-%             AM_spec_latt_ramptime, AM_spec_latt_ramptime, ...
-%             (AM_spec_latt_depth+0.855)/1.012);   
-%         AnalogFuncTo(calctime(curtime,0),'yLattice',...
-%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-%             AM_spec_latt_ramptime, AM_spec_latt_ramptime, ...
-%             (AM_spec_latt_depth-0.715)/1.158);    
-% curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',...
-%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-%             AM_spec_latt_ramptime, AM_spec_latt_ramptime, ...
-%             (AM_spec_latt_depth+9.571)/1.147);
-
-
-%New calibrations from Dec 22,,2021
-%  AnalogFuncTo(calctime(curtime,T0),'xLattice',...
-%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-%             AM_spec_latt_ramptime, AM_spec_latt_ramptime, (AM_spec_latt_depth+2.073)/1.082);   
-%         AnalogFuncTo(calctime(curtime,T0),'yLattice',...
-%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-%             AM_spec_latt_ramptime, AM_spec_latt_ramptime, (AM_spec_latt_depth+6.355)/1.278);    
-% curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
-%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-%             AM_spec_latt_ramptime, AM_spec_latt_ramptime, (AM_spec_latt_depth+10.677)/1.199); 
-
 
  AnalogFuncTo(calctime(curtime,T0),'xLattice',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
@@ -5220,6 +5202,11 @@ curtime = calctime(curtime,lattice_holdtime);
 
 %% High Field transfers + Imaging
 if seqdata.flags.High_Field_Imaging
+    % Typical Experimental Sequence
+    % - Ramp lattices up to 200Er
+    % - Ramp field up to 197G
+    % - Create 99 doublons via Raman n-->n+1 pulse
+    
     dispLineStr('Ramping High Field in Lattice',curtime);
 
     if do_plane_selection   
@@ -5240,11 +5227,10 @@ if seqdata.flags.High_Field_Imaging
   
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%% High Field Flags %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
     % Lattice ramps
     lattice_ramp_init               = 1;       % Initial lattice ramp
-    lattice_ramp_2                  = 0;       % Secondary lattice ramp
+    lattice_ramp_2                  = 0;       % Secondary lattice ramp before spectroscopy
     lattice_ramp_3                  = 0;       % between raman and rf spectroscopy
 
     % Feshbach field ramps
@@ -5255,15 +5241,13 @@ if seqdata.flags.High_Field_Imaging
     % Apply a phatom Raman pulse to kill atoms
     do_raman_phantom                = 0;
 
-    % RF Pre Flip 9<-->7data.params
-    
+    % RF Pre Flip 9<-->7data.params    
     rf_97_flip_init                 = 0;
     
     % Raman Spectroscopy
     do_raman_spectroscopy           = 1; 
     raman_short_sweep               = 0;
     do_raman_spectroscopy_post_rf   = 0;
-
     spin_flip_7_5                   = 0;   
 
     % RF Spectroscopy
@@ -5282,6 +5266,8 @@ if seqdata.flags.High_Field_Imaging
     
     % Lattice ramp
     if lattice_ramp_init        
+        % Ramp the lattices to their initial depth
+       
         
         % Select the depth to ramp
         HF_latt_depth_list = [200];
@@ -5333,7 +5319,10 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
 
 
     end   
-     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%% Prepare Lattice and State %%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     % Feshbach ramp
     if field_ramp_init
         % Feshbach Field ramp
@@ -5825,7 +5814,6 @@ curtime = calctime(curtime, Raman_on_time);
          end
     end
      
-
     %Do rf transfer from -7/2 to -5/2
     if spin_flip_7_5
         clear('sweep');
@@ -5888,9 +5876,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
     % Ramp the magnetic Fields
 curtime = rampMagneticFields(calctime(curtime,0), ramp);
         
-    end     
-    
-    
+    end         
 
     if lattice_ramp_3
         HF_spec_latt_depth_list = [100];
@@ -5943,14 +5929,20 @@ curtime = rampMagneticFields(calctime(curtime,0), ramp);
 curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
             HF_spec_latt_ramptime, HF_spec_latt_ramptime, (HF_spec_latt_depth-5.356)/0.958); 
-       
+        
+            disp(x_latt_voltage);
+            disp(y_latt_voltage);
+            disp(z_latt_voltage);            
+            
+            addOutputParam('latt_ramp3_X',x_latt_voltage);
+            addOutputParam('latt_ramp3_Y',y_latt_voltage);
+            addOutputParam('latt_ramp3_Z',z_latt_voltage);
  
 
 curtime = calctime(curtime,5);  %extra wait time
     end
-    
- 
-           % RF Rabi Oscillations
+     
+   % RF Rabi Oscillations
     if rf_rabi_manual
         mF1=-7/2;
         mF2=-9/2;    
@@ -6033,9 +6025,6 @@ curtime = calctime(curtime,5);  %extra wait time
         end
        
     end  
-
-    
-    
     
     % RF Sweep Spectroscopy
     if do_rf_spectroscopy
@@ -6178,18 +6167,13 @@ curtime = calctime(curtime,5);  %extra wait time
 
                 % Enable uwave frequency sweep
                 rf_srs_opts.EnableSweep=1;                    
-                rf_srs_opts.SweepRange=abs(delta_freq);  
-                
-
-                
+                rf_srs_opts.SweepRange=abs(delta_freq);     
                 
                 % Set SRS Source to the new one
                 setDigitalChannel(calctime(curtime,-5),'SRS Source',0);
 
                 % Set SRS Direction to RF
                 setDigitalChannel(calctime(curtime,-5),'K uWave Source',0);
-
-               
 
                 % Set initial modulation
                 setAnalogChannel(calctime(curtime,-5),'uWave FM/AM',1);
@@ -6230,8 +6214,6 @@ curtime = calctime(curtime,5);  %extra wait time
                 % Wait for Sweep
 %                             curtime = calctime(curtime,rf_pulse_length);
 
-
-
                 % Turn off VVA
                 setAnalogChannel(calctime(curtime,...
                     rf_wait_time  + extra_wait_time+rf_pulse_length),'RF Gain',rf_off_voltage);
@@ -6267,8 +6249,7 @@ curtime = calctime(curtime,5);  %extra wait time
                 
         end  
     end
-    
-    
+       
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%% Post Spectropscy Operations %%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -6599,7 +6580,6 @@ curtime=calctime(curtime,35);
            
            
     end   
-
     
     % RF shift register
     if shift_reg_at_HF
@@ -6704,7 +6684,8 @@ seqdata.params.HF_probe_fb = seqdata.params.HF_fb;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%% Prepare for Imaging %%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+    % We perform imaging a "standard" field of 195 G. Ramp the field to
+    % this value to perform time of flight and imaging
     % Feshbach Field Ramp (imaging)
     if field_ramp_img
 
@@ -6725,13 +6706,13 @@ seqdata.params.HF_probe_fb = seqdata.params.HF_fb;
         ramp.fesh_ramp_delay = 0;
         ramp.fesh_final = HF_FeshValue_Final;
         ramp.settling_time = 50;    
+        
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
 
         seqdata.params.HF_probe_fb = HF_FeshValue_Final;
     end
-
         
-    % Hold time in lattice before any RF
+    % Hold time at the end
      HF_wait_time_list = [0];
      HF_wait_time = getScanParameter(HF_wait_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'HF_wait_time','ms');
@@ -6746,6 +6727,7 @@ curtime = calctime(curtime,HF_wait_time);
 end
 
 %% Ramp HF and back
+% CF : It is unclear what the purpose of this code is for.
 ramp_HF_and_back = 0;
 if ramp_HF_and_back
     dispLineStr('ramp_HF_and_back',curtime);
@@ -6768,10 +6750,7 @@ if ramp_HF_and_back
 curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         HF_latt_ramptime, HF_latt_ramptime, HF_latt_depth); 
-    
-    
-    
-    
+        
         clear('ramp');
         % FB coil settings for spectroscopy
         ramp.FeshRampTime = 150;
@@ -6785,7 +6764,6 @@ curtime = rampMagneticFields(calctime(curtime,0), ramp);
 wait_time = 50;
 curtime = calctime(curtime,wait_time);
 
-
 clear('ramp');
         %FB coil settings for spectroscopy
         ramp.FeshRampTime = 150;
@@ -6795,7 +6773,6 @@ clear('ramp');
         ramp.FeshValue = seqdata.HF_FeshValue_final;%before 2017-1-6 100*1.08962; %22.6
         ramp.SettlingTime = 150;
         curtime = rampMagneticFields(calctime(curtime,0), ramp);
-
 end
 
 
@@ -6804,6 +6781,8 @@ end
 %RHYS - Definitely change this. Fudong's addition here was useful
 %(pre_lat_off_code = 0 just turns off all traps immediately), but, the name
 %of this flag is not good, nor should it be set all the way down here.
+
+% Immediately shut off lattices and dipole traps
 pre_lat_off_code = 1; % a method to disable previous lattice off code
 if (pre_lat_off_code == 0)
     dispLineStr('Diabatic lattice and dipole turn off',curtime);
@@ -6824,12 +6803,8 @@ if (pre_lat_off_code == 0)
 else
 lattice_off_delay = 10;
 
-%seqdata.flags. load_lattice = 0: do not load lattice
-%'__' = 1: load lattice
-%'__' = 2: ramp to deep lattice at the end
- 
-%RHYS - Lattice turn off code (snap or bandmap). Could perhaps be more
-%intuitive.
+
+% Turn off of lattices
  if ( seqdata.flags.load_lattice == 1 ) %shut off lattice, keep dipole trap on
     
     % Parameters for ramping down the lattice (after things have been done)
@@ -6987,10 +6962,9 @@ elseif ( seqdata.flags.load_lattice == 2 ); %leave lattice and dipole trap on an
         setAnalogChannel(calctime(curtime,lattice_off_time),'yLattice',0);
         setAnalogChannel(calctime(curtime,lattice_off_time),'yLattice',0);
         setDigitalChannel(calctime(curtime,lattice_off_time),'yLatticeOFF',0);
-        curtime=calctime(curtime,lattice_off_time);
-       
-    
-end
+        curtime=calctime(curtime,lattice_off_time);    
+ end
+
 end
 %% Output
 

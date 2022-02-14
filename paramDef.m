@@ -93,7 +93,7 @@ ptypes.tof                   = 'random';
 %  punits.HF_FeshValue_Initial = 'G';
 %  ptypes.HF_FeshValue_Initial = 'ordered';
 
- params.rf_freq_HF_shift = [40:1:55];
+ params.rf_freq_HF_shift = [45:0.5:60 -9:2:10];
  punits.rf_freq_HF_shift = 'kHz';
  ptypes.rf_freq_HF_shift = 'random';
 %  

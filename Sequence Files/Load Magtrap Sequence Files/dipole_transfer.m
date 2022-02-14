@@ -3343,18 +3343,18 @@ end
                 
         spin_flip_9_7 = 0;
         do_raman_spectroscopy = 0;
-        spin_flip_7_5 = 0;        
+        spin_flip_7_5 = 1;        
         rabi_manual=0;
         rf_rabi_manual = 0;
         do_rf_spectroscopy= 0; % 
         do_rf_post_spectroscopy =0;
         shift_reg_at_HF = 0;
-        ramp_field_2 = 0;
+        ramp_field_2 = 1;
 
         ramp_field_for_imaging = 0;
         
         spin_flip_9_7_again = 0;
-        spin_flip_7_5_again= 0;
+        spin_flip_7_5_again= 1;
 
 
  % Fesahbach Field ramp

@@ -30,7 +30,7 @@ scope_trigger =  'lattice control test';'Rampup ODT';
 %     setAnalogChannel(calctime(curtime,-0),'xLattice',-10,1);
 % %     
 % %     % Turn on Lattice RF
-% %     setDigitalChannel(calctime(curtime,-5),'xLatticeOFF',0);%0: ON
+    setDigitalChannel(calctime(curtime,-5),'yLatticeOFF',0);%0: ON
 %     setDigitalChannel(calctime(curtime,-3),'yLatticeOFF',0);%0: ON
 % %     setDigitalChannel(calctime(curtime,-5),'Z Lattice TTL',0);%0:  ON
 % % 

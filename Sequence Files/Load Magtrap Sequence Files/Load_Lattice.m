@@ -194,21 +194,24 @@ if newLoad
             dmd_pow=[DMD_power_val DMD_power_val 0];
             dmd_times=[100 50 50];
         case 2 % Simple square ramp
-            
-%             latt_depth=...
-%                  [L0(1) L0(1);     % X lattice
-%                  L0(2) L0(2);     % Y lattice
+%              latt_depth=...
+%                  [60 60; % X lattice
+%                  L0(2) L0(2);  % Y lattice
+%                  L0(3) L0(3)];    % Z Lattice
+%              latt_depth=...
+%                  [L0(1) L0(1); % X lattice
+%                  60 60;  % Y lattice
 %                  L0(3) L0(3)];    % Z Lattice
              latt_depth=...
-                 [60 60; % X lattice
+                 [L0(1) L0(1); % X lattice
                  L0(2) L0(2);  % Y lattice
-                 L0(3) L0(3)];    % Z Lattice
+                 60 60];    % Z Lattice
 %             latt_times=[1 latt_hold_time];
             latt_ramp_time_list = [150];
              latt_ramp_time = getScanParameter(latt_ramp_time_list,...
                 seqdata.scancycle,seqdata.randcyclelist,'latt_ramp_time','ms');
 %             latt_times=[150 50 0.2 50];
-            latt_times=[latt_ramp_time latt_hold_time];
+            latt_times=[latt_ramp_time 150];
             
             latt_XDT_pow_list = [seqdata.params.ODT_zeros(1)];
             latt_XDT_pow = getScanParameter(latt_XDT_pow_list,...
@@ -4725,6 +4728,10 @@ end
 % Newport regulation boxes.
 
 if do_lattice_mod
+    if seqdata.flags.mix_at_beginning
+        error('DONT DO AM SPEC WITH A SPIN MIXTURE!!')
+    end
+    
     dispLineStr('Amplitude Modulation Spectroscopy',curtime)
     
     lattice_ramp = 1; %if we need to ramp up the lattice for am spec
@@ -4878,7 +4885,7 @@ curtime = calctime (curtime,50);
                         
             mod_amp = mod_amp+d_amp;
             
-            mod_amp = mod_amp/2;
+            mod_amp = mod_amp;
             
             ch_on.AMPLITUDE = mod_amp;
             % Program the Rigols for modulation
@@ -4969,11 +4976,10 @@ curtime=calctime(curtime,deep_latt_holdtime);
 end
 
 
-%% Raman Transfers (Fluorescence Imaging)
+%% Fluorescence Imaging
 %turn on raman beams for side band cooling
 %RHYS - Important code for Raman/EIT cooling. Probably should not be a
 %branch off horizontal plane selection though.
-%
 
 % Plane Selection (earlier)
 %   - Apply FB + vertical gradient for selection
@@ -5091,18 +5097,10 @@ curtime = do_horizontal_plane_selection(curtime, horizontal_plane_select_params)
 end
 
 
-
-
-
 %% Moving on
-    
-%RHYS - Which hold time is this?
-%Hold time in lattices
-
 % Track this down and possibly delete if it is redunant or make the code
 % more obvious because this is just  random line of code
 curtime = calctime(curtime,lattice_holdtime);
-
 
 
 
@@ -5158,7 +5156,7 @@ if seqdata.flags.High_Field_Imaging
 
     % RF Spectroscopy
     rf_rabi_manual                  = 0;
-    do_rf_spectroscopy              = 1; 
+    do_rf_spectroscopy              = 0; 
     do_rf_post_spectroscopy         = 0;
     
     % Other RF Manipulations
@@ -5212,18 +5210,27 @@ if seqdata.flags.High_Field_Imaging
 %             HF_latt_ramptime, HF_latt_ramptime, (HF_latt_depth+10.677)/1.199); 
 
 %%
-%New calibrations from Jan 31
+% %New calibrations from Jan 31
+%  AnalogFuncTo(calctime(curtime,T0),'xLattice',...
+%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+%             HF_latt_ramptime, HF_latt_ramptime, (HF_latt_depth-3.505)/0.99);   
+%         AnalogFuncTo(calctime(curtime,T0),'yLattice',...
+%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+%             HF_latt_ramptime, HF_latt_ramptime, (HF_latt_depth+3.568)/1.095);    
+% curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
+%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+%             HF_latt_ramptime, HF_latt_ramptime, HF_latt_depth); 
+
+%New calibrations from Feb 18
  AnalogFuncTo(calctime(curtime,T0),'xLattice',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-            HF_latt_ramptime, HF_latt_ramptime, (HF_latt_depth-3.505)/0.99);   
+            HF_latt_ramptime, HF_latt_ramptime, (HF_latt_depth-5.057)/0.898);   
         AnalogFuncTo(calctime(curtime,T0),'yLattice',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
             HF_latt_ramptime, HF_latt_ramptime, (HF_latt_depth+3.568)/1.095);    
 curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-            HF_latt_ramptime, HF_latt_ramptime, (HF_latt_depth-5.356)/0.958); 
-
-
+            HF_latt_ramptime, HF_latt_ramptime, (HF_latt_depth+0.033)/0.969);
     end   
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%% Prepare Lattice and State %%%%%%%%%%%%%%%%%%%%
@@ -5409,16 +5416,16 @@ curtime = calctime(curtime,35);
         HF_Raman_latt_ramptime = getScanParameter(HF_Raman_latt_ramptime_list,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_Raman_latt_ramptime','ms');
         
-%New calibrations from Jan 31
+%New calibrations from Feb 18
  AnalogFuncTo(calctime(curtime,T0),'xLattice',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-            HF_Raman_latt_ramptime, HF_Raman_latt_ramptime, (HF_Raman_latt_depth-3.505)/0.99);   
+            HF_Raman_latt_ramptime, HF_Raman_latt_ramptime, (HF_Raman_latt_depth-5.057)/0.898);   
         AnalogFuncTo(calctime(curtime,T0),'yLattice',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
             HF_Raman_latt_ramptime, HF_Raman_latt_ramptime, (HF_Raman_latt_depth+3.568)/1.095);    
 curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-            HF_Raman_latt_ramptime, HF_Raman_latt_ramptime, (HF_Raman_latt_depth-5.356)/0.958); 
+            HF_Raman_latt_ramptime, HF_Raman_latt_ramptime, (HF_Raman_latt_depth+0.033)/0.969); 
 
     end
 
@@ -5442,7 +5449,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
              error('Incorrect RF frequency calculation!! MATLAB IS STUPID! >:(')
         end      
         
-        Raman_AOM3_freq_list =  [-79]*1e-3/2+(80+...   %-88 for 300Er, -76 for 200Er
+        Raman_AOM3_freq_list =  [-78]*1e-3/2+(80+...   %-88 for 300Er, -76 for 200Er
             abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6))/2; %-0.14239
         Raman_AOM3_freq = getScanParameter(Raman_AOM3_freq_list,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM3_freq','MHz');
@@ -5451,7 +5458,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
 %            Raman_AOM3_freq = freq*1e-3/2+(80+...   
 %             abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6))/2; 
         
-        Raman_AOM3_pwr_list = 0.740; %0.740
+        Raman_AOM3_pwr_list = 0.760; %0.740
         Raman_AOM3_pwr = getScanParameter(Raman_AOM3_pwr_list,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM3_pwr','MHz');
     
@@ -5760,11 +5767,11 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
     % Feshbach field ramp Another
     if field_ramp_2
         clear('ramp');
-        HF_FeshValue_Spectroscopy_List =[200.5];
-        HF_FeshValue_Spectroscopy = getScanParameter(HF_FeshValue_Spectroscopy_List,...
-            seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Spectroscopy','G');           
-        
-%           HF_FeshValue_Spectroscopy = paramGet('HF_FeshValue_Spectroscopy');
+%         HF_FeshValue_Spectroscopy_List =[200];
+%         HF_FeshValue_Spectroscopy = getScanParameter(HF_FeshValue_Spectroscopy_List,...
+%             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Spectroscopy','G');           
+%         
+          HF_FeshValue_Spectroscopy = paramGet('HF_FeshValue_Spectroscopy');
        
 %         HF_FeshValue_Spectroscopy = 200;
         addOutputParam('HF_FeshValue_Spectroscopy',HF_FeshValue_Spectroscopy,'G');
@@ -5834,7 +5841,7 @@ curtime = rampMagneticFields(calctime(curtime,0), ramp);
             HF_spec_latt_ramptime, HF_spec_latt_ramptime, (HF_spec_latt_depth+3.568)/1.095);    
 curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-            HF_spec_latt_ramptime, HF_spec_latt_ramptime, (HF_spec_latt_depth-5.356)/0.958); 
+            HF_spec_latt_ramptime, HF_spec_latt_ramptime, HF_spec_latt_depth); 
         
             disp(x_latt_voltage);
             disp(y_latt_voltage);
@@ -5868,7 +5875,7 @@ curtime = calctime(curtime,5);  %extra wait time
                          error('Incorrect RF frequency calculation!! MATLAB IS STUPID! >:(')
           end
           
-          rf_pulse_length_list = [0.005:0.005:0.075];  %0.23
+          rf_pulse_length_list = 0.25+[0.01:0.01:0.50];  %0.23
 
           rabi.pulse_length = getScanParameter(rf_pulse_length_list,...
             seqdata.scancycle,seqdata.randcyclelist,'rf_rabi_time_HF','ms');  % also is sweep length  0.5               
@@ -5963,7 +5970,7 @@ curtime = calctime(curtime,5);  %extra wait time
         addOutputParam('rf_delta_freq_HF',delta_freq,'MHz');
 
         % RF Pulse 
-        rf_pulse_length_list = 4; %ms
+        rf_pulse_length_list = 2; %ms
         rf_pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,...
             seqdata.randcyclelist,'rf_pulse_length');
         
@@ -6051,7 +6058,7 @@ curtime = calctime(curtime,5);  %extra wait time
 
                 disp('HS1 SRS Sweep Pulse');  
 
-                rf_srs_power_list = [6];
+                rf_srs_power_list = [4];
                 rf_srs_power = getScanParameter(rf_srs_power_list,seqdata.scancycle,...
                     seqdata.randcyclelist,'rf_srs_power','dBm');
 %                 rf_srs_power = paramGet('rf_srs_power');
@@ -6118,7 +6125,7 @@ curtime = calctime(curtime,5);  %extra wait time
                     sweep_time,sweep_time,beta);
 
                 % Wait for Sweep
-%                             curtime = calctime(curtime,rf_pulse_length);
+                            curtime = calctime(curtime,rf_pulse_length);
 
                 % Turn off VVA
                 setAnalogChannel(calctime(curtime,...

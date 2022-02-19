@@ -241,7 +241,7 @@ else
         'HF_prob_pwr1','V');
 
     % Power in -9 beam
-    pow2_list = [1.1];        
+    pow2_list = [1.2];  %1.1      
     pow2 = getScanParameter(pow2_list,seqdata.scancycle,seqdata.randcyclelist,...
         'HF_prob_pwr2','V');
 

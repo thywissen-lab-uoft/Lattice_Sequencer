@@ -14,6 +14,7 @@ yLattice0 = getScanParameter(yLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'yLatt0');
 
 zLattice0_list = -0.42;0.35;0.26;0.46;[0.40];0.44;
+zLattice0_list = 0.05;
 zLattice0 = getScanParameter(zLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'zLatt0');  
 % These parameters could be super sensitive to cause spikes and kill atoms
@@ -78,6 +79,11 @@ z_ErPerW = 186;
 
 % x_lattice2voltage = @(U) x_power2voltage(U/x_ErPerW); 
 zLattice = @(U) z_power2voltage(U/z_ErPerW);
+
+% 2022/02/14
+zLattice = @(U) ...
+    (U>=99.9412).*(U/99.1347+1.2132) + ...
+    (U<99.9412).*(U/8.3137-9.8);
 
 %% Output Calibration
 seqdata.lattice_calibration = latt_calib;

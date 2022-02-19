@@ -32,23 +32,23 @@ ptypes.tof                   = 'random';
 
 %% Lattice High Field
 
-% params.AM_spec_depth                   = [40];
+% params.AM_spec_depth                   = [400];
 % punits.AM_spec_depth = 'Er';
 % ptypes.AM_spec_depth = 'ordered';
-% 
-% params.AM_direction                   = ['Z'];
+% % 
+% params.AM_direction                   = ['Y'];
 % punits.AM_direction = '';
 % ptypes.AM_direction = 'ordered';
-% % 
-% % % %    300 = [260:5:340 295:1:325]*1e3; 48 points
-% % % %     200 = [200:5:300]*1e3; 57 points
-% % % %     100 = [100:10:180 140:1:165]*1e3; 43 points
-% % % %     60 = [70:5:150 110:1:145]*1e3; 53 points
-% % % %     250 [220:5:320 260:1:285]*1e3
-% params.AM_spec_freq                   = [80]*1e3;
+% % % 
+% % % % %    300 = [260:5:340 295:1:325]*1e3; 48 points
+% % % % %     200 = [200:5:300]*1e3; 57 points
+% % % % %     100 = [100:10:180 140:1:165]*1e3; 43 points
+% % % % %     60 = [70:5:150 110:1:145]*1e3; 53 points
+% % % % %     250 [220:5:320 260:1:285]*1e3
+% params.AM_spec_freq                   = [150:1:174]*1e3;
 % punits.AM_spec_freq = 'Hz';
 % ptypes.AM_spec_freq = 'random';
-% 
+
 
 % params.Raman_freq                   = [10:2.5:40];
 % punits.Raman_freq = 'kHz';
@@ -82,21 +82,21 @@ ptypes.tof                   = 'random';
 %  params.rf_rabi_time_HF = [0.005:0.005:0.150 0.165:0.01:1];
 %  punits.rf_rabi_time_HF = 'ms';
 %  ptypes.rf_rabi_time_HF = 'random';
-% 
-%  params.HF_FeshValue_Spectroscopy = [199.8 199.8];
-%  punits.HF_FeshValue_Spectroscopy = 'G';
-%  ptypes.HF_FeshValue_Spectroscopy = 'ordered';
+
+ params.HF_FeshValue_Spectroscopy = [199.8 199.8 199.9 199.9 200 200];
+ punits.HF_FeshValue_Spectroscopy = 'G';
+ ptypes.HF_FeshValue_Spectroscopy = 'ordered';
 
 
 % 
-%  params.HF_FeshValue_Initial = [197];
+%  params.HF_FeshValue_Initial = [197 198 198.5 199 199.5 200];
 %  punits.HF_FeshValue_Initial = 'G';
 %  ptypes.HF_FeshValue_Initial = 'ordered';
 
- params.rf_freq_HF_shift = [45:0.5:60 -9:2:10];
+ params.rf_freq_HF_shift = [-30:2:40];
  punits.rf_freq_HF_shift = 'kHz';
  ptypes.rf_freq_HF_shift = 'random';
-%  
+ 
  
 % params.HF_hold_time              = [1.1 1.2 1.5 2 2.5 3 3.5 4 5 6 7 8 9 10 12 13 14 15 17 20 25 30 35 40 50 60 75 90 100 110 120 130 150 170 200 230 250 275 300 325];
 % punits.HF_hold_time = 'ms';

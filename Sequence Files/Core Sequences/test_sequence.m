@@ -4729,26 +4729,26 @@ curtime = calctime(curtime,100);
 % setDigitalChannel(calctime(curtime,-10),'XDT Direct Control',0);
 % setDigitalChannel(calctime(curtime,-10),'XDT TTL',0);
 % setAnalogChannel(calctime(curtime,0),'ZeroVolts',0); 
-% % % % Choose the power limits
+% % % % % Choose the power limits
 % ODT1powerLOW=-0.05;
-% ODT1powerHIGH = 1.4;
-% % 
+% ODT1powerHIGH = 0.06;
+% % % 
 % ODT2powerLOW=-0.05;
-% ODT2powerHIGH = 1.4;
-% % 
-% % % % setAnalogChannel(curtime,'dipoleTrap1',-0.025); 
+% ODT2powerHIGH = 1.5;
+% % % 
+% % % % % setAnalogChannel(curtime,'dipoleTrap1',-0.025); 
 % AnalogFunc(calctime(curtime,0),'dipoleTrap1',...
 %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),100,100,ODT1powerLOW,ODT1powerHIGH);
 %     
 % AnalogFunc(calctime(curtime,0),'dipoleTrap2',...
 %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),100,100,ODT2powerLOW,ODT2powerHIGH);
-% % 
+% % % 
 % curtime = calctime(curtime,1000);
-% % 
+% 
 % setAnalogChannel(curtime,'dipoleTrap1',ODT1powerLOW); 
 % setAnalogChannel(curtime,'dipoleTrap2',ODT2powerLOW);
-% % setDigitalChannel(calctime(curtime,10),'XDT TTL',1);
-% % setDigitalChannel(calctime(curtime,.5),'XDT Direct Control',1);
+% setDigitalChannel(calctime(curtime,10),'XDT TTL',1);
+% setDigitalChannel(calctime(curtime,.5),'XDT Direct Control',1);
 
 
 % setAnalogChannel(curtime,54,0);

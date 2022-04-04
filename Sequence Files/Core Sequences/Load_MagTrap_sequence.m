@@ -108,7 +108,7 @@ seqdata.flags.do_F1_pulse = 0; % repump Rb F=1 before/during imaging
 
 
 
-seqdata.flags.High_Field_Imaging = 1;
+seqdata.flags.High_Field_Imaging = 0;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
 
@@ -117,7 +117,7 @@ seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now.
 
 %RHYS - params should be defined in a separate location from flags. 
 seqdata.flags.In_Trap_imaging = 0;
-tof_list = [15];
+tof_list = [25];
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
@@ -197,7 +197,7 @@ seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
 seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 
 % Optical lattice
-seqdata.flags.load_lattice = 1; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
+seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
 seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
 seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 
@@ -355,9 +355,9 @@ end
     CDT_piezo_X = 0;
     CDT_piezo_Y = 0;
     CDT_piezo_Z = 0;
-    setAnalogChannel(curtime,'Piezo mirror X',CDT_piezo_X);
-    setAnalogChannel(curtime,'Piezo mirror Y',CDT_piezo_Y);
-    setAnalogChannel(curtime,'Piezo mirror Z',CDT_piezo_Z);
+    setAnalogChannel(curtime,'Piezo mirror X',CDT_piezo_X,1);
+    setAnalogChannel(curtime,'Piezo mirror Y',CDT_piezo_Y,1);
+    setAnalogChannel(curtime,'Piezo mirror Z',CDT_piezo_Z,1);
 
     %Close science cell repump shutter
     setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',0); %1 = open, 0 = closed
@@ -864,7 +864,7 @@ if ( seqdata.flags.do_plug == 1)
     hold_time_list = [0];
     hold_time = getScanParameter(hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'hold_time_QPcoils');
     curtime = calctime(curtime,hold_time);   
-    plug_offset = -2.5;-2.5;175;%0 for experiment, -10 to align for in trap image
+    plug_offset = -2.5;%-2.5 for experiment, -10 to align for in trap image
 
     % Turn off the plug here if you are doing RF1B TOF.
     if ( seqdata.flags.do_dipole_trap ~= 1 )

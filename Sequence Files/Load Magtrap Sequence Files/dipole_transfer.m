@@ -1380,11 +1380,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); %
 curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_preramp_time,dipole_preramp_time,DT2_power(3));
 
             end
-            dipole1_power = evap_start_pwr1;
-            dipole2_power = evap_start_pwr2;
 
-        else
-            dipole2_power = dipole2_pin_pwr;
         end
 
         

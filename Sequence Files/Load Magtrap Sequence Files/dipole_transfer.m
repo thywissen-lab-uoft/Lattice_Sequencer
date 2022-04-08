@@ -1296,58 +1296,6 @@ curtime = calctime(curtime,300);
 
     end
 
-    %% Turn on Gradient for CDT Evap (to adjust Rb vs. K trapping)
-
-    gradient_evap = 0;
-    %RHYS - This never took off.
-    if gradient_evap
-
-        y_shim_list = [-0.2,0.1,-0.05,0.05,0.1];
-
-        % FB coil settings for gradient evap
-        ramp.fesh_ramptime = 100;
-        ramp.fesh_ramp_delay = 0;
-        ramp.fesh_final = 0.0115;%before 2017-1-6 0*22.6; %22.6
-        x_shim_offset = -0.10;
-        y_shim_offset = -0.40;
-        z_shim_offset = -0.65; %Displace QP centre from trap
-        addOutputParam('PSelect_FB',ramp.fesh_final)
-
-        %qp_time_list = [1 1000 3000 6000 9000 12000];
-
-        % QP coil settings for spectroscopy
-        ramp.QP_ramptime = 50;%150 %This controls what fraction of the ramp is actually performed.
-        ramp.QP_ramp_delay = 100;
-        ramp.QP_final =  0.3*1.78; %12 works well for XDT power of 1, 24 for XDT power of 2 (although this is a lot of current). 
-        %These two parameters define the shape - the time constant, and
-        %how long it takes to get to max amplitude.
-
-        ramp.shim_ramptime = 100; %150 %This controls what fraction of the ramp is actually performed.
-        ramp.shim_ramp_delay = 0;
-        ramp.xshim_final = x_shim_offset + ramp.QP_final / QP_value * (seqdata.params. plug_shims(1) - seqdata.params. shim_zero(1)) + seqdata.params. shim_zero(1); %5.5 from side
-        ramp.yshim_final = y_shim_offset + ramp.QP_final / QP_value * (seqdata.params. plug_shims(2) - seqdata.params. shim_zero(2)) + seqdata.params. shim_zero(2);
-        ramp.zshim_final = z_shim_offset + ramp.QP_final / QP_value * (seqdata.params. plug_shims(3) - seqdata.params. shim_zero(3)) + seqdata.params. shim_zero(3);
-        %These two parameters define the shape - the time constant, and
-        %how long it takes to get to max amplitude. 
-
-        ramp.settling_time = 150; %200
-
-curtime = ramp_bias_fields(calctime(curtime,0), ramp); %
-
-        %Wait some variable amount of time.
-%curtime = calctime(curtime, 100);
-
-        %clear('ramp')
-        %QP coil settings for spectroscopy
-        %ramp.QP_ramptime = 150; %150
-        %ramp.QP_ramp_delay = 60;
-        %ramp.QP_final =  0*1.78; %7
-        %ramp.settling_time = 150; %200
-
-%curtime = ramp_bias_fields(calctime(curtime,0), ramp); %
-
-    end
-
     %% CDT evap
     %RHYS - Imporant code, definitely should be kept and cleaned up.
     if ( seqdata.flags.CDT_evap == 1 )
@@ -1360,7 +1308,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); %
         do_pre_ramp = 1;
 
         % Pre ramp powers to sympathtetic cooling regime
-        if do_pre_ramp
+        if do_pre_ramp 
             disp(' Performing pre ramp to sympathetic power regime');
 
             % Powers to ramp to 
@@ -1380,7 +1328,6 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); %
 curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_preramp_time,dipole_preramp_time,DT2_power(3));
 
             end
-
         end
 
         
@@ -1507,39 +1454,6 @@ curtime = calctime(curtime,0); %100
         dip_holdtime=25000;
     end
 
-    %% Turn off Gradient after CDT Evap
-
-    %RHYS - Unused, delete.
-    if gradient_evap
-
-        % FB coil settings for gradient evap
-        ramp.fesh_ramptime = 100;
-        ramp.fesh_ramp_delay = 0;
-        ramp.fesh_final =  5.2539;%before 2017-1-6 0.25*22.6; %22.6
-        addOutputParam('PSelect_FB',ramp.fesh_final)
-
-        %qp_time_list = [1 1000 3000 6000 9000 12000];
-
-        % QP coil settings for spectroscopy
-        ramp.QP_ramptime = 500;%150 %This controls what fraction of the ramp is actually performed.
-        ramp.QP_ramp_delay = 100;
-        ramp.QP_final =  0.0*1.78; %12 works well for XDT power of 1, 24 for XDT power of 2 (although this is a lot of current). 
-        %These two parameters define the shape - the time constant, and
-        %how long it takes to get to max amplitude.
-
-        ramp.shim_ramptime = ramp.QP_ramptime; %150 %This controls what fraction of the ramp is actually performed.
-        ramp.shim_ramp_delay = ramp.QP_ramp_delay;
-        ramp.xshim_final = ramp.QP_final / QP_value * (seqdata.params. plug_shims(1) - seqdata.params. shim_zero(1)) + seqdata.params. shim_zero(1); %5.5 from side
-        ramp.yshim_final = ramp.QP_final / QP_value * (seqdata.params. plug_shims(2) - seqdata.params. shim_zero(2)) + seqdata.params. shim_zero(2);
-        ramp.zshim_final = ramp.QP_final / QP_value * (seqdata.params. plug_shims(3) - seqdata.params. shim_zero(3)) + seqdata.params. shim_zero(3);
-        %These two parameters define the shape - the time constant, and
-        %how long it takes to get to max amplitude. 
-
-        ramp.settling_time = 150; %200
-
-curtime = ramp_bias_fields(calctime(curtime,0), ramp); %
-
-    end
 
 
     %% Ramp Dipole Back Up Before Spectroscopy

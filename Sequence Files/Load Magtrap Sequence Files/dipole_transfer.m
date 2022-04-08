@@ -53,7 +53,6 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     % Ending optical evaporation
     exp_end_pwr = getScanParameter(Evap_End_Power_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');
-    Second_Evaporation_Stage = 0;
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%
     %After Evaporation (unless CDT_evap = 0)
@@ -1461,53 +1460,7 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_li
             AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),exp_evap_time,exp_evap_time,exp_tau,DT1_power(4));
 curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),exp_evap_time,exp_evap_time,exp_tau,seqdata.params.XDT_area_ratio*DT2_power(4));
             
-%RHYS - Don't think this was ever helpful.
-            if(Second_Evaporation_Stage)
-
-                Second_Evap_Power = 0.16;
-                Second_Evap_Time = 5000;
-                Second_Evap_Total_Time = 5000;
-                Second_Evap_Tau = Second_Evap_Total_Time/5;
-
-                % exponential evaporation ramps (ramping down XDT beams)
-                AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),Second_Evap_Time,Second_Evap_Total_Time,Second_Evap_Tau,Second_Evap_Power);
-curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),Second_Evap_Time,Second_Evap_Total_Time,Second_Evap_Tau,seqdata.params.XDT_area_ratio*Second_Evap_Power);
-            end
-
-            CDT_rampup = 0;
-            CDT_rampup_time = 1500;%1000-100;
-
-            CDT_rampdown_trapbottom =0;
-
-            
-            %RHYS - Never used.      
-            if CDT_rampup
-
-                CDT_rampup_pwr = 0.7;
-                CDT_rampup_tau =CDT_rampup_time/3;
-
-                evap_exp_rampdown = @(t,tt,tau,y2,y1)(y1+(y2-y1)/(exp(tt/tau)-1)*(exp(t/tau)-1));
-
-                %ramp down dipole 1 
-                AnalogFunc(calctime(curtime,0),40,@(t,tt,tau,y2,y1)(evap_exp_rampdown(t,tt,tau,y2,y1)),CDT_rampup_time,CDT_rampup_time,CDT_rampup_tau,CDT_rampup_pwr,exp_end_pwr*dipole1_exp_pwr);
-                %ramp down dipole 2 
-                curtime = AnalogFunc(calctime(curtime,0),38,@(t,tt,tau,y2,y1)(evap_exp_rampdown(t,tt,tau,y2,y1)),CDT_rampup_time,CDT_rampup_time,CDT_rampup_tau,CDT_rampup_pwr*dipole2_exp_pwr,exp_end_pwr*dipole2_exp_pwr);    
-
-                curtime = calctime(curtime,100);
-            end
-            
-            %RHYS - Never used.
-            if CDT_rampdown_trapbottom
-
-                CDT_rampdown_pwr = 0.25;
-                CDT_rampdown_time = 150;
-
-                %ramp dipole 1 trap on
-                AnalogFunc(calctime(curtime,0),40,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),CDT_rampdown_time,CDT_rampdown_time,CDT_rampdown_pwr,DT1_power(4));
-                %ramp dipole 2 trap on
-curtime = AnalogFunc(calctime(curtime,0),38,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),CDT_rampdown_time,CDT_rampdown_time,CDT_rampdown_pwr,DT2_power(4));
-            end
-                       
+     
             
             dipole_oscillation = 0;
             % Oscillate trap after evaporation
@@ -1554,64 +1507,6 @@ curtime = calctime(curtime,0); %100
             dip_holdtime=25000-exp_evap_time;
        
         end
-
-    %RHYS - Never used this, could be useful?
-    elseif ( seqdata.flags.CDT_evap == 2 ) % fast linear rampdown to test depth
-
-        linramp_time = 5000;
-        ramp_end1 = 0.2; %bottom is 0.07
-        ramp_end2 = 4;
-
-        %ramp dipole 1 trap down
-        AnalogFunc(calctime(curtime,0),40,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),linramp_time,linramp_time,ramp_end1,dipole1_power);
-        %ramp dipole 2 trap down
-curtime = AnalogFunc(calctime(curtime,0),38,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),linramp_time,linramp_time,ramp_end2,dipole2_power);
-
-
-        dip_holdtime=25000 - linramp_time;
-
-    %RHYS - 'Piecewise linear evaporation' - I've never used it, delete.        
-    elseif ( seqdata.flags.CDT_evap == 3 )
-
-        linramp_time = [10000 14000]*0.4;
-
-        dipole1_exp_pwr = 1.0;
-        dipole2_exp_pwr = 2.2; %2
-
-        %pre-ramp to sympathetic cooling regime
-        evap_start_pwr1 = 1.0; %0.8
-        evap_start_pwr2 = 1.0*2.2; %0.8*2.2
-
-        dipole_preramp_time = 500;
-
-        if ~(evap_start_pwr1==dipole1_power && evap_start_pwr1==dipole2_power)
-
-            %ramp down QP
-            %AnalogFunc(curtime,1,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),dipole_preramp_time,dipole_preramp_time,QP_ramp_end1*1.2,QP_ramp_end1);
-            %ramp up bias
-
-            %ramp dipole 1 trap on
-            AnalogFunc(calctime(curtime,0),40,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),dipole_preramp_time,dipole_preramp_time,evap_start_pwr1,dipole1_power);
-            %ramp dipole 2 trap on
-curtime = AnalogFunc(calctime(curtime,0),38,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),dipole_preramp_time,dipole_preramp_time,evap_start_pwr2,dipole2_power);
-        end
-
-        if do_qp_ramp_down2
-curtime = calctime(curtime, max([qp_ramp_down_time2-dipole_holdtime_before_evap, qp_ramp_down_time2+shim_ramp_offset-dipole_holdtime_before_evap]));
-        end
-
-        ramp_pwrs = [1 0.14 0.08]; %bottom is 0.07
-
-
-        for ii = 1:length(linramp_time)
-            %ramp dipole 1 trap down
-            AnalogFunc(calctime(curtime,0),40,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),linramp_time(ii),linramp_time(ii),ramp_pwrs(ii+1)*dipole1_exp_pwr,ramp_pwrs(ii)*dipole1_exp_pwr);
-            %ramp dipole 2 trap down
-curtime = AnalogFunc(calctime(curtime,0),38,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),linramp_time(ii),linramp_time(ii),ramp_pwrs(ii+1)*dipole2_exp_pwr,ramp_pwrs(ii)*dipole2_exp_pwr);
-        end
-
-        dip_holdtime=25000 - sum(linramp_time);
-
     else
         dip_holdtime=25000;
     end

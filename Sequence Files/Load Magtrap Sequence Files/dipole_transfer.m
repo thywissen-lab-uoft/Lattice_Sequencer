@@ -1429,50 +1429,103 @@ curtime = calctime(curtime,0); %100
 if (seqdata.flags.CDT_evap_2_high_field==1)
     dispLineStr('Optical evaporation at high field',curtime);
     
-
+    field_ramp_1 = 1;       % Initial ramp to high field
+    expevap2 = 0 ;          % Optical Evaporation
+    field_ramp_img = 0;     % High Field Imaging
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%% Ramp B Field to High Value %%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
     % Ramp magnetic field to high field value
-    clear('ramp');
-    ramp.FeshRampTime = 150;
-    ramp.FeshRampDelay = -0;
-    XDT_Evap2_FeshValue_List =[200];
-    XDT_Evap2_FeshValue = getScanParameter(XDT_Evap2_FeshValue_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'XDT_Evap2_FeshValue');
-    ramp.FeshValue = XDT_Evap2_FeshValue;
-    ramp.SettlingTime = 100; 
-    
-    % Also going to want to ramp shims (but do that later)  
-    disp(' Ramping to high field');
-    disp(['     Ramp Time     (ms) : ' num2str(ramp.FeshRampTime)]);
-    disp(['     Settling Time (ms) : ' num2str(ramp.SettlingTime)]);
-    disp(['     Fesh Value     (G) : ' num2str(ramp.FeshValue)]);
-    
-    
+    if field_ramp_1
+        clear('ramp');
+         ramp.SettlingTime = 100; 
 
+        % Shim Ramp
+        ramp.shim_ramptime = 100;
+        ramp.shim_ramp_delay = 0; % ramp earlier than FB field if needed
+        ramp.xshim_final = seqdata.params.shim_zero(1); 
+        ramp.yshim_final = seqdata.params.shim_zero(2);
+        ramp.zshim_final = seqdata.params.shim_zero(3);
+        
+        % Fesh Ramp        
+        XDT_Evap2_FeshValue_List =[200];
+        XDT_Evap2_FeshValue = getScanParameter(XDT_Evap2_FeshValue_List,...
+            seqdata.scancycle,seqdata.randcyclelist,'XDT_Evap2_FeshValue');
+        ramp.FeshRampTime = 150;
+        ramp.FeshRampDelay = -0;
+        ramp.FeshValue = XDT_Evap2_FeshValue;        
+
+        % Also going to want to ramp shims (but do that later)  
+        disp(' Ramping to high field');
+        disp(['     Ramp Time     (ms) : ' num2str(ramp.FeshRampTime)]);
+        disp(['     Settling Time (ms) : ' num2str(ramp.SettlingTime)]);
+        disp(['     Fesh Value     (G) : ' num2str(ramp.FeshValue)]);
 curtime = rampMagneticFields(calctime(curtime,0), ramp);
+        seqdata.params.HF_probe_fb = XDT_Evap2_FeshValue; 
+    end
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%% Opitcal Evaporation %%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    % Secondary evaporation parameters
-    exp_evap2_time = 5000;
-    tau2 = exp_evap2_time;
-    P1_end = exp_end_pwr2;    
-    P2_end = P1_end*seqdata.params.XDT_area_ratio;    
+    if expevap2
+        exp_evap2_time = 5000;
+        tau2 = exp_evap2_time;
+        P1_end = exp_end_pwr2;    
+        P2_end = P1_end*seqdata.params.XDT_area_ratio;    
 
-    % Display evaporation parameters
-    disp(' Performing exponential evaporation');
-    disp(['     Evap Time (ms) : ' num2str(exp_evap2_time)]);
-    disp(['     tau       (ms) : ' num2str(tau2)]);
-    disp(['     XDT1 end   (W) : ' num2str(P1_end)]);
-    disp(['     XDT2 end   (W) : ' num2str(P2_end)]);
+        % Display evaporation parameters
+        disp(' Performing exponential evaporation');
+        disp(['     Evap Time (ms) : ' num2str(exp_evap2_time)]);
+        disp(['     tau       (ms) : ' num2str(tau2)]);
+        disp(['     XDT1 end   (W) : ' num2str(P1_end)]);
+        disp(['     XDT2 end   (W) : ' num2str(P2_end)]);
 
-    % Ramp function
-    evap_exp_ramp = @(t,tt,tau,y2,y1)(y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));
-     
-    % Ramp the powers
-    AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
-        @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
-        exp_evap2_time,exp_evap2_time,tau2,P1_end);
+        % Ramp function
+        evap_exp_ramp = @(t,tt,tau,y2,y1)(y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));
+
+        % Ramp the powers
+        AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+            @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
+            exp_evap2_time,exp_evap2_time,tau2,P1_end);
 curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
-        @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
-        exp_evap2_time,exp_evap2_time,tau2,P2_end);              
+            @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
+            exp_evap2_time,exp_evap2_time,tau2,P2_end);   
+    end
+ 
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%% Prepare for Imaging %%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % We perform imaging a "standard" field of 195 G. Ramp the field to
+    % this value to perform time of flight and imaging
+    % Feshbach Field Ramp (imaging)
+    if field_ramp_img
+
+        % Feshbach Field ramp Field ramp
+        HF_FeshValue_Final_List = 206;
+        HF_FeshValue_Final = getScanParameter(HF_FeshValue_Final_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Final_Lattice','G');
+
+        % Define the ramp structure
+        ramp=struct;
+        ramp.shim_ramptime = 100;
+        ramp.shim_ramp_delay = 0; % ramp earlier than FB field if needed
+        ramp.xshim_final = seqdata.params.shim_zero(1); 
+        ramp.yshim_final = seqdata.params.shim_zero(2);
+        ramp.zshim_final = seqdata.params.shim_zero(3);
+        % FB coil 
+        ramp.fesh_ramptime = 100;
+        ramp.fesh_ramp_delay = 0;
+        ramp.fesh_final = HF_FeshValue_Final;
+        ramp.settling_time = 50;    
+        
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+
+        seqdata.params.HF_probe_fb = HF_FeshValue_Final;
+    end
+        
     
     % Figure out imaging (later)    
 end

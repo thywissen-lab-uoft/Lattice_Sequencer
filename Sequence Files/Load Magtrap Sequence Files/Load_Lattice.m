@@ -194,14 +194,14 @@ if newLoad
             dmd_pow=[DMD_power_val DMD_power_val 0];
             dmd_times=[100 50 50];
         case 2 % Simple square ramp
-             latt_depth=...
-                 [60 60; % X lattice
-                 L0(2) L0(2);  % Y lattice
-                 L0(3) L0(3)];    % Z Lattice
 %              latt_depth=...
-%                  [L0(1) L0(1); % X lattice
-%                  60 60;  % Y lattice
+%                  [60 60; % X lattice
+%                  L0(2) L0(2);  % Y lattice
 %                  L0(3) L0(3)];    % Z Lattice
+             latt_depth=...
+                 [L0(1) L0(1); % X lattice
+                 60 60;  % Y lattice
+                 L0(3) L0(3)];    % Z Lattice
 %              latt_depth=...
 %                  [L0(1) L0(1); % X lattice
 %                  L0(2) L0(2);  % Y lattice
@@ -6647,7 +6647,7 @@ curtime = calctime(curtime,10);
     if field_ramp_img
 
         % Feshbach Field ramp Field ramp
-        HF_FeshValue_Final_List = 206;
+        HF_FeshValue_Final_List = 195;
         HF_FeshValue_Final = getScanParameter(HF_FeshValue_Final_List,...
         seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Final_Lattice','G');
 

@@ -4725,24 +4725,24 @@ end
 % setAnalogChannel(calctime(curtime,0),59,0); %0.11
 
 %% ODT test
-curtime = calctime(curtime,100);
+% curtime = calctime(curtime,100);
 % setDigitalChannel(calctime(curtime,-10),'XDT Direct Control',0);
 % setDigitalChannel(calctime(curtime,-10),'XDT TTL',0);
 % setAnalogChannel(calctime(curtime,0),'ZeroVolts',0); 
-% % % % % Choose the power limits
-% ODT1powerLOW=-0.05;
-% ODT1powerHIGH = 0.06;
-% % % 
-% ODT2powerLOW=-0.05;
-% ODT2powerHIGH = 1.5;
-% % % 
-% % % % % setAnalogChannel(curtime,'dipoleTrap1',-0.025); 
+% % % % % % Choose the power limits
+% ODT1powerLOW=-0.04;
+% ODT1powerHIGH = 0.07;
+% % % % 
+% ODT2powerLOW=-0.04;
+% ODT2powerHIGH = 0.07;
+% % % % 
+% % % % % % setAnalogChannel(curtime,'dipoleTrap1',-0.025); 
 % AnalogFunc(calctime(curtime,0),'dipoleTrap1',...
 %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),100,100,ODT1powerLOW,ODT1powerHIGH);
 %     
 % AnalogFunc(calctime(curtime,0),'dipoleTrap2',...
 %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),100,100,ODT2powerLOW,ODT2powerHIGH);
-% % % 
+% % % % 
 % curtime = calctime(curtime,1000);
 % 
 % setAnalogChannel(curtime,'dipoleTrap1',ODT1powerLOW); 
@@ -4766,23 +4766,24 @@ curtime = calctime(curtime,100);
 % setAnalogChannel(calctime(curtime,0),'FB current',0,2);
 % 
 % setAnalogChannel(calctime(curtime,0),'FB current',10,2);
-% curtime = calctime(curtime,1000);
+%  curtime = calctime(curtime,500);
 % setAnalogChannel(calctime(curtime,0),'FB current',-0.5,2);
 % setDigitalChannel(calctime(curtime,0),'fast FB Switch',0);
 % 
 % 
-% fesh_current = 2;
-% ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); 
-% 
-% setDigitalChannel(calctime(curtime,-100),'fast FB Switch',1); %switch Feshbach field on
-% setAnalogChannel(calctime(curtime,-95),'FB current',0.0); %switch Feshbach field closer to on
-% setDigitalChannel(calctime(curtime,-100),'FB Integrator OFF',0); %switch Feshbach integrator on            
-%         %linear ramp from zero
-% AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),250,250, fesh_current,0);
-% 
-% curtime = calctime(curtime,1000);
-% % 
-% % AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),250,250, 0,fesh_current);
+curtime = calctime(curtime,500);
+fesh_current = 20;
+ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); 
+
+setDigitalChannel(calctime(curtime,-100),'fast FB Switch',1); %switch Feshbach field on
+setAnalogChannel(calctime(curtime,-95),'FB current',0.0); %switch Feshbach field closer to on
+setDigitalChannel(calctime(curtime,-100),'FB Integrator OFF',0); %switch Feshbach integrator on            
+% %         linear ramp from zero
+AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),250,250, fesh_current,0);
+
+curtime = calctime(curtime,1000);
+
+AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),250,250, 0,fesh_current);
 % 
 % setAnalogChannel(calctime(curtime,0),54,5);
 % setDigitalChannel(calctime(curtime,0),64,0);

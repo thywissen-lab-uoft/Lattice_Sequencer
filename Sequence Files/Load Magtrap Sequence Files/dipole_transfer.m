@@ -48,8 +48,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     dipole_holdtime_before_evap = 0;
     ramp_Feshbach_B_before_CDT_evap = 0;
 
-    %RHYS - A very important parameter. Pass these from elsewhere.
-    Evap_End_Power_List = [0.07];%[0.06];  %[0.055];[0.085];[.065];0.25; % XDT evaporative cooling final power; 
+    Evap_End_Power_List = [0.075];
     
     % Ending optical evaporation
     exp_end_pwr = getScanParameter(Evap_End_Power_List,...
@@ -1461,7 +1460,6 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_li
             % EXPONENTIAL RAMP 
             AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),exp_evap_time,exp_evap_time,exp_tau,DT1_power(4));
 curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),exp_evap_time,exp_evap_time,exp_tau,seqdata.params.XDT_area_ratio*DT2_power(4));
-% setDigitalChannel(calctime(curtime,50),'XDT TTL',1)
             
 %RHYS - Don't think this was ever helpful.
             if(Second_Evaporation_Stage)
@@ -1509,8 +1507,7 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,tau,y2)(eva
                 %ramp dipole 2 trap on
 curtime = AnalogFunc(calctime(curtime,0),38,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),CDT_rampdown_time,CDT_rampdown_time,CDT_rampdown_pwr,DT2_power(4));
             end
-            
-            
+                       
             
             dipole_oscillation = 0;
             % Oscillate trap after evaporation

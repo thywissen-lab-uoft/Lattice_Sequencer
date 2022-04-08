@@ -48,12 +48,21 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     dipole_holdtime_before_evap = 0;
     ramp_Feshbach_B_before_CDT_evap = 0;
 
-    Evap_End_Power_List = [0.075];
+    Evap_End_Power_List = [0.2];
     
     % Ending optical evaporation
     exp_end_pwr = getScanParameter(Evap_End_Power_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');
-
+    
+    
+    % Flag for second stage evaporation
+    
+    % Second Stage ending evaporation power
+    Evap2_End_Power_List = [0.075];    
+    % Ending optical evaporation
+    exp_end_pwr2 = getScanParameter(Evap2_End_Power_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power2','W');
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%
     %After Evaporation (unless CDT_evap = 0)
     %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -74,7 +83,6 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     K_probe_pulse = 0;              % Get rid of F = 9/2 Potassium
     D1_repump_pulse = 0;            % D1 repump instead of D2
     DMD_in_XDT = 0;
-    Lattice_in_XDT_Evap = 0;
     Kill_Beam_Alignment = 0;        %Pulse Kill beam on for whatever needs to be aligned.    
     ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
     k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
@@ -1324,12 +1332,14 @@ curtime = calctime(curtime,300);
             
             if ~(evap_start_pwr1==dipole1_power && evap_start_pwr1==dipole2_power)
                 %ramp dipole traps to sympathetic cooling regime
-                AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_preramp_time,dipole_preramp_time,DT1_power(3));
-curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),dipole_preramp_time,dipole_preramp_time,DT2_power(3));
-
+                AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+                    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+                    dipole_preramp_time,dipole_preramp_time,DT1_power(3));
+curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+                    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+                    dipole_preramp_time,dipole_preramp_time,DT2_power(3));
             end
         end
-
         
         if expevap
             disp(' Performing exponential evaporation');
@@ -1357,54 +1367,15 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,y2)(ramp_li
                 AnalogFuncTo(calctime(curtime,exp_evap_time*Dimple_On_Time_Scale),'Dimple Pwr',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Dimple_Ramp_Time, Dimple_Ramp_Time, Dimple_Power); 
             end
 
-            %RHYS - Tried this, not helpful for final temp.
-            if Lattice_in_XDT_Evap
-                Lattice_On_Time = 0.05*exp_evap_time;
-
-                P_Lat = 0.1;
-                AnalogFunc(calctime(curtime,-100+Lattice_On_Time),'latticeWaveplate',@(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),100,100,P_Lat);
-
-                %set intital value and set digital channel value
-                setAnalogChannel(calctime(curtime,Lattice_On_Time-60),'xLattice',-10,1);
-                setAnalogChannel(calctime(curtime,Lattice_On_Time-60),'yLattice',-10,1);
-                setAnalogChannel(calctime(curtime,Lattice_On_Time-60),'zLattice',-10,1);
-
-                % Enable rf output on ALPS3 (fast rf-switch and enable integrator)
-                setDigitalChannel(calctime(curtime,Lattice_On_Time-50),34,0);
-                setDigitalChannel(calctime(curtime,Lattice_On_Time-25),'Lattice Direct Control',0);
-                %---------------------------------------------------------
-                lat_ramp_time = 200;
-                lat_ramp_tau = 50;
-                X_Lattice_Depth = 2.5;
-                Y_Lattice_Depth = 2.5;
-                Z_Lattice_Depth = 0;
-              
-
-                %ramp up
-                AnalogFuncTo(calctime(curtime,Lattice_On_Time),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,X_Lattice_Depth);
-                AnalogFuncTo(calctime(curtime,Lattice_On_Time),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Y_Lattice_Depth);
-                AnalogFuncTo(calctime(curtime,Lattice_On_Time),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Z_Lattice_Depth);
-
-                X_Lattice_Depth = 0;
-                Y_Lattice_Depth = 0;
-                Z_Lattice_Depth = 0;    
-                %ramp down
-                AnalogFuncTo(calctime(curtime,exp_evap_time-lat_ramp_time),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,X_Lattice_Depth);
-                AnalogFuncTo(calctime(curtime,exp_evap_time-lat_ramp_time),'yLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Y_Lattice_Depth);
-                AnalogFuncTo(calctime(curtime,exp_evap_time-lat_ramp_time),'zLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,Z_Lattice_Depth);
-
-                %---------------------------------------------------------
-                %turn off TTLs
-                setDigitalChannel(calctime(curtime,exp_evap_time),34,1);
-                setDigitalChannel(calctime(curtime,exp_evap_time),'Lattice Direct Control',1);
-            end
-
             % EXPONENTIAL RAMP 
-            AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),exp_evap_time,exp_evap_time,exp_tau,DT1_power(4));
-curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),exp_evap_time,exp_evap_time,exp_tau,seqdata.params.XDT_area_ratio*DT2_power(4));
-            
-     
-            
+            AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+                @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
+                exp_evap_time,exp_evap_time,exp_tau,DT1_power(4));
+curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+                @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
+                exp_evap_time,exp_evap_time,exp_tau,seqdata.params.XDT_area_ratio*DT2_power(4));
+          
+          
             dipole_oscillation = 0;
             % Oscillate trap after evaporation
             if dipole_oscillation
@@ -1427,9 +1398,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,tau,y2)(evap_
                 disp(['     Frequency (Hz) : ' num2str(dip_osc_freq)]);
                 disp(['     Offset     (W) : ' num2str(dip_osc_offset)]);
                 disp(['     Amplitude  (W) : ' num2str(dip_osc_amp)]);
-                disp(['     Time      (ms) : ' num2str(dip_osc_time)]);
-
-                
+                disp(['     Time      (ms) : ' num2str(dip_osc_time)]);                
                 
                 %oscillate dipole 1 
                 AnalogFunc(calctime(curtime,0),'dipoleTrap1',@(t,freq,y2,y1)(dip_osc(t,freq,y2,y1)),dip_osc_time,dip_osc_freq,dip_osc_amp,dip_osc_offset);
@@ -1454,7 +1423,59 @@ curtime = calctime(curtime,0); %100
         dip_holdtime=25000;
     end
 
+%% Two Stage High Field Evaporation
+% This evaporates at high field from the initial evaporation
 
+if (seqdata.flags.CDT_evap_2_high_field==1)
+    dispLineStr('Optical evaporation at high field',curtime);
+    
+
+    % Ramp magnetic field to high field value
+    clear('ramp');
+    ramp.FeshRampTime = 150;
+    ramp.FeshRampDelay = -0;
+    XDT_Evap2_FeshValue_List =[200];
+    XDT_Evap2_FeshValue = getScanParameter(XDT_Evap2_FeshValue_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'XDT_Evap2_FeshValue');
+    ramp.FeshValue = XDT_Evap2_FeshValue;
+    ramp.SettlingTime = 100; 
+    
+    % Also going to want to ramp shims (but do that later)  
+    disp(' Ramping to high field');
+    disp(['     Ramp Time     (ms) : ' num2str(ramp.FeshRampTime)]);
+    disp(['     Settling Time (ms) : ' num2str(ramp.SettlingTime)]);
+    disp(['     Fesh Value     (G) : ' num2str(ramp.FeshValue)]);
+    
+    
+
+curtime = rampMagneticFields(calctime(curtime,0), ramp);
+    
+    % Secondary evaporation parameters
+    exp_evap2_time = 5000;
+    tau2 = exp_evap2_time;
+    P1_end = exp_end_pwr2;    
+    P2_end = P1_end*seqdata.params.XDT_area_ratio;    
+
+    % Display evaporation parameters
+    disp(' Performing exponential evaporation');
+    disp(['     Evap Time (ms) : ' num2str(exp_evap2_time)]);
+    disp(['     tau       (ms) : ' num2str(tau2)]);
+    disp(['     XDT1 end   (W) : ' num2str(P1_end)]);
+    disp(['     XDT2 end   (W) : ' num2str(P2_end)]);
+
+    % Ramp function
+    evap_exp_ramp = @(t,tt,tau,y2,y1)(y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));
+     
+    % Ramp the powers
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+        @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
+        exp_evap2_time,exp_evap2_time,tau2,P1_end);
+curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+        @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
+        exp_evap2_time,exp_evap2_time,tau2,P2_end);              
+    
+    % Figure out imaging (later)    
+end
 
     %% Ramp Dipole Back Up Before Spectroscopy
     %RHYS - Hmmm, sure. 
@@ -4345,42 +4366,6 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
     end
  
     
-%% Ramp HF and back
-ramp_HF_and_back = 0;
-if ramp_HF_and_back
-    dispLineStr('Ramping Fields Up and Down',curtime);
-
-    clear('ramp');
-    % FB coil settings for spectroscopy
-    ramp.FeshRampTime = 150;
-    ramp.FeshRampDelay = -0;
-    HF_FeshValue_Initial_List =[20:20:200];[202.78];
-    HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial');
-    ramp.FeshValue = HF_FeshValue_Initial;
-    ramp.SettlingTime = 50; 
-        
-    disp(['     Ramp Time     (ms) : ' num2str(ramp.FeshRampTime)]);
-    disp(['     Settling Time (ms) : ' num2str(ramp.SettlingTime)]);
-    disp(['     Fesh Value     (G) : ' num2str(ramp.FeshValue)]);
-
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
-
-wait_time = 50;
-curtime = calctime(curtime,wait_time);
-
-
-clear('ramp');
-        %FB coil settings for spectroscopy
-        ramp.FeshRampTime = 150;
-        ramp.FeshRampDelay = 0;        
-
-        
-        HF_FeshValue_final_list = [20];
-        seqdata.HF_FeshValue_final = getScanParameter(HF_FeshValue_final_list,seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_final');
-        ramp.FeshValue = seqdata.HF_FeshValue_final;%before 2017-1-6 100*1.08962; %22.6
-        ramp.SettlingTime = 50;
-        curtime = rampMagneticFields(calctime(curtime,0), ramp);
-end
 %% Ramp HF with QP Coils
 ramp_HF_and_back2 = 0;
 if ramp_HF_and_back2
@@ -4396,35 +4381,6 @@ if ramp_HF_and_back2
     HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
         seqdata.randcyclelist,'HF_QP_RampUpDown','A');   
     
-%     % Get the plug shim values
-%     I0=seqdata.params.plug_shims;
-%     Ix0=I0(1);Iy0=I0(2);Iz0=I0(3);
-% 
-%     getChannelValue(seqdata,'XShim',1,0)
-%     getChannelValue(seqdata,'YShim',1,0)
-%     getChannelValue(seqdata,'ZShim',1,0)
-% 
-%     % XYZ shim coefficients to maintain trap center with I_QP (amps/amps)
-%     Cx = -0.0499;
-%     Cy = 0.0045;
-%     Cz = 0.0105;
-% 
-%     % Record the starting shim values
-%     I_shim = [Ix0 Iy0 Iz0];     
-%    
-%             
-%     % Calculate change in shim currents
-%     I_QP = HF_QP;
-%     dI_QP = I_QP - 0;
-%     dIx = dI_QP * Cx;
-%     dIy = dI_QP * Cy;
-%     dIz = dI_QP * Cz;
-% 
-%     % Calculate the new shim currents
-%     Ix=Ix0+dIx;
-%     Iy=Iy0+dIy;
-%     Iz=Iz0+dIz;      
-
     clear('ramp');
     
     % Ramp the Feshbach Coils.
@@ -4435,14 +4391,7 @@ if ramp_HF_and_back2
     
     % Ramp the QP Coils
     ramp.QPRampTime = ramp.FeshRampTime;
-    ramp.QPValue = HF_QP;
-    
-    % Ramp the Shims
-%     ramp.ShimRampTime = ramp.FeshRampTime;
-%     ramp.ShimRampDelay = 0;    
-%     ramp.xShimValue = Ix;
-%     ramp.yShimValue = Iy;
-%     ramp.zShimValue = Iz;
+    ramp.QPValue = HF_QP;    
 
     disp(['     Ramp Time     (ms) : ' num2str(ramp.FeshRampTime)]);
     disp(['     Settling Time (ms) : ' num2str(ramp.SettlingTime)]);

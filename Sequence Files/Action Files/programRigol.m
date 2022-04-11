@@ -121,10 +121,10 @@ cmds.BURST_NCYCLES=':SOURCE<n>:BURST:NCYCLES';              % Number of cycles
 disp(' ');
 
 disp([' Progamming ' DeviceName]);
-disp(' - BURST, MOD, and SWEEP are mutually exclusive commands');
-disp(' - SWEEP returns to initial frequency at end of sweep.');
-disp(' - BURST can only go up to 100 MHz, <300ns trigger latency');
-disp(' - MOD is not coded yet.');
+% disp(' - BURST, MOD, and SWEEP are mutually exclusive commands');
+% disp(' - SWEEP returns to initial frequency at end of sweep.');
+% disp(' - BURST can only go up to 100 MHz, <300ns trigger latency');
+% disp(' - MOD is not coded yet.');
 
 % Connect to Rigol
 obj=visaConnect(DeviceName);
@@ -251,7 +251,7 @@ function obj=visaConnect(DeviceName)
         disp(['Established connection to ' nfo]);
 
     catch ME
-        warning(['Unable to connect to ' DeviceName]);
+        warning([DeviceName]);
 %         disp(ME);
         obj=[];
     end

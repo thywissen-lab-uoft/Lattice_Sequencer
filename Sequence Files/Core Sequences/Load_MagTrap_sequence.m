@@ -5,6 +5,9 @@ function timeout = Load_MagTrap_sequence(timein)
 
 curtime = timein;
 
+disp(repmat('-',1,60));
+dispLineStr('New Sequence',curtime);
+
 %% Initialize seqdata
 global seqdata;
 initialize_channels();

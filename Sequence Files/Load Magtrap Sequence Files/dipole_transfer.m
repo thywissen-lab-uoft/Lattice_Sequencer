@@ -1,17 +1,10 @@
-%------
-%Author: Dylan
-%Created: May 2012
-%Summary: Ramp the QP before QP transfer. Outputs are the currents/voltages
-%after the ramp
-%------
+function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein, I_QP, V_QP,I_shim)
 %RHYS - This code, probably originally intended to just load the dipole
 %trap, now includes everything anyone would ever want to do in a dipole
 %trap, including spin-flips/spectroscopy, evaporation, and a number of
 %specialized or obsolete sequences. I would trim it back extensively, move
 %hardcoded parameters out, and keep specialized sequences as optional
 %xdt-specific flags to call.
-function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein, I_QP, V_QP,I_shim)
-
 
     curtime = timein;
     global seqdata;
@@ -95,6 +88,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
         error('QP ramp must happen after time zero');
     end
     
+    %% XDT Powers
     
     %%%%% Specify the XDT2 power relative to XDT1 %%%%%%%%%%%%%%%%%%%%%%%%%
     % Power function of XDT1 relative to XDT2. Useful for making
@@ -137,7 +131,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     DT2_power = 1*[P2 P2 P2e xdt2_end_power];  
 %     DT2_power = -1*[1         1        1          1];  
 
-%% Special Flags
+    %% Special Flags
+    % CF : I have no idea what this is for
     if seqdata.flags.rb_vert_insitu_image
         seqdata.flags.do_Rb_uwave_transfer_in_ODT = 0;
         get_rid_of_Rb = 0;

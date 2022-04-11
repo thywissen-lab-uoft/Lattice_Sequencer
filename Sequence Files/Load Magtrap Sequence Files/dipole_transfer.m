@@ -170,7 +170,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     dipole2_power = CDT_power*0; %Voltage = 0.328 + 0.2375*dipole_power...about 4.2Watts/V when dipole 1 is off
 
     % Enable ALPs feedback control and turn on XDTs AOMs
-    setDigitalChannel(calctime(curtime,dipole_ramp_start_time-10),'XDT Direct Control',0);
+    setDigitalChannel(calctime(curtime,dipole_ramp_start_time-10),...
+        'XDT Direct Control',0);
     
     % Enable XDT AOMs
     setDigitalChannel(calctime(curtime,dipole_ramp_start_time-10),'XDT TTL',0);  
@@ -179,12 +180,14 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     % Ramp dipole 1 trap on
     AnalogFunc(calctime(curtime,dipole_ramp_start_time),...
         'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        dipole_ramp_up_time,dipole_ramp_up_time,seqdata.params.ODT_zeros(1),DT1_power(1));
+        dipole_ramp_up_time,dipole_ramp_up_time,...
+        seqdata.params.ODT_zeros(1),DT1_power(1));
     
-    % Ramp dipole 2 trap on (not really)
+    % Ramp dipole 2 trap on
     AnalogFunc(calctime(curtime,dipole_ramp_start_time),...
         'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        dipole_ramp_up_time,dipole_ramp_up_time,seqdata.params.ODT_zeros(2),DT2_power(1)); %used to be starting from -1  
+        dipole_ramp_up_time,dipole_ramp_up_time,...
+        seqdata.params.ODT_zeros(2),DT2_power(1)); %used to be starting from -1  
     
     ScopeTriggerPulse(curtime,'Rampup ODT');
     %% Ramp the QP Down    
@@ -260,16 +263,22 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
         % Turn on RF knife
         %Maybe not beneficially when transferring at lower freqs
         %cut_freq = 0.6;
-        %do_evap_stage(calctime(curtime,qp_ramp_down_start_time+200), 0, [8 8]*1E6, qp_ramp_down_time1-200, [-2], 0, 1);
+        %do_evap_stage(calctime(curtime,qp_ramp_down_start_time+200), ...
+%             0, [8 8]*1E6, qp_ramp_down_time1-200, [-2], 0, 1);
 
         % Turn off plug
-        %AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),33,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,0);
+        %AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),33,...
+%             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,0);
 
         % Ramp down FF.
-        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'Transport FF',@(t,tt,y2,y1)(ramp_func(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,QP_ramp_end1*23/30);
+        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),...
+            'Transport FF',@(t,tt,y2,y1)(ramp_func(t,tt,y1,y2)),...
+            qp_ramp_down_time1,qp_ramp_down_time1,QP_ramp_end1*23/30);
         
         % Ramp down QP and advance time
-        curtime = AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'Coil 16',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,QP_ramp_end1);
+        curtime = AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),...
+            'Coil 16',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+            qp_ramp_down_time1,qp_ramp_down_time1,QP_ramp_end1);
 
         % Some extra advances in time (WHAT IS THIS FOR?)
         if (dipole_ramp_start_time+dipole_ramp_up_time)>(qp_ramp_down_start_time+qp_ramp_down_time1)
@@ -396,14 +405,13 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     ScopeTriggerPulse(calctime(curtime,0),'Transport Supply Off');
 
     %Turn off Transport Supply
-%curtime=AnalogFunc(calctime(curtime,-500),18,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),500,500,0,15.8);
+% curtime=AnalogFunc(calctime(curtime,-500),18,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),500,500,0,15.8);
 
     %Use QP TTL to shut off coil 16 
     setDigitalChannel(calctime(curtime,0),21,1);
 
     %Turn Coil 15 FET off
     setAnalogChannel(calctime(curtime,0),21,0,1);
-
 
     %Hold for some time (field settling?)
 curtime = calctime(curtime,dipole_holdtime_before_evap);
@@ -925,7 +933,7 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
 
 end
 
-%% Spin mixture after OP
+%% Spin mixture after Optical Pumping
 
 if seqdata.flags.mix_at_beginning
     dispLineStr('RF K Sweeps for -7,-9 mixture.',curtime);  
@@ -1361,10 +1369,10 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
                 % Oscillate with a sinuisoidal function
                 dip_osc = @(t,freq,y2,y1)(y1 +y2*sin(2*pi*freq*t/1000));
 
-                dip_osc_time = 500; 1000;        % Duration to modulate             
+                dip_osc_time = 500; 1000;       % Duration to modulate             
  
                 dip_osc_offset = exp_end_pwr;   % CDT_rampup_pwr;
-                dip_osc_amp = 0.05;              % Oscillation amplitude
+                dip_osc_amp = 0.05;             % Oscillation amplitude
                 dip_osc_freq_list = [400:10:500 650];
                 dip_osc_freq = getScanParameter(dip_osc_freq_list,seqdata.scancycle,seqdata.randcyclelist,'dip_osc_freq');
 
@@ -1509,10 +1517,6 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
             exp_evap2_time,exp_evap2_time,tau2,P2_end);   
     end
     
-    
- 
-    
-    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%% Prepare for Imaging %%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1542,8 +1546,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
 
         seqdata.params.HF_probe_fb = HF_FeshValue_Final;
-    end
-        
+    end       
     
 end
 
@@ -2655,10 +2658,8 @@ curtime = calctime(curtime,DMD_on_time-100); -50;
     end 
 %% D1 Optical Pumping in ODT
 % After optical evaporation, ensure mF spin polarization via D1 optical
-% pumping. (mainly for testing optical pumping after spin mixture)
-% FC+CF 2021/05/12
+% pumping.
 
-% @VV AND PX FEEL FREE TO DELETE THIS IF THIS IS CRAP CODE
 if (seqdata.flags.do_D1OP_post_evap==1 && seqdata.flags.CDT_evap==1)
         dispLineStr('D1 Optical Pumping post op evap',curtime);  
 
@@ -2996,7 +2997,7 @@ curtime = setDigitalChannel(calctime(curtime,0),5,0);
 curtime=calctime(curtime,50);
     end
 
-    %% Kick the dipole trap (or punch, if so inclined).
+    %% Kick the dipole trap
     %RHYS - An alterative way to measure trap frequency using a piezo mirror to
     %give the atoms a kick. 
     if do_dipole_trap_kick
@@ -3006,7 +3007,8 @@ curtime=calctime(curtime,50);
         curtime = calctime(curtime, kick_ramp_time+20);
         kick_voltage = 10;
         time_list = [0:0.75:15];
-        kick_wait_time =getScanParameter(time_list,seqdata.scancycle,seqdata.randcyclelist,'kick_wait_time');
+        kick_wait_time =getScanParameter(time_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'kick_wait_time');
         %kick_wait_time = getScanParameter(time_list,seqdata.scancycle,seqdata.randcyclelist,'kick_wait_time');
         %kick_wait_time = 0;
         %addOutputparam('kick_wait_time',kick_wait_time);
@@ -3014,7 +3016,8 @@ curtime=calctime(curtime,50);
         kick_channel=54;
     
         %Ramp the Piezo Mirror to a Displaced Position
-        AnalogFuncTo(calctime(curtime,-kick_ramp_time),kick_channel,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),kick_ramp_time,kick_ramp_time,kick_voltage);
+        AnalogFuncTo(calctime(curtime,-kick_ramp_time),kick_channel,...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),kick_ramp_time,kick_ramp_time,kick_voltage);
 
         %Jump the Piezo Mirror Back to Trap Geometry
         setAnalogChannel(curtime,kick_channel,0,1);
@@ -3187,46 +3190,40 @@ curtime=calctime(curtime,kill_time);
 
     %end
     
-%% Ramp FB field up to 20G before loading lattice
-%Useful for tuning interaction strength when loading lattice.
-if seqdata.flags.ramp_up_FB_for_lattice 
-
-    %ramp 1
-    
+%% Ramp FB field up before loading lattice
+% Before loading the lattices, it is sometimes useful to control the
+% magnetic field to establish the interaction (attractive versus repulsive)
+% during the loading. Attractive interactions tend to create a larger
+% number of doubly occupied sites.
+if seqdata.flags.ramp_up_FB_for_lattice     
     seqdata.params.time_in_HF = curtime;
     Lattice_loading_field_list =[207];
     Lattice_loading_field = getScanParameter(Lattice_loading_field_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'Lattice_loading_field','G');
+        seqdata.scancycle,seqdata.randcyclelist,'Lattice_loading_field','G');
 
-
-    % Turn the FB up to 20G before loading the lattice, so that large field
-    % ramps in the lattice can be done more quickly
+    % Coarse initial ramp to 195 G
     clear('ramp');
-
-    % FB coil settings for spectroscopy
     ramp.fesh_ramptime = 150;
     ramp.fesh_ramp_delay = -0;
     ramp.fesh_final = 195;
     ramp.settling_time = 100;
 curtime = ramp_bias_fields(calctime(curtime,0), ramp);
-
-    %ramp 2
     
-    % Turn the FB up to 20G before loading the lattice, so that large field
-    % ramps in the lattice can be done more quickly
+    % Secondary ramp to final field
     clear('ramp');
-
-    % FB coil settings for spectroscopy
     ramp.fesh_ramptime = 2;
     ramp.fesh_ramp_delay = -0;
     ramp.fesh_final = Lattice_loading_field;
     ramp.settling_time = 50;
     
 curtime = ramp_bias_fields(calctime(curtime,0), ramp);
-
 end
     
-    %% Ramp FB field up to 200G for High Field Imaging after ODT
+%% Ramp FB field up to 200G for High Field Imaging after ODT
+    
+    % CF: This code is a quite a mess and should be cleanaed up. 1000
+    % lines?! If you need a specific portion, just make a separate flag
+    
     if (seqdata.flags.High_Field_Imaging && ~seqdata.flags.load_lattice )  %This is a way of doing normal high field imaging from the ODT using the seqdata.flags.High_Field_Imaging flag from the load magtrap sequence
 %     if (seqdata.flags.High_Field_Imaging)             % Use this flag if
 %     you still want to ramp the high field from ODT and then load lattice
@@ -4438,7 +4435,10 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
     end
  
     
-%% Ramp HF with QP Coils
+%% Ramp Feshbach and QP Coils
+% To characerize field gradients, it is useful to ramp the FB and QP coils
+% at the end of evaporation. Strong field gradients kick atoms out of the
+% trap. And a "round trip" magnetic field ramp tests this.
 ramp_HF_and_back2 = 0;
 if ramp_HF_and_back2
     dispLineStr('Ramping Fields Up and Down',curtime);
@@ -4472,9 +4472,8 @@ if ramp_HF_and_back2
 
 curtime = rampMagneticFields(calctime(curtime,0), ramp);
 
-wait_time = 50;
+    wait_time = 50;
 curtime = calctime(curtime,wait_time);
-
 
     clear('ramp');
     % Ramp Back to original values
@@ -4487,15 +4486,7 @@ curtime = calctime(curtime,wait_time);
     
     % Ramp the QP Coils
     ramp.QPRampTime = ramp.FeshRampTime;
-    ramp.QPValue = 0;
-    
-    % Ramp the Shims
-%     ramp.ShimRampTime = ramp.FeshRampTime;
-%     ramp.ShimRampDelay = 0;    
-%     ramp.xShimValue = Ix0;
-%     ramp.yShimValue = Iy0;
-%     ramp.zShimValue = Iz0;
-
+    ramp.QPValue = 0;    
     
     curtime = rampMagneticFields(calctime(curtime,0), ramp);
 end

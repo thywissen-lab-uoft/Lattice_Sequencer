@@ -494,10 +494,16 @@ switch flags.image_atomtype
                     % Get the center frequency
                     Boff = 0.11;
                     B = seqdata.params.HF_probe_fb+ Boff;
-                    rf_tof_freq_list =  [57]*1e-3 +...  %57
-                        abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
-                    rf_tof_freq = getScanParameter(rf_tof_freq_list,seqdata.scancycle,...
-                        seqdata.randcyclelist,'rf_tof_freq','MHz'); 57;61;
+                    rf_tof_shift_list = [135]; % 57 is typical
+                    rf_tof_shift = getScanParameter(rf_tof_shift_list,seqdata.scancycle,...
+                        seqdata.randcyclelist,'rf_tof_shift','kHz');
+                    
+                    rf_tof_freq =  rf_tof_shift*1e-3 +... 
+                        abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);   
+                    addOutputParam('rf_tof_freq',rf_tof_freq,'MHz');
+                    
+%                     rf_tof_freq = getScanParameter(rf_tof_freq_list,seqdata.scancycle,...
+%                         seqdata.randcyclelist,'rf_tof_freq','MHz'); 57;61;
                     
 
                     if (rf_tof_freq < 1)
@@ -505,7 +511,7 @@ switch flags.image_atomtype
                     end
 
                     % RF Frequency Sweep
-                    rf_tof_delta_freq_list = [12]*1e-3;20;
+                    rf_tof_delta_freq_list = [12]*1e-3;12;
                     rf_tof_delta_freq = getScanParameter(rf_tof_delta_freq_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_tof_delta_freq','MHz');
 %                     delta_freq= 0.05; %0.02            

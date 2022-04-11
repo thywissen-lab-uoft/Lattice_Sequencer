@@ -48,17 +48,15 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     dipole_holdtime_before_evap = 0;
     ramp_Feshbach_B_before_CDT_evap = 0;
 
-    Evap_End_Power_List = [0.2];
+    Evap_End_Power_List = [0.08];
     
     % Ending optical evaporation
     exp_end_pwr = getScanParameter(Evap_End_Power_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');
     
-    
-    % Flag for second stage evaporation
-    
+        
     % Second Stage ending evaporation power
-    Evap2_End_Power_List = [0.075];    
+    Evap2_End_Power_List = [0.08];    
     % Ending optical evaporation
     exp_end_pwr2 = getScanParameter(Evap2_End_Power_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power2','W');
@@ -1432,38 +1430,77 @@ if (seqdata.flags.CDT_evap_2_high_field==1)
     field_ramp_1 = 1;       % Initial ramp to high field
     expevap2 = 0 ;          % Optical Evaporation
     field_ramp_img = 0;     % High Field Imaging
+    spin_flip_9_7 = 0;
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%% Ramp B Field to High Value %%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
     % Ramp magnetic field to high field value
     if field_ramp_1
-        clear('ramp');
-         ramp.SettlingTime = 100; 
+        clear('ramp');                
+        
+        zShim = 0;
+        
+        % Fesh Ramp        
+        XDT_Evap2_FeshValue_List =[195];
+        XDT_Evap2_FeshValue = getScanParameter(XDT_Evap2_FeshValue_List,...
+            seqdata.scancycle,seqdata.randcyclelist,'XDT_Evap2_FeshValue');
 
-        % Shim Ramp
+        % Define the ramp structure
+        ramp=struct;
         ramp.shim_ramptime = 100;
         ramp.shim_ramp_delay = 0; % ramp earlier than FB field if needed
         ramp.xshim_final = seqdata.params.shim_zero(1); 
         ramp.yshim_final = seqdata.params.shim_zero(2);
-        ramp.zshim_final = seqdata.params.shim_zero(3);
-        
-        % Fesh Ramp        
-        XDT_Evap2_FeshValue_List =[200];
-        XDT_Evap2_FeshValue = getScanParameter(XDT_Evap2_FeshValue_List,...
-            seqdata.scancycle,seqdata.randcyclelist,'XDT_Evap2_FeshValue');
-        ramp.FeshRampTime = 150;
-        ramp.FeshRampDelay = -0;
-        ramp.FeshValue = XDT_Evap2_FeshValue;        
+        ramp.zshim_final = seqdata.params.shim_zero(3) + zShim;
+        % FB coil 
+        ramp.fesh_ramptime = 100;
+        ramp.fesh_ramp_delay = 0;
+        ramp.fesh_final = XDT_Evap2_FeshValue;
+        ramp.settling_time = 100;      
 
         % Also going to want to ramp shims (but do that later)  
         disp(' Ramping to high field');
-        disp(['     Ramp Time     (ms) : ' num2str(ramp.FeshRampTime)]);
-        disp(['     Settling Time (ms) : ' num2str(ramp.SettlingTime)]);
-        disp(['     Fesh Value     (G) : ' num2str(ramp.FeshValue)]);
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
+        disp(['     Ramp Time     (ms) : ' num2str(ramp.fesh_ramptime)]);
+        disp(['     Settling Time (ms) : ' num2str(ramp.settling_time)]);
+        disp(['     Fesh Value     (G) : ' num2str(ramp.fesh_final)]);
+        
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+
+        fieldReal = XDT_Evap2_FeshValue + 2.35*zShim + 0.1; 
+
         seqdata.params.HF_probe_fb = XDT_Evap2_FeshValue; 
     end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%% Spin Flip 97 %%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    if spin_flip_9_7
+        B = fieldReal; 
+        rf_pulse_length_list = 100;
+        delta_freq = 10;        
+        
+        rf_list =  [0] +...
+            (BreitRabiK(B,9/2,-7/2) - BreitRabiK(B,9/2,-9/2))/6.6260755e-34/1E6;
+        
+        clear('sweep_pars');
+        sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'xdt_hf_rf_freq');
+        sweep_pars.delta_freq = delta_freq;
+        sweep_pars.power =  0;
+        sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  
+        
+        disp(' DDS Spin Flip');
+        disp(['     Frequency    (MHz) : ' num2str(sweep_pars.freq)]);
+        disp(['     Delta Freq   (kHz) : ' num2str(sweep_pars.delta_freq)]);
+        disp(['     Pulse Time    (ms) : ' num2str(sweep_pars.pulse_length)]);
+        disp(['     Power          (V) : ' num2str(sweep_pars.power)]);      
+
+        curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
+    end
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%% Opitcal Evaporation %%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1492,6 +1529,8 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
             @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
             exp_evap2_time,exp_evap2_time,tau2,P2_end);   
     end
+    
+    
  
     
     
@@ -1527,7 +1566,6 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     end
         
     
-    % Figure out imaging (later)    
 end
 
     %% Ramp Dipole Back Up Before Spectroscopy
@@ -3210,23 +3248,25 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 end
     
     %% Ramp FB field up to 200G for High Field Imaging after ODT
-%     if (seqdata.flags.High_Field_Imaging && ~seqdata.flags.load_lattice )
-    if (seqdata.flags.High_Field_Imaging)
+    if (seqdata.flags.High_Field_Imaging && ~seqdata.flags.load_lattice )  %This is a way of doing normal high field imaging from the ODT using the seqdata.flags.High_Field_Imaging flag from the load magtrap sequence
+%     if (seqdata.flags.High_Field_Imaging)             % Use this flag if
+%     you still want to ramp the high field from ODT and then load lattice
+%     on the atrractive side of the resonance. 
         dispLineStr('Ramping High Field in XDT',curtime);
         time_in_HF_imaging = curtime;
                 
         spin_flip_9_7 = 0;
         do_raman_spectroscopy = 0;
-        spin_flip_7_5 = 1;        
+        spin_flip_7_5 = 0;        
         rabi_manual=0;
         rf_rabi_manual = 0;
         do_rf_spectroscopy= 0; % 
         do_rf_post_spectroscopy =0;
         shift_reg_at_HF = 0;
-        ramp_field_2 = 1;
+        ramp_field_2 = 0;
         
         spin_flip_9_7_again = 0;
-        spin_flip_7_5_again= 1;
+        spin_flip_7_5_again= 0;
         
         ramp_field_3 = 0;
         spin_flip_7_5_3 = 0;
@@ -4355,7 +4395,7 @@ curtime = calctime(curtime,50);
    if ramp_field_for_imaging
 
     % Fesahbach Field ramp
-    HF_FeshValue_Final_List = [206]; % 206 207 208 209 210 211
+    HF_FeshValue_Final_List = [195]; % 206 207 208 209 210 211
     HF_FeshValue_Final = getScanParameter(HF_FeshValue_Final_List,...
     seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Imaging_ODT','G');
  

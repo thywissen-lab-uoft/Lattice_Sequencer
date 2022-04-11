@@ -5175,7 +5175,7 @@ if seqdata.flags.High_Field_Imaging
        
         
 %         Select the depth to ramp
-        HF_latt_depth_list = [60];
+        HF_latt_depth_list = [100];
         HF_latt_depth = getScanParameter(HF_latt_depth_list,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_latt_depth','Er');
         
@@ -5815,20 +5815,20 @@ curtime = calctime(curtime,50);
     % Feshbach field ramp Another
     if field_ramp_2
         clear('ramp');
-%         HF_FeshValue_Spectroscopy_List =[200.1];
-%         HF_FeshValue_Spectroscopy = getScanParameter(HF_FeshValue_Spectroscopy_List,...
-%             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Spectroscopy','G');           
+        HF_FeshValue_Spectroscopy_List =[200.1];
+        HF_FeshValue_Spectroscopy = getScanParameter(HF_FeshValue_Spectroscopy_List,...
+            seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Spectroscopy','G');           
 %         
-        HF_FeshValue_Spectroscopy = paramGet('HF_FeshValue_Spectroscopy');
+%         HF_FeshValue_Spectroscopy = paramGet('HF_FeshValue_Spectroscopy');
       
         HF_FeshValue_Initial = HF_FeshValue_Spectroscopy; %For use below in spectroscopy
         seqdata.params.HF_probe_fb = HF_FeshValue_Spectroscopy; %For imaging
 
-%         zshim_list = [0];
-%         zshim = getScanParameter(zshim_list,...
-%     seqdata.scancycle,seqdata.randcyclelist,'HF_shimvalue_Spectroscopy','A');
+        zshim_list = [0];
+        zshim = getScanParameter(zshim_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'HF_shimvalue_Spectroscopy','A');
 
-        zshim = paramGet('HF_shimvalue_Spectroscopy');
+%         zshim = paramGet('HF_shimvalue_Spectroscopy');
         
         ramptime2 = 50;
           % Define the ramp structure
@@ -5988,7 +5988,7 @@ curtime = calctime(curtime,5);  %extra wait time
     if do_rf_spectroscopy
         dispLineStr('RF Sweep Spectroscopy',curtime);
         mF1=-7/2;   % Lower energy spin state
-        mF2=-5/2;   % Higher energy spin state
+        mF2=-9/2;   % Higher energy spin state
 
         % Get the center frequency
         Boff = 0.11;

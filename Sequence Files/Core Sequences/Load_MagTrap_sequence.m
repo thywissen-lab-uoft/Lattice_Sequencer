@@ -1120,30 +1120,6 @@ curtime = DigitalPulse(calctime(curtime,0),'Remote field sensor SR',50,1);
     %make sense! These have not been updated in forever. 
 curtime = Reset_Channels(calctime(curtime,0));
 
-%% Pulse on XDTs for 100ms and trigger pyKraken for measurement
-% CF : This portion of code is obsolete and we have no plans to implement
-% it.  Delete it as it can be easily rewritten int eh future.
-
-    %RHYS - triggering the pyKraken before MOT loading is useful. Measuring the
-    %XDT pointing is not done right now, since we removed the QPDs, but is in
-    %theory useful (the idea of using QPDs to keep our critical beams aligned
-    %is still a good one). 
-    % trigger pulse for pyKraken
-    DigitalPulse(calctime(curtime,0),'RaspPi Trig',1000,1); 
-    
-    measure_XDT_pointing = 0;
-    if (measure_XDT_pointing)
-        %pulse XDTs on
-        setDigitalChannel(calctime(curtime,1),'XDT TTL',0);
-        setDigitalChannel(calctime(curtime,1),'XDT Direct Control',0);
-        setAnalogChannel(calctime(curtime,1),'dipoleTrap1',0.2);
-        setAnalogChannel(calctime(curtime,1),'dipoleTrap2',0.2);
-        %turn XDTs off
-        setAnalogChannel(calctime(curtime,5001),'dipoleTrap2',0,1);
-        setDigitalChannel(calctime(curtime,5001),'XDT TTL',1);
-        setAnalogChannel(calctime(curtime,5001),'dipoleTrap1',-0.5,1);
-        setDigitalChannel(calctime(curtime,5002),'XDT Direct Control',1);
-    end
 end
 
 %% Raman Shutter

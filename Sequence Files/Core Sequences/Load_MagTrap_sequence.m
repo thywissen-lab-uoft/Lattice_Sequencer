@@ -85,6 +85,7 @@ controlled_load_time = 20000;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CF : These flags need to be cleaned up and make more sense
 
 %RHYS - really don't need so many image types, and why is iXon_movie
 %its own thing?
@@ -106,8 +107,6 @@ seqdata.flags.do_stern_gerlach = 0; %1: Do a gradient pulse at the beginning of 
 seqdata.flags.iXon = 0; % use iXon camera to take an absorption image (only vertical)
 seqdata.flags.do_F1_pulse = 0; % repump Rb F=1 before/during imaging
 
-
-
 seqdata.flags.High_Field_Imaging = 0;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
@@ -115,7 +114,6 @@ seqdata.flags.High_Field_Imaging = 0;
 % CF : D2 Gray molasses is worse than D1, we should delete this
 seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now. 
 
-%RHYS - params should be defined in a separate location from flags. 
 seqdata.flags.In_Trap_imaging = 0;
 tof_list = [21];
 seqdata.params.tof = getScanParameter(tof_list,...
@@ -1107,17 +1105,13 @@ curtime = setAnalogChannel(calctime(curtime,100),37,0);
         end
     end
 
-
-%% B Field Measurement (set/reset of the field sensor after the cycle)
+% B Field Measurement (set/reset of the field sensor after the cycle)
 curtime = sense_Bfield(curtime);
 
-%% Set/Reset Pulses for Remote Field Sensor (after the sensor in the bucket)
-
+% Set/Reset Pulses for Remote Field Sensor (after the sensor in the bucket)
 curtime = DigitalPulse(calctime(curtime,0),'Remote field sensor SR',50,1);
 
-%% Reset analog and digital channels to default values
-    %RHYS - Should go through channels and check whether their reset values
-    %make sense! These have not been updated in forever. 
+% Reset analog and digital channels (shouldn't this always happen?)
 curtime = Reset_Channels(calctime(curtime,0));
 
 end

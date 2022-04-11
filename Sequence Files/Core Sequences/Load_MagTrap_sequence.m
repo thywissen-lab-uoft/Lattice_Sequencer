@@ -131,9 +131,11 @@ seqdata.params.UV_on_time = 10000; %UV on time + savingtime + wait time = real w
 %%% TRANSPORT, RF1A, and RF1B %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Transport curves
+% Horizontal Transport Type
 seqdata.flags.hor_transport_type = 1; 
 %0: min jerk curves, 1: slow down in middle section curves, 2: none
+
+% Vertical Transport Type
 seqdata.flags.ver_transport_type = 3; 
 %0: min jerk curves, 1: slow down in middle section curves, 2: none, 3: linear, 4: triple min jerk
 
@@ -152,6 +154,14 @@ seqdata.flags.ver_transport_type = 3;
 seqdata.flags.compress_QP = 1; % compress QP after transport
 seqdata.flags.RF_evap_stages = [1, 1, 1]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
 
+% Turn on plug beam during RF1B
+seqdata.flags.do_plug = 1;
+
+% Lower cloud after evaporation before TOF (useful for hot clouds)
+seqdata.flags.lower_atoms_after_evap = 0; 
+
+% CF : Probably should move parameters to the lower sections and keep this
+% area as flags only.
 
 % RF1A and RF1B timescales
 RF_1B_time_scale_list = [0.8];
@@ -170,11 +180,6 @@ RF_1B_Final_Frequency_list = [1];%0.8,0.4 1
 RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq','MHz');
 
-% Turn on plug beam during RF1B
-seqdata.flags.do_plug = 1;
-
-% Lower cloud after evaporation before TOF (useful for hot clouds)
-seqdata.flags.lower_atoms_after_evap = 0; 
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% DIPOLE TRAP AND LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -192,12 +197,12 @@ seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
 % Optical Evaporation
 seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
 
-% High Field Evaporation
-seqdata.flags.CDT_evap_2_high_field= 1;    
-
 % After optical evaporation
 seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
 seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
+
+% High Field Evaporation
+seqdata.flags.CDT_evap_2_high_field= 1;    
 
 % Optical lattice
 seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time

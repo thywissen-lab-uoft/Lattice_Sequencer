@@ -98,7 +98,7 @@ seqdata.flags.image_type = 0;
 seqdata.flags.MOT_flour_image = 0;
 
 iXon_movie = 0; %Take a multiple frame movie?
-seqdata.flags.image_atomtype = 1;%  0:Rb; 1:K; 2: K+Rb (double shutter)
+seqdata.flags.image_atomtype = 1;%  0: Rb; 1:K; 2: K+Rb (double shutter)
 seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.img_direction = 0; 
 %1 = x direction (Sci) / MOT, 2 = y direction (Sci), 
@@ -111,10 +111,10 @@ seqdata.flags.High_Field_Imaging = 0;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
 
-% CF : D2 Gray molasses is worse than D1, we should delete this
-seqdata.flags.K_D2_gray_molasses = 0; %RHYS - Irrelevant now. 
+seqdata.flags.K_D2_gray_molasses = 0; % Obsolete flag
 
-seqdata.flags.In_Trap_imaging = 0;
+seqdata.flags.In_Trap_imaging = 0; % Does this flag work for QP/XDT? Or only QP?
+
 tof_list = [21];
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
@@ -170,9 +170,11 @@ RF_1B_Final_Frequency_list = [1];%0.8,0.4 1
 RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq','MHz');
 
+% Turn on plug beam during RF1B
+seqdata.flags.do_plug = 1;
 
-seqdata.flags.do_plug = 1;   % ramp on plug after transfer to window
-seqdata.flags.lower_atoms_after_evap = 0; % lower hot cloud after evap to get clean TOF signal
+% Lower cloud after evaporation before TOF (useful for hot clouds)
+seqdata.flags.lower_atoms_after_evap = 0; 
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% DIPOLE TRAP AND LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

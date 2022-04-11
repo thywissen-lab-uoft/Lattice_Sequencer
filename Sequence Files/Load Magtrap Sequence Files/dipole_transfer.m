@@ -1300,9 +1300,7 @@ curtime = calctime(curtime,300);
             disp(' Performing pre ramp to sympathetic power regime');
 
             % Powers to ramp to 
-            evap_start_pwr1 = DT1_power(3); %0.8
-            evap_start_pwr2 = DT2_power(3); %0.8*1
-            dipole_preramp_time = 500;50;%500
+            dipole_preramp_time = 500;
 
             disp(['     Ramp Time (ms) : ' num2str(dipole_preramp_time)]);
             disp(['     XDT 1 init (W) : ' num2str(DT1_power(2))]);
@@ -1310,15 +1308,13 @@ curtime = calctime(curtime,300);
             disp(['     XDT 1 (W)      : ' num2str(DT1_power(3))]);
             disp(['     XDT 2 (W)      : ' num2str(DT2_power(3))]);            
             
-            if ~(evap_start_pwr1==dipole1_power && evap_start_pwr1==dipole2_power)
-                %ramp dipole traps to sympathetic cooling regime
-                AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+            % Ramp optical power requests to sympathetic regime
+            AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
                     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
                     dipole_preramp_time,dipole_preramp_time,DT1_power(3));
 curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
                     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
                     dipole_preramp_time,dipole_preramp_time,DT2_power(3));
-            end
         end
         
         if expevap

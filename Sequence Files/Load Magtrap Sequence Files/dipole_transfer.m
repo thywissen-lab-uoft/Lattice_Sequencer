@@ -85,7 +85,6 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
     k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
     seqdata.flags.ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
-
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -98,55 +97,38 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     
     
     %%%%% Specify the XDT2 power relative to XDT1 %%%%%%%%%%%%%%%%%%%%%%%%%
-    % This is useful to ensure that at the end of optical evaporation the
-    % horizontal trap frequencies are rotationally symmetric which is
-    % useful for the condutitivty experiments.
-    %Calibrate to match horizontal trap frequencies.
-%     XDT2_power_func = @(P_XDT1)((sqrt(81966+1136.6*(21.6611-(-119.75576*P_XDT1^2+159.16306*P_XDT1+13.0019)))-286.29766)/2/(-284.1555));
-    XDT2_power_func = @(P_XDT1)(P_XDT1/2);
-    
-    % Making it uniform for now (CF 2020/01/26)
+    % Power function of XDT1 relative to XDT2. Useful for making
+    % circularly symmetric trap at end of evaporation.
     XDT2_power_func = @(x) x;
-    
-    %RHYS - More parameters.
-%     %Initial powers.
-%     P1 = 1.5;1.50;1;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
-%     P2 = 1.5;1.50;1.5;0.5;1.5;%Can currently be about 2.0W. ~1V/W on monitor. Feb 27, 2019.
-%     
 
     % Initial XDT power
     P12_list = [1.4];1.4;
-    P12 = getScanParameter(P12_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'XDT_initial_power','W');
+    P12 = getScanParameter(P12_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'XDT_initial_power','W');
     P1 = P12;
-    P2 = P12;       %P2 = XDT2_power_func(P1);
+    P2 = P12;       
             
-    
+    % Sympathetic cooling powers
     Pevap_list = [0.8];
     Pevap = getScanParameter(Pevap_list,...
         seqdata.scancycle,seqdata.randcyclelist,'XDT_Pevap','W');
-    % Sympathetic cooling powers
     P1e = Pevap; %0.8
     P2e = Pevap; %0.8
-
-    % Uncomment these to overwrite initial ramp and just use max powers.
-%     P1e=P1;
-%     P2e=P2;    
-%     %P2e = XDT2_power_func(P1e);    
-%     
-    %Final powers.
-    xdt1_end_power = exp_end_pwr;
-    
-   
-    %xdt2_end_power =(sqrt(81966+1136.6*(21.6611-(-119.75576*xdt1_end_power^2+159.16306*xdt1_end_power+13.0019)))-286.29766)/2/(-284.1555);
+ 
+    % Final optical power
+    xdt1_end_power = exp_end_pwr;    
     xdt2_end_power = XDT2_power_func(exp_end_pwr);
     
     % Evaporation Time
-    Time_List =  [18]*1e3; %[500] for fast evap, for sparse image, [15000] for normal experiment
-    Evap_time = getScanParameter(Time_List,seqdata.scancycle,seqdata.randcyclelist,'evap_time');   
-    exp_evap_time = Evap_time;         
+    Time_List =  [18]*1e3; % [15000] for normal experiment
+    Evap_time = getScanParameter(Time_List,seqdata.scancycle,...
+        seqdata.randcyclelist,'evap_time','ms');   
+    exp_evap_time = Evap_time;      
+    
+    % Exponetial time factor
     Tau_List = [3.5];%[5];
-    exp_tau_frac = getScanParameter(Tau_List,seqdata.scancycle,seqdata.randcyclelist,'Evap_Tau_frac');
+    exp_tau_frac = getScanParameter(Tau_List,seqdata.scancycle,...
+        seqdata.randcyclelist,'Evap_Tau_frac');
     exp_tau=Evap_time/exp_tau_frac;
 
     %Power    Load ODT1  Load ODT2  Begin Evap      Finish Evap

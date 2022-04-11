@@ -131,10 +131,10 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
         seqdata.randcyclelist,'Evap_Tau_frac');
     exp_tau=Evap_time/exp_tau_frac;
 
-    %Power    Load ODT1  Load ODT2  Begin Evap      Finish Evap
-    DT1_power = 1*[P1         P1        P1e          xdt1_end_power];
+    % Power vector (load, hold, sympathetic, final)
+    DT1_power = 1*[P1 P1 P1e xdt1_end_power];
 %     DT1_power = -1*[1         1        1          1]; 
-    DT2_power = 1*[P2      P2        P2e          xdt2_end_power];  
+    DT2_power = 1*[P2 P2 P2e xdt2_end_power];  
 %     DT2_power = -1*[1         1        1          1];  
 
 %% Special Flags
@@ -151,10 +151,6 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
    
 %% Dipole trap initial ramp on
 % Perform the initial ramp on of dipole trap 1
-
-
-% setAnalogChannel(calctime(curtime,-10000),40,-0.060);
-
 
     dipole_ramp_start_time_list =[0]; [-500];
     dipole_ramp_start_time = getScanParameter(dipole_ramp_start_time_list,...
@@ -175,6 +171,8 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
 
     % Enable ALPs feedback control and turn on XDTs AOMs
     setDigitalChannel(calctime(curtime,dipole_ramp_start_time-10),'XDT Direct Control',0);
+    
+    % Enable XDT AOMs
     setDigitalChannel(calctime(curtime,dipole_ramp_start_time-10),'XDT TTL',0);  
     dispLineStr('ODT 1 ramp up started at',calctime(curtime,dipole_ramp_start_time));
 
@@ -214,8 +212,7 @@ function [timeout I_QP V_QP P_dip dip_holdtime,I_shim] = dipole_transfer(timein,
     mean_fesh_current = 5.25392;%before 2017-1-6   22.6/4; %Calculated resonant fesh current. Feb 6th. %Rb: 21, K: 21
     fesh_current = mean_fesh_current;
         
-    vSet_ramp = 1.07*vSet; %24
-    
+    vSet_ramp = 1.07*vSet; %24   
     
     extra_hold_time_list =0;[0,50,100,200,500,750,1000]; %PX added for measuring lifetime hoding in high power XDT
     extra_hold_time = getScanParameter(extra_hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'extra_hold_time');

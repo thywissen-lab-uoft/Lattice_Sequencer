@@ -158,12 +158,13 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
         seqdata.scancycle,seqdata.randcyclelist,'dipole_ramp_up_time');
 %     dipole_ramp_up_time = 200;      % Duration of initial ramp on
 
+    % CF : What are thes for? Can we delete?
     %RHYS - Actually unused. 
     CDT_power = 3.8;%3.5; %4.5   7.0 Jan 22nd
-
     dipole1_power = CDT_power*1; %1
     dipole2_power = CDT_power*0; %Voltage = 0.328 + 0.2375*dipole_power...about 4.2Watts/V when dipole 1 is off
 
+    % CF : This is no longer used??
     % Enable ALPs feedback control and turn on XDTs AOMs
     setDigitalChannel(calctime(curtime,dipole_ramp_start_time-10),...
         'XDT Direct Control',0);
@@ -294,14 +295,17 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
         XDT_pin_time_list = [0];
         XDT_pin_time = getScanParameter(XDT_pin_time_list,seqdata.scancycle,seqdata.randcyclelist,'XDT_pin_time');                
         
-%         XDT_pin_time =400;400;
-
         dipole2_ramp_start_time = 0; 
-        %ramp dipole 2 trap on
-        AnalogFuncTo(calctime(curtime,dipole2_ramp_start_time),'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),XDT_pin_time,XDT_pin_time,DT2_power(2));
-        %ramp dipole 1 down a bit while dipole 2 ramps up
-
-        curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),XDT_pin_time,XDT_pin_time,DT1_power(2));
+        
+        % Ramp ODT2
+        AnalogFuncTo(calctime(curtime,dipole2_ramp_start_time),'dipoleTrap2',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+            XDT_pin_time,XDT_pin_time,DT2_power(2));
+        
+        % Ramp ODT1
+        curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+            XDT_pin_time,XDT_pin_time,DT1_power(2));
   
 
         % Ramp Feshbach field
@@ -371,21 +375,19 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
 
     V_QP = vSet_ramp;
         
+    % Turn off the plug beam now that the QP coils are off
     plug_turnoff_time_list =[0]; -200;
     plug_turnoff_time = getScanParameter(plug_turnoff_time_list,seqdata.scancycle,seqdata.randcyclelist,'plug_turnoff_time');
-     setDigitalChannel(calctime(curtime,plug_turnoff_time),'Plug Shutter',0);%0:OFF; 1:ON; -200
-     dispLineStr('Turning off plug ',calctime(curtime,plug_turnoff_time));
-
-    %this code below is to hold atoms in the XDT beams to check the heating issue 
-    % hold_time_list = [17000 20000];
-    % hold_time = getScanParameter(hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'hold_time_XDT');
-%curtime = calctime(curtime,hold_time);    
-    
+    setDigitalChannel(calctime(curtime,plug_turnoff_time),'Plug Shutter',0);%0:OFF; 1:ON; -200
+    dispLineStr('Turning off plug ',calctime(curtime,plug_turnoff_time));
+ 
+    % Update the dipole trap powers
     P_dip = dipole1_power;
     P_dip2 = DT2_power(2);
     %P_dip2 = dipole2_power; %Dipole 2 Power is definied to be zero, and
     %dipole 2 is instead ramped up to dipole2_pin_power
      
+    % CF: Is this useful? Delete?
     do_dipole_handover = 0;
     if do_dipole_handover % for alignment checks -- load from DT1 in DT2
         handover_time = 50;

@@ -252,7 +252,8 @@ function obj=visaConnect(DeviceName)
 
     catch ME
         warning(['Unable to connect to ' DeviceName]);
-        disp(ME);
+%         disp(ME);
+        obj=[];
     end
 
 end

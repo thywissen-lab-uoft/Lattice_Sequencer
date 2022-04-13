@@ -101,14 +101,12 @@ seqdata.flags.image_type = 0;
 seqdata.flags.MOT_flour_image = 0;
 
 iXon_movie = 0; %Take a multiple frame movie?
-seqdata.flags.image_atomtype = 1;%  0: Rb; 1:K; 2: K+Rb (double shutter)
-seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
-seqdata.flags.img_direction = 0; 
-%1 = x direction (Sci) / MOT, 2 = y direction (Sci), 
-%3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
+seqdata.flags.image_atomtype = 1;   % 0: Rb; 1:K; 2: K+Rb (double shutter)
+seqdata.flags.image_loc = 1;        % 0: `+-+MOT cell, 1: science chamber    
+seqdata.flags.img_direction = 0;    %1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
 seqdata.flags.do_stern_gerlach = 0; %1: Do a gradient pulse at the beginning of ToF
-seqdata.flags.iXon = 0; % use iXon camera to take an absorption image (only vertical)
-seqdata.flags.do_F1_pulse = 0; % repump Rb F=1 before/during imaging
+seqdata.flags.iXon = 0;             % use iXon camera to take an absorption image (only vertical)
+seqdata.flags.do_F1_pulse = 0;      % repump Rb F=1 before/during imaging
 
 seqdata.flags.High_Field_Imaging = 0;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
@@ -217,11 +215,7 @@ end
 
 %RHYS - these are kind of useless.
 %VV - Although these are set to zero there are a bunch of occurrances of these flags in the this
-%sequeence and other files. So keeping these for now. Will be deleted
-%later
-%Imaging Molasses
-seqdata.flags.do_imaging_molasses = 0; % 1: In Lattice or XDT, 2: Free space after QP, 3: Free Space after XDT
-seqdata.flags.evap_away_Rb_in_QP = 0; %Evaporate to 0.4MHz in QP+XDT to kill Rb and load lots of K (only works when loading XDT)
+%sequeence and other files. So keeping these for now. Will be deleted later
 seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / alignment
 
 %% Scope Trigger

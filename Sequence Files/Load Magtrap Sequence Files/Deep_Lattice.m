@@ -65,10 +65,10 @@ img_lattice_depth = 1300;      %Additional Depth for Lattice
     img_zlat_curpower = img_zlat_rampuppower + P_Zlattice;
     
 %% Turn on Molasses Beams
-if ( seqdata.flags.do_imaging_molasses == 1 )
-    curtime = imaging_molasses(calctime(curtime,0));
-else
-end
+% if ( seqdata.flags.do_imaging_molasses == 1 )
+%     curtime = imaging_molasses(calctime(curtime,0));
+% else
+% end
  %% Hold for some time
  
  curtime = calctime(curtime,1);

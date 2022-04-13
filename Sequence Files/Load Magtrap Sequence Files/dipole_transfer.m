@@ -36,7 +36,7 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     dipole_oscillation_heating = 0;%Heat atoms by modulating the XDT beams 
     
     %Evaporation in the XDT
-    %--------------------
+    %-------------------- 
     tilt_evaporation = 0;
     dipole_holdtime_before_evap = 0;
     ramp_Feshbach_B_before_CDT_evap = 0;
@@ -62,7 +62,7 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     do_end_uwave_transfer = 0;      % transfer Rb atoms from F=1 to F=2, then blow them away with probe pulse
     Rb_RF_sweep = 0;                % sweep atoms from |2,2> into |2,-2>
     Rb_repump = 0;                  % repump atoms back into F = 2
-    seqdata.flags.get_rid_of_Rb = 1;% Get rid of Rb at end of evap (only happens when CDT_evap = 1
+    seqdata.flags.get_rid_of_Rb = 0;% Get rid of Rb at end of evap (only happens when CDT_evap = 1
     do_RF_sweep_before_uWave = 0;   % Do an mF sweep before uWave spectroscopy
     do_K_uwave_spectroscopy = 0;    % do uWave Spectroscopy of 40K
     do_K_uwave_multi_sweeps = 0;    % do multiple uWave sweeps of 40K
@@ -1468,7 +1468,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
         sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,...
             seqdata.randcyclelist,'xdt_hf_rf_freq');
         sweep_pars.delta_freq = delta_freq;
-        sweep_pars.power =  0;
+        sweep_pars.power =  0; %in dBm
         sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,...
             seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  
         
@@ -1482,7 +1482,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%% Opitcal Evaporation %%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%% Optical Evaporation %%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     if expevap2

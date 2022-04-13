@@ -118,11 +118,11 @@ seqdata.flags.K_D2_gray_molasses = 0; % Obsolete flag
 
 seqdata.flags.In_Trap_imaging = 0; % Does this flag work for QP/XDT? Or only QP?
 
-tof_list = [21];
+tof_list = [25];
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
-tof_krb_diff_list=[0];
+tof_krb_diff_list= [0];
 seqdata.params.tof_krb_diff = getScanParameter(tof_krb_diff_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof_krb_diff','ms');
 
@@ -195,7 +195,7 @@ seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
 seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 0; % uWave Frequency sweep Rb 2-->1
 seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
 seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
-seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
+seqdata.flags.mix_at_beginning = 1;             % RF Mixing -9-->-9+-7
     
 % Optical Evaporation
 seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
@@ -205,7 +205,7 @@ seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
 seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 
 % High Field Evaporation
-seqdata.flags.CDT_evap_2_high_field= 1;    
+seqdata.flags.CDT_evap_2_high_field= 0;    
 
 % Optical lattice
 seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time

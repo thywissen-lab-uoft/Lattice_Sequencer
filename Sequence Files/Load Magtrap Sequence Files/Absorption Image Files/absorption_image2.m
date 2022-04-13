@@ -315,7 +315,7 @@ end
 % Update curtime to the imaging time (add the tof).
 curtime = calctime(curtime,params.timings.tof);
 
-% Take the first absorption image.
+% Take the first absorption image with atoms
 tof_krb_diff=seqdata.params.tof_krb_diff;
 params.isProgrammedSRS = 0;
 params=do_abs_pulse2(curtime,params,flags,K_power,tof_krb_diff);
@@ -324,7 +324,7 @@ params=do_abs_pulse2(curtime,params,flags,K_power,tof_krb_diff);
 % RHYS - could be shorter
 curtime = calctime(curtime,200); 
 
-% Take the second absorption image
+% Take the second absorption image without atoms
 do_abs_pulse2(curtime,params,flags,K_power,tof_krb_diff);
 
 %% Turn Probe and Repump off

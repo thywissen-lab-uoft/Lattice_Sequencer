@@ -18,8 +18,6 @@ if ~isequal(opts.QPCurrents(1),I_QP)
     error('The initial sweep current does not match the initial current');
 end
 
-doDebug=1;
-
 curtime=timein;
 
 global seqdata;
@@ -50,11 +48,6 @@ I_shim = [Ix Iy Iz];
 setDigitalChannel(curtime,'RF/uWave Transfer',0);
 % Iterate over each sweep
 for kk=1:length(opts.SweepTimes)
-    
-    if doDebug
-%         disp(
-    end
-    
     
     % Turn on/off the RF
     state = opts.RFEnable(kk);

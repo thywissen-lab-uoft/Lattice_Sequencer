@@ -30,6 +30,9 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     seqdata.flags.do_K_uwave_transfer_in_ODT = 0;%transfer K atoms from F=9/2 to F=7/2
     dipole_oscillation_heating = 0;%Heat atoms by modulating the XDT beams 
     
+    Rb_RF_sweep = 0;                % sweep atoms from |2,2> into |2,-2>
+
+    
     %Evaporation in the XDT
     %-------------------- 
     tilt_evaporation = 0;
@@ -52,12 +55,9 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     %%%%%%%%%%%%%%%%%%%%%%%%%%
     %After Evaporation (unless CDT_evap = 0)
     %%%%%%%%%%%%%%%%%%%%%%%%%%
-    ramp_dipole_for_spect = 0;      % Ramp dipole back up before any further physics 
+    ramp_XDT_up = 0;                % Ramp dipole back up after evaporation before any further physics 
     do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscillations for temperature measurement
-    do_end_uwave_transfer = 0;      % transfer Rb atoms from F=1 to F=2, then blow them away with probe pulse
-    Rb_RF_sweep = 0;                % sweep atoms from |2,2> into |2,-2>
     seqdata.flags.get_rid_of_Rb = 0;% Get rid of Rb at end of evap (only happens when CDT_evap = 1
-    do_RF_sweep_before_uWave = 0;   % Do an mF sweep before uWave spectroscopy
     do_K_uwave_spectroscopy = 0;    % do uWave Spectroscopy of 40K
     do_K_uwave_multi_sweeps = 0;    % do multiple uWave sweeps of 40K
     do_Rb_uwave_spectroscopy = 0;   % do uWave Spectroscopy of 87Rb
@@ -66,7 +66,6 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     do_field_ramps = 0;             % Ramp shim and FB fields without spectroscopy
     K_repump_pulse = 0;             % Get rid of F = 7/2 Potassium
     K_probe_pulse = 0;              % Get rid of F = 9/2 Potassium
-    D1_repump_pulse = 0;            % D1 repump instead of D2
     DMD_in_XDT = 0;
     Kill_Beam_Alignment = 0;        %Pulse Kill beam on for whatever needs to be aligned.    
     ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
@@ -1490,7 +1489,7 @@ end
 
     %% Ramp Dipole Back Up Before Spectroscopy
     %RHYS - Hmmm, sure. 
-    if ramp_dipole_for_spect
+    if ramp_XDT_up
         dip_1 = .1; %1.5
         dip_2 = .1; %1.5
         dip_ramptime = 1000; %1000
@@ -1546,16 +1545,17 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
     end
 
 
-    %% Get rid of Rb by doing repump and probe pulse
-        %Only do this if evaporation has happened
+%% Remove Rb from XDT
+% After optical evaporation, it is useful to only have Rb in the trap. Do
+% this by pulsing resonant Rb light
 
-    %RHYS - This is commonly used. 
     if (seqdata.flags.get_rid_of_Rb && seqdata.flags. CDT_evap == 1)
 
         %repump atoms from F=1 to F=2, and blow away these F=2 atoms with
         %the probe
         %open shutter
         %probe
+        
         setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP shutter',1); %0=closed, 1=open
         %repump
         setDigitalChannel(calctime(curtime,-10),'Rb Sci Repump',1);
@@ -1585,92 +1585,7 @@ curtime = setAnalogChannel(calctime(curtime,5),'Rb Repump AM',0.0);
 curtime = setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',0);
 
 curtime=calctime(curtime,100);
-    end
-    
-
-
-  
-
-    %% Do uWave transfer back to F=2
-    %RHYS - Why? Delete.
-    if do_end_uwave_transfer
-
-        AnalogFunc(calctime(curtime,50),37,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),uWave_sweep_time,uWave_sweep_time, fesh_current,fesh_uWave_current);
-
-curtime  = do_uwave_pulse(calctime(curtime,0), 0, uWave_pulse_freq*1E6, uWave_sweep_time,2);
-
-        %blow away atoms in F=2
-        %%open shutter
-        %setDigitalChannel(calctime(curtime,-10),25,1); %0=closed, 1=open
-        %%open analog
-        %setAnalogChannel(calctime(curtime,-10),26,0.7);
-        %%set TTL
-        %setDigitalChannel(calctime(curtime,-10),24,1);
-        %%set detuning
-        %setAnalogChannel(calctime(curtime,-10),34,6590-237);
-        %%pulse beam with TTL 
-%curtime = DigitalPulse(calctime(curtime,0),24,15,0);
-
-    end
-
-    %%Turn on Shim Supply Relay
-    %setDigitalChannel(calctime(curtime,-50),33,1);
-%curtime=calctime(curtime,0);
-
-    %setDigitalChannel(calctime(curtime,0),33,1);
-    
-
-    %% Get rid of F = 7/2 atoms using D1 Beam
-    %RHYS - Why? Delete.
-    if D1_repump_pulse
-
-curtime = calctime(curtime,10);
-
-        %Set Detuning
-        setAnalogChannel(calctime(curtime,-10),48,205);
-        
-        %turn on D1 AOM 20s before it's being used in order for it to
-        %warm up (shutter is closed 
-        setAnalogChannel(calctime(curtime,-40000),47,0.7,1);
-
-        %Pulse D1 beam with TTL
-curtime = DigitalPulse(calctime(curtime,0),35,1,1);
-
-        %Close D1 Shutter
-        setDigitalChannel(calctime(curtime,0),'D1 Shutter',0);
-
-        %Turn F Pump TTLack On to Keep Warm
-        setDigitalChannel(calctime(curtime,10),35,1);
-    else
-    end
-
-    %% Do Sweep before uWave
-
-    %RHYS - Should sweep K state from one side of manifold to the other. I
-    %think we have other ways of doing this, so delete.
-    if do_RF_sweep_before_uWave
-
-        %Ramp FB Field
-        clear('ramp');
-
-        % FB coil settings for spectroscopy
-        ramp.fesh_ramptime = 50;
-        ramp.fesh_ramp_delay = -0;
-        ramp.fesh_final = 41.9507;%before 2017-1-6 2*22.6; %22.6
-        ramp.settling_time = 100;
-
-curtime = ramp_bias_fields(calctime(curtime,0), ramp);
-
-        %Do RF Sweep
-        clear('sweep');
-        sweep_pars.freq = 6.9; %MHz
-        sweep_pars.power = 4.9;
-        sweep_pars.delta_freq = -2.00; % end_frequency - start_frequency
-        sweep_pars.pulse_length = 40; % also is sweep length
-         
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
-
-    end
+    end   
 
 
 
@@ -1969,37 +1884,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars); % ch
         %-----------------------ramp down Feshbach field for imaging
 
     end
-    
-    %RHYS - Not sure what this commented code is for either. It is probably not important.     
-    %% RF spectroscopy test
-
-    %if (do_RF_spectroscopy_test == 1)
-%curtime = calctime(curtime,500);
-        %rf_power=10;
-        %rf_freq =31.3812;
-        %delta_freq = 0.2;    
-        %start_freq=rf_freq-delta_freq/2;
-        %end_freq=rf_freq+delta_freq/2;
-        %pulse_length = 0.2;
-        
-        %%do a pulse
-        %pulse_start_time = curtime;
-        %pulse_end_time = calctime(curtime,pulse_length);
-        %%Set RF power
-        %setAnalogChannel(caltime(curtime,-0.1),'RF Gain',rf_power,1);
-        %%set RF freq
-        %DDS_sweep(pulse_start_time,1,start_freq,end_freq,pulse_length);% DDS_id = 1: use the rf evap DDS
-        %%turn on RF TTL
-        %setDigitalChannel(pulse_start_time,'RF TTL',1); % 0: power off, 1: power on
-        %%turn off RF TTL
-        %setDigitalChannel(pulse_end_time,'RF TTL',0); % 0: power off, 1: power on
-        %%set RF power to -10
-        %setAnalogChannel(caltime(pulse_end_time,0.1),'RF Gain',rf_power,1);
-        %%wait 1ms after turn off TTL
-%curtime = calctime(pulse_end_time,1);    
-    % end
-
-
+   
     %% RF Spectroscopy
     %RHYS - Tests RF transfer for a specific set of states: there is a lot of
     %baggage and commented-out codes here which could be deleted.

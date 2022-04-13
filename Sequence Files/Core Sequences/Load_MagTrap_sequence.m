@@ -50,7 +50,7 @@ seqdata.flags.in_trap_OP = 0;
 seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been programmed via GPIB
 
 
-%% Switches
+%% Flags
 
 %RHYS - these can be switched on for certain predefined sequences. It's
 %a good idea, but I have never used them (except MOT_abs_image). They
@@ -112,14 +112,14 @@ seqdata.flags.High_Field_Imaging = 0;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
 
-seqdata.flags.K_D2_gray_molasses = 0; % Obsolete flag
-
 seqdata.flags.In_Trap_imaging = 0; % Does this flag work for QP/XDT? Or only QP?
 
+% Choose the time-of-flight time for absorption imaging
 tof_list = [25];
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
+% For double shutter imaging, may delay imaging Rb after K
 tof_krb_diff_list= [0];
 seqdata.params.tof_krb_diff = getScanParameter(tof_krb_diff_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof_krb_diff','ms');
@@ -129,7 +129,7 @@ seqdata.params.UV_on_time = 10000; %UV on time + savingtime + wait time = real w
 % usually 15s for non XDT
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% TRANSPORT, RF1A, and RF1B %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Mag Trap : TRANSPORT, RF1A, and RF1B %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Horizontal Transport Type
@@ -180,7 +180,7 @@ RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
 
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% DIPOLE TRAP AND LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% DIPOLE TRAP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Dipole trap
@@ -202,6 +202,11 @@ seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 % High Field Evaporation
 seqdata.flags.CDT_evap_2_high_field= 0;    
 
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% OPTICAL LATTICE%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Optical lattice
 seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
 seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
@@ -219,6 +224,7 @@ end
 seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / alignment
 
 %% Scope Trigger
+
 % Choose which scope trigger to use.
 % scope_trigger = 'Load lattices'; 
 scope_trigger = 'Lattice_Mod';
@@ -297,7 +303,7 @@ end
 %     setAnalogChannel(calctime(curtime,0),'D1 FM',D1_FM);
 %     addOutputParam('D1_DP_FM',D1_FM);
 
-%% Make sure dipole and lattice traps are off and adjust XDT piezo mirrors
+%% Initialize Voltage levels
 % and initialize repump imaging.
 
     %RHYS - Initialization settings for a lot of channels. But, the 'reset
@@ -571,20 +577,14 @@ if ( seqdata.flags.RF_evap_stages(1) == 1 )
     % Gains during each sweep
     RF_gain_1 = 0.5*[-4.1 -4.1 -4.1 -4.1]; 
     % Duration of each sweep interval
-    sweep_times_1 =[14000 8000 4000].*rf_evap_time_scale(1);
-    
+    sweep_times_1 =[14000 8000 4000].*rf_evap_time_scale(1);    
     
     disp(['     Times        (ms) : ' mat2str(sweep_times_1) ]);
     disp(['     Frequencies (MHz) : ' mat2str(freqs_1*1E-6) ]);
     disp(['     Gains         (V) : ' mat2str(RF_gain_1) ]);
 
-
     % Hold before beginning evaporation
     curtime = calctime(curtime,pre_hold_time);
-
-    % Do a pulse of Rb repump to kill F=1
-%     setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',1);
-%     curtime = setDigitalChannel(calctime(curtime,1000),'Rb Sci Repump',0);
 
     % Do the RF evaporation
     curtime = do_evap_stage(curtime, fake_sweep, freqs_1, sweep_times_1, ...
@@ -752,7 +752,7 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
 %     hold_time = getScanParameter(hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'QP_hold_time');
 % %     setDigitalChannel(calctime(curtime,-2.5),'Plug Shutter',0);% 0:OFF; 1: ON
 %     curtime = calctime(curtime,hold_time);  % This goes away if you want to keep knife on
-% %     
+  
 
 % % % % 
 % %     Keep RF on
@@ -864,16 +864,14 @@ end
 %% Post QP Evap Tasks
 %RHYS - clean.
 %turn plug off
-if ( seqdata.flags.do_plug == 1)
-    
-    
+if ( seqdata.flags.do_plug == 1)       
     hold_time_list = [0];
     hold_time = getScanParameter(hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'hold_time_QPcoils');
     curtime = calctime(curtime,hold_time);   
     plug_offset = -2.5;%-2.5 for experiment, -10 to align for in trap image
 
     % Turn off the plug here if you are doing RF1B TOF.
-    if ( seqdata.flags.do_dipole_trap ~= 1 )
+    if (seqdata.flags.do_dipole_trap ~= 1)
         % Dipole transfer has its own code for turning off the plug after
         % loading the XDTs
         dispLineStr('Turning off plug at',calctime(curtime,plug_offset));
@@ -881,21 +879,13 @@ if ( seqdata.flags.do_plug == 1)
         ScopeTriggerPulse(calctime(curtime,0),'plug test');
     end        
 end
-%% Dipole trap ramp on (and QP rampdown)
+%% Dipole Trap
+
 if ( seqdata.flags.do_dipole_trap == 1 )
     dispLineStr('Caling dipole_transfer.m',curtime);   
     [curtime, I_QP, V_QP, P_dip, dip_holdtime, I_shim] = ...
         dipole_transfer(curtime, I_QP, V_QP, I_shim);
 end
-
-
-%%%%%%%%%%%%%% CF: NEW DIPOLE TRANFER TESTING
-% if seqdata.flags.do_dipole_trap
-%     [curtime,I_QP,I_shim,P1,P2] = dipole_transfer2(curtime, I_QP, V_QP,I_shim);
-% end
-
-
-curtime=calctime(curtime,0);
 
 %% Pulse lattice after releasing from dipole trap
 
@@ -909,8 +899,6 @@ end
 %% Load Lattice
 
 if ( seqdata.flags.load_lattice ~= 0 )
-%RHYS - loads the lattices and performs science/fluorescence imaging.
-%Important. Code is probably way too bulky. 
     [curtime,P_dip,P_Xlattice,P_Ylattice,P_Zlattice,P_RotWave]= Load_Lattice(curtime);
 end
 

@@ -327,7 +327,7 @@ if doOP
 
     %some flags used in the script for optical pumping
     seqdata.flags.Rb_Probe_Order = 1;
-    seqdata.flags.K_D2_gray_molasses = 0;
+%     seqdata.flags.K_D2_gray_molasses = 0;
     seqdata.flags.image_loc = 1;
 
     % Perform optical pumping

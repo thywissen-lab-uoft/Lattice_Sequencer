@@ -34,14 +34,14 @@ seqdata.params.plug_shims = [(seqdata.params. shim_zero(1)-1-0.04-0.3),...
 %Current shim values (x,y,z)- reset to zero
 seqdata.params.shim_val = [0 0 0]; 
 
+% CF : What is this variable for?
 hold_list = [500];
 seqdata.params. molasses_time = getScanParameter(hold_list,...
 seqdata.scancycle,seqdata.randcyclelist,'hold_list');%192.5;
 addOutputParam('molasses_hold_list',seqdata.params. molasses_time); 
 
 % Dipole trap and lattice beam parameters 
-seqdata.params. XDT_area_ratio = 1; % DT2 with respect to DT1
-
+seqdata.params.XDT_area_ratio = 1; % DT2 with respect to DT1
 
 % Rb Probe Beam AOM Order
 seqdata.flags.Rb_Probe_Order = 1;   %1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
@@ -896,10 +896,11 @@ if ( seqdata.flags.pulse_lattice_for_alignment ~= 0 )
         seqdata.flags.pulse_lattice_for_alignment);
 end
 
-%% Load Lattice
+%% Optical Lattice
 
 if ( seqdata.flags.load_lattice ~= 0 )
-    [curtime,P_dip,P_Xlattice,P_Ylattice,P_Zlattice,P_RotWave]= Load_Lattice(curtime);
+    [curtime,P_dip,P_Xlattice,P_Ylattice,P_Zlattice,P_RotWave] = ...
+        Load_Lattice(curtime);
 end
 
 %% Pulse Z Lattice after ramping up other lattices to align
@@ -908,7 +909,6 @@ if (seqdata.flags. pulse_zlattice_for_alignment == 1 )
     %RHYS - another alignment tool. 
     curtime = Pulse_Lattice(curtime,4);
 end
-
 
 %% lower atoms from window for clean TOF release
 
@@ -1053,7 +1053,8 @@ curtime = iXon_FluorescenceImage(curtime,'ExposureOffsetTime',molasses_offset,'E
     %demagnetization stuff actually does anything). Could be wrapped into a
     %function. 
 
-%% post-sequence: rotate diople trap waveplate to default value
+%% Post-sequence: rotate diople trap waveplate to default value
+
     do_wp_default = 1;
     if (do_wp_default == 1)
         %Rotate waveplate to divert all power to dipole traps.

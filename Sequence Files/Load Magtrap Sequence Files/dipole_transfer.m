@@ -70,8 +70,9 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     Kill_Beam_Alignment = 0;        %Pulse Kill beam on for whatever needs to be aligned.    
     ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
     k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
-    seqdata.flags.ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
     ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
+
+    seqdata.flags.ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%
     % FB Field and evaporation
@@ -1959,97 +1960,7 @@ curtime = calctime(curtime,kill_time);
 
             total_pulse_length=total_pulse_length+kill_time;
         end
-
-        %RHYS - Remove all of the following.
-        %sweep_pars.freq = 41.2989;
-        
-        %sweep_pars.delta_freq = -1*delta_freq;        
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
-
-        %sweep_pars.freq = 32.6815;
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
-         
-        %sweep_pars.freq = 34.1583;
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
-        
-        %sweep_pars.freq = 35.8558;
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
-        
-        %sweep_pars.freq = 37.835;
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
- 
-        %sweep_pars.freq = 40.1836;
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
-
-        %sweep_pars.freq = 43.0334;
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
-
-        %sweep_pars.freq = 46.5928;
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
-
-        %sweep_pars.freq = 51.2166;
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
-    
-%curtime=calctime(curtime,100);
-
-        %if (check_effi == 1)
-            %sweep_pars.freq = 51.2166;
-        %else 
-            %sweep_pars.freq = 51.2166;
-        %end
-        %sweep_pars.delta_freq = -1*delta_freq;
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
-
-        %sweep_pars.freq = 46.5928;
-        %sweep_pars.delta_freq = -1*delta_freq;
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
-
-        %sweep_pars.freq = 43.0334;
-        %sweep_pars.delta_freq = -1*delta_freq;
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
-
-        %sweep_pars.freq = 40.1836;
-        %sweep_pars.delta_freq = -1*delta_freq;
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
-      
-        %sweep_pars.freq = 37.835;
-        %sweep_pars.delta_freq = -1*delta_freq;
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
-      
-        %sweep_pars.freq = 35.8558;
-        %sweep_pars.delta_freq = -1*delta_freq;
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
-       
-        %sweep_pars.freq = 34.1583;
-        %sweep_pars.delta_freq = -1*delta_freq;
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
-      
-        %sweep_pars.freq = 32.6815;
-        %sweep_pars.delta_freq = -1*delta_freq;
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
-      
-        %sweep_pars.freq = 31.3812;
-        %sweep_pars.delta_freq = -1*delta_freq;
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        %total_pulse_length=total_pulse_length+sweep_pars.pulse_length;
-
+     
         do_ACync_plane_selection = 1;
         if do_ACync_plane_selection
             ACync_start_time = calctime(acync_time_start,-80);

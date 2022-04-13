@@ -163,9 +163,6 @@ seqdata.flags.do_plug = 1;
 % Lower cloud after evaporation before TOF (useful for hot clouds)
 seqdata.flags.lower_atoms_after_evap = 0; 
 
-% CF : Probably should move parameters to the lower sections and keep this
-% area as flags only.
-
 % RF1A and RF1B timescales
 RF_1B_time_scale_list = [0.8];
 RF_1B_time_scale = getScanParameter(RF_1B_time_scale_list,...
@@ -506,11 +503,15 @@ curtime = calctime(curtime,1000);
     setAnalogChannel(calctime(curtime,0),'Z Shim',0.0,2); %2
 
 %% Transport 
-dispLineStr('Magnetic Transport',curtime);
+% Use the CATS to mangetically transport the atoms from the MOT cell to the
+% science chamber.
 
-    %open kitten relay
-curtime = setDigitalChannel(curtime,'Kitten Relay',1);
+    dispLineStr('Magnetic Transport',curtime);
 
+        % Open kitten relay
+    curtime = setDigitalChannel(curtime,'Kitten Relay',1);
+
+    % Trigger Labjack for monitoring currents
     DigitalPulse(calctime(curtime,-500),'Transport LabJack Trigger',100,0);
     
     %Turn shim multiplexer to Science shims
@@ -524,8 +525,7 @@ curtime = setDigitalChannel(curtime,'Kitten Relay',1);
     setAnalogChannel(calctime(curtime,1000),28,0,3); %3
     setAnalogChannel(calctime(curtime,1000),19,0,4); %4
 
-    %digital trigger
-    disp('Start Calculating Transport')
+    % Scope trigger
     ScopeTriggerPulse(calctime(curtime,0),'Start Transport');
     
     %RHYS - the third imporant function. Transports cloud from MOT to science
@@ -533,6 +533,7 @@ curtime = setDigitalChannel(curtime,'Kitten Relay',1);
     %Furthermore, note the significant calculation time due to spline
     %interpolation - this is likely unneccesary?
     
+    disp('Start Calculating Transport')
 curtime = Transport_Cloud(curtime, seqdata.flags.hor_transport_type,...
     seqdata.flags.ver_transport_type, seqdata.flags.image_loc);
     disp('End Calculating Transport')  

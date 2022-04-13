@@ -11,8 +11,7 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
 
     %% Flags
     %Dipole Loading Flags
-    %--------------------
-    
+    %--------------------    
     QP_value = I_QP;
     vSet = V_QP;
     qp_ramp_down_start_time = 0;
@@ -21,16 +20,12 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     do_qp_ramp_down2 = 1;%1
     ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
     %ramp_func = @(t,tt,y2,y1)(minimum_jerk(t,tt,y2-y1)+y1); 
-    %ramps the shims based on the inverse of the gradient
-    %shim_ramp_func2 =
-    %@(t,tt,y2,y1)(y1-(y2-y1)/1.2/(5-1.2)+(y2-y1)/(5-1.2)./(1-t/tt+0.2));
-    
+
     %After Loading the XDT
     %--------------------
     %RHYS - Move all of these flags out of this function, and declare them
     %in the seqdata structure to be passed in.  
     
-    get_rid_of_Rb_init = 0;%get rid of Rb with resonant light pulse
     init_Rb_RF_sweep = 0;%Sweep 87Rb to |1,-1> (or |2,-2>) before evaporation
     seqdata.flags.do_K_uwave_transfer_in_ODT = 0;%transfer K atoms from F=9/2 to F=7/2
     dipole_oscillation_heating = 0;%Heat atoms by modulating the XDT beams 
@@ -38,7 +33,7 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     %Evaporation in the XDT
     %-------------------- 
     tilt_evaporation = 0;
-    dipole_holdtime_before_evap = 0;
+    dipole_holdtime_before_evap = 0;    % not a flag but a value
     ramp_Feshbach_B_before_CDT_evap = 0;
 
     Evap_End_Power_List = [0.08];
@@ -61,7 +56,6 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscillations for temperature measurement
     do_end_uwave_transfer = 0;      % transfer Rb atoms from F=1 to F=2, then blow them away with probe pulse
     Rb_RF_sweep = 0;                % sweep atoms from |2,2> into |2,-2>
-    Rb_repump = 0;                  % repump atoms back into F = 2
     seqdata.flags.get_rid_of_Rb = 0;% Get rid of Rb at end of evap (only happens when CDT_evap = 1
     do_RF_sweep_before_uWave = 0;   % Do an mF sweep before uWave spectroscopy
     do_K_uwave_spectroscopy = 0;    % do uWave Spectroscopy of 40K
@@ -78,8 +72,8 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
     k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
     seqdata.flags.ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
-    
-    
+    ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%
     % FB Field and evaporation
     %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -733,55 +727,6 @@ curtime = calctime(curtime,wait_time);
 end 
  
 
-
-%% Kill Rb in XDT
-    %RHYS - Kind of unneccessary (could just kill it in the mag trap if desired).    
-    if get_rid_of_Rb_init        
-        do_repump_before_kill = 0;        
-
-        kill_pulse_time_list = 2; %5 %%DO NOT SET TO ZERO%%
-        kill_pulse_time = getScanParameter(kill_pulse_time_list,seqdata.scancycle,seqdata.randcyclelist,'kill_pulse_time');
-        %repump atoms from F=1 to F=2, and blow away these F=2 atoms with
-        %the probe
-        %open shutter
-        %probe
-        setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP shutter',1); %0=closed, 1=open, d25
-        
-        if do_repump_before_kill
-            %repump
-            setDigitalChannel(calctime(curtime,-10),'Rb Sci Repump',1); 
-        else
-            setDigitalChannel(calctime(curtime,-10),'Rb Sci Repump',0); 
-        end
-        setAnalogChannel(calctime(curtime,-100),'Rb Repump AM',0,1); %0.7
-        
-        
-        %open analog
-        %probe
-        setAnalogChannel(calctime(curtime,-10),'Rb Probe/OP AM',0.7); %a36
-        %repump (keep off since no TTL)
-
-        %set TTL
-        %probe
-        setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',1);%d24
-        %repump doesn't have one
-
-        %set detuning
-        setAnalogChannel(calctime(curtime,-10), 'Rb Beat Note FM',6590-237); %a34
-
-        %pulse beam with TTL 
-        %TTL probe pulse
-        DigitalPulse(calctime(curtime,0),'Rb Probe/OP TTL',kill_pulse_time,0);
-        %repump pulse
-        setAnalogChannel(calctime(curtime,0),'Rb Repump AM',1,1); %0.7
-curtime = setAnalogChannel(calctime(curtime,kill_pulse_time),'Rb Repump AM',0.0,1);
-
-        %close shutter
-        setDigitalChannel(calctime(curtime,0),'Rb Probe/OP shutter',0); %0=closed, 1=open
-curtime = setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',0);
-
-curtime = calctime(curtime,50);
-    end
 
     
 %% 40K RF Sweep Init
@@ -1644,15 +1589,7 @@ curtime=calctime(curtime,100);
     
 
 
-    %% Repump atoms back into F=2 with repump light
-    %RHYS - Why?
-    if Rb_repump 
-
-        setAnalogChannel(curtime,2,0.7,1);
-curtime = DigitalPulse(curtime,5,50,1);
-curtime = setAnalogChannel(curtime,2,0,1);
-
-    end
+  
 
     %% Do uWave transfer back to F=2
     %RHYS - Why? Delete.
@@ -3074,114 +3011,15 @@ curtime=calctime(curtime,kill_time);
     %the lattice as it gives the rotating waveplate time to turn before the
     %lattice turns on.
     if do_dipole_trap_kick
-
         curtime = calctime(curtime,kick_wait_time);
-
     else
-        %XDT on for 100ms before further physics
-%curtime=calctime(curtime,100 + 0*10000); %100%35
-%         exxdthold_list=1000;[1000];[1000];+500; %necessory for loading lattice => give some time for waveplate to rotate 
-        
+        % Why is this hold time here?
         exxdthold_list= [100];
-        exxdthold = getScanParameter(exxdthold_list,seqdata.scancycle,seqdata.randcyclelist,'exxdthold','ms');
+        exxdthold = getScanParameter(exxdthold_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'exxdthold','ms');
         curtime=calctime(curtime,exxdthold);%for sparse image
-
-    end
-    
-    %RHYS - High field imaging stuff. What to keep, what to delete?
-    %Record the current of the Feshbach coil
-    %seqdata.params. feshbach_val = fesh_current_val;
-
-    %%% Ramp FB field up to 200G for High Field Imaging
-    % 
-    %%ADD XDT HOLD AGAIN!!!!
-    %if seqdata.flags.High_Field_Imaging
-        %clear('ramp');
-     
-        %%FB coil settings for spectroscopy
-        %ramp.fesh_ramptime = 150;
-        %ramp.fesh_ramp_delay = -0;
-        %ramp.fesh_final = 205;%before 2017-1-6 100*1.08962; %22.6
-        %ramp.settling_time = 50;    
-     
-%curtime = ramp_bias_fields(calctime(curtime,0), ramp);
-   
-        %ScopeTriggerPulse(curtime,'FB_ramp');
-        %clear('ramp');
-    
-        %%FB coil settings for spectroscopy
-        %ramp.fesh_ramptime = 15;
-        %ramp.fesh_ramp_delay = -0;
-        %ramp.fesh_final = 190;%before 2017-1-6 100*1.08962; %22.6
-        %ramp.settling_time = 1;
-     
-%curtime = ramp_bias_fields(calctime(curtime,0), ramp);
-     
-        %%turn off dipole trap  
-        %setAnalogChannel(calctime(curtime,0),'dipoleTrap1',0);
-        %setAnalogChannel(calctime(curtime,0),'dipoleTrap2',0);
-        %setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
-         
-%curtime = calctime (curtime,5);
-   
-        %clear('ramp');
-
-        %%FB coil settings for spectroscopy
-        %ramp.fesh_ramptime = 5;
-        %ramp.fesh_ramp_delay = 10;
-        %ramp.fesh_final = 205;%before 2017-1-6 100*1.08962; %22.6
-        %ramp.settling_time = 1;
-
-        %ramp_bias_fields(calctime(curtime,0), ramp);
-    
-    %end
-
-
-    %%%Spin Flip For High Field Imaging
-     
-    %spin_flip_for_HF_imaging = 0;
-     
-    %if spin_flip_for_HF_imaging
-        %clear('sweep');
-        %rf_list = [6.3371]; 
-        %sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,seqdata.randcyclelist,'rf_freq')
-        %rf_power_list = [-9.0];
-        %sweep_pars.power = getScanParameter(rf_power_list,seqdata.scancycle,seqdata.randcyclelist,'rf_transfer_power');  -5.7; %-7.7
-        %delta_freq = 0.02;
-        %sweep_pars.delta_freq = delta_freq;
-        %rf_pulse_length_list = [5];
-        %sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5           
-         
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-       
-        %clear('ramp');
-        %ramp.FeshRampTime = 150;
-        %ramp.FeshRampDelay = -0;
-        %ramp.FeshValue = 205;%before 2017-1-6 100*1.08962; %22.6
-        %ramp.SettlingTime = 50;     
-%curtime = rampMagneticFields(calctime(curtime,0), ramp);
-         
-        %clear('sweep');
-        %rf_list = 47.7062; [6.3371]; 
-        %sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,seqdata.randcyclelist,'rf_freq')
-        %rf_power_list = [0];
-        %sweep_pars.power = getScanParameter(rf_power_list,seqdata.scancycle,seqdata.randcyclelist,'rf_transfer_power');  -5.7; %-7.7
-        %delta_freq = 1;0.02;
-        %sweep_pars.delta_freq = delta_freq;
-        %rf_pulse_length_list = 20;[5];
-        %sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5        
-        %addOutputParam('RF_Pulse_Length',sweep_pars.freq);    
-        
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        
-    %clear('ramp');
-    %ramp.FeshRampTime = 150;
-    %ramp.FeshRampDelay = -0;
-    %ramp.FeshValue = 20;%before 2017-1-6 100*1.08962; %22.6
-    %ramp.SettlingTime = 50; 
-%curtime = rampMagneticFields(calctime(curtime,0), ramp);
-
-    %end
+    end   
+  
     
 %% Ramp FB field up before loading lattice
 % Before loading the lattices, it is sometimes useful to control the
@@ -4432,8 +4270,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
 % To characerize field gradients, it is useful to ramp the FB and QP coils
 % at the end of evaporation. Strong field gradients kick atoms out of the
 % trap. And a "round trip" magnetic field ramp tests this.
-ramp_HF_and_back2 = 0;
-if ramp_HF_and_back2
+if ramp_QP_FB_and_back
     dispLineStr('Ramping Fields Up and Down',curtime);
 
     % Feshvalue to ramp to

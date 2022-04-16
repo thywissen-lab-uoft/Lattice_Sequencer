@@ -134,7 +134,7 @@ seqdata.digchannels(75).resetvalue = 1;
 seqdata.digchannels(76).name = 'SRS Source post spec'; %0:K new SRS 1:Rb SRS
 seqdata.digchannels(76).resetvalue = 0;
 
-seqdata.digchannels(77).name = 'Channel 77'; %unused
+seqdata.digchannels(77).name = 'ODT Rigol Trigger'; %unused
 seqdata.digchannels(78).name = 'Channel 78'; %unused
 seqdata.digchannels(79).name = 'Channel 79'; %unused
 seqdata.digchannels(80).name = 'Channel 80'; %unused
@@ -690,6 +690,7 @@ seqdata.analogchannels(46).voltagefunc{2} = @(a)(a); % Use a 10x Voltage Divider
 
 
 % %channel 47 (D1 AM Control)
+% CF : Needs better descriptor. Multiple D1 light in the sequence
 seqdata.analogchannels(47).name = 'D1 AM';
 seqdata.analogchannels(47).minvoltage = 0;
 seqdata.analogchannels(47).maxvoltage = 10;
@@ -711,6 +712,8 @@ seqdata.analogchannels(48).voltagefunc{2} = @(a)(a);
     %the AOM\
     
 %channel 49 (D1 EOM Amplitude)
+% CF : Needs better descriptor. Multiple D1 light in the sequence (I assume
+% this is for GM?)
 seqdata.analogchannels(49).name = 'D1 EOM';
 seqdata.analogchannels(49).minvoltage = -1;
 seqdata.analogchannels(49).maxvoltage = 10;

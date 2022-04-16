@@ -57,7 +57,7 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     %%%%%%%%%%%%%%%%%%%%%%%%%%
     ramp_XDT_up = 0;                % Ramp dipole back up after evaporation before any further physics 
     do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscillations for temperature measurement
-    seqdata.flags.get_rid_of_Rb = 0;% Get rid of Rb at end of evap (only happens when CDT_evap = 1
+    seqdata.flags.get_rid_of_Rb = 1;% Get rid of Rb at end of evap (only happens when CDT_evap = 1
     do_K_uwave_spectroscopy = 0;    % do uWave Spectroscopy of 40K
     do_K_uwave_multi_sweeps = 0;    % do multiple uWave sweeps of 40K
     do_Rb_uwave_spectroscopy = 0;   % do uWave Spectroscopy of 87Rb
@@ -167,6 +167,10 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     setDigitalChannel(calctime(curtime,dipole_ramp_start_time-10),'XDT TTL',0);  
     dispLineStr('ODT 1 ramp up started at',calctime(curtime,dipole_ramp_start_time));
 
+    % Trigger function generator
+%     DigitalPulse(calctime(curtime,dipole_ramp_start_time),...
+%         'ODT Rigol Trigger',1,1)
+    
     % Ramp dipole 1 trap on
     AnalogFunc(calctime(curtime,dipole_ramp_start_time),...
         'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...

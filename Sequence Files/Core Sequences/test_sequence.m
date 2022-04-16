@@ -5242,6 +5242,10 @@ AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1))
 %     setDigitalChannel(calctime(curtime,400),'yLatticeOFF',1); % 0 : All on, 1 : All off
 
 
+%% Probe Beam Check
+% setDigitalChannel(calctime(curtime,10),'K Probe/OP TTL',1);
+%     setAnalogChannel(calctime(curtime,10),'K Probe/OP AM',6);
+
 timeout = curtime;
 
 

@@ -103,14 +103,14 @@ Raman_transfers = 0;                                % (4727)            keep : a
 if seqdata.flags.High_Field_Imaging
     lattice_holdtime = 0; %no extra hold time if HF is ramped before lattice loading   
 else
-   lattice_holdtime_list =[150]; [150]; %150 sept28
+   lattice_holdtime_list =[150]; [150];
    % Minimum value is stupidly set by the fact that the XDT ramp down go
    % backwards in time.  This should be changed.
    lattice_holdtime = getScanParameter(lattice_holdtime_list,seqdata.scancycle,seqdata.randcyclelist,'latt_holdtime','ms');%maximum is 4
  
 end
 
-lattice_rampdown_list = [0]; %0 for snap off (for in-situ latice postions for alignment)
+lattice_rampdown_list = [3]; %0 for snap off (for in-situ latice postions for alignment)
                              %3 for band mapping
 
 if Drop_From_XDT
@@ -136,7 +136,7 @@ if newLoad
     zld = 60;
     
     % Ramp Mode
-    rampMode=2;
+    rampMode=0;
     do_DMD=0;
     %
     % 0 : Ramp only the lattice
@@ -145,10 +145,14 @@ if newLoad
     %initial lattice depth
     initial_latt_depth_list = [10];
     init_depth = getScanParameter(initial_latt_depth_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'initial_latt_depth','ms');
+        seqdata.scancycle,seqdata.randcyclelist,'initial_latt_depth','Er');
     switch rampMode
-        case 0 % Ramp only the lattice
+        case 0 
+            % Ramp only the lattices in a multistep seqeunce.
+            % This is the "typical" ramp sequence that we perform;
+            
             %%% Lattice %%%
+            % Ramp the optical powers of the lattice
             latt_depth=...
                 [init_depth init_depth zld zld;     % X lattice
                  init_depth init_depth zld zld;     % Y lattice
@@ -159,12 +163,11 @@ if newLoad
 %             latt_times=[150 50 0.2 50];
             latt_times=[latt_ramp_time 50 0.2 50];
             
-            %%% XDT is fixed%%%
+            %%% XDT %%%
+            % Keep the powers constant            
             dip_pow=dip_endpower;
-%             dip_times=[1];
-            
+%             dip_times=[1];            
             dip_pow=[dip_endpower,dip_endpower,dip_endpower,dip_endpower];
-
             dip_times=latt_times;  
 
             %%% DMD is fixed %%%
@@ -193,32 +196,44 @@ if newLoad
 
             dmd_pow=[DMD_power_val DMD_power_val 0];
             dmd_times=[100 50 50];
-        case 2 % Simple square ramp
+        case 2 
+            % For Alignment of the lattices
+            % This ramp ramps the XDT powers down while ramping up only one
+            % of the lattices.  Compare the XDT insitu position to the
+            % insitu position measured here. (Use a TOF~0);
+            
+            U_align = 100; % Lattice depth to align to
+            
+            % Simple square ramp of only one lattice 
 %              latt_depth=...
-%                  [60 60; % X lattice
+%                  [U_align U_align; % X lattice
 %                  L0(2) L0(2);  % Y lattice
 %                  L0(3) L0(3)];    % Z Lattice
              latt_depth=...
                  [L0(1) L0(1); % X lattice
-                 60 60;  % Y lattice
+                 U_align U_align;  % Y lattice
                  L0(3) L0(3)];    % Z Lattice
 %              latt_depth=...
 %                  [L0(1) L0(1); % X lattice
 %                  L0(2) L0(2);  % Y lattice
-%                  60 60];    % Z Lattice
-%             latt_times=[1 latt_hold_time];
+%                  U_align U_align];    % Z Lattice
+
+            % Lattice Ramp Times
             latt_ramp_time_list = [150];
-             latt_ramp_time = getScanParameter(latt_ramp_time_list,...
-                seqdata.scancycle,seqdata.randcyclelist,'latt_ramp_time','ms');
-%             latt_times=[150 50 0.2 50];
+            latt_ramp_time = getScanParameter(latt_ramp_time_list,...
+                seqdata.scancycle,seqdata.randcyclelist,...
+                'latt_ramp_time','ms');
             latt_times=[latt_ramp_time 150];
             
+            % XDT Power
             latt_XDT_pow_list = [seqdata.params.ODT_zeros(1)];
             latt_XDT_pow = getScanParameter(latt_XDT_pow_list,...
-                seqdata.scancycle,seqdata.randcyclelist,'latt_XDT_pow','V');
-            %%% XDT %%%
+                seqdata.scancycle,seqdata.randcyclelist,...
+                'latt_XDT_pow','V');
+            
+            %%% XDT Power and Time Vector %%%
             dip_pow=[dip_endpower latt_XDT_pow];
-            dip_times=[50 50];   
+            dip_times=[150 50];   
             
              %%% DMD is fixed %%%
             dmd_pow=[];

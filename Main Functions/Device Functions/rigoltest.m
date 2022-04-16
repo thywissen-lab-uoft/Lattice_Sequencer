@@ -4,11 +4,11 @@ dt = 1/sr;
 
 % Timings
 t1 = .075;          % Ramp on
-tha = 1.12;         % Hold after ramp
+tha = 1.3418;         % Hold after ramp
 t2 = .500;          % Ramp to sympathetic
-t3 = 18;tau=18;     % Exponential Decrease
-thb= 0.2;           % Hold time after evaporation
-
+t3 = 18;tau=18/3.5;     % Exponential Decrease
+thb= 0.206;           % Hold time after evaporation
+% thb = ;
 % Total Time
 Ttot = t1 + tha + t2 + t3 +thb;
 
@@ -19,8 +19,8 @@ tVec = 0:dt:Ttot;
 y0 = -0.04;
 y1 = 1.5;
 y2 = 0.8;
-y3 = 0.08;
-y4 = 0.08;
+y3 = 0.1;
+y4 = 0.1;
 
 % Ramp On
 tVec_a = tVec(tVec<=t1);
@@ -49,7 +49,7 @@ tt = [tVec_a tVec_b tVec_c tVec_d tVec_e];
 yy = [y_a y_b y_c y_d y_e];
 
 % Plot the powers
-figure(1)
+figure
 clf
 co=get(gca,'colororder');
 plot(tt,yy,'-','linewidth',1,'color',co(1,:));
@@ -82,7 +82,7 @@ values_1 = volt2val(v1);
 values_2 = volt2val(v2);
 
 % Plot the normalized voltages
-figure(2);
+figure;
 clf
 plot(values_1,'-','linewidth',1,'color',co(1,:));
 hold on

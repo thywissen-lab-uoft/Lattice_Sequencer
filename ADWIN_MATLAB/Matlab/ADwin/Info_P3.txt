@@ -1,0 +1,13 @@
+Information zu dem ADwin Matlab Treiber.
+
+Diese Version wurde mit Matlab R2012b erzeugt.
+Sie funktioniert mit Matlab Version R2007b bis ...
+
+---------------------------------------------------------------------------
+
+Information about the ADwin Matlab driver.
+
+This Version is created with Matlab R2012b.
+It works with Matlab Version R2007b to ...
+
+

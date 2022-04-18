@@ -1,0 +1,15 @@
+Information zu dem ADwin Matlab Treiber.
+
+Hinweis: ADwin_P1 wurde in früheren ADwin-CD Versionen ADwin_Rev2 genannt.
+
+Diese Version benutzt die ADlab.dll.
+Sie funktioniert mit Matlab Version 7.0 oder früher bis R2006a (7.2).
+
+---------------------------------------------------------------------------
+
+Information about the ADwin Matlab driver.
+
+Note: ADwin_P1 was called in earlier ADwin-CD versions ADwin_Rev2.
+
+This version uses the ADlab.dll.
+It works with Matlab Version 7.0 or earlier to R2006a (7.2).

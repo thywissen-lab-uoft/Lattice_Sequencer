@@ -1,0 +1,15 @@
+Information zu dem ADwin Matlab Treiber.
+
+Diese Version wurde mit Matlab R2007a erzeugt.
+Sie funktioniert mit Matlab Version 7.1 bis R2010b.
+
+---------------------------------------------------------------------------
+
+Information about the ADwin Matlab driver.
+
+This Version is created with Matlab R2007a.
+It works with Matlab Version 7.1 to R2010b.
+
+
+
+

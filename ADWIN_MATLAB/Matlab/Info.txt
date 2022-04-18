@@ -1,0 +1,85 @@
+Voraussetzungen zur Verfügbarkeit der ADwin Funktionen:
+
+- Sicherstellen, dass der Pfad "C:\ADwin\Developer\Matlab\ADwin" in der Matlab PATH Suchliste eingetagen ist .
+(hier eingetragene Pfade werden bei dem Aufruf von Funktionen durchsucht)
+
+Anschließend können alle ADwin Funktionen unter Matlab verwendet werden.
+
+Anmerkung:
+Wenn Sie eine MATLAB Version 5, Version 6 oder kleiner als Version 7.1 verwenden, benennen
+Sie in dem Verzeichnis <C:\ADwin\Developer\Matlab> die folgenden
+Ordner um:
+	<.\ADwin>	->	<.\ADwin_P3>
+	<.\ADwin_P1>	->	<.\ADwin>
+
+Weitere Information siehe "Matlab_ger.pdf" im Kapitel "3.2 ADwin-Treiber für MATLAB® einbinden".
+	
+Hinweis : Die Lizenz für den Matlab Treiber gehört nicht zum Standardlieferumpfang. 
+Sie ist gesondert zu bestellen und zu bezahlen.
+
+
+
+---------------------------------------------------------------------------
+
+
+Prerequisite for the availability of the ADwin functions:
+
+- Take care that this path "C:\ADwin\Developer\Matlab\ADwin" is in the Matlab PATH list.
+(the registered paths will be searched through, after the function is called)
+
+Afterwards all ADwin functions can be used under Matlab.
+
+Note: 
+If you use a MATLAB Version 5, Version 6 or smaller than Version 7.1, rename the following
+folders in <C:\ADwin\Developer\Matlab>:
+	<.\ADwin> 	->	<.\ADwin_P3>
+	<.\ADwin_P1>	->	<.\ADwin>
+
+For further information please see "Matlab_eng.pdf" chapter "3.2 Including the ADwin Driver for MATLAB®".	
+
+Remark :  The license key for the Matlab driver is not part of the standard delivery. 
+It has to be ordered and paid separately.
+
+
+
+#######################################################################################
+#######################################################################################
+
+Information zu dem ADwin Matlab Treiber. / Information about the ADwin Matlab driver.
+
+#######################################################################################
+########################### Paket/packet ADwin (ADwin_P3) #############################
+
+Diese Version wurde mit Matlab R2007b erzeugt.
+Sie funktioniert mit Matlab Version R2007b bis R2011a (oder neuer)
+
+---------------------------------------------------------------------------
+
+This Version is created with Matlab R2007b.
+It works with Matlab Version R2007b to R2011a (or newer)
+
+
+#######################################################################################
+################################ Paket/packet ADwin_P2 ################################
+
+Diese Version wurde mit Matlab R2007a erzeugt.
+Sie funktioniert mit Matlab Version 7.1 bis R2010b.
+
+---------------------------------------------------------------------------
+
+This Version is created with Matlab R2007a.
+It works with Matlab Version 7.1 to R2010b.
+
+
+#######################################################################################
+################################ Paket/packet ADwin_P1 ################################
+Hinweis: ADwin_P1 wurde in früheren ADwin-CD Versionen ADwin_Rev2 genannt.
+
+Diese Version benutzt die ADlab.dll.
+Sie funktioniert mit Matlab Version 7.0 oder früher bis R2006a (7.2).
+
+---------------------------------------------------------------------------
+Note: ADwin_P1 was called in earlier ADwin-CD versions ADwin_Rev2.
+
+This Version uses the ADlab.dll.
+It works with Matlab Version 7.0 or earlier to R2006a (7.2).

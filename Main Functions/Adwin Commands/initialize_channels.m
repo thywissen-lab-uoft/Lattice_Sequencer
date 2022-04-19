@@ -6,6 +6,7 @@
 function initialize_channels()
 
 global seqdata;
+%% Initialize Channel Array
 
 %define the analog channel structure array
 %56 analog channels (numbered channel 1-56)
@@ -20,7 +21,8 @@ seqdata.digchannels = repmat(struct('channel',0,...
     'bitpos',0,...
     'cardid',0),1,32*seqdata.digcardnum);
 
-%set the digital channels
+% Initialize digital channels
+% Each digital card (identified by cardid) has 32 channels 
 for i = 1:length(seqdata.digchannels)
     seqdata.digchannels(i).channel = i;
     seqdata.digchannels(i).name = sprintf('d%g',i); % 2013-03-02: added names
@@ -37,8 +39,10 @@ for i = 1:length(seqdata.digchannels)
     
 end
 
+%% Digital Channels
+
 % digital channel names
-seqdata.digchannels(1).name = 'K D1 GM Shutter'; % 1: ON, 0: OFF
+seqdata.digchannels(1).name = 'K D1 GM Shutter';    % 1: ON, 0: OFF
 seqdata.digchannels(2).name = 'K Trap Shutter'; % 1: ON, 0: OFF
 seqdata.digchannels(3).name = 'K Repump Shutter';% all repump power shutter, different from 0th order shutter
 seqdata.digchannels(4).name = 'Rb Trap Shutter'; %1: ON, 0: OFF
@@ -154,6 +158,10 @@ seqdata.digchannels(93).name = 'Channel 93'; %unused
 seqdata.digchannels(94).name = 'Channel 94'; %unused
 seqdata.digchannels(95).name = 'Channel 95'; %unused
 seqdata.digchannels(96).name = 'Channel 96'; %unused
+
+%% Analog Channels
+% If the reset value is of size 1x2 the second index is the voltage
+% function to use. If the reset value is a single number, it is a voltage.
 
 %set the analog channel numbers
 for i = 1:length(seqdata.analogchannels)

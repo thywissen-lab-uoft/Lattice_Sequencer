@@ -39,9 +39,15 @@ Achs=seqdata.analogchannels;
 Dchs=seqdata.digchannels;
 
 % Define the RGB color scheme for the rows in the table
-cc=[255	255	255;
-    221 235 247]/255;
-bc=[47	117	181]/255;
+ccD=[221 235 247;
+    255	255	255]/255;
+
+ccA=[245,230,255;
+    255	255	255]/255;
+
+
+bcD=[47	117	181]/255;
+bcA=[0.4940    0.1840    0.5560];
 
 %% Graphical Initialize
 
@@ -49,7 +55,7 @@ bc=[47	117	181]/255;
 % Initialize main figure
 hFGUI=figure(101);
 clf
-set(hFGUI,'color','w','Name',guiname,'Toolbar','none','menubar','none',...
+set(hFGUI,'color','w','Name',guiname,'Toolbar','none',...
     'NumberTitle','off','Resize','on','Visible','off','Tag','GUI');
 hFGUI.Position(3:4)=[900 600];
 hFGUI.Position(2)=50;
@@ -151,9 +157,17 @@ hpOver=uipanel('parent',hFGUI,'backgroundcolor','w',...
 hpOver.Position=[0 0 hFGUI.Position(3) hFGUI.Position(4)];
 
 % Define the respective size of the digital and analog panels
+
+% Width of digital panel
 w1=350;
-g=50;
+
+% Gao between panels
+g=10;
+
+% Width of analog panel
 w2=hpOver.Position(3)-w1-g;
+
+% Heigh of each channel
 h=25;
 
 
@@ -169,8 +183,8 @@ hpD.Position=[0 0 w1 hpOver.Position(4)-60];
 % (you scroll by moving the large panel inside the small one; it's clunky
 % but MATLAB doesn't have a good scrollable interface for figure interace)
 hpDS=uipanel('parent',hpD,'backgroundcolor','w',...
-    'units','pixels','fontsize',12,'clipping','on');
-hpDS.Position=[0 0 400 h*length(Dchs)];
+    'units','pixels','fontsize',12,'clipping','on','bordertype','none');
+hpDS.Position=[0 0 400 h*length(Dchs)+6];
 hpDS.Position(2)=hpD.Position(4)-hpDS.Position(4);
 
 
@@ -183,7 +197,7 @@ Dlbl.Position(1:2)=[0 hpD.Position(4)+2];
 % Channel namel label
 t=uicontrol('parent',Dlbl,'style','text','units','pixels',...
 'fontsize',10,'fontname','monospaced','fontweight','bold',...
-'backgroundcolor','w','String','Channel Name');
+'backgroundcolor','w','String','Digital Channel Name');
 t.Position(3:4)=t.Extent(3:4);
 t.Position(1:2)=[10 0];
 
@@ -205,14 +219,14 @@ tic
 % Populate the digital channels
 for nn=1:length(Dchs)
     % Grab the color
-    c=[cc(mod(nn-1,size(cc,1))+1,:) .1];    
+    c=[ccD(mod(nn-1,size(ccD,1))+1,:) .1];    
     
     % panel for this row
     hpDs(nn)=uipanel('parent',hpDS,'backgroundcolor',c,...
         'units','pixels','fontsize',10,'bordertype','line',...
-        'highlightcolor',bc,'borderwidth',1);
+        'highlightcolor',bcD,'borderwidth',1);
     hpDs(nn).Position(3:4)=[w1 h+1];
-    hpDs(nn).Position(1:2)=[0 hpDS.Position(4)-nn*h];    
+    hpDs(nn).Position(1:2)=[0 hpDS.Position(4)-nn*h-3];    
     hpDs(nn).UserData.Channel=Dchs(nn);    
     
     % Channel label
@@ -221,7 +235,7 @@ for nn=1:length(Dchs)
         'backgroundcolor',c);
     t.String=['d' num2str(Dchs(nn).channel) ' ' Dchs(nn).name];      
     t.Position(3:4)=t.Extent(3:4);
-    t.Position(1:2)=[10 0.5*(hpDs(nn).Position(4)-t.Position(4))-3];
+    t.Position(1:2)=[10 0.5*(hpDs(nn).Position(4)-t.Position(4))-4];
  
     % Override Checkbox
     ckOver=uicontrol('parent',hpDs(nn),'style','checkbox','units','pixels',...
@@ -278,8 +292,8 @@ hpA.Position=[hpD.Position(3)+g 0 w2 hpD.Position(4)];
 
 % Total container uipanel for analog channels
 hpAS=uipanel('parent',hpA,'backgroundcolor','w',...
-    'units','pixels','fontsize',12,'clipping','on');
-hpAS.Position=[0 0 w2 h*length(Achs)];
+    'units','pixels','fontsize',12,'clipping','on','BorderType','none');
+hpAS.Position=[0 0 w2 h*length(Achs)+6];
 hpAS.Position(2)=hpA.Position(4)-hpAS.Position(4);
 
 
@@ -302,7 +316,7 @@ Albl.Position(1:2)=[hpA.Position(1) hpA.Position(4)+2];
 % Channel label
 t=uicontrol('parent',Albl,'style','text','units','pixels',...
 'fontsize',10,'fontname','monospaced','fontweight','bold',...
-'backgroundcolor','w','String','Channel Name');
+'backgroundcolor','w','String','Analog Channel Name');
 t.Position(3:4)=t.Extent(3:4);
 t.Position(1:2)=[10 0];
 
@@ -312,40 +326,44 @@ t=uicontrol('parent',Albl,'style','text','units','pixels',...
 'fontsize',8,'fontname','monospaced','fontweight','bold',...
 'backgroundcolor','w','String','override?');
 t.Position(3:4)=t.Extent(3:4);
-t.Position(1:2)=[175 0];
+t.Position(1:2)=[225 0];
 
 % Value label
 t=uicontrol('parent',Albl,'style','text','units','pixels',...
 'fontsize',8,'fontname','monospaced','fontweight','bold',...
 'backgroundcolor','w','String','value');
 t.Position(3:4)=t.Extent(3:4);
-t.Position(1:2)=[245 0];
+t.Position(1:2)=[295 0];
 
 % fucntion label
 t=uicontrol('parent',Albl,'style','text','units','pixels',...
 'fontsize',8,'fontname','monospaced','fontweight','bold',...
 'backgroundcolor','w','String','func#');
 t.Position(3:4)=t.Extent(3:4);
-t.Position(1:2)=[285 0];
+t.Position(1:2)=[335 0];
 
 % voltage label
 t=uicontrol('parent',Albl,'style','text','units','pixels',...
 'fontsize',8,'fontname','monospaced','fontweight','bold',...
 'backgroundcolor','w','String','voltage');
 t.Position(3:4)=t.Extent(3:4);
-t.Position(1:2)=[350 0];
+t.Position(1:2)=[400 0];
 
 tic
+
+
+
+
 % Populate the analog channels
 for nn=1:length(Achs)
-    c=[cc(mod(nn-1,size(cc,1))+1,:) .1];    
+    c=[ccA(mod(nn-1,size(ccA,1))+1,:) .1];    
     
     % panel for this row
     hpAs(nn)=uipanel('parent',hpAS,'backgroundcolor',c,...
         'units','pixels','fontsize',10,'bordertype','line',...
-        'highlightcolor',bc,'borderwidth',1);
+        'highlightcolor',bcA,'borderwidth',1);
     hpAs(nn).Position(3:4)=[w2+1000 h+1];
-    hpAs(nn).Position(1:2)=[0 hpAS.Position(4)-nn*h];    
+    hpAs(nn).Position(1:2)=[0 hpAS.Position(4)-nn*h-3];    
     hpAs(nn).UserData.Channel=Achs(nn);
     
     % Channel label
@@ -360,7 +378,7 @@ for nn=1:length(Achs)
     ckOver=uicontrol('parent',hpAs(nn),'style','checkbox','units','pixels',...
         'fontsize',6,'fontname','monospaced','backgroundcolor',c);
     ckOver.Position(3:4)=ckOver.Extent(3:4)+50;
-    ckOver.Position(1)=200;
+    ckOver.Position(1)=250;
     ckOver.Position(2)=0.5*(hpAs(nn).Position(4)-ckOver.Position(4));
     ckOver.Callback={@overCBA nn};
 
@@ -370,12 +388,21 @@ for nn=1:length(Achs)
         'enable','off','String', '');
     ckValue.String=num2str(real(Achs(nn).resetvalue(1)));
     ckValue.Position(4)=ckValue.Extent(4);
-    ckValue.Position(3)=40;
-    ckValue.Position(1)=240;
+    ckValue.Position(3)=60;
+    ckValue.Position(1)=290;
     ckValue.Position(2)=0.5*(hpAs(nn).Position(4)-ckValue.Position(4));
     ckValue.Enable='off';        
     hpAs(nn).UserData.ckValue=ckValue;
-    
+     
+%     tbl=uitable('parent',hpAs(nn),'columnname',{},'rowname',{},...
+%         'units','pixels','columnwidth',{60},'data',0,'enable','off',...
+%         'columneditable',[true]);
+%     tbl.Position(1)=290;
+%     tbl.Position(3) = 40;
+%     tbl.Position(3:4) = tbl.Extent(3:4);
+%         tbl.Position(2)=0.5*(hpAs(nn).Position(4)-tbl.Position(4));
+%     hpAs(nn).UserData.TableValue=tbl;
+
     % Function select pull-down menu
     pdFunc=uicontrol('parent',hpAs(nn),'style','popupmenu',...
         'units','pixels','fontsize',8,'fontname','monospaced',...
@@ -393,6 +420,8 @@ for nn=1:length(Achs)
     pdFunc.Position(3)=30;
     pdFunc.Position(4)=pdFunc.Extent(4);
     pdFunc.Position(1)=ckValue.Position(1)+ckValue.Position(3);
+%     pdFunc.Position(1)=tbl.Position(1)+tbl.Position(3);
+
     pdFunc.Position(2)=0.5*(hpAs(nn).Position(4)-pdFunc.Position(4))+1;
     hpAs(nn).UserData.pdFunc=pdFunc;
     
@@ -401,7 +430,7 @@ for nn=1:length(Achs)
         'fontsize',8,'fontname','monospaced','backgroundcolor',c,...
         'enable','on','horizontalalignment','left');
     tVolt.String=[num2str(foo(real(Achs(nn).resetvalue(1)))) ' V'];
-    tVolt.Position(1)=350;
+    tVolt.Position(1)=400;
     tVolt.Position(3:4)=[120 tVolt.Extent(4)];
     tVolt.Position(2)=2;
 end
@@ -412,10 +441,13 @@ toc
         if a.Value
             hpAs(ind).UserData.ckValue.Enable='on';   
             hpAs(ind).UserData.pdFunc.Enable='on';   
+%             hpAs(ind).UserData.TableValue.Enable='on';
 
         else
             hpAs(ind).UserData.ckValue.Enable='off';            
             hpAs(ind).UserData.pdFunc.Enable='off';   
+%             hpAs(ind).UserData.TableValue.Enable='off';
+
         end     
     end
 

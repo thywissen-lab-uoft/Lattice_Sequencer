@@ -42,13 +42,13 @@ newLoad=1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % These flags control how the XDT/Lattice waveplate behaves.
 rotate_waveplate_init = 1;              % (345) initially rotate the WP to put 90% the power to the lattice
-rotate_waveplate = 0;                   % (4637):  Turn Rotating Waveplate to Shift Power to Lattice Beams
+rotate_waveplate = 0;                   % (4637):  Turn Rotating Waveplate to Shift Power to Lattice Beams 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 Drop_From_XDT = 0;                      %  (97,5187,5257) May need to add code to rotate waveplate back here.
-do_lattice_mod = 0;                     %  (4547)        apply AM Spectroscopy                 
+do_lattice_mod = 1;                     %  (4547)        apply AM Spectroscopy                 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Conductivity
@@ -4905,7 +4905,7 @@ curtime = calctime (curtime,50);
             ch_on.AMPLITUDE = mod_amp;
             % Program the Rigols for modulation
             programRigol(addr_mod_xy,ch_off,ch_off);  % Turn off xy mod
-            programRigol(addr_z,[],ch_on);            % Turn off z mod
+            programRigol(addr_z,[],ch_on);            % Turn on z mod
     end
     
     addOutputParam('mod_amp',mod_amp);

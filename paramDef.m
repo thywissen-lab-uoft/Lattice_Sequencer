@@ -32,22 +32,22 @@ ptypes.tof                   = 'random';
 
 %% Lattice High Field
 
-% params.AM_spec_depth                   = [200];
-% punits.AM_spec_depth = 'Er';
-% ptypes.AM_spec_depth = 'ordered';
-% % 
-% params.AM_direction                   = ['Z'];
-% punits.AM_direction = '';
-% ptypes.AM_direction = 'ordered';
+params.AM_spec_depth                   = [200];
+punits.AM_spec_depth = 'Er';
+ptypes.AM_spec_depth = 'ordered';
+% 
+params.AM_direction                   = ['X'];
+punits.AM_direction = '';
+ptypes.AM_direction = 'ordered';
 % % % 
 % % % % %    300 = [260:5:340 295:1:325]*1e3; 48 points
 % % % % %     200 = [200:5:300]*1e3; 57 points
 % % % % %     100 = [100:10:180 140:1:165]*1e3; 43 points
 % % % % %     60 = [70:5:150 110:1:145]*1e3; 53 points
 % % % % %     250 [220:5:320 260:1:285]*1e3
-% params.AM_spec_freq                   = [120 100]*1e3;
-% punits.AM_spec_freq = 'Hz';
-% ptypes.AM_spec_freq = 'random';
+params.AM_spec_freq                   = [200:5:260]*1e3;
+punits.AM_spec_freq = 'Hz';
+ptypes.AM_spec_freq = 'random';
 
 
 % params.Raman_freq                   = [10:2.5:40];
@@ -84,18 +84,18 @@ ptypes.tof                   = 'random';
 % 
 
 % % % 
- params.HF_FeshValue_Spectroscopy = [205 206 203 208];
- punits.HF_FeshValue_Spectroscopy = 'G';
- ptypes.HF_FeshValue_Spectroscopy = 'ordered';
-%  
-  params.HF_shimvalue_Spectroscopy = [0 0 0 0];
- punits.HF_shimvalue_Spectroscopy = 'G';
- ptypes.HF_shimvalue_Spectroscopy = 'HF_FeshValue_Spectroscopy';
-
+%  params.HF_FeshValue_Spectroscopy = [205 206 203 208];
+%  punits.HF_FeshValue_Spectroscopy = 'G';
+%  ptypes.HF_FeshValue_Spectroscopy = 'ordered';
 % %  
- params.rf_freq_HF_shift = [-10:2:50 -10:2:50];
- punits.rf_freq_HF_shift = 'kHz';
- ptypes.rf_freq_HF_shift = 'random';
+%   params.HF_shimvalue_Spectroscopy = [0 0 0 0];
+%  punits.HF_shimvalue_Spectroscopy = 'G';
+%  ptypes.HF_shimvalue_Spectroscopy = 'HF_FeshValue_Spectroscopy';
+% 
+% % %  
+%  params.rf_freq_HF_shift = [-10:2:50 -10:2:50];
+%  punits.rf_freq_HF_shift = 'kHz';
+%  ptypes.rf_freq_HF_shift = 'random';
 %  
 %   
 %  params.Raman_Pulse_Time = [0 0.5 1 1.5 2 5];

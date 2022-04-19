@@ -4771,20 +4771,20 @@ end
 % setDigitalChannel(calctime(curtime,0),'fast FB Switch',0);
 % 
 % 
-curtime = calctime(curtime,500);
-fesh_current = 20;
-ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); 
-
-setDigitalChannel(calctime(curtime,-100),'fast FB Switch',1); %switch Feshbach field on
-setAnalogChannel(calctime(curtime,-95),'FB current',0.0); %switch Feshbach field closer to on
-setDigitalChannel(calctime(curtime,-100),'FB Integrator OFF',0); %switch Feshbach integrator on            
-% %         linear ramp from zero
-AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),250,250, fesh_current,0);
-
-curtime = calctime(curtime,1000);
-
-AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),250,250, 0,fesh_current);
-% 
+% % % % curtime = calctime(curtime,500);
+% % % % fesh_current = 20;
+% % % % ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); 
+% % % % 
+% % % % setDigitalChannel(calctime(curtime,-100),'fast FB Switch',1); %switch Feshbach field on
+% % % % setAnalogChannel(calctime(curtime,-95),'FB current',0.0); %switch Feshbach field closer to on
+% % % % setDigitalChannel(calctime(curtime,-100),'FB Integrator OFF',0); %switch Feshbach integrator on            
+% % % % % %         linear ramp from zero
+% % % % AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),250,250, fesh_current,0);
+% % % % 
+% % % % curtime = calctime(curtime,1000);
+% % % % 
+% % % % AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),250,250, 0,fesh_current);
+% % % % % 
 % setAnalogChannel(calctime(curtime,0),54,5);
 % setDigitalChannel(calctime(curtime,0),64,0);
 
@@ -5104,13 +5104,17 @@ AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1))
 % paramGet('HF_FeshValue_Spectroscopy')
 % paramGet('rf_freq_HF')
 % 
-%% Test RF gain
+%% Test RF 
 % 
 % 
 % 
-% curtime=calctime(curtime,1000); 
-% setAnalogChannel(calctime(curtime,0),'RF Gain',-2);
-% curtime=calctime(curtime,50); 
+curtime=calctime(curtime,1000); 
+setAnalogChannel(calctime(curtime,0),'RF Gain',-5);
+setDigitalChannel(calctime(curtime,0),'RF Source',1);      % 1 si DDS : 0 is SRSs
+setDigitalChannel(calctime(curtime,0),'RF TTL',1);      % 0 : off, 1 : on 
+setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',0);      % 0 : RF 1 : uwave 
+
+curtime=calctime(curtime,50); 
 % 
 
 

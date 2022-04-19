@@ -32,21 +32,21 @@ spin_mixture_in_lattice_before_plane_selection = 0; % (668)             keep : M
 Dimple_Trap_Before_Plane_Selection = 0; % (716)         keep : turn on the dimple, leave this option: note that the turning off code was deleted
 do_optical_pumping = 0;                 % (1426) keep : optical pumping in lattice    
 
-% Whether to actually load the lattice
-doLoadLattice=1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Lattice Ramps and Waveplates
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+rotate_waveplate_1 = 1;            % (122) First waveplate rotation for 90%
+do_lattice_ramp_1 = 1;             % Load the lattices
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Waveplate
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% These flags control how the XDT/Lattice waveplate behaves.
-rotate_waveplate_1 = 1;              % (122) First waveplate rotation for 90%
-rotate_waveplate_2 = 0;                % (4637):  Turn Rotating Waveplate to Shift Power to Lattice Beams 
+do_lattice_ramp_2 = 1;             % Secondary ramp after waveplate rotation 2
+rotate_waveplate_2 = 0;            % (4637):  Turn Rotating Waveplate to Shift Power to Lattice Beams 
+
+do_lattice_mod = 0;                     %  (4547)        apply AM Spectroscopy                 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 Drop_From_XDT = 0;                      %  (97,5187,5257) May need to add code to rotate waveplate back here.
-do_lattice_mod = 1;                     %  (4547)        apply AM Spectroscopy                 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Conductivity
@@ -84,7 +84,6 @@ second_plane_selection = 0;                         % (2755)            copy
 eliminate_planes_with_QP = 0;                       % (2933)            keep : QP vacuum cleaner. In 2nd time plane selection section
 do_plane_selection_horizontally = 0;                % (3077,3111,3144)  keep : generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
 Dimple_Trap_After_Plane_Selection = 0;              % (4155,4209)       delete (?) : turn on dimple trap %Rhys suggested to delete?
-do_lattice_ramp_after_spectroscopy = 0;             % (4658)            keep : Ramp lattice for fluorescence image
 
 % Actual fluorsence image flag
 Raman_transfers = 0;                                % (4727)            keep : apply fluorescence imaging light
@@ -152,9 +151,9 @@ if rotate_waveplate_1
 %         @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
 %         rotation_time,rotation_time,P_RotWave);    
 end
-%% Define Lattice Ramp Settings
+%% Lattice Ramp 1
 
-if doLoadLattice
+if do_lattice_ramp_1
     dispLineStr('Defining initial lattice and DMD ramps.',curtime);
     
     % Hold in lattice
@@ -300,13 +299,7 @@ if doLoadLattice
     if (length(dmd_times) ~= size(dmd_pow,2))
         error('Invalid ramp specification for dmd lattice loading!');
     end
-end
 
-
-
-
-%% Load Lattice from XDT Ramps
-if doLoadLattice
     seqdata.times.lattice_start_time = curtime;
     ScopeTriggerPulse(curtime,'Load lattices');
     
@@ -4258,7 +4251,7 @@ end
 
 %% Ramp lattice after spectroscopy/plane selection
 %RHYS - Important, keep and clean.
-if do_lattice_ramp_after_spectroscopy
+if do_lattice_ramp_2
     dispLineStr('Lattice Ramp High',curtime)    
 
     
@@ -6022,7 +6015,7 @@ curtime = calctime(curtime,HF_wait_time);
 end
 
 %% Ramp HF and back
-% CF : It is unclear what the purpose of this code is for.
+
 ramp_HF_and_back = 0;
 if ramp_HF_and_back
     dispLineStr('ramp_HF_and_back',curtime);

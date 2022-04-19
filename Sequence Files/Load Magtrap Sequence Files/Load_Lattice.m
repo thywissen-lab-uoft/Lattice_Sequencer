@@ -159,21 +159,22 @@ if do_lattice_ramp_1
     % 2 : Simple ramp used to measure the lattice alignment
    
     % DMD
-    do_DMD=0;
-    
+    do_DMD=0;    
 
     switch rampMode
         case 0 
             % Ramp only the lattices in a multistep seqeunce.
             % This is the "typical" ramp sequence that we perform;
+            % Typically this involves a ramp to a moderate depth followed
+            % by a quick snap to a pinning lattice depth
             
-                %initial lattice depth
+            % Initial lattice depth
             initial_latt_depth_list = [10];
             init_depth = getScanParameter(initial_latt_depth_list,...
                 seqdata.scancycle,seqdata.randcyclelist,...
                 'initial_latt_depth','Er');
             
-            % Lattice depth to ramp to
+            % Final lattice depth to ramp to
             U = 60;
             
             %%% Lattice %%%
@@ -182,10 +183,12 @@ if do_lattice_ramp_1
                 [init_depth init_depth U U;     % X lattice
                  init_depth init_depth U U;     % Y lattice
                  init_depth init_depth U U];    % Z Lattice 
+             
+             % Initial ramp on time
              latt_ramp_time_list = [150];
              latt_ramp_time = getScanParameter(latt_ramp_time_list,...
                 seqdata.scancycle,seqdata.randcyclelist,'latt_ramp_time','ms');
-%             latt_times=[150 50 0.2 50];
+
             latt_times=[latt_ramp_time 50 0.2 50];
             
             %%% XDT %%%

@@ -28,7 +28,6 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 % These are the lattice flags sorted roughly chronologically.
 
 ramp_fields_after_lattice_loading = 0;  % (416,503)     keep : Ramp on the fesbhach field after lattice load
-get_rid_of_Rb_in_lattice = 0;           % (523)         keep : Blow away Rb after lattice load
 spin_mixture_in_lattice_before_plane_selection = 0; % (668)             keep : Make a -9/2,-7/2 spin mixture.   
 Dimple_Trap_Before_Plane_Selection = 0; % (716)         keep : turn on the dimple, leave this option: note that the turning off code was deleted
 do_optical_pumping = 0;                 % (1426) keep : optical pumping in lattice    
@@ -610,50 +609,6 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',@(t,tt,y1,tau,y2)(evap_
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); 
     end
 
-end
-%% Get rid of Rb by doing repump and probe pulse
-    %Only do this if evaporation has happened
-%RHYS - If attempting to evaporate in lattice with Rb as well. Never been useful, could delete.    
-
-% CORA - Can we delete this? (Should Rb be blown away at the end of dipole
-% transfer?)
-
-if (get_rid_of_Rb_in_lattice && seqdata.flags. CDT_evap == 1)
-    dispLineStr('Removing Rb in lattice.',curtime);
-
-        %repump atoms from F=1 to F=2, and blow away these F=2 atoms with
-        %the probe
-        %open shutter
-            %probe
-            setDigitalChannel(calctime(curtime,-10),25,1); %0=closed, 1=open
-            %repump
-            setDigitalChannel(calctime(curtime,-10),5,1);
-        %open analog
-            %probe
-            setAnalogChannel(calctime(curtime,-10),36,0.7);
-            %repump (keep off since no TTL)
-            
-        %set TTL
-            %probe
-            setDigitalChannel(calctime(curtime,-10),24,1);
-            %repump doesn't have one
-            
-        %set detuning (Make sure that the laser is not coming from OP
-        %resonance... it will take ~75ms to reach the cycling transition)
-        setAnalogChannel(calctime(curtime,-10),34,6590-237);
-
-        %pulse beam with TTL 
-            %TTL probe pulse
-            DigitalPulse(calctime(curtime,0),24,5,0);
-            %repump pulse
-            setAnalogChannel(calctime(curtime,0),2,0.7);
-curtime = setAnalogChannel(calctime(curtime,5),2,0.0);
-        
-        %close shutter
-        setDigitalChannel(calctime(curtime,0),25,0); %0=closed, 1=open
-curtime = setDigitalChannel(calctime(curtime,0),5,0);
-        
-curtime=calctime(curtime,50);
 end
 
 

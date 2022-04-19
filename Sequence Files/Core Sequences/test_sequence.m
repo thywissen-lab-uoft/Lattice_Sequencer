@@ -10,6 +10,9 @@ curtime = timein;
 
 global seqdata;
 
+RF_switch_gain_test = 0;
+acync_test = 0;
+
 % setAnalogChannel(calctime(curtime,0),43,-1)
 % DigitalPulse(calctime(curtime,0),'RaspPi Trig',1000,1)
 
@@ -5086,37 +5089,34 @@ end
 % curtime = rampMagneticFields(calctime(curtime,0), ramp);
 
 %% Test Acync
+if acync_test
+curtime = calctime(curtime,100);
 
-% curtime = calctime(curtime,100);
-% setDigitalChannel(calctime(curtime,-35),'ACync Master',1);
-% % 
-% setAnalogChannel(calctime(curtime,-5),57,00);
-% % 
-% % AnalogFuncTo(calctime(curtime,0),57,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2,2,10);
-% % setAnalogChannel(calctime(curtime,10),57,-10);
-% % % 
-% setDigitalChannel(calctime(curtime,0),72,1);
-% setDigitalChannel(calctime(curtime,15),72,0);
-% % 
-% 
-% setDigitalChannel(calctime(curtime,30),'ACync Master',0);
+    setDigitalChannel(calctime(curtime,-35),'ACync Master',1);
+    % 
+    setAnalogChannel(calctime(curtime,-5),57,00);
+    % 
+    % AnalogFuncTo(calctime(curtime,0),57,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2,2,10);
+    % setAnalogChannel(calctime(curtime,10),57,-10);
+    % 
+    setDigitalChannel(calctime(curtime,0),72,1);
+    setDigitalChannel(calctime(curtime,15),72,0);
+    % 
 
-% paramGet('HF_FeshValue_Spectroscopy')
-% paramGet('rf_freq_HF')
-% 
+    setDigitalChannel(calctime(curtime,30),'ACync Master',0);
+end
 %% Test RF 
-% 
-% 
-% 
+
+if RF_switch_gain_test
+
 curtime=calctime(curtime,1000); 
-setAnalogChannel(calctime(curtime,0),'RF Gain',-5);
-setDigitalChannel(calctime(curtime,0),'RF Source',1);      % 1 si DDS : 0 is SRSs
-setDigitalChannel(calctime(curtime,0),'RF TTL',1);      % 0 : off, 1 : on 
-setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',0);      % 0 : RF 1 : uwave 
-
+    setAnalogChannel(calctime(curtime,0),'RF Gain',-5);
+    setDigitalChannel(calctime(curtime,0),'RF Source',1);      % 1 si DDS : 0 is SRSs
+    setDigitalChannel(calctime(curtime,0),'RF TTL',1);      % 0 : off, 1 : on 
+    setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',0);      % 0 : RF 1 : uwave 
 curtime=calctime(curtime,50); 
-% 
-
+ 
+end
 
 %% Test Rb uwave sweep
 % curtime = calctime(curtime,1000);
@@ -5245,10 +5245,6 @@ curtime=calctime(curtime,50);
 %     setAnalogChannel(calctime(curtime,200),'xLattice',-10 ,1);
 %     setDigitalChannel(calctime(curtime,400),'yLatticeOFF',1); % 0 : All on, 1 : All off
 
-
-%% Probe Beam Check
-% setDigitalChannel(calctime(curtime,10),'K Probe/OP TTL',1);
-%     setAnalogChannel(calctime(curtime,10),'K Probe/OP AM',6);
 
 timeout = curtime;
 

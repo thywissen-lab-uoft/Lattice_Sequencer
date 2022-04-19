@@ -43,7 +43,6 @@ do_lattice_mod = 0;               % Amplitude modulation spectroscopy
 do_rotate_waveplate_2 = 1;        % Second waveplate rotation 95% 
 do_lattice_ramp_2 = 1;            % Secondary lattice ramp
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
@@ -87,7 +86,7 @@ do_plane_selection_horizontally = 0;                % (3077,3111,3144)  keep : g
 Dimple_Trap_After_Plane_Selection = 0;              % (4155,4209)       delete (?) : turn on dimple trap %Rhys suggested to delete?
 
 % Actual fluorsence image flag
-Raman_transfers = 0;                                % (4727)            keep : apply fluorescence imaging light
+Raman_transfers = 1;                                % (4727)            keep : apply fluorescence imaging light
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other Parameters
@@ -2019,7 +2018,7 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
 
     end
 
-%% Plane select a second time
+    % Plane select a second time
     %RHYS - This is a crazy copy of basically just everything above.
     %Why this needs to be a module.
     if (second_plane_selection == 1)
@@ -4011,26 +4010,27 @@ end
 %% Ramp lattice after spectroscopy/plane selection
 %RHYS - Important, keep and clean.
 if do_lattice_ramp_2
-    dispLineStr('Lattice Ramp High',curtime)    
+    dispLineStr('Lattice Ramp 2',curtime)    
+    ScopeTriggerPulse(curtime,'lattice_ramp_2');
 
-    
-imaging_depth_list = [600]; 
-imaging_depth = getScanParameter(imaging_depth_list,seqdata.scancycle,seqdata.randcyclelist,'FI_latt_depth','Er'); 
+    % 
+    imaging_depth_list = [700]; 
+    imaging_depth = getScanParameter(imaging_depth_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'FI_latt_depth','Er'); 
 
     %Define ramp parameters
-     xLatDepth = imaging_depth;
-     yLatDepth = imaging_depth;
-     zLatDepth = imaging_depth; 
-     
-     addOutputParam('xLatDepth',xLatDepth);
-     addOutputParam('yLatDepth',yLatDepth);
-     addOutputParam('zLatDepth',zLatDepth);
+    xLatDepth = imaging_depth;
+    yLatDepth = imaging_depth;
+    zLatDepth = imaging_depth; 
 
+    addOutputParam('xLatDepth',xLatDepth);
+    addOutputParam('yLatDepth',yLatDepth);
+    addOutputParam('zLatDepth',zLatDepth);
 
-lat_rampup_imaging_depth = 1*[1*[xLatDepth xLatDepth];
+    lat_rampup_imaging_depth = 1*[1*[xLatDepth xLatDepth];
                                1*[yLatDepth yLatDepth];
                                1*[zLatDepth zLatDepth]];  %[100 650 650;100 650 650;100 900 900]
-     lat_rampup_imaging_time =       [20         5        ];
+    lat_rampup_imaging_time =  [20 5 ];
      
     if (length(lat_rampup_imaging_time) ~= size(lat_rampup_imaging_depth,2)) || ...
             (size(lat_rampup_imaging_depth,1)~=length(lattices))
@@ -4052,16 +4052,16 @@ lat_rampup_imaging_depth = 1*[1*[xLatDepth xLatDepth];
         end
 curtime =   calctime(curtime,lat_rampup_imaging_time(j));
     end
+    
+    % Turn of dipole traps
     setAnalogChannel(calctime(curtime,0),'dipoleTrap1',0);
     setAnalogChannel(calctime(curtime,0),'dipoleTrap2',0);
     setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
 
- dispLineStr('Deep lattices ramped at',curtime);
 
-    ScopeTriggerPulse(curtime,'lattice_ramp_2');
+    deep_latt_holdtime_list = [50];
+    deep_latt_holdtime = getScanParameter(deep_latt_holdtime_list,seqdata.scancycle,seqdata.randcyclelist,'deep_latt_holdtime'); 
 
-deep_latt_holdtime_list = [50];
-deep_latt_holdtime = getScanParameter(deep_latt_holdtime_list,seqdata.scancycle,seqdata.randcyclelist,'deep_latt_holdtime'); 
 curtime=calctime(curtime,deep_latt_holdtime);
     
 end
@@ -4081,7 +4081,10 @@ end
 % Fluoresence Imaging
 %   - Set quantiazation axis along FPUMP
 %   - Set field for EIT condition and Raman detuning
-%   - Apply EIT Pump (FPUMP) light, EIT probe light, Raman light
+%   - Apply light
+%       - EIT Pump (FPUMP) light
+%       - EIT probe light (2 horizontal beams)
+%       - Raman beams (2 beams) 
 %   - Expose the Camera
 
 % Raman/UWave Transfers
@@ -4121,7 +4124,6 @@ if (Raman_transfers == 1)
     horizontal_plane_select_params.Raman_AOM_Frequency = 110 + getScanParameter(Raman_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Freq')/1000;
 
     Raman_On_Time_List =[2000];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
-
     
     %%% uWave %%%
     % uWave settings (if Microwave_or_Raman==1)
@@ -5855,6 +5857,9 @@ lattice_off_delay = 10;
 % Turn off of lattices
  if ( seqdata.flags.load_lattice == 1 ) %shut off lattice, keep dipole trap on
     
+    ScopeTriggerPulse(curtime,'lattice_off');
+
+     
     % Parameters for ramping down the lattice (after things have been done)
     zlat_endpower = L0(3)-1;-19;-0.2;       % where to end the ramp
     ylat_endpower = L0(2)-1;-20;-0.2;       % where to end the ramp
@@ -5911,7 +5916,6 @@ curtime = AnalogFuncTo(calctime(curtime,0),38,@(t,tt,y1,y2) ...
         disp([' yLattice End (Er)  : ' num2str(ylat_endpower)])
         disp([' zLattice End (Er)  : ' num2str(zlat_endpower)])
 
-        ScopeTriggerPulse(curtime,'latoff');
         % ramp down lattice (min-jerk or exponential)
         if ( lat_rampdowntau == 0 )
             % Min-jerk ramp-down of lattices

@@ -409,12 +409,7 @@ curtime =   calctime(curtime,opt.Microwave_Pulse_Length);
         end
         if (opt.Fluorescence_Image == 1)
             iXon_FluorescenceImage(curtime,'ExposureOffsetTime',opt.Microwave_Pulse_Length,'ExposureDelay',0,'FrameTime',opt.Microwave_Pulse_Length/opt.Num_Frames,'NumFrames',opt.Num_Frames)
-        end
-        
-        
-        
-        
-        
+        end     
         
         
         

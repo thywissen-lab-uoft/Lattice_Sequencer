@@ -226,9 +226,6 @@ seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / ali
 %% Scope Trigger
 
 % Choose which scope trigger to use.
-% scope_trigger = 'Load lattices';
-
-% scope_trigger = 'Lattice_Mod';
 
 
 
@@ -236,7 +233,9 @@ seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / ali
 %%% OPTICAL LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % scope_trigger = 'lattice_ramp_1';
+% scope_trigger = 'Lattice_Mod';
 scope_trigger = 'lattice_ramp_2';
+% scope_trigger = 'lattice_off';
 
 %% Set switches for predefined scenarios
 

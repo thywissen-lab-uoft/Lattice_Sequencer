@@ -35,13 +35,14 @@ do_optical_pumping = 0;                 % (1426) keep : optical pumping in latti
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Lattice Ramps and Waveplates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-do_rotate_waveplate_1 = 1;            % (122) First waveplate rotation for 90%
-do_lattice_ramp_1 = 1;             % Load the lattices
+do_rotate_waveplate_1 = 1;        % First waveplate rotation for 90%
+do_lattice_ramp_1 = 1;            % Load the lattices
 
-do_rotate_waveplate_2 = 0;            % (4637):  Turn Rotating Waveplate to Shift Power to Lattice Beams 
-do_lattice_ramp_2 = 0;            % Secondary ramp after waveplate rotation 2
+do_lattice_mod = 0;               % Amplitude modulation spectroscopy             
 
-do_lattice_mod = 0;                     %  (4547)        apply AM Spectroscopy                 
+do_rotate_waveplate_2 = 1;        % Second waveplate rotation 95% 
+do_lattice_ramp_2 = 1;            % Secondary lattice ramp
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other

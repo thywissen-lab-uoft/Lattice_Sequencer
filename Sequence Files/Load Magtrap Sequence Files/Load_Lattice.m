@@ -460,7 +460,6 @@ if do_lattice_ramp_1
 end
 
 
-
 %% Ramp down HF used for loading lattice (this flag is in dipole transfer)
 
 if seqdata.flags.ramp_up_FB_for_lattice
@@ -505,48 +504,7 @@ end
         end
         seqdata.params. feshbach_val = fesh_final;
     end
-    
-    %Get rid of any leftover Rb atoms
-    kill_Rb_in_lattice = 0;
-    %RHYS - Kill leftover Rb if some was kept around for evaporating in a
-    %lattice perhaps. Unlikely to find use. Delete.
-    if kill_Rb_in_lattice
-        
-        kill_pulse_time = 5; %5
-    
-        %repump atoms from F=1 to F=2, and blow away these F=2 atoms with the probe
-        %open shutter
-            %probe
-            setDigitalChannel(calctime(curtime,-10),25,1); %0=closed, 1=open
-            %repump
-            setDigitalChannel(calctime(curtime,-10),5,1);
-        %open analog
-            %probe
-            setAnalogChannel(calctime(curtime,-10),36,0.7);
-            %repump (keep off since no TTL)
-            
-        %set TTL
-            %probe
-            setDigitalChannel(calctime(curtime,-10),24,1);
-            %repump doesn't have one
-            
-        %set detuning
-        setAnalogChannel(calctime(curtime,-10),34,6590-237);
-
-        %pulse beam with TTL 
-            %TTL probe pulse
-            DigitalPulse(calctime(curtime,0),24,kill_pulse_time,0);
-            %repump pulse
-            setAnalogChannel(calctime(curtime,0),2,0.7); %0.7
-curtime = setAnalogChannel(calctime(curtime,kill_pulse_time),2,0.0);
-        
-        %close shutter
-        setDigitalChannel(calctime(curtime,0),25,0); %0=closed, 1=open
-curtime = setDigitalChannel(calctime(curtime,0),5,0);
-        
-curtime=calctime(curtime,2);
-    end
-    
+      
 
     %Second set of lattice ramps
     lattice_ramp_II = 0;

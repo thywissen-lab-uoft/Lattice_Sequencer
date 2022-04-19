@@ -482,65 +482,6 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 end
 
        
-%% Do Physics Things in Lattice (holding, further ramps, modulation, physics ...)
-% CORA - This code doesn't seem useful and/or redundant. Can we delete?
-
-    %RHYS - Not sure why we would want to set it to 0. Could imagine
-    %ramping it down if high, but that might happen later regardless.
-    turn_off_feshbach = 0;
-
-    if turn_off_feshbach      
-        %Turn off Feshbach coil
-        %set time
-        curtime=calctime(curtime,-15);  % NECESSARY? RAMP ALREADY DONE ramptime-5 AHEAD
-
-        %Set Feshbach field
-        ramptime = 15;
-        fesh_final = 0;
-
-        AnalogFuncTo(calctime(curtime,-ramptime-5),'FB current',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),ramptime,ramptime,fesh_final);
-        if fesh_final == 0 %Turn off Feshbach coils with fast switch
-            setDigitalChannel(calctime(curtime,-3),31,0);
-        end
-        seqdata.params. feshbach_val = fesh_final;
-    end
-      
-
-    %Second set of lattice ramps
-    lattice_ramp_II = 0;
-    %RHYS - Is this useful for ramping lattices after FB/DMD manipulations?
-    %Not sure. Either delete, or at least move the flag up to the top so
-    %someone knows this is a possibility.
-    if lattice_ramp_II
-        %Define ramp parameters
-        xLatDepth = 15; %380
-        yLatDepth = 15; %500
-        zLatDepth = lat_rampup_depth(3); %270
-        
-        lat_rampupII_depth = [xLatDepth; yLatDepth; zLatDepth];  %[100 650 650;100 650 650;100 900 900]
-        lat_rampupII_time = [200];
-
-        if (length(lat_rampupII_time) ~= size(lat_rampupII_depth,2)) || ...
-                (size(lat_rampupII_depth,1)~=length(lattices))
-            error('Invalid ramp specification for lattice loading!');
-        end
-        
-        %lattice rampup segments
-        for j = 1:length(lat_rampupII_time)
-            for k = 1:length(lattices)
-                if j==1
-                    if lat_rampupII_depth(k,j) ~= lat_rampup_depth(k,end) % only do a minjerk ramp if there is a change in depth
-                        AnalogFuncTo(calctime(curtime,0),lattices{k},@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampupII_time(j), lat_rampupII_time(j), lat_rampupII_depth(k,j));
-                    end
-                else
-                    if lat_rampupII_depth(k,j) ~= lat_rampupII_depth(k,j-1) % only do a minjerk ramp if there is a change in depth
-                        AnalogFuncTo(calctime(curtime,0),lattices{k},@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampupII_time(j), lat_rampupII_time(j), lat_rampupII_depth(k,j));
-                    end
-                end
-            end
-curtime = calctime(curtime,lat_rampupII_time(j));
-        end
-    end
 
 %% Make a -9/2,-7/2 spin mixture.
 % RHYS - Should do what it promises. Usually the mixture already exists, so

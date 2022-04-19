@@ -34,7 +34,8 @@ Dimple_Trap_Before_Plane_Selection = 0; % (716)         keep : turn on the dimpl
 do_optical_pumping = 0;                 % (1426) keep : optical pumping in lattice    
 remove_one_spin_state = 0;              % (1657)        keep : An attempt to remove only |9/2,-9/2> atoms while keeping |9/2,-7/2> so that plane selection could work
 
-newLoad=1;
+% Whether to actually load the lattice
+doLoadLattice=1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Waveplate
@@ -122,7 +123,6 @@ end
 %% Rotate waveplate to shift power to lattice beams
 % This piece of code rotates the rotatable wavepalte to shift the optical
 % power to the lattices.
-%
 
 if rotate_waveplate_1
     dispLineStr('Rotating waveplate',curtime);
@@ -131,7 +131,6 @@ if rotate_waveplate_1
     
     %Turn rotating waveplate to shift a little power to the lattice beams
     wp_Trot1 = 600; % Rotation time during XDT
-    wp_Trot2 = 150; % gets added as a wait time after lattice rampup  
     
     P_RotWave_I = 0.8;
     P_RotWave_II = 0.99;
@@ -157,7 +156,7 @@ if rotate_waveplate_1
 end
 %% Define Lattice Ramp Settings
 
-if newLoad
+if doLoadLattice
     dispLineStr('Defining initial lattice and DMD ramps.',curtime);
     
     % Hold in lattice
@@ -309,7 +308,7 @@ end
 
 
 %% Load Lattice from XDT Ramps
-if newLoad
+if doLoadLattice
     seqdata.times.lattice_start_time = curtime;
     ScopeTriggerPulse(curtime,'Load lattices');
     
@@ -4717,14 +4716,17 @@ curtime = calctime(curtime,1);
 end
 
 
-%% Rotate power distribution waveplate again (if loading lattice from a strong dipole trap)
+%% Second Waveplate Rotation
 % Rotate waveplate to distribute more power to the lattice
+
 if rotate_waveplate_2
+    wp_Trot2 = 150; 
+
     dispLineStr('Rotate waveplate again',curtime)    
         %Rotate waveplate again to divert the rest of the power to lattice beams
 curtime = AnalogFunc(calctime(curtime,0),41,...
-    @(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),...
-    wp_Trot2,wp_Trot2,P_RotWave_I,P_RotWave_II);             
+        @(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),...
+        wp_Trot2,wp_Trot2,P_RotWave_I,P_RotWave_II);             
 end
 
 %% Ramp lattice after spectroscopy/plane selection

@@ -40,8 +40,8 @@ newLoad=1;
 % Waveplate
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % These flags control how the XDT/Lattice waveplate behaves.
-rotate_waveplate_init = 1;              % (345) initially rotate the WP to put 90% the power to the lattice
-rotate_waveplate = 0;                   % (4637):  Turn Rotating Waveplate to Shift Power to Lattice Beams 
+rotate_waveplate_1 = 1;              % (122) First waveplate rotation for 90%
+rotate_waveplate_2 = 0;                % (4637):  Turn Rotating Waveplate to Shift Power to Lattice Beams 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -119,6 +119,42 @@ else
         seqdata.scancycle,seqdata.randcyclelist,'latt_rampdown_time','ms'); %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
 end
 
+%% Rotate waveplate to shift power to lattice beams
+% This piece of code rotates the rotatable wavepalte to shift the optical
+% power to the lattices.
+%
+
+if rotate_waveplate_1
+    dispLineStr('Rotating waveplate',curtime);
+    %Start with a little power towards lattice beams, and increase power to
+    %max only after ramping on the lattice
+    
+    %Turn rotating waveplate to shift a little power to the lattice beams
+    wp_Trot1 = 600; % Rotation time during XDT
+    wp_Trot2 = 150; % gets added as a wait time after lattice rampup  
+    
+    P_RotWave_I = 0.8;
+    P_RotWave_II = 0.99;
+    
+    disp(['     Rotation Time 1 : ' num2str(wp_Trot1) ' ms']);
+    disp(['     Rotation Time 2 : ' num2str(wp_Trot1) ' ms']);
+    disp(['     Power 1         : ' num2str(100*P_RotWave_I) '%']);
+    disp(['     Power 2         : ' num2str(100*P_RotWave_II) '%']);
+
+    P_RotWave = P_RotWave_I; %output argument    
+    AnalogFunc(calctime(curtime,-100-wp_Trot1),'latticeWaveplate',...
+        @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
+        wp_Trot1,wp_Trot1,P_RotWave);
+% % else
+%     %Start with all power towards lattice beams
+%     rotation_time = 1000;   % The time to rotate the waveplate
+%     P_RotWave = 0.5;%0.9       % The fraction of power that will be transmitted 
+%                             % through the PBS to lattice beams
+%                             % 0 = dipole, 1 = lattice
+%     curtime = AnalogFunc(calctime(curtime,-100-rotation_time),'latticeWaveplate',...
+%         @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
+%         rotation_time,rotation_time,P_RotWave);    
+end
 %% Define Lattice Ramp Settings
 
 if newLoad
@@ -270,42 +306,7 @@ if newLoad
 end
 
 
-%% Rotate waveplate to shift power to lattice beams
-% This piece of code rotates the rotatable wavepalte to shift the optical
-% power to the lattices.
-%
-% CF : Shouldn't this appear int he beginning of the code?
-if rotate_waveplate_init
-    dispLineStr('Rotating waveplate',curtime);
-    %Start with a little power towards lattice beams, and increase power to
-    %max only after ramping on the lattice
-    
-    %Turn rotating waveplate to shift a little power to the lattice beams
-    wp_Trot1 = 600; % Rotation time during XDT
-    wp_Trot2 = 150; % gets added as a wait time after lattice rampup  
-    
-    P_RotWave_I = 0.8;
-    P_RotWave_II = 0.99;
-    
-    disp(['     Rotation Time 1 : ' num2str(wp_Trot1) ' ms']);
-    disp(['     Rotation Time 2 : ' num2str(wp_Trot1) ' ms']);
-    disp(['     Power 1         : ' num2str(100*P_RotWave_I) '%']);
-    disp(['     Power 2         : ' num2str(100*P_RotWave_II) '%']);
 
-    P_RotWave = P_RotWave_I; %output argument    
-    AnalogFunc(calctime(curtime,-100-wp_Trot1),'latticeWaveplate',...
-        @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
-        wp_Trot1,wp_Trot1,P_RotWave);
-% % else
-%     %Start with all power towards lattice beams
-%     rotation_time = 1000;   % The time to rotate the waveplate
-%     P_RotWave = 0.5;%0.9       % The fraction of power that will be transmitted 
-%                             % through the PBS to lattice beams
-%                             % 0 = dipole, 1 = lattice
-%     curtime = AnalogFunc(calctime(curtime,-100-rotation_time),'latticeWaveplate',...
-%         @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
-%         rotation_time,rotation_time,P_RotWave);    
-end
 
 %% Load Lattice from XDT Ramps
 if newLoad
@@ -4718,7 +4719,7 @@ end
 
 %% Rotate power distribution waveplate again (if loading lattice from a strong dipole trap)
 % Rotate waveplate to distribute more power to the lattice
-if rotate_waveplate
+if rotate_waveplate_2
     dispLineStr('Rotate waveplate again',curtime)    
         %Rotate waveplate again to divert the rest of the power to lattice beams
 curtime = AnalogFunc(calctime(curtime,0),41,...

@@ -39,7 +39,7 @@ rotate_waveplate_1 = 1;            % (122) First waveplate rotation for 90%
 do_lattice_ramp_1 = 1;             % Load the lattices
 
 do_lattice_ramp_2 = 1;             % Secondary ramp after waveplate rotation 2
-rotate_waveplate_2 = 0;            % (4637):  Turn Rotating Waveplate to Shift Power to Lattice Beams 
+rotate_waveplate_2 = 1;            % (4637):  Turn Rotating Waveplate to Shift Power to Lattice Beams 
 
 do_lattice_mod = 0;                     %  (4547)        apply AM Spectroscopy                 
 
@@ -140,19 +140,11 @@ if rotate_waveplate_1
     P_RotWave = P_RotWave_I; %output argument    
     AnalogFunc(calctime(curtime,-100-wp_Trot1),'latticeWaveplate',...
         @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
-        wp_Trot1,wp_Trot1,P_RotWave);
-% % else
-%     %Start with all power towards lattice beams
-%     rotation_time = 1000;   % The time to rotate the waveplate
-%     P_RotWave = 0.5;%0.9       % The fraction of power that will be transmitted 
-%                             % through the PBS to lattice beams
-%                             % 0 = dipole, 1 = lattice
-%     curtime = AnalogFunc(calctime(curtime,-100-rotation_time),'latticeWaveplate',...
-%         @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
-%         rotation_time,rotation_time,P_RotWave);    
+        wp_Trot1,wp_Trot1,P_RotWave);    
 end
 %% Lattice Ramp 1
-
+% Ramp the lattices up to the starting values.  The ramp procedue can
+% either be multi step or single step.
 if do_lattice_ramp_1
     dispLineStr('Defining initial lattice and DMD ramps.',curtime);
     
@@ -479,9 +471,7 @@ dispLineStr('Ramping FB field (not sure why?).',curtime);
         ramp.settling_time = 100;
 curtime = ramp_bias_fields(calctime(curtime,0), ramp);
     
-end
-
-       
+end    
 
 %% Make a -9/2,-7/2 spin mixture.
 % RHYS - Should do what it promises. Usually the mixture already exists, so

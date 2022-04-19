@@ -35,11 +35,11 @@ do_optical_pumping = 0;                 % (1426) keep : optical pumping in latti
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Lattice Ramps and Waveplates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-rotate_waveplate_1 = 1;            % (122) First waveplate rotation for 90%
+do_rotate_waveplate_1 = 1;            % (122) First waveplate rotation for 90%
 do_lattice_ramp_1 = 1;             % Load the lattices
 
-do_lattice_ramp_2 = 0;             % Secondary ramp after waveplate rotation 2
-rotate_waveplate_2 = 0;            % (4637):  Turn Rotating Waveplate to Shift Power to Lattice Beams 
+do_rotate_waveplate_2 = 0;            % (4637):  Turn Rotating Waveplate to Shift Power to Lattice Beams 
+do_lattice_ramp_2 = 0;            % Secondary ramp after waveplate rotation 2
 
 do_lattice_mod = 0;                     %  (4547)        apply AM Spectroscopy                 
 
@@ -119,7 +119,7 @@ end
 %% Rotate waveplate to shift power to lattice beams
 % Rotate the waveplate to shift the optical power to the lattices.
 
-if rotate_waveplate_1
+if do_rotate_waveplate_1
     dispLineStr('Rotating waveplate',curtime);
     %Start with a little power towards lattice beams, and increase power to
     %max only after ramping on the lattice
@@ -143,8 +143,9 @@ end
 %% Lattice Ramp 1
 % Ramp the lattices up to the starting values.  The ramp procedue can
 % either be multi step or single step.
-if do_lattice_ramp_1
+if do_lattice_ramp_1    
     dispLineStr('Defining initial lattice and DMD ramps.',curtime);
+    ScopeTriggerPulse(curtime,'lattice_ramp_1');
 
     % Lattice depth and ramp times
     L0=seqdata.params.lattice_zero;  
@@ -1356,7 +1357,6 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
 curtime = calctime(curtime,50);
     
 end
-
 
 
 %% Plane selection
@@ -3997,7 +3997,7 @@ end
 %% Second Waveplate Rotation
 % Rotate waveplate to distribute more power to the lattice
 
-if rotate_waveplate_2
+if do_rotate_waveplate_2
     wp_Trot2 = 150; 
 
     dispLineStr('Rotate waveplate again',curtime)    
@@ -4057,7 +4057,8 @@ curtime =   calctime(curtime,lat_rampup_imaging_time(j));
 
  dispLineStr('Deep lattices ramped at',curtime);
 
-    
+    ScopeTriggerPulse(curtime,'lattice_ramp_2');
+
 deep_latt_holdtime_list = [50];
 deep_latt_holdtime = getScanParameter(deep_latt_holdtime_list,seqdata.scancycle,seqdata.randcyclelist,'deep_latt_holdtime'); 
 curtime=calctime(curtime,deep_latt_holdtime);

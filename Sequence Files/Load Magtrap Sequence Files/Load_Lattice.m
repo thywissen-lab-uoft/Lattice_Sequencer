@@ -38,8 +38,8 @@ do_optical_pumping = 0;                 % (1426) keep : optical pumping in latti
 rotate_waveplate_1 = 1;            % (122) First waveplate rotation for 90%
 do_lattice_ramp_1 = 1;             % Load the lattices
 
-do_lattice_ramp_2 = 1;             % Secondary ramp after waveplate rotation 2
-rotate_waveplate_2 = 1;            % (4637):  Turn Rotating Waveplate to Shift Power to Lattice Beams 
+do_lattice_ramp_2 = 0;             % Secondary ramp after waveplate rotation 2
+rotate_waveplate_2 = 0;            % (4637):  Turn Rotating Waveplate to Shift Power to Lattice Beams 
 
 do_lattice_mod = 0;                     %  (4547)        apply AM Spectroscopy                 
 
@@ -109,7 +109,6 @@ end
 
 lattice_rampdown_list = [3]; %0 for snap off (for in-situ latice postions for alignment)
                              %3 for band mapping
-
 if Drop_From_XDT
     lattice_rampdown = 50;
 else
@@ -118,8 +117,7 @@ else
 end
 
 %% Rotate waveplate to shift power to lattice beams
-% This piece of code rotates the rotatable wavepalte to shift the optical
-% power to the lattices.
+% Rotate the waveplate to shift the optical power to the lattices.
 
 if rotate_waveplate_1
     dispLineStr('Rotating waveplate',curtime);
@@ -147,39 +145,43 @@ end
 % either be multi step or single step.
 if do_lattice_ramp_1
     dispLineStr('Defining initial lattice and DMD ramps.',curtime);
-    
-    % Hold in lattice
-    latt_hold_time_list = [50];
-    latt_hold_time = getScanParameter(latt_hold_time_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'lattice_hold_time','ms');
+
     % Lattice depth and ramp times
-    L0=seqdata.params.lattice_zero;    
+    L0=seqdata.params.lattice_zero;  
+    
     % Get the optical evaporation ending power
-    dip_endpower = 1.0*getChannelValue(seqdata,'dipoleTrap1',1,0);
-    zld = 60;
+    dip_endpower = 1.0*getChannelValue(seqdata,'dipoleTrap1',1,0);        
     
     % Ramp Mode
-    rampMode=0;
-    do_DMD=0;
-    %
+    rampMode=0;    
     % 0 : Ramp only the lattice
     % 1 : Ramp lattice,XDT,and DMD
+    % 2 : Simple ramp used to measure the lattice alignment
    
-    %initial lattice depth
-    initial_latt_depth_list = [10];
-    init_depth = getScanParameter(initial_latt_depth_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'initial_latt_depth','Er');
+    % DMD
+    do_DMD=0;
+    
+
     switch rampMode
         case 0 
             % Ramp only the lattices in a multistep seqeunce.
             % This is the "typical" ramp sequence that we perform;
             
+                %initial lattice depth
+            initial_latt_depth_list = [10];
+            init_depth = getScanParameter(initial_latt_depth_list,...
+                seqdata.scancycle,seqdata.randcyclelist,...
+                'initial_latt_depth','Er');
+            
+            % Lattice depth to ramp to
+            U = 60;
+            
             %%% Lattice %%%
             % Ramp the optical powers of the lattice
             latt_depth=...
-                [init_depth init_depth zld zld;     % X lattice
-                 init_depth init_depth zld zld;     % Y lattice
-                 init_depth init_depth zld zld];    % Z Lattice 
+                [init_depth init_depth U U;     % X lattice
+                 init_depth init_depth U U;     % Y lattice
+                 init_depth init_depth U U];    % Z Lattice 
              latt_ramp_time_list = [150];
              latt_ramp_time = getScanParameter(latt_ramp_time_list,...
                 seqdata.scancycle,seqdata.randcyclelist,'latt_ramp_time','ms');
@@ -197,6 +199,13 @@ if do_lattice_ramp_1
             dmd_pow=0;
             dmd_times=[1];
         case 1 % Ramp everything
+                
+            % Hold in lattice
+            latt_hold_time_list = [50];
+            latt_hold_time = getScanParameter(latt_hold_time_list,...
+                seqdata.scancycle,seqdata.randcyclelist,...
+                'lattice_hold_time','ms');         
+            
             %%% Lattice %%%
             latt_depth=...
                  [L0(1) L0(1);

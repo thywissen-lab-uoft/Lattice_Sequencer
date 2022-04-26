@@ -38,19 +38,19 @@ initialize_channels()
 Achs=seqdata.analogchannels;
 Dchs=seqdata.digchannels;
 
-% Define the RGB color scheme for the rows in the table
+% Define the RGB color scheme for the rows of digital channels
 ccD=[221 235 247;
     255	255	255]/255;
 
+% Define the RGB color scheme for the rows of analog channels
 ccA=[245,230,255;
     255	255	255]/255;
 
 
 bcD=[47	117	181]/255;
-bcA=[0.4940    0.1840    0.5560];
+bcA=[0.4940 0.1840 0.5560];
 
 %% Graphical Initialize
-
 
 % Initialize main figure
 hFGUI=figure(101);

@@ -77,7 +77,7 @@ quant_shim_val = params.quant_shim_val.(flags.img_direction).(flags.negative_ima
 %vertical bias.
 if strcmp(flags.condition, 'SG')
     disp(' Pulsing Stern-Gerlach field.');
-  do_stern_gerlach(seqdata,flags,params.SG)
+    do_stern_gerlach(seqdata,flags,params.SG)
 end
 
 %% Turn on quantizing field for imaging 

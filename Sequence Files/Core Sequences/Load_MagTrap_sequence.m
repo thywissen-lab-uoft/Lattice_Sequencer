@@ -278,7 +278,7 @@ end
     %RHYS - Setting some specific parameters for DDS and objective
     %position. Silly that this is here. 
 
-    obj_piezo_V_List = 4.6;[5.4];[4.6];
+    obj_piezo_V_List = [5];[4.6];
     % 0.1V = 700 nm, must be larger than  larger value means farther away from the window.
 %     obj_piezo_V = getScanParameter(obj_piezo_V_List, ...
 %     seqdata.scancycle, 1, 'Objective_Piezo_Z','V');%5

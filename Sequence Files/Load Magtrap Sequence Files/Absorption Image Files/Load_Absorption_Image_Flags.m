@@ -39,10 +39,10 @@ function flags = Load_Absorption_Image_Flags()
     %% Other flags
     
     %OP/repump flags.
-    flags.do_F1_pulse = 1; %Repump Rb F = 1 to F = 2 before/during imaging
-    flags.use_K_OP = 1; %Usually useful. Must enable repump as well.
-    flags.use_K_repump = 1; % 1:turn on K repump beam for imaging F=7/2
-    flags.K_repump_during_image = 0; %Not sure this is useful.
+    flags.do_F1_pulse = 1;              % Repump Rb F = 1 to F = 2 before/during imaging
+    flags.use_K_OP = 1;                 % Usually useful. Must enable repump as well.
+    flags.use_K_repump = 1;             % 1:turn on K repump beam for imaging F=7/2
+    flags.K_repump_during_image = 0;    % Not sure this is useful.
 
     
     %Special flags

@@ -5088,36 +5088,75 @@ end
 %         ramp.SettlingTime = 50;    
 % curtime = rampMagneticFields(calctime(curtime,0), ramp);
 
-%% Test Acync
-if acync_test
-curtime = calctime(curtime,100);
-
-    setDigitalChannel(calctime(curtime,-35),'ACync Master',1);
-    % 
-    setAnalogChannel(calctime(curtime,-5),57,00);
-    % 
-    % AnalogFuncTo(calctime(curtime,0),57,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2,2,10);
-    % setAnalogChannel(calctime(curtime,10),57,-10);
-    % 
-    setDigitalChannel(calctime(curtime,0),72,1);
-    setDigitalChannel(calctime(curtime,15),72,0);
-    % 
-
-    setDigitalChannel(calctime(curtime,30),'ACync Master',0);
-end
+% %% Test Acync
+% if acync_test
+% curtime = calctime(curtime,100);
+% 
+%     setDigitalChannel(calctime(curtime,-35),'ACync Master',1);
+%     % 
+%     setAnalogChannel(calctime(curtime,-5),57,00);
+%     % 
+%     % AnalogFuncTo(calctime(curtime,0),57,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2,2,10);
+%     % setAnalogChannel(calctime(curtime,10),57,-10);
+%     % 
+%     setDigitalChannel(calctime(curtime,0),72,1);
+%     setDigitalChannel(calctime(curtime,15),72,0);
+%     % 
+% 
+%     setDigitalChannel(calctime(curtime,30),'ACync Master',0);
+% end
 %% Test RF 
 
-if RF_switch_gain_test
+% if RF_switch_gain_test
+% 
+% curtime=calctime(curtime,1000); 
+%     setAnalogChannel(calctime(curtime,0),'RF Gain',-5);
+%     setDigitalChannel(calctime(curtime,0),'RF Source',1);      % 1 si DDS : 0 is SRSs
+%     setDigitalChannel(calctime(curtime,0),'RF TTL',1);      % 0 : off, 1 : on 
+%     setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',0);      % 0 : RF 1 : uwave 
+% curtime=calctime(curtime,50); 
+%  
+% end
+
+%% K uwave Test
+
+%     curtime=calctime(curtime,1000); 
+% 
+%     % Make sure RF, Rb uWave, K uWave are all off for safety
+%     setDigitalChannel(calctime(curtime,-50),'RF TTL',0);
+%     setDigitalChannel(calctime(curtime,-50),'Rb uWave TTL',0);
+%     setDigitalChannel(calctime(curtime,-50),'K uWave TTL',0);
+% 
+%     % Switch antenna to uWaves (0: RF, 1: uWave)
+%     setDigitalChannel(calctime(curtime,-40),'RF/uWave Transfer',1); 
+%     
+%     % Switch uWave source to the K sources (0: K, 1: Rb);
+%     setDigitalChannel(calctime(curtime,-30),'K/Rb uWave Transfer',0);
+% 
+%     % RF Switch for K SRS depreciated?
+%     setDigitalChannel(calctime(curtime,-20),'K uWave Source',1);  
+%     
+%     % Other thing
+%     setDigitalChannel(calctime(curtime,-20),'SRS Source',1);  
+%     
+%     setDigitalChannel(calctime(curtime,-50),'K uWave TTL',1);
+%     
+%     setAnalogChannel(calctime(curtime,0),'uWave VVA',10);
+
+%% Test K kill
+k_kill = 1;
+if k_kill
+curtime=calctime(curtime,1000); 
+setAnalogChannel(calctime(curtime,pulse_offset_time-50),'K Trap FM',42.7); %54.5
+
+% open K probe shutter
+setDigitalChannel(calctime(curtime,pulse_offset_time-5),'Downwards D2 Shutter',1); %0=closed, 1=open
+
+% Set TTL off initially
+setDigitalChannel(calctime(curtime,pulse_offset_time-20),'Kill TTL',1);%0= off, 1=on
 
 curtime=calctime(curtime,1000); 
-    setAnalogChannel(calctime(curtime,0),'RF Gain',-5);
-    setDigitalChannel(calctime(curtime,0),'RF Source',1);      % 1 si DDS : 0 is SRSs
-    setDigitalChannel(calctime(curtime,0),'RF TTL',1);      % 0 : off, 1 : on 
-    setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',0);      % 0 : RF 1 : uwave 
-curtime=calctime(curtime,50); 
- 
 end
-
 %% Test Rb uwave sweep
 % curtime = calctime(curtime,1000);
 %  % uWave Sweeep Prepare

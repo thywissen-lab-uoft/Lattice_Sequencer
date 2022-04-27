@@ -1913,8 +1913,9 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
         setDigitalChannel(calctime(curtime,pulse_offset_time-5),...
             'Downwards D2 Shutter',1);     
 
-        % Pulse beam with TTL
-        DigitalPulse(calctime(curtime,pulse_offset_time),'Kill TTL',kill_time,1);
+        % Pulse K Kill AOM
+        DigitalPulse(calctime(curtime,pulse_offset_time),'Kill TTL',...
+            kill_time,1);
 
         % Close K Kill shutter
         setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time+2),...

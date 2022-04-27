@@ -77,7 +77,7 @@ Dimple_Mod = 0;                     % (4185) keep: Used to calibrate dimple trap
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-do_plane_selection = 1;                             % (2082-3285) Primary Flag    
+do_plane_selection = 1;                             % Plane selection flag
 fast_plane_selection = 0;                           % (1406)            keep : under development; could be the future of plane selection code for cleaner control
 do_plane_selection_horizontally = 0;                % (3077,3111,3144)  keep : generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
 Dimple_Trap_After_Plane_Selection = 0;              % (4155,4209)       delete (?) : turn on dimple trap %Rhys suggested to delete?
@@ -1442,7 +1442,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
     FB_init = getChannelValue(seqdata,37,1,0);
     if ramp_fields
         % Ramp the SHIMs, QP, and FB to the appropriate level  
-        disp('Ramping fields');
+        disp(' Ramping fields');
         clear('ramp');       
         
         xshimdlist = -0.257;
@@ -1528,11 +1528,11 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     %Determine the frequency to plane select |9/2,-7/2> atoms
 %     freq2 = DoublePlaneSelectionFrequency(spect_pars.freq, [9/2,-9/2],[7/2,-7/2],[9/2,-7/2],[7/2,-5/2]);
 
-    disp('spectroscopy2');
+%     disp('spectroscopy2');
     use_ACSync = 0;
 
     % Define the SRS frequency
-    freq_list = 0;[-300];-90       
+    freq_list = 0;[-300];       
     
     % 2021/06/22 CF
     % Use this when Xshimd=3, zshimd=-1 and you vary yshimd

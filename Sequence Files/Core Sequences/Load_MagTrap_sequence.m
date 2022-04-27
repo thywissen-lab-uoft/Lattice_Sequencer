@@ -11,6 +11,8 @@ dispLineStr('New Sequence',curtime);
 %% Initialize seqdata
 global seqdata;
 initialize_channels();
+
+% Number of DDS scans is zero
 seqdata.numDDSsweeps = 0;
 seqdata.scanindex = -1;
 
@@ -63,8 +65,6 @@ mag_trap_MOT = 0; %Absportion image of MOT after magnetic trapping
 MOT_abs_image = 0; %Absorption image of the MOT (no load in mag trap);
 transfer_recap_curve = 0; %Transport curve from MOT and back
 after_sci_cell_load = 0; %Abs image after loading into science cell
-bench_transport = 0; %special stage for benchmarking the transport
-bench_rf = 0; %special stage for benchmarking RF power making it to the atoms
 seqdata.flags.rb_vert_insitu_image = 0; 
 %take a vertical in-situ image of BEC in XDT to centre the microscope objective
 

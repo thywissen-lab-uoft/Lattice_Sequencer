@@ -78,7 +78,6 @@ Dimple_Mod = 0;                     % (4185) keep: Used to calibrate dimple trap
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 do_plane_selection = 1;                             % Plane selection flag
-fast_plane_selection = 0;                           % (1406)            keep : under development; could be the future of plane selection code for cleaner control
 Dimple_Trap_After_Plane_Selection = 0;              % (4155,4209)       delete (?) : turn on dimple trap %Rhys suggested to delete?
 
 % Actual fluorsence image flag
@@ -1231,24 +1230,6 @@ curtime = calctime(curtime,holdtime);
     
 end
 
-%% Do Plane Selection
-%RHYS - Graham started to condense some of the plane selection code here.
-%Not sure if it works. Probably a good starting point for making a
-%more-organized plane-selection module.
-
-if fast_plane_selection
-    
-    plane_select_params.Fake_Pulse = 0;
-    plane_select_params.Selection__Frequency = 1388.375;
-    plane_select_params.Selection_Range = 400/1000;
-    plane_select_params.Resonant_Light_Removal = 1;
-    plane_select_params.Final_Transfer = 1;
-    
-    addOutputParam('freq_val',plane_select_params.Selection__Frequency)
-    
-curtime = do_fast_plane_selection(curtime, plane_select_params);
-    
-end
 
 
 %% Optical Pumping

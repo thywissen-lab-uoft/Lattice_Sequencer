@@ -1358,11 +1358,9 @@ newramp = struct('ShimValues',seqdata.params.shim_zero,...
             'FeshValue',10,'QPValue',0,'SettlingTime',100);
 
     % Ramp fields for pumping
-curtime = rampMagneticFields(calctime(curtime,0), newramp);   
-    
+curtime = rampMagneticFields(calctime(curtime,0), newramp);       
 
-curtime = calctime(curtime,50);
-    
+curtime = calctime(curtime,50);    
 end
 
 
@@ -1388,8 +1386,11 @@ end
 if do_plane_selection
     dispLineStr('Plane Selection',curtime);
     
-    initial_transfer = 0;   % Transfer atoms to |7/2,-7/2> initially. Do we need this??  
-    Lattices_to_Pin_plane_selection = 0; % ramp up lattices for plane selection 
+    % Transfer atoms to |7/2,-7/2> initially. Do we need this??  
+    initial_transfer = 0;   
+    
+    % Ramp up lattices for plane selection (typically unesasaary)
+    Lattices_to_Pin_plane_selection = 0; 
     
     % Establish field gradeint with QP, FB, and shim fields for plane selection
     ramp_fields = 1; 
@@ -1412,11 +1413,14 @@ if do_plane_selection
     % Rhys says we can delete? keep : QP vacuum cleaner. In 2nd time plane selection section
     eliminate_planes_with_QP = 0;   
    
-    final_repump_pulse = 0; %Pulse on repump beam to try to remove any atoms left in F=7/2
+     % Pulse repump to remove leftover F=7/2
+    final_repump_pulse = 0;
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Apply pinning lattice for plane selection
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Increase the lattice depth to pin the atoms
+    
     if Lattices_to_Pin_plane_selection
         disp('Ramping lattices and dipole traps.');
         setDigitalChannel(calctime(curtime,-0.1),'yLatticeOFF',0);
@@ -1439,6 +1443,9 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Ramp magnetic field for planes selection
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Apply a field gradient to make a spatially dependent Zeeman shift
+    % that allows us to selectively choose a single plane.
+    
     FB_init = getChannelValue(seqdata,37,1,0);
     if ramp_fields
         % Ramp the SHIMs, QP, and FB to the appropriate level  
@@ -1692,6 +1699,10 @@ ScopeTriggerPulse(curtime,'Plane Select');
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Plane select via uWave application
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Apply microwaves inconjuction with a frequency or magnetic field
+    % sweep to transfer atoms from the F=9/2 manifold to the F=7/2 in a
+    % specific plane.
+    
     if (sweep_field == 0) %Sweeping frequency of SRS
         disp('Using SRS to plane select');
     
@@ -1858,12 +1869,11 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
     % Vertical Kill Beam Application
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
           
-    % Vertical *upwards* D2 kill beam to kill untransfered atoms            
-    %Should be plenty of time to do optical removal without
-    %updating curtime, due to the shim field settling time above
+    % Apply a vertical *upwards* D2 beam resonant with the 9/2 manifold to 
+    % remove any atoms not transfered to the F=7/2 manifold.
 
     if vertical_kill_pulse==1
-        dispLineStr('Vertical D2 Kill Pulse',curtime);
+        dispLineStr('Applying vertical D2 Kill Pulse',curtime);
 
         %Resonant light pulse to remove any untransferred atoms from
         %F=9/2
@@ -1872,11 +1882,7 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
             seqdata.randcyclelist,'kill_time','ms'); %10 
         kill_detuning_list = [42.7];%42.7
         kill_detuning = getScanParameter(kill_detuning_list,...
-            seqdata.scancycle,seqdata.randcyclelist,'kill_det');
-%             kill_detuning = 39;   40;   %27 for 80G       %43 @ 2018-02-22
-%             addOutputParam('kill_det',kill_detuning);
-%             addOutputParam('kill_time',kill_time);
-        
+            seqdata.scancycle,seqdata.randcyclelist,'kill_det');        
 
         %Kill SP AOM 
         mod_freq =  (120)*1E6;
@@ -1892,36 +1898,31 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
         disp(['     Kill Amp         (V) : ' num2str(mod_amp)]); 
         disp(['     Kill Detuning  (MHz) : ' num2str(kill_detuning)]); 
 
-
-
-        pulse_offset_time = -5; %Need to step back in time a bit to do the kill pulse
-                                  % directly after transfer, not after the subsequent wait times
-
-%             %set probe detuning
-%             setAnalogChannel(calctime(curtime,pulse_offset_time-50),'K Probe/OP FM',170); %195
+        % Offset time of pulse (why?)
+        pulse_offset_time = -5;
+                                  
         % Set trap AOM detuning to change probe
-        setAnalogChannel(calctime(curtime,pulse_offset_time-50),'K Trap FM',kill_detuning); %54.5
+        setAnalogChannel(calctime(curtime,pulse_offset_time-50),...
+            'K Trap FM',kill_detuning); %54.5
+   
+        % Turn off kill SP (0= off, 1=on)(we keep it on for thermal stability)
+        setDigitalChannel(calctime(curtime,pulse_offset_time-20),...
+            'Kill TTL',0);
+        
+        % Open K Kill shutter (0=closed, 1=open)
+        setDigitalChannel(calctime(curtime,pulse_offset_time-5),...
+            'Downwards D2 Shutter',1);     
 
-        % open K probe shutter
-        setDigitalChannel(calctime(curtime,pulse_offset_time-5),'Downwards D2 Shutter',1); %0=closed, 1=open
-
-        % Set TTL off initially
-        setDigitalChannel(calctime(curtime,pulse_offset_time-20),'Kill TTL',0);%0= off, 1=on
-
-%             kill_lat_ramp_time = 3;
-%             AnalogFuncTo(calctime(curtime,pulse_offset_time-kill_lat_ramp_time),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), kill_lat_ramp_time, kill_lat_ramp_time, 60/atomscale); %30?                                      
-
-        %pulse beam with TTL
+        % Pulse beam with TTL
         DigitalPulse(calctime(curtime,pulse_offset_time),'Kill TTL',kill_time,1);
 
-%             AnalogFuncTo(calctime(curtime,pulse_offset_time+kill_time),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), kill_lat_ramp_time, kill_lat_ramp_time, 60/atomscale); %30?                                      
+        % Close K Kill shutter
+        setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time+2),...
+            'Downwards D2 Shutter',0);
 
-        %close K probe shutter
-        setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time+2),'Downwards D2 Shutter',0);
-
-        %set kill AOM back on
-        setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time + 5),'Kill TTL',1);
-
+        % Turn on kill SP (thermal stability)
+        setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time+5),...
+            'Kill TTL',1);
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1965,6 +1966,10 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
         setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time + 1),'K Probe/OP shutter',0);
     end
 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % uWave Transfer back to |9/2,-9/2>
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+    
     if transfer_back_to_9half
         % Transfer the |7,-7> back to |9,-9>.  This sweep can be broad
         % because everything else is dead (nominally). This step is
@@ -2346,6 +2351,9 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 
 
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Repump to kill F=7/2
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
     if final_repump_pulse
         %Pulse on repump beam to try to remove any atoms left in F=7/2
         repump_pulse_time = 5;

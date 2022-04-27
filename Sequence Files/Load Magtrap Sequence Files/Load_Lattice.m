@@ -29,7 +29,6 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 
 ramp_fields_after_lattice_loading = 0;  % (416,503)     keep : Ramp on the fesbhach field after lattice load
 spin_mixture_in_lattice_before_plane_selection = 0; % (668)             keep : Make a -9/2,-7/2 spin mixture.   
-Dimple_Trap_Before_Plane_Selection = 0; % (716)         keep : turn on the dimple, leave this option: note that the turning off code was deleted
 do_optical_pumping = 0;                 % (1426) keep : optical pumping in lattice    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -536,37 +535,6 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,10),3,sweep_pars);
 curtime = rf_uwave_spectroscopy(calctime(curtime,10),3,sweep_pars);
 
         curtime = calctime(curtime,50);
-
-end
-
-%% Dimple before plane selecting
-%RHYS - Code for turning on the dimple (850nm beam). Never really worked
-%for making things colder. Could keep the option.
-
-if (Dimple_Trap_Before_Plane_Selection)      
-    
-    Dimple_Power_List = [2.0];
-    Dimple_Power = getScanParameter(Dimple_Power_List,seqdata.scancycle,seqdata.randcyclelist,'Dimple_Power');%maximum is 4
-    Dimple_Ramp_Time_list = [50]; %50
-    Dimple_Ramp_Time = getScanParameter(Dimple_Ramp_Time_list,seqdata.scancycle,seqdata.randcyclelist,'Dimple_Ramp_Time')*1;
-    Dimple_Wait_Time_List = [50];%[50];
-    Dimple_Wait_Time = getScanParameter(Dimple_Wait_Time_List,seqdata.scancycle,seqdata.randcyclelist,'Dimple_Wait_Time')*1;
-    
-    setDigitalChannel(calctime(curtime,-10),'Dimple Shutter',1);
-    setDigitalChannel(calctime(curtime,0),'Dimple TTL',0);%0
-curtime = AnalogFuncTo(calctime(curtime,0),'Dimple Pwr',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Dimple_Ramp_Time, Dimple_Ramp_Time, Dimple_Power); 
-    
-% %     Next, go to 1D z-lattice, with 2 steps
-% %     1st step, goes to 2 Er
-%     AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 2/atomscale); 
-%     AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 2/atomscale);
-% curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 10/atomscale);    
-% % %     2nd step, goes to 0 Er    
-%     AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0/atomscale); 
-%     AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0/atomscale);
-% curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0/atomscale);
-%   
-curtime = calctime(curtime, Dimple_Wait_Time);
 
 end
 

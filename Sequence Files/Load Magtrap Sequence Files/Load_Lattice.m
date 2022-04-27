@@ -68,12 +68,6 @@ do_K_raman_spectroscopy = 0;            % (3989) under development
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Dimple Beam
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% These flags are associated with the now defunct dimple beam
-Dimple_Mod = 0;                     % (4185) keep: Used to calibrate dimple trap depth
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 do_plane_selection = 1;                             % Plane selection flag
@@ -3081,28 +3075,7 @@ curtime = calctime(curtime, Dimple_Wait_Time);
 
 end
 
-%% Modulate Dimple Trap
-%RHYS - Used to calibrate dimple trap depth. Make into a module, stick
-%somewhere. 
-if (Dimple_Mod)
-    A_mod = 0.5;
-    Frequency_List = [100:100:2000];
-    f_mod = getScanParameter(Frequency_List,seqdata.scancycle,seqdata.randcyclelist,'Modulation_Frequency')*10^(-3);
-    Dimple_Sweeptime = 100;
-    Dimple_Power_Sweep = 0.00;
 
-% curtime = AnalogFuncTo(calctime(curtime,0),'Dimple Pwr',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),Dimple_Sweeptime,Dimple_Sweeptime,Dimple_Power-Dimple_Power_Sweep/2);
-    
-    ScopeTriggerPulse(calctime(curtime,0),'Dimple Mod');
-    
-    AnalogFuncTo(calctime(curtime,0),'Dimple Pwr',@(t,tt,y1,y2)(ramp_minjerk_mod(t,tt,y1,y2,A_mod/2,f_mod)),Dimple_Sweeptime,Dimple_Sweeptime,Dimple_Power+Dimple_Power_Sweep/2);
-       %Lattices back to 60Er.    
-%     AnalogFuncTo(calctime(curtime,Dimple_Sweeptime),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0.6*111); 
-%     AnalogFuncTo(calctime(curtime,Dimple_Sweeptime),'yLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0.6*80)
-curtime = AnalogFuncTo(calctime(curtime,Dimple_Sweeptime),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50, 0.6*20);
-
-
-end
 
  %% Dimple Trap Off
 %RHYS - The second part of that dimple after plane select code, where the

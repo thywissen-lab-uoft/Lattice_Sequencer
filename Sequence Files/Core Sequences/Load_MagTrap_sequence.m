@@ -196,7 +196,7 @@ seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
 seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
 
 % After optical evaporation
-seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
+seqdata.flags.do_D1OP_post_evap = 1;            % D1 pump
 seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 
 % High Field Evaporation

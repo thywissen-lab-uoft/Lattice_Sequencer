@@ -30,7 +30,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 ramp_fields_after_lattice_loading = 0;  % (416,503)     keep : Ramp on the fesbhach field after lattice load
 spin_mixture_in_lattice_before_plane_selection = 0; % (668)             keep : Make a -9/2,-7/2 spin mixture.   
 Dimple_Trap_Before_Plane_Selection = 0; % (716)         keep : turn on the dimple, leave this option: note that the turning off code was deleted
-do_optical_pumping = 1;                 % (1426) keep : optical pumping in lattice    
+do_optical_pumping = 0;                 % (1426) keep : optical pumping in lattice    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Lattice Ramps and Waveplates
@@ -79,9 +79,6 @@ Dimple_Mod = 0;                     % (4185) keep: Used to calibrate dimple trap
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 do_plane_selection = 1;                             % (2082-3285) Primary Flag    
 fast_plane_selection = 0;                           % (1406)            keep : under development; could be the future of plane selection code for cleaner control
-kill_pulses = 1;                                    % (1917,2561,2847)  keep :D2 Kill F=9/2
-second_plane_selection = 0;                         % (2755)            copy 
-eliminate_planes_with_QP = 0;                       % (2933)            keep : QP vacuum cleaner. In 2nd time plane selection section
 do_plane_selection_horizontally = 0;                % (3077,3111,3144)  keep : generalized for Raman cooling %1: use new version of the code, 2: use old messy code, 3: DOUBLE SELECTION! 
 Dimple_Trap_After_Plane_Selection = 0;              % (4155,4209)       delete (?) : turn on dimple trap %Rhys suggested to delete?
 
@@ -237,23 +234,33 @@ if do_lattice_ramp_1
             % This ramp ramps the XDT powers down while ramping up only one
             % of the lattices.  Compare the XDT insitu position to the
             % insitu position measured here. (Use a TOF~0);
+            % This also is used for lattice alignment with the ixon.
             
             U_align = 100; % Lattice depth to align to
-            
             % Simple square ramp of only one lattice 
-%              latt_depth=...
-%                  [U_align U_align; % X lattice
-%                  L0(2) L0(2);  % Y lattice
-%                  L0(3) L0(3)];    % Z Lattice
-%              latt_depth=...
-%                  [L0(1) L0(1); % X lattice
-%                  U_align U_align;  % Y lattice
-%                  L0(3) L0(3)];    % Z Lattice
-             latt_depth=...
-                 [L0(1) L0(1); % X lattice
-                 L0(2) L0(2);  % Y lattice
-                 U_align U_align];    % Z Lattice
-
+            
+            %Select the lattice direction to load
+%             direction = 'X';
+%             direction = 'Y';
+            direction = 'Z';
+            switch direction
+                case 'X'
+                  latt_depth=...
+                     [U_align U_align; % X lattice
+                     L0(2) L0(2);  % Y lattice
+                     L0(3) L0(3)];    % Z Lattice
+                case 'Y'
+                  latt_depth=...
+                     [L0(1) L0(1); % X lattice
+                     U_align U_align;  % Y lattice
+                     L0(3) L0(3)];    % Z Lattice
+                case 'Z'
+                  latt_depth=...
+                     [L0(1) L0(1); % X lattice
+                     L0(2) L0(2);  % Y lattice
+                     U_align U_align];    % Z Lattice
+            end
+            
             % Lattice Ramp Times
             latt_ramp_time_list = [150];
             latt_ramp_time = getScanParameter(latt_ramp_time_list,...
@@ -1380,10 +1387,33 @@ end
 
 if do_plane_selection
     dispLineStr('Plane Selection',curtime);
-    initial_transfer = 0;    
-    Lattices_to_Pin_plane_selection = 0;    
-    ramp_fields = 1;
-
+    
+    initial_transfer = 0;   % Transfer atoms to |7/2,-7/2> initially. Do we need this??  
+    Lattices_to_Pin_plane_selection = 0; % ramp up lattices for plane selection 
+    
+    % Establish field gradeint with QP, FB, and shim fields for plane selection
+    ramp_fields = 1; 
+    
+    % Do you want to fake the plane selection sweep?
+    fake_the_plane_selection_sweep = 1; %0=No, 1=Yes, no plane selection but remove all atoms.
+        
+    % Pulse the vertical D2 kill beam to kill untransfered F=9/2
+    vertical_kill_pulse = 1;
+    
+    % Pulse horizontal D2 to kill the 9/2 atoms (CF: Can we delete?)
+    Horizontal_D2 = 0; 
+    
+    % Transfer back to -9/2 via uwave transfer
+    transfer_back_to_9half = 0;
+    
+    % Do another plane selection. (CF : Delete? make a modual?)
+    second_plane_selection = 0;   
+    
+    % Rhys says we can delete? keep : QP vacuum cleaner. In 2nd time plane selection section
+    eliminate_planes_with_QP = 0;   
+   
+    final_repump_pulse = 0; %Pulse on repump beam to try to remove any atoms left in F=7/2
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Apply pinning lattice for plane selection
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1460,22 +1490,19 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
     end
     
-
-    %Do you want to fake the plane selection sweep?
-    fake_the_plane_selection_sweep = 0; %0=No, 1=Yes, no plane selection but remove all atoms.
-
-    % When cloud moves up, field is smaller, so frequency goes down (|9/2,-9/2>)
-%         freq_list = [-490]/1000;
-    %unit is kHz. Have to tunning the frequency everyday.
-%         freq_val = -0/1000 + getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'freq_val');  % |9/2,-9/2> %2094 at 105G/cm, 3460 at 210G/cm
-    %spect_pars.freq = 1186.107 +freq_val; %MHz (1186.107 for 2*22.6 FB)  % |9/2,9/2>
-%         addOutputParam('freq_val',freq_val)
-    planeselect_freq = 1606.75;%1498.30 + freq_val;%1386.5 +freq_val;  1186.107 + freq_val
-%         planeselect_freq = 1364.658; %select atoms in |9/2,-7/2> to |7/2,-5/2>
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % uWave Settings for Plane Selection
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % This should be cleaned up a lot
+    
+    planeselect_freq = 1606.75;
     spect_pars.freq = planeselect_freq;   % |9/2,-9/2>
     spect_pars.power = 15;15;%6.5; %-15 %uncalibrated "gain" for rf
+    
     ffscan_list = [100]/1000;%frequency sweep width
     ffscan = getScanParameter(ffscan_list,seqdata.scancycle,seqdata.randcyclelist,'ffscan');
+    
+    
     planeselect_sweep_width = ffscan;%500/1000;
     spect_pars.delta_freq = planeselect_sweep_width; %300
     spect_pars.mod_dev = planeselect_sweep_width; %Frequency range of SRS (MHz/V, input range is +/-1V, eg: 1/1000 means +/-500Hz)
@@ -1501,7 +1528,6 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     %Determine the frequency to plane select |9/2,-7/2> atoms
 %     freq2 = DoublePlaneSelectionFrequency(spect_pars.freq, [9/2,-9/2],[7/2,-7/2],[9/2,-7/2],[7/2,-5/2]);
 
-%spectroscopy2
     disp('spectroscopy2');
     use_ACSync = 0;
 
@@ -1663,9 +1689,8 @@ curtime = calctime(curtime,100);
        
 ScopeTriggerPulse(curtime,'Plane Select');
      
-
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Plane select via uWave manipulation
+    % Plane select via uWave application
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if (sweep_field == 0) %Sweeping frequency of SRS
         disp('Using SRS to plane select');
@@ -1743,7 +1768,7 @@ ScopeTriggerPulse(curtime,'Plane Select');
         programSRS(uWave_opts); 
 curtime = calctime(curtime,75);
 
-    elseif (sweep_field == 1) %Sweeping field with z Shim, SRS frequency is fixed
+    elseif (sweep_field == 1) % Sweeping field with z Shim, SRS frequency is fixed
         disp('Using Z shim to plane select');
 
         %SRS in pulsed mode with amplitude modulation
@@ -1829,22 +1854,20 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
             
     end
 
-    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Vertical Kill Beam Application
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    Downwards_D2 = 1;% turn on the kill beam
-    if Downwards_D2            
+          
     % Vertical *upwards* D2 kill beam to kill untransfered atoms            
-        %Should be plenty of time to do optical removal without
-        %updating curtime, due to the shim field settling time above
+    %Should be plenty of time to do optical removal without
+    %updating curtime, due to the shim field settling time above
 
-        if kill_pulses==1
+    if vertical_kill_pulse==1
         dispLineStr('Vertical D2 Kill Pulse',curtime);
 
         %Resonant light pulse to remove any untransferred atoms from
         %F=9/2
-        kill_time_list = [2];2
+        kill_time_list = [0.5];2;
         kill_time = getScanParameter(kill_time_list,seqdata.scancycle,...
             seqdata.randcyclelist,'kill_time','ms'); %10 
         kill_detuning_list = [42.7];%42.7
@@ -1899,13 +1922,12 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
         %set kill AOM back on
         setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time + 5),'Kill TTL',1);
 
-        end
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Horizontal Kill Beam Application
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-    Horizontal_D2 = 0;
+    
     if Horizontal_D2
         dispLineStr('Horizontal D2 Kill Pulse',curtime);
 
@@ -1943,7 +1965,6 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
         setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time + 1),'K Probe/OP shutter',0);
     end
 
-    transfer_back_to_9half = 0;% transfer back to -9/2
     if transfer_back_to_9half
         % Transfer the |7,-7> back to |9,-9>.  This sweep can be broad
         % because everything else is dead (nominally). This step is
@@ -2122,39 +2143,38 @@ curtime = calctime(curtime,field_shift_time+5); %April 13th 2015, Reduce the pos
 
         %D2 Kill Pulse
         %-------------  
-        if Downwards_D2
-            %Should be plenty of time to do optical removal without
-            %updating curtime, due to the shim field settling time above
+        %Should be plenty of time to do optical removal without
+        %updating curtime, due to the shim field settling time above
 
-            if kill_pulses==1
-            %Resonant light pulse to remove any untransferred atoms from
-            %F=9/2
+        if vertical_kill_pulse==1
+        %Resonant light pulse to remove any untransferred atoms from
+        %F=9/2
 
 %             %set probe detuning
 %             setAnalogChannel(calctime(curtime,pulse_offset_time-50),'K Probe/OP FM',170); %195
-            %set trap AOM detuning to change probe
-            setAnalogChannel(calctime(curtime,pulse_offset_time-50),'K Trap FM',kill_detuning); %54.5
+        %set trap AOM detuning to change probe
+        setAnalogChannel(calctime(curtime,pulse_offset_time-50),'K Trap FM',kill_detuning); %54.5
 
-            %open K probe shutter
-            setDigitalChannel(calctime(curtime,pulse_offset_time-10),'Downwards D2 Shutter',1); %0=closed, 1=open
-            %set TTL off initially
-            setDigitalChannel(calctime(curtime,pulse_offset_time-20),'Kill TTL',0);%0= off, 1=on
+        %open K probe shutter
+        setDigitalChannel(calctime(curtime,pulse_offset_time-10),'Downwards D2 Shutter',1); %0=closed, 1=open
+        %set TTL off initially
+        setDigitalChannel(calctime(curtime,pulse_offset_time-20),'Kill TTL',0);%0= off, 1=on
 
 %                 AnalogFuncTo(calctime(curtime,pulse_offset_time-0.1),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 10/atomscale); %30?                                      
 
-            %pulse beam with TTL
-            DigitalPulse(calctime(curtime,pulse_offset_time),'Kill TTL',kill_time,1);
+        %pulse beam with TTL
+        DigitalPulse(calctime(curtime,pulse_offset_time),'Kill TTL',kill_time,1);
 
 %                 AnalogFuncTo(calctime(curtime,pulse_offset_time+kill_time),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60/atomscale); %30?                                      
 
-            %close K probe shutter
-            setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time),'Downwards D2 Shutter',0);
+        %close K probe shutter
+        setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time),'Downwards D2 Shutter',0);
 
-            %set kill AOM back on
-            setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time + 5),'Kill TTL',1);
+        %set kill AOM back on
+        setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time + 5),'Kill TTL',1);
 
-            end
         end
+
 
         Transfer_Back_Again = 0;
         if (Transfer_Back_Again)
@@ -2325,7 +2345,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     end
 
 
-    final_repump_pulse = 0;
+    
     if final_repump_pulse
         %Pulse on repump beam to try to remove any atoms left in F=7/2
         repump_pulse_time = 5;
@@ -2381,7 +2401,7 @@ if do_plane_selection_horizontally == 1
     horizontal_plane_select_params.Sweep_About_Central_Frequency = 1;
     horizontal_plane_select_params.Resonant_Light_Removal = 1;
     horizontal_plane_select_params.Final_Transfer = 1;
-    horizontal_plane_select_params.Resonant_Light_Removal = kill_pulses;
+    horizontal_plane_select_params.Resonant_Light_Removal = vertical_kill_pulse;
     horizontal_plane_select_params.Selection_Angle = 66.5; %-30 for vertical, +60 for horizontal (iXon axes)
         %Kill pulse uses the shim fields for quantization, atom removal may
         %be poor for angles much different from -90deg!!

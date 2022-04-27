@@ -3018,32 +3018,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     end
     
 end
-    
-%% Turn off Gradient
-%RHYS - Turns off the QP. Still don't like the structure here, seems it
-%should just be contained to each spectroscopy module.
-
-% if (do_K_uwave_spectroscopy2 ||do_K_uwave_spectroscopy || ...
-%         do_Rb_uwave_spectroscopy || do_RF_spectroscopy  ...
-%         )
-%     
-%     if isfield(ramp,'QP_final')
-%         if ramp.QP_final ~=0
-%             clear('ramp');
-%             %If QP gradient was turned on for spectroscopy/plane selection, turn it
-%             %off before releasing from lattice
-% 
-%             % QP coil settings for spectroscopy
-%             rampdown.QP_ramptime = 100;
-%             rampdown.QP_ramp_delay = -0;
-%             rampdown.QP_final =  0*1.78;
-% 
-%             rampdown.settling_time = 50;
-%                 
-% curtime = ramp_bias_fields(calctime(curtime,0), rampdown); % check ramp_bias_fields to see what struct ramp may contain
-%         end
-%     end
-% end
+ 
 
 
 

@@ -51,7 +51,7 @@ Drop_From_XDT = 0;                      %  (97,5187,5257) May need to add code t
 % Conductivity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % These flags are associated with the conducitivity experiment
-conductivity_without_dimple = 0;       % (747-1536) keep: the real conductivity experiment happens here 
+do_conductivity = 0;       % (747-1536) keep: the real conductivity experiment happens here 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy
@@ -536,7 +536,7 @@ end
 %keep for now, just clean up. A very long code: make its own module, delete
 %all the commented crap.
 
-if (conductivity_without_dimple == 1 )
+if (do_conductivity == 1 )
     time_in_cond = curtime;
     Post_Mod_Lat_Ramp = 0;
     Lattices_to_Pin = 1;

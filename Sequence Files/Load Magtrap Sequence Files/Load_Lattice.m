@@ -3019,10 +3019,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     
 end
  
-
-
-
-%% Lattice Modulation; use bandstructure calculation for conversion into
+%% Amplitude Modulation Spectroscopy of Lattice
 % This code applies amplitude modulation to XYZ optical lattices.  This is
 % done by programming a Rigol generator that goes into the sum input of the
 % Newport regulation boxes.
@@ -3400,14 +3397,13 @@ curtime = do_horizontal_plane_selection(curtime, horizontal_plane_select_params)
 end
 
 
-%% Moving on
-% Track this down and possibly delete if it is redunant or make the code
-% more obvious because this is just  random line of code
+%% Hold the Lattice
+% Unclear why this hold time is important or not
+
 curtime = calctime(curtime,lattice_holdtime);
 
-
-
 %% High Field transfers + Imaging
+
 if seqdata.flags.High_Field_Imaging
     % Typical Experimental Sequence
     % - Ramp lattices up to 200Er

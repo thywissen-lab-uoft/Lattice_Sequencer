@@ -70,7 +70,7 @@ do_K_raman_spectroscopy = 0;            % (3989) under development
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-do_plane_selection = 1;                             % Plane selection flag
+do_plane_selection = 0;                             % Plane selection flag
 
 % Actual fluorsence image flag
 Raman_transfers = 1;                                % (4727)            keep : apply fluorescence imaging light
@@ -1818,7 +1818,7 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
 
         %Resonant light pulse to remove any untransferred atoms from
         %F=9/2
-        kill_time_list = [0.5];2;
+        kill_time_list = [2];2;
         kill_time = getScanParameter(kill_time_list,seqdata.scancycle,...
             seqdata.randcyclelist,'kill_time','ms'); %10 
         kill_detuning_list = [42.7];%42.7
@@ -1842,29 +1842,31 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
         % Offset time of pulse (why?)
         pulse_offset_time = -5;
                                   
-        % Set trap AOM detuning to change probe
-        setAnalogChannel(calctime(curtime,pulse_offset_time-50),...
-            'K Trap FM',kill_detuning); %54.5
-   
-        % Turn off kill SP (0= off, 1=on)(we keep it on for thermal stability)
-        setDigitalChannel(calctime(curtime,pulse_offset_time-20),...
-            'Kill TTL',0);
-        
-        % Open K Kill shutter (0=closed, 1=open)
-        setDigitalChannel(calctime(curtime,pulse_offset_time-5),...
-            'Downwards D2 Shutter',1);     
+        if kill_time>0
+            % Set trap AOM detuning to change probe
+            setAnalogChannel(calctime(curtime,pulse_offset_time-50),...
+                'K Trap FM',kill_detuning); %54.5
 
-        % Pulse K Kill AOM
-        DigitalPulse(calctime(curtime,pulse_offset_time),'Kill TTL',...
-            kill_time,1);
+            % Turn off kill SP (0= off, 1=on)(we keep it on for thermal stability)
+            setDigitalChannel(calctime(curtime,pulse_offset_time-20),...
+                'Kill TTL',0);
 
-        % Close K Kill shutter
-        setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time+2),...
-            'Downwards D2 Shutter',0);
+            % Open K Kill shutter (0=closed, 1=open)
+            setDigitalChannel(calctime(curtime,pulse_offset_time-5),...
+                'Downwards D2 Shutter',1);     
 
-        % Turn on kill SP (thermal stability)
-        setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time+5),...
-            'Kill TTL',1);
+            % Pulse K Kill AOM
+            DigitalPulse(calctime(curtime,pulse_offset_time),'Kill TTL',...
+                kill_time,1);
+
+            % Close K Kill shutter
+            setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time+2),...
+                'Downwards D2 Shutter',0);
+
+            % Turn on kill SP (thermal stability)
+            setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time+5),...
+                'Kill TTL',1);
+        end
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

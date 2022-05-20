@@ -412,202 +412,156 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
 curtime = calctime(curtime,dipole_holdtime_before_evap);
 
 
-    %% Rb uWave transfer
+%% Rb uWave 1 SWEEP FESHBACH FIELD
 
-    %RHYS - Next follows a long set of possible types of RF or microwave
-    %transfer. These could in theory be combined into one general function. The
-    %things to specify would be: the atom, the field, field ramp up/down times, 
-    %whether to ramp the field or the function generator frequency, the sweep 
-    %time, the sweep range, the power as a function of max, and whether to do
-    %some kind of round trip there and back. General functions have been
-    %attempted (see rf_uwave_spectroscopy) but are themselves messy, and so
-    %many of these historical messy codes still exist. 
+%Pre-ramp the field to 20G for transfer
+if ( seqdata.flags.do_Rb_uwave_transfer_in_ODT)      
+    dispLineStr('uWave Rb 2-->1',curtime);
     
-    if ( seqdata.flags.do_Rb_uwave_transfer_in_ODT )
-        dispLineStr('uWave Rb 2-->1',curtime);
-    end
+    init_ramp_fields = 1; % Ramp field to starting value?
+    do_F2_blowaway = 1; % Remove remaining F=2 atoms after transfer?
 
-    %Pre-ramp the field to 20G for transfer
-    if ( seqdata.flags.do_Rb_uwave_transfer_in_ODT )      
-        
-        %%%%%%%%%%%%%%%%%%%%%%%%
-        % Program the SRS
-        %%%%%%%%%%%%%%%%%%%%%%%
-        % Use this code if using the SRS (instead of the Anritsu) to
-        % transfer atoms
-        
-        Rb_SRS=struct;
-        Rb_SRS.Address=29;        % GPIB address of the Rb SRS        
-        Rb_SRS_list = [0];
-        Rb_SRS_det = getScanParameter(Rb_SRS_list,seqdata.scancycle,seqdata.randcyclelist,'Rb_SRS_det');
-        Rb_SRS.Frequency=6.87560 + Rb_SRS_det/1000; % Frequency in GHz
-        Rb_SRS.Power=8;%8           % Power in dBm (Don't go too high)
-        Rb_SRS.Enable=1;          % Whether to enable 
-        Rb_SRS.EnableSweep=0;        
-%         programSRS_Rb(Rb_SRS);  
-        
-        
-        %%%%%%%%%%%%%%%%%%%%%%%%
-        % Field Sweep settings
-        %%%%%%%%%%%%%%%%%%%%%%%        
-        % Center feshbach field
-        mean_field_list = [19.35:0.02:19.5];19.432;
-        mean_field = getScanParameter(mean_field_list,seqdata.scancycle,...
-            seqdata.randcyclelist,'Rb_Transfer_Field','G');
-        
-        % Total field sweep range
-        del_fesh_current = 0.2;1;%0.10431;% before 2017-1-6 0.1; %0.1        
-        addOutputParam('del_fesh_current',del_fesh_current,'G')
 
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    % Program the SRS
+    %%%%%%%%%%%%%%%%%%%%%%%
+    % Use this code if using the SRS (instead of the Anritsu) to
+    % transfer atoms
+
+    Rb_SRS=struct;
+    Rb_SRS.Address=29;        % GPIB address of the Rb SRS        
+    Rb_SRS_list = [0];
+    Rb_SRS_det = getScanParameter(Rb_SRS_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'Rb_SRS_det');
+    Rb_SRS.Frequency=6.87560 + Rb_SRS_det/1000; % Frequency in GHz
+    Rb_SRS.Power=8;%8           % Power in dBm (Don't go too high)
+    Rb_SRS.Enable=1;          % Whether to enable 
+    Rb_SRS.EnableSweep=0;        
+%         programSRS_Rb(Rb_SRS);          
+
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    % Field Sweep settings
+    %%%%%%%%%%%%%%%%%%%%%%%        
+    % Center feshbach field
+    mean_field_list = [19.35:0.02:19.5];19.432;
+    mean_field = getScanParameter(mean_field_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'Rb_Transfer_Field','G');
+
+    % Total field sweep range
+    del_fesh_current = 0.2;1;%0.10431;% before 2017-1-6 0.1; %0.1        
+    addOutputParam('del_fesh_current',del_fesh_current,'G')
+
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    % INITIALIZING FIELD RAMP : (mean field + delta/2)
+    %%%%%%%%%%%%%%%%%%%%%%%
+    if init_ramp_fields 
         
-        %%%%%%%%%%%%%%%%%%%%%%%%
-        % INITIALIZING FIELD RAMP : (mean field + delta/2)
-        %%%%%%%%%%%%%%%%%%%%%%%
-        ramp_fields = 1;       
-        if ramp_fields % if a coil value is not set, this coil will not be changed from its current value
-            % shim settings for spectroscopy
-            clear('ramp');
-            shim_ramptime_list = [2];
-            shim_ramptime = getScanParameter(shim_ramptime_list,seqdata.scancycle,seqdata.randcyclelist,'shim_ramptime');
-            ramp.shim_ramptime = shim_ramptime;
-            ramp.shim_ramp_delay = 0; % ramp earlier than FB field if FB field is ramped to zero
-            
-            %Give ramp shim values if we want to do spectroscopy using the
-            %shims instead of FB coil. If nothing set here, then
-            %ramp_bias_fields just takes the getChannelValue (which is set to
-            %field zeroing values)
-            ramp.xshim_final = seqdata.params.shim_zero(1); %0.146
-            ramp.yshim_final = seqdata.params.shim_zero(2);
-            ramp.zshim_final = seqdata.params.shim_zero(3);
+        clear('ramp');
+        shim_ramptime_list = [2];
+        shim_ramptime = getScanParameter(shim_ramptime_list,seqdata.scancycle,seqdata.randcyclelist,'shim_ramptime');
+        
+        % Ramp shims to the zero condition
+        ramp = struct;
+        ramp.shim_ramptime = shim_ramptime;
+        ramp.shim_ramp_delay = 0; 
+        ramp.xshim_final = seqdata.params.shim_zero(1); %0.146
+        ramp.yshim_final = seqdata.params.shim_zero(2);
+        ramp.zshim_final = seqdata.params.shim_zero(3);
+        
+        % Ramp FB to initial magnetic field
+        fb_ramp_time = 50;
+        ramp.fesh_ramptime = fb_ramp_time;
+        ramp.fesh_ramp_delay = 0;
+        ramp.fesh_final = mean_field+del_fesh_current/2; %22.6
+        ramp.settling_time = 50;
 
-            % FB coil settings for spectroscopy
-%             fb_ramp_time_list = 50;
-%             fb_ramp_time = getScanParameter(fb_ramp_time_list,...
-%                 seqdata.scancycle,seqdata.randcyclelist,'uwave_fb_ramp_time','ms');
-
-            fb_ramp_time = 50;
-            ramp.fesh_ramptime = fb_ramp_time;
-            ramp.fesh_ramp_delay = 0;
-            ramp.fesh_final = mean_field+del_fesh_current/2; %22.6
-            ramp.settling_time = 50;
-            
-            disp('Ramping the feshbach field');
+        disp('Ramping the feshbach field to initial value.');
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
-       
-        end
     end
-    
 
-    % Perform Field ramp with uWave to transfer Rb from F=2 to F=1
-    if seqdata.flags.do_Rb_uwave_transfer_in_ODT        
-        do_roundtrip = 0;   % Sweep field there and back again?
-        do_F2_blowaway = 1; % Remove remaining F=2 atoms after transfer?
+    % Use Anritsu Source
+    setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',0); %0 = Anritsu, 1 = Sextupler
 
-        % switch Rb microwave source to Anritsu for transfer
-        setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',0); %0 = Anritsu, 1 = Sextupler
 
-curtime=calctime(curtime,0); % some time for opening transfer switches and field settling
+    uWave_sweep_time = 60; %60
+    fesh_uWave_current = mean_field-del_fesh_current/2;
 
-        uWave_sweep_time = 60; %60
-        fesh_uWave_current = mean_field-del_fesh_current/2;
+    addOutputParam('uWave_sweep_time',uWave_sweep_time)
 
-        addOutputParam('uWave_sweep_time',uWave_sweep_time)
+    uWave_pulse_freq = 21.52; % in MHz (???? this seems to be unnecessary)
 
-        uWave_pulse_freq = 21.52; % in MHz (???? this seems to be unnecessary)
+    ScopeTriggerPulse(curtime,'Rb uwave transfer');
 
-        ScopeTriggerPulse(curtime,'Rb uwave transfer');
-
-        % microwave pulse
-        do_uwave_pulse(calctime(curtime,0), 0, uWave_pulse_freq*1E6, uWave_sweep_time,0);
-       
-        % sweeping the magnetic field during microwave pulse (for most rf/uwave sources works significantly better than a frequency sweep)
-        if ( do_roundtrip ) % do a roundtrip sweep over 2*(uWave_sweep_time/2)
-
-            fesh_current_val = getChannelValue(seqdata,37); % get curent value to ramp back to in the end
-            AnalogFuncTo(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),uWave_sweep_time/2,uWave_sweep_time/2, fesh_uWave_current);
-curtime  = AnalogFuncTo(calctime(curtime,000+uWave_sweep_time/2),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),uWave_sweep_time/2,uWave_sweep_time/2, fesh_current_val);
-
-        else % do a single sweep over uWave_sweep_time 
+    % microwave pulse
+    do_uwave_pulse(calctime(curtime,0), 0, uWave_pulse_freq*1E6, uWave_sweep_time,0);
 
 curtime  =  AnalogFuncTo(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),uWave_sweep_time,uWave_sweep_time,fesh_uWave_current);
-            fesh_current_val = fesh_uWave_current;
+    fesh_current_val = fesh_uWave_current;
 
-        end
 
-        % optical pulse resonant with transition from F=2 to clean out remaining population
-        if do_F2_blowaway
-            dispLineStr('Blowing Rb F=2 away',curtime);
+    % optical pulse resonant with transition from F=2 to clean out remaining population
+    if do_F2_blowaway
+        dispLineStr('Blowing Rb F=2 away',curtime);
 
-            %wait a bit before pulse
-            curtime = calctime(curtime,0);
+        %wait a bit before pulse
+        curtime = calctime(curtime,0);
 
-            setAnalogChannel(calctime(curtime,-10),4,0.0); % set amplitude   0.7
-            AnalogFuncTo(calctime(curtime,-15),34,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,6590-237); % Ramp Rb trap laser to resonance   237
-            AnalogFuncTo(calctime(curtime,-15),35,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,1.2,1); % Ramp FF to Rb trap beat-lock 
-            setDigitalChannel(calctime(curtime,-10),25,1); % open Rb probe shutter
-            setDigitalChannel(calctime(curtime,-10),24,1); % disable AOM rf (TTL), just to be sure
-            RbF2_kill_time_list =[2]; 3;
-            pulse_time = getScanParameter(RbF2_kill_time_list,seqdata.scancycle,seqdata.randcyclelist,'RbF2_kill_time');
+        setAnalogChannel(calctime(curtime,-10),4,0.0); % set amplitude   0.7
+        AnalogFuncTo(calctime(curtime,-15),34,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,6590-237); % Ramp Rb trap laser to resonance   237
+        AnalogFuncTo(calctime(curtime,-15),35,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,1.2,1); % Ramp FF to Rb trap beat-lock 
+        setDigitalChannel(calctime(curtime,-10),25,1); % open Rb probe shutter
+        setDigitalChannel(calctime(curtime,-10),24,1); % disable AOM rf (TTL), just to be sure
+        RbF2_kill_time_list =[2]; 3;
+        pulse_time = getScanParameter(RbF2_kill_time_list,seqdata.scancycle,seqdata.randcyclelist,'RbF2_kill_time');
 curtime = DigitalPulse(calctime(curtime,0),24,pulse_time,0); % pulse beam with TTL   15
 
-           setDigitalChannel(calctime(curtime,0),25,0); % close shutter
+       setDigitalChannel(calctime(curtime,0),25,0); % close shutter
 
-        end
+    end
 
-        sweep_back = 0;
-        if sweep_back
-            %Wait for some time
-            wait_time = 50;
-            curtime=calctime(curtime,wait_time);
+   
 
-            % microwave pulse
-            do_uwave_pulse(calctime(curtime,0), 0, uWave_pulse_freq*1E6, uWave_sweep_time,0);
-
-curtime  =  AnalogFuncTo(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),uWave_sweep_time,uWave_sweep_time,mean_field+del_fesh_current/2);
-%             fesh_current_val = mean_field+del_fesh_current/2;  
-        end
-
-        % switch Rb microwave source to Sextupled SRS for whatever follows
-        setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',1); %0 = Anritsu, 1 = Sextupler
+    % switch Rb microwave source to Sextupled SRS for whatever follows
+    setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',1); %0 = Anritsu, 1 = Sextupler
 
 
-        %Ramp the field back down after transfer to keep coil cool
-        ramp_fields = 0; % do a field ramp for spectroscopy
-        if ramp_fields % if a coil value is not set, this coil will not be changed from its current value
-            % shim settings for spectroscopy
-            clear('ramp');
-            ramp.shim_ramptime = 50;
-            ramp.shim_ramp_delay = -10; % ramp earlier than FB field if FB field is ramped to zero
+    %Ramp the field back down after transfer to keep coil cool
+    ramp_fields = 0; % do a field ramp for spectroscopy
+    if ramp_fields % if a coil value is not set, this coil will not be changed from its current value
+        % shim settings for spectroscopy
+        clear('ramp');
+        ramp.shim_ramptime = 50;
+        ramp.shim_ramp_delay = -10; % ramp earlier than FB field if FB field is ramped to zero
 
-            getChannelValue(seqdata,27,1,0);
-            getChannelValue(seqdata,19,1,0);
-            getChannelValue(seqdata,28,1,0);
+        getChannelValue(seqdata,27,1,0);
+        getChannelValue(seqdata,19,1,0);
+        getChannelValue(seqdata,28,1,0);
 
-            %Give ramp shim values if we want to do spectroscopy using the
-            %shims instead of FB coil. If nothing set here, then
-            %ramp_bias_fields just takes the getChannelValue (which is set to
-            %field zeroing values)
-            %ramp.xshim_final = 0.146; %0.146
-            %ramp.yshim_final = -0.0517;
-            %ramp.zshim_final = 1.5;
+        %Give ramp shim values if we want to do spectroscopy using the
+        %shims instead of FB coil. If nothing set here, then
+        %ramp_bias_fields just takes the getChannelValue (which is set to
+        %field zeroing values)
+        %ramp.xshim_final = 0.146; %0.146
+        %ramp.yshim_final = -0.0517;
+        %ramp.zshim_final = 1.5;
 
-            % FB coil settings for spectroscopy
-            ramp.fesh_ramptime = 50;
-            ramp.fesh_ramp_delay = 10;
-            ramp.fesh_final = 62.92029;% before 2017-1-6 (60/20)*22.6; %22.6
-            ramp.settling_time = 100;
+        % FB coil settings for spectroscopy
+        ramp.fesh_ramptime = 50;
+        ramp.fesh_ramp_delay = 10;
+        ramp.fesh_final = 62.92029;% before 2017-1-6 (60/20)*22.6; %22.6
+        ramp.settling_time = 100;
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
 
-        else
-            %some additional hold time
+    else
+        %some additional hold time
 curtime = calctime(curtime,70);70;
 
-        end
+    end
 
-    end 
-    
+end 
+
 %% Rb uWave transfer 3 - Sweep the uWave to transfer Rb
 % This section of code transfer the Rb cloud from the |2,2> to the |1,1>
 % state using a uWave frequency sweep.

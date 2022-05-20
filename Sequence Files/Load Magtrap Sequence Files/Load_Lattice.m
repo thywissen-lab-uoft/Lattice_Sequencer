@@ -40,7 +40,7 @@ do_lattice_ramp_1 = 1;            % Load the lattices
 do_lattice_mod = 0;               % Amplitude modulation spectroscopy             
 
 do_rotate_waveplate_2 = 1;        % Second waveplate rotation 95% 
-do_lattice_ramp_2 = 1;           % Secondary lattice ramp
+do_lattice_ramp_2 = 1;           % Secondary lattice ramp for fluorescence imaging
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -1337,7 +1337,7 @@ if do_plane_selection
     ramp_fields = 1; 
     
     % Do you want to fake the plane selection sweep?
-    fake_the_plane_selection_sweep = 1; %0=No, 1=Yes, no plane selection but remove all atoms.
+    fake_the_plane_selection_sweep = 0; %0=No, 1=Yes, no plane selection but remove all atoms.
         
     % Pulse the vertical D2 kill beam to kill untransfered F=9/2
     vertical_kill_pulse = 1;
@@ -1480,7 +1480,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     use_ACSync = 0;
 
     % Define the SRS frequency
-    freq_list = 0;[-300];       
+    freq_list = [0];[-300];       
     
     % 2021/06/22 CF
     % Use this when Xshimd=3, zshimd=-1 and you vary yshimd
@@ -3227,7 +3227,7 @@ if do_lattice_ramp_2
     ScopeTriggerPulse(curtime,'lattice_ramp_2');
 
     % 
-    imaging_depth_list = [700]; 
+    imaging_depth_list = [650]; 
     imaging_depth = getScanParameter(imaging_depth_list,seqdata.scancycle,...
         seqdata.randcyclelist,'FI_latt_depth','Er'); 
 
@@ -3388,6 +3388,9 @@ if (Raman_transfers == 1)
         
     ScopeTriggerPulse(curtime,'Raman Beams On');
       
+    
+    % for pco multi fluoresence TESTING
+%     horizontal_plane_select_params.Num_Frames = 9;
 curtime = do_horizontal_plane_selection(curtime, horizontal_plane_select_params);
 
  dispLineStr('do_horizontal_plane_selection execution finished at',curtime);

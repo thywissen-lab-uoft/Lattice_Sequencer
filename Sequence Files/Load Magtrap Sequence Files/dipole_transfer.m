@@ -39,7 +39,7 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     dipole_holdtime_before_evap = 0;    % not a flag but a value
     ramp_Feshbach_B_before_CDT_evap = 0;
 
-    Evap_End_Power_List = [0.08];
+    Evap_End_Power_List =[0.08];
     
     % Ending optical evaporation
     exp_end_pwr = getScanParameter(Evap_End_Power_List,...
@@ -429,28 +429,41 @@ curtime = calctime(curtime,dipole_holdtime_before_evap);
 
     %Pre-ramp the field to 20G for transfer
     if ( seqdata.flags.do_Rb_uwave_transfer_in_ODT )      
-        Rb_SRS=struct;
-        Rb_SRS.Address=29;        % GPIB address of the Rb SRS
         
+        %%%%%%%%%%%%%%%%%%%%%%%%
+        % Program the SRS
+        %%%%%%%%%%%%%%%%%%%%%%%
+        % Use this code if using the SRS (instead of the Anritsu) to
+        % transfer atoms
+        
+        Rb_SRS=struct;
+        Rb_SRS.Address=29;        % GPIB address of the Rb SRS        
         Rb_SRS_list = [0];
         Rb_SRS_det = getScanParameter(Rb_SRS_list,seqdata.scancycle,seqdata.randcyclelist,'Rb_SRS_det');
         Rb_SRS.Frequency=6.87560 + Rb_SRS_det/1000; % Frequency in GHz
         Rb_SRS.Power=8;%8           % Power in dBm (Don't go too high)
         Rb_SRS.Enable=1;          % Whether to enable 
-        Rb_SRS.EnableSweep=0;
-        
+        Rb_SRS.EnableSweep=0;        
 %         programSRS_Rb(Rb_SRS);  
         
         
-        %Field about which to do the sweep
-        %mean_field =19.435;%19.468706; %before 2017-1-6 20.97; %21.66
-        mean_field_list = 19.432;19.432;%0.2 for 0.7xdt power
-        mean_field = getScanParameter(mean_field_list,seqdata.scancycle,seqdata.randcyclelist,'Rb_Transfer_Field');
-        del_fesh_current = 0.2;1;%0.10431;% before 2017-1-6 0.1; %0.1
-        addOutputParam('del_fesh_current',del_fesh_current)
-        %mean_field = (B_2-0.1)*1.08962 + del_fesh_current/2;
+        %%%%%%%%%%%%%%%%%%%%%%%%
+        % Field Sweep settings
+        %%%%%%%%%%%%%%%%%%%%%%%        
+        % Center feshbach field
+        mean_field_list = [19.35:0.02:19.5];19.432;
+        mean_field = getScanParameter(mean_field_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'Rb_Transfer_Field','G');
+        
+        % Total field sweep range
+        del_fesh_current = 0.2;1;%0.10431;% before 2017-1-6 0.1; %0.1        
+        addOutputParam('del_fesh_current',del_fesh_current,'G')
 
-        ramp_fields = 1;
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%
+        % INITIALIZING FIELD RAMP : (mean field + delta/2)
+        %%%%%%%%%%%%%%%%%%%%%%%
+        ramp_fields = 1;       
         if ramp_fields % if a coil value is not set, this coil will not be changed from its current value
             % shim settings for spectroscopy
             clear('ramp');
@@ -458,11 +471,7 @@ curtime = calctime(curtime,dipole_holdtime_before_evap);
             shim_ramptime = getScanParameter(shim_ramptime_list,seqdata.scancycle,seqdata.randcyclelist,'shim_ramptime');
             ramp.shim_ramptime = shim_ramptime;
             ramp.shim_ramp_delay = 0; % ramp earlier than FB field if FB field is ramped to zero
-
-            %getChannelValue(seqdata,27,1,0);
-            %getChannelValue(seqdata,19,1,0);
-            %getChannelValue(seqdata,28,1,0);
-
+            
             %Give ramp shim values if we want to do spectroscopy using the
             %shims instead of FB coil. If nothing set here, then
             %ramp_bias_fields just takes the getChannelValue (which is set to
@@ -472,14 +481,17 @@ curtime = calctime(curtime,dipole_holdtime_before_evap);
             ramp.zshim_final = seqdata.params.shim_zero(3);
 
             % FB coil settings for spectroscopy
-            ramp.fesh_ramptime = 50;
+%             fb_ramp_time_list = 50;
+%             fb_ramp_time = getScanParameter(fb_ramp_time_list,...
+%                 seqdata.scancycle,seqdata.randcyclelist,'uwave_fb_ramp_time','ms');
+
+            fb_ramp_time = 50;
+            ramp.fesh_ramptime = fb_ramp_time;
             ramp.fesh_ramp_delay = 0;
             ramp.fesh_final = mean_field+del_fesh_current/2; %22.6
             ramp.settling_time = 50;
             
             disp('Ramping the feshbach field');
-%             disp(['     Field (G) : ' num2str(ramp.
-
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
        
@@ -562,7 +574,6 @@ curtime  =  AnalogFuncTo(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y
 
         %Ramp the field back down after transfer to keep coil cool
         ramp_fields = 0; % do a field ramp for spectroscopy
-
         if ramp_fields % if a coil value is not set, this coil will not be changed from its current value
             % shim settings for spectroscopy
             clear('ramp');
@@ -759,7 +770,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
     % RF Sweep Settings
     k_rf_freq_list = [6.05];
     k_rf_pulsetime_list = [100];100;
-    k_rf_power_list = [-3];0;
+    k_rf_power_list = [-3];0;-3;
     k_rf_delta_list=[-1];-0.5;   
     
     clear('sweep');
@@ -2270,7 +2281,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
         dispLineStr('Ramping XDTs back on.',curtime);
        
        
-        power_list = [0.1];
+        power_list = [0.3];
         power_val = getScanParameter(power_list,seqdata.scancycle,...
             seqdata.randcyclelist,'power_val','W');
 
@@ -2393,13 +2404,20 @@ curtime = calctime(curtime,DMD_on_time-100); -50;
 if (seqdata.flags.do_D1OP_post_evap==1 && seqdata.flags.CDT_evap==1)
         dispLineStr('D1 Optical Pumping post op evap',curtime);  
 
-        
-    op_time_list = [1]; %1
-    optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_op_time2','ms'); %optical pumping pulse length
+    % optical pumping pulse length
+    op_time_list = [5]; %1
+    optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle,...
+        seqdata.randcyclelist, 'ODT_op_time2','ms');
+    
+    % optical pumping repump power
     repump_power_list = [0.2];
-    repump_power =getScanParameter(repump_power_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_op_repump_pwr2','V'); %optical pumping repump power
+    repump_power =getScanParameter(repump_power_list, seqdata.scancycle,...
+        seqdata.randcyclelist, 'ODT_op_repump_pwr2','V'); 
+    
+    %optical power
     D1op_pwr_list = [5]; %min: 0, max:10 %5
-    D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_D1op_pwr2','V'); %optical power
+    D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle,...
+        seqdata.randcyclelist, 'ODT_D1op_pwr2','V'); 
 
     
     %Determine the requested frequency offset from zero-field resonance

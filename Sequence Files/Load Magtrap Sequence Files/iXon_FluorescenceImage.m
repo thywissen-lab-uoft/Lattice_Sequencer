@@ -41,10 +41,10 @@ opt = struct('ExposureDelay', 55, ... delay of (first) exposure from timein-Expo
              'NumFrames', 1, ... Number of frames to take
              'FrameTime', 5050, ... Time between frames (beginning to beginning); check minimal time with iXon GUI's "info"
              'FinalWaitTime', 500, ... Final time to add to timeout
-             'PiezoScan',1, ...         Whether to refocus the objective for subsequent frames
+             'PiezoScan',0, ...         Whether to refocus the objective for subsequent frames
              'PiezoScanStep',0.01 ...  Piezo refocusing shift per exposure
                 );      
-         
+         disp('hi');
 %% checking inputs (edit with care!)
 
 % checking the necessary input arguments
@@ -112,8 +112,13 @@ end
     end
 
     %Expose iXon Once to Clear Buffer
-    DigitalPulse(calctime(curtime,-opt.ExposureOffsetTime+opt.ExposureDelay-opt.PreFlushOffsetTime),'iXon Trigger',1,1);
-
+    DigitalPulse(calctime(curtime,-opt.ExposureOffsetTime+opt.ExposureDelay-opt.PreFlushOffsetTime),...
+        'iXon Trigger',1,1);
+    
+%     % Trigger Pixel Fly (only for fluoresnece with it).
+%     DigitalPulse(calctime(curtime,-opt.ExposureOffsetTime+opt.ExposureDelay-opt.PreFlushOffsetTime),...
+%         'PixelFly Trigger',1,1);
+    
     % Set Scope Trigger
     ScopeTriggerPulse(calctime(curtime,-opt.ExposureOffsetTime+opt.ExposureDelay ),'Start Fluorescence Capture',0.1);
 
@@ -125,7 +130,13 @@ end
             %Refocus
             setAnalogChannel(calctime(curtime,-opt.ExposureOffsetTime+opt.ExposureDelay+(j-1)*opt.FrameTime-100),'objective Piezo Z',Vo + opt.PiezoScanStep*(j-1),1);
         end
-        DigitalPulse(calctime(curtime,-opt.ExposureOffsetTime+opt.ExposureDelay+(j-1)*opt.FrameTime),'iXon Trigger',1,1);
+        DigitalPulse(calctime(curtime,-opt.ExposureOffsetTime+opt.ExposureDelay+(j-1)*opt.FrameTime),...
+            'iXon Trigger',1,1);
+            
+%         Trigger Pixel Fly (only for fluoresnece with it).
+%         DigitalPulse(calctime(curtime,-opt.ExposureOffsetTime+opt.ExposureDelay+(j-1)*opt.FrameTime),...
+%             'PixelFly Trigger',1,1);
+%         
     end
 
     ScopeTriggerPulse(calctime(curtime,-opt.ExposureOffsetTime+opt.ExposureDelay),'iXon Exposure')

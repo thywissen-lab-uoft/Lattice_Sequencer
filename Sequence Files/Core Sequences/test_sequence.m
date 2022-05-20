@@ -5144,7 +5144,7 @@ end
 %     setAnalogChannel(calctime(curtime,0),'uWave VVA',10);
 
 %% Test K kill
-k_kill = 1;
+k_kill = 0;
 if k_kill
 curtime=calctime(curtime,1000); 
 setAnalogChannel(calctime(curtime,pulse_offset_time-50),'K Trap FM',42.7); %54.5
@@ -5157,6 +5157,79 @@ setDigitalChannel(calctime(curtime,pulse_offset_time-20),'Kill TTL',1);%0= off, 
 
 curtime=calctime(curtime,1000); 
 end
+
+%% Oscillate piezo
+do_piezo_oscillate=0;
+if do_piezo_oscillate
+    
+    seqdata.flags.image_type = 0; 
+    seqdata.flags.image_atomtype = 1;
+    
+    tof_list = [25];
+    seqdata.params.tof = getScanParameter(tof_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
+    
+    curtime=calctime(curtime,100); 
+%     V_center = [5];
+%     V_amp = [3];
+%     
+%     % Freqency of oscillation
+%     freq = 1; % In Hz;
+%     freq = freq * 1e-3;
+%     
+%     % Total oscillation time
+%     T_tot = 5; % In s
+%     T_tot = T_tot*1e3;
+    
+%     if (V_amp+V_center)>10 || (V_center - V_amp)<0
+%        error('votlage out of range'); 
+%     end
+    
+    % 0.1V = 700 nm, must be larger than  larger value means farther away from the window.
+    setDigitalChannel(calctime(curtime,-30),'Kill TTL',1);
+    setDigitalChannel(calctime(curtime,-20),'Downwards D2 Shutter',1); %0=closed, 1=open
+    
+    obj_piezo_V_List = [10];
+    
+    obj_piezo_V = getScanParameter(obj_piezo_V_List, ...
+    seqdata.scancycle, 1:length(obj_piezo_V_List), 'Objective_Piezo_Z','V');
+
+    setAnalogChannel(calctime(curtime,0),'objective Piezo Z',obj_piezo_V,1);   
+ 
+% AnalogFunc (curtime, chanell name, function handle, total time to run,
+% arguments to fucntion (first arumgnet is t))
+%     AnalogFunc(calctime(curtime,0),'objective Piezo Z',...             
+%         @(t,amp,cen,f) amp*sin(2*pi*f*t)+cen,T_tot,...
+%         V_amp,V_center,freq);
+
+
+    pulse_length = 0.3;
+
+    curtime = calctime(curtime,10);
+    DigitalPulse(curtime,'PixelFly Trigger',pulse_length,1);
+
+    setDigitalChannel(calctime(curtime,50),'Downwards D2 Shutter',0); %0=closed, 1=open
+
+    curtime = calctime(curtime,300);
+    DigitalPulse(curtime,'PixelFly Trigger',pulse_length,1);
+
+   
+   
+
+end
+
+%% Pixel FLy Testing
+do_pixel_fly_test = 0;
+if do_pixel_fly_test
+    curtime=calctime(curtime,1000); 
+
+   DigitalPulse(curtime,'PixelFly Trigger',101,1);
+   curtime=calctime(curtime,1000); 
+   
+   setAnalogChannel(calctime(curtime,0),'UV Lamp 2',0)
+
+end
+
 %% Test Rb uwave sweep
 % curtime = calctime(curtime,1000);
 %  % uWave Sweeep Prepare
@@ -5284,9 +5357,13 @@ end
 %     setAnalogChannel(calctime(curtime,200),'xLattice',-10 ,1);
 %     setDigitalChannel(calctime(curtime,400),'yLatticeOFF',1); % 0 : All on, 1 : All off
 
+setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 : Int on; 1 : int hold    
+    setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',6);
+    setAnalogChannel(calctime(curtime,0),'K Probe/OP FM',180);
+
 
 timeout = curtime;
 
 
 
-seqdata.flags = struct;
+

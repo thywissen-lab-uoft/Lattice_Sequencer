@@ -5,15 +5,26 @@ function params = Load_Absorption_Image_Parameters()
     kdet_shift_list = [0];%[2];%-1
     kdet_shift = getScanParameter(kdet_shift_list,...
         seqdata.scancycle,seqdata.randcyclelist,'kdet_shift','MHz');
-    params.detunings.K.X.positive.normal = 22.2;
+    params.detunings.K.X.positive.normal = 22.2 ;
     params.detunings.K.X.positive.in_trap = 23.5;
-    params.detunings.K.X.positive.QP_imaging = 23.5;
+    params.detunings.K.X.positive.QP_imaging = 23.5 + 0 ;
     params.detunings.K.X.positive.SG = 24.5;
     params.detunings.K.X.positive.short_tof = 24.5;
     params.detunings.K.X.negative.normal = 32.2; %(33.5-0.8 -0.5) for DFG, (33.5-0.8 +1) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
     
-    params.detunings.K.X.negative.SG = 32.5; % for mF stern gerlach
-    params.detunings.K.X.negative.SG = 35.5; % for F stern gerlach
+%     kdet_neg_shift_list = [0];%[2];%-1
+%     kdet_neg_shift = getScanParameter(kdet_neg_shift_list,...
+%         seqdata.scancycle,seqdata.randcyclelist,'kdet_shift','MHz');
+
+    % for mF stern gerlach
+%     params.detunings.K.X.negative.SG = 32.5; 
+    
+    % for F stern gerlach
+%     params.detunings.K.X.negative.SG = 35.5; 
+    
+    % Lattice F Stern Gerlach, TOF = 15 ms
+    params.detunings.K.X.negative.SG = 35.5+kdet_shift;
+
     
     % Potassium - Y-cam
     params.detunings.K.Y.positive.normal = 21.5;
@@ -97,16 +108,16 @@ function params = Load_Absorption_Image_Parameters()
     SG_QP_val_list = [7.5];%7.5;%5
     SG_QP_val = getScanParameter(SG_QP_val_list,seqdata.scancycle,seqdata.randcyclelist,'SG_QP_val');
     
-    % mF Stern Gerlach For |9,-9> vs |9,-7> low field
-    params.SG.SG_QP_val = 7.5*1.78;
-    params.SG.SG_QP_pulsetime = 5;
-    params.SG.SG_QP_ramptime =2;
+    % mF Stern Gerlach For |9,-9> vs |9,-7> low field (15ms TOF K)
+%     params.SG.SG_QP_val = 7.5*1.78;
+%     params.SG.SG_QP_pulsetime = 5;
+%     params.SG.SG_QP_ramptime =2;
 
-%     % F Stern Gerlach : |9,-9> vs |7,-7> low field (~20G) 
-%     params.SG.QG_QP_val = 1.78*5;
-%     params.SG.SG_QP_pulsetime = 2; 
-%     params.SG.SG_QP_ramptime =1; 
-%     
+%     % F Stern Gerlach : |9,-9> vs |7,-7> low field (~20G) (15ms TOF)
+    params.SG.SG_QP_val = 1.78*5;
+    params.SG.SG_QP_pulsetime = 2; 
+    params.SG.SG_QP_ramptime =1; 
+    
     % Stern Gerlach feed forward
     params.SG.SG_QP_FF = 23*(params.SG.SG_QP_val/30); % voltage FF on delta supplySS
 

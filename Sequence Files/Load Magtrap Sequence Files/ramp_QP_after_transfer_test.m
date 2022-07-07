@@ -23,7 +23,7 @@ Kitten_value = Kitten_curval;
 vSet = V_QP;
     
 %Final Gradient ramp factor
-ramp_factor_list = [0.5];
+ramp_factor_list = [.1];
 ramp_factor = getScanParameter(ramp_factor_list,seqdata.scancycle,...
     seqdata.randcyclelist,'ramp_factorB');
 
@@ -72,9 +72,13 @@ Ix0=I0(1);Iy0=I0(2);Iz0=I0(3);
 dI_QP=QP_value-I_QP0;
 
 % The shift in currents is linearly proportional to the QP currents shift
-dIx=dI_QP*-0.0499;
-dIy=dI_QP*0.0045;
-dIz=dI_QP*0.0105;
+Cx = seqdata.params.plug_shims_slopes(1);
+Cy = seqdata.params.plug_shims_slopes(2);
+Cz = seqdata.params.plug_shims_slopes(3);
+
+dIx=dI_QP*Cx;
+dIy=dI_QP*Cy;
+dIz=dI_QP*Cz;
 
 % Calculate the new shim
 Xshim_value=Ix0+dIx;

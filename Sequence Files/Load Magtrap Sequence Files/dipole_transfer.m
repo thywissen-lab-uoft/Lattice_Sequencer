@@ -39,7 +39,7 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     dipole_holdtime_before_evap = 0;    % not a flag but a value
     ramp_Feshbach_B_before_CDT_evap = 0;
 
-    Evap_End_Power_List =[0.08];
+    Evap_End_Power_List = [0.07];0.08;[0.08];
     
     % Ending optical evaporation
     exp_end_pwr = getScanParameter(Evap_End_Power_List,...
@@ -67,7 +67,8 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     K_repump_pulse = 0;             % Get rid of F = 7/2 Potassium
     K_probe_pulse = 0;              % Get rid of F = 9/2 Potassium
     DMD_in_XDT = 0;
-    Kill_Beam_Alignment = 0;        %Pulse Kill beam on for whatever needs to be aligned.    
+    Kill_Beam_Alignment = 0;        %Pulse Kill beam on for whatever needs to be aligned.  
+    Raman_Vertical_Alignment = 0;   %Pulse Vertical Raman beam on for alignment. 
     ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
     k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
     ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
@@ -236,9 +237,19 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
         dI_QP=QP_ramp_end1-QP_curval; 
                 
         % Calculate the change in shim currents
-        dIx=dI_QP*-0.0499;
-        dIy=dI_QP*0.0045;
-        dIz=dI_QP*0.0105;      
+%         Cx = -0.0499;
+%         Cy = 0.0045;
+%         Cz = 0.0105;
+        
+        Cx = seqdata.params.plug_shims_slopes(1);
+        Cy = seqdata.params.plug_shims_slopes(2);
+        Cz = seqdata.params.plug_shims_slopes(3);
+        
+        dIx=dI_QP*Cx;
+        dIy=dI_QP*Cy;
+        dIz=dI_QP*Cz;      
+        
+        
                 
         % Calculate the new shim values
         I_shim = I_shim + [dIx dIy dIz];        
@@ -326,10 +337,19 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
         dI_QP=QP_ramp_end2-QP_ramp_end1; 
         
         % Calculate the change in shim currents
-        dIx=dI_QP*-0.0499;
-        dIy=dI_QP*0.0045;
-        dIz=dI_QP*0.0105;  
-                
+%         Cx = -0.0499;
+%         Cy = 0.0045;
+%         Cz = 0.0105;
+        
+        Cx = seqdata.params.plug_shims_slopes(1);
+        Cy = seqdata.params.plug_shims_slopes(2);
+        Cz = seqdata.params.plug_shims_slopes(3);
+%         
+        
+        dIx=dI_QP*Cx;
+        dIy=dI_QP*Cy;
+        dIz=dI_QP*Cz;    
+        
         % Calculate the new shim values
         I_shim = I_shim + [dIx dIy dIz];
         
@@ -430,7 +450,7 @@ if ( seqdata.flags.do_Rb_uwave_transfer_in_ODT)
 
     Rb_SRS=struct;
     Rb_SRS.Address=29;        % GPIB address of the Rb SRS        
-    Rb_SRS_list = [0];
+    Rb_SRS_list = [0]; %in MHz
     Rb_SRS_det = getScanParameter(Rb_SRS_list,seqdata.scancycle,...
         seqdata.randcyclelist,'Rb_SRS_det');
     Rb_SRS.Frequency=6.87560 + Rb_SRS_det/1000; % Frequency in GHz
@@ -443,7 +463,7 @@ if ( seqdata.flags.do_Rb_uwave_transfer_in_ODT)
     % Field Sweep settings
     %%%%%%%%%%%%%%%%%%%%%%%        
     % Center feshbach field
-    mean_field_list = [19.35:0.02:19.5];19.432;
+    mean_field_list = 19.432;
     mean_field = getScanParameter(mean_field_list,seqdata.scancycle,...
         seqdata.randcyclelist,'Rb_Transfer_Field','G');
 
@@ -459,7 +479,11 @@ if ( seqdata.flags.do_Rb_uwave_transfer_in_ODT)
         clear('ramp');
         shim_ramptime_list = [2];
         shim_ramptime = getScanParameter(shim_ramptime_list,seqdata.scancycle,seqdata.randcyclelist,'shim_ramptime');
-        
+               
+        getChannelValue(seqdata,27,1,0);
+        getChannelValue(seqdata,19,1,0);
+        getChannelValue(seqdata,28,1,0);
+
         % Ramp shims to the zero condition
         ramp = struct;
         ramp.shim_ramptime = shim_ramptime;
@@ -480,27 +504,38 @@ if ( seqdata.flags.do_Rb_uwave_transfer_in_ODT)
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
     end
 
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    % uWave with Field sweep
+    %%%%%%%%%%%%%%%%%%%%%%%
+    % Send scope trigger
+    ScopeTriggerPulse(curtime,'Rb uwave transfer');
+
     % Use Anritsu Source
     setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',0); %0 = Anritsu, 1 = Sextupler
 
+    % Set the field sweep time
+    % Anritsu needs a bit longer (100 ms).
+    uWave_sweep_time_list = 100;60;
+    uWave_sweep_time = getScanParameter(uWave_sweep_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'uWave_sweep_time','ms');
 
-    uWave_sweep_time = 60; %60
-    fesh_uWave_current = mean_field-del_fesh_current/2;
+    % No idea what this does
+    uWave_pulse_freq = 21.52;
 
-    addOutputParam('uWave_sweep_time',uWave_sweep_time)
-
-    uWave_pulse_freq = 21.52; % in MHz (???? this seems to be unnecessary)
-
-    ScopeTriggerPulse(curtime,'Rb uwave transfer');
-
-    % microwave pulse
+    % Pulse uWave during the field sweep
     do_uwave_pulse(calctime(curtime,0), 0, uWave_pulse_freq*1E6, uWave_sweep_time,0);
 
-curtime  =  AnalogFuncTo(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),uWave_sweep_time,uWave_sweep_time,fesh_uWave_current);
-    fesh_current_val = fesh_uWave_current;
+    % Ramp the FB field
+curtime  =  AnalogFuncTo(calctime(curtime,0),'FB current',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        uWave_sweep_time,uWave_sweep_time,mean_field-del_fesh_current/2);
 
-
-    % optical pulse resonant with transition from F=2 to clean out remaining population
+    % Switch Rb microwave source to Sextupled SRS for whatever follows
+    setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',1); %0 = Anritsu, 1 = Sextupler    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    % F=2 Pulse Blow Away
+    %%%%%%%%%%%%%%%%%%%%%%%
     if do_F2_blowaway
         dispLineStr('Blowing Rb F=2 away',curtime);
 
@@ -517,15 +552,11 @@ curtime  =  AnalogFuncTo(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y
 curtime = DigitalPulse(calctime(curtime,0),24,pulse_time,0); % pulse beam with TTL   15
 
        setDigitalChannel(calctime(curtime,0),25,0); % close shutter
-
     end
-
    
-
-    % switch Rb microwave source to Sextupled SRS for whatever follows
-    setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',1); %0 = Anritsu, 1 = Sextupler
-
-
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    % Final Field Ramp
+    %%%%%%%%%%%%%%%%%%%%%%%
     %Ramp the field back down after transfer to keep coil cool
     ramp_fields = 0; % do a field ramp for spectroscopy
     if ramp_fields % if a coil value is not set, this coil will not be changed from its current value
@@ -703,9 +734,15 @@ end
 
 if seqdata.flags.init_K_RF_sweep
     dispLineStr('RF K Sweep 9-->-9',curtime);   
-
+    
+    % Get the Feshbach value (in G) at this time.
+    fesh_value = getChannelValue(seqdata,'FB current',1,0);
+    
+    
     %Ramp FB if not done previously
-    if ~seqdata.flags.do_Rb_uwave_transfer_in_ODT && ~seqdata.flags.do_Rb_uwave_transfer_in_ODT2
+%      if ~seqdata.flags.do_Rb_uwave_transfer_in_ODT && ~seqdata.flags.do_Rb_uwave_transfer_in_ODT2
+         
+     if fesh_value~=19.332
         clear('ramp');
         ramp=struct;
         ramp.fesh_ramptime = 50;
@@ -717,7 +754,7 @@ if seqdata.flags.init_K_RF_sweep
         disp(['     Ramp Time    (ms) : ' num2str(ramp.fesh_ramptime)]);
         
 curtime = ramp_bias_fields(calctime(curtime,0), ramp);   
-    end
+     end
 
     disp(' Applying RF sweep to transfer K state.');
     
@@ -759,7 +796,7 @@ if (seqdata.flags.do_D1OP_before_evap==1)
     optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_op_time1','ms'); %optical pumping pulse length
     repump_power_list = [0.2];
     repump_power =getScanParameter(repump_power_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_op_repump_pwr1','V'); %optical pumping repump power
-    D1op_pwr_list = [5]; %min: 0, max:10
+    D1op_pwr_list = [8]; %min: 0, max:10
     D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_D1op_pwr1','V'); %optical power
 
     
@@ -2359,7 +2396,7 @@ if (seqdata.flags.do_D1OP_post_evap==1 && seqdata.flags.CDT_evap==1)
         dispLineStr('D1 Optical Pumping post op evap',curtime);  
 
     % optical pumping pulse length
-    op_time_list = [5]; %1
+    op_time_list = [1]; %1
     optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle,...
         seqdata.randcyclelist, 'ODT_op_time2','ms');
     
@@ -2369,7 +2406,7 @@ if (seqdata.flags.do_D1OP_post_evap==1 && seqdata.flags.CDT_evap==1)
         seqdata.randcyclelist, 'ODT_op_repump_pwr2','V'); 
     
     %optical power
-    D1op_pwr_list = [5]; %min: 0, max:10 %5
+    D1op_pwr_list = [8]; %min: 0, max:10 %5
     D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle,...
         seqdata.randcyclelist, 'ODT_D1op_pwr2','V'); 
 
@@ -2777,6 +2814,45 @@ curtime=calctime(curtime,kill_time);
 
     end
 
+    
+ %% Vertical Raman Alignment
+ if Raman_Vertical_Alignment
+     
+     curtime=calctime(curtime,50);
+     
+     Device_id = 1;
+     Raman_vert_freq = 110*1E6;
+     Raman_vert_pwr = 0.8;
+     Raman_vert_offset = 0;
+     str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',Raman_vert_freq,Raman_vert_pwr,Raman_vert_offset);
+    
+     addVISACommand(Device_id, str);
+     
+     setDigitalChannel(calctime(curtime,-50),'Raman TTL 2a',0);
+     setDigitalChannel(calctime(curtime,-50),'Raman TTL 2',0);
+     setDigitalChannel(calctime(curtime,-50),'Raman TTL 3a',0);
+     setDigitalChannel(calctime(curtime,-50),'Raman TTL 3',0);
+     setDigitalChannel(calctime(curtime,-50),'Raman TTL 1',0);
+     
+     setDigitalChannel(calctime(curtime,-5),'Raman Shutter',1);
+     
+     raman_time_list = [1];
+     raman_time = getScanParameter(raman_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'raman_time');
+    
+     DigitalPulse(calctime(curtime,0),'Raman TTL 2',raman_time,1);
+     DigitalPulse(calctime(curtime,0),'Raman TTL 2a',raman_time,1);
+     
+     setDigitalChannel(calctime(curtime,raman_time),'Raman Shutter',0);
+     setDigitalChannel(calctime(curtime,raman_time),'Raman TTL 2a',1);
+     setDigitalChannel(calctime(curtime,raman_time),'Raman TTL 2',1);
+     setDigitalChannel(calctime(curtime,raman_time),'Raman TTL 3a',1);
+     setDigitalChannel(calctime(curtime,raman_time),'Raman TTL 3',1);
+     setDigitalChannel(calctime(curtime,raman_time),'Raman TTL 1',1);
+     
+ end
+ 
+ 
     %% Keep XDT On for Some Time
     %RHYS - Either hold for some time after using dipole trap kick, or just
     %holds a bit in general. The one second hold time seems useful for loading

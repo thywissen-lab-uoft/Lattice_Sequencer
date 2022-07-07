@@ -61,7 +61,7 @@ seqdata.digchannels(19).name = 'RF TTL';            % 0 is off
 seqdata.digchannels(20).name = 'RaspPi Trig';       % 1 Triggers
 seqdata.digchannels(21).name = 'Coil 16 TTL';       % (fast switch) 1 is off - on control board, bypasses servo.
 seqdata.digchannels(22).name = '15/16 Switch';      % 15 Switch (A FET - beside coil short detector). Used for sending equal currents into both coils for QP.
-seqdata.digchannels(23).name = 'D1 Shutter';
+seqdata.digchannels(23).name = 'D1 Shutter';        %D1 shutter before 4-pass AOM
 seqdata.digchannels(24).name = 'Rb Probe/OP TTL';   % 0: laser ON; 1 laser OFF
 seqdata.digchannels(25).name = 'Rb Probe/OP shutter';
 seqdata.digchannels(26).name = 'PixelFly Trigger';
@@ -73,8 +73,8 @@ seqdata.digchannels(31).name = 'fast FB Switch';    % 1 = on (make sure channel 
 seqdata.digchannels(32).name = 'iXon Trigger';
 seqdata.digchannels(33).name = 'Shim Relay';        % 1 = on (MOT Shims)
 seqdata.digchannels(34).name = 'yLatticeOFF';       % Controls all 3 lattice beams (i.e. Lattice TTL)
-seqdata.digchannels(35).name = 'D1 TTL';
-seqdata.digchannels(36).name = 'EIT Shutter';
+seqdata.digchannels(35).name = 'D1 TTL';            %TTL for the EIT probe AOMs; 1: ON; 0 : OFF
+seqdata.digchannels(36).name = 'EIT Shutter';       %Shutter for EIT probe beam paths
 seqdata.digchannels(37).name = 'Shim Multiplexer';  % 0 = MOT Shims (unipolar), 1: Science shim coils ???
 seqdata.digchannels(37).resetvalue = 0; 
 seqdata.digchannels(38).name = 'FPump Direct';      % 0 off, 1 on

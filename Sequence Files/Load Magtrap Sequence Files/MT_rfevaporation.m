@@ -35,9 +35,14 @@ I0=seqdata.params.plug_shims;
 Ix=I0(1);Iy=I0(2);Iz=I0(3);
 
 % XYZ shim coefficients to maintain trap center with I_QP (amps/amps)
-Cx = -0.0499;
-Cy = 0.0045;
-Cz = 0.0105;
+% Cx = -0.0499;
+% Cy = 0.0045;
+% Cz = 0.0105;
+
+% The shift in currents is linearly proportional to the QP currents shift
+Cx = seqdata.params.plug_shims_slopes(1);
+Cy = seqdata.params.plug_shims_slopes(2);
+Cz = seqdata.params.plug_shims_slopes(3);
 
 % Record the starting shim values
 I_shim = [Ix Iy Iz];

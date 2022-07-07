@@ -59,7 +59,10 @@ opt = struct('Offset_Field',4, ... field (in G) to horizontally offset the QP gr
              'F_Pump_Power', 0, ... F pump power for RSC.
              'Raman_Power1', 0, ... Voltage sent to Raman AOMS.
              'Raman_Power2', 0, ... Voltage sent to Raman AOMS.
-             'Use_EIT_Beams', 0 ... Whether to turn on EIT beams.
+             'Use_EIT_Beams', 0, ... Whether to turn on EIT beams.
+             'Enable_FPump', 0, ...
+             'Enable_EITProbe', 0, ...
+             'Enable_Raman', 0 ...
          );
      
      
@@ -68,7 +71,9 @@ opt = struct('Offset_Field',4, ... field (in G) to horizontally offset the QP gr
     kHz = 1/1000;
     MHz = 1;
 
-%% checking inputs (edit with care!)
+%% Check inputs
+% Process the varargins. After timein it could either be a structure with
+% field names and values, or it could be a set of string and value pairs.
 
 % checking the necessary input arguments
 if (nargin < narginfix)
@@ -83,8 +88,9 @@ if ( ~isempty(varargin) )
     optnames = {};
     optvalues = {};
 
-    % if first optional arguments are structures, read in their fields first
+    % varargin is a structure
     while ( isstruct(varargin{1}) )
+        
         addnames = fieldnames(varargin{1});
         for j = 1:length(addnames)
             optnames{end+1} = addnames{j};
@@ -94,7 +100,7 @@ if ( ~isempty(varargin) )
         if ( isempty(varargin) ); break; end
     end 
 
-    % check that there is an even number of remaining optional arguments
+    % varargin is an even length string and value pairs
     if mod(length(varargin),2)
         error('Optional arguments must be given in pairs ...''name'',value,... !');
     else
@@ -109,8 +115,7 @@ if ( ~isempty(varargin) )
         end
     end
 
-    % assigning values to optional arguments to fields of structure 'opt',
-    % provided that these fields were initialized above
+    % Assign the processed varargins to the opt struct
     for j =1:length(optnames)
         % check that the option is valid; i.e. defined as a field of the
         % structure opt. Make it an error if needed.
@@ -130,11 +135,11 @@ end
 %Selection Angle allows us to rotate the horizontal cut around the z axis
 %Selection Angle = 0 corresponds to an X shim field, which points along the Y Lattice
 
-%Determine the requested frequency offset from zero-field resonance
-frequency_shift = (opt.Offset_Field + opt.Field_Shift)*2.4889;
+% Convert the quantization magnetic field to frequency (|9,-9>->|7,-7>)
+frequency_shift = (opt.Offset_Field + opt.Field_Shift)*2.4889; % MHz
 
-%Define the measured shim calibrations (NOT MEASURED YET, ASSUMING 2G/A)
-Shim_Calibration_Values = [2.4889*2, 0.983*2.4889*2];  %Conversion from Shim Values (Amps) to frequency (MHz) to
+% Coefficients that convert from XY shim current (A) to frequency (MHz) 
+Shim_Calibration_Values = [2.4889*2, 0.983*2.4889*2]; % MHz/A
 
 %Determine how much to turn on the X and Y shims to get this frequency
 %shift at the requested angle
@@ -144,15 +149,16 @@ Y_Shim_Value = frequency_shift * sind(opt.Selection_Angle) / Shim_Calibration_Va
 
 %% Plane Selection
 
-% Ramp up gradient and Feshbach field   
-
+% Ramp up gradient and Feshbach field  
     if opt.Ramp_Fields_Up
-
-        newramp = struct('ShimValues',seqdata.params.shim_zero + [X_Shim_Value+opt.X_Shim_Offset, Y_Shim_Value+opt.Y_Shim_Offset, opt.Z_Shim_Offset],...
-            'FeshValue',opt.Feshbach_Level,'QPValue',opt.QP_Selection_Gradient,'SettlingTime',100);
-
+        newramp = struct('ShimValues',seqdata.params.shim_zero + ...
+            [X_Shim_Value+opt.X_Shim_Offset, ...
+            Y_Shim_Value+opt.Y_Shim_Offset, ...
+            opt.Z_Shim_Offset],...
+            'FeshValue',opt.Feshbach_Level,...
+            'QPValue',opt.QP_Selection_Gradient,...
+            'SettlingTime',100);
 curtime = rampMagneticFields(calctime(curtime,0), newramp);
-
     end
         
 field_shift_time = 20;                  % time to shift the field to the initial value for the sweep (and from the final value)
@@ -343,11 +349,11 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
     elseif (opt.Microwave_Or_Raman == 2)
         % Program Rigol generator
         if strcmp(opt.Rigol_Mode, 'Sweep')
-            str = sprintf('SOURce1:SWEep:STATe ON;SOURce1:SWEep:TRIGger:SOURce: EXTernal;SOURce1:SWEep:TIME %gMS;SOURce1:FREQuency:CENTer %gMHZ;SOURce1:FREQuency:SPAN %gMHZ;SOURce1:VOLT %g;SOURce2:VOLT %g;', opt.Modulation_Time, opt.Raman_AOM_Frequency, opt.Selection_Range, opt.Raman_Power1, opt.Raman_Power2);
-            
-            % Hold at end of sweep (FROM CF)
-%             str = sprintf('SOURce1:SWEep:STATe ON;SOURce1:SWEep:TRIGger:SOURce: EXTernal;SOURce1:SWEep:TIME %gMS;SOURce1:FREQuency:CENTer %gMHZ;SOURce1:FREQuency:SPAN %gMHZ;SOURce1:VOLT %g;SOURce2:VOLT %g;', opt.Modulation_Time, opt.Raman_AOM_Frequency, opt.Selection_Range, opt.Raman_Power1, opt.Raman_Power2);
-
+            str = sprintf(['SOURce1:SWEep:STATe ON;SOURce1:SWEep:TRIGger:SOURce ' ...
+                'EXTernal;SOURce1:SWEep:TIME %gMS;SOURce1:FREQuency:CENTer ' ...
+                '%gMHZ;SOURce1:FREQuency:SPAN %gMHZ;SOURce1:VOLT %g;SOURce2:VOLT %g;'], ...
+                opt.Modulation_Time, opt.Raman_AOM_Frequency, opt.Selection_Range, ...
+                opt.Raman_Power1, opt.Raman_Power2);      
         elseif strcmp(opt.Rigol_Mode, 'Pulse')
             str = sprintf('SOURce1:SWEep:STATe OFF;SOURce1:MOD:STATe OFF; SOURce1:FREQuency %gMHZ;SOURce1:VOLT %gVPP;SOURce2:VOLT %gVPP;', opt.Raman_AOM_Frequency, opt.Raman_Power1, opt.Raman_Power2);
         elseif strcmp(opt.Rigol_Mode, 'Modulate')
@@ -360,16 +366,19 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
             %Turn off F-Pump and probe AOMs before use. 
             setAnalogChannel(calctime(curtime,-10),'F Pump',-1);
             setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
+            
+            
             setDigitalChannel(calctime(curtime,-10),'D1 TTL',0);
+            
             %Open shutters just before beams turn on.
             setDigitalChannel(calctime(curtime,-5),'EIT Shutter',1);
             setDigitalChannel(calctime(curtime,-5),'D1 Shutter',1);
+            
             %Set F-pump on and enable feedback, turn on probe AOM also.
             setAnalogChannel(calctime(curtime,0),'F Pump',opt.F_Pump_Power);
             setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
             setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
             setDigitalChannel(calctime(curtime,0),'D1 TTL',1);            
-%             DigitalPulse(calctime(curtime,-10),'D1 OP TTL',10,0);
         end
         %Raman excitation beam AOM-shutter sequence.
         DigitalPulse(calctime(curtime,-150),'Raman TTL 1',150,0);
@@ -378,12 +387,9 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
 
         DigitalPulse(calctime(curtime,-150),'Raman TTL 3',5200,0);
         DigitalPulse(calctime(curtime,-150),'Raman TTL 3a',5200,0);
-
-
-
         
-%         DigitalPulse(calctime(curtime,-100),'Raman Shutter',opt.Microwave_Pulse_Length+3100,0);
-        DigitalPulse(calctime(curtime,-100),'Raman Shutter',opt.Microwave_Pulse_Length+3100,1);% CF 2021/03/30 new shutter
+        DigitalPulse(calctime(curtime,-100),'Raman Shutter',...
+            opt.Microwave_Pulse_Length+3100,1);% CF 2021/03/30 new shutter
 
         DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL 1',3050,0);
         DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL 2',3050,0);

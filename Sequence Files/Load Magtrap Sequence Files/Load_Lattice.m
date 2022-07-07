@@ -29,7 +29,7 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 
 ramp_fields_after_lattice_loading = 0;  % (416,503)     keep : Ramp on the fesbhach field after lattice load
 spin_mixture_in_lattice_before_plane_selection = 0; % (668)             keep : Make a -9/2,-7/2 spin mixture.   
-do_optical_pumping = 0;                 % (1426) keep : optical pumping in lattice    
+  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Lattice Ramps and Waveplates
@@ -70,6 +70,7 @@ do_K_raman_spectroscopy = 0;            % (3989) under development
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+do_optical_pumping = 0;                 % (1426) keep : optical pumping in lattice  
 do_plane_selection = 0;                             % Plane selection flag
 
 % Actual fluorsence image flag
@@ -90,7 +91,8 @@ else
    lattice_holdtime_list =[150]; [150];
    % Minimum value is stupidly set by the fact that the XDT ramp down go
    % backwards in time.  This should be changed.
-   lattice_holdtime = getScanParameter(lattice_holdtime_list,seqdata.scancycle,seqdata.randcyclelist,'latt_holdtime','ms');%maximum is 4
+   lattice_holdtime = getScanParameter(lattice_holdtime_list,...
+       seqdata.scancycle,seqdata.randcyclelist,'latt_holdtime','ms');%maximum is 4
  
 end
 
@@ -231,8 +233,8 @@ if do_lattice_ramp_1
             
             %Select the lattice direction to load
 %             direction = 'X';
-%             direction = 'Y';
-            direction = 'Z';
+            direction = 'Y';
+%             direction = 'Z';
             switch direction
                 case 'X'
                   latt_depth=...
@@ -1151,7 +1153,10 @@ curtime = AnalogFuncTo(calctime(curtime,-0.1),'zLattice',@(t,tt,y1,y2)(ramp_minj
 % curtime = AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,tau,y2)(ramp_exp_lat(t,tt,tau,y2,y1)),lat_ramp_time,lat_ramp_time,lat_ramp_tau,0/atomscale);
 
 %     ramp down 
-    if ((ramp_up_FB_after_evap == 1 || ramp_up_FB_after_latt_loading ==1 ||ramp_up_FB_during_mod_ramp == 1 ) && (do_plane_selection == 0))
+    if ((ramp_up_FB_after_evap == 1 || ...
+            ramp_up_FB_after_latt_loading ==1 || ...
+            ramp_up_FB_during_mod_ramp == 1 ) && ...
+            (do_plane_selection == 0))
 curtime = calctime(curtime,20);
      % Turn the FB up to 20G before loading the lattice, so that large field
         % ramps in the lattice can be done more quickly
@@ -1215,12 +1220,14 @@ if (do_optical_pumping == 1)
     op_time_list = [3];%3
     optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle,...
         seqdata.randcyclelist, 'latt_op_time','ms');
+    
     % OP repump power
     repump_power_list = [0.5];
     repump_power =getScanParameter(repump_power_list, seqdata.scancycle,...
-        seqdata.randcyclelist, 'latt_op_repump_pwr');     
+        seqdata.randcyclelist, 'latt_op_repump_pwr');    
+    
     % OP power
-    D1op_pwr_list = [5]; %min: 0, max:10 %5
+    D1op_pwr_list = [10]; %min: 0, max:10 %5
     D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle,...
         seqdata.randcyclelist, 'latt_D1op_pwr'); 
     
@@ -1230,8 +1237,10 @@ if (do_optical_pumping == 1)
     addOutputParam('Selection_Angle',Selection_Angle)
 
     %Define the measured shim calibrations (NOT MEASURED YET, ASSUMING 2G/A)
-    Shim_Calibration_Values = [2.4889*2, 0.983*2.4889*2];  %Conversion from Shim Values (Amps) to frequency (MHz) to
+    Shim_Calibration_Values = [2.4889*2, 0.983*2.4889*2];  
+    %Conversion from Shim Values (Amps) to frequency (MHz) to
 
+    
     %Determine how much to turn on the X and Y shims to get this frequency
     %shift at the requested angle
     X_Shim_Value = frequency_shift * cosd(Selection_Angle) / Shim_Calibration_Values(1);
@@ -1331,38 +1340,30 @@ if do_plane_selection
     initial_transfer = 0;   
     
     % Ramp up lattices for plane selection (typically unesasaary)
-    Lattices_to_Pin_plane_selection = 0; 
+    planeselect_doPinLattices = 0; 
     
     % Establish field gradeint with QP, FB, and shim fields for plane selection
     ramp_fields = 1; 
     
     % Do you want to fake the plane selection sweep?
-    fake_the_plane_selection_sweep = 0; %0=No, 1=Yes, no plane selection but remove all atoms.
+    %0=No, 1=Yes, no plane selection but remove all atoms.
+    fake_the_plane_selection_sweep = 0; 
         
     % Pulse the vertical D2 kill beam to kill untransfered F=9/2
-    vertical_kill_pulse = 1;
-    
-    % Pulse horizontal D2 to kill the 9/2 atoms (CF: Can we delete?)
-    Horizontal_D2 = 0; 
-    
+    planeselect_doVertKill = 1;
+
     % Transfer back to -9/2 via uwave transfer
-    transfer_back_to_9half = 0;
-    
-    % Do another plane selection. (CF : Delete? make a modual?)
-    second_plane_selection = 0;   
-    
-    % Rhys says we can delete? keep : QP vacuum cleaner. In 2nd time plane selection section
-    eliminate_planes_with_QP = 0;   
-   
-     % Pulse repump to remove leftover F=7/2
-    final_repump_pulse = 0;
+    planeselect_doMicrowaveBack = 0;    
+ 
+    % Pulse repump to remove leftover F=7/2
+    planeselect_doFinalRepumpPulse = 0;
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Apply pinning lattice for plane selection
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Increase the lattice depth to pin the atoms
-    
-    if Lattices_to_Pin_plane_selection
+    % Typically unecessary as you have already pinned them
+    if planeselect_doPinLattices
         disp('Ramping lattices and dipole traps.');
         setDigitalChannel(calctime(curtime,-0.1),'yLatticeOFF',0);
         
@@ -1441,7 +1442,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % uWave Settings for Plane Selection
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % This should be cleaned up a lot
+    % This should be cleaned up a lot, yes it should
     
     planeselect_freq = 1606.75;
     spect_pars.freq = planeselect_freq;   % |9/2,-9/2>
@@ -1473,14 +1474,10 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     spect_pars.AM_ramp_time = 2;9;  
 %  spect_pars.AM_ramp_time = 9; %Used for pulse_type = 1      2*16.7
 
-    %Determine the frequency to plane select |9/2,-7/2> atoms
-%     freq2 = DoublePlaneSelectionFrequency(spect_pars.freq, [9/2,-9/2],[7/2,-7/2],[9/2,-7/2],[7/2,-5/2]);
-
-%     disp('spectroscopy2');
-    use_ACSync = 0;
+    use_ACSync = 1;
 
     % Define the SRS frequency
-    freq_list = [0];[-300];       
+    freq_list = [340];[-300];       
     
     % 2021/06/22 CF
     % Use this when Xshimd=3, zshimd=-1 and you vary yshimd
@@ -1659,9 +1656,9 @@ ScopeTriggerPulse(curtime,'Plane Select');
 
 
         % Determine the range of the sweep
-        uWave_delta_freq_list= [100] /1000;
+        uWave_delta_freq_list= [130] /1000;
         uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
-            seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq');
+            seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq','kHz');
         
         
         uwave_sweep_time_list =[uWave_delta_freq]*1000/10*2; 
@@ -1685,8 +1682,10 @@ ScopeTriggerPulse(curtime,'Plane Select');
             setDigitalChannel(calctime(curtime,-5),'ACync Master',1);
         end
 
-        % Turn on the uWave
-        setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);    
+        % Turn on the uWave        
+        if  ~fake_the_plane_selection_sweep
+            setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);    
+        end
         
         % Ramp the SRS modulation using a TANH
         % At +-1V input for +- full deviation
@@ -1695,11 +1694,13 @@ ScopeTriggerPulse(curtime,'Plane Select');
             @(t,T,beta) tanh(2*beta*(t-0.5*sweep_time)/sweep_time),...
             sweep_time,sweep_time,beta,1);
         
+        if  ~fake_the_plane_selection_sweep
         % Sweep the VVA (use voltage func 2 to invert the vva transfer
         % curve (normalized 0 to 10
         AnalogFunc(calctime(curtime,0),'uWave VVA',...
             @(t,T,beta,A) A*sech(2*beta*(t-0.5*sweep_time)/sweep_time),...
             sweep_time,sweep_time,beta,env_amp,2);
+        end
         
         % Wait
         curtime = calctime(curtime,sweep_time);
@@ -1813,12 +1814,12 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
     % Apply a vertical *upwards* D2 beam resonant with the 9/2 manifold to 
     % remove any atoms not transfered to the F=7/2 manifold.
 
-    if vertical_kill_pulse==1
+    if planeselect_doVertKill==1
         dispLineStr('Applying vertical D2 Kill Pulse',curtime);
 
         %Resonant light pulse to remove any untransferred atoms from
         %F=9/2
-        kill_time_list = [2];2;
+        kill_time_list = [1];2;
         kill_time = getScanParameter(kill_time_list,seqdata.scancycle,...
             seqdata.randcyclelist,'kill_time','ms'); %10 
         kill_detuning_list = [42.7];%42.7
@@ -1869,52 +1870,13 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
         end
     end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Horizontal Kill Beam Application
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-    
-    if Horizontal_D2
-        dispLineStr('Horizontal D2 Kill Pulse',curtime);
 
-
-        %Should be plenty of time to do optical removal without
-        %updating curtime, due to the shim field settling time above
-
-
-        %Resonant light pulse to remove any untransferred atoms from F=9/2
-        kill_probe_pwr = 0.5;
-        kill_time = 15;
-        kill_detuning = 110; %-8 MHz to be resonant with |9/2,9/2> -> |11/2,11/2> transition in 40G field
-                             %110 MHz to be resonant with |9/2,-9/2> -> |11/2,-11/2> transition in 40G field
-        addOutputParam('kill_detuning',kill_detuning);
-
-        pulse_offset_time = -5; %Need to step back in time a bit to do the kill pulse
-                                  % directly after transfer, not after the subsequent wait times
-
-        %set probe detuning
-        setAnalogChannel(calctime(curtime,pulse_offset_time-10),'K Probe/OP FM',190); %195
-        %set trap AOM detuning to change probe
-        setAnalogChannel(calctime(curtime,pulse_offset_time-10),'K Trap FM',kill_detuning); %54.5
-
-        %open K probe shutter
-        setDigitalChannel(calctime(curtime,pulse_offset_time-10),'K Probe/OP shutter',1); %0=closed, 1=open
-        %turn up analog
-        setAnalogChannel(calctime(curtime,pulse_offset_time-10),29,kill_probe_pwr);
-        %set TTL off initially
-        setDigitalChannel(calctime(curtime,pulse_offset_time-11),9,1);
-
-        %pulse beam with TTL
-        DigitalPulse(calctime(curtime,pulse_offset_time),9,kill_time,0);
-
-        %close K probe shutter
-        setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time + 1),'K Probe/OP shutter',0);
-    end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % uWave Transfer back to |9/2,-9/2>
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
     
-    if transfer_back_to_9half
+    if planeselect_doMicrowaveBack
         % Transfer the |7,-7> back to |9,-9>.  This sweep can be broad
         % because everything else is dead (nominally). This step is
         % also somewhat uncessary because the Raman beams during
@@ -2000,305 +1962,11 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
         end
 
     end
-
-    % Plane select a second time
-    %RHYS - This is a crazy copy of basically just everything above.
-    %Why this needs to be a module.
-    if (second_plane_selection == 1)
-        %Select the desired plane again in order to increase the
-        %efficiency of the optical kill pulse
-
-curtime = calctime(curtime,100);
-
-        %Plane Selection Pulse
-        %---------------------
-
-            %SRS in pulsed mode with amplitude modulation
-            spect_type = 2;
-            spect_pars.pulse_length = planeselect_pulse_length;
-            spect_pars.delta_freq = planeselect_sweep_width;
-
-            field_drift = 0/1000; %Change in resonance due to thermal effects in QP/FB Coils 750?
-
-            %Take frequency range in MHz, convert to shim range in Amps
-            %  (-5.714 MHz/A on Jan 29th 2015)
-            if (seqdata.flags. K_RF_sweep==1 || seqdata.flags. init_K_RF_sweep==1)
-                %In -ve mF state, frequency increases with field
-                dBz = (spect_pars.delta_freq) / (5.714);
-                dBz_drift = field_drift / (5.714);
-            else 
-                %In +ve mF state, frequency decreases with field
-                dBz = (spect_pars.delta_freq) / (-5.714);
-                dBz_drift = field_drift / (-5.714);
-            end
-        field_shift_time = 20; % time to shift the field to the initial value for the sweep (and from the final value)
-        field_shift_settle = 40; % settling time after initial and final field shifts
-
-        if (Cycle_About_Freq_Val)
-            %Shift field down and up by half of the desired width
-            z_shim_sweep_center = getChannelValue(seqdata,28,1,0);
-            z_shim_sweep_start = z_shim_sweep_center+dBz_drift-1*dBz/2;
-            z_shim_sweep_final = z_shim_sweep_center+dBz_drift+1*dBz/2;
-        else %Start at current field and ramp up
-            z_shim_sweep_center = getChannelValue(seqdata,28,1,0);
-            z_shim_sweep_start = z_shim_sweep_center+dBz_drift;
-            z_shim_sweep_final = z_shim_sweep_center+dBz_drift+1*dBz;
-        end
-
-        % synchronizing this plane-selection sweep
-        do_ACync_plane_selection = 1;
-        if do_ACync_plane_selection
-            dispLineStr('enabling ACync',curtime);
-            % Enable ACync right after ramping up to start field
-            ACync_start_time = calctime(curtime,spect_pars.uwave_delay - field_shift_settle);
-            % Disable ACync right before ramping back to initial field value
-            ACync_end_time = calctime(curtime,spect_pars.uwave_delay + ...
-                field_shift_settle + spect_pars.pulse_length);
-            setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
-            setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
-        end
-
-        %Ramp shim to start value before generator turns on
-        clear('ramp');
-        ramp.shim_ramptime = field_shift_time;
-        ramp.shim_ramp_delay = spect_pars.uwave_delay-field_shift_settle-field_shift_time; %offset from the beginning of uwave pulse
-        ramp.zshim_final = z_shim_sweep_start;
-
-        ramp_bias_fields(calctime(curtime,0), ramp);
-
-        %Ramp shim during uwave pulse to transfer atoms
-        ramp.shim_ramptime = spect_pars.pulse_length;
-        ramp.shim_ramp_delay = spect_pars.uwave_delay;
-        ramp.zshim_final = z_shim_sweep_final;
-
-        ramp_bias_fields(calctime(curtime,0), ramp);
-
-        %Ramp shim back to initial value after pulse is complete
-        clear('ramp');
-        ramp.shim_ramptime = field_shift_time;
-        ramp.shim_ramp_delay = spect_pars.uwave_delay+spect_pars.pulse_length+field_shift_settle; %offset from the beginning of uwave pulse
-        ramp.zshim_final = z_shim_sweep_center;
-
-        ramp_bias_fields(calctime(curtime,0), ramp);
-
-        %Extra Parameters for the plane selecting pulse
-        spect_pars.fake_pulse = fake_the_plane_selection_sweep;  %Whether to actually open the uWave switch (0: do pulse; 1: don't do pulse)
-        spect_pars.power_scale = 1; %Diminish the uWave power from the programmed value
-
-        %Do plane selection pulse
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);     
-            %Wait for shim field to return to initial value
-curtime = calctime(curtime,field_shift_time+5); %April 13th 2015, Reduce the post transfer settle time... since we will ramp the shim again anyway
-
-        %D2 Kill Pulse
-        %-------------  
-        %Should be plenty of time to do optical removal without
-        %updating curtime, due to the shim field settling time above
-
-        if vertical_kill_pulse==1
-        %Resonant light pulse to remove any untransferred atoms from
-        %F=9/2
-
-%             %set probe detuning
-%             setAnalogChannel(calctime(curtime,pulse_offset_time-50),'K Probe/OP FM',170); %195
-        %set trap AOM detuning to change probe
-        setAnalogChannel(calctime(curtime,pulse_offset_time-50),'K Trap FM',kill_detuning); %54.5
-
-        %open K probe shutter
-        setDigitalChannel(calctime(curtime,pulse_offset_time-10),'Downwards D2 Shutter',1); %0=closed, 1=open
-        %set TTL off initially
-        setDigitalChannel(calctime(curtime,pulse_offset_time-20),'Kill TTL',0);%0= off, 1=on
-
-%                 AnalogFuncTo(calctime(curtime,pulse_offset_time-0.1),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 10/atomscale); %30?                                      
-
-        %pulse beam with TTL
-        DigitalPulse(calctime(curtime,pulse_offset_time),'Kill TTL',kill_time,1);
-
-%                 AnalogFuncTo(calctime(curtime,pulse_offset_time+kill_time),'zLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 0.1, 0.1, 60/atomscale); %30?                                      
-
-        %close K probe shutter
-        setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time),'Downwards D2 Shutter',0);
-
-        %set kill AOM back on
-        setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time + 5),'Kill TTL',1);
-
-        end
-
-
-        Transfer_Back_Again = 0;
-        if (Transfer_Back_Again)
-%             %Transfer Back
-%             %-------------             
-curtime = calctime(curtime,65); %Wait time to finish shim ramps
-
-            %SRS in pulsed mode with amplitude modulation
-            spect_type = 2;
-
-            final_transfer_range = 2; %MHz
-            if (seqdata.flags. K_RF_sweep==1)
-                %In -ve mF state, frequency increases with field
-                dBz = final_transfer_range / (5.714);
-            else 
-                %In +ve mF state, frequency decreases with field
-                dBz = final_transfer_range / (-5.714);
-            end
-
-            spect_pars.pulse_length = 100*final_transfer_range; %Seems to give good LZ transfer for power = -12dBm peak
-            spect_pars.SRS_select = 0; %Use SRS A for the global sweep
-%                 spect_pars.AM_ramp_time = 9;
-
-            final_sweep_time = spect_pars.pulse_length;
-            field_shift_time = 10; % time to shift the field to the initial value for the sweep (and from the final value)
-            field_shift_settle = spect_pars.AM_ramp_time + 10; % settling time after initial and final field shifts
-
-            z_shim_sweep_center = getChannelValue(seqdata,28,1,0);
-            z_shim_sweep_start = z_shim_sweep_center+dBz_drift-1*dBz/2;
-            z_shim_sweep_final = z_shim_sweep_center+dBz_drift+1*dBz/2;
-
-            %Ramp shim to start value, then sweep for transfer, then ramp to final value
-            clear('ramp');
-            ramp.shim_ramptime = field_shift_time;
-            ramp.shim_ramp_delay = spect_pars.uwave_delay-field_shift_settle-field_shift_time; %offset from the beginning of uwave pulse
-            ramp.zshim_final = z_shim_sweep_start;
-            ramp_bias_fields(calctime(curtime,0), ramp);
-
-            ramp.shim_ramptime = final_sweep_time;
-            ramp.shim_ramp_delay = spect_pars.uwave_delay;
-            ramp.zshim_final = z_shim_sweep_final;
-            ramp_bias_fields(calctime(curtime,0), ramp);
-
-            ramp.shim_ramptime = field_shift_time;
-            ramp.shim_ramp_delay = spect_pars.uwave_delay+spect_pars.pulse_length+field_shift_settle; %offset from the beginning of uwave pulse
-            ramp.zshim_final = z_shim_sweep_center;
-            ramp_bias_fields(calctime(curtime,0), ramp);
-
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars); 
-        end
-
-        %Wait for shim field to return to initial value
-curtime = calctime(curtime,field_shift_settle+field_shift_time); 
-
-    end
-
-    %RHYS - QP vacuum cleaner. Will never be used again.
-    if (eliminate_planes_with_QP)
-
-        %Reduce QP before relaxing from 3D confinement
-        % (ramp happens during the 'field settling time')
-%             clear('ramp');
-%             ramp.QP_ramptime = 50;
-%             ramp.QP_ramp_delay = -50;
-%             ramp.QP_final =  0.0*1.78; %4
-%             
-%             ramp.fesh_final = FB_init;
-%             ramp.fesh_ramptime = 50;
-%             ramp.fesh_ramp_delay = -50;
-%             
-%             ramp_bias_fields(curtime, ramp);
-
-
-
-        % Note: only works ok in a very narrow range of parameters;
-        % always kills some atoms in 9/2 as well. Optimal parameters
-        % may change with lattice alignment.     
-
-        QP_kill_time = 80; % time with lowered lattices and strong gradient
-
-        lat_psel_ramp_depth = [[0 0 20 20];[0 0 20 20];[20 20 20 20]]; % lattice depths in Er
-        lat_psel_ramp_time = [150 NaN 50 50]; % sum of the last two ramp times is effectively the field settling time
-
-        clear('ramp');
-
-    % Field Ramps for Gradient Kill
-        % Reduce FB coil so that the transverse gradient is significant
-        ramp.fesh_ramptime = 50;
-        ramp.fesh_ramp_delay = -0;
-        ramp.fesh_final = 0.10431;%before 2017-1-6 0.1; %0.05
-        % Ramp X and Y shims to center the QP gradient around the trap axis
-        ramp.shim_ramptime = 50;
-        ramp.shim_ramp_delay = 0;
-        ramp.xshim_final = getChannelValue(seqdata,27,1,0)-0.050; %-0.050 previously.
-        ramp.yshim_final = getChannelValue(seqdata,19,1,0)+0.090;
-        ramp.zshim_final = getChannelValue(seqdata,28,1,0)-0.10;
-        % QP coil settings for gradient killing
-        ramp.QP_ramptime = 50;
-        ramp.QP_ramp_delay = 00;
-        ramp.QP_final =  3.5*1.78; %4
-        % no settling time (being rough here) -- lattice rampup time plus additional hold time are used instead
-        ramp.settling_time = 0;
-
-    %Lattice Ramps for Gradient Kill
-        % first field ramp (happens once the horizontal lattice is ramped down)
-        ramp_bias_fields(calctime(curtime,lat_psel_ramp_time(1)), ramp); % check ramp_bias_fields to see what struct ramp may contain
-
-        % second field ramp (happens before the horizontal lattice is ramped back up)
-        clear('ramp');
-
-        ramp.fesh_final = FB_init;
-        ramp.fesh_ramptime = 50;
-        ramp.fesh_ramp_delay = 0;
-
-        ramp.QP_final =  0*1.78; 
-        ramp.QP_ramptime = 50;
-%             ramp.QP_ramp_delay = 25;
-%             ramp.QP_FF_ramp_delay = ramp.QP_ramp_delay;
-%             ramp.QP_FF_ramptime = ramp.QP_ramptime+10;
-
-        ramp_bias_fields(calctime(curtime,lat_psel_ramp_time(1)+ramp.fesh_ramptime+QP_kill_time), ramp); % check ramp_bias_fields to see what struct ramp may contain
-
-        % wait with lowered horizontal lattice until FB field is ramped up again and gradient is removed
-        lat_psel_ramp_time(2) = 2*ramp.fesh_ramptime+QP_kill_time;
-
-
-        if (length(lat_psel_ramp_time) ~= size(lat_psel_ramp_depth,2)) || ...
-                (size(lat_psel_ramp_depth,1)~=length(lattices)) || ...
-                isnan(sum(sum(lat_psel_ramp_depth)))
-            error('Invalid ramp specification for lattice loading!');
-        end
-
-    % execute lattice ramps (advances curtime)
-        if length(lat_psel_ramp_time) >= 1
-            for j = 1:length(lat_psel_ramp_time)
-                for k = 1:length(lattices)
-                    curr_val = getChannelValue(seqdata,lattices{k},1);
-                    if lat_psel_ramp_depth(k,j) ~= curr_val % only do a minjerk ramp if there is a change in depth
-                        AnalogFuncTo(calctime(curtime,0),lattices{k},@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_psel_ramp_time(j), lat_psel_ramp_time(j), lat_psel_ramp_depth(k,j));
-                    end
-                end
-curtime =   calctime(curtime,lat_psel_ramp_time(j));
-            end
-        end
-    else
-
-        % Ramp gradient and FB back down
-        clear('ramp');
-
-        ramp.xshim_final = seqdata.params. shim_zero(1);
-        ramp.yshim_final = seqdata.params. shim_zero(2);
-        ramp.shim_ramptime = 50;
-        ramp.shim_ramp_delay = -10;
-
-        % FB coil settings for spectroscopy
-        ramp.fesh_ramptime = 50;
-        ramp.fesh_ramp_delay = -0;
-        ramp.fesh_final = FB_init; %18
-
-        % QP coil settings for spectroscopy
-        ramp.QP_ramptime = 50;
-        ramp.QP_ramp_delay = -0;
-        ramp.QP_final =  0; %7
-
-        ramp.settling_time = 200; %200
-
-curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
-    end
-
-
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Repump to kill F=7/2
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-    if final_repump_pulse
+    if planeselect_doFinalRepumpPulse
         %Pulse on repump beam to try to remove any atoms left in F=7/2
         repump_pulse_time = 5;
         repump_pulse_power = 0.7;
@@ -2696,11 +2364,11 @@ if do_K_uwave_spectroscopy
         seqdata.randcyclelist,'uwavepower_val');
 
     spect_pars.power = uwavepower_val; % 15 %dBm
-    spect_pars.delta_freq = 100/1000;50/1000;% end_frequency - start_frequency (in
+    spect_pars.delta_freq = 200/1000;100/1000;50/1000;% end_frequency - start_frequency (in
     spect_pars.mod_dev = spect_pars.delta_freq;
 
 %         spect_pars.pulse_length = t0*10^(-1.5)/10^(pwr/10); % also is sweep length (max is Keithley time - 20ms)
-    pulse_time_list =[40];[spect_pars.delta_freq*1000/5]; %Keep fixed at 5kHz/ms.
+    pulse_time_list =[80];40;[spect_pars.delta_freq*1000/5]; %Keep fixed at 5kHz/ms.
     spect_pars.pulse_length = getScanParameter(pulse_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'uwave_pulse_time');
     spect_pars.pulse_type = 1;  %0 - Basic Pulse; 1 - Ramp up and down with min-jerk
@@ -2723,7 +2391,7 @@ if do_K_uwave_spectroscopy
             dBz = spect_pars.delta_freq / (-5.714); 
             
             field_shift_offset = 25;
-            field_shift_time = 5;
+            field_shift_time = 5;5;
             
             z_shim_sweep_center = getChannelValue(seqdata,28,1,0);
             z_shim_sweep_start = z_shim_sweep_center-dBz/2;
@@ -2822,7 +2490,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
     end
 
 
-    elseif ( do_Rb_uwave_spectroscopy ) % does a uwave pulse or sweep for spectroscopy
+elseif ( do_Rb_uwave_spectroscopy ) % does a uwave pulse or sweep for spectroscopy
         dispLineStr('Rb_uwave_spectroscopy.',curtime);
 
 %         freq_list = [-20:0.8:-12]/1000;%
@@ -2841,7 +2509,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
 
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars); % check rf_uwave_spectroscopy to see what struct spect_pars may contain
 
-    end
+end
     
 
 %% RF Spectroscopy
@@ -2914,7 +2582,7 @@ if do_K_raman_spectroscopy
     Device_id = 7; %Rigol for D1 lock(Ch. 1) and Raman 3(Ch. 2). Do not change any Ch. 1 settings here. 
     Raman_AOM3_freq =  (60)*1E6;
     Raman_AOM3_pwr = 0.3;
-    RamanspecMode = 'sweep'
+    RamanspecMode = 'sweep';
 %     RamanspecMode = 'pulse'
 
     
@@ -3281,9 +2949,7 @@ end
 
 
 %% Fluorescence Imaging
-%turn on raman beams for side band cooling
-%RHYS - Important code for Raman/EIT cooling. Probably should not be a
-%branch off horizontal plane selection though.
+
 
 % Plane Selection (earlier)
 %   - Apply FB + vertical gradient for selection
@@ -3304,6 +2970,28 @@ end
 %   - Set quantiazation axis along FPUMP
 %   - Set field for EIT condition, Raman detuning, uWave detuning
 %   - Apply Raman/uWave light and sweep freq
+%
+%
+% EIT Probe and F-Pump alignment
+%   - block all beams except the one that you want to align
+%   - use SG to measure F ratios and also uWave spec.
+%   - For Fpump want to first tranfser to F=7 manifold with uWave
+%
+%  - 2022/07/04 - EIT Probe 2 gets 60% transfer w 100us pulse time
+%  - 2022/07/04 - EIT Prboe 1 gets 80% transfer w 100us pulse time
+%  - 2022/07/04 - F pump gets 
+%
+% NOTES ON THE PHYSICS
+%
+% RAMAN :
+% - For n->n tranfsers the ideal Raman two photon frequency depends only on
+% the magnetic field. You can calibrate the n->n frequency by comparing to
+% the uWave tranfsers.
+% 
+% EIT:
+% The EIT imaging only works on n->n-1 at two photon resonance.  Thus the 
+% ideal parmeters relate the (1) magnetic field (2) F-pump power (3) F-pump
+% alignment (4) Single photon detuning
 
 if (Raman_transfers == 1)
     dispLineStr('Raman Transfer',curtime);
@@ -3313,92 +3001,158 @@ if (Raman_transfers == 1)
     clear('horizontal_plane_select_params');
     
     horizontal_plane_select_params.Fake_Pulse = 0;
+    
+    
+    Raman_On_Time_List =[2000];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
+
+   % uWave or Raman Tranfers
+   % 1: uwave, 2: Raman 3:Raman with field sweep
+    horizontal_plane_select_params.Microwave_Or_Raman = 2; 
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%% EIT Settings %%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    % Do you want the EIT beams to pulse?
     horizontal_plane_select_params.Use_EIT_Beams = 1;    
     
+%     horizontal_plane_select_params.Enable_FPump = 0;
+%     horizontal_plane_select_params.Enable_EITProbe = 0;
+%     horizontal_plane_select_params.Enable_Raman = 0 ;
+    
     %%%% F Pump Power %%%
-    F_Pump_List = [1.1];%0.8 is optimized for 220 MHz. 1.1 is optimized for 210 MHz.
+    F_Pump_List = [0.1:.05:1.2];0.7;[0.8];[.9];
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,...
         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V'); %1.4; (1.2 is typically max)
+        
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%% RAMAN SETTINGS %%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    V10 = 1.2;
+    V20 = 0.98;    
     
-    %%% Raman 1 Power %%%
-    Raman_Power_List =[0.7];[0.5]; %Do not exceed 2V here. 1.2V is approximately max AOM deflection.
+    % 2022/07/04 - around 5.1 mW max Raman V; 5.4 mW max Raman H1 NOT
+    % ANYMORE
+ 
+    %%% Raman 1 Power (Vertical) %%%
+    Raman_Power_List =V10*[.5];   
     horizontal_plane_select_params.Raman_Power1 = getScanParameter(Raman_Power_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'Raman_Power1','V'); 
-    
-    %%% Raman 2 Power %%%
-    Raman_Power2_List =[0.6];horizontal_plane_select_params.Raman_Power1;
+        seqdata.scancycle,seqdata.randcyclelist,'Raman_Power1','V');   
+
+    %%% Raman 2 Power (Horizontal 1) %%%
+    Raman_Power2_List =V20*[0.5];
     horizontal_plane_select_params.Raman_Power2 = getScanParameter(Raman_Power2_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_Power2','V');
-%     horizontal_plane_select_params.Raman_Power2 = horizontal_plane_select_params.Raman_Power1;
-        
-    %%% Raman 1/2 (?) Frequency %%%
-    Raman_List = [0];0;   %-30% : in kHz;
-    horizontal_plane_select_params.Raman_AOM_Frequency = 110 + getScanParameter(Raman_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Freq')/1000;
-
-    Raman_On_Time_List =[2000];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
     
-    %%% uWave %%%
-    % uWave settings (if Microwave_or_Raman==1)
+    % Param get scan
+%    Raman_V_Voltage = paramGet('Raman_V_Voltage');
+%    horizontal_plane_select_params.Raman_Power1 = Raman_V_Voltage;
+%    Raman_H1_Voltage = paramGet('Raman_H1_Voltage');
+%    horizontal_plane_select_params.Raman_Power2 = Raman_H1_Voltage;
+%         
+    %%% Raman 1 Frequency (Vertical) %%%
+    Raman_List = [-80];-80;   %-30% : in kHz;
+    horizontal_plane_select_params.Raman_AOM_Frequency = 110 + ...
+        getScanParameter(Raman_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Freq')/1000;
+
+    % Raman Rigol Mode
+    horizontal_plane_select_params.Rigol_Mode = 'Pulse';  %'Sweep', 'Pulse', 'Modulate'
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%% MICROWAVE SETTINGS %%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Center frequency shift uWave settings
     uwave_freq_list = [0]/1000;
     uwave_freq = getScanParameter(uwave_freq_list,...
         seqdata.scancycle,seqdata.randcyclelist,'uwave_freq');
-    horizontal_plane_select_params.Selection__Frequency = 1285.8 + 11.025 +uwave_freq; %11.550
+    
+    % Center frequency of uWave Generator
+    horizontal_plane_select_params.Selection__Frequency = 1285.8 + ...
+        11.025 + uwave_freq; %11.550
     horizontal_plane_select_params.Microwave_Power_For_Selection = 15; %dBm
+    
+    % Pulse Time of uWave is the same as the Raman Time
     horizontal_plane_select_params.Microwave_Pulse_Length = ...
         getScanParameter(Raman_On_Time_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_Time');     
-    horizontal_plane_select_params.Rigol_Mode = 'Pulse';  %'Sweep', 'Pulse', 'Modulate'
-    Range_List = [50];%in kHz
-    horizontal_plane_select_params.Selection_Range = getScanParameter(Range_List,seqdata.scancycle,seqdata.randcyclelist,'Sweep_Range')/1000; 
     
-    % Camera Settings 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%% Sweep Settings %%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    Range_List = [50];50;%in kHz
+    horizontal_plane_select_params.Selection_Range = getScanParameter(Range_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'Sweep_Range')/1000; 
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%% Camera Settings %%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
     horizontal_plane_select_params.Fluorescence_Image = 1;
     horizontal_plane_select_params.Num_Frames = 1; % 2 for 2 images    
     
     Modulation_List = Raman_On_Time_List;
-    horizontal_plane_select_params.Modulation_Time = getScanParameter(Modulation_List,seqdata.scancycle,seqdata.randcyclelist,'Modulation_Time');
+    horizontal_plane_select_params.Modulation_Time = getScanParameter(Modulation_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'Modulation_Time');
     
-    % F transfers with Raman or with uWave
-    horizontal_plane_select_params.Microwave_Or_Raman = 2; %1: uwave, 2: Raman 3:Raman with field sweep
     horizontal_plane_select_params.Sweep_About_Central_Frequency = 1;
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%% Other Settings %%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
     
     % Unclear what these settings are for
     horizontal_plane_select_params.Resonant_Light_Removal = 0;
     horizontal_plane_select_params.Final_Transfer = 0; 
     
     % Which SRS to use (in cause of uWave)
-    horizontal_plane_select_params.SRS_Selection = 1;
+    horizontal_plane_select_params.SRS_Selection = 1;    
     
-    horizontal_plane_select_params.QP_Selection_Gradient = 0; % relevant only for plane selection
-    horizontal_plane_select_params.Ramp_Fields_Up = 1; % ramp B field down in the begining quatnization along Fpump
+        
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%% Magnetic Field Settings %%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Use QP coils for plane selection (not relevant here)
+    horizontal_plane_select_params.QP_Selection_Gradient = 0; 
+    % Ramp fields up at the beginning
+    horizontal_plane_select_params.Ramp_Fields_Up = 1;    
+    % Ramp fields down at the end
     horizontal_plane_select_params.Ramp_Fields_Down = 0; 
     
     % Shim values for quantizing field
-    Field_Shift_List = [0.155]; %unit G 
-    horizontal_plane_select_params.Field_Shift = getScanParameter(Field_Shift_List,seqdata.scancycle,seqdata.randcyclelist,'Field_Shift','G');
+    % This affects Raman, Microwave, and EIT mechanisms.
+    Field_Shift_List = [0.175];[0.155]; 0.155; %unit G 
+    horizontal_plane_select_params.Field_Shift = getScanParameter(...
+        Field_Shift_List,seqdata.scancycle,seqdata.randcyclelist,...
+        'Field_Shift','G');    
+    
+    % Magnetic Field Offsets
     horizontal_plane_select_params.X_Shim_Offset = 0;
     horizontal_plane_select_params.Y_Shim_Offset = 0;
-    horizontal_plane_select_params.Z_Shim_Offset = 0.055;0.055;%b4:0.05;
+    horizontal_plane_select_params.Z_Shim_Offset = 0.055;
     Angle_List = [62];
-    Angle = getScanParameter(Angle_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Angle');
+    Angle = getScanParameter(Angle_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'Raman_Angle');
     horizontal_plane_select_params.Selection_Angle = Angle;62;66.5; %-30 for vertical, +60 for horizontal (iXon axes)
       
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%% Run the Code!! %%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+    
     % Break thermal stabilization by turn off AOM
     setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);
         
-    ScopeTriggerPulse(curtime,'Raman Beams On');
-      
-    
-    % for pco multi fluoresence TESTING
-%     horizontal_plane_select_params.Num_Frames = 9;
-curtime = do_horizontal_plane_selection(curtime, horizontal_plane_select_params);
+    % Trigger the Scope
+    ScopeTriggerPulse(curtime,'Raman Beams On');      
 
- dispLineStr('do_horizontal_plane_selection execution finished at',curtime);
+    % Run the fluoresnce imaging code
+curtime = do_horizontal_plane_selection(curtime, ...
+    horizontal_plane_select_params);
+
 
     % Turn on optical pumping beam AOM for thermal stabilization
-    setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);
+    setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);  
     
-
+    dispLineStr('do_horizontal_plane_selection execution finished at',curtime);
 end
 
 

@@ -9,15 +9,15 @@ ptypes = struct;         % Structure which contains boolean of random for each p
 
 %% Micrscope Stuff
 
-params.obj_piezo_V          = [5];
-punits.obj_piezo_V          = 'V';
-ptypes.obj_piezo_V           = 'random';
+% params.obj_piezo_V          = [5];
+% punits.obj_piezo_V          = 'V';
+% ptypes.obj_piezo_V           = 'random';
 
 %% Define Parameters
-
-params.tof                  = [10];
-punits.tof                  = 'ms';
-ptypes.tof                   = 'random';
+% 
+% params.tof                  = [10];
+% punits.tof                  = 'ms';
+% ptypes.tof                   = 'random';
 
 %% RF 1B
 % 
@@ -30,15 +30,23 @@ ptypes.tof                   = 'random';
 
 %% Lattice
 
+%% Raman
+% params.Raman_V_Voltage = linspace(1.2*.1,1.2,10);
+% punits.Raman_V_Voltage = 'V';
+% ptypes.Raman_V_Voltage = 'ordered';
+% 
+% params.Raman_H1_Voltage = linspace(.1,1,10);
+% punits.Raman_H1_Voltage = 'V';
+% ptypes.Raman_H1_Voltage = 'random';
 %% Lattice High Field
 
-params.AM_spec_depth                   = [200];
-punits.AM_spec_depth = 'Er';
-ptypes.AM_spec_depth = 'ordered';
-% 
-params.AM_direction                   = ['X'];
-punits.AM_direction = '';
-ptypes.AM_direction = 'ordered';
+% params.AM_spec_depth                   = [200];
+% punits.AM_spec_depth = 'Er';
+% ptypes.AM_spec_depth = 'ordered';
+% % 
+% params.AM_direction                   = ['X'];
+% punits.AM_direction = '';
+% ptypes.AM_direction = 'ordered';
 % % % 
 % % % % %    300 = [260:5:340 295:1:325]*1e3; 48 points
 % % % % %     200 = [200:5:300]*1e3; 57 points

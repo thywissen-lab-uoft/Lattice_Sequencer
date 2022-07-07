@@ -41,7 +41,7 @@ setAnalogChannel(calctime(curtime,-0),'UV Lamp 2',3); % The y axis bubls 3V on ,
 setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',...          
     6590+rb_MOT_detuning);      
 setAnalogChannel(calctime(curtime,0),'Rb Trap AM', 0.7);            % Rb MOT Trap power   (voltage)
-setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);             % Rb MOT trap TTL     (0 : ON)
+setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);             % Rb MOT trap TTL     (0 : ON)
 setDigitalChannel(calctime(curtime,-2),'Rb Trap Shutter',0);        % Rb MOT trap shutter (1 : ON)
 
 % Repump
@@ -345,11 +345,55 @@ end
 
 
 
+doOldMol = 0;   %DO NOT USE
+if doOldMol
+  %Old molasess code (pre 2020)
+    %% Molasses
+%To fix: the quadrupole field is not turning off *completely* here
+do_molasses = 1;
+molasses_time_list = 15;[15];[5];7;
+molasses_time = getScanParameter(molasses_time_list,seqdata.scancycle,seqdata.randcyclelist,'molasses_time');
+% molasses_time = 7.5; %(10 for Rb evap ) %10 (overwritten below if K is selected)
+if do_molasses
+    k_molasses_detuning_list =[7.5];[7.5];5.5; %%20 Oct 30, 2015
+    k_molasses_detuning = getScanParameter(k_molasses_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'k_molasses_detuning');
+    k_molasses_repump_detuning = -50;-20;%-50 seems better than -20 somehow...
+    %While true that this 'works' out to large detunings, optimizing for a
+    %'long' (e.g. 200ms) molasses time shows a sharp max.
+    rbmolasses_List = [55]; %60
+    rbmolasses_det=getScanParameter(rbmolasses_List,seqdata.scancycle,seqdata.randcyclelist,'rb_molasses_det');
+    rb_molasses_detuning = rbmolasses_det;50; %53;%before 2016-11-25:50  %48 %46.5 (2014-04-25)
+    %turn on the shims for optical pumping and/or molasses
+    %turn on the Y (quantizing) shim
+% Turn off field gradients
+% Set the shims
+setAnalogChannel(calctime(curtime,0),'MOT Coil',0,1);   
+setAnalogChannel(calctime(curtime,0),'Y Shim',0.15,2); %0.15
+setAnalogChannel(calctime(curtime,0),'X Shim',0.15,2); %0.15
+setAnalogChannel(calctime(curtime,0),'Z Shim',0.00,2); %0.00
+    %set shims and detuning (atom dependent)
+        %set molasses detuning
+        setAnalogChannel(calctime(curtime,0),'K Trap FM',k_molasses_detuning);
+        setAnalogChannel(calctime(curtime,0),'K Repump FM',k_molasses_repump_detuning,2); %765
+        %turn down Trap power for molasses
+        setAnalogChannel(calctime(curtime,0),'K Trap AM',0.7); %0.7 Oct 30, 2015
+        %set Repump power (turn down for molasses)
+%         kmolasses_List=[0 0.5:0.1:0.7];
+%         kmolasses_am=getScanParameter(kmolasses_List,seqdata.scancycle,seqdata.randcyclelist,'kmolasses_am');
+        setAnalogChannel(calctime(curtime,0),'K Repump AM',0.025); %0.5
+    % Advance in time (molasses_time)
+    curtime = calctime(curtime,molasses_time);
+    setAnalogChannel(curtime,'K Repump FM',0,2);
+else
+end
+end
+
+
 %% Optical Pumping
 % setDigitalChannel(calctime(curtime,0),'ScopeTrigger',1);
 % setDigitalChannel(calctime(curtime,1),'ScopeTrigger',0); 
 
-doOP =0;
+doOP =1;
 if doOP
 % This stage using the Rb/K Pump (trap light) beam along the Y-axis to pump
 % atoms into the |2,2> and |9/2,9/2> state
@@ -409,9 +453,9 @@ if loadMT
 %     curtime = calctime(curtime,100);    
 
     % Set the shims away from pumping values back to "zero" field
-    setAnalogChannel(calctime(curtime,0),'X Shim',0.15,2); % 0.15
-    setAnalogChannel(calctime(curtime,0),'Y Shim',0.15,2); % 0.15
-    setAnalogChannel(calctime(curtime,0),'Z Shim',0.00,2); % 0.0    
+    setAnalogChannel(calctime(curtime,0),'X Shim',0.2,2); % 0.15
+    setAnalogChannel(calctime(curtime,0),'Y Shim',2.0,2); % 0.15
+    setAnalogChannel(calctime(curtime,0),'Z Shim',0.9,2); % 0.0    
     
     
     % Hold in magnetic trap if desired
@@ -448,7 +492,7 @@ setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);
 %%%%%%%%%%%% Perform the time of flight %%%%%%%%%%%%
 
 % Set the time of flight
-tof_list = [20];
+tof_list = [5];
 tof =getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof_time'); 
 
 % Increment the time (ie. perform the time of flight)
@@ -480,7 +524,7 @@ setDigitalChannel(calctime(curtime,-5),'K Repump Shutter',1);
 setDigitalChannel(calctime(curtime,-5),'K Trap Shutter',1); 
 setDigitalChannel(calctime(curtime,0),'K Trap TTL',0); 
 setDigitalChannel(calctime(curtime,0),'K Repump TTL',0); 
-
+% 
 % % Imaging beams for Rb
 % setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);      
 % setDigitalChannel(calctime(curtime,-2),'Rb Repump Shutter',1); 

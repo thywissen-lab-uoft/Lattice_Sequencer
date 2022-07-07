@@ -82,12 +82,24 @@ end
 % Rubidium MOT beams turn on
 if (seqdata.atomtype==3 || seqdata.atomtype==4) && rb_detuning~=-100
     disp(' Turning on Rb beams');
-
+    
+    %Added 06/10/2022 by FC and RL
+    %This modulates the frequency and amplitude of the Rb Trap AOM
+    %frequency source (Rigol DG 4162) (Device 8). 
+    rb_trap_freq_list =  [109]; % in MHz
+    rb_trap_freq=getScanParameter(rb_trap_freq_list,seqdata.scancycle,seqdata.randcyclelist,'rb_trap_AOM_FM', 'MHz');
+    
+    rb_trap_amp = 1.08; %in V
+    rb_trap_offset = 0; %in V
+    
+    str=sprintf(':SOUR2:APPL:SIN %f,%f,%f;',(rb_trap_freq)*1E6,rb_trap_amp,rb_trap_offset);
+    addVISACommand(8, str);  %Device 8 Source 2 is the new Rb trap AOM FM
+    
     % Trap
-    turn_on_beam(calctime(curtime,K_MOT_before_Rb_time),1,0.7,3);
+    turn_on_beam(calctime(curtime,K_MOT_before_Rb_time),1,0.7,3); % The analog voltage sent here (0.7) no longer does anything.
     
     % Repump
-    turn_on_beam(calctime(curtime,K_MOT_before_Rb_time),2,0.8,3);
+    turn_on_beam(calctime(curtime,K_MOT_before_Rb_time),2,0.8,3); %should this be 0.9 not 0.8?
     
     rb_repump_power_list = [0.9];
     rb_repump_power = getScanParameter(rb_repump_power_list,...

@@ -5357,10 +5357,68 @@ end
 %     setAnalogChannel(calctime(curtime,200),'xLattice',-10 ,1);
 %     setDigitalChannel(calctime(curtime,400),'yLatticeOFF',1); % 0 : All on, 1 : All off
 
-setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 : Int on; 1 : int hold    
-    setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',6);
-    setAnalogChannel(calctime(curtime,0),'K Probe/OP FM',180);
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); % 0 : Int on; 1 : int hold    
+%     setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',6);
+% 
+%     setAnalogChannel(calctime(curtime,0),'K Probe/OP FM',180);%      AnalogFunc(calctime(curtime,0),'yLattice',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50, 50,-0.9, yask);
 
+%     setAnalogChannel(calctime(curtime,200),'MOT Coil',10)
+
+% setAnalogChannel(calctime(curtime,0),'Rb Trap AM', 0.3);            % Rb MOT Trap power   (voltage)
+% setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0); 
+
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1);
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP Shutter',1); % Open K Shtter with pre-trigger
+% %Now at k_op_offset time because there is no TTL (turns on pulse). 
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.5)
+% 
+% setDigitalChannel(calctime(curtime,0),'D1 Shutter',0)
+% setDigitalChannel(calctime(curtime,0),'F Pump TTL',0)
+% setDigitalChannel(calctime(curtime,0),'EIT Shutter',0);
+% setAnalogChannel(calctime(curtime,0),'F Pump',0.9)
+% setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
+% setDigitalChannel(calctime(curtime,0),'D1 TTL',1);
+
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 2',0);
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 3',0);
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 1',0);
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 2a',0);
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 3a',0);
+% setAnalogChannel(calctime(curtime,0),'F Pump',0.9)
+
+    curtime = calctime(curtime,1000)
+
+
+
+
+    
+    % Open D1 shutter (FPUMP + OPT PUMP)
+    setDigitalChannel(calctime(curtime,-8),'D1 Shutter', 1);%1: turn on laser; 0: turn off laser
+        
+    % Open optical pumping AOMS (allow light) and regulate F-pump
+    setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
+    setAnalogChannel(calctime(curtime,0),'F Pump',1.2);
+    setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
+    setDigitalChannel(calctime(curtime,0),'D1 OP TTL',1);
+        setAnalogChannel(calctime(curtime,0),'D1 AM',10); 
+
+    %Optical pumping time
+% curtime = calctime(curtime,optical_pump_time);
+    
+
+
+
+
+
+ 
+% MHz = 1e6;
+% kHz = 1e3;
+%     detuning_list = [0];[0];300;
+%     df = getScanParameter(detuning_list, seqdata.scancycle, seqdata.randcyclelist, 'detuning');
+%     DDSFreq = 324.20625*MHz + df*kHz/4;
+%     DDS_sweep(calctime(curtime,0),2,DDSFreq,DDSFreq,calctime(curtime,1));
+%     addOutputParam('DDSFreq',DDSFreq);
 
 timeout = curtime;
 

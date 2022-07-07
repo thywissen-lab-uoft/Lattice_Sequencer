@@ -33,6 +33,20 @@ seqdata.params.plug_shims = [(seqdata.params. shim_zero(1)-1-0.04-0.3),...
     (seqdata.params. shim_zero(2)+0.125), ...
     (seqdata.params. shim_zero(3)+ 0.35)];%0.35 + 0.55)];
 
+% Slope relation between shim and QP currents to keep field center fixed.
+% Important for ramping QP at end of RF1B and during QP ramp down in ODT
+Cx=-0.0507;Cy=0.0045;Cz=0.0115;% new values, but they appear to be worse?
+
+% Cz_list = [.009:.0005:.012];
+% Cz = getScanParameter(Cz_list,...
+%     seqdata.scancycle,seqdata.randcyclelist,'Cz','arb');%192.5;
+
+% Old values, but they appear to be better?
+Cx = -0.0499;
+Cy = 0.0045;
+Cz = 0.0105;
+seqdata.params.plug_shims_slopes = [Cx Cy Cz];
+
 %Current shim values (x,y,z)- reset to zero
 seqdata.params.shim_val = [0 0 0]; 
 
@@ -125,7 +139,7 @@ seqdata.params.tof_krb_diff = getScanParameter(tof_krb_diff_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof_krb_diff','ms');
 
 
-seqdata.params.UV_on_time = 10000; %UV on time + savingtime + wait time = real wait time between cycles%
+seqdata.params.UV_on_time = 10000; % UV on time + savingtime + wait time = real wait time between cycles%
 % usually 15s for non XDT
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -162,7 +176,7 @@ seqdata.flags.do_plug = 1;
 seqdata.flags.lower_atoms_after_evap = 0; 
 
 % RF1A and RF1B timescales
-RF_1B_time_scale_list = [0.8];
+RF_1B_time_scale_list = [0.8];0.8;
 RF_1B_time_scale = getScanParameter(RF_1B_time_scale_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1B_time_scale');
 
@@ -174,7 +188,7 @@ RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1A_finalfreq','MHz');
 
 % RF1B Final Frequency
-RF_1B_Final_Frequency_list = [1];%0.8,0.4 1
+RF_1B_Final_Frequency_list = [1];1;%0.8,0.4 1
 RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq','MHz');
  
@@ -186,8 +200,8 @@ RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
 seqdata.flags.do_dipole_trap = 1; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
 seqdata.params.ODT_zeros = [-0.04,-0.04];
 seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
-seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 0; % uWave Frequency sweep Rb 2-->1
-seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
+seqdata.flags.do_Rb_uwave_transfer_in_ODT2 =0; % uWave Frequency sweep Rb 2-->1
+seqdata.flags.init_K_RF_sweep = 1;             % RF Freq Sweep K 9-->-9  
 seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
 seqdata.flags.mix_at_beginning = 1;             % RF Mixing -9-->-9+-7
     
@@ -283,7 +297,7 @@ end
     %RHYS - Setting some specific parameters for DDS and objective
     %position. Silly that this is here. 
 
-    obj_piezo_V_List = [5];[4.6];
+    obj_piezo_V_List = [3];[5];[4.6];
     % 0.1V = 700 nm, must be larger than  larger value means farther away from the window.
 %     obj_piezo_V = getScanParameter(obj_piezo_V_List, ...
 %     seqdata.scancycle, 1, 'Objective_Piezo_Z','V');%5
@@ -299,16 +313,20 @@ end
     %for the purpose of initialization of the experiment. I don't think it
     %is a good practice to keep commented code here just like this.
     
+%% Four-Pass
+
     % Set 4-Pass Frequency
-    %Don't want to do this with every cycle since it drops the connection
-    %sometimes and doesn't turn on correctly
-%  
-%     detuning_list = [0];[0];300;
-%     df = getScanParameter(detuning_list, seqdata.scancycle, seqdata.randcyclelist, 'detuning');
-%     DDSFreq = 324.20625*MHz + df*kHz/4;
-%     DDS_sweep(calctime(curtime,0),2,DDSFreq,DDSFreq,calctime(curtime,1));
-%     addOutputParam('DDSFreq',DDSFreq);
-% % 
+    detuning_list = [0];
+    df = getScanParameter(detuning_list, seqdata.scancycle, seqdata.randcyclelist, 'detuning');
+    DDSFreq = 324.20625*MHz + df*kHz/4;
+    addOutputParam('FourPassFrequency',DDSFreq*1e-6,'MHz');
+    
+    doProgram4Pass = 0;
+    if doProgram4Pass
+        DDS_sweep(calctime(curtime,0),2,DDSFreq,DDSFreq,calctime(curtime,1));
+    end
+
+    
 
     % %Set the frequency of the first DP AOM 
 %     D1_FM_List = [222.5];
@@ -722,12 +740,17 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     sweep_time = getScanParameter(sweep_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'RF1B_sweep_time');
     sweep_times_1b = [6000 3000 2]*rf_evap_time_scale(2); 2000;
-    evap_end_gradient_factor_list = [0.9]; %0.75
+    evap_end_gradient_factor_list = [.9]; %0.75
     evap_end_gradient_factor = getScanParameter(evap_end_gradient_factor_list,...
         seqdata.scancycle,seqdata.randcyclelist,'evap_end_gradient_factor');
     currs_1b = [1 1 evap_end_gradient_factor evap_end_gradient_factor]*I_QP;
     freqs_1b = [freqs_1(end)/MHz*1.1 7 RF_1B_Final_Frequency 2]*MHz;
-    rf_1b_gain = -2;    
+    
+    rf_1b_gain_list = [-2];
+    rf_1b_gain = getScanParameter(rf_1b_gain_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'RF1B_gain','V');
+    
+%     rf_1b_gain = -2;    
     gains = ones(1,length(freqs_1b))*rf_1b_gain;
     
     % Create RF1B structure object
@@ -753,6 +776,9 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     ramp_after_1B = 0;
     if ramp_after_1B
+        % This is useful if you want to check the plug_shim_slopes
+        % (lowering the field gradient should keep the MT field zero
+        % constant if the plug shim slopes are appropriate)
         dispLineStr('Ramp QP after RF1B',curtime);       
 
         [curtime, I_QP, I_kitt, V_QP, I_fesh] = ...

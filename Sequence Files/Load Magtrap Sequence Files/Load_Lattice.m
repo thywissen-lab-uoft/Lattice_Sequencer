@@ -27,7 +27,6 @@ seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 %% Lattice Flags    
 % These are the lattice flags sorted roughly chronologically.
 
-ramp_fields_after_lattice_loading = 0;  % (416,503)     keep : Ramp on the fesbhach field after lattice load
 spin_mixture_in_lattice_before_plane_selection = 0; % (668)             keep : Make a -9/2,-7/2 spin mixture.   
   
 
@@ -71,7 +70,7 @@ do_K_raman_spectroscopy = 0;            % (3989) under development
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 do_optical_pumping = 0;                 % (1426) keep : optical pumping in lattice  
-do_plane_selection = 0;                             % Plane selection flag
+do_plane_selection = 1;                             % Plane selection flag
 
 % Actual fluorsence image flag
 Raman_transfers = 1;                                % (4727)            keep : apply fluorescence imaging light
@@ -233,8 +232,8 @@ if do_lattice_ramp_1
             
             %Select the lattice direction to load
 %             direction = 'X';
-            direction = 'Y';
-%             direction = 'Z';
+%             direction = 'Y';
+            direction = 'Z';
             switch direction
                 case 'X'
                   latt_depth=...
@@ -1422,14 +1421,11 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         % FB coil settings for spectroscopy
         ramp.fesh_ramptime = 100;
         ramp.fesh_ramp_delay = -0;
-        fb_shift_list = [0.6];[0.56];%0.2 for 0.7xdt power
+        fb_shift_list = [.6];[0.6];[0.56];%0.2 for 0.7xdt power
         fb_shift = getScanParameter(fb_shift_list,seqdata.scancycle,...
             seqdata.randcyclelist,'fb_shift');
-        ramp.fesh_final = 128-fb_shift;125.829-fb_shift; %before 2017-1-6 6*22.6; %22.6% smaller b field means farther away from the window
-        %default value of ramp.fesh_final is 6*22.6, for plane
-        %selection
-%         addOutputParam('fb_shift',ramp..00f2.b_shift)
-
+        ramp.fesh_final = 128-fb_shift;125.829-fb_shift; 
+        
         % QP coil settings for spectroscopy
         ramp.QP_ramptime = 100;
         ramp.QP_ramp_delay = -0;
@@ -1656,7 +1652,7 @@ ScopeTriggerPulse(curtime,'Plane Select');
 
 
         % Determine the range of the sweep
-        uWave_delta_freq_list= [130] /1000;
+        uWave_delta_freq_list= [30] /1000;
         uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq','kHz');
         
@@ -3021,7 +3017,7 @@ if (Raman_transfers == 1)
 %     horizontal_plane_select_params.Enable_Raman = 0 ;
     
     %%%% F Pump Power %%%
-    F_Pump_List = [0.1:.05:1.2];0.7;[0.8];[.9];
+    F_Pump_List = [1.1];1.1;[1.2];0.7;[0.8];[.9];
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,...
         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V'); %1.4; (1.2 is typically max)
         
@@ -3035,7 +3031,7 @@ if (Raman_transfers == 1)
     % ANYMORE
  
     %%% Raman 1 Power (Vertical) %%%
-    Raman_Power_List =V10*[.5];   
+    Raman_Power_List =V10*[0.5];   
     horizontal_plane_select_params.Raman_Power1 = getScanParameter(Raman_Power_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_Power1','V');   
 
@@ -3061,6 +3057,7 @@ if (Raman_transfers == 1)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%% MICROWAVE SETTINGS %%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     % Center frequency shift uWave settings
     uwave_freq_list = [0]/1000;
     uwave_freq = getScanParameter(uwave_freq_list,...
@@ -3079,6 +3076,7 @@ if (Raman_transfers == 1)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%% Sweep Settings %%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     Range_List = [50];50;%in kHz
     horizontal_plane_select_params.Selection_Range = getScanParameter(Range_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Sweep_Range')/1000; 

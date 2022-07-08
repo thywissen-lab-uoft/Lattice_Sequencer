@@ -171,7 +171,8 @@ field_shift_settle = 40;                % settling time after initial and final 
         spect_pars.SRS_select = opt.SRS_Selection;
         spect_pars.power = opt.Microwave_Power_For_Selection;
         spect_pars.delta_freq = opt.Selection_Range;
-        spect_pars.mod_dev = max([ 200*kHz, (opt.Selection_Range/2 + 5*kHz) , (opt.Double_Selection*opt.Selection_Range_B/2 + 5*kHz)]);
+        spect_pars.mod_dev = max([ 200*kHz, (opt.Selection_Range/2 + 5*kHz) , ...
+            (opt.Double_Selection*opt.Selection_Range_B/2 + 5*kHz)]);
         spect_pars.pulse_length = opt.Microwave_Pulse_Length;
         spect_pars.uwave_delay = 0; 
         spect_type = 2;             %Pulse uWave source

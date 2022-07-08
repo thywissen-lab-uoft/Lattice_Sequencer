@@ -940,7 +940,7 @@ if seqdata.flags.mix_at_beginning
     f1=sweep_pars.freq-sweep_pars.delta_freq/2;
     f2=sweep_pars.freq+sweep_pars.delta_freq/2;
 
-    n_sweeps_mix_list=[10];
+    n_sweeps_mix_list=[11];
     n_sweeps_mix = getScanParameter(n_sweeps_mix_list,...
         seqdata.scancycle,seqdata.randcyclelist,'n_sweeps_mix');  % also is sweep length  0.5               
 
@@ -2551,7 +2551,7 @@ if (seqdata.flags.mix_at_end==1 && seqdata.flags.CDT_evap==1)
         f1=sweep_pars.freq-sweep_pars.delta_freq/2;
         f2=sweep_pars.freq+sweep_pars.delta_freq/2;
         
-        n_sweeps_mix_list=[10];10
+        n_sweeps_mix_list=[13];10
         n_sweeps_mix = getScanParameter(n_sweeps_mix_list,...
             seqdata.scancycle,seqdata.randcyclelist,'n_sweeps_mix');  % also is sweep length  0.5               
 

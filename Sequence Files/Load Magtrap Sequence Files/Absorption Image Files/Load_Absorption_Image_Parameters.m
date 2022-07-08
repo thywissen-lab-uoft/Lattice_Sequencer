@@ -109,14 +109,14 @@ function params = Load_Absorption_Image_Parameters()
     SG_QP_val = getScanParameter(SG_QP_val_list,seqdata.scancycle,seqdata.randcyclelist,'SG_QP_val');
     
     % mF Stern Gerlach For |9,-9> vs |9,-7> low field (15ms TOF K)
-%     params.SG.SG_QP_val = 7.5*1.78;
-%     params.SG.SG_QP_pulsetime = 5;
-%     params.SG.SG_QP_ramptime =2;
+    params.SG.SG_QP_val = 7.5*1.78;
+    params.SG.SG_QP_pulsetime = 5;
+    params.SG.SG_QP_ramptime =2;
 
 %     % F Stern Gerlach : |9,-9> vs |7,-7> low field (~20G) (15ms TOF)
-    params.SG.SG_QP_val = 1.78*5;
-    params.SG.SG_QP_pulsetime = 2; 
-    params.SG.SG_QP_ramptime =1; 
+%     params.SG.SG_QP_val = 1.78*5;
+%     params.SG.SG_QP_pulsetime = 2; 
+%     params.SG.SG_QP_ramptime =1; 
     
     % Stern Gerlach feed forward
     params.SG.SG_QP_FF = 23*(params.SG.SG_QP_val/30); % voltage FF on delta supplySS

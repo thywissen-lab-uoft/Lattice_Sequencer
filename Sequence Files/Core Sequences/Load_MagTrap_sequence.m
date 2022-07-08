@@ -203,7 +203,7 @@ seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
 seqdata.flags.do_Rb_uwave_transfer_in_ODT2 =0; % uWave Frequency sweep Rb 2-->1
 seqdata.flags.init_K_RF_sweep = 1;             % RF Freq Sweep K 9-->-9  
 seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
-seqdata.flags.mix_at_beginning = 1;             % RF Mixing -9-->-9+-7
+seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
     
 % Optical Evaporation
 seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
@@ -297,7 +297,7 @@ end
     %RHYS - Setting some specific parameters for DDS and objective
     %position. Silly that this is here. 
 
-    obj_piezo_V_List = [3];[5];[4.6];
+    obj_piezo_V_List = [2.7];[5];[4.6];
     % 0.1V = 700 nm, must be larger than  larger value means farther away from the window.
 %     obj_piezo_V = getScanParameter(obj_piezo_V_List, ...
 %     seqdata.scancycle, 1, 'Objective_Piezo_Z','V');%5
@@ -316,9 +316,9 @@ end
 %% Four-Pass
 
     % Set 4-Pass Frequency
-    detuning_list = [0];
+    detuning_list = [5];
     df = getScanParameter(detuning_list, seqdata.scancycle, seqdata.randcyclelist, 'detuning');
-    DDSFreq = 324.20625*MHz + df*kHz/4;
+    DDSFreq = 324.206*MHz + df*kHz/4;
     addOutputParam('FourPassFrequency',DDSFreq*1e-6,'MHz');
     
     doProgram4Pass = 0;

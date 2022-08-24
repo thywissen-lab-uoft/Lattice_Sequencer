@@ -37,10 +37,6 @@ seqdata.params.plug_shims = [...
 % Important for ramping QP at end of RF1B and during QP ramp down in ODT
 Cx=-0.0507;Cy=0.0045;Cz=0.0115;% new values, but they appear to be worse?
 
-% Cz_list = [.009:.0005:.012];
-% Cz = getScanParameter(Cz_list,...
-%     seqdata.scancycle,seqdata.randcyclelist,'Cz','arb');%192.5;
-
 % Old values, but they appear to be better?
 Cx = -0.0499;
 Cy = 0.0045;
@@ -74,10 +70,11 @@ seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been p
 
 %It's preferable to add a switch here than comment out code!
 %Special flags
-mag_trap_MOT = 0; %Absportion image of MOT after magnetic trapping
-MOT_abs_image = 0; %Absorption image of the MOT (no load in mag trap);
-transfer_recap_curve = 0; %Transport curve from MOT and back
-after_sci_cell_load = 0; %Abs image after loading into science cell
+mag_trap_MOT = 0;           % Absportion image of MOT after magnetic trapping
+MOT_abs_image = 0;          % Absorption image of the MOT (no load in mag trap);
+transfer_recap_curve = 0;   % Transport curve from MOT and back
+after_sci_cell_load = 0;    % Abs image after loading into science cell
+
 seqdata.flags.rb_vert_insitu_image = 0; 
 %take a vertical in-situ image of BEC in XDT to centre the microscope objective
 
@@ -104,8 +101,8 @@ seqdata.flags.MOT_flour_image = 0;
 iXon_movie = 0; %Take a multiple frame movie?
 seqdata.flags.image_atomtype = 1;   % 0: Rb; 1:K; 2: K+Rb (double shutter)
 seqdata.flags.image_loc = 1;        % 0: `+-+MOT cell, 1: science chamber    
-seqdata.flags.img_direction = 0;    %1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
-seqdata.flags.do_stern_gerlach = 0; %1: Do a gradient pulse at the beginning of ToF
+seqdata.flags.img_direction = 0;    % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
+seqdata.flags.do_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of ToF
 seqdata.flags.iXon = 0;             % use iXon camera to take an absorption image (only vertical)
 seqdata.flags.do_F1_pulse = 0;      % repump Rb F=1 before/during imaging
 
@@ -135,7 +132,8 @@ seqdata.flags.hor_transport_type = 1;
 
 % Vertical Transport Type
 seqdata.flags.ver_transport_type = 3; 
-%0: min jerk curves, 1: slow down in middle section curves, 2: none, 3: linear, 4: triple min jerk
+% 0: min jerk curves, 1: slow down in middle section curves, 
+% 2: none, 3: linear, 4: triple min jerk
 
 % For debugging: enable only certain coils during the transport
 % sequence (and only during the transport sequence!)
@@ -221,7 +219,7 @@ else
     seqdata.flags.QP_imaging = 1;
 end
 
-seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / alignment
+seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing/alignment
 
 %% Scope Trigger
 % Choose which scope trigger to use.
@@ -271,42 +269,39 @@ end
 %% Set Objective Piezo Voltage
 % If the cloud moves up, the voltage must increase to refocus
 %  (as the experiment warms up, selected plane tends to move up a bit)
-    
-    %RHYS - Setting some specific parameters for DDS and objective
-    %position. Silly that this is here. 
 
-    obj_piezo_V_List = [3];[5];[4.6];
-    % 0.1V = 700 nm, must be larger than  larger value means farther away from the window.
+obj_piezo_V_List = [3];[5];[4.6];
+% 0.1V = 700 nm, must be larger than  larger value means farther away from the window.
 %     obj_piezo_V = getScanParameter(obj_piezo_V_List, ...
 %     seqdata.scancycle, 1, 'Objective_Piezo_Z','V');%5
 
-    obj_piezo_V = getScanParameter(obj_piezo_V_List, ...
-    seqdata.scancycle, 1:length(obj_piezo_V_List), 'Objective_Piezo_Z','V');%5
+obj_piezo_V = getScanParameter(obj_piezo_V_List, ...
+seqdata.scancycle, 1:length(obj_piezo_V_List), 'Objective_Piezo_Z','V');%5
 
-    % obj_piezo_V = 6.8;
-    setAnalogChannel(calctime(curtime,0),'objective Piezo Z',obj_piezo_V,1);
-    addOutputParam('objpzt',obj_piezo_V,'V');
-    
-    %VV - I plan to puth the below line of code into a seperate code just
-    %for the purpose of initialization of the experiment. I don't think it
-    %is a good practice to keep commented code here just like this.
+% obj_piezo_V = 6.8;
+setAnalogChannel(calctime(curtime,0),'objective Piezo Z',obj_piezo_V,1);
+addOutputParam('objpzt',obj_piezo_V,'V');
+
+%VV - I plan to puth the below line of code into a seperate code just
+%for the purpose of initialization of the experiment. I don't think it
+%is a good practice to keep commented code here just like this.
     
 %% Four-Pass
 
-    % Set 4-Pass Frequency
-    detuning_list = [5];
-    df = getScanParameter(detuning_list, seqdata.scancycle, seqdata.randcyclelist, 'detuning');
-    DDSFreq = 324.206*MHz + df*kHz/4;
-    addOutputParam('FourPassFrequency',DDSFreq*1e-6,'MHz');
-    
-    doProgram4Pass = 0;
-    if doProgram4Pass
-        DDS_sweep(calctime(curtime,0),2,DDSFreq,DDSFreq,calctime(curtime,1));
-    end
+% Set 4-Pass Frequency
+detuning_list = [5];
+df = getScanParameter(detuning_list, seqdata.scancycle, seqdata.randcyclelist, 'detuning');
+DDSFreq = 324.206*MHz + df*kHz/4;
+addOutputParam('FourPassFrequency',DDSFreq*1e-6,'MHz');
 
-    
+doProgram4Pass = 0;
+if doProgram4Pass
+    DDS_sweep(calctime(curtime,0),2,DDSFreq,DDSFreq,calctime(curtime,1));
+end
 
-    % %Set the frequency of the first DP AOM 
+
+
+% %Set the frequency of the first DP AOM 
 %     D1_FM_List = [222.5];
 %     D1_FM = getScanParameter(D1_FM_List, seqdata.scancycle, seqdata.randcyclelist);%5
 %     setAnalogChannel(calctime(curtime,0),'D1 FM',D1_FM);
@@ -314,201 +309,202 @@ end
 
 %% Initialize Voltage levels
 
-    %RHYS - Initialization settings for a lot of channels. But, the 'reset
-    %values' should already be set in initialize_channels, and, I think,
-    %set at the end of the sequence. So, these should just be incorporated
-    %into that function properly instead of defined here. 
-    
-    % Perhaps to be safe, we just have another call to @Reset_Channels?
+%RHYS - Initialization settings for a lot of channels. But, the 'reset
+%values' should already be set in initialize_channels, and, I think,
+%set at the end of the sequence. So, these should just be incorporated
+%into that function properly instead of defined here. 
 
-    %Initialize modulation ramp to off.
-    setAnalogChannel(calctime(curtime,0),'Modulation Ramp',0);
+% Perhaps to be safe, we just have another call to @Reset_Channels?
 
-    %Initialize the Raman VVA to on.
-    setAnalogChannel(calctime(curtime,0),'Raman VVA',9.9);
+%Initialize modulation ramp to off.
+setAnalogChannel(calctime(curtime,0),'Modulation Ramp',0);
 
-    %close all RF and uWave switches
-    setDigitalChannel(calctime(curtime,0),'RF TTL',0);
-    setDigitalChannel(calctime(curtime,0),'Rb uWave TTL',0);
-    setDigitalChannel(calctime(curtime,0),'K uWave TTL',0);
-    setAnalogChannel(calctime(curtime,0),'uWave VVA',10);
-    
-    %Set both transfer switches back to initial positions
-    setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',0); %0 = RF
-    setDigitalChannel(calctime(curtime,0),'K/Rb uWave Transfer',1); %1 = Rb
-    setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',1); %0 = Anritsu, 1 = Sextupler
-    
-    %Reset Feschbach coil regulation
-    setDigitalChannel(calctime(curtime,0),'FB Integrator OFF',0);  %Integrator disabled
-    setDigitalChannel(calctime(curtime,0),'FB offset select',0);        %No offset voltage
-    
-    %turn off dipole trap beams
+%Initialize the Raman VVA to on.
+setAnalogChannel(calctime(curtime,0),'Raman VVA',9.9);
+
+%close all RF and uWave switches
+setDigitalChannel(calctime(curtime,0),'RF TTL',0);
+setDigitalChannel(calctime(curtime,0),'Rb uWave TTL',0);
+setDigitalChannel(calctime(curtime,0),'K uWave TTL',0);
+setAnalogChannel(calctime(curtime,0),'uWave VVA',10);
+
+%Set both transfer switches back to initial positions
+setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',0); %0 = RF
+setDigitalChannel(calctime(curtime,0),'K/Rb uWave Transfer',1); %1 = Rb
+setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',1); %0 = Anritsu, 1 = Sextupler
+
+%Reset Feschbach coil regulation
+setDigitalChannel(calctime(curtime,0),'FB Integrator OFF',0);  %Integrator disabled
+setDigitalChannel(calctime(curtime,0),'FB offset select',0);        %No offset voltage
+
+%turn off dipole trap beams
 %     setAnalogChannel(calctime(curtime,0),'dipoleTrap1',-0.5,1);
-    setAnalogChannel(calctime(curtime,0),'dipoleTrap1',seqdata.params.ODT_zeros(1));
+setAnalogChannel(calctime(curtime,0),'dipoleTrap1',seqdata.params.ODT_zeros(1));
 %     setAnalogChannel(calctime(curtime,0),'dipoleTrap2',-1,1);
-    setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));
-    setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
-    setDigitalChannel(calctime(curtime,0),'XDT Direct Control',1);
-    
-    %turn off lattice beams
+setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));
+setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
+setDigitalChannel(calctime(curtime,0),'XDT Direct Control',1);
+
+%turn off lattice beams
 %     setAnalogChannel(calctime(curtime,0),'xLattice',seqdata.params.lattice_zero(1));%-0.1,1);
-    setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);%-0.1,1);    
+setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);%-0.1,1);    
 %     setAnalogChannel(calctime(curtime,0),'yLattice',seqdata.params.lattice_zero(2));%-0.1,1);
-    setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);%-0.1,1);
+setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);%-0.1,1);
 
-    setAnalogChannel(calctime(curtime,0),'zLattice',-10,1);%-0.1,1);
-    
-    setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);
-    setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1);% Added 2014-03-06 in order to avoid integrator wind-up
-    
-    %set rotating waveplate back to full dipole power
-    AnalogFuncTo(calctime(curtime,0),'latticeWaveplate',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2500,2500,0,1);
-    
-    %set uWave Generator Selection back to SRS A by default
-    setDigitalChannel(curtime,'K uWave Source',0);
-    
-    % Set CDT piezo mirrors (X, Y, Z refer to channels, not spatial dimension)
-    CDT_piezo_X = 0;
-    CDT_piezo_Y = 0;
-    CDT_piezo_Z = 0;
-    setAnalogChannel(curtime,'Piezo mirror X',CDT_piezo_X,1);
-    setAnalogChannel(curtime,'Piezo mirror Y',CDT_piezo_Y,1);
-    setAnalogChannel(curtime,'Piezo mirror Z',CDT_piezo_Z,1);
+setAnalogChannel(calctime(curtime,0),'zLattice',-10,1);%-0.1,1);
 
-    %Close science cell repump shutter
-    setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',0); %1 = open, 0 = closed
-    setDigitalChannel(calctime(curtime,0),'K Sci Repump',0); %1 = open, 0 = closed
-        
-    %Kill beam AOM on to keep warm.
-    setDigitalChannel(calctime(curtime,0),'Kill TTL',1);
-    setDigitalChannel(curtime,'Downwards D2 Shutter',0);
-    
-    %Pulsed beams on to keep warm.
-    setDigitalChannel(calctime(curtime,0),'D1 OP TTL',1);
-    
-    %Set Raman AOM TTL to open for AOM to stay warmed up
-    %Turn off Raman shutter with TTL.
+setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);
+setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1);% Added 2014-03-06 in order to avoid integrator wind-up
+
+%set rotating waveplate back to full dipole power
+AnalogFuncTo(calctime(curtime,0),'latticeWaveplate',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2500,2500,0,1);
+
+%set uWave Generator Selection back to SRS A by default
+setDigitalChannel(curtime,'K uWave Source',0);
+
+% Set CDT piezo mirrors (X, Y, Z refer to channels, not spatial dimension)
+CDT_piezo_X = 0;
+CDT_piezo_Y = 0;
+CDT_piezo_Z = 0;
+setAnalogChannel(curtime,'Piezo mirror X',CDT_piezo_X,1);
+setAnalogChannel(curtime,'Piezo mirror Y',CDT_piezo_Y,1);
+setAnalogChannel(curtime,'Piezo mirror Z',CDT_piezo_Z,1);
+
+%Close science cell repump shutter
+setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',0); %1 = open, 0 = closed
+setDigitalChannel(calctime(curtime,0),'K Sci Repump',0); %1 = open, 0 = closed
+
+%Kill beam AOM on to keep warm.
+setDigitalChannel(calctime(curtime,0),'Kill TTL',1);
+setDigitalChannel(curtime,'Downwards D2 Shutter',0);
+
+%Pulsed beams on to keep warm.
+setDigitalChannel(calctime(curtime,0),'D1 OP TTL',1);
+
+%Set Raman AOM TTL to open for AOM to stay warmed up
+%Turn off Raman shutter with TTL.
 %     setDigitalChannel(calctime(curtime,5),'Raman Shutter',1);
-    setDigitalChannel(calctime(curtime,5),'Raman Shutter',0); %2021/03/30 new shutter
+setDigitalChannel(calctime(curtime,5),'Raman Shutter',0); %2021/03/30 new shutter
 
-    setDigitalChannel(calctime(curtime,0),'Raman TTL 1',1);
-    setDigitalChannel(calctime(curtime,0),'Raman TTL 2',1);
-    setDigitalChannel(calctime(curtime,0),'Raman TTL 2a',1);
+setDigitalChannel(calctime(curtime,0),'Raman TTL 1',1);
+setDigitalChannel(calctime(curtime,0),'Raman TTL 2',1);
+setDigitalChannel(calctime(curtime,0),'Raman TTL 2a',1);
 
-    setDigitalChannel(calctime(curtime,0),'Raman TTL 3',1);
-    setDigitalChannel(calctime(curtime,0),'Raman TTL 3a',1);
+setDigitalChannel(calctime(curtime,0),'Raman TTL 3',1);
+setDigitalChannel(calctime(curtime,0),'Raman TTL 3a',1);
 
-    %Set 'D1' Raman AOMs to open, shutter closed.
-    setDigitalChannel(calctime(curtime,0),'D1 TTL',1);
-    setDigitalChannel(calctime(curtime,0),'D1 Shutter',0);
-    
-    %Set TTL to keep F-pump and mF-pump warm.
-    setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
-    setDigitalChannel(calctime(curtime,0),'FPump Direct',1);
-    setAnalogChannel(calctime(curtime,0),'F Pump',9.99);
-    
-    %Plug beam
-    setDigitalChannel(calctime(curtime,0),'Plug Shutter',0); %1: off, 0: on
-   
-    %High-field imaging
-    setDigitalChannel(calctime(curtime,0),'High Field Shutter',0);
-    setDigitalChannel(calctime(curtime,0),'K High Field Probe',1);
-    
-    % Turn off Rigol modulation
-    addr_mod_xy = 9; % ch1 x mod, ch2 y mod
-    addr_z = 5; %ch1 z lat, ch2 z mod  
-    ch_off = struct;
-    ch_off.STATE = 'OFF';
-    ch_off.AMPLITUDE = 0;
-    ch_off.FREQUENCY = 1;
-    
-    programRigol(addr_mod_xy,ch_off,ch_off);   % Turn off xy mod
-    programRigol(addr_z,[],ch_off);             % Turn off z mod
+%Set 'D1' Raman AOMs to open, shutter closed.
+setDigitalChannel(calctime(curtime,0),'D1 TTL',1);
+setDigitalChannel(calctime(curtime,0),'D1 Shutter',0);
+
+%Set TTL to keep F-pump and mF-pump warm.
+setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
+setDigitalChannel(calctime(curtime,0),'FPump Direct',1);
+setAnalogChannel(calctime(curtime,0),'F Pump',9.99);
+
+%Plug beam
+setDigitalChannel(calctime(curtime,0),'Plug Shutter',0); %1: off, 0: on
+
+%High-field imaging
+setDigitalChannel(calctime(curtime,0),'High Field Shutter',0);
+setDigitalChannel(calctime(curtime,0),'K High Field Probe',1);
+
+% Turn off Rigol modulation
+addr_mod_xy = 9; % ch1 x mod, ch2 y mod
+addr_z = 5; %ch1 z lat, ch2 z mod  
+ch_off = struct;
+ch_off.STATE = 'OFF';
+ch_off.AMPLITUDE = 0;
+ch_off.FREQUENCY = 1;
+
+programRigol(addr_mod_xy,ch_off,ch_off);   % Turn off xy mod
+programRigol(addr_z,[],ch_off);             % Turn off z mod
 
     
 %% Make sure Shim supply relay is on
 
-    %Turn on MOT Shim Supply Relay
-    setDigitalChannel(calctime(curtime,0),33,1);
+%Turn on MOT Shim Supply Relay
+setDigitalChannel(calctime(curtime,0),33,1);
 
-    %Turn shim multiplexer to MOT shims    
-    setDigitalChannel(calctime(curtime,0),37,0);  
+%Turn shim multiplexer to MOT shims    
+setDigitalChannel(calctime(curtime,0),37,0);  
 
 %% Prepare to Load into the Magnetic Trap
 
-    if ( seqdata.flags.controlled_load == 1 )
+if ( seqdata.flags.controlled_load == 1 )
 
-        %turn off trap
-        setAnalogChannel(curtime,8,0);
-        setDigitalChannel(curtime,4,0);
+    %turn off trap
+    setAnalogChannel(curtime,8,0);
+    setDigitalChannel(curtime,4,0);
 
-        %turn trap back on
+    %turn trap back on
 curtime = Load_MOT(calctime(curtime,500),30);
 
-        %wait fixed amount of time
+    %wait fixed amount of time
 curtime = calctime(curtime,controlled_load_time);
 
-    else
-        %RHYS - which historic reasons? Is it important?        
-        %this has been here for historic reasons
-        curtime = calctime(curtime,1500);
-    end   
+else
+    %RHYS - which historic reasons? Is it important?        
+    %this has been here for historic reasons
+    curtime = calctime(curtime,1500);
+end   
 
 curtime = Prepare_MOT_for_MagTrap(curtime);
-    %RHYS - Should integrate the following lines into the above function. 
 
-    %Open other AOMS to keep them warm. Why ever turn them off for long
-    %when we have shutters to do our dirty work?
-    setDigitalChannel(calctime(curtime,10),'K Trap TTL',0);
-    setAnalogChannel(calctime(curtime,10),'K Trap AM',0.8);
-    
-    setDigitalChannel(calctime(curtime,10),'Rb Trap TTL',0);    
-    setAnalogChannel(calctime(curtime,10),'Rb Trap AM',0.7);
+%RHYS - Should integrate the following lines into the above function. 
 
-    setDigitalChannel(calctime(curtime,10),'K Repump TTL',0);
-    setAnalogChannel(calctime(curtime,10),'K Repump AM',0.45);
-    
-    setAnalogChannel(calctime(curtime,10),'Rb Repump AM',0.9);
+%Open other AOMS to keep them warm. Why ever turn them off for long
+%when we have shutters to do our dirty work?
+setDigitalChannel(calctime(curtime,10),'K Trap TTL',0);
+setAnalogChannel(calctime(curtime,10),'K Trap AM',0.8);
+
+setDigitalChannel(calctime(curtime,10),'Rb Trap TTL',0);    
+setAnalogChannel(calctime(curtime,10),'Rb Trap AM',0.7);
+
+setDigitalChannel(calctime(curtime,10),'K Repump TTL',0);
+setAnalogChannel(calctime(curtime,10),'K Repump AM',0.45);
+
+setAnalogChannel(calctime(curtime,10),'Rb Repump AM',0.9);
 
 if ~seqdata.flags.MOT_flour_image
     
 %% Load into Magnetic Trap
 
-    %RHYS - One of the first examples of doing something based on a
-    %confusing series of if statements and conditions. Works, but is highly
-    %error prone and has become very convoluted over time as options have
-    %been added and removed. 
+%RHYS - One of the first examples of doing something based on a
+%confusing series of if statements and conditions. Works, but is highly
+%error prone and has become very convoluted over time as options have
+%been added and removed. 
 
-    if ~( MOT_abs_image || seqdata.flags.image_type==4 )
+if ~( MOT_abs_image || seqdata.flags.image_type==4 )
 
-        %same as molasses (assume this zero's external fields)
+    %same as molasses (assume this zero's external fields)
 
-        yshim2 = 0.25;%0.25; %0.9
-        xshim2 = 0.25;%0.2; %0.1
-        zshim2 = 0.05;%0.05; %0.3  0.0 Dec 4th 2013
-        
-        %RHYS - Again, probably control these things within functions for
-        %code readability. 
-        
-        %optimize shims for loading into mag trap
-        setAnalogChannel(calctime(curtime,0.01),'Y Shim',yshim2,3); %1.25
-        setAnalogChannel(calctime(curtime,0.01),'X Shim',xshim2,2); %0.3 
-        setAnalogChannel(calctime(curtime,0.01),'Z Shim',zshim2,2); %0.2
+    yshim2 = 0.25;%0.25; %0.9
+    xshim2 = 0.25;%0.2; %0.1
+    zshim2 = 0.05;%0.05; %0.3  0.0 Dec 4th 2013
 
-        %RHYS - the second important function, which loads the MOT into the magtrap. 
+    %RHYS - Again, probably control these things within functions for
+    %code readability. 
+
+    %optimize shims for loading into mag trap
+    setAnalogChannel(calctime(curtime,0.01),'Y Shim',yshim2,3); %1.25
+    setAnalogChannel(calctime(curtime,0.01),'X Shim',xshim2,2); %0.3 
+    setAnalogChannel(calctime(curtime,0.01),'Z Shim',zshim2,2); %0.2
+
+    %RHYS - the second important function, which loads the MOT into the magtrap. 
 
 curtime = Load_MagTrap_from_MOT(curtime);
 
-        if transfer_recap_curve && (seqdata.flags.hor_transport_type == 2)
+    if transfer_recap_curve && (seqdata.flags.hor_transport_type == 2)
 curtime = calctime(curtime,1000);
-        end
-
     end
-        
-    %turn off shims
-    setAnalogChannel(calctime(curtime,0),'Y Shim',0.0,3); %3
-    setAnalogChannel(calctime(curtime,0),'X Shim',0.0,2); %2
-    setAnalogChannel(calctime(curtime,0),'Z Shim',0.0,2); %2
+
+end
+
+%turn off shims
+setAnalogChannel(calctime(curtime,0),'Y Shim',0.0,3); %3
+setAnalogChannel(calctime(curtime,0),'X Shim',0.0,2); %2
+setAnalogChannel(calctime(curtime,0),'Z Shim',0.0,2); %2
 
 %% Transport 
 % Use the CATS to mangetically transport the atoms from the MOT cell to the

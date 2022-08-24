@@ -451,7 +451,7 @@ if ~seqdata.flags.MOT_flour_image
 %error prone and has become very convoluted over time as options have
 %been added and removed. 
 
-if ~( MOT_abs_image || seqdata.flags.image_type==4 )
+if ~(seqdata.flags.image_type==4 )
 
     %same as molasses (assume this zero's external fields)
 
@@ -470,10 +470,6 @@ if ~( MOT_abs_image || seqdata.flags.image_type==4 )
     %RHYS - the second important function, which loads the MOT into the magtrap. 
 
 curtime = Load_MagTrap_from_MOT(curtime);
-
-    if transfer_recap_curve && (seqdata.flags.hor_transport_type == 2)
-curtime = calctime(curtime,1000);
-    end
 
 end
 
@@ -1076,13 +1072,9 @@ k_MOT_detuning_list = 22;
 k_MOT_detuning = getScanParameter(k_MOT_detuning_list,...
     seqdata.scancycle,seqdata.randcyclelist,'k_MOT_detuning');        
 
-k_repump_shift = 0;  %before2016-11-25:0 %0
+k_repump_shift = 0;
 addOutputParam('k_repump_shift',k_repump_shift);
 mot_wait_time = 50;
-
-if seqdata.flags.image_type==5
-    mot_wait_time = 0;
-end
 
 % Load the MOT
 curtime = Load_MOT(calctime(curtime,mot_wait_time),[rb_MOT_detuning k_MOT_detuning]);
@@ -1090,13 +1082,7 @@ curtime = Load_MOT(calctime(curtime,mot_wait_time),[rb_MOT_detuning k_MOT_detuni
 % Set the repump detuning
 setAnalogChannel(curtime,'K Repump FM',k_repump_shift,2);
 
-if ( seqdata.flags.do_dipole_trap == 1 )
-%         curtime = calctime(curtime,dip_holdtime);        
-elseif mag_trap_MOT || MOT_abs_image    
-    curtime = calctime(curtime,100);        
-else
-    curtime = calctime(curtime,1*500);
-end
+%% Transport Reset
 
 % Reset transport relay (Coil 3 vs Coil 11)
 curtime = setDigitalChannel(calctime(curtime,10),'Transport Relay',0);

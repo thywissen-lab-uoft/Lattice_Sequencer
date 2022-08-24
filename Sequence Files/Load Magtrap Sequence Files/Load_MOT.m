@@ -87,7 +87,9 @@ if (seqdata.atomtype==3 || seqdata.atomtype==4) && rb_detuning~=-100
     %This modulates the frequency and amplitude of the Rb Trap AOM
     %frequency source (Rigol DG 4162) (Device 8). 
     rb_trap_freq_list =  [109]; % in MHz
-    rb_trap_freq=getScanParameter(rb_trap_freq_list,seqdata.scancycle,seqdata.randcyclelist,'rb_trap_AOM_FM', 'MHz');
+    rb_trap_freq=getScanParameter(rb_trap_freq_list,...
+        seqdata.scancycle,seqdata.randcyclelist,...
+        'rb_trap_AOM_FM', 'MHz');
     
     rb_trap_amp = 1.08; %in V
     rb_trap_offset = 0; %in V
@@ -230,54 +232,8 @@ else
     error('Invalid MOT location');    
 end
 
-%% MOT fly away
-% CF : I have no idea what this is for. Can we delete it?
-
-flyaway = 0;
-if flyaway       
-    %Set Frequency 
-    curtime = setAnalogChannel(calctime(curtime,3000),5,10); %32.8MHz detuning
-    %setAnalogChannel(calctime(curtime,load_MOT_tof),34,6575);
-    
-%     %turn on the Y (quantizing) shim 
-%     setAnalogChannel(calctime(curtime,-1),19,1.0); %1.0 for molassess
-%     %turn on the X (left/right) shim 
-%     setAnalogChannel(calctime(curtime,-1),27,0.3); %0.30 for molasses
-%     %turn on the Z (top/bottom) shim 
-%     setAnalogChannel(calctime(curtime,-1),28,0.1); %0.10 for molasses  
-    
-    %lower repump intensity
-    curtime = setAnalogChannel(curtime,25,0.4);
-    curtime = setAnalogChannel(curtime,26,0.7);
-
-    %TTL
-    curtime = setDigitalChannel(curtime,16,0); %MOT TTL
-    %CATS
-    curtime = setAnalogChannel(curtime,8,0); %13.5G/cm        
-end
-%% MOT Flicker
-% CF : I have no idea what this is for. Can we delete it?
-
-MOT_flicker = 0;
-if MOT_flicker
-    for step = 1:1    
-        curtime = setAnalogChannel(calctime(curtime,1000),8,0); 
-        curtime = setAnalogChannel(calctime(curtime,2000),8,10); 
-    end
-%     curtime = calctime(curtime,2000);
-%     setAnalogChannel(curtime,8,0); %13G/cm
-%     curtime = calctime(curtime,1000);
-%     setAnalogChannel(curtime,8,BGrad)        
-end
-
-% curtime = calctime(curtime,10000);
-% turn_off_beam(curtime,1,1,3);
-% curtime = MOT_fluor_image(calctime(curtime,30));
-
-%curtime = calctime(curtime,-500);
-
 %% MOT PULSE
-doMOTPulse = 1;
+doMOTPulse = 0;
 
 if doMOTPulse
     disp('Pulsing MOT Beams for PD measurements');
@@ -305,9 +261,9 @@ if doMOTPulse
     % Turn on Rb Beams
     setDigitalChannel(calctime(curtime,tP),'Rb Trap Shutter',1);  
     setDigitalChannel(calctime(curtime,tP),'Rb Repump Shutter',1);    
-    curtime = calctime(curtime,tP);
-    
+    curtime = calctime(curtime,tP);    
 end
+
 %% UV ON
 %Turn on UV cataract-inducing light.
 
@@ -315,11 +271,6 @@ disp('Turning on UV light');
 UV_On_Time = seqdata.params.UV_on_time;
 setDigitalChannel(calctime(curtime,UV_On_Time),'UV LED',1); %1 = on; 0, off
 curtime = setAnalogChannel(calctime(curtime,UV_On_Time),'UV Lamp 2',5);
-
-
-% setDigitalChannel(calctime(curtime,0),12,1);
-% setDigitalChannel(calctime(curtime,5000),12,0);
-% dispLineStr('hello',curtime);'
 
 
 %% End it

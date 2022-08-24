@@ -2365,7 +2365,7 @@ if do_K_uwave_spectroscopy
     spect_pars.delta_freq = 25/1000;
     spect_pars.mod_dev = spect_pars.delta_freq;
 
-    pulse_time_list =[10];40;[spect_pars.delta_freq*1000/5]; %Keep fixed at 5kHz/ms.
+    pulse_time_list =[2 4 6 8 10 15 20 30];40;[spect_pars.delta_freq*1000/5]; %Keep fixed at 5kHz/ms.
     spect_pars.pulse_length = getScanParameter(pulse_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'uwave_pulse_time');
     spect_pars.pulse_type = 1;  %0 - Basic Pulse; 1 - Ramp up and down with min-jerk

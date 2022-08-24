@@ -60,18 +60,17 @@ addOutputParam('molasses_hold_list',seqdata.params. molasses_time);
 seqdata.params.XDT_area_ratio = 1; % DT2 with respect to DT1
 
 % Rb Probe Beam AOM Order
-seqdata.flags.Rb_Probe_Order = 1;   %1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
-                                %2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
+seqdata.flags.Rb_Probe_Order = 1;   % 1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
+                                    % 2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
 seqdata.flags.in_trap_OP = 0; 
 seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been programmed via GPIB
 
 
 %% Flags
 
-%RHYS - these can be switched on for certain predefined sequences. It's
-%a good idea, but I have never used them (except MOT_abs_image). They
-%should be studied before considering deleting (transfer recap for
-%instance was used for benchmarking transport system). 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %It's preferable to add a switch here than comment out code!
 %Special flags
@@ -85,25 +84,13 @@ seqdata.flags.rb_vert_insitu_image = 0;
 seqdata.flags.controlled_load = 0; %do a specific load time
 controlled_load_time = 20000;
 
-%RHYS - go through flags and remove obsolete options. PXU and VV should
-%know most of what is and is not useful, but should still be done
-%carefully. Obviously the code that would be called by the flag must
-%also be modified. 
-
-%RHYS - the flag system makes some sense, in that it is useful for
-%specifying what parts of the sequence to run, whether to look at Rb or
-%K, etc. Compared with the CHIP lab approach of running a different
-%file for each possible sequence, this seems more natural. However, it
-%should be streamlined: only a few flags are ever actually switched for
-%controlling the sequence these days. The others are basically
-%permanent, and thus should no longer be considered 'flags', but more
-%like 'fixed properties'. 
+seqdata.params.UV_on_time = 10000;
+% UV on time + savingtime + wait time = real wait time between cycles%
+% usually 15s for non XDT
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% CF : These flags need to be cleaned up and make more sense
-
 %RHYS - really don't need so many image types, and why is iXon_movie
 %its own thing?
 
@@ -137,10 +124,6 @@ seqdata.params.tof = getScanParameter(tof_list,...
 tof_krb_diff_list= [0];
 seqdata.params.tof_krb_diff = getScanParameter(tof_krb_diff_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof_krb_diff','ms');
-
-
-seqdata.params.UV_on_time = 10000; % UV on time + savingtime + wait time = real wait time between cycles%
-% usually 15s for non XDT
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Mag Trap : TRANSPORT, RF1A, and RF1B %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -204,20 +187,19 @@ seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
 seqdata.flags.do_Rb_uwave_transfer_in_ODT2 =0;  % uWave Frequency sweep Rb 2-->1
 seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
 seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
-seqdata.flags.mix_at_beginning = 1;             % RF Mixing -9-->-9+-7
+seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
     
 % Optical Evaporation
 % 1: exp 2: fast linear 3: piecewise linear
 seqdata.flags.CDT_evap = 1;       
 
 % After optical evaporation
-seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
+seqdata.flags.do_D1OP_post_evap = 1;            % D1 pump
 seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 
 % High Field Evaporation (not used yet; for near BEC/BCS)
 seqdata.flags.CDT_evap_2_high_field= 0;    
 
- 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OPTICAL LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1153,46 +1135,43 @@ setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
 
 
 %% Load MOT
-% CF : This should be it's own subfunction. No need to put it in the main
-% code
 dispLineStr('Loading MOT.',curtime);
 
+rb_mot_det_List= 32;
+rb_MOT_detuning=getScanParameter(rb_mot_det_List,...
+    seqdata.scancycle,seqdata.randcyclelist,'rb_MOT_detuning');
 
-    rb_mot_det_List= 32;[32];30;
-    rb_MOT_detuning=getScanParameter(rb_mot_det_List,seqdata.scancycle,seqdata.randcyclelist,'rb_MOT_detuning');
-        
-    k_MOT_detuning_list = [22];
-    k_MOT_detuning = getScanParameter(k_MOT_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'k_MOT_detuning');        
- 
-    
-    k_repump_shift = 0;  %before2016-11-25:0 %0
-    addOutputParam('k_repump_shift',k_repump_shift);
-    mot_wait_time = 50;
-  
-    if seqdata.flags.image_type==5
-        mot_wait_time = 0;
-    end
-        
-    %call Load_MOT function
-    curtime = Load_MOT(calctime(curtime,mot_wait_time),[rb_MOT_detuning k_MOT_detuning]);
-        
-    setAnalogChannel(curtime,'K Repump FM',k_repump_shift,2);
-      
-    if ( seqdata.flags.do_dipole_trap == 1 )
+k_MOT_detuning_list = 22;
+k_MOT_detuning = getScanParameter(k_MOT_detuning_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'k_MOT_detuning');        
+
+k_repump_shift = 0;  %before2016-11-25:0 %0
+addOutputParam('k_repump_shift',k_repump_shift);
+mot_wait_time = 50;
+
+if seqdata.flags.image_type==5
+    mot_wait_time = 0;
+end
+
+% Load the MOT
+curtime = Load_MOT(calctime(curtime,mot_wait_time),[rb_MOT_detuning k_MOT_detuning]);
+
+% Set the repump detuning
+setAnalogChannel(curtime,'K Repump FM',k_repump_shift,2);
+
+if ( seqdata.flags.do_dipole_trap == 1 )
 %         curtime = calctime(curtime,dip_holdtime);        
-    elseif mag_trap_MOT || MOT_abs_image    
-        curtime = calctime(curtime,100);        
-    else
-        curtime = calctime(curtime,1*500);%25000
-    end
+elseif mag_trap_MOT || MOT_abs_image    
+    curtime = calctime(curtime,100);        
+else
+    curtime = calctime(curtime,1*500);
+end
 
-    %set relay back
-curtime = setDigitalChannel(calctime(curtime,10),28,0);
+% Reset transport relay (Coil 3 vs Coil 11)
+curtime = setDigitalChannel(calctime(curtime,10),'Transport Relay',0);
 
-    %RHYS - Following is some irrelevant stuff and some quality of life stuff,
-    %including an important check on overall cycle time. 
-    
 %% Scope trigger selection
+
 SelectScopeTrigger(scope_trigger);
 
 %% Timeout

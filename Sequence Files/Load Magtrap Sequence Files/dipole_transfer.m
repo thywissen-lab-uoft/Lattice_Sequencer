@@ -39,7 +39,7 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     dipole_holdtime_before_evap = 0;    % not a flag but a value
     ramp_Feshbach_B_before_CDT_evap = 0;
 
-    Evap_End_Power_List = [0.06];0.08;[0.08];
+    Evap_End_Power_List = [0.08];0.08;[0.08];
     
     % Ending optical evaporation
     exp_end_pwr = getScanParameter(Evap_End_Power_List,...

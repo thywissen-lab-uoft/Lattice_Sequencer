@@ -132,7 +132,12 @@ end
 % Rubidium Trap Detuning
 if (seqdata.atomtype==3 || seqdata.atomtype==4) && rb_detuning~=-100 %Rb-87
     setAnalogChannel(calctime(curtime,load_MOT_tof),...
-        34,6590+rb_detuning ); %775 is resonance %6585 at room temp
+        'Rb Beat Note FM',6590+rb_detuning ); %775 is resonance %6585 at room temp
+    
+    MOT_trap_detuning_real = -28;
+    f_osc = calcOffsetLockFreq(MOT_trap_detuning_real,'MOT');
+    DDS_id = 3;    
+    DDS_sweep(calctime(curtime,load_MOT_tof),DDS_id,f_osc*1e6,f_osc*1e6,1)    
 end
 
 %% Turn on MOT Coil

@@ -58,14 +58,14 @@ function params = Load_Absorption_Image_Parameters()
     
     %% HF imaging
 %     % Potassium -HF -Xcam : settting the DP HF imaging AOM freq
-%     kHFdet_shift_list = [-4:0.5:2];%-1
-%     kHFdet_shift = getScanParameter(kHFdet_shift_list,seqdata.scancycle,...
-%         seqdata.randcyclelist,'HF_kdet_shift');
+    kHFdet_shift_list = [-8];%-1
+    kHFdet_shift = getScanParameter(kHFdet_shift_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'HF_kdet_shift');
 
 
 %     params.detunings.K.X.negative9.HF.normal = -7 -0.4;
 %    %195G:-1.5 206:-0.4
-    params.detunings.K.X.negative9.HF.normal = -7-0.4; %-1.5
+    params.detunings.K.X.negative9.HF.normal = kHFdet_shift;-7-0.4; %-1.5
     
     params.detunings.K.X.negative9.HF.SG = -4.5; %
     
@@ -108,15 +108,15 @@ function params = Load_Absorption_Image_Parameters()
     SG_QP_val_list = [7.5];%7.5;%5
     SG_QP_val = getScanParameter(SG_QP_val_list,seqdata.scancycle,seqdata.randcyclelist,'SG_QP_val');
     
-    % mF Stern Gerlach For |9,-9> vs |9,-7> low field (15ms TOF K)
-    params.SG.SG_QP_val = 7.5*1.78;
-    params.SG.SG_QP_pulsetime = 5;
-    params.SG.SG_QP_ramptime =2;
+%     mF Stern Gerlach For |9,-9> vs |9,-7> low field (15ms TOF K)
+%     params.SG.SG_QP_val = 7.5*1.78;
+%     params.SG.SG_QP_pulsetime = 5;
+%     params.SG.SG_QP_ramptime =2;
 
-%     % F Stern Gerlach : |9,-9> vs |7,-7> low field (~20G) (15ms TOF)
-%     params.SG.SG_QP_val = 1.78*5;
-%     params.SG.SG_QP_pulsetime = 2; 
-%     params.SG.SG_QP_ramptime =1; 
+% %     % F Stern Gerlach : |9,-9> vs |7,-7> low field (~20G) (15ms TOF)
+    params.SG.SG_QP_val = 1.78*5;
+    params.SG.SG_QP_pulsetime = 2; 
+    params.SG.SG_QP_ramptime =1; 
     
     % Stern Gerlach feed forward
     params.SG.SG_QP_FF = 23*(params.SG.SG_QP_val/30); % voltage FF on delta supplySS

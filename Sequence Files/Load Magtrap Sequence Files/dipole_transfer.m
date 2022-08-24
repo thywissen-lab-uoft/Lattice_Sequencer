@@ -39,7 +39,7 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     dipole_holdtime_before_evap = 0;    % not a flag but a value
     ramp_Feshbach_B_before_CDT_evap = 0;
 
-    Evap_End_Power_List = [0.07];0.08;[0.08];
+    Evap_End_Power_List = [0.06];0.08;[0.08];
     
     % Ending optical evaporation
     exp_end_pwr = getScanParameter(Evap_End_Power_List,...
@@ -247,9 +247,7 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
         
         dIx=dI_QP*Cx;
         dIy=dI_QP*Cy;
-        dIz=dI_QP*Cz;      
-        
-        
+        dIz=dI_QP*Cz;   
                 
         % Calculate the new shim values
         I_shim = I_shim + [dIx dIy dIz];        
@@ -264,12 +262,6 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
         AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'X Shim',...
             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
             qp_ramp_down_time1,qp_ramp_down_time1,I_shim(1),3); 
-        
-        % Turn on RF knife
-        %Maybe not beneficially when transferring at lower freqs
-        %cut_freq = 0.6;
-        %do_evap_stage(calctime(curtime,qp_ramp_down_start_time+200), ...
-%             0, [8 8]*1E6, qp_ramp_down_time1-200, [-2], 0, 1);
 
         % Turn off plug
         %AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),33,...
@@ -544,6 +536,14 @@ curtime  =  AnalogFuncTo(calctime(curtime,0),'FB current',...
 
         setAnalogChannel(calctime(curtime,-10),4,0.0); % set amplitude   0.7
         AnalogFuncTo(calctime(curtime,-15),34,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,6590-237); % Ramp Rb trap laser to resonance   237
+
+        probe32_trap_detuning = 0;
+        f_osc = calcOffsetLockFreq(probe32_trap_detuning,'Probe32');
+        DDS_id = 3;    
+        DDS_sweep(calctime(curtime,-15),DDS_id,f_osc*1e6,f_osc*1e6,1)    
+        
+        
+        
         AnalogFuncTo(calctime(curtime,-15),35,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,1.2,1); % Ramp FF to Rb trap beat-lock 
         setDigitalChannel(calctime(curtime,-10),25,1); % open Rb probe shutter
         setDigitalChannel(calctime(curtime,-10),24,1); % disable AOM rf (TTL), just to be sure
@@ -2396,7 +2396,7 @@ if (seqdata.flags.do_D1OP_post_evap==1 && seqdata.flags.CDT_evap==1)
         dispLineStr('D1 Optical Pumping post op evap',curtime);  
 
     % optical pumping pulse length
-    op_time_list = [1]; %1
+    op_time_list = [5];[1]; %1
     optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle,...
         seqdata.randcyclelist, 'ODT_op_time2','ms');
     

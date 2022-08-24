@@ -66,9 +66,9 @@ ptypes = struct;         % Structure which contains boolean of random for each p
 % punits.latt_depth = 'Er';
 % ptypes.latt_depth = 'ordered';
 % 
-% params.HF_wait_time_5                   = [1:10];
-% punits.HF_wait_time_5 = 'ms';
-% ptypes.HF_wait_time_5 = 'random';
+params.HF_wait_time_5 =[5]; [1:10];
+punits.HF_wait_time_5 = 'ms';
+ptypes.HF_wait_time_5 = 'random';
 
 % % 
 % params.HF_spec_latt_depth = [60];

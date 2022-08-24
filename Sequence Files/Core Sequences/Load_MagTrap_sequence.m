@@ -24,14 +24,14 @@ GHz = 1E9;
 %% Constants and Parameters
 % These are properties of the machine that are not changed. 
 
-%Ambient field cancelling values (ramp to these at end of XDT loading)
+% Ambient field cancelling values (ramp to these at end of XDT loading)
 seqdata.params. shim_zero = [(0.1585-0.0160), (-0.0432-0.022), (-0.0865-0.015)];
 
-%Shim values that align the plugged-QP trap (these are non-zero, since the
-%centre of the imaging window is different from the natural QP centre)
-seqdata.params.plug_shims = [(seqdata.params. shim_zero(1)-1-0.04-0.3),...
+% Shim values that align the plugged-QP trap to the center of the 
+seqdata.params.plug_shims = [...
+    (seqdata.params. shim_zero(1)-1-0.04-0.3),...
     (seqdata.params. shim_zero(2)+0.125), ...
-    (seqdata.params. shim_zero(3)+ 0.35)];%0.35 + 0.55)];
+    (seqdata.params. shim_zero(3)+ 0.35)];
 
 % Slope relation between shim and QP currents to keep field center fixed.
 % Important for ramping QP at end of RF1B and during QP ramp down in ODT
@@ -180,7 +180,7 @@ RF_1B_time_scale_list = [0.8];0.8;
 RF_1B_time_scale = getScanParameter(RF_1B_time_scale_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1B_time_scale');
 
-rf_evap_time_scale = [0.6 RF_1B_time_scale];[0.6 .9];[0.7 0.9];
+rf_evap_time_scale = [0.6 RF_1B_time_scale];
 
 % RF1A Ending Frequency
 RF_1A_Final_Frequency_list = [16];%16
@@ -197,22 +197,24 @@ RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Dipole trap
-seqdata.flags.do_dipole_trap = 1; % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
+% 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
+seqdata.flags.do_dipole_trap = 1; 
 seqdata.params.ODT_zeros = [-0.04,-0.04];
 seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
-seqdata.flags.do_Rb_uwave_transfer_in_ODT2 =0; % uWave Frequency sweep Rb 2-->1
-seqdata.flags.init_K_RF_sweep = 1;             % RF Freq Sweep K 9-->-9  
+seqdata.flags.do_Rb_uwave_transfer_in_ODT2 =0;  % uWave Frequency sweep Rb 2-->1
+seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
 seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
-seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
+seqdata.flags.mix_at_beginning = 1;             % RF Mixing -9-->-9+-7
     
 % Optical Evaporation
-seqdata.flags.CDT_evap = 1;        % 1: exp. evap, 2: fast lin. rampdown to test depth, 3: piecewise lin. evap 
+% 1: exp 2: fast linear 3: piecewise linear
+seqdata.flags.CDT_evap = 1;       
 
 % After optical evaporation
 seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
 seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 
-% High Field Evaporation
+% High Field Evaporation (not used yet; for near BEC/BCS)
 seqdata.flags.CDT_evap_2_high_field= 0;    
 
  
@@ -237,16 +239,10 @@ else
     seqdata.flags.QP_imaging = 1;
 end
 
-%RHYS - these are kind of useless.
-%VV - Although these are set to zero there are a bunch of occurrances of these flags in the this
-%sequeence and other files. So keeping these for now. Will be deleted later
 seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing / alignment
 
 %% Scope Trigger
-
 % Choose which scope trigger to use.
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OPTICAL LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -297,7 +293,7 @@ end
     %RHYS - Setting some specific parameters for DDS and objective
     %position. Silly that this is here. 
 
-    obj_piezo_V_List = [2.7];[5];[4.6];
+    obj_piezo_V_List = [3];[5];[4.6];
     % 0.1V = 700 nm, must be larger than  larger value means farther away from the window.
 %     obj_piezo_V = getScanParameter(obj_piezo_V_List, ...
 %     seqdata.scancycle, 1, 'Objective_Piezo_Z','V');%5
@@ -335,7 +331,6 @@ end
 %     addOutputParam('D1_DP_FM',D1_FM);
 
 %% Initialize Voltage levels
-% and initialize repump imaging.
 
     %RHYS - Initialization settings for a lot of channels. But, the 'reset
     %values' should already be set in initialize_channels, and, I think,
@@ -539,7 +534,7 @@ curtime = calctime(curtime,1000);
 
     dispLineStr('Magnetic Transport',curtime);
 
-        % Open kitten relay
+    % Open kitten relay
     curtime = setDigitalChannel(curtime,'Kitten Relay',1);
 
     % Trigger Labjack for monitoring currents
@@ -1162,17 +1157,11 @@ setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
 % code
 dispLineStr('Loading MOT.',curtime);
 
-    %RHYS - a lot of parameters and cleaning to do here. I've also always
-    %thought it was odd that MOT loading happened at the end of the sequence,
-    %and it makes it tricky to optimize the MOT. The reason is probably due to
-    %the extra wait time spent saving files after the sequence completes... may
-    %as well have a MOT loading while this happens. If that were fixed, this
-    %could instead be the first thing in the sequence. 
+
     rb_mot_det_List= 32;[32];30;
-    %32 before 2019.1.1
     rb_MOT_detuning=getScanParameter(rb_mot_det_List,seqdata.scancycle,seqdata.randcyclelist,'rb_MOT_detuning');
- 
-    k_MOT_detuning_list = [22];% before 2018-02-14: 18
+        
+    k_MOT_detuning_list = [22];
     k_MOT_detuning = getScanParameter(k_MOT_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'k_MOT_detuning');        
  
     

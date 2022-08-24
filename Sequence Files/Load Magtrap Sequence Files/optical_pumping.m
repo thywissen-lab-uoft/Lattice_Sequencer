@@ -16,7 +16,7 @@ curtime = timein;
 
 %% Optical pumping parameters
 % tmax=15;
-optime_list = [3.1];[2];
+optime_list = [3.1];[3.1];[2];
 optime = getScanParameter(optime_list,seqdata.scancycle,seqdata.randcyclelist,'optime','ms');
 
 % K
@@ -125,6 +125,14 @@ if (seqdata.atomtype == 3 || seqdata.atomtype == 4)
 %     setAnalogChannel(calctime(curtime,-5),'Rb Beat Note FF',0.18,1);
 %     setDigitalChannel(calctime(curtime,-0.5),50,1);
     setAnalogChannel(calctime(curtime,0.0),'Rb Beat Note FM',6590+rb_op_detuning);
+    
+    
+    
+    op_trap_detuning = 50;
+    f_osc = calcOffsetLockFreq(op_trap_detuning,'Probe22');
+    DDS_id = 3;    
+    DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,.01)  
+    
 %     setDigitalChannel(calctime(curtime,0.5),50,0);
 %     setAnalogChannel(calctime(curtime,5),'Rb Beat Note FF',0,1);
 end

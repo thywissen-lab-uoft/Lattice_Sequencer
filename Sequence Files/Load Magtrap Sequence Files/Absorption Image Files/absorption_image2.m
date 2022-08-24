@@ -494,7 +494,7 @@ switch flags.image_atomtype
                     % Get the center frequency
                     Boff = 0.11;
                     B = seqdata.params.HF_probe_fb+ Boff;
-                    rf_tof_shift_list = [135]; % 57 is typical
+                    rf_tof_shift_list = [57]; % 57 is typical
                     rf_tof_shift = getScanParameter(rf_tof_shift_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_tof_shift','kHz');
                     

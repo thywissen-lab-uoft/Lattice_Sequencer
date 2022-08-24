@@ -135,7 +135,7 @@ seqdata.digchannels(76).name = 'SRS Source post spec'; %0:K new SRS 1:Rb SRS
 seqdata.digchannels(76).resetvalue = 0;
 
 seqdata.digchannels(77).name = 'ODT Rigol Trigger'; %unused
-seqdata.digchannels(78).name = 'Channel 78'; %unused
+seqdata.digchannels(78).name = 'DDS Rb Trap Trigger'; % To trigger the DDS that sets the offset lock
 seqdata.digchannels(79).name = 'Channel 79'; %unused
 seqdata.digchannels(80).name = 'Channel 80'; %unused
 seqdata.digchannels(81).name = 'Channel 81'; %unused

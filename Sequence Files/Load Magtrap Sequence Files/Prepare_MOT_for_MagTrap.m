@@ -110,6 +110,14 @@ zshim_comp = 0.00;
 
 %%%%%%%%%%%%%%%% Set CMOT Rb Beams %%%%%%%%%%%%%%%%
 setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',6590+rb_cMOT_detuning); 
+
+% New way to set the detuning
+CMOT_trap_detuning = -36.5;
+f_osc = calcOffsetLockFreq(CMOT_trap_detuning,'MOT');
+DDS_id = 3;    
+DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,.01)    
+
+
 % AnalogFuncTo(calctime(curtime,0),'Rb Beat Note FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),rb_cMOT_time,rb_cMOT_time,6590+rb_cMOT_detuning);
 setAnalogChannel(calctime(curtime,0),'Rb Repump AM',rb_cmot_repump_power);
 setAnalogChannel(calctime(curtime,0),'Rb Trap AM',0.1);
@@ -170,6 +178,13 @@ rb_mol_repump_power = getScanParameter(rb_mol_repump_power_list,seqdata.scancycl
    
 % Set the power and detunings
 setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',6590+rb_molasses_detuning);
+
+MOL_trap_detuning = -81;
+f_osc = calcOffsetLockFreq(MOL_trap_detuning,'MOT');
+DDS_id = 3;    
+DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,.01)    
+
+
 setAnalogChannel(curtime,'Rb Trap AM',rb_mol_trap_power); %0.7
 setAnalogChannel(curtime,'Rb Repump AM',rb_mol_repump_power); %0.14 
 

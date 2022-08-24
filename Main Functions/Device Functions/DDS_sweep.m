@@ -14,7 +14,6 @@ global seqdata;
 
 %add a new sweep to the seqdata array
 seqdata.numDDSsweeps = seqdata.numDDSsweeps + 1;
-
 if DDS_id==1
     
     DigitalPulse(timein,18,0.1,1);
@@ -31,10 +30,9 @@ elseif DDS_id==2 %Formerly 6.8GHz microwave. Currently setting 4-pass frequency.
     
 elseif DDS_id==3
     
-    %USE A DIFFERENT TRIGGER HERE
-    DigitalPulse(timein,13,0.1,1);
+
+    DigitalPulse(timein,'DDS Rb Trap Trigger',0.1,1);
     seqdata.DDSsweeps(seqdata.numDDSsweeps,:) = [DDS_id start_freq end_freq tt];
-    
 else
     error('Invalid DDS ID');
 end

@@ -27,8 +27,10 @@ disp('Sending DDS commands...');
         %t = udp('192.168.1.156', 37829, 'LocalPort', 4629); %General Purpose DDS #3
         t(1) = udp('192.168.1.155', 37829, 'LocalPort', 4629); %RF 192.168.1.155
         t(2) = udp('192.168.1.156', 37829, 'LocalPort', 4630); %4 Pass AOM 192.168.1.156
-        t(3) = udp('192.168.1.157', 37829, 'LocalPort', 4631); %350MHz for TA lock 192.168.1.157
         
+        % DDS that controls the Rb Trap Offset lock
+        t(3) = udp('192.168.1.157', 37829, 'LocalPort', 4631);
+
 %       t(1) = udp('192.168.1.155', 37829, 'LocalPort', 4629); %350MHz for TA lock 192.168.1.156"
 %       t(2) = udp('192.168.1.156', 37829, 'LocalPort', 4630); %6.8GHz  
 %       t(3) = udp('192.168.1.157', 37829, 'LocalPort', 4631); %RF %192.168.1.157
@@ -44,7 +46,7 @@ disp('Sending DDS commands...');
         for i = 1:3 
             set(t(i), 'InputBufferSize', 30000);
             % Open connection to the server. 
-             fopen(t(i)); 
+             fopen(t(i)) ;
         end
         
         
@@ -70,7 +72,6 @@ disp('Sending DDS commands...');
 
         %Go through each DDS Sweep
         for i = 1:seqdata.numDDSsweeps
-
             %DDS id
             if ~(seqdata.DDSsweeps(i,1) == 1 || seqdata.DDSsweeps(i,2)) %assume DDS_ID==1 is the evaporation DDS
 

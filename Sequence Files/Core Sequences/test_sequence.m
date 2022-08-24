@@ -5231,7 +5231,7 @@ if do_pixel_fly_test
 end
 
 %% Test Rb uwave sweep
-% curtime = calctime(curtime,1000);
+curtime = calctime(curtime,1000);
 %  % uWave Sweeep Prepare
 %     %%%%%%%%%%%%%%%%%%%%
 % %     use_ACSync=0;    
@@ -5379,29 +5379,41 @@ end
 % setAnalogChannel(calctime(curtime,0),'F Pump',0.9)
 % setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
 % setDigitalChannel(calctime(curtime,0),'D1 TTL',1);
-
-% setDigitalChannel(calctime(curtime,0),'Raman TTL 2',0);
-% setDigitalChannel(calctime(curtime,0),'Raman TTL 3',0);
-% setDigitalChannel(calctime(curtime,0),'Raman TTL 1',0);
-% setDigitalChannel(calctime(curtime,0),'Raman TTL 2a',0);
-% setDigitalChannel(calctime(curtime,0),'Raman TTL 3a',0);
+%     setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',6);
+% 
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 2',1);
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 3',1);
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 1',1);
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 2a',1);
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 3a',1);
 % setAnalogChannel(calctime(curtime,0),'F Pump',0.9)
 
-    curtime = calctime(curtime,1000)
+%     curtime = calctime(curtime,1000)
 
 
+%     setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',4.083,1);
 
+% % setDigitalChannel(calctime(curtime,0),'DDS Rb Trap Trigger',0);
+% seqdata.numDDSsweeps = 0;
+% seqdata.DDSsweeps=[];
+% 
+% op_trap_detuning = -28;
+% f_osc = calcOffsetLockFreq(op_trap_detuning,'MOT');
+% DDS_id = 3;    
+% DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,1)  
+%     
+% setDigitalChannel(calctime(curtime,0),'DDS Rb Trap Trigger', 1);%1: turn on laser; 0: turn off laser
 
     
     % Open D1 shutter (FPUMP + OPT PUMP)
-    setDigitalChannel(calctime(curtime,-8),'D1 Shutter', 1);%1: turn on laser; 0: turn off laser
-        
-    % Open optical pumping AOMS (allow light) and regulate F-pump
-    setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
-    setAnalogChannel(calctime(curtime,0),'F Pump',1.2);
-    setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
-    setDigitalChannel(calctime(curtime,0),'D1 OP TTL',1);
-        setAnalogChannel(calctime(curtime,0),'D1 AM',10); 
+%     setDigitalChannel(calctime(curtime,-8),'D1 Shutter', 1);%1: turn on laser; 0: turn off laser
+%         
+%     Open optical pumping AOMS (allow light) and regulate F-pump
+%     setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
+%     setAnalogChannel(calctime(curtime,0),'F Pump',1.2);
+%     setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
+%     setDigitalChannel(calctime(curtime,0),'D1 OP TTL',1);
+%         setAnalogChannel(calctime(curtime,0),'D1 AM',10); 
 
     %Optical pumping time
 % curtime = calctime(curtime,optical_pump_time);

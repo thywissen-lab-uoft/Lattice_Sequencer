@@ -112,6 +112,11 @@ curtime = timein;
             
             addGPIBCommand(SRSAddress,sprintf(['FREQ %fMHz; TYPE 3; SDEV %gMHz; SFNC 5; ' ...
                 'AMPR %gdBm; MODL 1; DISP 2; ENBR %g;'],pars.freq,mod_dev,pars.power,rf_on)); % Externally controlled frequency modulation (see SRS manual on GPIB commands)            
+             
+
+
+        
+        
         else
             %SRS already programmed!
         end
@@ -145,14 +150,44 @@ curtime =   AnalogFunc(calctime(curtime,uwave_delay),46,@(t,tt,y1,y2)(ramp_linea
     elseif ( type == 2 ) % K-uwave pulse using the SRS (GPIB controlled)
         rf_on = 1;
         if seqdata.flags. SRS_programmed(pars.SRS_select+1)==0
+            
+
 
             %AM Modulation
             if (pars.pulse_type == 1) %Set power and enable amplitude modulation
 %                 addGPIBCommand(SRSAddress,sprintf('FREQ %fMHz; AMPR %gRMS; MODL 1; TYPE 0; MFNC 5; ADEP 100; DISP 2; ENBR %g; AMPR?',pars.freq,0.2236*sqrt(10^(pars.power/10)),rf_on));
-                addGPIBCommand(SRSAddress,sprintf('FREQ %fMHz; AMPR %gdBm; MODL 0; DISP 2; ENBR %g; FREQ?',pars.freq,pars.power,rf_on));
+                
+                if SRSAddress==28
+                    
+                    settings = struct;
+                    settings.Address = '192.168.1.121';
+                    settings.PowerN = pars.power;
+                    settings.PowerBNC = 0;
+                    settings.EnableN = 1;
+                    settings.EnableBNC = 0;
+                    settings.EnableSweep = 0;
+                    settings.SweepRange = 0;
+                    settings.Frequency = pars.freq;
+                    
+                    programSRSNew(settings) 
+                    
+                    
 
+                else     
+                    addGPIBCommand(SRSAddress,sprintf('FREQ %fMHz; AMPR %gdBm; MODL 0; DISP 2; ENBR %g; FREQ?',pars.freq,pars.power,rf_on));
+
+                end
+            
+            
+            
             else %Set the power with no modulation
-                addGPIBCommand(SRSAddress,sprintf('FREQ %fMHz; AMPR %gdBm; MODL 0; DISP 2; ENBR %g; FREQ?',pars.freq,pars.power,rf_on));
+                
+                
+                            
+                    addGPIBCommand(SRSAddress,sprintf('FREQ %fMHz; AMPR %gdBm; MODL 0; DISP 2; ENBR %g; FREQ?',pars.freq,pars.power,rf_on));
+                
+                
+                
             end
         else
             

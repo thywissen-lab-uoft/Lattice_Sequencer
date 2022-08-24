@@ -1,8 +1,8 @@
-function programSRS_BNC(settings)
+function programSRSNew(settings)
 % programSRS.m
 %
 % Author      : C Fujiwara
-% Last Edited : 2021/03/30
+% Last Edited : 2022/08/24
 %
 % This function programs our SRS sources to a single frequency.
 %
@@ -24,13 +24,13 @@ if nargin==0
    settings.SweepRange=100;     % Sweep range in kHz
 end
 
-settings.EnableN   = 0;
 
 disp('Programming SRS ');
 disp(['     Address      : ' num2str(settings.Address)]);
 disp(['     Frequency    : ' num2str(settings.Frequency) ' MHz']);
 disp(['     Power        : ' num2str(settings.PowerBNC) ' dBm']);
-disp(['     Enable       : ' num2str(settings.EnableBNC)]);
+disp(['     Enable BNC   : ' num2str(settings.EnableBNC)]);
+disp(['     Enable N     : ' num2str(settings.EnableN)]);
 disp(['     Enable Sweep : ' num2str(settings.EnableSweep)]);
 disp(['     Sweep Range  : ' num2str(settings.SweepRange) ' MHz']);
 
@@ -72,7 +72,7 @@ disp(['     Sweep Range  : ' num2str(settings.SweepRange) ' MHz']);
 
 % ENBR(?) Set(query) the enable state of the Type-N output (0:off 1:on)
 cmdstr=['FREQ %fMHz; MODL %g; MFNC %g; FDEV %gMHz;' ...
-    'DISP 2; ENBR %g; ENBL %g; AMPL %gdBm; FREQ?'];
+    'DISP 2; ENBR %g; ENBL %g; AMPL %gdBm;  AMPR %gdBm; FREQ?'];
 cmd=sprintf(cmdstr,...
     settings.Frequency,...
     settings.EnableSweep,...
@@ -80,7 +80,8 @@ cmd=sprintf(cmdstr,...
     settings.SweepRange,...
     settings.EnableN,...
     settings.EnableBNC,...
-    settings.PowerBNC);
+    settings.PowerBNC,...
+    settings.PowerN);
 
 % cmd=sprintf('FREQ?;')
 if ischar(settings.Address)
@@ -88,11 +89,18 @@ if ischar(settings.Address)
 %     cmd = sprintf('FREQ %fMHZ; AMPL %gdBm; FREQ?; AMPL?',...
 %         settings.Frequency,...
 %         settings.PowerBNC);
+    pause(0.1)
     sendIPCommand(cmd,settings.Address)
+    pause(0.1)
+
+    cmd
+% keyboard
 else
     % disp(cmd)
     addGPIBCommand(settings.Address,cmd);
 end
+
+
 
 end
 

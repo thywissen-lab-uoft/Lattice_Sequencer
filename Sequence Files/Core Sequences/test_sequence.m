@@ -5418,8 +5418,21 @@ curtime = calctime(curtime,1000);
     %Optical pumping time
 % curtime = calctime(curtime,optical_pump_time);
     
+setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);
+setDigitalChannel(calctime(curtime,0),'RF Source',0);
+setDigitalChannel(calctime(curtime,0),'SRS Source',1);
+setDigitalChannel(calctime(curtime,0),'SRS Source post spec',0);
+setDigitalChannel(calctime(curtime,0),'K uWave Source',1);
+setDigitalChannel(calctime(curtime,0),'RF TTL',0);
 
 
+setAnalogChannel(calctime(curtime,0),'F Pump',0.9)
+
+% Switch antenna to uWaves (0: RF, 1: uWave)
+setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',1); 
+
+% Switch uWave source to the K sources (0: K, 1: Rb);
+setDigitalChannel(calctime(curtime,0),'K/Rb uWave Transfer',0);
 
 
 

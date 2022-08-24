@@ -70,9 +70,7 @@ seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been p
 
 %It's preferable to add a switch here than comment out code!
 %Special flags
-mag_trap_MOT = 0;           % Absportion image of MOT after magnetic trapping
-MOT_abs_image = 0;          % Absorption image of the MOT (no load in mag trap);
-transfer_recap_curve = 0;   % Transport curve from MOT and back
+
 after_sci_cell_load = 0;    % Abs image after loading into science cell
 
 seqdata.flags.rb_vert_insitu_image = 0; 
@@ -102,7 +100,7 @@ iXon_movie = 0; %Take a multiple frame movie?
 seqdata.flags.image_atomtype = 1;   % 0: Rb; 1:K; 2: K+Rb (double shutter)
 seqdata.flags.image_loc = 1;        % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.img_direction = 0;    % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
-seqdata.flags.do_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of ToF
+seqdata.flags.do_stern_gerlach = 1; % 1: Do a gradient pulse at the beginning of ToF
 seqdata.flags.iXon = 0;             % use iXon camera to take an absorption image (only vertical)
 seqdata.flags.do_F1_pulse = 0;      % repump Rb F=1 before/during imaging
 
@@ -113,7 +111,7 @@ seqdata.flags.High_Field_Imaging = 0;
 seqdata.flags.In_Trap_imaging = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging
-tof_list = [25];
+tof_list = [15];
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
@@ -203,10 +201,9 @@ seqdata.flags.CDT_evap_2_high_field= 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Optical lattice
-seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
+seqdata.flags.load_lattice = 1; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
 seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
 seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OTHER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -234,22 +231,6 @@ scope_trigger = 'lattice_ramp_2';
 
 %% Set switches for predefined scenarios
 
-%RHYS - the predefined scenarios described before. These have not been
-%used in years, so cannot verify whether they do or do not work. Useful
-%idea though. 
-
-if mag_trap_MOT || MOT_abs_image || transfer_recap_curve
-    seqdata.flags.hor_transport_type = 2;
-    seqdata.flags.ver_transport_type = 2;
-    seqdata.flags.image_type = 0; %0: absorption image, 1: recapture, 2:fluor, 3: blue_absorption, 4: MOT fluor, 5: load MOT immediately, 6: MOT fluor with MOT off
-    seqdata.flags.image_loc = 0;
-    seqdata.flags.do_plug = 0;
-    seqdata.flags.compress_QP = 0;
-    seqdata.flags.RF_evap_stages = [0 0 0];
-    seqdata.flags.do_dipole_trap = 0;
-    seqdata.flags.load_lattice = 0;  
-    seqdata.flags.pulse_lattice_for_alignment = 0;
-end
 
 if seqdata.flags.image_loc == 0 %MOT cell imaging
     seqdata.flags.do_plug = 0;
@@ -260,11 +241,6 @@ if seqdata.flags.image_loc == 0 %MOT cell imaging
     seqdata.flags.pulse_lattice_for_alignment = 0;
 end
 
-%% Consistency checks
-%Implement special flags
-if (mag_trap_MOT + MOT_abs_image + transfer_recap_curve + after_sci_cell_load)>1
-    error('Too many special flags set');
-end
 
 %% Set Objective Piezo Voltage
 % If the cloud moves up, the voltage must increase to refocus
@@ -614,21 +590,18 @@ if ( seqdata.flags.RF_evap_stages(1) == 2 )
     curtime = do_evap_stage(curtime, fake_sweep, freqs_1, sweep_times_1, ...
         RF_gain_1, hold_time, (seqdata.flags.RF_evap_stages(3) ~= 0));
 end
-    
-
-    
+        
 %% Evaporation during compression
 do_evap_during_compression = 0;
 if (do_evap_during_compression && seqdata.flags.RF_evap_stages(2)==1)
     dispLineStr('Evaporate during compression',curtime);
-
     freqs_1 = [freqs_1(end)/MHz*1 25]*MHz;
     RF_gain_1 = [0.5 0.5]*[-4.1];
     sweep_times_1 = 560; %560 is maximum
     do_evap_stage(curtime,0, freqs_1, sweep_times_1, ...
             RF_gain_1, 0, (seqdata.flags.RF_evap_stages(3) == 0));
-
 end
+
 %% Ramp down QP and/or transfer to the window
 % Decompress the QP trap and transpor the atoms closer to the window.
 

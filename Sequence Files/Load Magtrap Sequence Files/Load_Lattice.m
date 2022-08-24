@@ -2357,15 +2357,15 @@ if do_K_uwave_spectroscopy
     %Currently 1390.75 for 2*22.6.
     spect_pars.freq = 1335.845 +2.5+ freq_offset;
 
-    uwavepower_list = [15];%15
+    uwavepower_list = [0];[15];%15
     uwavepower_val = getScanParameter(uwavepower_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'uwavepower_val');
+        seqdata.randcyclelist,'uwavepower_val','dBm');
 
     spect_pars.power = uwavepower_val; % 15 %dBm
-    spect_pars.delta_freq = 25/1000;
+    spect_pars.delta_freq = 1000/1000;
     spect_pars.mod_dev = spect_pars.delta_freq;
 
-    pulse_time_list =[2 4 6 8 10 15 20 30];40;[spect_pars.delta_freq*1000/5]; %Keep fixed at 5kHz/ms.
+    pulse_time_list =[10:20:150];40;[spect_pars.delta_freq*1000/5]; %Keep fixed at 5kHz/ms.
     spect_pars.pulse_length = getScanParameter(pulse_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'uwave_pulse_time');
     spect_pars.pulse_type = 1;  %0 - Basic Pulse; 1 - Ramp up and down with min-jerk
@@ -2448,7 +2448,6 @@ curtime = DigitalPulse(calctime(curtime,-Raman_Ramp_Time-Raman_On_Delay),'Raman 
         end
         
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
-
 %change curtime for testing F pump
 curtime = calctime(curtime,20);
 

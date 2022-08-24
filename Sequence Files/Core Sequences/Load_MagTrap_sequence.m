@@ -545,27 +545,25 @@ curtime = Transport_Cloud(curtime, seqdata.flags.hor_transport_type,...
 %% Ramp up QP
 dispLineStr('Compression stage after transport to science cell.',curtime);
 
-    % Compression stage after the transport to the science cell
+% Compression stage after the transport to the science cell
 
-    %RHYS - a fourth important function. Makes a deep magnetic trap after
-    %transport. The shims are set to their plug-evaporation values here, but
-    %could be played with, since the actual values only move a big trap around
-    %at this stage, and may be unhelpful/irrelevant. Also, integrate into the
-    %function for cleanliness (I'm going to stop repeating this). 
-
-[curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_trans(curtime, seqdata.flags.compress_QP);
+[curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_trans(curtime, ...
+    seqdata.flags.compress_QP);
 
 
-    %Shim Values to Turn On To: (0 to do plug evaporation, Bzero values for molasses after RF Stage 1)
-    y_shim_val = seqdata.params.plug_shims(2); %0*0.5
-    x_shim_val = seqdata.params.plug_shims(1); %0*1.6
-    z_shim_val = seqdata.params.plug_shims(3); %0*0.8
-       
-    
-    %turn on shims
-    AnalogFuncTo(calctime(curtime,0),'Y Shim',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,y_shim_val,4); 
-    AnalogFuncTo(calctime(curtime,0),'X Shim',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,x_shim_val,3); 
-curtime = AnalogFuncTo(calctime(curtime,0),'Z Shim',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,z_shim_val,3); 
+%Shim Values to Turn On To: 
+% (0 to do plug evaporation, Bzero values for molasses after RF Stage 1)
+x_shim_val = seqdata.params.plug_shims(1); %0*1.6
+y_shim_val = seqdata.params.plug_shims(2); %0*0.5
+z_shim_val = seqdata.params.plug_shims(3); %0*0.8
+
+%turn on shims
+AnalogFuncTo(calctime(curtime,0),'Y Shim',...
+    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,y_shim_val,4); 
+AnalogFuncTo(calctime(curtime,0),'X Shim',...
+    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,x_shim_val,3);
+curtime = AnalogFuncTo(calctime(curtime,0),'Z Shim',...
+    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,z_shim_val,3); 
 
 %% RF1A
 if ( seqdata.flags.RF_evap_stages(1) == 1 )
@@ -578,8 +576,10 @@ if ( seqdata.flags.RF_evap_stages(1) == 1 )
 
     % Frequency points
     freqs_1 = [ start_freq 28 20 RF_1A_Final_Frequency]*MHz;
+    
     % Gains during each sweep
     RF_gain_1 = 0.5*[-4.1 -4.1 -4.1 -4.1]; 
+    
     % Duration of each sweep interval
     sweep_times_1 =[14000 8000 4000].*rf_evap_time_scale(1);    
     

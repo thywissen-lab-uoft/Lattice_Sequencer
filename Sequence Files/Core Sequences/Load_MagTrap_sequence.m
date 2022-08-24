@@ -615,45 +615,7 @@ if ( seqdata.flags.RF_evap_stages(1) == 2 )
         RF_gain_1, hold_time, (seqdata.flags.RF_evap_stages(3) ~= 0));
 end
     
-%% Kill Rb after RF1A
-%Get rid of Rb afterwards (used for loading dilute 40K into lattice)
-kill_Rb_after_RFStage1 = 0;
 
-if kill_Rb_after_RFStage1
-    dispLineStr('Kill Rb after RF1A',curtime);
-    kill_pulse_time = 5; %5
-
-    %open shutter
-    %probe
-    setDigitalChannel(calctime(curtime,-10),25,1); %0=closed, 1=open
-    %repump
-    %setDigitalChannel(calctime(curtime,-10),5,1);
-    %open analog
-    %probe
-    setAnalogChannel(calctime(curtime,-10),36,0.7);
-    %repump (keep off since no TTL)
-
-    %set TTL
-    %probe
-    setDigitalChannel(calctime(curtime,-10),24,1);
-    %repump doesn't have one
-
-    %set detuning
-    setAnalogChannel(calctime(curtime,-10),34,6590-237);
-
-    %pulse beam with TTL 
-    %TTL probe pulse
-    curtime = DigitalPulse(calctime(curtime,0),24,kill_pulse_time,0);
-    %repump pulse
-    %setAnalogChannel(calctime(curtime,0),2,0.7); %0.7
-    %curtime = setAnalogChannel(calctime(curtime,kill_pulse_time),2,0.0);
-
-    %close shutter
-    curtime = setDigitalChannel(calctime(curtime,0),25,0); %0=closed, 1=open
-    %curtime = setDigitalChannel(calctime(curtime,0),5,0);
-
-    curtime=calctime(curtime,5);
-end
     
 %% Evaporation during compression
 do_evap_during_compression = 0;

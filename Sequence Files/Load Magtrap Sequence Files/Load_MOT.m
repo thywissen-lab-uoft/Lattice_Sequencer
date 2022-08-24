@@ -3,7 +3,7 @@
 %Created: July 2009
 %Summary: This turns on the MOT
 %------
-function timeout = Load_MOT(timein,detuning,loc)
+function timeout = Load_MOT(timein,detuning)
 
 curtime = timein;
 global seqdata;
@@ -12,19 +12,7 @@ global seqdata;
 %type is set to K+Rb then the first element is Rb detuning and second is K
 %detuning. If detuning is -100 then do not turn on the MOT
 
-%loc: 0 MOT cell, 1 sci cell
-
-if nargin<3
-   loc = 0;
-end
-
 load_MOT_tof = 10;
-
-%use kitten or not
-use_kitten_Load_MOT = 2; %0: no kitten, 1: kitten, 2: coil 15 h-bridge
-
-%trigger dark spot
-%DigitalPulse(calctime(curtime,0),15,10,1)
 
 %% Sort out detuning
 
@@ -41,21 +29,26 @@ end
 ScopeTriggerPulse(calctime(curtime,0),'Load MOT',1);
 
 %% Turn shim multiplexer to MOT shims    
+% The shim controller controls both the MOT and Science chamber shims. Make
+% sure the shim controller is set to control the MOT shis.
 
-setDigitalChannel(calctime(curtime,0),37,0); 
+% Shim controller switch
+setDigitalChannel(calctime(curtime,0),'Shim Multiplexer',0); 
+
 %Don't close relay for Science Cell Shims because of current spikes
 setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);
     
 %% Turn on Trap and Repump Light
 curtime = calctime(curtime, load_MOT_tof);
+
 %MOT stagger
 K_MOT_before_Rb_time=0;
 
 % Potassium MOT beams turn on
 if (seqdata.atomtype==1 || seqdata.atomtype==2 || seqdata.atomtype==4) && k_detuning~=-100
     disp(' Turning on K beams');
-    k_trap_power = 0.8; %0.25 for ~2000 atom DFG; 0.8 for full power
-    k_repump_power = 0.45; %0.25 for ~2000 atom DFG; 0.45 for full power
+    k_trap_power = 0.8; 
+    k_repump_power = 0.45; 
     
     % Trap
     turn_on_beam(curtime,1,k_trap_power,1);%0.7
@@ -105,7 +98,7 @@ if (seqdata.atomtype==3 || seqdata.atomtype==4) && rb_detuning~=-100
     
     rb_repump_power_list = [0.9];
     rb_repump_power = getScanParameter(rb_repump_power_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'mot_rb_repump_power');;
+        seqdata.scancycle,seqdata.randcyclelist,'mot_rb_repump_power');
     setAnalogChannel(calctime(curtime,20),'Rb Repump AM',rb_repump_power);    
 end
 
@@ -143,94 +136,37 @@ if (seqdata.atomtype==3 || seqdata.atomtype==4) && rb_detuning~=-100 %Rb-87
 end
 
 %% Turn on MOT Coil
-   disp(' Setting MOT Coil Gradients');
-
+disp(' Setting MOT Coil Gradients');
 
 BGrad = 10; %10
 
 %Feed Forward
-    setAnalogChannel(calctime(curtime,0),18,10); 
-    %CATS
-    setAnalogChannel(calctime(curtime,0),8,BGrad); %load_MOT_tof
-% %    Science Cell QP (1.5A for 15G/cm)
+setAnalogChannel(calctime(curtime,0),18,10); 
+%CATS
+setAnalogChannel(calctime(curtime,0),8,BGrad);     
+       
+% TTL (What does this do?)
+curtime = setDigitalChannel(calctime(curtime,0),'MOT TTL',0); %MOT TTL
     
-    if loc==1
-        if use_kitten_Load_MOT ==1;    
-        setAnalogChannel(calctime(curtime,load_MOT_tof),1,3.5);
-        setAnalogChannel(calctime(curtime,load_MOT_tof),21,1,1);
-        setAnalogChannel(calctime(curtime,load_MOT_tof),3,0,1);
-        elseif use_kitten_Load_MOT == 0;
-        %set 16 current
-        setAnalogChannel(calctime(curtime,load_MOT_tof),1,3.5);
-        %set 15 current
-        setAnalogChannel(calctime(curtime,load_MOT_tof),21,0,1);
-        setAnalogChannel(calctime(curtime,load_MOT_tof),3,0,1);
-        setAnalogChannel(calctime(curtime,load_MOT_tof),32,1,1);
-        elseif use_kitten_Load_MOT == 2;
-        %set 16 current
-        setAnalogChannel(calctime(curtime,load_MOT_tof),1,0.5);
-        %set 15 current
-        setAnalogChannel(calctime(curtime,load_MOT_tof),21,0.5,1);
-        end
-    end
-        
-    %TTL
-    curtime = setDigitalChannel(calctime(curtime,0),16,0); %MOT TTL
-    
-    %turn on channel 16 fast swithch
-    setDigitalChannel(curtime,21,0);
+%turn on channel 16 fast swithch
+setDigitalChannel(curtime,21,0);
 
 
 %% Turn on Shims
+disp(' Setting MOT Shim values');
 
-if loc==0
-   disp(' Setting MOT Shim values');
+%Turn on Shim Supply Relay
+setDigitalChannel(calctime(curtime,0),33,1);
 
-    %Turn on Shim Supply Relay
-    setDigitalChannel(calctime(curtime,0),33,1);
+% Rb optimized shim values
+setAnalogChannel(calctime(curtime,0),'X Shim',0.2,2);
+setAnalogChannel(calctime(curtime,0),'Y Shim',2.0,2);
+setAnalogChannel(calctime(curtime,0),'Z Shim',0.9,2);
 
-    
-%         %turn on the Y (quantizing) shim 
-%     curtime = setAnalogChannel(calctime(curtime,0),19,0.95,1); % 0.8 May 29 2013 %0.9 feb 4 (0.9 June 6)  (k=1.8, rb=0.8 june 25)
-    %turn on the X (left/right) shim 
-%     curtime = setAnalogChannel(calctime(curtime,0),27,0.5,1);  % 0.4 May 29 2013 %0.0 feb 4 (0.0 June 6)  (k=0.0, rb=0.4 june 25)
-%     %turn on the Z (top/bottom) shim 
-%     curtime = setAnalogChannel(calctime(curtime,0),28,0.42,1);  % 0.42 May 29 2013 %0.45 feb 4 (0.42 June 6) (k=0.6,rb=0.42 june 25)
-%     %turn on the Z (top/bottom) shim via bipolar supply
-%     %curtime = setAnalogChannel(calctime(curtime,0),47,0.42,1);  % 0.42 May 29 2013 %0.45 feb 4 (0.42 June 6) (k=0.6,rb=0.42 june 25)
-
-    
-    %turn on the Y (quantizing) shim 
-%     curtime = setAnalogChannel(calctime(curtime,0),'Y Shim',2,2)%(1.6,1); %1.6 % 0.8 May 29 2013 %0.9 feb 4 (0.9 June 6)  (k=1.8, rb=0.8 june 25)
-    %turn on the X (left/right) shim 
-%     curtime = setAnalogChannel(calctime(curtime,0),'X Shim',0.2,2)%(0.4,1);  % 0.4 May 29 2013 %0.0 feb 4 (0.0 June 6)  (k=0.0, rb=0.4 june 25)
-    %turn on the Z (top/bottom) shim 
-%     curtime = setAnalogChannel(calctime(curtime,0),'Z Shim',0.9,2)%(1.6,1);  %1.6 % 0.42 May 29 2013 %0.45 feb 4 (0.42 June 6) (k=0.6,rb=0.42 june 25)
-    %turn on the Z (top/bottom) shim via bipolar supply
-    %curtime = setAnalogChannel(calctime(curtime,0),47,0.42,1);  % 0.42 May 29 2013 %0.45 feb 4 (0.42 June 6) (k=0.6,rb=0.42 june 25)
-
- %Rb optimized shim values
-    curtime = setAnalogChannel(calctime(curtime,0),'X Shim',0.2,2);
-    curtime = setAnalogChannel(calctime(curtime,0),'Y Shim',2.0,2);
-    curtime = setAnalogChannel(calctime(curtime,0),'Z Shim',0.9,2);
-
- %K optimized shim values
-% curtime = setAnalogChannel(calctime(curtime,0),'X Shim',0.0 ,2);  0.2;
-% curtime = setAnalogChannel(calctime(curtime,0),'Y Shim', 0.0  ,2); 2;
-% curtime = setAnalogChannel(calctime(curtime,0),'Z Shim',0.2 ,2);  0.9;
-%  
-elseif loc==1
-    
-    %turn on the Y (quantizing) shim 
-    curtime = setAnalogChannel(calctime(curtime,0),19,0.0); %0.5 
-    %turn on the X (left/right) shim 
-    curtime = setAnalogChannel(calctime(curtime,0),27,0.0); %0.75
-    %turn on the Z (top/bottom) shim 
-    curtime = setAnalogChannel(calctime(curtime,0),28,0.0);%0.5
-    
-else    
-    error('Invalid MOT location');    
-end
+% K optimized shim values
+% setAnalogChannel(calctime(curtime,0),'X Shim',0.0 ,2);  0.2;
+% setAnalogChannel(calctime(curtime,0),'Y Shim', 0.0  ,2); 2;
+% setAnalogChannel(calctime(curtime,0),'Z Shim',0.2 ,2);  0.9;
 
 %% MOT PULSE
 doMOTPulse = 0;

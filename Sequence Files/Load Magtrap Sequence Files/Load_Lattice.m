@@ -38,8 +38,8 @@ do_lattice_ramp_1 = 1;            % Load the lattices
 
 do_lattice_mod = 0;               % Amplitude modulation spectroscopy             
 
-do_rotate_waveplate_2 = 0;        % Second waveplate rotation 95% 
-do_lattice_ramp_2 = 0;           % Secondary lattice ramp for fluorescence imaging
+do_rotate_waveplate_2 = 1;        % Second waveplate rotation 95% 
+do_lattice_ramp_2 = 1;           % Secondary lattice ramp for fluorescence imaging
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -73,7 +73,7 @@ do_optical_pumping = 0;                 % (1426) keep : optical pumping in latti
 do_plane_selection = 0;                             % Plane selection flag
 
 % Actual fluorsence image flag
-Raman_transfers = 0;                                % (4727)            keep : apply fluorescence imaging light
+Raman_transfers = 1;                                % (4727)            keep : apply fluorescence imaging light
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other Parameters
@@ -2350,22 +2350,22 @@ if do_K_uwave_spectroscopy
     dispLineStr('Performing K uWave Spectroscopy',curtime);
     clear('spect_pars');
 
-    freq_list = [20]/1000;
+    freq_list = [20]/1000;[20]/1000;
     freq_offset = getScanParameter(freq_list,seqdata.scancycle,...
         seqdata.randcyclelist,'freq_val');
 
     %Currently 1390.75 for 2*22.6.
     spect_pars.freq = 1335.845 +2.5+ freq_offset;
 
-    uwavepower_list = [0];[15];%15
+    uwavepower_list = [15];[15];%15
     uwavepower_val = getScanParameter(uwavepower_list,seqdata.scancycle,...
         seqdata.randcyclelist,'uwavepower_val','dBm');
 
     spect_pars.power = uwavepower_val; % 15 %dBm
-    spect_pars.delta_freq = 1000/1000;
+    spect_pars.delta_freq = 25/1000;
     spect_pars.mod_dev = spect_pars.delta_freq;
 
-    pulse_time_list =[10:20:150];40;[spect_pars.delta_freq*1000/5]; %Keep fixed at 5kHz/ms.
+    pulse_time_list =[30];40;[spect_pars.delta_freq*1000/5]; %Keep fixed at 5kHz/ms.
     spect_pars.pulse_length = getScanParameter(pulse_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'uwave_pulse_time');
     spect_pars.pulse_type = 1;  %0 - Basic Pulse; 1 - Ramp up and down with min-jerk
@@ -2991,7 +2991,7 @@ if (Raman_transfers == 1)
     horizontal_plane_select_params.Fake_Pulse = 0;
     
     
-    Raman_On_Time_List =[0.1];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
+    Raman_On_Time_List =[0.05];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
 
    % uWave or Raman Tranfers
    % 1: uwave, 2: Raman 3:Raman with field sweep

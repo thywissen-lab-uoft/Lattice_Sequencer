@@ -112,8 +112,11 @@ zshim_comp = 0.00;
 setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',6590+rb_cMOT_detuning); 
 
 % New way to set the detuning
-CMOT_trap_detuning = -36.5;
-f_osc = calcOffsetLockFreq(CMOT_trap_detuning,'MOT');
+Rb_CMOT_Trap_detuning_list = -30;-36.5;
+Rb_CMOT_Trap_detuning = getScanParameter(Rb_CMOT_Trap_detuning_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'Rb_CMOT_Trap_detuning','MHz');  %in MHZ
+
+f_osc = calcOffsetLockFreq(Rb_CMOT_Trap_detuning,'MOT');
 DDS_id = 3;    
 DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,.01)    
 

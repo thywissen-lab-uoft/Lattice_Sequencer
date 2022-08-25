@@ -99,7 +99,7 @@ iXon_movie = 0; %Take a multiple frame movie?
 seqdata.flags.image_atomtype = 1;   % 0: Rb; 1:K; 2: K+Rb (double shutter)
 seqdata.flags.image_loc = 1;        % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.img_direction = 0;    % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
-seqdata.flags.do_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of ToF
+seqdata.flags.do_stern_gerlach = 1; % 1: Do a gradient pulse at the beginning of ToF
 seqdata.flags.iXon = 0;             % use iXon camera to take an absorption image (only vertical)
 seqdata.flags.do_F1_pulse = 0;      % repump Rb F=1 before/during imaging
 
@@ -110,7 +110,7 @@ seqdata.flags.High_Field_Imaging = 0;
 seqdata.flags.In_Trap_imaging = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging
-tof_list = [25];
+tof_list = [15];
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
@@ -182,14 +182,14 @@ seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
 seqdata.flags.do_Rb_uwave_transfer_in_ODT2 =0;  % uWave Frequency sweep Rb 2-->1
 seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
 seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
-seqdata.flags.mix_at_beginning = 1;             % RF Mixing -9-->-9+-7
+seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
     
 % Optical Evaporation
 % 1: exp 2: fast linear 3: piecewise linear
 seqdata.flags.CDT_evap = 1;       
 
 % After optical evaporation
-seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
+seqdata.flags.do_D1OP_post_evap = 1;            % D1 pump
 seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 
 % High Field Evaporation (not used yet; for near BEC/BCS)
@@ -200,7 +200,7 @@ seqdata.flags.CDT_evap_2_high_field= 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Optical lattice
-seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
+seqdata.flags.load_lattice = 1; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
 seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
 seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 
@@ -411,7 +411,7 @@ if (seqdata.flags.controlled_load == 1)
     % Load the MOT
     loadMOTSimple(curtime,1);
     
-    controlled_load_time = 20000;
+    controlled_load_time = 30000;
     
     % Wait for the MOT to load
 curtime = calctime(curtime,controlled_load_time);
@@ -862,7 +862,6 @@ if ( seqdata.flags.lower_atoms_after_evap == 1 )
         1,@(t,tt,dt)(dt*t/tt+I_QP),lower_transfer_time,lower_transfer_time,15-I_QP);
 end
 
-
 %% Turn off coils and traps.  
 dispLineStr('Turning off coils and traps.',curtime);
 
@@ -925,8 +924,7 @@ dispLineStr('Turning off coils and traps.',curtime);
 %             setAnalogChannel(calctime(curtime,0),'dipoleTrap2',0,1);
             setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));
             setDigitalChannel(calctime(curtime,-1),'XDT Direct Control',1);
-        end
-    
+        end    
     
         if seqdata.flags. do_dipole_trap == 3
             setDigitalChannel(calctime(curtime,0),'XDT TTL',1);

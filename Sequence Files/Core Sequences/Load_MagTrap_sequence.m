@@ -77,7 +77,6 @@ seqdata.flags.rb_vert_insitu_image = 0;
 %take a vertical in-situ image of BEC in XDT to centre the microscope objective
 
 seqdata.flags.controlled_load = 0; %do a specific load time
-controlled_load_time = 20000;
 
 seqdata.params.UV_on_time = 10000;
 % UV on time + savingtime + wait time = real wait time between cycles%
@@ -100,7 +99,7 @@ iXon_movie = 0; %Take a multiple frame movie?
 seqdata.flags.image_atomtype = 1;   % 0: Rb; 1:K; 2: K+Rb (double shutter)
 seqdata.flags.image_loc = 1;        % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.img_direction = 0;    % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
-seqdata.flags.do_stern_gerlach = 1; % 1: Do a gradient pulse at the beginning of ToF
+seqdata.flags.do_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of ToF
 seqdata.flags.iXon = 0;             % use iXon camera to take an absorption image (only vertical)
 seqdata.flags.do_F1_pulse = 0;      % repump Rb F=1 before/during imaging
 
@@ -111,7 +110,7 @@ seqdata.flags.High_Field_Imaging = 0;
 seqdata.flags.In_Trap_imaging = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging
-tof_list = [15];
+tof_list = [25];
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
@@ -183,14 +182,14 @@ seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
 seqdata.flags.do_Rb_uwave_transfer_in_ODT2 =0;  % uWave Frequency sweep Rb 2-->1
 seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
 seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
-seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
+seqdata.flags.mix_at_beginning = 1;             % RF Mixing -9-->-9+-7
     
 % Optical Evaporation
 % 1: exp 2: fast linear 3: piecewise linear
 seqdata.flags.CDT_evap = 1;       
 
 % After optical evaporation
-seqdata.flags.do_D1OP_post_evap = 1;            % D1 pump
+seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
 seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 
 % High Field Evaporation (not used yet; for near BEC/BCS)
@@ -201,7 +200,7 @@ seqdata.flags.CDT_evap_2_high_field= 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Optical lattice
-seqdata.flags.load_lattice = 1; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
+seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
 seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
 seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 
@@ -405,25 +404,22 @@ setDigitalChannel(calctime(curtime,0),33,1);
 %Turn shim multiplexer to MOT shims    
 setDigitalChannel(calctime(curtime,0),37,0);  
 
-%% Prepare to Load into the Magnetic Trap
+%% Load the MOT
+% Dump out the saved MOT and reload it
 
-if ( seqdata.flags.controlled_load == 1 )
-
-    %turn off trap
-    setAnalogChannel(curtime,8,0);
-    setDigitalChannel(curtime,4,0);
-
-    %turn trap back on
-curtime = Load_MOT(calctime(curtime,500),30);
-
-    %wait fixed amount of time
+if (seqdata.flags.controlled_load == 1)
+    % Load the MOT
+    loadMOTSimple(curtime,1);
+    
+    controlled_load_time = 20000;
+    
+    % Wait for the MOT to load
 curtime = calctime(curtime,controlled_load_time);
-
 else
-    %RHYS - which historic reasons? Is it important?        
-    %this has been here for historic reasons
-    curtime = calctime(curtime,1500);
+    curtime = calctime(curtime,750);
 end   
+
+%% Prepare to Load into the Magnetic Trap
 
 curtime = Prepare_MOT_for_MagTrap(curtime);
 
@@ -1062,6 +1058,7 @@ setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
 
 
 %% Load MOT
+
 %{
 dispLineStr('Loading MOT.',curtime);
 
@@ -1084,12 +1081,13 @@ curtime = Load_MOT(calctime(curtime,mot_wait_time),[rb_MOT_detuning k_MOT_detuni
 setAnalogChannel(curtime,'K Repump FM',k_repump_shift,2);
 %}
 
-
 % Load the MOT
-load_MOTSimple(curtime,0);
+loadMOTSimple(curtime,0);
 
 % Wait some additional time
-curtime = calctime(curtime,seqdata.params.UV_on_time);
+if ~seqdata.flags.controlled_load
+    curtime = calctime(curtime,seqdata.params.UV_on_time);
+end
 %% Transport Reset
 
 % Reset transport relay (Coil 3 vs Coil 11)

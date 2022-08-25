@@ -1,4 +1,4 @@
-function timeout = load_MOTSimple(timein,dumpMOT)
+function timeout = loadMOTSimple(timein,dumpMOT)
 
 curtime = timein;
 global seqdata;
@@ -20,7 +20,7 @@ BGrad=getScanParameter(BGrad_list,...
     seqdata.scancycle,seqdata.randcyclelist,'Rb_Trap_MOT_detuning','??');
 
 % Rb Trap Detuning
-Rb_Trap_MOT_det_list=-28;
+Rb_Trap_MOT_det_list=[-28];[-28];
 Rb_Trap_MOT_detuning=getScanParameter(Rb_Trap_MOT_det_list,...
     seqdata.scancycle,seqdata.randcyclelist,'Rb_Trap_MOT_detuning','MHz');
 

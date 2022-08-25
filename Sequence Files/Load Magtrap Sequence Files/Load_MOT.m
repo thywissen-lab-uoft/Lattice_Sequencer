@@ -55,13 +55,6 @@ if (seqdata.atomtype==1 || seqdata.atomtype==2 || seqdata.atomtype==4) && k_detu
     
     % Repump
     turn_on_beam(curtime,2,k_repump_power,1); 
-%     setDigitalChannel(calctime(curtime,0),'gray molasses shear mod AOM TLL',0); % 0: turn off shear mod AOM
-%     setDigitalChannel(calctime(curtime,0),'K Repump 0th Shutter',0); %turn on K repump power for MOT
-    
-%     Rb_Push_Power = 0.7;
-%     setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',0);
-%     setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',Rb_Push_Power);
-%     setDigitalChannel(calctime(curtime,0),'Rb Probe/OP shutter',1);
 end
 
 % CF : Why turn off beams for a particular detuning?
@@ -91,7 +84,8 @@ if (seqdata.atomtype==3 || seqdata.atomtype==4) && rb_detuning~=-100
     addVISACommand(8, str);  %Device 8 Source 2 is the new Rb trap AOM FM
     
     % Trap
-    turn_on_beam(calctime(curtime,K_MOT_before_Rb_time),1,0.7,3); % The analog voltage sent here (0.7) no longer does anything.
+    % The analog voltage sent here (0.7) no longer does anything.
+    turn_on_beam(calctime(curtime,K_MOT_before_Rb_time),1,0.7,3);
     
     % Repump
     turn_on_beam(calctime(curtime,K_MOT_before_Rb_time),2,0.8,3); %should this be 0.9 not 0.8?
@@ -156,7 +150,7 @@ setDigitalChannel(curtime,21,0);
 disp(' Setting MOT Shim values');
 
 %Turn on Shim Supply Relay
-setDigitalChannel(calctime(curtime,0),33,1);
+setDigitalChannel(calctime(curtime,0),'Shim Relay',1);
 
 % Rb optimized shim values
 setAnalogChannel(calctime(curtime,0),'X Shim',0.2,2);
@@ -200,7 +194,7 @@ if doMOTPulse
     curtime = calctime(curtime,tP);    
 end
 
-%% UV ON
+%% UV ON : LIAD
 %Turn on UV cataract-inducing light.
 
 disp('Turning on UV light');

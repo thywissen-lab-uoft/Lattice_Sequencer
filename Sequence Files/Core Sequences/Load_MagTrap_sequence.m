@@ -1062,6 +1062,7 @@ setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
 
 
 %% Load MOT
+%{
 dispLineStr('Loading MOT.',curtime);
 
 rb_mot_det_List= 32;
@@ -1081,7 +1082,14 @@ curtime = Load_MOT(calctime(curtime,mot_wait_time),[rb_MOT_detuning k_MOT_detuni
 
 % Set the repump detuning
 setAnalogChannel(curtime,'K Repump FM',k_repump_shift,2);
+%}
 
+
+% Load the MOT
+load_MOTSimple(curtime,0);
+
+% Wait some additional time
+curtime = calctime(curtime,seqdata.params.UV_on_time);
 %% Transport Reset
 
 % Reset transport relay (Coil 3 vs Coil 11)

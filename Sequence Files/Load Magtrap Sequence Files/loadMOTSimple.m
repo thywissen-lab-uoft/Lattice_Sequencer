@@ -17,7 +17,7 @@ ScopeTriggerPulse(curtime,'Load MOT',1);
 % Field Gradient
 BGrad_list = 10;
 BGrad=getScanParameter(BGrad_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'Rb_Trap_MOT_detuning','??');
+    seqdata.scancycle,seqdata.randcyclelist,'MOT_Gradient','??');
 
 % Rb Trap Detuning
 Rb_Trap_MOT_det_list=[-25];[-28];
@@ -60,7 +60,7 @@ setAnalogChannel(curtime,'K Repump FM',K_Repump_MOT_detuning,2);
 % Rb Trap Detuning    
 f_osc = calcOffsetLockFreq(Rb_Trap_MOT_detuning,'MOT');
 DDS_id = 3;    
-DDS_sweep(curtime,DDS_id,f_osc*1e6,f_osc*1e6,1)    
+DDS_sweep(curtime,DDS_id,f_osc*1e6,f_osc*1e6,1);    
 
 % Rb Repumper Detuning
 % Currently unable to change this
@@ -135,7 +135,7 @@ setAnalogChannel(calctime(curtime,0),'Z Shim',0.9,2);
 disp('Turning on UV light');
 
 setDigitalChannel(curtime,'UV LED',1); %1 = on; 0, off
-setAnalogChannel(curtime,'UV Lamp 2',5);
+% setAnalogChannel(curtime,'UV Lamp 2',5);
 
 %% Wait a HOT Second
 curtime = calctime(curtime,100);

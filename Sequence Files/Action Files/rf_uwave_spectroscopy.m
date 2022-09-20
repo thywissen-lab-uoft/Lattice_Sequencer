@@ -149,7 +149,7 @@ curtime =   AnalogFunc(calctime(curtime,uwave_delay),46,@(t,tt,y1,y2)(ramp_linea
 % --------------------------------------
     elseif ( type == 2 ) % K-uwave pulse using the SRS (GPIB controlled)
         rf_on = 1;
-        if seqdata.flags. SRS_programmed(pars.SRS_select+1)==0
+        if seqdata.flags.SRS_programmed(pars.SRS_select+1)==0
             
 
 
@@ -164,14 +164,18 @@ curtime =   AnalogFunc(calctime(curtime,uwave_delay),46,@(t,tt,y1,y2)(ramp_linea
                     settings.PowerN = pars.power;
                     settings.PowerBNC = 0;
                     settings.EnableN = 1;
+                    
+%                     settings.EnableN = 0;
+
+                    
                     settings.EnableBNC = 0;
                     settings.EnableSweep = 0;
                     settings.SweepRange = 0;
                     settings.Frequency = pars.freq;
-                    
                     programSRSNew(settings) 
                     
-                    
+                    pause(2)
+
 
                 else     
                     addGPIBCommand(SRSAddress,sprintf('FREQ %fMHz; AMPR %gdBm; MODL 0; DISP 2; ENBR %g; FREQ?',pars.freq,pars.power,rf_on));

@@ -40,13 +40,22 @@ disp('Sending DDS commands...');
         %you will get a local port
         %binding error next time you run the program. This is fixed by
         %restarting MATLAB
-
+        
+%         for i=1:3
+%            fclose(t(i)); 
+%         end
         
         % Set size of receiving buffer, if needed. 
         for i = 1:3 
             set(t(i), 'InputBufferSize', 30000);
             % Open connection to the server. 
-             fopen(t(i)) ;
+            try                
+                fopen(t(i)) ;   
+            catch ME
+                keyboard
+               warning(['unable to connect to DDS ' num2str(i)]); 
+            end
+                
         end
         
         

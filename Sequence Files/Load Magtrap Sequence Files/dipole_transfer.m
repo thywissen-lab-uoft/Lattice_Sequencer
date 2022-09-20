@@ -39,7 +39,7 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     dipole_holdtime_before_evap = 0;    % not a flag but a value
     ramp_Feshbach_B_before_CDT_evap = 0;
 
-    Evap_End_Power_List = [0.06];0.08;[0.08];
+    Evap_End_Power_List = [0.08];0.08;[0.08];
     
     % Ending optical evaporation
     exp_end_pwr = getScanParameter(Evap_End_Power_List,...
@@ -866,19 +866,16 @@ curtime = calctime(curtime,optical_pump_time);
 
 curtime =  setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);    
 
-clear('ramp');
-     
+clear('ramp');     
 
         % Ramp the bias fields
 newramp = struct('ShimValues',seqdata.params.shim_zero,...
             'FeshValue',20,'QPValue',0,'SettlingTime',100);
 
     % Ramp fields for pumping
-curtime = rampMagneticFields(calctime(curtime,0), newramp);   
-    
+curtime = rampMagneticFields(calctime(curtime,0), newramp);       
 
     curtime = calctime(curtime,50);
-
 end
 
 %% Spin mixture after Optical Pumping
@@ -1580,6 +1577,14 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
         %resonance... it will take ~75ms to reach the cycling transition)
         setAnalogChannel(calctime(curtime,-10),'Rb Beat Note FM',6590-237);
 
+        % Rb Probe Detuning    
+        % Not optimized!!
+        f_osc = calcOffsetLockFreq(10,'Probe32');
+        DDS_id = 3;    
+        DDS_sweep(calctime(curtime,-10),DDS_id,f_osc*1e6,f_osc*1e6,1)    
+        
+        
+
         %pulse beam with TTL 
         %TTL probe pulse
         DigitalPulse(calctime(curtime,0),'Rb Probe/OP TTL',5,0);
@@ -1768,7 +1773,6 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
             spect_pars.pulse_length + 150);
             setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
             setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
-
         end
 
         if ( seqdata.flags.pulse_raman_beams ~= 0)
@@ -1814,39 +1818,6 @@ curtime=calctime(curtime,100);
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
         end
       %-----------------------ramp down Feshbach field for imaging
-
-        Raman_Back = 0;
-
-        if Raman_Back
-            %advance by waittime
-            waittime = 500;
-            curtime = calctime(curtime,waittime);
-
-            freq_list = [150]/1000;
-            freq_val = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'freq_val');
-            %Currently 1390.75 for 2*22.6.
-            spect_pars.freq = 1292.3 + freq_val; %Center of a sweep (~1390.75 for 2*22.6 and -9/2; ~1498.25 for 4*22.6 and -9/2)
-            spect_pars.power = -3; %dBm
-            spect_pars.delta_freq = 1000/1000; % end_frequency - start_frequency
-            spect_pars.mod_dev = 1000/1000;
-
-            spect_pars.SRS_select = 1;
-            spect_pars.pulse_length = 2000; % also is sweep length
-            spect_type = 1; %1: sweeps, 2: pulse, 7: 60Hz sync sweeps
-
-            addOutputParam('freq_val',freq_val)
-
-            %if ( seqdata.flags.pulse_raman_beams ~= 0)
-                %Raman_On_Time = spect_pars.pulse_length;
-                %DigitalPulse(curtime,'D1 TTL',Raman_On_Time,1);
-                %pulse_time_list = [100];
-                %pulse_time = getScanParameter(pulse_time_list,seqdata.scancycle,seqdata.randcyclelist,'pulse_time');
-%curtime = Pulse_RamanBeams(curtime,pulse_time,'MOTLightSource',2);
-%curtime = calctime(curtime,25); 
-            %end
-
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
-        end
 
 
     elseif ( do_Rb_uwave_spectroscopy ) % does a uwave pulse or sweep for spectroscopy

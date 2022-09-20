@@ -103,7 +103,7 @@ seqdata.digchannels(56).name = 'ACync Master'; %Master pulse for ACync Board
 seqdata.digchannels(57).name = 'D1 OP TTL'; %0: off; 1: on;
 seqdata.digchannels(58).name = 'Raman Shutter'; %0: off, 1: on
 seqdata.digchannels(59).name = 'Kill TTL'; %0:off, 1: on. 
-seqdata.digchannels(60).name = 'Raman TTL 1'; %0: off, 1: on (Horizontal Raman Beam only as of 30June.2021)
+seqdata.digchannels(60).name = 'Raman TTL 1'; % Raman 1 (V) ZASWA(P2;1=on) + Rigol Trigger (CH1)
 seqdata.digchannels(61).name = 'XDT TTL'; %0: on, 1: off
 seqdata.digchannels(61).resetvalue = 1;
 seqdata.digchannels(62).name = 'DMD TTL'; %0: on, 1:off
@@ -113,8 +113,8 @@ seqdata.digchannels(63).name = 'XDT Direct Control'; %0: off, 1:on
 seqdata.digchannels(64).name = 'K Sci Repump'; %K repump in science chamber 
 seqdata.digchannels(65).name = 'K D1 GM Shutter 2'; % Second D1 GM shutter
 seqdata.digchannels(66).name = 'Transport LabJack Trigger'; %unused
-seqdata.digchannels(67).name = 'Raman TTL 3'; %Raman Spectroscopy beam TTL(R3)
-seqdata.digchannels(68).name = 'Raman TTL 2'; %Vertical Raman Beam TTL (R2)
+seqdata.digchannels(67).name = 'Raman TTL 3'; % Raman H2 Rigol Trigger (CH2)
+seqdata.digchannels(68).name = 'Raman TTL 2'; % Raman H1 Rigol Trigger (CH2)
 seqdata.digchannels(69).name = 'HF freq source'; % 0: Rigol Ch1, 1: Rigol Ch2
 seqdata.digchannels(69).resetvalue = 1;
 seqdata.digchannels(70).name = 'DMD shutter'; %0 on 1 off
@@ -122,8 +122,8 @@ seqdata.digchannels(70).resetvalue = 1;
 seqdata.digchannels(71).name = 'DMD PID holder'; %unused
 seqdata.digchannels(71).resetvalue = 0;
 
-seqdata.digchannels(72).name = 'Raman TTL 3a'; %
-seqdata.digchannels(73).name = 'Raman TTL 2a'; %
+seqdata.digchannels(72).name = 'Raman TTL 3a'; % Raman 3 (H2) ZASWA
+seqdata.digchannels(73).name = 'Raman TTL 2a'; % Raman 2 (H1) ZASWA
 
 seqdata.digchannels(74).name = 'RF Source'; % 0 : DDS, 1 : SRS
 seqdata.digchannels(74).resetvalue = 0;
@@ -136,8 +136,8 @@ seqdata.digchannels(76).resetvalue = 0;
 
 seqdata.digchannels(77).name = 'ODT Rigol Trigger'; %unused
 seqdata.digchannels(78).name = 'DDS Rb Trap Trigger'; % To trigger the DDS that sets the offset lock
-seqdata.digchannels(79).name = 'Channel 79'; %unused
-seqdata.digchannels(80).name = 'Channel 80'; %unused
+seqdata.digchannels(79).name = 'Vortex Shutter 1'; % For testing Vortex as PA laser
+seqdata.digchannels(80).name = 'Vortex Shutter 2'; % For testing Vortex as PA laser
 seqdata.digchannels(81).name = 'Channel 81'; %unused
 seqdata.digchannels(82).name = 'Channel 82'; %unused
 seqdata.digchannels(83).name = 'Channel 83'; %unused
@@ -508,8 +508,8 @@ end
 %     seqdata.analogchannels(30).voltagefunc{2} = @(a)(1.41911-0.09634*a+8.43139*10^(-4)*a^2-1.57057*10^(-6)*a^3);%@(a)((a*1-136.96864)/19.37436);%@(a)((a*1-184.2)/79.972);
     seqdata.analogchannels(30).voltagefunc{2} = @(a)(-28.25805+0.22225*a-2.54054*10^(-4)*a.^2);
     
-     %channel 31 (Coil 16 trigger)
-    seqdata.analogchannels(31).name = 'Coil 16 Trigger';
+     %channel 31 Unused
+    seqdata.analogchannels(31).name = 'Unused';
     seqdata.analogchannels(31).minvoltage = -1;
     seqdata.analogchannels(31).maxvoltage = 10;
     seqdata.analogchannels(31).defaultvoltagefunc = 2;
@@ -799,7 +799,7 @@ seqdata.analogchannels(59).defaultvoltagefunc = 2;
 seqdata.analogchannels(59).voltagefunc{2} = @(a)(a);
     
 %channel 60 (Compensation Beam Power Control)
-seqdata.analogchannels(60).name = 'UV Lamp 2'; % control K repump 0th order
+seqdata.analogchannels(60).name = 'UV Lamp 2'; % unused
 seqdata.analogchannels(60).minvoltage = -10;
 seqdata.analogchannels(60).maxvoltage = 10;
 seqdata.analogchannels(60).defaultvoltagefunc = 2; 

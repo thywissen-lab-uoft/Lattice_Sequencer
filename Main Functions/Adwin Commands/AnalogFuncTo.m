@@ -36,9 +36,10 @@ if channel~=0
     % on channel was set in the "past".
     quiet = 0;
     if (lasttime > timein) && (~quiet)
+        chName = seqdata.analogchannels(channel).name;
         error(['Attempting to use AnalogFuncTo to start a ramp before the last \n' ...
-            'change done on analog channel %g (time = %g).\n' ...
-            'Set flag ''quiet'' in order to suppress this error.'],channel,timein);
+            'change done on analog channel %g %s (time = %g).\n' ...
+            'Set flag ''quiet'' in order to suppress this error.'],channel,chName,timein);
     elseif (lasttime > timein) && (quiet)
         buildWarning(sprintf('AnalogFuncTo::Warning -- Channel %g set earlier than last change at time %g!',channel,timein));
     end

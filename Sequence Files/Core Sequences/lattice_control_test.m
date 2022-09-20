@@ -25,9 +25,9 @@ scope_trigger =  'lattice control test';'Rampup ODT';
  
 %     % Initialize lattice depths to zero
 %     curtime = calctime(curtime,100);   
-%     setAnalogChannel(calctime(curtime,-70),'yLattice',-10,1);
+    setAnalogChannel(calctime(curtime,-70),'yLattice',-10,1);
     setAnalogChannel(calctime(curtime,-70),'zLattice',-10,1);
-%     setAnalogChannel(calctime(curtime,-0),'xLattice',-10,1);
+    setAnalogChannel(calctime(curtime,-0),'xLattice',-10,1);
 % %     
 % %     % Turn on Lattice RF
     setDigitalChannel(calctime(curtime,-5),'yLatticeOFF',0);%0: ON

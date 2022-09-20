@@ -99,7 +99,7 @@ iXon_movie = 0; %Take a multiple frame movie?
 seqdata.flags.image_atomtype = 1;   % 0: Rb; 1:K; 2: K+Rb (double shutter)
 seqdata.flags.image_loc = 1;        % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.img_direction = 0;    % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
-seqdata.flags.do_stern_gerlach = 1; % 1: Do a gradient pulse at the beginning of ToF
+seqdata.flags.do_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of ToF
 seqdata.flags.iXon = 0;             % use iXon camera to take an absorption image (only vertical)
 seqdata.flags.do_F1_pulse = 0;      % repump Rb F=1 before/during imaging
 
@@ -110,7 +110,7 @@ seqdata.flags.High_Field_Imaging = 0;
 seqdata.flags.In_Trap_imaging = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging
-tof_list = [15];
+tof_list = [25];
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
@@ -182,14 +182,14 @@ seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
 seqdata.flags.do_Rb_uwave_transfer_in_ODT2 =0;  % uWave Frequency sweep Rb 2-->1
 seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
 seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
-seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
+seqdata.flags.mix_at_beginning = 1;             % RF Mixing -9-->-9+-7
     
 % Optical Evaporation
 % 1: exp 2: fast linear 3: piecewise linear
 seqdata.flags.CDT_evap = 1;       
 
 % After optical evaporation
-seqdata.flags.do_D1OP_post_evap = 1;            % D1 pump
+seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
 seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 
 % High Field Evaporation (not used yet; for near BEC/BCS)
@@ -200,7 +200,7 @@ seqdata.flags.CDT_evap_2_high_field= 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Optical lattice
-seqdata.flags.load_lattice = 1; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
+seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
 seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
 seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 
@@ -227,6 +227,7 @@ seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing/align
 % scope_trigger = 'Lattice_Mod';
 scope_trigger = 'lattice_ramp_2';
 % scope_trigger = 'lattice_off';
+% scope_trigger = 'Raman Beams On';
 
 %% Set switches for predefined scenarios
 
@@ -273,8 +274,6 @@ doProgram4Pass = 0;
 if doProgram4Pass
     DDS_sweep(calctime(curtime,0),2,DDSFreq,DDSFreq,calctime(curtime,1));
 end
-
-
 
 % %Set the frequency of the first DP AOM 
 %     D1_FM_List = [222.5];
@@ -876,13 +875,13 @@ dispLineStr('Turning off coils and traps.',curtime);
     end    
     
     %Turn off QP Coils
-    setAnalogChannel(calctime(curtime,0),21,0,1); %15
-    curtime = setAnalogChannel(calctime(curtime,0),1,0,1); %16
-    curtime = setAnalogChannel(curtime,3,0,1); %kitten
+    setAnalogChannel(calctime(curtime,0),'Coil 15',0,1); %15
+    curtime = setAnalogChannel(calctime(curtime,0),'Coil 16',0,1); %16
+    curtime = setAnalogChannel(curtime,'kitten',0,1); %kitten
     
     %MOT
     if ( seqdata.flags.image_type ~= 4 )
-        setAnalogChannel(curtime,8,0,1);
+        setAnalogChannel(curtime,'MOT Coil',0,1);
     end
 
     %MOT/QCoil TTL (separate switch for coil 15 (TTL) and 16 (analog))
@@ -952,7 +951,7 @@ dispLineStr('Turning off coils and traps.',curtime);
     end
 
     if ~(seqdata.flags.image_type==1 || seqdata.flags.image_type==4)
-        setDigitalChannel(curtime,16,1);    
+        setDigitalChannel(curtime,'MOT TTL',1);    
     end
 
 
@@ -963,7 +962,6 @@ dispLineStr('Turning off coils and traps.',curtime);
     if seqdata.flags.image_type == 0 % Absorption Image
         dispLineStr('Absorption Imaging.',curtime);
 
-        %curtime = absorption_image(calctime(curtime,0.0)); 
          curtime = absorption_image2(calctime(curtime,0.0)); 
 
     elseif seqdata.flags.image_type == 8 %Try to use the iXon and a Pixelfly camera simultaneously for absorption and fluorescence imaging.
@@ -1080,6 +1078,7 @@ setAnalogChannel(curtime,'K Repump FM',k_repump_shift,2);
 %}
 
 % Load the MOT
+dispLineStr('Load the MOT',curtime);
 loadMOTSimple(curtime,0);
 
 % Wait some additional time

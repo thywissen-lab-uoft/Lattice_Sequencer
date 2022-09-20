@@ -45,70 +45,96 @@ params = seqdata.params.absorption_image;
 % Display the imaging flags (conditions of imaging)
 str=['Absorption Imaging : ' flags.image_atomtype ' ' flags.img_direction ...
     ' ' flags.negative_imaging_shim ' ' flags.condition];
-% disp(str)
-% disp(flags)
 
-% Grab the relevant parameters
-% detuning = params.detunings.(flags.image_atomtype).(flags.img_direction) ...
-%   .(flags.negative_imaging_shim).(flags.condition);
-% power = params.powers.(flags.image_atomtype).(flags.img_direction);
-
-% Rb Settings
+% Rb Probe Detuning and Power
 Rb_detuning = params.detunings.Rb.(flags.img_direction) ...
-  .(flags.negative_imaging_shim).(flags.condition);
+    .(flags.negative_imaging_shim).(flags.condition);
 Rb_power = params.powers.Rb.(flags.img_direction);
-rb_detuning_shift_time = params.timings.rb_detuning_shift_time.(flags.img_direction);
 
-% K Settings
+% K Probe Detuning and Power
 K_detuning = params.detunings.K.(flags.img_direction) ...
   .(flags.negative_imaging_shim).(flags.condition);
 K_power = params.powers.K.(flags.img_direction);
+
+% K Optical Pumping Detuning
 k_OP_detuning = params.k_OP_detuning.(flags.negative_imaging_shim);
+
+% K Repump Detuning
 k_repump_shift = params.k_repump_shift.(flags.negative_imaging_shim);
 
-% Quantization axis settings
-quant_timings = params.quant_timings.(flags.condition); %This one is a structure.
+% Timings for establishing quantization axis
+quant_timings = params.quant_timings.(flags.condition); 
+
+% Shim values for quantization axis
 quant_shim_val = params.quant_shim_val.(flags.img_direction).(flags.negative_imaging_shim);
 
 
-%% Pulse QP to do SG imaging (uses first several ms of ToF depending on the parameters chosen)
-%Do a special set of magnetic field maninpulations if doing
-%Stern-Gerlach imaging. Basically pulse the QP field in the presence of a
-%vertical bias.
+%% Stern Gerlach
+% Pulse the QP coils at the beginning of the time of flight to 
+% separate F and mF states 
+
 if strcmp(flags.condition, 'SG')
     disp(' Pulsing Stern-Gerlach field.');
     do_stern_gerlach(seqdata,flags,params.SG)
 end
 
 %% Turn on quantizing field for imaging 
+% Set the quantization axis for imaging.
+% For low field imaging, the quantization axis is co-axial with the X or Y
+% lattice direction. The direction depends on the which stretched state you
+% are trying to image.
+%
+% The shims are ramped in tandem with the Feshbach coils to keep a well-defined
+% mF states (Feshbach defines mF and F during dipole and lattice) 
 
 %This sets parameters for imaging in the science chamber under most circumstances
 if (strcmp(flags.img_direction,'X') || strcmp(flags.img_direction,'Y'))
   if (~strcmp(flags.condition,'in_trap'))
+      
     % Some warnings displayed: still relevant?
-    if (quant_timings.quant_handover_delay + quant_timings.quant_handover_time > params.timings.tof)
-      buildWarning('absorption_image','Quantization shims are still ramping on during imaging pulse!',1)
+    if (quant_timings.quant_handover_delay + ...
+            quant_timings.quant_handover_time > ...
+            params.timings.tof)
+      buildWarning('absorption_image',...
+          'Quantization shims are still ramping on during imaging pulse!',1)
     end
-    if (quant_timings.quant_handover_fesh_ramptime + quant_timings.quant_handover_fesh_rampdelay + quant_timings.quant_handover_delay > params.timings.tof)
-      buildWarning('absorption_image','Quantization ''FB'' field is still ramping on during imaging pulse!')
+    
+    if (quant_timings.quant_handover_fesh_ramptime + ...
+            quant_timings.quant_handover_fesh_rampdelay + ...
+            quant_timings.quant_handover_delay > params.timings.tof)
+      buildWarning('absorption_image',...
+          'Quantization ''FB'' field is still ramping on during imaging pulse!')
     end
 
     % Actually execute the field ramps based on the parameters set prior.
     if (~flags.High_Field_Imaging)
-      % start handover to quantization field for imaging
-      quant_handover_start = calctime(seqdata.times.tof_start,quant_timings.quant_handover_delay);
+        
+      % Time to beging ramping shims
+      quant_handover_start = calctime(seqdata.times.tof_start,...
+          quant_timings.quant_handover_delay);
 
-      % ramp shims to quantization field values
-      AnalogFuncTo(calctime(quant_handover_start,0),'X Shim',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),quant_timings.quant_handover_time,quant_timings.quant_handover_time,quant_shim_val(1),3);
-      AnalogFuncTo(calctime(quant_handover_start,0),'Y Shim',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),quant_timings.quant_handover_time,quant_timings.quant_handover_time,quant_shim_val(2),4);
-      AnalogFuncTo(calctime(quant_handover_start,0),'Z Shim',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),quant_timings.quant_handover_time,quant_timings.quant_handover_time,quant_shim_val(3),3);
+      % Ramp shims to appropriate values
+      AnalogFuncTo(calctime(quant_handover_start,0),'X Shim',...
+          @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+          quant_timings.quant_handover_time,...
+          quant_timings.quant_handover_time,quant_shim_val(1),3);
+      AnalogFuncTo(calctime(quant_handover_start,0),'Y Shim',...
+          @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+          quant_timings.quant_handover_time,...
+          quant_timings.quant_handover_time,quant_shim_val(2),4);
+      AnalogFuncTo(calctime(quant_handover_start,0),'Z Shim',...
+          @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+          quant_timings.quant_handover_time,...
+          quant_timings.quant_handover_time,quant_shim_val(3),3);
 
-      % Switch off FB coil if necessary
-      if (getChannelValue(seqdata,'FB current',1,0) > 0) && (quant_timings.quant_handover_fesh_ramptime <= 0)
+      % Turn off FB Field
+      if (getChannelValue(seqdata,'FB current',1,0) > 0) && ...
+              (quant_timings.quant_handover_fesh_ramptime <= 0)
         % hard shut off of FB field
         setAnalogChannel(calctime(quant_handover_start,0),'FB current',-0.5,1);%0
         setDigitalChannel(calctime(quant_handover_start,0),'fast FB Switch',0); %fast switch
-      elseif (getChannelValue(seqdata,'FB current',1,0) > 0) && (quant_timings.quant_handover_fesh_ramptime > 0)
+      elseif (getChannelValue(seqdata,'FB current',1,0) > 0) ...
+              && (quant_timings.quant_handover_fesh_ramptime > 0)
         % ramp FB field
         AnalogFuncTo(calctime(quant_handover_start,quant_timings.quant_handover_fesh_rampdelay),'FB current',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),quant_timings.quant_handover_fesh_ramptime,quant_timings.quant_handover_fesh_ramptime,0);
         setDigitalChannel(calctime(quant_handover_start,quant_timings.quant_handover_time),'fast FB Switch',0); %fast switch
@@ -117,42 +143,25 @@ if (strcmp(flags.img_direction,'X') || strcmp(flags.img_direction,'Y'))
         setAnalogChannel(calctime(quant_handover_start,0),'FB current',-0.5,1);%0
         setDigitalChannel(calctime(quant_handover_start,quant_timings.quant_handover_time),'fast FB Switch',0);
       end
-
     end
+  elseif strcmp(flags.condition,'in_trap')
+      % For in-trap imaging, you don't touch the magnetic fields!
 
-    % eventually set all shims to zero (50ms after image was taken)
-    setAnalogChannel(calctime(curtime,params.timings.tof+50),'X Shim',0.0,3);
-    setAnalogChannel(calctime(curtime,params.timings.tof+50),'Y Shim',0.0,4);
-    setAnalogChannel(calctime(curtime,params.timings.tof+50),'Z Shim',0.0,3);
-
-    %Rhys - Why is this required?
-    % set FB channel to 0 as well to keep from getting errors in AnalogFuncTo: 
+  end
+  
+  % Turn off feshbach sometime after the time of flight
     clear('ramp');
     ramp.fesh_ramptime = 100; 
     ramp.fesh_ramp_delay = -0;
     ramp.fesh_final = 0;
     ramp.settling_time = 10;
     ramp_bias_fields(calctime(curtime,params.timings.tof+50), ramp);
-    
-    %If imaging in the magnetic trap, do not turn on the quantizing shim.
-  elseif strcmp(flags.condition,'in_trap')
-    % eventually set all shims to zero (50ms after image was taken)
-    % set FB channel to 0 as well to keep from getting errors in AnalogFuncTo
-    % %RHYS - These things are going to happen regardless! Remove if statement?
+   
+    % Turn off the shims sometime after the time of flight
     setAnalogChannel(calctime(curtime,params.timings.tof+50),'X Shim',0,3);
     setAnalogChannel(calctime(curtime,params.timings.tof+50),'Y Shim',0,4);
     setAnalogChannel(calctime(curtime,params.timings.tof+50),'Z Shim',0,3);
-    setAnalogChannel(calctime(curtime,params.timings.tof+50),'FB current',0,1);
-  end
-  %If imaging in the MOT, handle the quantizing shims differently.
-  elseif (strcmp(flags.img_direction,'MOT'))
-    if ~strcmp(flags.condition,'in_trap')
-      setAnalogChannel(calctime(curtime,0),'Y Shim',3.5,2); %3.5
-    end
-    % Turn Y shim off later
-    setAnalogChannel(calctime(curtime,params.timings.tof+50),'Y Shim',0.0,2);
 end
-
 %% Prepare detunings for optional optical pumping and repump pulses, which occur before the first image.
 
 %Before the actual imaging pulse, perform repump and/or optical
@@ -161,25 +170,29 @@ if (~flags.High_Field_Imaging)
   if flags.use_K_repump
     %Repump pulse: off slightly after optical pumping pulse - simulataneous with optical
     %pumping
-    DigitalPulse(calctime(curtime,params.timings.tof - params.timings.k_detuning_shift_time - params.timings.K_OP_time),'K Repump TTL',params.timings.K_OP_time+0.2,0);
+    DigitalPulse(calctime(curtime,params.timings.tof - ...
+        params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
+        'K Repump TTL',params.timings.K_OP_time+0.2,0);
   end
   
   if flags.use_K_OP
     %set probe detuning
     setAnalogChannel(calctime(curtime,params.timings.tof - ...
-        params.timings.k_detuning_shift_time - params.timings.K_OP_time),'K Probe/OP FM',190.0); %202.5 for 2G shim
+        params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
+        'K Probe/OP FM',190.0); %202.5 for 2G shim
     %SET trap AOM detuning to change probe
     setAnalogChannel(calctime(curtime,params.timings.tof - ...
-        params.timings.k_detuning_shift_time - params.timings.K_OP_time),'K Trap FM',k_OP_detuning); %40 for 2G shim
+        params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
+        'K Trap FM',k_OP_detuning); %40 for 2G shim
     %Set AM for Optical Pumping
     setAnalogChannel(calctime(curtime,params.timings.tof - ...
-        params.timings.k_detuning_shift_time - params.timings.K_OP_time),'K Probe/OP AM',K_power);%0.65
+        params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
+        'K Probe/OP AM',K_power);%0.65
     %TTL
     DigitalPulse(calctime(curtime,params.timings.tof - ...
-        params.timings.k_detuning_shift_time - params.timings.K_OP_time),'K Probe/OP TTL',params.timings.K_OP_time,1); %0.3
-    
-    
-    %Turn off AM
+        params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
+        'K Probe/OP TTL',params.timings.K_OP_time,1); %0.3   
+        %Turn off AM
      setAnalogChannel(calctime(curtime,params.timings.tof - ...
          params.timings.k_detuning_shift_time),'K Probe/OP AM',0,1);   
   end
@@ -188,24 +201,22 @@ end
 
 %% Prepare detuning, repump, and probe for the actual image
 if(~flags.High_Field_Imaging)
+    % The probe beam detuning is set by two double passes
     
-  % Set K probe Detuning for pump and probe
+  % Set K probe FM
   setAnalogChannel(calctime(curtime,...
-        params.timings.tof-params.timings.k_detuning_shift_time),'K Probe/OP FM',180);
+        params.timings.tof-params.timings.k_detuning_shift_time),...
+        'K Probe/OP FM',180);
+    
+  % Set K Trap FM 
   setAnalogChannel(calctime(curtime,...
-        params.timings.tof-params.timings.k_detuning_shift_time),'K Trap FM',K_detuning);  
+        params.timings.tof-params.timings.k_detuning_shift_time),...
+        'K Trap FM',K_detuning);  
   
-  % Set Rb probe detuning via offset lock
-  AnalogFuncTo(calctime(curtime,...
-      params.timings.tof - rb_detuning_shift_time),'Rb Beat Note FM',...
-      @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-      rb_detuning_shift_time,rb_detuning_shift_time, Rb_detuning);
-  
-  % Set Rb probe back to "original" value much later
-  AnalogFuncTo(calctime(curtime,...
-      params.timings.tof + 500),'Rb Beat Note FM',...
-      @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-      1000,1000, 6590+32);
+  % Set Rb Probe Detuning
+    f_osc = calcOffsetLockFreq(Rb_detuning,'Probe32');
+    DDS_id = 3;    
+    DDS_sweep(curtime,DDS_id,f_osc*1e6,f_osc*1e6,1)    
 
   % Set K probe/OP power 
   setAnalogChannel(calctime(curtime,-1+params.timings.tof),...
@@ -272,19 +283,32 @@ if ~(flags.High_Field_Imaging)
     
   % Open K shutter
   if strcmp(flags.image_atomtype, 'K') || strcmp(flags.image_atomtype, 'KRb')
+      
+      % Open Probe Shutter in preparation
     setDigitalChannel(calctime(curtime, -5+params.timings.tof),'K Probe/OP shutter',1);
-    if (flags.use_K_repump || flags.K_repump_during_image)
+    if (flags.use_K_repump || flags.K_repump_during_image)        
+        
+%         k_repump_am_list = [0:.05:.8]; % 
+%         k_repump_am = getScanParameter(k_repump_am_list,...
+%         seqdata.scancycle,seqdata.randcyclelist,'k_repump_am','V?'); 
+        
       %Open science cell K repump shutter
-      setDigitalChannel(calctime(curtime,-5+params.timings.tof),'K Sci Repump',1);
+      setDigitalChannel(calctime(curtime,-5+params.timings.tof),...
+          'K Sci Repump',1);             
+
       %turn repump back up
-      setAnalogChannel(calctime(curtime,-5+params.timings.tof),25,0.8);
+      setAnalogChannel(calctime(curtime,-5+params.timings.tof),...
+          'K Repump AM',.8);.8;
       %repump TTL
-      setDigitalChannel(calctime(curtime,-5+params.timings.tof),7,1);
+      setDigitalChannel(calctime(curtime,-5+params.timings.tof),...
+          'K Repump TTL',1);
       %Frequency shift the repump
       if strcmp(flags.negative_imaging_shim,'negative')
-        setAnalogChannel(calctime(curtime,-5+params.timings.tof),'K Repump FM',k_repump_shift,2);
+        setAnalogChannel(calctime(curtime,-5+params.timings.tof),...
+            'K Repump FM',k_repump_shift,2);
       else
-        setAnalogChannel(calctime(curtime,-5+params.timings.tof),'K Repump FM',k_repump_shift,2);
+        setAnalogChannel(calctime(curtime,-5+params.timings.tof),...
+            'K Repump FM',k_repump_shift,2);
       end
     end
   end
@@ -315,17 +339,21 @@ end
 % Update curtime to the imaging time (add the tof).
 curtime = calctime(curtime,params.timings.tof);
 
+    tD_list = [-20];
+tD=getScanParameter(tD_list,seqdata.scancycle,...
+    seqdata.randcyclelist,'pixel_delay','us');
+
 % Take the first absorption image with atoms
 tof_krb_diff=seqdata.params.tof_krb_diff;
 params.isProgrammedSRS = 0;
-params=do_abs_pulse2(curtime,params,flags,K_power,tof_krb_diff);
+params=do_abs_pulse2(curtime,params,flags,K_power,tof_krb_diff,tD*1e-3);
 
 % Wait 200 ms for all traces of atoms to be gone 
 % RHYS - could be shorter
 curtime = calctime(curtime,200); 
 
 % Take the second absorption image without atoms
-do_abs_pulse2(curtime,params,flags,K_power,tof_krb_diff);
+do_abs_pulse2(curtime,params,flags,K_power,tof_krb_diff,tD*1e-3);
 
 %% Turn Probe and Repump off
 
@@ -349,7 +377,7 @@ end
 
 % Absorption pulse function -- triggers cameras and pulses probe/repump
 % RHYS - It would be reasonable to call this as a method of an absorption image class.
-function params = do_abs_pulse2(curtime,params,flags,K_power,tof_krb_diff)
+function params = do_abs_pulse2(curtime,params,flags,K_power,tof_krb_diff,tD)
 global seqdata
 pulse_length = params.timings.pulse_length;
 
@@ -360,7 +388,8 @@ ScopeTriggerPulse(curtime,'Camera triggers',pulse_length);
 if (flags.iXon)
   DigitalPulse(curtime,'iXon Trigger',pulse_length,1);
 else
-  DigitalPulse(curtime,'PixelFly Trigger',pulse_length,1);
+
+  DigitalPulse(calctime(curtime,tD),'PixelFly Trigger',pulse_length,1);
 end
 
 

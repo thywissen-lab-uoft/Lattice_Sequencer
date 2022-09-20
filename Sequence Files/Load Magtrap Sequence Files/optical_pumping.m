@@ -17,19 +17,23 @@ curtime = timein;
 %% Optical pumping parameters
 % tmax=15;
 optime_list = [3.1];[3.1];[2];
-optime = getScanParameter(optime_list,seqdata.scancycle,seqdata.randcyclelist,'optime','ms');
+optime = getScanParameter(optime_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'optime','ms');
 
 % K
 k_op_am_list = [0.4];[0.5];[0.25]; %0.1:0.1:0.9
-k_op_am = getScanParameter(k_op_am_list,seqdata.scancycle,seqdata.randcyclelist,'k_op_am','V');
+k_op_am = getScanParameter(k_op_am_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'k_op_am','??');
 k_op_offset = 0.0;
 k_op_time = optime;
 k_op_detuning_list = [5];%3 
-k_op_detuning = getScanParameter(k_op_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'k_op_det');
+k_op_detuning = getScanParameter(k_op_detuning_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'k_op_det');
 
 % Rb
 rb_op_am_list = [1];[0.8];[0.8];  %  (1) RF amplitude (V)       
-rb_op_am = getScanParameter(rb_op_am_list,seqdata.scancycle,seqdata.randcyclelist,'rb_op_am','V');
+rb_op_am = getScanParameter(rb_op_am_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'rb_op_am','V');
 rb_op_offset = 0.0;
 rb_op_time = optime;        % (1) optical pumping time
 
@@ -39,7 +43,8 @@ rb_op_detuning_set(2) = -3;     % for 2->3
 % rb_op_detuning = rb_op_detuning_set(seqdata.flags.Rb_Probe_Order);
 % 
 rb_op_detuning_list = [-20];-20;
-rb_op_detuning = getScanParameter(rb_op_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'rb_op_detuning','MHz');
+rb_op_detuning = getScanParameter(rb_op_detuning_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'rb_op_detuning','MHz');
 
 %% Prepare OP
 
@@ -68,7 +73,8 @@ if (seqdata.atomtype==1 || seqdata.atomtype==4)
 %     K_OP_repump_am = 0.7;
 
      K_OP_repump_am_list = [0.3];
-     K_OP_repump_am =  getScanParameter(K_OP_repump_am_list,seqdata.scancycle,seqdata.randcyclelist,'K_OP_repump_am');
+     K_OP_repump_am =  getScanParameter(K_OP_repump_am_list,...
+         seqdata.scancycle,seqdata.randcyclelist,'K_OP_repump_am');
 
      setAnalogChannel(curtime,'K Repump AM',K_OP_repump_am); %0.3
 % %      

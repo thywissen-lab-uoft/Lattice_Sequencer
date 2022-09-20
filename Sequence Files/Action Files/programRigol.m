@@ -172,9 +172,9 @@ catch ME
 end
 
 %% Close Connect and Delete
+
 fclose(obj);
 delete(obj);
-
 
 %% Helper Functions
 
@@ -226,7 +226,6 @@ delete(obj);
         pause(0.01);
         fprintf(obj,strBeepOFF);    % Disable beep
     end
-
 end
 
 function obj=visaConnect(DeviceName)

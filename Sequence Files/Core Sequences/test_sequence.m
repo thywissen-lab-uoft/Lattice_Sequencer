@@ -5231,7 +5231,7 @@ if do_pixel_fly_test
 end
 
 %% Test Rb uwave sweep
-curtime = calctime(curtime,1000);
+% curtime = calctime(curtime,1000);
 %  % uWave Sweeep Prepare
 %     %%%%%%%%%%%%%%%%%%%%
 % %     use_ACSync=0;    
@@ -5418,21 +5418,21 @@ curtime = calctime(curtime,1000);
     %Optical pumping time
 % curtime = calctime(curtime,optical_pump_time);
     
-setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);
-setDigitalChannel(calctime(curtime,0),'RF Source',0);
-setDigitalChannel(calctime(curtime,0),'SRS Source',1);
-setDigitalChannel(calctime(curtime,0),'SRS Source post spec',0);
-setDigitalChannel(calctime(curtime,0),'K uWave Source',1);
-setDigitalChannel(calctime(curtime,0),'RF TTL',0);
-
-
-setAnalogChannel(calctime(curtime,0),'F Pump',0.9)
-
-% Switch antenna to uWaves (0: RF, 1: uWave)
-setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',1); 
-
-% Switch uWave source to the K sources (0: K, 1: Rb);
-setDigitalChannel(calctime(curtime,0),'K/Rb uWave Transfer',0);
+% setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);
+% setDigitalChannel(calctime(curtime,0),'RF Source',0);
+% setDigitalChannel(calctime(curtime,0),'SRS Source',1);
+% setDigitalChannel(calctime(curtime,0),'SRS Source post spec',0);
+% setDigitalChannel(calctime(curtime,0),'K uWave Source',1);
+% setDigitalChannel(calctime(curtime,0),'RF TTL',0);
+% 
+% 
+% setAnalogChannel(calctime(curtime,0),'F Pump',0.9)
+% 
+% % Switch antenna to uWaves (0: RF, 1: uWave)
+% setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',1); 
+% 
+% % Switch uWave source to the K sources (0: K, 1: Rb);
+% setDigitalChannel(calctime(curtime,0),'K/Rb uWave Transfer',0);
 
 
 
@@ -5444,8 +5444,88 @@ setDigitalChannel(calctime(curtime,0),'K/Rb uWave Transfer',0);
 %     DDSFreq = 324.20625*MHz + df*kHz/4;
 %     DDS_sweep(calctime(curtime,0),2,DDSFreq,DDSFreq,calctime(curtime,1));
 %     addOutputParam('DDSFreq',DDSFreq);
+setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1)
+
+setDigitalChannel(calctime(curtime,-0),'UV LED',1); % THe X axis bulb 1 on 0 off
+
+ %%
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1)
+% % setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); 
+% % setAnalogChannel(calctime(curtime,0),'K Trap FM',5);
+% % setDigitalChannel(calctime(curtime,0),'K Probe/OP Shutter',1); % Open K Shtter with pre-trigger
+% % 
+% % setDigitalChannel(calctime(curtime,0),'Rb Probe/OP Shutter',1); % Open shutter
+% % setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',1); % Set 
+% % setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',0); % inverted logic
+% 
+% 
+% % Shutter 1 is usually closed (light not allowed)
+% setDigitalChannel(curtime,'Vortex Shutter 1',0);
+% 
+% % Shutter 2 is nominally open (light allowed)
+% setDigitalChannel(curtime,'Vortex Shutter 2',1);
+% setDigitalChannel(curtime,'ScopeTrigger',0);
+% 
+% curtime = calctime(curtime,100);
+% 
+% 
+% tD1 = -2.75;
+% tD2 = -2.85;
+% 
+% pulse_time = 3;
+% 
+% % Let light through with Shutter 1
+% setDigitalChannel(calctime(curtime,tD1),'Vortex Shutter 1',1);
+% setDigitalChannel(curtime,'ScopeTrigger',1);
+% setDigitalChannel(calctime(curtime,pulse_time),'ScopeTrigger',0);
+% 
+% % Stop light with shutter 2
+% setDigitalChannel(calctime(curtime,tD2+pulse_time),'Vortex Shutter 2',0);
+% 
+% curtime=calctime(curtime,100);
+% 
+% % Reset
+% setDigitalChannel(curtime,'Vortex Shutter 1',0);
+% setDigitalChannel(curtime+10,'Vortex Shutter 2',1);
+
+%% 2022/09/06
+% Testing thermal properties of Y lattice Fiber
+% 
+% 
+% % Turn off all lattices but turn AOM on
+% setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);
+% setAnalogChannel(calctime(curtime,0),'zLattice',-10,1);
+% setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);
+% setDigitalChannel(calctime(curtime,0),'yLatticeOFF',0);%0: ON
+% 
+% doRotateWaveplate=1;
+% if doRotateWaveplate
+%     wp_Trot1 = 600; % Rotation time during XDT
+%     wp_Trot2 = 150; 
+%     P_RotWave_I = 0.8;
+%     P_RotWave_II = 0.99;    
+% %     P_RotWave_II = 0.01;    
+% 
+%     dispLineStr('Rotate waveplate again',curtime)    
+%         %Rotate waveplate again to divert the rest of the power to lattice beams
+% curtime = AnalogFunc(calctime(curtime,0),41,...
+%         @(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),...
+%         wp_Trot2,wp_Trot2,P_RotWave_I,P_RotWave_II);             
+% end
+% 
+% curtime=calctime(curtime,550);
+% 
+% % Set Y lattice depth to be high
+% ScopeTriggerPulse(calctime(curtime,0),'lattice_on');
+% setAnalogChannel(calctime(curtime,0),'yLattice',150,2);
+% 
+% % Wait 2 seconds
+% curtime=calctime(curtime,2000);
+% 
+% setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);
 
 timeout = curtime;
+% SelectScopeTrigger('lattice_on');
 
 
 

@@ -31,7 +31,7 @@ opt = struct('Offset_Field',4, ... field (in G) to horizontally offset the QP gr
              'QP_Selection_Gradient', 7*1.78, ... gradient for plane selection.
              'Feshbach_Level', 0.01, ... feshbach level for plane selection.
              'Selection_Range', 100/1000, ... range of sweep for plane selection.
-             'Selection__Frequency', 1285.8+10.750, ... frequency for plane selection from |9/2,-9/2>.
+             'Selection_Frequency', 1285.8+10.750, ... frequency for plane selection from |9/2,-9/2>.
              'Raman_AOM_Frequency', 110, ... Frequency of Raman excitation AOM.
              'Rigol_Mode', 'Pulse', ... Whether to pulse, sweep, or modulate the Rigol output.
              'Modulation_Time', 1, ... Period of modulation of Rigol in 'modulate' mode.
@@ -167,7 +167,7 @@ field_shift_settle = 40;                % settling time after initial and final 
     if (opt.Microwave_Or_Raman == 1)
 
         %Settings for plane selection
-        spect_pars.freq = opt.Selection__Frequency;
+        spect_pars.freq = opt.Selection_Frequency;
         spect_pars.SRS_select = opt.SRS_Selection;
         spect_pars.power = opt.Microwave_Power_For_Selection;
         spect_pars.delta_freq = opt.Selection_Range;
@@ -356,9 +356,11 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
                 opt.Modulation_Time, opt.Raman_AOM_Frequency, opt.Selection_Range, ...
                 opt.Raman_Power1, opt.Raman_Power2);      
         elseif strcmp(opt.Rigol_Mode, 'Pulse')
-            str = sprintf('SOURce1:SWEep:STATe OFF;SOURce1:MOD:STATe OFF; SOURce1:FREQuency %gMHZ;SOURce1:VOLT %gVPP;SOURce2:VOLT %gVPP;', opt.Raman_AOM_Frequency, opt.Raman_Power1, opt.Raman_Power2);
+            str = sprintf('SOURce1:SWEep:STATe OFF;SOURce1:MOD:STATe OFF; SOURce1:FREQuency %gMHZ;SOURce1:VOLT %gVPP;SOURce2:VOLT %gVPP;', ...
+                opt.Raman_AOM_Frequency, opt.Raman_Power1, opt.Raman_Power2);
         elseif strcmp(opt.Rigol_Mode, 'Modulate')
-            str = sprintf('SOURce1:MOD:STATe ON;SOURce1:MOD:TYPe FM;SOURce1:MOD:FM:INTernal:FUNCtion TRIangle;SOURce1:MOD:FM:INTernal:FREQuency %gKHZ;SOURce1:FREQuency %gMHZ;SOURce1:MOD:FM:DEViation %gMHZ;SOURce1:VOLT %g;SOURce2:VOLT %g;', 1/opt.Modulation_Time, opt.Raman_AOM_Frequency, abs(opt.Selection_Range), opt.Raman_Power1, opt.Raman_Power2);            
+            str = sprintf('SOURce1:MOD:STATe ON;SOURce1:MOD:TYPe FM;SOURce1:MOD:FM:INTernal:FUNCtion TRIangle;SOURce1:MOD:FM:INTernal:FREQuency %gKHZ;SOURce1:FREQuency %gMHZ;SOURce1:MOD:FM:DEViation %gMHZ;SOURce1:VOLT %g;SOURce2:VOLT %g;', ...
+                1/opt.Modulation_Time, opt.Raman_AOM_Frequency, abs(opt.Selection_Range), opt.Raman_Power1, opt.Raman_Power2);            
         end
         
         addVISACommand(1, str); 
@@ -482,7 +484,7 @@ curtime =   calctime(curtime,opt.Microwave_Pulse_Length);
         
         %Raman excitation beam AOM-shutter sequence.
         DigitalPulse(calctime(curtime,-150),'Raman TTL 1',150,0);
-        DigitalPulse(calctime(curtime,-150),'Raman TTL 2',150,0);
+        DigitalPulse(calctime(curtime,-150),'Raman TTL 2',10,0);
         DigitalPulse(calctime(curtime,-150),'Raman TTL 2a',150,0);
 
 
@@ -609,7 +611,7 @@ end
 if opt.Double_Selection
     %Second field sweep, kill pulse, and transfer
     
-    spect_pars.freq = opt.Selection__Frequency;
+    spect_pars.freq = opt.Selection_Frequency;
     spect_pars.SRS_select = opt.SRS_Selection;
     spect_pars.power = opt.Microwave_Power_For_Selection;
     spect_pars.delta_freq = opt.Selection_Range_B;
@@ -833,7 +835,7 @@ dispLineStr('TIME!!!!',curtime);
 curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 
 else
-curtime = calctime(curtime,100); %Added March 19,2021 to shorten the lattice time for Raman transfers
+curtime = calctime(curtime,5); %Added March 19,2021 to shorten the lattice time for Raman transfers
 end
         
 %% assigning outputs (edit with care!)

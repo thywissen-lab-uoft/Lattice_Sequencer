@@ -102,7 +102,7 @@ setAnalogChannel(curtime,'X Shim',0.5,1);%27
 setAnalogChannel(curtime,'Z Shim',0.42,1);%28
 setAnalogChannel(curtime,'K Probe/OP AM',);%29
 setAnalogChannel(curtime,'K Probe/OP FM',);%30
-setAnalogChannel(curtime,'Coil 16 Trigger',);%31
+setAnalogChannel(curtime,31,0);%31
 setAnalogChannel(curtime,'Modulation Ramp',0.1);%32
 setAnalogChannel(curtime,'Plug Beam',);%33
 setAnalogChannel(curtime,'Rb Beat Note FM',);%34

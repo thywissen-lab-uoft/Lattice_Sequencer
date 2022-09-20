@@ -7,15 +7,11 @@ function params = Load_Absorption_Image_Parameters()
         seqdata.scancycle,seqdata.randcyclelist,'kdet_shift','MHz');
     params.detunings.K.X.positive.normal = 22.2 ;
     params.detunings.K.X.positive.in_trap = 23.5;
-    params.detunings.K.X.positive.QP_imaging = 23.5 + 0 ;
+    params.detunings.K.X.positive.QP_imaging = 21.5;
     params.detunings.K.X.positive.SG = 24.5;
     params.detunings.K.X.positive.short_tof = 24.5;
-    params.detunings.K.X.negative.normal = 32.2; %(33.5-0.8 -0.5) for DFG, (33.5-0.8 +1) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
+    params.detunings.K.X.negative.normal = 32.6; %(32.6) for DFG, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
     
-%     kdet_neg_shift_list = [0];%[2];%-1
-%     kdet_neg_shift = getScanParameter(kdet_neg_shift_list,...
-%         seqdata.scancycle,seqdata.randcyclelist,'kdet_shift','MHz');
-
     % for mF stern gerlach
 %     params.detunings.K.X.negative.SG = 32.5; 
     
@@ -35,25 +31,42 @@ function params = Load_Absorption_Image_Parameters()
     % Rubidium - X-cam
     
 %     
-    rbdet_shift_list = [0];2;
+    rbdet_shift_list = [0];
     rbdet_shift = getScanParameter(rbdet_shift_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'rbdet_shift');
+        seqdata.scancycle,seqdata.randcyclelist,'rbdet_shift','MHz');
     
-    params.detunings.Rb.X.positive.normal = 6590 - 238;           % XDTs/lattice
-    params.detunings.Rb.X.positive.in_trap = 6590 - 246+7;          % QP in-situ
-    params.detunings.Rb.X.positive.QP_imaging = 6590 - 238.5 + rbdet_shift;       % QP TOF
-    params.detunings.Rb.X.positive.SG = 6590 - 241.8 +2;            % Stern Gerlach
-    params.detunings.Rb.X.negative.normal = 6590 - 232;
-    
-    % This is not calibrated; only to prevent code frmo crashing
-    params.detunings.Rb.X.negative.SG = 6590 - 241.8 +2;            
+%     params.detunings.Rb.X.positive.normal = 6590 - 238;           % XDTs/lattice
+%     params.detunings.Rb.X.positive.in_trap = 6590 - 246+7;          % QP in-situ
+%     params.detunings.Rb.X.positive.QP_imaging = 6590 - 238.5 + rbdet_shift;       % QP TOF
+%     params.detunings.Rb.X.positive.SG = 6590 - 241.8 +2;            % Stern Gerlach
+%     params.detunings.Rb.X.negative.normal = 6590 - 232;
+%     
+% %     This is not calibrated; only to prevent code frmo crashing
+%     params.detunings.Rb.X.negative.SG = 6590 - 241.8 +2;   
+%     
+% %     Rubidium - Y-cam
+%     params.detunings.Rb.Y.positive.normal = 6590 - 230.7;
+%     params.detunings.Rb.Y.positive.in_trap = 6590 - 243;
+% %     Rubidium - MOT
+%     params.detunings.Rb.MOT.positive.normal = 6590 - 240;
 
+
+    % Rubidium XCAM
+    params.detunings.Rb.X.positive.normal = 10;    % |2,2> 2022/09/02
+    params.detunings.Rb.X.positive.in_trap = 0;             % |2,2> Uncalibrated
+    params.detunings.Rb.X.positive.QP_imaging = 10;         % QP imaging 15 ms tof |2,2> 2022/09/02
+    params.detunings.Rb.X.positive.SG = 0;                  % Uncalibrated
+    params.detunings.Rb.X.negative.normal = 0;              % Uncalibrated
+    params.detunings.Rb.X.negative.SG = 0;                  % Uncalibrated
     
-    % Rubidium - Y-cam
-    params.detunings.Rb.Y.positive.normal = 6590 - 230.7;
-    params.detunings.Rb.Y.positive.in_trap = 6590 - 243;
-    % Rubidium - MOT
-    params.detunings.Rb.MOT.positive.normal = 6590 - 240;
+%     Rubidium - Y-cam
+    params.detunings.Rb.Y.positive.normal = 0;
+    params.detunings.Rb.Y.positive.in_trap = 0;
+%     Rubidium - MOT
+    params.detunings.Rb.MOT.positive.normal  = 0 ;
+
+
+
     
     
     %% HF imaging
@@ -79,9 +92,9 @@ function params = Load_Absorption_Image_Parameters()
     params.k_OP_detuning.positive = 24;
     params.k_OP_detuning.negative = 33;
     params.k_repump_shift.positive = 28;
-    params.k_repump_shift.negative = 21;
+    params.k_repump_shift.negative = 21;21;
     %% Probe beam powers
-    K_probe_pwr_list = [.15];%.15;%[0.5];
+    K_probe_pwr_list = [0.175];%.15;%[0.5];
     K_probe_pwr = getScanParameter(K_probe_pwr_list,seqdata.scancycle,...
         seqdata.randcyclelist,'K_probe_pwr','V');
     
@@ -108,15 +121,15 @@ function params = Load_Absorption_Image_Parameters()
     SG_QP_val_list = [7.5];%7.5;%5
     SG_QP_val = getScanParameter(SG_QP_val_list,seqdata.scancycle,seqdata.randcyclelist,'SG_QP_val');
     
-%     mF Stern Gerlach For |9,-9> vs |9,-7> low field (15ms TOF K)
-%     params.SG.SG_QP_val = 7.5*1.78;
-%     params.SG.SG_QP_pulsetime = 5;
-%     params.SG.SG_QP_ramptime =2;
+% %    mF Stern Gerlach For |9,-9> vs |9,-7> low field (15ms TOF K)
+    params.SG.SG_QP_val = 7.5*1.78;
+    params.SG.SG_QP_pulsetime = 5;
+    params.SG.SG_QP_ramptime =2;
 
 % %     % F Stern Gerlach : |9,-9> vs |7,-7> low field (~20G) (15ms TOF)
-    params.SG.SG_QP_val = 1.78*5;
-    params.SG.SG_QP_pulsetime = 2; 
-    params.SG.SG_QP_ramptime =1; 
+%     params.SG.SG_QP_val = 1.78*5;
+%     params.SG.SG_QP_pulsetime = 2; 
+%     params.SG.SG_QP_ramptime =1; 
     
     % Stern Gerlach feed forward
     params.SG.SG_QP_FF = 23*(params.SG.SG_QP_val/30); % voltage FF on delta supplySS

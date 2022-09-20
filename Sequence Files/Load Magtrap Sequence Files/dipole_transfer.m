@@ -2381,7 +2381,27 @@ if (seqdata.flags.do_D1OP_post_evap==1 && seqdata.flags.CDT_evap==1)
     D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle,...
         seqdata.randcyclelist, 'ODT_D1op_pwr2','V'); 
 
+    % fpump extra time
+    op_repump_extra_time_list = [2];
+    op_repump_extra_time = getScanParameter(op_repump_extra_time_list, seqdata.scancycle,...
+        seqdata.randcyclelist, 'ODT_op_time_extra2','ms');  
     
+    % values
+    op_after_options = struct;
+    op_after_options.op_time = optical_pump_time;
+    op_after_options.fpump_power = repump_power;
+    op_after_options.d1op_power = D1op_pwr;
+    op_after_options.fpump_extratime = op_repump_extra_time;    
+    op_after_options.leave_on = 0;
+    
+    
+    % Perform optical pumping
+     curtime = opticalpumpingD1(timein,op_after_options);
+    
+    % Commenting out for testing purposes
+
+%{
+        
     %Determine the requested frequency offset from zero-field resonance
     frequency_shift = (4)*2.4889;(4)*2.4889;
     Selection_Angle = 62.0;
@@ -2435,7 +2455,6 @@ curtime = calctime(curtime,optical_pump_time);
     % Turn off OP before F-pump so atoms repumped back to -9/2.
     setDigitalChannel(calctime(curtime,0),'D1 OP TTL',0);
 
-    op_repump_extra_time = 2;
     % Close optical pumping AOMS (no light)
     setDigitalChannel(calctime(curtime,op_repump_extra_time),'F Pump TTL',1);%1
     setAnalogChannel(calctime(curtime,op_repump_extra_time),'F Pump',-1);%1
@@ -2463,7 +2482,11 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
     
 
     curtime = calctime(curtime,50);
-end    
+    
+    
+%}
+end   
+ 
     
     
 %% Remix at end: Ensure a 50/50 mixture after spin-mixture evaporation

@@ -2405,16 +2405,20 @@ if (seqdata.flags.do_D1OP_post_evap==1 && seqdata.flags.CDT_evap==1)
     % Ramp fields for pumping
 curtime = rampMagneticFields(calctime(curtime,0), newramp);   
 
-    % Close EIT Probe Shutter
+    % Makure sure EIT Probe shutter is closed
     setDigitalChannel(calctime(curtime,-20),'EIT Shutter',0);
     
     % Break the thermal stabilzation of AOMs by turning them off
-    setDigitalChannel(calctime(curtime,-10),'D1 TTL',0);
+    % EIT Probe AOM (not necessary?)
+    setDigitalChannel(calctime(curtime,-10),'D1 TTL',0); 
+    
+    % F-pump AOM + regulation
     setAnalogChannel(calctime(curtime,-10),'F Pump',-1);
     setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
+    
+    % D1 opitcal pumping TTL + AM control
     setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);    
     setAnalogChannel(calctime(curtime,-10),'D1 AM',D1op_pwr); 
-
     
     % Open D1 shutter (FPUMP + OPT PUMP)
     setDigitalChannel(calctime(curtime,-8),'D1 Shutter', 1);%1: turn on laser; 0: turn off laser

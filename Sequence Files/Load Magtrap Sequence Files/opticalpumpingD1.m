@@ -11,7 +11,7 @@ if nargin == 1
    opts = struct;
    opts.op_time = 5;
    opts.fpump_power = 0.2;
-   opts.d1op_power = 8;
+   opts.d1op_power = 8; 
    opts.fpump_extratime = 2;
    
    opts.leave_on = 1;
@@ -29,9 +29,22 @@ fpump_power = opts.fpump_power;             % fpump power (repumps F=7/2);
 fpump_extratime = opts.fpump_extratime;     % fpump extra time on
 d1op_power = opts.d1op_power;               % optical pumping power (AM)
 
+disp(['     Pumping time (ms)     ' num2str(op_time)]);
+disp(['     Pumping AM (V)        ' num2str(d1op_power)]);
+disp(['     Fpump power (V)       ' num2str(fpump_power)]);
+disp(['     Fpump extra time (ms) ' num2str(fpump_extratime)]);
+
 % Flag to keep the beams on after calling this function.  This is useful
 % for debugging purposes.
 leave_on = opts.leave_on;
+
+%% Extra Initial Wait
+% If you are leaving the beams on at the end, you are presumably debugging
+% the sequence, so add some extra time so calls backwards in time are okay.
+
+if leave_on
+   curtime = calctime(curtime,50); 
+end
 
 %% Ramp Mangetic Field for optical pumping
 % The quantization is set along the optical pumping axis (FPUMP)
@@ -59,12 +72,15 @@ leave_on = opts.leave_on;
     % Ramp fields for pumping
 curtime = rampMagneticFields(calctime(curtime,0), newramp);   
 
+    disp(' Ramping magnetic fields ...');
+
 %% Prepare Light
 
     % Make sure EIT shutter is closed (EIT Probes) (necessary? already
     % closed?)
     setDigitalChannel(calctime(curtime,-20),'EIT Shutter',0); %0 = closed
-    
+    setDigitalChannel(calctime(curtime,-20),'D1 Shutter', 0);%2
+      
     % Break the thermal stabilzation of AOMs by turning them off
     setDigitalChannel(calctime(curtime,-10),'D1 TTL',0);        % EIT probe off
     setAnalogChannel(calctime(curtime,-10),'F Pump',-1);        % fpump regulation low
@@ -73,7 +89,8 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
     setAnalogChannel(calctime(curtime,-10),'D1 AM',d1op_power); % d1 AOM AM set
     
 %% Turn on beams
-    
+    disp(' Pulsing light');
+
     % Open D1 shutter (FPUMP + OPT PUMP + EIT Probe) (EIT Shutter still
     % closed)
     setDigitalChannel(calctime(curtime,-8),'D1 Shutter', 1); % 1: light; 0: no light
@@ -93,6 +110,8 @@ curtime = calctime(curtime,op_time);
 % Turn off beams
 
 if ~leave_on    
+    disp(' Turning off beams');
+
     % Turn off OP before F-pump to ensure F=9/2 population
     setDigitalChannel(calctime(curtime,0),'D1 OP TTL',0);
     
@@ -116,15 +135,17 @@ curtime = calctime(curtime,fpump_extratime + 5);
 clear('ramp');
 
 %% Ramp Magnetic Field Back to operating
+disp(' Ramping field back');
 
 % Define new structure
 newramp = struct('ShimValues',seqdata.params.shim_zero,...
-            'FeshValue',20,'QPValue',0,'SettlingTime',100);
-        
+            'FeshValue',20,'QPValue',0,'SettlingTime',100);        
         
     % Ramp fields for pumping
 curtime = rampMagneticFields(calctime(curtime,0), newramp);   
     
+% Extra wait time (why not just put it into the settling time?)
+curtime = calctime(curtime,50);
 
 end
 

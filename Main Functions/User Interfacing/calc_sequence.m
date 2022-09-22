@@ -23,27 +23,9 @@ disp('Sending DDS commands...');
     if seqdata.numDDSsweeps ~= 0
     
         % Create TCP/IP object 't'. Specify server machine and port number. 
-        %t = tcpip('192.168.1.153', 37829); %Phase-O-matic
-        %t = udp('192.168.1.156', 37829, 'LocalPort', 4629); %General Purpose DDS #3
-        t(1) = udp('192.168.1.155', 37829, 'LocalPort', 4629); %RF 192.168.1.155
-        t(2) = udp('192.168.1.156', 37829, 'LocalPort', 4630); %4 Pass AOM 192.168.1.156
-        
-        % DDS that controls the Rb Trap Offset lock
-        t(3) = udp('192.168.1.157', 37829, 'LocalPort', 4631);
-
-%       t(1) = udp('192.168.1.155', 37829, 'LocalPort', 4629); %350MHz for TA lock 192.168.1.156"
-%       t(2) = udp('192.168.1.156', 37829, 'LocalPort', 4630); %6.8GHz  
-%       t(3) = udp('192.168.1.157', 37829, 'LocalPort', 4631); %RF %192.168.1.157
-%       
-        
-        %NOTE: If this process is interrupted (i.e. fopen runs, but not fclose)
-        %you will get a local port
-        %binding error next time you run the program. This is fixed by
-        %restarting MATLAB
-        
-%         for i=1:3
-%            fclose(t(i)); 
-%         end
+        t(1) = udp('192.168.1.155', 37829, 'LocalPort', 4629); % RF 
+        t(2) = udp('192.168.1.156', 37829, 'LocalPort', 4630); % 4 Pass         
+        t(3) = udp('192.168.1.157', 37829, 'LocalPort', 4631); % Rb Trap Offset Lock
         
         % Set size of receiving buffer, if needed. 
         for i = 1:3 
@@ -54,10 +36,8 @@ disp('Sending DDS commands...');
             catch ME
                 keyboard
                warning(['unable to connect to DDS ' num2str(i)]); 
-            end
-                
-        end
-        
+            end                
+        end        
         
         %DDS commands
         add_cmd = char(hex2dec('C1'));

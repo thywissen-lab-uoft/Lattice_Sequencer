@@ -5444,9 +5444,9 @@ end
 %     DDSFreq = 324.20625*MHz + df*kHz/4;
 %     DDS_sweep(calctime(curtime,0),2,DDSFreq,DDSFreq,calctime(curtime,1));
 %     addOutputParam('DDSFreq',DDSFreq);
-setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1)
-
-setDigitalChannel(calctime(curtime,-0),'UV LED',1); % THe X axis bulb 1 on 0 off
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1)
+% 
+% setDigitalChannel(calctime(curtime,-0),'UV LED',1); % THe X axis bulb 1 on 0 off
 
  %%
 % setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1)
@@ -5523,6 +5523,12 @@ setDigitalChannel(calctime(curtime,-0),'UV LED',1); % THe X axis bulb 1 on 0 off
 % curtime=calctime(curtime,2000);
 % 
 % setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);
+%%
+setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1)
+% 
+setDigitalChannel(calctime(curtime,0),79,1); % THe X axis bulb 1 on 0 off
+% setDigitalChannel(calctime(curtime,-0),80,1); % THe X axis bulb 1 on 0 off
+
 
 timeout = curtime;
 % SelectScopeTrigger('lattice_on');

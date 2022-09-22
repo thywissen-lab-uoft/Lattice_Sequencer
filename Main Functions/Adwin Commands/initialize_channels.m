@@ -136,8 +136,8 @@ seqdata.digchannels(76).resetvalue = 0;
 
 seqdata.digchannels(77).name = 'ODT Rigol Trigger'; %unused
 seqdata.digchannels(78).name = 'DDS Rb Trap Trigger'; % To trigger the DDS that sets the offset lock
-seqdata.digchannels(79).name = 'Vortex Shutter 1'; % For testing Vortex as PA laser
-seqdata.digchannels(80).name = 'Vortex Shutter 2'; % For testing Vortex as PA laser
+seqdata.digchannels(79).name = 'PA TTL';     % For testing Vortex as PA laser (1: ON)
+seqdata.digchannels(80).name = 'PA Shutter'; % For testing Vortex as PA laser (1: ON)
 seqdata.digchannels(81).name = 'Channel 81'; %unused
 seqdata.digchannels(82).name = 'Channel 82'; %unused
 seqdata.digchannels(83).name = 'Channel 83'; %unused
@@ -691,6 +691,8 @@ seqdata.analogchannels(46).voltagefunc{2} = @(a)(a); % Use a 10x Voltage Divider
 
 % %channel 47 (D1 AM Control)
 % CF : Needs better descriptor. Multiple D1 light in the sequence
+% CF : 2022/09/20 This controls the optical pumping AOM (but could control
+% other things?)
 seqdata.analogchannels(47).name = 'D1 AM';
 seqdata.analogchannels(47).minvoltage = 0;
 seqdata.analogchannels(47).maxvoltage = 10;

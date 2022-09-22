@@ -13,6 +13,11 @@ function programSRS(settings)
 % This current version of code keeps the old addGPIBCommand. As of writing
 % of this function, CF is unclear how the GPIB addresses are specified, and
 % so treats it as a black box.
+%
+%
+% Each SRS has a few different options.  However, the biggest difference is
+% which port you are going to output on. In principle there are three
+% different kinds of outputs
 
 if nargin==0
    settings=struct;
@@ -21,7 +26,7 @@ if nargin==0
    settings.Power=15;             % Power (dBM);
    settings.Enable=1;
    settings.EnableSweep=0;        % Whether to sweep the frequency
-   settings.SweepRange=100;     % Sweep range in kHz
+   settings.SweepRange=100;       % Sweep range in kHz
 end
 
 
@@ -79,8 +84,6 @@ cmd=sprintf('FREQ %fMHz; AMPR %gdBm; MODL %g; MFNC %g; FDEV %gMHz; DISP 2; ENBR 
     settings.SweepRange,...
     settings.Enable);
 
-
-% disp(cmd)
 addGPIBCommand(settings.Address,cmd);
 end
 

@@ -39,7 +39,7 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     dipole_holdtime_before_evap = 0;    % not a flag but a value
     ramp_Feshbach_B_before_CDT_evap = 0;
 
-    Evap_End_Power_List = [0.08];0.08;[0.08];
+    Evap_End_Power_List = [0.07];0.08;[0.08];
     
     % Ending optical evaporation
     exp_end_pwr = getScanParameter(Evap_End_Power_List,...
@@ -47,7 +47,7 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     
         
     % Second Stage ending evaporation power
-    Evap2_End_Power_List = [0.08];    
+    Evap2_End_Power_List = [0.07];    
     % Ending optical evaporation
     exp_end_pwr2 = getScanParameter(Evap2_End_Power_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power2','W');
@@ -98,7 +98,7 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     P2 = P12;       
             
     % Sympathetic cooling powers
-    Pevap_list = [0.8];
+    Pevap_list = [.8];
     Pevap = getScanParameter(Pevap_list,...
         seqdata.scancycle,seqdata.randcyclelist,'XDT_Pevap','W');
     P1e = Pevap; %0.8
@@ -924,10 +924,6 @@ if seqdata.flags.mix_at_beginning
     sweep_pars.pulse_length = getScanParameter(pulse_length_list,...
         seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_time_post_evap');
 
-    %numbers for spin mixture -9 and -7; power = -9.1, delta =
-    %0.01,time = 1.25
-    %numbers for near spin polarized -7/2; power = -8.4, delta = 0.06, time = 6ms 
-
     disp(['     Center Freq      (MHz) : ' num2str(sweep_pars.freq)]);
     disp(['     Delta Freq       (MHz) : ' num2str(sweep_pars.delta_freq)]);
     disp(['     Power              (V) : ' num2str(sweep_pars.power)]);
@@ -937,7 +933,7 @@ if seqdata.flags.mix_at_beginning
     f1=sweep_pars.freq-sweep_pars.delta_freq/2;
     f2=sweep_pars.freq+sweep_pars.delta_freq/2;
 
-    n_sweeps_mix_list=[11];
+    n_sweeps_mix_list=[0:1:10];
     n_sweeps_mix = getScanParameter(n_sweeps_mix_list,...
         seqdata.scancycle,seqdata.randcyclelist,'n_sweeps_mix');  % also is sweep length  0.5               
 
@@ -2364,7 +2360,7 @@ curtime = calctime(curtime,DMD_on_time-100); -50;
 % pumping.
 
 if (seqdata.flags.do_D1OP_post_evap==1 && seqdata.flags.CDT_evap==1)
-        dispLineStr('D1 Optical Pumping post op evap',curtime);  
+    dispLineStr('D1 Optical Pumping post optical evaporation',curtime);  
 
     % optical pumping pulse length
     op_time_list = [5];[1]; %1
@@ -2377,7 +2373,7 @@ if (seqdata.flags.do_D1OP_post_evap==1 && seqdata.flags.CDT_evap==1)
         seqdata.randcyclelist, 'ODT_op_repump_pwr2','V'); 
     
     %optical power
-    D1op_pwr_list = [8]; %min: 0, max:10 %5
+    D1op_pwr_list = [8]; %min: 0, max:10 (CF : I think the AOM power is too low)
     D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle,...
         seqdata.randcyclelist, 'ODT_D1op_pwr2','V'); 
 
@@ -2396,12 +2392,12 @@ if (seqdata.flags.do_D1OP_post_evap==1 && seqdata.flags.CDT_evap==1)
     
     
     % Perform optical pumping
-     curtime = opticalpumpingD1(timein,op_after_options);
+      curtime = opticalpumpingD1(curtime,op_after_options);
     
     % Commenting out for testing purposes
 
-%{
-        
+
+        %{
     %Determine the requested frequency offset from zero-field resonance
     frequency_shift = (4)*2.4889;(4)*2.4889;
     Selection_Angle = 62.0;

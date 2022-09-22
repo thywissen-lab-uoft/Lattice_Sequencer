@@ -902,11 +902,8 @@ if seqdata.flags.mix_at_beginning
 
     %Do RF Sweep
     clear('sweep');
-    % 2021/05/12 Make a generic mixture
-    % These settings don't care about setting a particular mixture
-    rf_k_sweep_freqs=[3.0495];%3.048 [1.8353];3.01;
 
-    rf_k_sweep_freqs=[5.990]+[-0.003];%3.048 [1.8353];3.01;
+    rf_k_sweep_freqs=[5.995];
 
     % With delta_freq =0.1;
     % 3.01 --> (-7,-5) (a little -9)
@@ -917,7 +914,7 @@ if seqdata.flags.mix_at_beginning
     sweep_pars.freq=rf_k_sweep_center;        
     sweep_pars.power = -9.2;-9.1;   
 
-    delta_freq_list = 0.01;[0.01];%0.006; 0.01
+    delta_freq_list = -0.01;[0.01];%0.006; 0.01
     sweep_pars.delta_freq = getScanParameter(delta_freq_list,...
         seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_range_post_evap');
     pulse_length_list = 1.25;[0.75];%0.4ms for mixing 2ms for 80% transfer remove further sweeps
@@ -933,7 +930,7 @@ if seqdata.flags.mix_at_beginning
     f1=sweep_pars.freq-sweep_pars.delta_freq/2;
     f2=sweep_pars.freq+sweep_pars.delta_freq/2;
 
-    n_sweeps_mix_list=[0:1:10];
+    n_sweeps_mix_list=[11];
     n_sweeps_mix = getScanParameter(n_sweeps_mix_list,...
         seqdata.scancycle,seqdata.randcyclelist,'n_sweeps_mix');  % also is sweep length  0.5               
 
@@ -2481,8 +2478,7 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
     
     
 %}
-end   
- 
+end    
     
     
 %% Remix at end: Ensure a 50/50 mixture after spin-mixture evaporation
@@ -2510,47 +2506,40 @@ if (seqdata.flags.mix_at_end==1 && seqdata.flags.CDT_evap==1)
 
         %Do RF Sweep
         clear('sweep');
-        % 2021/05/12 Make a generic mixture
-        % These settings don't care about setting a particular mixture
-        rf_k_sweep_freqs=[3.0495];%3.048 [1.8353];3.01;
+                
         
-        rf_k_sweep_freqs=[5.990]+[-0.003];%3.048 [1.8353];3.01;
+        rf_k_sweep_freqs=[5.995];
 
         % With delta_freq =0.1;
         % 3.01 --> (-7,-5) (a little -9)
         % 3.07 --> (-1,+1,+3); 
         rf_k_sweep_center = getScanParameter(rf_k_sweep_freqs,...
-            seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_freq_post_evap');
+            seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_freq_post_evap','MHz');
         
-        sweep_pars.freq=rf_k_sweep_center;        
-        sweep_pars.power = -9.1;-9.2;   
+        sweep_pars.freq=rf_k_sweep_center;    
         
-        delta_freq_list =.01;[0.0040];%0.006; 0.01
+        sweep_pars.power = -8.5;-9.1;-9.2;   
+        
+        delta_freq_list =-.01;[0.0040];%0.006; 0.01
         sweep_pars.delta_freq = getScanParameter(delta_freq_list,...
-            seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_range_post_evap');
+            seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_range_post_evap','MHz');
         pulse_length_list = 1.25;[0.75];%0.4ms for mixing 2ms for 80% transfer remove further sweeps
+        
         sweep_pars.pulse_length = getScanParameter(pulse_length_list,...
-            seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_time_post_evap');
-        
-        %numbers for spin mixture -9 and -7; power = -9.1, delta =
-        %0.01,time = 1.25
-        %numbers for near spin polarized -7/2; power = -8.4, delta = 0.06, time = 6ms 
-        
+            seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_time_post_evap','ms');
+                
         disp(['     Center Freq (MHz) : ' num2str(sweep_pars.freq)]);
         disp(['     Delta Freq  (MHz) : ' num2str(sweep_pars.delta_freq)]);
         disp(['     Power         (V) : ' num2str(sweep_pars.power)]);
-        disp(['     Sweep time   (ms) : ' num2str(sweep_pars.pulse_length)]);  
-        
+        disp(['     Sweep time   (ms) : ' num2str(sweep_pars.pulse_length)]);          
         
         f1=sweep_pars.freq-sweep_pars.delta_freq/2;
         f2=sweep_pars.freq+sweep_pars.delta_freq/2;
         
-        n_sweeps_mix_list=[13];10
+        n_sweeps_mix_list=[10];
         n_sweeps_mix = getScanParameter(n_sweeps_mix_list,...
             seqdata.scancycle,seqdata.randcyclelist,'n_sweeps_mix');  % also is sweep length  0.5               
-
-        T60=16.666; % 60 Hz period
-        
+        T60=16.666; % 60 Hz period        
         do_ACync_rf = 1;
         if do_ACync_rf
             ACync_start_time = calctime(curtime,-30);
@@ -2583,22 +2572,15 @@ if (seqdata.flags.mix_at_end==1 && seqdata.flags.CDT_evap==1)
 %             % Advance time by 60 Hz period
 %             curtime=calctime(curtime,T60);        
 %         end        
-%         setAnalogChannel(calctime(curtime,1),'RF Gain',-10); 
-
-        
+%         setAnalogChannel(calctime(curtime,1),'RF Gain',-10);         
                  
         %%%%%%%%%% Automatic specification %%%%%%%%%%%%%%
-        % Perform any additional sweeps
         for kk=1:n_sweeps_mix
             disp([' Sweep Number ' num2str(kk) ]);
             rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
             curtime = calctime(curtime,T60);
-        end     
-
-        
-            
-
-curtime = calctime(curtime,50);
+        end      
+curtime = calctime(curtime,10);
 
 end
 %% RF Rabi Oscillation

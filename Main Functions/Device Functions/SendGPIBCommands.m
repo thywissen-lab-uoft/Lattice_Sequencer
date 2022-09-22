@@ -10,7 +10,6 @@ disp(['Sending GPIB commands (' num2str(length(cmds)) ')']);
 
 brd = 0; % Board index (can use NI VISA to check -- should see GPIB$::INTFC for brd = $)
 
-
 for j=1:length(cmds)
     % separate primary adress of device from command string
     pa = str2double(cmds{j}(1:(strfind(cmds{j},'#')-1)));
@@ -45,6 +44,7 @@ for j=1:length(cmds)
     end
     fclose(obj);
     delete(obj);
+    pause(0.01);
 
 end
 

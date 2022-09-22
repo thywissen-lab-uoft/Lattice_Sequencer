@@ -5530,6 +5530,13 @@ setDigitalChannel(calctime(curtime,0),79,1); % THe X axis bulb 1 on 0 off
 % setDigitalChannel(calctime(curtime,-0),80,1); % THe X axis bulb 1 on 0 off
 
 
+srs.GPIB = 30;
+srs.FREQ = 1285.5125;
+srs.DISP = 2;
+srs.ENBR = 1;
+programSRSFinal(srs);
+
+
 timeout = curtime;
 % SelectScopeTrigger('lattice_on');
 

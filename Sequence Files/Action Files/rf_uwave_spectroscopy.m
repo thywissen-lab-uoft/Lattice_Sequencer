@@ -69,12 +69,11 @@ curtime = timein;
         %SRS A
             SRSAddress = 27;
         end
-    end
-    
+    end    
     
     %Default wait time after spectroscopy
     post_wait_time = 10;
-
+    
 % --------------------------------------
     if ( type == 1 ) % K-uwave sweep using the SRS (GPIB controlled)
         rf_on = 1;

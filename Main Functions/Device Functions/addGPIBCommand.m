@@ -118,18 +118,14 @@ else
         seqdata.gpib{len+1} = sprintf(['%g#' str], addr);
     else
         switch lower(opt.Mode)
-            case {'first'}
-                
+            case {'first'}                
                 % not adding anything (since there already is an entry for
                 % this adress). Instead comparing the new command string 
                 % and the existing entry and throwing a warning if commands
                 % are different.
-                
-
                 if ~strcmpi(sprintf(['%g#' str],addr), seqdata.gpib{idx})
                     buildWarning(mename, sprintf('Multiple programming at GPIB address %g ignored.',addr))
-                end
-                
+                end                
             case {'append'}
                 
                 % append command to existing list.

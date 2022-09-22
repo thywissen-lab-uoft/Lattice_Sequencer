@@ -17,7 +17,11 @@ function programSRS(settings)
 %
 % Each SRS has a few different options.  However, the biggest difference is
 % which port you are going to output on. In principle there are three
-% different kinds of outputs
+% different kinds of outputs :
+%
+%  H : Frequency doubled output at the back
+%  L : "LF" BNC output at front (DC-60 MHz)
+%  R : "RF" N type output at front (High frequency)
 
 if nargin==0
    settings=struct;
@@ -29,7 +33,6 @@ if nargin==0
    settings.SweepRange=100;       % Sweep range in kHz
 end
 
-
 disp('Programming SRS ');
 disp(['     Address      : ' num2str(settings.Address)]);
 disp(['     Frequency    : ' num2str(settings.Frequency) ' MHz']);
@@ -38,27 +41,27 @@ disp(['     Enable       : ' num2str(settings.Enable)]);
 disp(['     Enable Sweep : ' num2str(settings.EnableSweep)]);
 disp(['     Sweep Range  : ' num2str(settings.SweepRange) ' MHz']);
 
+%%%%%% GPIB Command Summary
 
-% ADDRESSES:
-% See SRS manual on how to change GPIB adress
-    % 27 - SRS A  (For GM?)
-    % 28 - SRS B  1.3-1.5 GHz uWave
-    % 29 - SRS RB 6.8 GHz
-    
-
-% GPIB Command Summary
-%
 % FREQ(?) Set(query) the output frequency
-% AMPR(?) Set(query) the output power
+
 % MODL(?) Set(query) the modulation enable
-% MFNC(?) Set(query) the modulation funcy
+% MFNC(?) Set(query) the modulation function (typically want mode 5)
     % 0 : Sine wave
     % 1 : Ramp
     % 2 : Triangle
     % 3 : Square
     % 4 : Noise
     % 5 : External
-% FDEV(?) Set(query) the modulation range
+% FDEV(?) Set(query) the modulation range (this is an amplitude)
+
+% ENBH(?) Enable(query) the frequency doubled output
+% ENBL(?) Enable(query) the low frequency output
+% ENBR(?) Enable (query) the the N type output
+
+% AMPR(?) Set(query) the output power of the front N type output
+% AMPL(?) Set(query) the output power of the front BNC output
+% AMPH(?) Set(query) the output power of the back output
 
 % DISP(?) Set(query) the dispay
 %   0 : Modulation Type
@@ -74,7 +77,6 @@ disp(['     Sweep Range  : ' num2str(settings.SweepRange) ' MHz']);
 %   10 : BNC Offset
 %   11 : Rear DC Offset
 %   12 : Clock Offset
-% ENBR(?) Set(query) the enable state of the Type-N output (0:off 1:on)
 
 cmd=sprintf('FREQ %fMHz; AMPR %gdBm; MODL %g; MFNC %g; FDEV %gMHz; DISP 2; ENBR %g; FREQ?',...
     settings.Frequency,...
@@ -84,6 +86,6 @@ cmd=sprintf('FREQ %fMHz; AMPR %gdBm; MODL %g; MFNC %g; FDEV %gMHz; DISP 2; ENBR 
     settings.SweepRange,...
     settings.Enable);
 
-addGPIBCommand(settings.Address,cmd);
+addGPIBCommand(settings.Address,cmd,'Mode','Append');
 end
 

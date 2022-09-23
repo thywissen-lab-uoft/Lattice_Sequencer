@@ -843,8 +843,7 @@ end
 %% Optical Lattice
 
 if ( seqdata.flags.load_lattice ~= 0 )
-    [curtime,P_dip,P_Xlattice,P_Ylattice,P_Zlattice,P_RotWave] = ...
-        Load_Lattice(curtime);
+    curtime = Load_Lattice(curtime);
 end
 
 %% Pulse Z Lattice after ramping up other lattices to align

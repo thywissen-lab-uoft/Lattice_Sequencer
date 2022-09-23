@@ -7,17 +7,10 @@
 %           Typically called after evaporation in ODT
 %------
 
-function [timeout,P_dip,P_Xlattice,P_Ylattice,P_Zlattice,P_RotWave] = Load_Lattice(varargin)
+function [timeout] = Load_Lattice(timein)
 global seqdata;
 
-timein = varargin{1};
 lattice_flags(timein);
-
-if nargin > 1
-    Imaging_Time = varargin{2};
-else
-    Imaging_Time = 1*5000+50;
-end
 
 curtime = timein;
 lattices = {'xLattice','yLattice','zLattice'};
@@ -117,10 +110,9 @@ if do_rotate_waveplate_1
     disp(['     Power 1         : ' num2str(100*P_RotWave_I) '%']);
     disp(['     Power 2         : ' num2str(100*P_RotWave_II) '%']);
 
-    P_RotWave = P_RotWave_I; %output argument    
     AnalogFunc(calctime(curtime,-100-wp_Trot1),'latticeWaveplate',...
         @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
-        wp_Trot1,wp_Trot1,P_RotWave);    
+        wp_Trot1,wp_Trot1,P_RotWave_I);    
 end
 %% Lattice Ramp 1
 % Ramp the lattices up to the starting values.  The ramp procedue can
@@ -3774,25 +3766,9 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice',...
     setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);  %0: ON / 1: OFF,yLatticeOFF
     setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1); % Added 2014-03-06 in order to avoid integrator wind-up
     
-% Optical powers to pass out of function
-    %Dipole power
-    if dipole_trap_off_after_lattice_on == 0;
-        P_dip = dip_endpower;
-    elseif dipole_trap_off_after_lattice_on == 1;
-        P_dip = 0;
-    elseif dipole_trap_off_after_lattice_on == 2;
-        P_dip = 0;
-    elseif dipole_trap_off_after_lattice_on == 3;
-        P_dip = 0;
-    elseif dipole_trap_off_after_lattice_on == 4;
-        P_dip = 0;
-    end
-    %Lattice Power
-    P_Xlattice = 0;
-    P_Ylattice = 0;
-    P_Zlattice = 0;
- 
- end
+
+    
+end
 
 
 %% Output

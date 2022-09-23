@@ -62,7 +62,7 @@ function programSRSFinal(settings)
 %% Default Settings
 
 defaultSettings=struct;
-defaultSettings.GPIB = 28;      % GPIB Address to program
+defaultSettings.GPIB = 30;      % GPIB Address to program
 
 defaultSettings.FREQ = 1285;    % Frequency [MHz]
 
@@ -71,13 +71,13 @@ defaultSettings.FDEV = 1;       % Modulation amplitude [MHz]
 defaultSettings.TYPE = 1;       % Modulation type   (1 : frequency)
 defaultSettings.MFNC = 5;       % Modulation source (5 : external)
 
-defaultSettings.ENBH = 0;       % Enable H output
+% defaultSettings.ENBH = 0;       % Enable H output
 defaultSettings.ENBR = 0;       % Enabe RF output
 defaultSettings.ENBL = 0;       % Enable LF output
 
 defaultSettings.AMPR = 0;       % Amplitude of RF output [dBm]
 defaultSettings.AMPL = 0;       % Amplitude of LF output [dBm]
-defaultSettings.AMPH = 0;       % Amplitude of H output [dBm]
+% defaultSettings.AMPH = 0;       % Amplitude of H output [dBm]
 
 defaultSettings.DISP = 2;       % What to display
 
@@ -107,11 +107,15 @@ for jj = 1:length(fnames)
 end
 
 %% Check that only one output is enabled
+% 
+% if sum(settings.ENBH + settings.ENBL + settings.ENBR)~=1
+%    error('You can only have one SRS output enabled at a time!!'); 
+% end
 
-if sum(settings.ENBH + settings.ENBL + settings.ENBR)~=1
+
+if sum(settings.ENBL + settings.ENBR)~=1
    error('You can only have one SRS output enabled at a time!!'); 
 end
-
 %% Print desired output
 disp('Programming SRS ');
 
@@ -128,7 +132,8 @@ end
 % At the beginning disable all outputs. This may not be necessary, but I'm
 % not sure how the SRS behaves if you accidnetally enable multiple outputs.
 
-cmds = ['ENBR 0; ENBH 0; ENBL 0;'];
+% cmds = ['ENBR 0; ENBH 0; ENBL 0;'];
+cmds = ['ENBR 0; ENBL 0;'];
 
 %% Send output commands
 for kk=1:length(fnames)
@@ -144,7 +149,9 @@ for kk=1:length(fnames)
    end
 end
 
-addGPIBCommand(settings.GPIB,cmd,'Mode','First');
+cmds = [cmds ' FREQ?'];
+% disp(cmds)
+addGPIBCommand(settings.GPIB,cmds,'Mode','First');
 
 end
 

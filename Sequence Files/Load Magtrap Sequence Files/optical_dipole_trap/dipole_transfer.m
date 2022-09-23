@@ -40,11 +40,6 @@ ramp_XDT_up = 0;                % Ramp dipole back up after evaporation before a
 do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscillations for temperature measurement
 
 
-seqdata.flags.kill_Rb_before_evap = 0;   % Remove Rb before optical evaporation
-seqdata.flags.kill_Rb_after_evap  = 1;   % Remove Rb after optical evaporation
-
-seqdata.flags.kill_K7_before_evap = 1;   % Remove 7/2 K before optical evaporation
-seqdata.flags.kill_K7_after_evap  = 0;   % Remove 7/2 K after optical evaporation
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % Spectroscopy after Evaporation
@@ -58,7 +53,7 @@ do_field_ramps = 0;             % Ramp shim and FB fields without spectroscopy
 ramp_XDT_after_evap = 0;        % Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
 k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
 ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
-
+do_K_uWaveSpectrscopy_CORA = 1;
 seqdata.flags.ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1703,38 +1698,6 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); %
 end
 
 
-%% Get rid of F = 7/2 K using a repump pulse
-
-if (seqdata.flags.kill_K7_after_evap && seqdata.flags.CDT_evap == 1)
-    
-    % optical pumping pulse length
-    repump_pulse_time_list = [1];
-    repump_pulse_time = getScanParameter(repump_pulse_time_list, seqdata.scancycle,...
-        seqdata.randcyclelist, 'kill7_time2','ms');
-    
-    % optical pumping repump power
-    repump_power_list = [0.7];
-    repump_power =getScanParameter(repump_power_list, seqdata.scancycle,...
-        seqdata.randcyclelist, 'kill7_power2','V');     
-    
-curtime = calctime(curtime,10);
-
-    %Open Repump Shutter
-    setDigitalChannel(calctime(curtime,-10),'K Repump Shutter',1);  
-    
-    %turn repump back up
-    setAnalogChannel(calctime(curtime,-10),'K Repump AM',repump_power);
-
-    %repump TTL
-    curtime = DigitalPulse(calctime(curtime,0),'K Repump TTL',repump_pulse_time,0); 
-
-    %Close Repump Shutter
-    setDigitalChannel(calctime(curtime,0),'K Repump Shutter',0);
-    
-    %turn repump back down
-    setAnalogChannel(calctime(curtime,0),'K Repump AM',0.0);
-end
-
 
 %% Ramp XDT Up for Lattice Alignment
 %RHYS - This usually gets used. Can clean. Also contains options for
@@ -1924,6 +1887,106 @@ if (seqdata.flags.mix_at_end==1 && seqdata.flags.CDT_evap==1)
 curtime = calctime(curtime,10);
 
 end
+
+%% K uWave Spectroscopy CORA
+if (do_K_uWaveSpectrscopy_CORA)
+    dispLineStr('do_K_uWaveSpectrscopy_CORA',curtime);      
+%     
+    % FB coil settings
+    ramp=struct;
+    ramp.fesh_ramptime = 50;
+    ramp.fesh_ramp_delay = -0;
+    ramp.fesh_final = 20;
+    ramp.settling_time = 200;
+
+    disp('Ramping fields');
+    disp(['     Field         (G) : ' num2str(ramp.fesh_final)]);
+    disp(['     Ramp Time    (ms) : ' num2str(ramp.fesh_ramptime)]);
+
+    % Ramp the bias fields
+    curtime = ramp_bias_fields(calctime(curtime,0), ramp);   
+    
+    % Frequency
+    freq_shift_list = [5]; % Offset in kHz
+    f0 = 1335.811;         % MHz
+
+    uwave_freq_shift = getScanParameter(freq_shift_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'uWave_freq_shift','kHz');    
+    uwave_freq = uwave_freq_shift/1000 + f0;
+    
+    addOutputParam('uWave_freq',uwave_freq,'MHz');
+    
+    % Frequency Shift
+    % Only used for sweep spectroscopy
+    uwave_delta_freq_list = [200];
+    uwave_delta_freq=getScanParameter(uwave_delta_freq_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'uwave_delta_freq','kHz');
+        
+    % Time
+    uwave_time_list = [30];
+    uwave_time = getScanParameter(uwave_time_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'uWave_time','ms');    
+    
+    % Power
+    uwave_power_list = [15];
+    uwave_power = getScanParameter(uwave_power_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'uWave_power','dBm');  
+        
+    % Spetroscopy parameters
+    spec_pars = struct;
+    spec_pars.Mode='sweep_frequency_chirp';
+    spec_pars.use_ACSync = 0;
+    spec_pars.PulseTime = uwave_time;
+    
+    spec_pars.FREQ = uwave_freq;                % Center in MHz
+    spec_pars.FDEV = (uwave_delta_freq/2)/1000; % Amplitude in MHz
+    spec_pars.AMPR = uwave_power;               % Power in dBm
+    spec_pars.ENBR = 1;                         % Enable N Type
+    spec_pars.GPIB = 30;                        % SRS GPIB Address    
+    
+    % Do you sweep back after a variable hold time?
+    spec_pars.doSweepBack = 0;
+    uwave_hold_time_list = [10];
+    uwave_hold_time  = getScanParameter(uwave_hold_time_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'hold_time','ms');     
+    spec_pars.HoldTime = uwave_hold_time;
+        
+    curtime = K_uWave_Spectroscopy(curtime,spec_pars);    
+end
+
+%% Get rid of F = 7/2 K using a repump pulse
+
+if (seqdata.flags.kill_K7_after_evap && seqdata.flags.CDT_evap == 1)
+    
+    % optical pumping pulse length
+    repump_pulse_time_list = [1];
+    repump_pulse_time = getScanParameter(repump_pulse_time_list, seqdata.scancycle,...
+        seqdata.randcyclelist, 'kill7_time2','ms');
+    
+    % optical pumping repump power
+    repump_power_list = [0.7];
+    repump_power =getScanParameter(repump_power_list, seqdata.scancycle,...
+        seqdata.randcyclelist, 'kill7_power2','V');     
+    
+curtime = calctime(curtime,10);
+
+    %Open Repump Shutter
+    setDigitalChannel(calctime(curtime,-10),'K Repump Shutter',1);  
+    
+    %turn repump back up
+    setAnalogChannel(calctime(curtime,-10),'K Repump AM',repump_power);
+
+    %repump TTL
+    curtime = DigitalPulse(calctime(curtime,0),'K Repump TTL',repump_pulse_time,0); 
+
+    %Close Repump Shutter
+    setDigitalChannel(calctime(curtime,0),'K Repump Shutter',0);
+    
+    %turn repump back down
+    setAnalogChannel(calctime(curtime,0),'K Repump AM',0.0);
+end
+
+
 %% RF Rabi Oscillation
 
 if (k_rf_rabi_oscillation)      

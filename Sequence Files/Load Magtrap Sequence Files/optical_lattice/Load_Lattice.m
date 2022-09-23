@@ -3708,7 +3708,7 @@ end
 % Perform Bandmapping
 
 % Turn off of lattices
- if ( seqdata.flags.load_lattice == 1 )
+ if ( seqdata.flags.load_lattice)
    
     % Ramp XDTs before the lattices
     dispLineStr('Ramping down XDTs',curtime);
@@ -3791,30 +3791,7 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice',...
     P_Xlattice = 0;
     P_Ylattice = 0;
     P_Zlattice = 0;
-
-%RHYS - Not sure what these other options are good for.
-elseif ( seqdata.flags.load_lattice == 2 ); %leave lattice and dipole trap on and pass powers out of function
-    
-        %Optical powers to pass out of function
-        %Dipole power
-        P_dip = dip_endpower;
-        %Lattice Power
-        P_Xlattice = getChannelValue(seqdata,'xLattice');
-        P_Ylattice = getChannelValue(seqdata,'yLattice');
-        P_Zlattice = getChannelValue(seqdata,'zLattice');
-        
- elseif (seqdata.flags.load_lattice == 3)
-        xdt_off_time=0;
-        lattice_off_time=10;
-        setAnalogChannel(calctime(curtime,xdt_off_time),'dipoleTrap1',0,1);
-        setAnalogChannel(calctime(curtime,xdt_off_time),'dipoleTrap2',0,1);
-        setDigitalChannel(calctime(curtime,xdt_off_time),'XDT TTL',1);
-
-        setAnalogChannel(calctime(curtime,lattice_off_time),'xLattice',0);
-        setAnalogChannel(calctime(curtime,lattice_off_time),'yLattice',0);
-        setAnalogChannel(calctime(curtime,lattice_off_time),'yLattice',0);
-        setDigitalChannel(calctime(curtime,lattice_off_time),'yLatticeOFF',0);
-        curtime=calctime(curtime,lattice_off_time);    
+ 
  end
 
 

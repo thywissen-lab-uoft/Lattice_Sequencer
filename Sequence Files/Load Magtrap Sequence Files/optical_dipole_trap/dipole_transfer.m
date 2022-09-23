@@ -38,8 +38,6 @@ exp_end_pwr2 = getScanParameter(Evap2_End_Power_List,...
 ramp_XDT_up = 0;                % Ramp dipole back up after evaporation before any further physics 
 do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscillations for temperature measurement
 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % Spectroscopy after Evaporation
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -47,7 +45,7 @@ do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscill
 ramp_XDT_after_evap = 0;        % Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
 k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
 ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
-do_K_uWaveSpectrscopy_CORA = 1;
+uWave_K_Spectroscopy = 1;
 seqdata.flags.ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1368,9 +1366,9 @@ curtime = calctime(curtime,10);
 
 end
 
-%% K uWave Spectroscopy CORA
-if (do_K_uWaveSpectrscopy_CORA)
-    dispLineStr('do_K_uWaveSpectrscopy_CORA',curtime);      
+%% uWave_K_Spectroscopy
+if (uWave_K_Spectroscopy)
+    dispLineStr('uWave_K_Spectroscopy',curtime);      
 %     
     % FB coil settings
     ramp=struct;

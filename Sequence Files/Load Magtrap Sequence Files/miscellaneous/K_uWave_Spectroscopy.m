@@ -158,7 +158,7 @@ switch uWaveMode
         setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);
         
     case 'sweep_frequency_chirp'
-    %% Swee Frequency Linearly Spectroscopy
+    %% Sweep Frequency Linearly Spectroscopy
         % 2022/09/23 Tested
         disp(' Landau-Zener Sweep uWave Frequency');   
 
@@ -176,31 +176,29 @@ switch uWaveMode
         % At +-1V input for +- full deviation
         AnalogFunc(calctime(curtime,0),'uWave FM/AM',@(t,T) -1+2*t/T,PulseTime,PulseTime);
         
-        % Wait
-        curtime = calctime(curtime,PulseTime);     
+        % Wait for sweep
+        curtime = calctime(curtime,PulseTime);    
+        
+        if isfield(settings,'doSweepBack') && isfield(settings,'HoldTime') && settings.doSweepBack
+            
+            if settings.HoldTime>0
+                setDigitalChannel(calctime(curtime,0),'K uWave TTL',0);    
+                curtime = calctime(curtime,settings.HoldTime);
+                setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);    
+            end        
+                
+            % Ramp back
+            AnalogFunc(calctime(curtime,0),'uWave FM/AM',@(t,T) 1-2*t/T,PulseTime,PulseTime);
+        
+            % Wait for ramp
+            curtime = calctime(curtime,PulseTime);    
+        end        
         
         % Turn off the uWave
         setDigitalChannel(calctime(curtime,0),'K uWave TTL',0); 
-        
+
         % Turn off VVA
-        setAnalogChannel(calctime(curtime,0),'uWave VVA',0);
-        
-        if isfield(settings,'doSweepBack') && settings.doSweepBack && isfield(settings,'HoldTime')
-            curtime = calctime(curtime,settings.HoldTime);
-            setAnalogChannel(calctime(curtime,-10),'uWave VVA',10,1);        
-            setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);    
-            % Ramp the SRS modulation 
-            % At +-1V input for +- full deviation
-            AnalogFunc(calctime(curtime,0),'uWave FM/AM',@(t,T) 1-2*t/T,PulseTime,PulseTime);
-            
-            % Wait
-            curtime = calctime(curtime,PulseTime);    
-            % Turn off the uWave
-            setDigitalChannel(calctime(curtime,0),'K uWave TTL',0); 
-        
-            % Turn off VVA
-            setAnalogChannel(calctime(curtime,0),'uWave VVA',0);        
-        end
+        setAnalogChannel(calctime(curtime,0),'uWave VVA',0);         
 
         % Reset the uWave deviation after a while
         setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);

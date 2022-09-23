@@ -28,8 +28,8 @@ do_lattice_ramp_1 = 1;            % Load the lattices
 
 do_lattice_mod = 0;               % Amplitude modulation spectroscopy             
 
-do_rotate_waveplate_2 = 1;        % Second waveplate rotation 95% 
-do_lattice_ramp_2 = 1;            % Secondary lattice ramp for fluorescence imaging
+do_rotate_waveplate_2 = 0;        % Second waveplate rotation 95% 
+do_lattice_ramp_2 = 0;            % Secondary lattice ramp for fluorescence imaging
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -45,7 +45,7 @@ seqdata.flags.do_conductivity = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.lattice_uWave_spec = 0;
+seqdata.flags.lattice_uWave_spec = 1;
 
 do_K_uwave_spectroscopy_old = 0;        % (3786) keep
 do_RF_spectroscopy = 0;                 % (3952,4970)
@@ -84,9 +84,10 @@ else
  
 end
 
+
+% Band Map time
 lattice_rampdown_list = [3]; %0 for snap off (for in-situ latice postions for alignment)
                              %3 for band mapping
-
 lattice_rampdown = getScanParameter(lattice_rampdown_list,...
     seqdata.scancycle,seqdata.randcyclelist,'latt_rampdown_time','ms'); %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
 
@@ -151,7 +152,7 @@ if do_lattice_ramp_1
             
             % Final lattice depth to ramp to
             U = 100;
-            
+
             %%% Lattice %%%
             % Ramp the optical powers of the lattice
             latt_depth=...
@@ -636,6 +637,7 @@ end
 %RHYS - Spectroscopy sections for calibration. Comments about lack of code
 %generality from dipole_transfer apply here too: clean and generalize!
 
+
 if ( do_K_uwave_spectroscopy_old || ...
         do_RF_spectroscopy || seqdata.flags.lattice_uWave_spec)
     dispLineStr('Ramping magnetic fields BEFORE RF/uwave spectroscopy',curtime);
@@ -676,11 +678,12 @@ end
 %% K uWave Spectroscopy
 
 if seqdata.flags.lattice_uWave_spec
-     dispLineStr('uWave_K_Spectroscopy',curtime);      
-    
+     dispLineStr('uWave_K_Spectroscopy',curtime);
+   
     % Frequency
     freq_shift_list = [0]; % Offset in kHz
-    f0 = 1338.345;          % MHz
+    f0 = 1338.345;          % MHz % Normal frequency
+    
 
     uwave_freq_shift = getScanParameter(freq_shift_list,seqdata.scancycle,...
         seqdata.randcyclelist,'uWave_freq_shift','kHz');    
@@ -717,8 +720,8 @@ if seqdata.flags.lattice_uWave_spec
     spec_pars.GPIB = 30;                        % SRS GPIB Address    
     
     % Do you sweep back after a variable hold time?
-    spec_pars.doSweepBack = 0;
-    uwave_hold_time_list = [10];
+    spec_pars.doSweepBack = 1;
+    uwave_hold_time_list = [600 700 800 900 1000];
     uwave_hold_time  = getScanParameter(uwave_hold_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'hold_time','ms');     
     spec_pars.HoldTime = uwave_hold_time;
@@ -782,6 +785,7 @@ end
 %          y_Bzero = -0.0925; %-0.075  -0.07 minimizes field
 %          z_Bzero = -0.145;% Z BIPOLAR PARAM, -0.075 minimizes the field
 %          (May 20th, 2013)
+
 
 if ( do_K_uwave_spectroscopy_old || ...
         do_RF_spectroscopy || seqdata.flags.lattice_uWave_spec...

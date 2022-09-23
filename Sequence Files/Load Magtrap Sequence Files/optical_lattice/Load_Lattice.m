@@ -3700,19 +3700,16 @@ end
 
 
 %% Lattice Turn Off
-
+% Turn off the lattices.
+%
+% During typical operation :
+%
+% Ramp off the XDTs
+% Perform Bandmapping
 
 % Turn off of lattices
- if ( seqdata.flags.load_lattice == 1 ) %shut off lattice, keep dipole trap on
-    
-    ScopeTriggerPulse(curtime,'lattice_off');
-    % Parameters for ramping down the lattice (after things have been done)
-    zlat_endpower = L0(3)-1;-19;-0.2;       % where to end the ramp
-    ylat_endpower = L0(2)-1;-20;-0.2;       % where to end the ramp
-    xlat_endpower = L0(1)-1;-22; -0.2;       % where to end the ramp
-    lat_rampdowntime =lattice_rampdown*1; % how long to ramp (0: switch off)   %1ms
-    lat_rampdowntau = 1*lattice_rampdown/5;    % time-constant for exponential rampdown (0: min-jerk)
-
+ if ( seqdata.flags.load_lattice == 1 )
+   
     % Ramp XDTs before the lattices
     dispLineStr('Ramping down XDTs',curtime);
     dip_rampstart = -15;
@@ -3731,7 +3728,14 @@ end
     seqdata.params.XDT_area_ratio*dip2_endpower;
     setDigitalChannel(calctime(curtime,dip_rampstart+dip_ramptime),...
         'XDT TTL',1); %cut lattice power for bandmapping?    
-
+    
+     ScopeTriggerPulse(curtime,'lattice_off');
+    % Parameters for ramping down the lattice (after things have been done)
+    zlat_endpower = L0(3)-1;-19;-0.2;       % where to end the ramp
+    ylat_endpower = L0(2)-1;-20;-0.2;       % where to end the ramp
+    xlat_endpower = L0(1)-1;-22; -0.2;       % where to end the ramp
+    lat_rampdowntime =lattice_rampdown*1; % how long to ramp (0: switch off)   %1ms
+    lat_rampdowntau = 1*lattice_rampdown/5;    % time-constant for exponential rampdown (0: min-jerk)
         
     if ( lat_rampdowntime > 0 )
         dispLineStr('Band mapping',curtime);
@@ -3763,38 +3767,13 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice', ...
 curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice',...
                 @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),lat_rampdowntime,...
                 lat_rampdowntime,zlat_endpower);
-
-            % exponential ramp-down of lattices            
-%             AnalogFuncTo(calctime(curtime,0),'xLattice',@(t,tt,y1,y2,tau)(ramp_exponential(t,tt,y1,y2,tau)),lat_rampdowntime,lat_rampdowntime,xlat_endpower,lat_rampdowntau);
-%             AnalogFuncTo(calctime(curtime,0),'yLattice',@(t,tt,y1,y2,tau)(ramp_exponential(t,tt,y1,y2,tau)),lat_rampdowntime,lat_rampdowntime,ylat_endpower,lat_rampdowntau);
-% curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice',@(t,tt,y1,y2,tau)(ramp_exponential(t,tt,y1,y2,tau)),lat_rampdowntime,lat_rampdowntime,zlat_endpower,lat_rampdowntau);
         end
-    end
-    
-    % Finish turning off lattices and dipole traps
-%     setAnalogChannel(calctime(curtime,0),'xLattice',-0.1,1);
-%     setAnalogChannel(calctime(curtime,0),'yLattice',-0.1,1);
-%     setAnalogChannel(calctime(curtime,0),'zLattice',-0.1,1);
+    end   
     
     %TTLs
-%     setDigitalChannel(calctime(curtime,0),11,1);  %0: ON / 1: OFF, XLatticeOFF         
-    setDigitalChannel(calctime(curtime,0),34,1);  %0: ON / 1: OFF,yLatticeOFF
+    setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);  %0: ON / 1: OFF,yLatticeOFF
     setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1); % Added 2014-03-06 in order to avoid integrator wind-up
     
-    XDT_Holding_time_list = [150];%holding time in XDT
-    XDT_Holding_time = getScanParameter(XDT_Holding_time_list,seqdata.scancycle,seqdata.randcyclelist,'xdtht');%maximum is 4
-      
-
-    
-% % % % % % % % % % % %     %Rotate waveplate to divert all power to dipole traps.
-% % % % % % % % % % % %     AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),200,200,P_RotWave,0); 
-% % % % % % % % % % % %     P_RotWave = 0;
-% % % % % % % % % % % %     
-% % % % % % % % % % % %     % wait after lattice was ramped down (if lattice was ramped down)
-% % % % % % % % % % % % curtime = calctime(curtime,lat_post_waittime);
-    
-% At the end of this sequence, the lattice should be off and ALPS3 disabled
-
 % Optical powers to pass out of function
     %Dipole power
     if dipole_trap_off_after_lattice_on == 0;

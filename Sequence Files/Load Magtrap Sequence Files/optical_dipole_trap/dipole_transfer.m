@@ -17,7 +17,6 @@ ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 
 %Evaporation in the XDT
 %-------------------- 
-tilt_evaporation = 0;
 dipole_holdtime_before_evap = 0;    % not a flag but a value
 ramp_Feshbach_B_before_CDT_evap = 0;
 
@@ -45,11 +44,6 @@ do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscill
 % Spectroscopy after Evaporation
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-do_K_uwave_spectroscopy = 0;    % do uWave Spectroscopy of 40K
-do_K_uwave_multi_sweeps = 0;    % do multiple uWave sweeps of 40K
-do_Rb_uwave_spectroscopy = 0;   % do uWave Spectroscopy of 87Rb
-do_RF_spectroscopy = 0;         % do spectroscopy with DDS 
-do_field_ramps = 0;             % Ramp shim and FB fields without spectroscopy
 ramp_XDT_after_evap = 0;        % Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
 k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
 ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
@@ -115,10 +109,6 @@ if seqdata.flags.rb_vert_insitu_image
     exp_end_pwr =0.18;
 end
 
-%% Sanity checks
-if ( do_K_uwave_spectroscopy + do_Rb_uwave_spectroscopy + do_RF_spectroscopy ) > 1
-    buildWarning('dipole_transfer','More than one type of spectroscopy is selected! Need specific solution?',1)
-end
 
 %% Dipole trap initial ramp on
 % Perform the initial ramp on of dipole trap 1
@@ -1116,7 +1106,7 @@ end
 
 if (seqdata.flags.CDT_evap_2_high_field==1)
     dispLineStr('Optical evaporation at high field',curtime);    
-    curtime = dipole_high_field_evap(timein)       
+    curtime = dipole_high_field_evap(timein);       
 end
 
 %% Ramp Dipole Back Up Before Spectroscopy
@@ -1186,98 +1176,6 @@ curtime=calctime(curtime,100);
 end   
 
 
-
-%% Do field ramp for spectroscopy
-
-% Shim values for zero field found via spectroscopy
-%x_Bzero = 0.115; %0.03 minimizes field
-%y_Bzero = -0.0925; %-0.075  -0.07 minimizes field
-%z_Bzero = -0.145;% Z BIPOLAR PARAM, -0.075 minimizes the field
-%(May 20th, 2013)
-% To not ramp a field but leave it at its current value: do not specify the
-% respective value, e.g. do not specify a value for ramp.xshim_final to
-% keep current value.
-
-% % %ADD FIELD RAMP HERE
-% % %Ramp dipole on before pulsing the lattice beam. This should allow for
-% % %better alignment of lattice to the potassium cloud, avoiding issue of
-% % %gravitational sag for Rb. The XDT is then snapped off after the
-% % %lattice pulse. 
-
-%dip_1 = 1;
-%dip_2 = 1;
-%dip_ramptime = 1000; %1000
-%dip_rampstart = 50;
-
-%ramp_XDT_before_spect = 1;
-
-%if ramp_XDT_before_spect
-    %AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_1);
-    %AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_2);
-%curtime = calctime(curtime,dip_rampstart+dip_ramptime);
-%end
-
-
-
-%RHYS - All the various types of spectroscopy share a common field ramp
-%code, which bring the FB field to some value. Again, I think the field
-%ramp should just be part of a general spectroscopy function, however.
-if ( do_K_uwave_spectroscopy || do_K_uwave_multi_sweeps || do_Rb_uwave_spectroscopy || do_RF_spectroscopy || do_field_ramps )
-
-    ramp_fields = 1; % do a field ramp for spectroscopy
-
-    if ramp_fields
-        clear('ramp');
-        %ramp.shim_ramptime = 50;
-        %ramp.shim_ramp_delay = -10; % ramp earlier than FB field if FB field is ramped to zero
-
-        %getChannelValue(seqdata,27,1,0)
-        %getChannelValue(seqdata,19,1,0)
-        %getChannelValue(seqdata,28,1,0)
-
-        %First, ramp on a quantizing shim.
-        ramp.shim_ramptime = 50;
-        ramp.shim_ramp_delay = -0;
-        ramp.xshim_final = getChannelValue(seqdata,27,1,0);
-        ramp.yshim_final = getChannelValue(seqdata,19,1,0);%1.61;
-        ramp.zshim_final = getChannelValue(seqdata,28,1,0);%getChannelValue(seqdata,28,1,0); %0.065 for -1MHz   getChannelValue(seqdata,28,1,0)
-        addOutputParam('shim_value',ramp.zshim_final - getChannelValue(seqdata,28,1,0))
-
-        %Give ramp shim values if we want to do spectroscopy using the
-        %shims instead of FB coil. If nothing set here, then
-        %ramp_bias_fields just takes the getChannelValue (which is set to
-        %field zeroing values)
-        %ramp.xshim_final = getChannelValue(seqdata,27,1,0);
-        %ramp.yshim_final = 1;
-        %ramp.zshim_final = getChannelValue(seqdata,28,1,0);
-
-        %FB coil settings for spectroscopy
-        %ramp.fesh_ramptime = 50;
-        %ramp.fesh_ramp_delay = -0;
-        %ramp.fesh_final = 1.0105*2*22.6; %1.0077*2*22.6 for same transfer as plane selection
-
-        % FB coil settings for spectroscopy
-        ramp.fesh_ramptime = 50;
-        ramp.fesh_ramp_delay = -0;
-        ramp.fesh_off_delay = 0;
-        %B_List = [199.6 200.6 201 202.3 202.6 201.3:0.05:202.2];
-        %B = getScanParameter(B_List,seqdata.scancycle,seqdata.randcyclelist,'B_Field');
-
-        ramp.fesh_final = 25;%before 2017-1-6 2*22.6; %6*22.6*1.0068 - Current values for optimal stub-tuning near 120G.
-
-        ramp.use_fesh_switch = 1; %Don't actually want to close the FB switch to avoid current spikes
-
-        %QP coil settings for spectroscopy
-        %ramp.QP_ramptime = 50;
-        %ramp.QP_ramp_delay = -0;
-        %ramp.QP_final =  0*1.78; %7
-
-
-        ramp.settling_time = 200;
-
-curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
-    end
-end
 
 
 

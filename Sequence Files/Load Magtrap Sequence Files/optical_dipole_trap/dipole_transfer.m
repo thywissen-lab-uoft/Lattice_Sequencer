@@ -1436,7 +1436,7 @@ end
 if (seqdata.flags.kill_K7_after_evap && seqdata.flags.CDT_evap == 1)
     
     % optical pumping pulse length
-    repump_pulse_time_list = [1];
+    repump_pulse_time_list = [10];
     repump_pulse_time = getScanParameter(repump_pulse_time_list, seqdata.scancycle,...
         seqdata.randcyclelist, 'kill7_time2','ms');
     

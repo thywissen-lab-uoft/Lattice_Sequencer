@@ -185,10 +185,10 @@ seqdata.flags.do_D1OP_before_evap= 0;           % D1 pump to purify
 seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
     
 seqdata.flags.kill_Rb_before_evap = 0;   % Remove Rb before optical evaporation
-seqdata.flags.kill_K7_before_evap = 1;   % Remove 7/2 K before optical evaporation
+seqdata.flags.kill_K7_before_evap = 0;   % Remove 7/2 K before optical evaporation (untested)
 
 seqdata.flags.kill_Rb_after_evap  = 1;   % Remove Rb after optical evaporation
-seqdata.flags.kill_K7_after_evap  = 0;   % Remove 7/2 K after optical evaporation
+seqdata.flags.kill_K7_after_evap  = 0;   % Remove 7/2 K after optical evaporation (untested)
 
 % Optical Evaporation
 % 1: exp 2: fast linear 3: piecewise linear
@@ -206,7 +206,7 @@ seqdata.flags.CDT_evap_2_high_field= 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Optical lattice
-seqdata.flags.load_lattice = 1; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
+seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
 seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
 seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 

@@ -40,20 +40,22 @@ ramp_XDT_up = 0;                % Ramp dipole back up after evaporation before a
 do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscillations for temperature measurement
 
 
-seqdata.flags.kill_Rb_after_evap = 1;   % Remove Rb after optical evaporation
-seqdata.flags.kill_Rb_before_evap = 0;
+seqdata.flags.kill_Rb_before_evap = 0;   % Remove Rb before optical evaporation
+seqdata.flags.kill_Rb_after_evap  = 1;   % Remove Rb after optical evaporation
 
-seqdata.flags.kill_K7_before_evap = 0;  % remove 7/2 K before optical evaporation
-seqdata.flags.kill_K7_after_evap = 0;   % remove 7/2 K after optical evaporation
+seqdata.flags.kill_K7_before_evap = 1;   % Remove 7/2 K before optical evaporation
+seqdata.flags.kill_K7_after_evap  = 0;   % Remove 7/2 K after optical evaporation
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Spectroscopy after Evaporation
+%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 do_K_uwave_spectroscopy = 0;    % do uWave Spectroscopy of 40K
 do_K_uwave_multi_sweeps = 0;    % do multiple uWave sweeps of 40K
 do_Rb_uwave_spectroscopy = 0;   % do uWave Spectroscopy of 87Rb
 do_RF_spectroscopy = 0;         % do spectroscopy with DDS 
 do_field_ramps = 0;             % Ramp shim and FB fields without spectroscopy
-K_repump_pulse = 0;             
-ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
+ramp_XDT_after_evap = 0;        % Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
 k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
 ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
 
@@ -764,6 +766,38 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars); 
 curtime = calctime(curtime,5);
 
+end
+
+%% Kill F=7/2 in ODT before evap
+
+if (seqdata.flags.kill_K7_before_evap)
+    
+    % optical pumping pulse length
+    repump_pulse_time_list = [1];
+    repump_pulse_time = getScanParameter(repump_pulse_time_list, seqdata.scancycle,...
+        seqdata.randcyclelist, 'kill7_time1','ms');
+    
+    % optical pumping repump power
+    repump_power_list = [0.7];
+    repump_power =getScanParameter(repump_power_list, seqdata.scancycle,...
+        seqdata.randcyclelist, 'kill7_power1','V');     
+    
+curtime = calctime(curtime,10);
+
+    %Open Repump Shutter
+    setDigitalChannel(calctime(curtime,-10),'K Repump Shutter',1);  
+    
+    %turn repump back up
+    setAnalogChannel(calctime(curtime,-10),'K Repump AM',repump_power);
+
+    %repump TTL
+    curtime = DigitalPulse(calctime(curtime,0),'K Repump TTL',repump_pulse_time,0); 
+
+    %Close Repump Shutter
+    setDigitalChannel(calctime(curtime,0),'K Repump Shutter',0);
+    
+    %turn repump back down
+    setAnalogChannel(calctime(curtime,0),'K Repump AM',0.0);
 end
 
     
@@ -1671,7 +1705,17 @@ end
 
 %% Get rid of F = 7/2 K using a repump pulse
 
-if seqdata.flags.kill_K7_after_evap   
+if (seqdata.flags.kill_K7_after_evap && seqdata.flags.CDT_evap == 1)
+    
+    % optical pumping pulse length
+    repump_pulse_time_list = [1];
+    repump_pulse_time = getScanParameter(repump_pulse_time_list, seqdata.scancycle,...
+        seqdata.randcyclelist, 'kill7_time2','ms');
+    
+    % optical pumping repump power
+    repump_power_list = [0.7];
+    repump_power =getScanParameter(repump_power_list, seqdata.scancycle,...
+        seqdata.randcyclelist, 'kill7_power2','V');     
     
 curtime = calctime(curtime,10);
 
@@ -1679,10 +1723,10 @@ curtime = calctime(curtime,10);
     setDigitalChannel(calctime(curtime,-10),'K Repump Shutter',1);  
     
     %turn repump back up
-    setAnalogChannel(calctime(curtime,-10),'K Repump AM',0.7);
+    setAnalogChannel(calctime(curtime,-10),'K Repump AM',repump_power);
 
     %repump TTL
-    curtime = DigitalPulse(calctime(curtime,0),'K Repump TTL',1,0); 
+    curtime = DigitalPulse(calctime(curtime,0),'K Repump TTL',repump_pulse_time,0); 
 
     %Close Repump Shutter
     setDigitalChannel(calctime(curtime,0),'K Repump Shutter',0);
@@ -1702,7 +1746,7 @@ end
 %gravitational sag for Rb. The XDT is then snapped off after the
 %lattice pulse. 
 
-if (ramp_XDT_after_evap && seqdata.flags. CDT_evap == 1)
+if (ramp_XDT_after_evap && seqdata.flags.CDT_evap == 1)
     dispLineStr('Ramping XDTs back on.',curtime);
 
     power_list = [0.3];

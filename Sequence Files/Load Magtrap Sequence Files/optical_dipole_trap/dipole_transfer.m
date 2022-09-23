@@ -9,126 +9,124 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     curtime = timein;
     global seqdata;
 
-    %% Flags
-    %Dipole Loading Flags
-    %--------------------    
-    QP_value = I_QP;
-    vSet = V_QP;
-    qp_ramp_down_start_time = 0;
-    %stages of QP-dipole transfer
-    do_qp_ramp_down1 = 1;%1
-    do_qp_ramp_down2 = 1;%1
-    ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
-    %ramp_func = @(t,tt,y2,y1)(minimum_jerk(t,tt,y2-y1)+y1); 
+%% Flags
+%Dipole Loading Flags
+%--------------------    
+QP_value = I_QP;
+vSet = V_QP;
+qp_ramp_down_start_time = 0;
+%stages of QP-dipole transfer
+do_qp_ramp_down1 = 1;%1
+do_qp_ramp_down2 = 1;%1
+ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
+%ramp_func = @(t,tt,y2,y1)(minimum_jerk(t,tt,y2-y1)+y1); 
 
-    %After Loading the XDT
-    %--------------------
-    %RHYS - Move all of these flags out of this function, and declare them
-    %in the seqdata structure to be passed in.  
-    
-    
+%After Loading the XDT
+%--------------------
+%RHYS - Move all of these flags out of this function, and declare them
+%in the seqdata structure to be passed in.  
 
-    
-    %Evaporation in the XDT
-    %-------------------- 
-    tilt_evaporation = 0;
-    dipole_holdtime_before_evap = 0;    % not a flag but a value
-    ramp_Feshbach_B_before_CDT_evap = 0;
 
-    Evap_End_Power_List = [0.07];0.08;[0.08];
-    
-    % Ending optical evaporation
-    exp_end_pwr = getScanParameter(Evap_End_Power_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');    
-        
-    % Second Stage ending evaporation power
-    Evap2_End_Power_List = [0.07];    
-    % Ending optical evaporation
-    exp_end_pwr2 = getScanParameter(Evap2_End_Power_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power2','W');
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%
-    %After Evaporation (unless CDT_evap = 0)
-    %%%%%%%%%%%%%%%%%%%%%%%%%%
-    ramp_XDT_up = 0;                % Ramp dipole back up after evaporation before any further physics 
-    do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscillations for temperature measurement
-    seqdata.flags.get_rid_of_Rb = 1;% Get rid of Rb at end of evap (only happens when CDT_evap = 1
-    do_K_uwave_spectroscopy = 0;    % do uWave Spectroscopy of 40K
-    do_K_uwave_multi_sweeps = 0;    % do multiple uWave sweeps of 40K
-    do_Rb_uwave_spectroscopy = 0;   % do uWave Spectroscopy of 87Rb
-    do_RF_spectroscopy = 0;         % do spectroscopy with DDS 
-    do_field_ramps = 0;             % Ramp shim and FB fields without spectroscopy
-    K_repump_pulse = 0;             % Get rid of F = 7/2 Potassium
-    ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
-    k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
-    ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
+%Evaporation in the XDT
+%-------------------- 
+tilt_evaporation = 0;
+dipole_holdtime_before_evap = 0;    % not a flag but a value
+ramp_Feshbach_B_before_CDT_evap = 0;
 
-    seqdata.flags.ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
+Evap_End_Power_List = [0.07];0.08;[0.08];
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%
-    % FB Field and evaporation
-    %%%%%%%%%%%%%%%%%%%%%%%%%%
+% Ending optical evaporation
+exp_end_pwr = getScanParameter(Evap_End_Power_List,...
+    seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');    
 
-    if qp_ramp_down_start_time<0
-        error('QP ramp must happen after time zero');
-    end
-    
-    %% XDT Powers
-    
-    %%%%% Specify the XDT2 power relative to XDT1 %%%%%%%%%%%%%%%%%%%%%%%%%
-    % Power function of XDT1 relative to XDT2. Useful for making
-    % circularly symmetric trap at end of evaporation.
-    XDT2_power_func = @(x) x;
+% Second Stage ending evaporation power
+Evap2_End_Power_List = [0.07];    
+% Ending optical evaporation
+exp_end_pwr2 = getScanParameter(Evap2_End_Power_List,...
+    seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power2','W');
 
-    % Initial XDT power
-    P12_list = [1.4];1.4;
-    P12 = getScanParameter(P12_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'XDT_initial_power','W');
-    P1 = P12;
-    P2 = P12;       
-            
-    % Sympathetic cooling powers
-    Pevap_list = [.8];
-    Pevap = getScanParameter(Pevap_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'XDT_Pevap','W');
-    P1e = Pevap; %0.8
-    P2e = Pevap; %0.8
- 
-    % Final optical power
-    xdt1_end_power = exp_end_pwr;    
-    xdt2_end_power = XDT2_power_func(exp_end_pwr);
-    
-    % Evaporation Time
-    Time_List =  [18]*1e3; % [15000] for normal experiment
-    Evap_time = getScanParameter(Time_List,seqdata.scancycle,...
-        seqdata.randcyclelist,'evap_time','ms');   
-    exp_evap_time = Evap_time;      
-    
-    % Exponetial time factor
-    Tau_List = [3.5];%[5];
-    exp_tau_frac = getScanParameter(Tau_List,seqdata.scancycle,...
-        seqdata.randcyclelist,'Evap_Tau_frac');
-    exp_tau=Evap_time/exp_tau_frac;
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%After Evaporation (unless CDT_evap = 0)
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+ramp_XDT_up = 0;                % Ramp dipole back up after evaporation before any further physics 
+do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscillations for temperature measurement
+seqdata.flags.get_rid_of_Rb = 1;% Get rid of Rb at end of evap (only happens when CDT_evap = 1
+do_K_uwave_spectroscopy = 0;    % do uWave Spectroscopy of 40K
+do_K_uwave_multi_sweeps = 0;    % do multiple uWave sweeps of 40K
+do_Rb_uwave_spectroscopy = 0;   % do uWave Spectroscopy of 87Rb
+do_RF_spectroscopy = 0;         % do spectroscopy with DDS 
+do_field_ramps = 0;             % Ramp shim and FB fields without spectroscopy
+K_repump_pulse = 0;             % Get rid of F = 7/2 Potassium
+ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
+k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
+ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
 
-    % Power vector (load, hold, sympathetic, final)
-    DT1_power = 1*[P1 P1 P1e xdt1_end_power];
+seqdata.flags.ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FB Field and evaporation
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if qp_ramp_down_start_time<0
+    error('QP ramp must happen after time zero');
+end
+    
+%% XDT Powers
+
+%%%%% Specify the XDT2 power relative to XDT1 %%%%%%%%%%%%%%%%%%%%%%%%%
+% Power function of XDT1 relative to XDT2. Useful for making
+% circularly symmetric trap at end of evaporation.
+XDT2_power_func = @(x) x;
+
+% Initial XDT power
+P12_list = [1.4];1.4;
+P12 = getScanParameter(P12_list,seqdata.scancycle,...
+    seqdata.randcyclelist,'XDT_initial_power','W');
+P1 = P12;
+P2 = P12;       
+
+% Sympathetic cooling powers
+Pevap_list = [.8];
+Pevap = getScanParameter(Pevap_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'XDT_Pevap','W');
+P1e = Pevap; %0.8
+P2e = Pevap; %0.8
+
+% Final optical power
+xdt1_end_power = exp_end_pwr;    
+xdt2_end_power = XDT2_power_func(exp_end_pwr);
+
+% Evaporation Time
+Time_List =  [18]*1e3; % [15000] for normal experiment
+Evap_time = getScanParameter(Time_List,seqdata.scancycle,...
+    seqdata.randcyclelist,'evap_time','ms');   
+exp_evap_time = Evap_time;      
+
+% Exponetial time factor
+Tau_List = [3.5];%[5];
+exp_tau_frac = getScanParameter(Tau_List,seqdata.scancycle,...
+    seqdata.randcyclelist,'Evap_Tau_frac');
+exp_tau=Evap_time/exp_tau_frac;
+
+% Power vector (load, hold, sympathetic, final)
+DT1_power = 1*[P1 P1 P1e xdt1_end_power];
 %     DT1_power = -1*[1         1        1          1]; 
-    DT2_power = 1*[P2 P2 P2e xdt2_end_power];  
+DT2_power = 1*[P2 P2 P2e xdt2_end_power];  
 %     DT2_power = -1*[1         1        1          1];  
 
-    %% Special Flags
-    % CF : I have no idea what this is for
-    if seqdata.flags.rb_vert_insitu_image
-        seqdata.flags.do_Rb_uwave_transfer_in_ODT = 0;
-        get_rid_of_Rb = 0;
-        exp_end_pwr =0.18;
-    end
+%% Special Flags
+% CF : I have no idea what this is for
+if seqdata.flags.rb_vert_insitu_image
+    seqdata.flags.do_Rb_uwave_transfer_in_ODT = 0;
+    get_rid_of_Rb = 0;
+    exp_end_pwr =0.18;
+end
 
 %% Sanity checks
-    if ( do_K_uwave_spectroscopy + do_Rb_uwave_spectroscopy + do_RF_spectroscopy + do_singleshot_spectroscopy) > 1
-        buildWarning('dipole_transfer','More than one type of spectroscopy is selected! Need specific solution?',1)
-    end
-   
+if ( do_K_uwave_spectroscopy + do_Rb_uwave_spectroscopy + do_RF_spectroscopy ) > 1
+    buildWarning('dipole_transfer','More than one type of spectroscopy is selected! Need specific solution?',1)
+end
+
 %% Dipole trap initial ramp on
 % Perform the initial ramp on of dipole trap 1
 
@@ -325,8 +323,7 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
         
         Cx = seqdata.params.plug_shims_slopes(1);
         Cy = seqdata.params.plug_shims_slopes(2);
-        Cz = seqdata.params.plug_shims_slopes(3);
-%         
+        Cz = seqdata.params.plug_shims_slopes(3);         
         
         dIx=dI_QP*Cx;
         dIy=dI_QP*Cy;
@@ -1100,19 +1097,19 @@ if (seqdata.flags.CDT_evap_2_high_field==1)
     curtime = dipole_high_field_evap(timein)       
 end
 
-    %% Ramp Dipole Back Up Before Spectroscopy
-    %RHYS - Hmmm, sure. 
-    if ramp_XDT_up
-        dip_1 = .1; %1.5
-        dip_2 = .1; %1.5
-        dip_ramptime = 1000; %1000
-        dip_rampstart = 0;
-        dip_waittime = 500;
+%% Ramp Dipole Back Up Before Spectroscopy
+%RHYS - Hmmm, sure. 
+if ramp_XDT_up
+    dip_1 = .1; %1.5
+    dip_2 = .1; %1.5
+    dip_ramptime = 1000; %1000
+    dip_rampstart = 0;
+    dip_waittime = 500;
 
-        AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_1);
-        AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_2);
+    AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_1);
+    AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_2);
 curtime = calctime(curtime,dip_rampstart+dip_ramptime+dip_waittime);
-    end
+end
 
 
 
@@ -1168,515 +1165,515 @@ end
 
 
 
-    %% Do field ramp for spectroscopy
+%% Do field ramp for spectroscopy
 
-    % Shim values for zero field found via spectroscopy
-    %x_Bzero = 0.115; %0.03 minimizes field
-    %y_Bzero = -0.0925; %-0.075  -0.07 minimizes field
-    %z_Bzero = -0.145;% Z BIPOLAR PARAM, -0.075 minimizes the field
-    %(May 20th, 2013)
-    % To not ramp a field but leave it at its current value: do not specify the
-    % respective value, e.g. do not specify a value for ramp.xshim_final to
-    % keep current value.
+% Shim values for zero field found via spectroscopy
+%x_Bzero = 0.115; %0.03 minimizes field
+%y_Bzero = -0.0925; %-0.075  -0.07 minimizes field
+%z_Bzero = -0.145;% Z BIPOLAR PARAM, -0.075 minimizes the field
+%(May 20th, 2013)
+% To not ramp a field but leave it at its current value: do not specify the
+% respective value, e.g. do not specify a value for ramp.xshim_final to
+% keep current value.
 
-    % % %ADD FIELD RAMP HERE
-    % % %Ramp dipole on before pulsing the lattice beam. This should allow for
-    % % %better alignment of lattice to the potassium cloud, avoiding issue of
-    % % %gravitational sag for Rb. The XDT is then snapped off after the
-    % % %lattice pulse. 
-    
-    %dip_1 = 1;
-    %dip_2 = 1;
-    %dip_ramptime = 1000; %1000
-    %dip_rampstart = 50;
-    
-    %ramp_XDT_before_spect = 1;
-    
-    %if ramp_XDT_before_spect
-        %AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_1);
-        %AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_2);
+% % %ADD FIELD RAMP HERE
+% % %Ramp dipole on before pulsing the lattice beam. This should allow for
+% % %better alignment of lattice to the potassium cloud, avoiding issue of
+% % %gravitational sag for Rb. The XDT is then snapped off after the
+% % %lattice pulse. 
+
+%dip_1 = 1;
+%dip_2 = 1;
+%dip_ramptime = 1000; %1000
+%dip_rampstart = 50;
+
+%ramp_XDT_before_spect = 1;
+
+%if ramp_XDT_before_spect
+    %AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_1);
+    %AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_2);
 %curtime = calctime(curtime,dip_rampstart+dip_ramptime);
-    %end
+%end
 
 
 
-    %RHYS - All the various types of spectroscopy share a common field ramp
-    %code, which bring the FB field to some value. Again, I think the field
-    %ramp should just be part of a general spectroscopy function, however.
-    if ( do_K_uwave_spectroscopy || do_K_uwave_multi_sweeps || do_Rb_uwave_spectroscopy || do_RF_spectroscopy || do_singleshot_spectroscopy || do_field_ramps )
+%RHYS - All the various types of spectroscopy share a common field ramp
+%code, which bring the FB field to some value. Again, I think the field
+%ramp should just be part of a general spectroscopy function, however.
+if ( do_K_uwave_spectroscopy || do_K_uwave_multi_sweeps || do_Rb_uwave_spectroscopy || do_RF_spectroscopy || do_field_ramps )
 
-        ramp_fields = 1; % do a field ramp for spectroscopy
+    ramp_fields = 1; % do a field ramp for spectroscopy
 
-        if ramp_fields
-            clear('ramp');
-            %ramp.shim_ramptime = 50;
-            %ramp.shim_ramp_delay = -10; % ramp earlier than FB field if FB field is ramped to zero
-            
-            %getChannelValue(seqdata,27,1,0)
-            %getChannelValue(seqdata,19,1,0)
-            %getChannelValue(seqdata,28,1,0)
+    if ramp_fields
+        clear('ramp');
+        %ramp.shim_ramptime = 50;
+        %ramp.shim_ramp_delay = -10; % ramp earlier than FB field if FB field is ramped to zero
 
-            %First, ramp on a quantizing shim.
-            ramp.shim_ramptime = 50;
-            ramp.shim_ramp_delay = -0;
-            ramp.xshim_final = getChannelValue(seqdata,27,1,0);
-            ramp.yshim_final = getChannelValue(seqdata,19,1,0);%1.61;
-            ramp.zshim_final = getChannelValue(seqdata,28,1,0);%getChannelValue(seqdata,28,1,0); %0.065 for -1MHz   getChannelValue(seqdata,28,1,0)
-            addOutputParam('shim_value',ramp.zshim_final - getChannelValue(seqdata,28,1,0))
-            
-            %Give ramp shim values if we want to do spectroscopy using the
-            %shims instead of FB coil. If nothing set here, then
-            %ramp_bias_fields just takes the getChannelValue (which is set to
-            %field zeroing values)
-            %ramp.xshim_final = getChannelValue(seqdata,27,1,0);
-            %ramp.yshim_final = 1;
-            %ramp.zshim_final = getChannelValue(seqdata,28,1,0);
+        %getChannelValue(seqdata,27,1,0)
+        %getChannelValue(seqdata,19,1,0)
+        %getChannelValue(seqdata,28,1,0)
 
-            %FB coil settings for spectroscopy
-            %ramp.fesh_ramptime = 50;
-            %ramp.fesh_ramp_delay = -0;
-            %ramp.fesh_final = 1.0105*2*22.6; %1.0077*2*22.6 for same transfer as plane selection
+        %First, ramp on a quantizing shim.
+        ramp.shim_ramptime = 50;
+        ramp.shim_ramp_delay = -0;
+        ramp.xshim_final = getChannelValue(seqdata,27,1,0);
+        ramp.yshim_final = getChannelValue(seqdata,19,1,0);%1.61;
+        ramp.zshim_final = getChannelValue(seqdata,28,1,0);%getChannelValue(seqdata,28,1,0); %0.065 for -1MHz   getChannelValue(seqdata,28,1,0)
+        addOutputParam('shim_value',ramp.zshim_final - getChannelValue(seqdata,28,1,0))
 
-            % FB coil settings for spectroscopy
-            ramp.fesh_ramptime = 50;
-            ramp.fesh_ramp_delay = -0;
-            ramp.fesh_off_delay = 0;
-            %B_List = [199.6 200.6 201 202.3 202.6 201.3:0.05:202.2];
-            %B = getScanParameter(B_List,seqdata.scancycle,seqdata.randcyclelist,'B_Field');
+        %Give ramp shim values if we want to do spectroscopy using the
+        %shims instead of FB coil. If nothing set here, then
+        %ramp_bias_fields just takes the getChannelValue (which is set to
+        %field zeroing values)
+        %ramp.xshim_final = getChannelValue(seqdata,27,1,0);
+        %ramp.yshim_final = 1;
+        %ramp.zshim_final = getChannelValue(seqdata,28,1,0);
 
-            ramp.fesh_final = 25;%before 2017-1-6 2*22.6; %6*22.6*1.0068 - Current values for optimal stub-tuning near 120G.
+        %FB coil settings for spectroscopy
+        %ramp.fesh_ramptime = 50;
+        %ramp.fesh_ramp_delay = -0;
+        %ramp.fesh_final = 1.0105*2*22.6; %1.0077*2*22.6 for same transfer as plane selection
 
-            ramp.use_fesh_switch = 1; %Don't actually want to close the FB switch to avoid current spikes
+        % FB coil settings for spectroscopy
+        ramp.fesh_ramptime = 50;
+        ramp.fesh_ramp_delay = -0;
+        ramp.fesh_off_delay = 0;
+        %B_List = [199.6 200.6 201 202.3 202.6 201.3:0.05:202.2];
+        %B = getScanParameter(B_List,seqdata.scancycle,seqdata.randcyclelist,'B_Field');
 
-            %QP coil settings for spectroscopy
-            %ramp.QP_ramptime = 50;
-            %ramp.QP_ramp_delay = -0;
-            %ramp.QP_final =  0*1.78; %7
+        ramp.fesh_final = 25;%before 2017-1-6 2*22.6; %6*22.6*1.0068 - Current values for optimal stub-tuning near 120G.
+
+        ramp.use_fesh_switch = 1; %Don't actually want to close the FB switch to avoid current spikes
+
+        %QP coil settings for spectroscopy
+        %ramp.QP_ramptime = 50;
+        %ramp.QP_ramp_delay = -0;
+        %ramp.QP_final =  0*1.78; %7
 
 
-            ramp.settling_time = 200;
+        ramp.settling_time = 200;
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
-        end
+    end
+end
+
+
+%% uWave spectroscopy (K or Rb)
+%RHYS - More spectroscopy code to clean. These ones actually get used on
+%occasion for checking field calibration.
+if do_K_uwave_spectroscopy
+    dispLineStr('do_K_uwave_spectroscopy',curtime);
+    clear('spect_pars');
+
+    freq_list = [0]/1000;
+    freq_val = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'freq_val');
+    %Currently 1390.75 for 2*22.6.
+    spect_pars.freq = 1335.845 + freq_val; %Optimal stub-tuning frequency. Center of a sweep (~1390.75 for 2*22.6 and -9/2; ~1498.25 for 4*22.6 and -9/2)
+    spect_pars.power = 15; %dBm
+    spect_pars.delta_freq = 500/1000; % end_frequency - start_frequency
+    spect_pars.mod_dev = spect_pars.delta_freq;
+
+    %spect_pars.pulse_length = t0*10^(-1.5)/10^(pwr/10); % also is sweep length (max is Keithley time - 20ms)
+    pulse_time_list = [spect_pars.delta_freq*1000/5]; %Keep fixed at 5kHz/ms.
+    spect_pars.pulse_length = getScanParameter(pulse_time_list,seqdata.scancycle,seqdata.randcyclelist,'uwave_pulse_time');
+    spect_pars.pulse_type = 1;  %0 - Basic Pulse; 1 - Ramp up and down with min-jerk
+    spect_pars.AM_ramp_time = 9;
+    spect_pars.fake_pulse = 0;
+    spect_pars.uwave_delay = 0; %wait time before starting pulse
+    spect_pars.uwave_window = 0; % time to wait during 60Hz sync pulse (Keithley time +20ms)
+    spect_type = 2; %1: sweeps, 2: pulse, 7: 60Hz sync sweeps 9: field sweep
+    spect_pars.SRS_select = 1;
+
+    %addOutputParam('uwave_pwr',pwr)
+    addOutputParam('sweep_time',spect_pars.pulse_length)
+    addOutputParam('sweep_range',spect_pars.delta_freq)
+    addOutputParam('freq_val',freq_val)
+
+    do_field_sweep = 1;
+    if do_field_sweep
+        %Take frequency range in MHz, convert to shim range in Amps
+        %  (-5.714 MHz/A on Jan 29th 2015)
+        dBz = spect_pars.delta_freq / (-5.714); 
+
+        %dBz = 0;
+        field_shift_offset = 15;
+        field_shift_time = 5;
+
+        z_shim_sweep_center = getChannelValue(seqdata,28,1,0);
+        z_shim_sweep_start = z_shim_sweep_center-dBz/2;
+        z_shim_sweep_final = z_shim_sweep_center+dBz/2;
+
+        %Ramp shim to start value before generator turns on
+        clear('ramp');
+        ramp.shim_ramptime = field_shift_time;
+        ramp.shim_ramp_delay = spect_pars.uwave_delay-field_shift_offset; %offset from the beginning of uwave pulse
+        ramp.zshim_final = z_shim_sweep_start;
+
+        ramp_bias_fields(calctime(curtime,0), ramp);
+
+        %Ramp shim during uwave pulse to transfer atoms
+        ramp.shim_ramptime = spect_pars.pulse_length;
+        ramp.shim_ramp_delay = spect_pars.uwave_delay;
+        ramp.zshim_final = z_shim_sweep_final;
+
+        ramp_bias_fields(calctime(curtime,0), ramp);
+
+        %Ramp shim back to initial value after pulse is complete
+        clear('ramp');
+        ramp.shim_ramptime = field_shift_time;
+        ramp.shim_ramp_delay = spect_pars.uwave_delay+spect_pars.pulse_length+field_shift_offset; %offset from the beginning of uwave pulse
+        ramp.zshim_final = z_shim_sweep_center;
+
+        ramp_bias_fields(calctime(curtime,0), ramp);
     end
 
+    use_ACSync = 1;
+    if use_ACSync
+        % Enable ACync 10ms before pulse
+        ACync_start_time = calctime(curtime,spect_pars.uwave_delay - 50);
+        % Disable ACync 150ms after pulse
+        ACync_end_time = calctime(curtime,spect_pars.uwave_delay + ...
+        spect_pars.pulse_length + 150);
+        setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
+        setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
+    end
 
-    %% uWave spectroscopy (K or Rb)
-    %RHYS - More spectroscopy code to clean. These ones actually get used on
-    %occasion for checking field calibration.
-    if do_K_uwave_spectroscopy
-        dispLineStr('do_K_uwave_spectroscopy',curtime);
-        clear('spect_pars');
+    if ( seqdata.flags.pulse_raman_beams ~= 0)
 
-        freq_list = [0]/1000;
-        freq_val = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'freq_val');
-        %Currently 1390.75 for 2*22.6.
-        spect_pars.freq = 1335.845 + freq_val; %Optimal stub-tuning frequency. Center of a sweep (~1390.75 for 2*22.6 and -9/2; ~1498.25 for 4*22.6 and -9/2)
-        spect_pars.power = 15; %dBm
-        spect_pars.delta_freq = 500/1000; % end_frequency - start_frequency
-        spect_pars.mod_dev = spect_pars.delta_freq;
-
-        %spect_pars.pulse_length = t0*10^(-1.5)/10^(pwr/10); % also is sweep length (max is Keithley time - 20ms)
-        pulse_time_list = [spect_pars.delta_freq*1000/5]; %Keep fixed at 5kHz/ms.
-        spect_pars.pulse_length = getScanParameter(pulse_time_list,seqdata.scancycle,seqdata.randcyclelist,'uwave_pulse_time');
-        spect_pars.pulse_type = 1;  %0 - Basic Pulse; 1 - Ramp up and down with min-jerk
-        spect_pars.AM_ramp_time = 9;
-        spect_pars.fake_pulse = 0;
-        spect_pars.uwave_delay = 0; %wait time before starting pulse
-        spect_pars.uwave_window = 0; % time to wait during 60Hz sync pulse (Keithley time +20ms)
-        spect_type = 2; %1: sweeps, 2: pulse, 7: 60Hz sync sweeps 9: field sweep
-        spect_pars.SRS_select = 1;
-
-        %addOutputParam('uwave_pwr',pwr)
-        addOutputParam('sweep_time',spect_pars.pulse_length)
-        addOutputParam('sweep_range',spect_pars.delta_freq)
-        addOutputParam('freq_val',freq_val)
-
-        do_field_sweep = 1;
-        if do_field_sweep
-            %Take frequency range in MHz, convert to shim range in Amps
-            %  (-5.714 MHz/A on Jan 29th 2015)
-            dBz = spect_pars.delta_freq / (-5.714); 
-           
-            %dBz = 0;
-            field_shift_offset = 15;
-            field_shift_time = 5;
-
-            z_shim_sweep_center = getChannelValue(seqdata,28,1,0);
-            z_shim_sweep_start = z_shim_sweep_center-dBz/2;
-            z_shim_sweep_final = z_shim_sweep_center+dBz/2;
-
-            %Ramp shim to start value before generator turns on
-            clear('ramp');
-            ramp.shim_ramptime = field_shift_time;
-            ramp.shim_ramp_delay = spect_pars.uwave_delay-field_shift_offset; %offset from the beginning of uwave pulse
-            ramp.zshim_final = z_shim_sweep_start;
-
-            ramp_bias_fields(calctime(curtime,0), ramp);
-
-            %Ramp shim during uwave pulse to transfer atoms
-            ramp.shim_ramptime = spect_pars.pulse_length;
-            ramp.shim_ramp_delay = spect_pars.uwave_delay;
-            ramp.zshim_final = z_shim_sweep_final;
-
-            ramp_bias_fields(calctime(curtime,0), ramp);
-
-            %Ramp shim back to initial value after pulse is complete
-            clear('ramp');
-            ramp.shim_ramptime = field_shift_time;
-            ramp.shim_ramp_delay = spect_pars.uwave_delay+spect_pars.pulse_length+field_shift_offset; %offset from the beginning of uwave pulse
-            ramp.zshim_final = z_shim_sweep_center;
-
-            ramp_bias_fields(calctime(curtime,0), ramp);
-        end
-
-        use_ACSync = 1;
-        if use_ACSync
-            % Enable ACync 10ms before pulse
-            ACync_start_time = calctime(curtime,spect_pars.uwave_delay - 50);
-            % Disable ACync 150ms after pulse
-            ACync_end_time = calctime(curtime,spect_pars.uwave_delay + ...
-            spect_pars.pulse_length + 150);
-            setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
-            setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
-        end
-
-        if ( seqdata.flags.pulse_raman_beams ~= 0)
-
-            Raman_On_Delay = 0.0;
-            Raman_On_Time = spect_pars.pulse_length;
-            Raman_Ramp_Time = 0.00 * Raman_On_Time;
-            %Ramp VVA to open.
-            %AnalogFuncTo(calctime(curtime,-Raman_Ramp_Time-Raman_On_Delay),52,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),Raman_Ramp_Time,Raman_Ramp_Time,9.9);
-            %Pulse Raman beams on.
+        Raman_On_Delay = 0.0;
+        Raman_On_Time = spect_pars.pulse_length;
+        Raman_Ramp_Time = 0.00 * Raman_On_Time;
+        %Ramp VVA to open.
+        %AnalogFuncTo(calctime(curtime,-Raman_Ramp_Time-Raman_On_Delay),52,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),Raman_Ramp_Time,Raman_Ramp_Time,9.9);
+        %Pulse Raman beams on.
 curtime = DigitalPulse(calctime(curtime,-Raman_Ramp_Time-Raman_On_Delay),'Raman TTL',Raman_On_Time+2*Raman_Ramp_Time+2*Raman_On_Delay,1);
-            %Ramp VVA to closed.
-            %AnalogFuncTo(calctime(curtime,-Raman_Ramp_Time),52,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),Raman_Ramp_Time,Raman_Ramp_Time,0);
-            %pulse_time_list = [100];
-            %pulse_time = getScanParameter(pulse_time_list,seqdata.scancycle,seqdata.randcyclelist,'pulse_time');
+        %Ramp VVA to closed.
+        %AnalogFuncTo(calctime(curtime,-Raman_Ramp_Time),52,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),Raman_Ramp_Time,Raman_Ramp_Time,0);
+        %pulse_time_list = [100];
+        %pulse_time = getScanParameter(pulse_time_list,seqdata.scancycle,seqdata.randcyclelist,'pulse_time');
 %curtime = Pulse_RamanBeams(curtime,pulse_time,'MOTLightSource',2);
 %curtime = calctime(curtime,Raman_On_Time); 
-        end
+    end
 
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
-        %change curtime for testing F pump
+    %change curtime for testing F pump
 curtime = calctime(curtime,20);
 
-        ScopeTriggerPulse(curtime,'K uWave Spectroscopy');
+    ScopeTriggerPulse(curtime,'K uWave Spectroscopy');
 
-      %-----------------------ramp down Feshbach field for imaging
+  %-----------------------ramp down Feshbach field for imaging
 curtime=calctime(curtime,100);
-        ramp_fields_down = 1; % do a field ramp for spectroscopy    
-        if ramp_fields_down % if a coil value is not set, this coil will not be changed from its current value
-            % shim settings for spectroscopy
-            clear('ramp');
-            ramp.shim_ramptime = 50;
-            ramp.shim_ramp_delay = 0; % ramp earlier than FB field if FB field is ramped to zero
-            ramp.xshim_final = seqdata.params.shim_zero(1); %0.146
-            ramp.yshim_final = seqdata.params.shim_zero(2);
-            ramp.zshim_final = seqdata.params.shim_zero(3);
+    ramp_fields_down = 1; % do a field ramp for spectroscopy    
+    if ramp_fields_down % if a coil value is not set, this coil will not be changed from its current value
+        % shim settings for spectroscopy
+        clear('ramp');
+        ramp.shim_ramptime = 50;
+        ramp.shim_ramp_delay = 0; % ramp earlier than FB field if FB field is ramped to zero
+        ramp.xshim_final = seqdata.params.shim_zero(1); %0.146
+        ramp.yshim_final = seqdata.params.shim_zero(2);
+        ramp.zshim_final = seqdata.params.shim_zero(3);
 
-            % FB coil settings for spectroscopy
-            ramp.fesh_ramptime = 50;
-            ramp.fesh_ramp_delay = 0;
-            ramp.fesh_final = 20; %22.6
-            ramp.settling_time = 50;    
+        % FB coil settings for spectroscopy
+        ramp.fesh_ramptime = 50;
+        ramp.fesh_ramp_delay = 0;
+        ramp.fesh_final = 20; %22.6
+        ramp.settling_time = 50;    
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
-        end
-      %-----------------------ramp down Feshbach field for imaging
+    end
+  %-----------------------ramp down Feshbach field for imaging
 
 
-    elseif ( do_Rb_uwave_spectroscopy ) % does a uwave pulse or sweep for spectroscopy
+elseif ( do_Rb_uwave_spectroscopy ) % does a uwave pulse or sweep for spectroscopy
 
-        %freq_list = [-20:0.8:-12]/1000;%
-        %freq_val = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'freq_val');
-        freq_val = 0.0;
-        spect_pars.freq = 6894.0+freq_val; %MHz (6876MHz for FB = 22.6)
-        %power_list = [8.6 7 5 3 1 0];
-        %spect_pars.power = getScanParameter(power_list,seqdata.scancycle,seqdata.randcyclelist,'uwave_power');
-        spect_pars.power = 8.6; %dBm
-        spect_pars.delta_freq = 5; % end_frequency - start_frequency
-        spect_pars.pulse_length = 100; % also is sweep length
+    %freq_list = [-20:0.8:-12]/1000;%
+    %freq_val = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'freq_val');
+    freq_val = 0.0;
+    spect_pars.freq = 6894.0+freq_val; %MHz (6876MHz for FB = 22.6)
+    %power_list = [8.6 7 5 3 1 0];
+    %spect_pars.power = getScanParameter(power_list,seqdata.scancycle,seqdata.randcyclelist,'uwave_power');
+    spect_pars.power = 8.6; %dBm
+    spect_pars.delta_freq = 5; % end_frequency - start_frequency
+    spect_pars.pulse_length = 100; % also is sweep length
 
-        spect_type = 5; %5: sweeps, 6: pulse
+    spect_type = 5; %5: sweeps, 6: pulse
 
-        addOutputParam('freq_val',freq_val)
+    addOutputParam('freq_val',freq_val)
 
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars); % check rf_uwave_spectroscopy to see what struct spect_pars may contain
 
-        %RHYS - Not sure what this commented code is for. It is probably not important.      
-        %-----------------------ramp down Feshbach field for imaging
+    %RHYS - Not sure what this commented code is for. It is probably not important.      
+    %-----------------------ramp down Feshbach field for imaging
 %curtime=calctime(curtime,200);
-        %ramp_fields_down = 0; % do a field ramp for spectroscopy    
-        %if ramp_fields_down % if a coil value is not set, this coil will not be changed from its current value
-            %shim settings for spectroscopy
-            %clear('ramp');
-            %ramp.shim_ramptime = 50;
-            %ramp.shim_ramp_delay = 0; % ramp earlier than FB field if FB field is ramped to zero
-            %ramp.xshim_final = seqdata.params.shim_zero(1); %0.146
-            %ramp.yshim_final = seqdata.params.shim_zero(2);
-            %ramp.zshim_final = seqdata.params.shim_zero(3);
+    %ramp_fields_down = 0; % do a field ramp for spectroscopy    
+    %if ramp_fields_down % if a coil value is not set, this coil will not be changed from its current value
+        %shim settings for spectroscopy
+        %clear('ramp');
+        %ramp.shim_ramptime = 50;
+        %ramp.shim_ramp_delay = 0; % ramp earlier than FB field if FB field is ramped to zero
+        %ramp.xshim_final = seqdata.params.shim_zero(1); %0.146
+        %ramp.yshim_final = seqdata.params.shim_zero(2);
+        %ramp.zshim_final = seqdata.params.shim_zero(3);
 
-            %FB coil settings for spectroscopy
-            %ramp.fesh_ramptime = 50;
-            %ramp.fesh_ramp_delay = 0;
-            %ramp.fesh_final = 20; %22.6
-            %ramp.settling_time = 50;    
+        %FB coil settings for spectroscopy
+        %ramp.fesh_ramptime = 50;
+        %ramp.fesh_ramp_delay = 0;
+        %ramp.fesh_final = 20; %22.6
+        %ramp.settling_time = 50;    
 %curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
 %curtime=calctime(curtime,3000);     
-        %end
-        %-----------------------ramp down Feshbach field for imaging
+    %end
+    %-----------------------ramp down Feshbach field for imaging
 
-    end
-   
-    %% RF Spectroscopy
-    %RHYS - Tests RF transfer for a specific set of states: there is a lot of
-    %baggage and commented-out codes here which could be deleted.
-    if ( do_RF_spectroscopy ) % does an rf pulse or sweep for spectroscopy
-        check_effi = 0;
+end
+
+%% RF Spectroscopy
+%RHYS - Tests RF transfer for a specific set of states: there is a lot of
+%baggage and commented-out codes here which could be deleted.
+if ( do_RF_spectroscopy ) % does an rf pulse or sweep for spectroscopy
+    check_effi = 0;
 
 
 curtime=calctime(curtime,500);
 
-        %Do RF Sweep
-        clear('sweep');
-        rf_list = [17.5];[44.65 44.67 66.63]; [31.3812]; 
-        sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,seqdata.randcyclelist,'rf_freq')
-        %sweep_pars.freq = 31.37;44.4247; %Sweeps -9/2 to -7/2 at 207.6G.
-        rf_power_list = [5];
-        sweep_pars.power = getScanParameter(rf_power_list,seqdata.scancycle,seqdata.randcyclelist,'rf_transfer_power');  -5.7; %-7.7
-        delta_freq = 1.0;
-        sweep_pars.delta_freq = delta_freq;  -0.2; % end_frequency - start_frequency   0.01
-        sweep_pars.fake_pulse = 0;
-        rf_pulse_length_list = [0.0:0.06:0.48];;
-        sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5        
-        %sweep_pars.multiple_sweep = 1;
-        %sweep_pars.multiple_sweep_list = [34.1583];
+    %Do RF Sweep
+    clear('sweep');
+    rf_list = [17.5];[44.65 44.67 66.63]; [31.3812]; 
+    sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,seqdata.randcyclelist,'rf_freq')
+    %sweep_pars.freq = 31.37;44.4247; %Sweeps -9/2 to -7/2 at 207.6G.
+    rf_power_list = [5];
+    sweep_pars.power = getScanParameter(rf_power_list,seqdata.scancycle,seqdata.randcyclelist,'rf_transfer_power');  -5.7; %-7.7
+    delta_freq = 1.0;
+    sweep_pars.delta_freq = delta_freq;  -0.2; % end_frequency - start_frequency   0.01
+    sweep_pars.fake_pulse = 0;
+    rf_pulse_length_list = [0.0:0.06:0.48];;
+    sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5        
+    %sweep_pars.multiple_sweep = 1;
+    %sweep_pars.multiple_sweep_list = [34.1583];
 
-       
-        %%Do RF Pulse
-        %clear('pulse')
-        %rf_list =  [45.04:0.01:45.12]; 
-        %pulse_pars.freq = getScanParameter(rf_list,seqdata.scancycle,seqdata.randcyclelist,'rf_freq')
-        %rf_power_list = [-6];
-        %pulse_pars.power = getScanParameter(rf_power_list,seqdata.scancycle,seqdata.randcyclelist,'rf_transfer_power');  
-        %rf_pulse_length_list = [0.1];
-        %pulse_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');
-       
 
-        acync_time_start = curtime;
-        %trigger    
-        ScopeTriggerPulse(curtime,'rf_pulse_test');
+    %%Do RF Pulse
+    %clear('pulse')
+    %rf_list =  [45.04:0.01:45.12]; 
+    %pulse_pars.freq = getScanParameter(rf_list,seqdata.scancycle,seqdata.randcyclelist,'rf_freq')
+    %rf_power_list = [-6];
+    %pulse_pars.power = getScanParameter(rf_power_list,seqdata.scancycle,seqdata.randcyclelist,'rf_transfer_power');  
+    %rf_pulse_length_list = [0.1];
+    %pulse_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');
+
+
+    acync_time_start = curtime;
+    %trigger    
+    ScopeTriggerPulse(curtime,'rf_pulse_test');
 
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        total_pulse_length = sweep_pars.pulse_length+50;
+    total_pulse_length = sweep_pars.pulse_length+50;
 
-        kill_one_spin = 0;
-        %RHYS - Seems unnecessary to have this.
-        if  (kill_one_spin==1)
-        %Resonant light pulse to remove  atoms in 9/2 state
+    kill_one_spin = 0;
+    %RHYS - Seems unnecessary to have this.
+    if  (kill_one_spin==1)
+    %Resonant light pulse to remove  atoms in 9/2 state
 
-            kill_time_list = [0.25];
-            kill_time = getScanParameter(kill_time_list,seqdata.scancycle,seqdata.randcyclelist,'kill_time'); %10    
-            kill_detuning = 39;   40;   %27 for 80G       %43 @ 2018-02-22
-            addOutputParam('kill_det',kill_detuning);
-            pulse_offset_time = -5; %Need to step back in time a bit to do the kill pulse
-                                    %directly after transfer, not after the subsequent wait times
+        kill_time_list = [0.25];
+        kill_time = getScanParameter(kill_time_list,seqdata.scancycle,seqdata.randcyclelist,'kill_time'); %10    
+        kill_detuning = 39;   40;   %27 for 80G       %43 @ 2018-02-22
+        addOutputParam('kill_det',kill_detuning);
+        pulse_offset_time = -5; %Need to step back in time a bit to do the kill pulse
+                                %directly after transfer, not after the subsequent wait times
 
-            %set trap AOM detuning to change probe
-            setAnalogChannel(calctime(curtime,-50),'K Trap FM',kill_detuning); %54.5
-            %open K probe shutter
-            setDigitalChannel(calctime(curtime,-10),'Downwards D2 Shutter',1); %0=closed, 1=open
-            %set TTL off initially
-            setDigitalChannel(calctime(curtime,-20),'Kill TTL',0);%0= off, 1=on
-            ScopeTriggerPulse(curtime,'kill_test');
-            %turn on AOM TTL
-            setDigitalChannel(calctime(curtime,0),'Kill TTL',1);%0= off, 1=on
+        %set trap AOM detuning to change probe
+        setAnalogChannel(calctime(curtime,-50),'K Trap FM',kill_detuning); %54.5
+        %open K probe shutter
+        setDigitalChannel(calctime(curtime,-10),'Downwards D2 Shutter',1); %0=closed, 1=open
+        %set TTL off initially
+        setDigitalChannel(calctime(curtime,-20),'Kill TTL',0);%0= off, 1=on
+        ScopeTriggerPulse(curtime,'kill_test');
+        %turn on AOM TTL
+        setDigitalChannel(calctime(curtime,0),'Kill TTL',1);%0= off, 1=on
 curtime = calctime(curtime,kill_time);
-            setDigitalChannel(calctime(curtime,0),'Kill TTL',0);%0= off, 1=on
+        setDigitalChannel(calctime(curtime,0),'Kill TTL',0);%0= off, 1=on
 
-            %close K probe shutter
-            setDigitalChannel(calctime(curtime,0),'Downwards D2 Shutter',0);
+        %close K probe shutter
+        setDigitalChannel(calctime(curtime,0),'Downwards D2 Shutter',0);
 
-            %set kill AOM back on
-            setDigitalChannel(calctime(curtime,50),'Kill TTL',1);           
+        %set kill AOM back on
+        setDigitalChannel(calctime(curtime,50),'Kill TTL',1);           
 
-            total_pulse_length=total_pulse_length+kill_time;
-        end
-     
-        do_ACync_plane_selection = 1;
-        if do_ACync_plane_selection
-            ACync_start_time = calctime(acync_time_start,-80);
-            ACync_end_time = calctime(curtime,total_pulse_length+40);
-            setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
-            setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
-        end
-        %-----------------------ramp down Feshbach field for imaging
+        total_pulse_length=total_pulse_length+kill_time;
+    end
+
+    do_ACync_plane_selection = 1;
+    if do_ACync_plane_selection
+        ACync_start_time = calctime(acync_time_start,-80);
+        ACync_end_time = calctime(curtime,total_pulse_length+40);
+        setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
+        setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
+    end
+    %-----------------------ramp down Feshbach field for imaging
 
 
 curtime=calctime(curtime,41);
-        ramp_fields_down = 1; % do a field ramp for spectroscopy    
-        if ramp_fields_down % if a coil value is not set, this coil will not be changed from its current value
-            %shim settings for spectroscopy
-            clear('ramp');
-            ramp.shim_ramptime = 50;
-            ramp.shim_ramp_delay = 0; % ramp earlier than FB field if FB field is ramped to zero
-            ramp.xshim_final = seqdata.params.shim_zero(1); %0.146
-            ramp.yshim_final = seqdata.params.shim_zero(2);
-            ramp.zshim_final = seqdata.params.shim_zero(3);
+    ramp_fields_down = 1; % do a field ramp for spectroscopy    
+    if ramp_fields_down % if a coil value is not set, this coil will not be changed from its current value
+        %shim settings for spectroscopy
+        clear('ramp');
+        ramp.shim_ramptime = 50;
+        ramp.shim_ramp_delay = 0; % ramp earlier than FB field if FB field is ramped to zero
+        ramp.xshim_final = seqdata.params.shim_zero(1); %0.146
+        ramp.yshim_final = seqdata.params.shim_zero(2);
+        ramp.zshim_final = seqdata.params.shim_zero(3);
 
-            %FB coil settings for spectroscopy
-            ramp.fesh_ramptime = 50;
-            ramp.fesh_ramp_delay = 0;
-            ramp.fesh_final = 20; %22.6
-            ramp.settling_time = 50;    
+        %FB coil settings for spectroscopy
+        ramp.fesh_ramptime = 50;
+        ramp.fesh_ramp_delay = 0;
+        ramp.fesh_final = 20; %22.6
+        ramp.settling_time = 50;    
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
 curtime=calctime(curtime,100);     
-        end
-        %-----------------------ramp down Feshbach field for imaging
+    end
+    %-----------------------ramp down Feshbach field for imaging
 
 
-    %RHYS - Why do this here? Remove.
-         Make_Spin_Mixture = 0;
-        if (Make_Spin_Mixture)
-            %%Multiple sweeps to drive the mixture towards 50/50
+%RHYS - Why do this here? Remove.
+     Make_Spin_Mixture = 0;
+    if (Make_Spin_Mixture)
+        %%Multiple sweeps to drive the mixture towards 50/50
 curtime = rf_uwave_spectroscopy(calctime(curtime,10),3,sweep_pars);
 curtime = rf_uwave_spectroscopy(calctime(curtime,10),3,sweep_pars);
 curtime = rf_uwave_spectroscopy(calctime(curtime,10),3,sweep_pars);
 curtime = rf_uwave_spectroscopy(calctime(curtime,10),3,sweep_pars);
 curtime = rf_uwave_spectroscopy(calctime(curtime,10),3,sweep_pars);
-        end
-        %Do RF Sweep
-        %clear('sweep');        
-        %sweep_pars.freq = 20;46.7897; %Sweeps -7/2 to -5/2 at 207.6G.
-        %sweep_pars.power = 2.7; %-7.7
-        %sweep_pars.delta_freq = 0.3; % end_frequency - start_frequency   0.01
-        %sweep_pars.pulse_length = 30; % also is sweep length  0.5
+    end
+    %Do RF Sweep
+    %clear('sweep');        
+    %sweep_pars.freq = 20;46.7897; %Sweeps -7/2 to -5/2 at 207.6G.
+    %sweep_pars.power = 2.7; %-7.7
+    %sweep_pars.delta_freq = 0.3; % end_frequency - start_frequency   0.01
+    %sweep_pars.pulse_length = 30; % also is sweep length  0.5
 
-        %addOutputParam('RF_Pulse_Length',sweep_pars.pulse_length);
+    %addOutputParam('RF_Pulse_Length',sweep_pars.pulse_length);
 %curtime = rf_uwave_spectroscopy(calctime(curtime,10),3,sweep_pars);%3: sweeps, 4: pulse
 
-        %RHYS - I think this was code for testing molecule formation near the FB
-        %resonance. Could be included as a separate module.
-        do_feshbach_resonance_physics = 0;
-        if (do_feshbach_resonance_physics)
+    %RHYS - I think this was code for testing molecule formation near the FB
+    %resonance. Could be included as a separate module.
+    do_feshbach_resonance_physics = 0;
+    if (do_feshbach_resonance_physics)
+        clear('ramp')
+        % FB coil settings for spectroscopy
+        ramp.fesh_ramptime = 5;
+        ramp.fesh_ramp_delay = 5;
+        B_List = [200.5 201.5:0.05:202.1];%before 2017-1-6 [200.5 201.5:0.05:202.1];
+        B = getScanParameter(B_List,seqdata.scancycle,seqdata.randcyclelist,'B_Field');
+        ramp.fesh_final = (B-0.1)*1.08962;%before 2017-1-6 (B-0.1)*1.08962;%0*(0.336/20)*22.6; %1.0077*2*22.6 for same transfer as plane selection
+        ramp.use_fesh_switch = 1; %Don't actually want to close the FB switch to avoid current spikes
+        ramp.settling_time = 0;
+
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
+
+        %Do RF Sweep
+        clear('sweep');
+
+        sweep_pars.freq = -0.025 + (BreitRabiK(B,9/2,-5/2) - BreitRabiK(B,9/2,-7/2))/6.6260755e-34/1E6; %Sweeps -9/2 to -7/2 at 207.6G.
+        sweep_pars.power = 2.7; %-7.7
+        sweep_pars.delta_freq = -0.1; % end_frequency - start_frequency   0.01
+        sweep_pars.pulse_length = 10; % also is sweep length  0.5
+
+        addOutputParam('RF_Pulse_Length',sweep_pars.pulse_length);
+curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
+curtime = calctime(curtime, 200);
+
+        reverse_sweep = 0;
+        if reverse_sweep
             clear('ramp')
             % FB coil settings for spectroscopy
             ramp.fesh_ramptime = 5;
             ramp.fesh_ramp_delay = 5;
-            B_List = [200.5 201.5:0.05:202.1];%before 2017-1-6 [200.5 201.5:0.05:202.1];
-            B = getScanParameter(B_List,seqdata.scancycle,seqdata.randcyclelist,'B_Field');
-            ramp.fesh_final = (B-0.1)*1.08962;%before 2017-1-6 (B-0.1)*1.08962;%0*(0.336/20)*22.6; %1.0077*2*22.6 for same transfer as plane selection
+            B_2 = 199.6;%before 2017-1-6 199.6;
+            ramp.fesh_final = (B_2-0.1)*1.08962;%0*(0.336/20)*22.6; %1.0077*2*22.6 for same transfer as plane selection
             ramp.use_fesh_switch = 1; %Don't actually want to close the FB switch to avoid current spikes
-            ramp.settling_time = 0;
+            ramp.settling_time = 5;
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
-
-            %Do RF Sweep
-            clear('sweep');
-
-            sweep_pars.freq = -0.025 + (BreitRabiK(B,9/2,-5/2) - BreitRabiK(B,9/2,-7/2))/6.6260755e-34/1E6; %Sweeps -9/2 to -7/2 at 207.6G.
-            sweep_pars.power = 2.7; %-7.7
-            sweep_pars.delta_freq = -0.1; % end_frequency - start_frequency   0.01
-            sweep_pars.pulse_length = 10; % also is sweep length  0.5
-
-            addOutputParam('RF_Pulse_Length',sweep_pars.pulse_length);
+            sweep_pars.freq = (BreitRabiK(B_2,9/2,-5/2) - BreitRabiK(B_2,9/2,-7/2))/6.6260755e-34/1E6; 
+            sweep_pars.delta_freq = -sweep_pars.delta_freq;
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
-curtime = calctime(curtime, 200);
-
-            reverse_sweep = 0;
-            if reverse_sweep
-                clear('ramp')
-                % FB coil settings for spectroscopy
-                ramp.fesh_ramptime = 5;
-                ramp.fesh_ramp_delay = 5;
-                B_2 = 199.6;%before 2017-1-6 199.6;
-                ramp.fesh_final = (B_2-0.1)*1.08962;%0*(0.336/20)*22.6; %1.0077*2*22.6 for same transfer as plane selection
-                ramp.use_fesh_switch = 1; %Don't actually want to close the FB switch to avoid current spikes
-                ramp.settling_time = 5;
-
-curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
-                sweep_pars.freq = (BreitRabiK(B_2,9/2,-5/2) - BreitRabiK(B_2,9/2,-7/2))/6.6260755e-34/1E6; 
-                sweep_pars.delta_freq = -sweep_pars.delta_freq;
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
-            end
         end
-
-        %freq_list = [150]/1000;
-        %freq_val = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'freq_val');
-        %freq_val = 1/1000;
-        %addOutputParam('freq_val',freq_val);
-
-        %spect_pars.freq = 47.045+freq_val; %MHz
-        %power_list = [-8.2 -8.1 -7.9 -7.8 -7.7 -7.6];
-        %time_list = ([-15:5:5])/1000;
-        %spect_pars.power = getScanParameter(power_list,seqdata.scancycle,seqdata.randcyclelist,'rf_power'); %uncalibrated "gain" for rf
-        %spect_pars.power = -3; %-3
-        %spect_pars.delta_freq = 800/1000; % end_frequency - start_frequency
-        %sweeptime_list = [0.02 0.05 0.1 0.2 0.5:0.5:5];
-        %spect_pars.pulse_length =  getScanParameter(sweeptime_list,seqdata.scancycle,seqdata.randcyclelist,'sweeptime'); % also is sweep length        
-        %spect_pars.pulse_length = 0.2; % also is sweep length %0.2
-
-        %spect_type = 4; %3: sweeps, 4: pulse
-
-        %addOutputParam('rf_frequency',spect_pars.freq);
-        %addOutputParam('rf_power',spect_pars.power);
-            
-%curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars); % check rf_uwave_spectroscopy to see what struct spect_pars may contain
     end
 
-    %% Tilt Evaporation
-    %RHYS - An attempt to evaporate in the dipole trap by keeping a larger trap
-    %depth (for higher density) and tilting atoms out with a gradient. Was
-    %never better than the current evaporation method.
-    if tilt_evaporation
+    %freq_list = [150]/1000;
+    %freq_val = getScanParameter(freq_list,seqdata.scancycle,seqdata.randcyclelist,'freq_val');
+    %freq_val = 1/1000;
+    %addOutputParam('freq_val',freq_val);
 
-        %FB coil settings for spectroscopy
-        ramp.fesh_ramptime = 50;
-        ramp.fesh_ramp_delay = -0;
-        ramp.fesh_final = 10.49632;%before 2017-1-6 0.5*22.6; %22.6
-        addOutputParam('PSelect_FB',ramp.fesh_final)
+    %spect_pars.freq = 47.045+freq_val; %MHz
+    %power_list = [-8.2 -8.1 -7.9 -7.8 -7.7 -7.6];
+    %time_list = ([-15:5:5])/1000;
+    %spect_pars.power = getScanParameter(power_list,seqdata.scancycle,seqdata.randcyclelist,'rf_power'); %uncalibrated "gain" for rf
+    %spect_pars.power = -3; %-3
+    %spect_pars.delta_freq = 800/1000; % end_frequency - start_frequency
+    %sweeptime_list = [0.02 0.05 0.1 0.2 0.5:0.5:5];
+    %spect_pars.pulse_length =  getScanParameter(sweeptime_list,seqdata.scancycle,seqdata.randcyclelist,'sweeptime'); % also is sweep length        
+    %spect_pars.pulse_length = 0.2; % also is sweep length %0.2
 
-        qp_time_list = [1 1000 3000 6000 9000 12000];
+    %spect_type = 4; %3: sweeps, 4: pulse
 
-        %QP coil settings for spectroscopy
-        ramp.QP_ramptime = getScanParameter(qp_time_list,seqdata.scancycle,seqdata.randcyclelist,'qpTIME');%150 %This controls what fraction of the ramp is actually performed.
-        ramp.QP_ramp_delay = 60;
-        ramp.QP_final =  4.5*1.78; %12 works well for XDT power of 1, 24 for XDT power of 2 (although this is a lot of current). 
-        %These two parameters define the shape - the time constant, and
-        %how long it takes to get to max amplitude. 
-        ramp.QP_ramp_tau = 5000; %4000 from side
-        ramp.QP_ramptotaltime = 12000;
-        ramp.QP_ramp_type = 'Exponential';
+    %addOutputParam('rf_frequency',spect_pars.freq);
+    %addOutputParam('rf_power',spect_pars.power);
 
-        ramp.shim_ramptime = ramp.QP_ramptime; %150 %This controls what fraction of the ramp is actually performed.
-        ramp.shim_ramp_delay = ramp.QP_ramp_delay;
-        ramp.xshim_final = ramp.QP_final / QP_value * (seqdata.params. plug_shims(1) - seqdata.params. shim_zero(1)) + seqdata.params. shim_zero(1); %5.5 from side
-        ramp.yshim_final = ramp.QP_final / QP_value * (seqdata.params. plug_shims(2) - seqdata.params. shim_zero(2)) + seqdata.params. shim_zero(2);
-        ramp.zshim_final = ramp.QP_final / QP_value * (seqdata.params. plug_shims(3) - seqdata.params. shim_zero(3)) + seqdata.params. shim_zero(3);
-        %These two parameters define the shape - the time constant, and
-        %how long it takes to get to max amplitude. 
-        ramp.shim_ramp_tau = ramp.QP_ramp_tau ; %4000 from side
-        ramp.shim_ramptotaltime = ramp.QP_ramptotaltime;
-        ramp.shim_ramp_type = ramp.QP_ramp_type;
+%curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars); % check rf_uwave_spectroscopy to see what struct spect_pars may contain
+end
 
-        ramp.settling_time = 150; %200
+%% Tilt Evaporation
+%RHYS - An attempt to evaporate in the dipole trap by keeping a larger trap
+%depth (for higher density) and tilting atoms out with a gradient. Was
+%never better than the current evaporation method.
+if tilt_evaporation
+
+    %FB coil settings for spectroscopy
+    ramp.fesh_ramptime = 50;
+    ramp.fesh_ramp_delay = -0;
+    ramp.fesh_final = 10.49632;%before 2017-1-6 0.5*22.6; %22.6
+    addOutputParam('PSelect_FB',ramp.fesh_final)
+
+    qp_time_list = [1 1000 3000 6000 9000 12000];
+
+    %QP coil settings for spectroscopy
+    ramp.QP_ramptime = getScanParameter(qp_time_list,seqdata.scancycle,seqdata.randcyclelist,'qpTIME');%150 %This controls what fraction of the ramp is actually performed.
+    ramp.QP_ramp_delay = 60;
+    ramp.QP_final =  4.5*1.78; %12 works well for XDT power of 1, 24 for XDT power of 2 (although this is a lot of current). 
+    %These two parameters define the shape - the time constant, and
+    %how long it takes to get to max amplitude. 
+    ramp.QP_ramp_tau = 5000; %4000 from side
+    ramp.QP_ramptotaltime = 12000;
+    ramp.QP_ramp_type = 'Exponential';
+
+    ramp.shim_ramptime = ramp.QP_ramptime; %150 %This controls what fraction of the ramp is actually performed.
+    ramp.shim_ramp_delay = ramp.QP_ramp_delay;
+    ramp.xshim_final = ramp.QP_final / QP_value * (seqdata.params. plug_shims(1) - seqdata.params. shim_zero(1)) + seqdata.params. shim_zero(1); %5.5 from side
+    ramp.yshim_final = ramp.QP_final / QP_value * (seqdata.params. plug_shims(2) - seqdata.params. shim_zero(2)) + seqdata.params. shim_zero(2);
+    ramp.zshim_final = ramp.QP_final / QP_value * (seqdata.params. plug_shims(3) - seqdata.params. shim_zero(3)) + seqdata.params. shim_zero(3);
+    %These two parameters define the shape - the time constant, and
+    %how long it takes to get to max amplitude. 
+    ramp.shim_ramp_tau = ramp.QP_ramp_tau ; %4000 from side
+    ramp.shim_ramptotaltime = ramp.QP_ramptotaltime;
+    ramp.shim_ramp_type = ramp.QP_ramp_type;
+
+    ramp.settling_time = 150; %200
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); %
 
-        %Wait some variable amount of time.
+    %Wait some variable amount of time.
 curtime = calctime(curtime, 100);
 
-                clear('ramp')
-                % QP coil settings for spectroscopy
-                ramp.QP_ramptime = 150; %150
-                ramp.QP_ramp_delay = 60;
-                ramp.QP_final =  0*1.78; %7
-                ramp.settling_time = 150; %200
+            clear('ramp')
+            % QP coil settings for spectroscopy
+            ramp.QP_ramptime = 150; %150
+            ramp.QP_ramp_delay = 60;
+            ramp.QP_final =  0*1.78; %7
+            ramp.settling_time = 150; %200
 
-    curtime = ramp_bias_fields(calctime(curtime,0), ramp); %
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); %
 
-    end
+end
 
 
 %% Get rid of F = 7/2 K using a repump pulse
@@ -1700,7 +1697,6 @@ curtime = calctime(curtime,10);
 end
 
 
-
 %% Ramp XDT Up for Lattice Alignment
 %RHYS - This usually gets used. Can clean. Also contains options for
 %assessing XDT trap frequency, which should be separated back out into one
@@ -1714,36 +1710,35 @@ end
 if (ramp_XDT_after_evap && seqdata.flags. CDT_evap == 1)
     dispLineStr('Ramping XDTs back on.',curtime);
 
-
     power_list = [0.3];
     power_val = getScanParameter(power_list,seqdata.scancycle,...
         seqdata.randcyclelist,'power_val','W');
 
     dip_1 = power_val; %1.5
     dip_2 = power_val;XDT2_power_func(dip_1);
-
-    % 2020/01/26 ramp to full power
-%         dip_1 = P1;
-%         dip_2 = P2;
-% 
-%         
+       
     disp(['     XDT 1 (W) ' num2str(dip_1)]);
     disp(['     XDT 2 (W) ' num2str(dip_2)]);
-
-
-   % 2021/05/12 what is dip_sweep for?!
-    %dip_1 = 1;
+    
     dip_sweep = 0.00;
     dip_end_ramptime_list =[1500];
-    dip_ramptime = getScanParameter(dip_end_ramptime_list,seqdata.scancycle,seqdata.randcyclelist,'dip_end_ramptime');
+    dip_ramptime = getScanParameter(dip_end_ramptime_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'dip_end_ramptime');
     dip_rampstart_list = [0];
-    dip_rampstart = getScanParameter(dip_rampstart_list,seqdata.scancycle,seqdata.randcyclelist,'dip_on_time');
+    dip_rampstart = getScanParameter(dip_rampstart_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'dip_on_time');
 
     dip_waittime_list = [0];
-    dip_waittime = getScanParameter(dip_waittime_list,seqdata.scancycle,seqdata.randcyclelist,'dip_hold_time');
+    dip_waittime = getScanParameter(dip_waittime_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'dip_hold_time');
 
-    AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_1-dip_sweep/2);
-curtime = AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_2-dip_sweep/2);
+    AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        dip_ramptime,dip_ramptime,dip_1-dip_sweep/2);
+curtime = AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',...
+    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+    dip_ramptime,dip_ramptime,dip_2-dip_sweep/2);
+
 curtime = calctime(curtime,dip_waittime);
 
 end
@@ -1785,97 +1780,8 @@ if (seqdata.flags.do_D1OP_post_evap==1 && seqdata.flags.CDT_evap==1)
     
     
     % Perform optical pumping
-      curtime = opticalpumpingD1(curtime,op_after_options);
-    
-    % Commenting out for testing purposes
-
-
-        %{
-    %Determine the requested frequency offset from zero-field resonance
-    frequency_shift = (4)*2.4889;(4)*2.4889;
-    Selection_Angle = 62.0;
-    addOutputParam('Selection_Angle',Selection_Angle)
-
-    %Define the measured shim calibrations (NOT MEASURED YET, ASSUMING 2G/A)
-    Shim_Calibration_Values = [2.4889*2, 0.983*2.4889*2];  %Conversion from Shim Values (Amps) to frequency (MHz) to
-
-    %Determine how much to turn on the X and Y shims to get this frequency
-    %shift at the requested angle
-    X_Shim_Value = frequency_shift * cosd(Selection_Angle) / Shim_Calibration_Values(1);
-    Y_Shim_Value = frequency_shift * sind(Selection_Angle) / Shim_Calibration_Values(2);
-    X_Shim_Offset = 0;
-    Y_Shim_Offset = 0;
-    Z_Shim_Offset = 0.055;0.055;
-
-    %Ramp the magnetic fields so that we are spin-polarized.
-    newramp = struct('ShimValues',seqdata.params.shim_zero + [X_Shim_Value+X_Shim_Offset, Y_Shim_Value+Y_Shim_Offset, Z_Shim_Offset],...
-            'FeshValue',0.01,'QPValue',0,'SettlingTime',200);
-
-    % Ramp fields for pumping
-curtime = rampMagneticFields(calctime(curtime,0), newramp);   
-
-    % Makure sure EIT Probe shutter is closed
-    setDigitalChannel(calctime(curtime,-20),'EIT Shutter',0);
-    
-    % Break the thermal stabilzation of AOMs by turning them off
-    % EIT Probe AOM (not necessary?)
-    setDigitalChannel(calctime(curtime,-10),'D1 TTL',0); 
-    
-    % F-pump AOM + regulation
-    setAnalogChannel(calctime(curtime,-10),'F Pump',-1);
-    setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
-    
-    % D1 opitcal pumping TTL + AM control
-    setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);    
-    setAnalogChannel(calctime(curtime,-10),'D1 AM',D1op_pwr); 
-    
-    % Open D1 shutter (FPUMP + OPT PUMP)
-    setDigitalChannel(calctime(curtime,-8),'D1 Shutter', 1);%1: turn on laser; 0: turn off laser
-        
-    % Open optical pumping AOMS (allow light) and regulate F-pump
-    setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
-    setAnalogChannel(calctime(curtime,0),'F Pump',repump_power);
-    setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
-    setDigitalChannel(calctime(curtime,0),'D1 OP TTL',1);
-    
-    %Optical pumping time
-curtime = calctime(curtime,optical_pump_time);
-    
-    % Turn off OP before F-pump so atoms repumped back to -9/2.
-    setDigitalChannel(calctime(curtime,0),'D1 OP TTL',0);
-
-    % Close optical pumping AOMS (no light)
-    setDigitalChannel(calctime(curtime,op_repump_extra_time),'F Pump TTL',1);%1
-    setAnalogChannel(calctime(curtime,op_repump_extra_time),'F Pump',-1);%1
-    setDigitalChannel(calctime(curtime,op_repump_extra_time),'FPump Direct',1);
-    
-    % Close D1 shutter shutter
-    setDigitalChannel(calctime(curtime,5),'D1 Shutter', 0);%2
-    
-    %After optical pumping, turn on all AOMs for thermal stabilzation
-    
-    setDigitalChannel(calctime(curtime,10),'D1 TTL',1);
-    setDigitalChannel(calctime(curtime,10),'F Pump TTL',0);
-%     setAnalogChannel(calctime(curtime,10),'D1 AM',10); 
-
-curtime =  setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);    
-
-clear('ramp');
-
-        % Ramp the bias fields
-newramp = struct('ShimValues',seqdata.params.shim_zero,...
-            'FeshValue',20,'QPValue',0,'SettlingTime',100);
-
-    % Ramp fields for pumping
-curtime = rampMagneticFields(calctime(curtime,0), newramp);   
-    
-
-    curtime = calctime(curtime,50);
-    
-    
-%}
-end    
-    
+      curtime = opticalpumpingD1(curtime,op_after_options);    
+end        
     
 %% Remix at end: Ensure a 50/50 mixture after spin-mixture evaporation
 
@@ -2138,9 +2044,6 @@ curtime=calctime(curtime,50);
 
         %Piezo mirror is reset to 0 at the beginning of Load_MagTrap_Sequence
     end
-
-
-
   
  
     %% Keep XDT On for Some Time
@@ -2156,10 +2059,11 @@ curtime=calctime(curtime,50);
         exxdthold = getScanParameter(exxdthold_list,...
             seqdata.scancycle,seqdata.randcyclelist,'exxdthold','ms');
         curtime=calctime(curtime,exxdthold);%for sparse image
-    end   
-  
+    end
+    
     
 %% Ramp FB field up before loading lattice
+
 % Before loading the lattices, it is sometimes useful to control the
 % magnetic field to establish the interaction (attractive versus repulsive)
 % during the loading. Attractive interactions tend to create a larger

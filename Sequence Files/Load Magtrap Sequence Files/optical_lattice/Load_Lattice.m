@@ -55,7 +55,6 @@ do_conductivity = 0;       % (747-1536) keep: the real conductivity experiment h
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-do_K_uwave_spectroscopy2 = 0;           % (3497)
 do_K_uwave_spectroscopy = 1;            % (3786) keep
 do_Rb_uwave_spectroscopy = 0;           % (3929)
 do_RF_spectroscopy = 0;                 % (3952,4970)
@@ -2004,7 +2003,7 @@ end
 %RHYS - Spectroscopy sections for calibration. Comments about lack of code
 %generality from dipole_transfer apply here too: clean and generalize!
 
-if ( do_K_uwave_spectroscopy2 || do_K_uwave_spectroscopy || ...
+if ( do_K_uwave_spectroscopy || ...
         do_Rb_uwave_spectroscopy || do_RF_spectroscopy)
     dispLineStr('Ramping magnetic fields BEFORE RF/uwave spectroscopy',curtime);
     
@@ -2039,17 +2038,6 @@ if ( do_K_uwave_spectroscopy2 || do_K_uwave_spectroscopy || ...
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
     end
     
-end
-
-%% K uWave Manipulations
-% This code performs K uWave manipulations such as Rabi Oscillations,
-% Landau Zener Sweeps, and HS1 Sweeps This is the newer version of the code
-% that programs the SRS.
-
-if do_K_uwave_spectroscopy2
-    dispLineStr('Performing K uWave Spectroscopy',curtime);
-    
-    curtime = K_uWave_Spectroscopy(timein);
 end
 
 %% K uWave Spectroscopy (OLD)
@@ -2270,7 +2258,7 @@ end
 %          z_Bzero = -0.145;% Z BIPOLAR PARAM, -0.075 minimizes the field
 %          (May 20th, 2013)
 
-if ( do_K_uwave_spectroscopy2 || do_K_uwave_spectroscopy || ...
+if ( do_K_uwave_spectroscopy || ...
         do_Rb_uwave_spectroscopy || do_RF_spectroscopy ...
         )
     

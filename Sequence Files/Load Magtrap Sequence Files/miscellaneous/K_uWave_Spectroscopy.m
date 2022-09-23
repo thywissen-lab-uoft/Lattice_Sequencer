@@ -34,12 +34,6 @@ curtime = timein;
     
     % Program the SRS
     programSRSFinal(srs); 
-    
-    % Need these shim and FB values
-%   ramp.xshim_final = 0.1585; 
-%   ramp.yshim_final = -0.0432;
-%   ramp.zshim_final = -0.0865; 
-%   ramp.fesh_final = 20.98111;
 
 %% Prepare uwave Switches
 curtime = calctime(curtime,20);
@@ -71,7 +65,8 @@ switch uWaveMode
     case 'rabi'
     %% Rabi Oscillations
         disp(' uWave Rabi Oscillations');
-        
+        % 2022/09/23 Not Tested
+
         % Disable the frquency sweep
         uWave_opts.EnableSweep=0;                    
         uWave_opts.SweepRange=1;  
@@ -104,34 +99,15 @@ switch uWaveMode
         
     case 'sweep_field'
     %% Sweep Z Shim Field Spectroscopy
-        % Get the initial magnetic field value
+        % 2022/09/23 Not Tested
+    
+        % Get the shim value right now
         Bzc = getChannelValue(seqdata,'Z Shim',1,0);
-
-        
-        % THIS HAS NOT BEEN TESTED YET
-        disp(' Landau-Zener Sweep B-Field');
-        uWave_opts.EnableSweep=0;                    
-        uWave_opts.SweepRange=1;                   
-
-        % Set uWave power
-        setAnalogChannel(calctime(curtime,-10),'uWave VVA',10);
-        
-        % Sweep the magnetic field to perform Landau-Zener sweep
-        
-        % Define sweep range (MHz)
-        delta_freq_list=[20/1000];[500/1000];  
-        delta_freq=getScanParameter(delta_freq_list,seqdata.scancycle,seqdata.randcyclelist,'delta_freq');
-        
-        % Define sweep time (ms)
-         sweep_time_list =[delta_freq*1000/5]; 
-%         sweep_time_list =[6 7 8 9]; 
-        sweep_time = getScanParameter(sweep_time_list,seqdata.scancycle,seqdata.randcyclelist,'sweep_time');
         
         % Convert sweep range to current of z shim
-        dBz = delta_freq/(-5.714); % -5.714 MHz/A for Z shim (2015/01/29)         
-
-        % Define the magnetic field sweep
-        Bzc = getChannelValue(seqdata,'Z Shim',1,0);
+        dBz = delta_freq/(-5.714); % -5.714 MHz/A for Z shim (2015/01/29) 
+        
+        % Calculate the initial and final shim fields
         Bzi = Bzc-dBz/2;
         Bzf = Bzc+dBz/2;
         
@@ -140,10 +116,6 @@ switch uWaveMode
        
         % Time wait after ramping shims (for field settling);
         field_shift_offset = 15;     
-        
-        % Display summary
-        disp(['     Field Shift (kHz) : ' num2str(1E3*delta_freq)]);
-        disp(['     Ramp Time   (ms)  : ' num2str(sweep_time)]);
         
         % Ramp Z Shim to initial field of sweep before uWave        
         ramp=struct;
@@ -154,7 +126,7 @@ switch uWaveMode
 
         % Ramp Z Shim to final field of sweep during uWave
         ramp=struct;
-        ramp.shim_ramptime = sweep_time;
+        ramp.shim_ramptime = PulseTime;
         ramp.shim_ramp_delay = 0;                   
         ramp.zshim_final = Bzf;
         ramp_bias_fields(calctime(curtime,0), ramp);
@@ -163,15 +135,18 @@ switch uWaveMode
         clear('ramp');
         ramp=struct;
         ramp.shim_ramptime = field_shift_time;
-        ramp.shim_ramp_delay = sweep_time+field_shift_offset;
+        ramp.shim_ramp_delay = PulseTime+field_shift_offset;
         ramp.zshim_final = Bzc;            
         ramp_bias_fields(calctime(curtime,0), ramp);
+        
+        % Set uWave power
+        setAnalogChannel(calctime(curtime,-10),'uWave VVA',10);    
         
         % Turn on the uWave
         setDigitalChannel(calctime(curtime,0),'K uWave TTL',1); 
         
         % Wait
-        curtime = calctime(curtime,sweep_time);
+        curtime = calctime(curtime,PulseTime);
         
         % Turn off the uWave
         setDigitalChannel(calctime(curtime,0),'K uWave TTL',0); 
@@ -184,11 +159,8 @@ switch uWaveMode
         
     case 'sweep_frequency_chirp'
     %% Swee Frequency Linearly Spectroscopy
-
+        % 2022/09/23 Tested
         disp(' Landau-Zener Sweep uWave Frequency');   
-
-        % Set uWave power
-%         setAnalogChannel(calctime(curtime,-10),'uWave VVA',2.5);    
 
         % Set VVA to Max Power
         setAnalogChannel(calctime(curtime,-10),'uWave VVA',10,1);        
@@ -235,6 +207,9 @@ switch uWaveMode
         
     case 'sweep_frequency_HS1'
     %% HS1 Frequency Sweep
+        % 2022/09/23 Not Tested
+
+    
         disp('HS1 Sweep Pulse');
         
         % Calculate the beta parameter

@@ -756,8 +756,6 @@ yf=sqrt(10.^(-vva_spec(2,:)*.1)/10^(-4.48*.1));yf(1)=0;
 seqdata.analogchannels(53).voltagefunc{2} = @(a) interp1(yf,xf,a,'pchip');
 
 
-
-
 %channel 54 (Piezo mirror controller, channel X)
 seqdata.analogchannels(54).name = 'Piezo mirror X';
 seqdata.analogchannels(54).minvoltage = -0.15;

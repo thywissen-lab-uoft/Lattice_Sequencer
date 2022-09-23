@@ -1256,11 +1256,10 @@ if (seqdata.flags.do_D1OP_post_evap==1 && seqdata.flags.CDT_evap==1)
     op_after_options.fpump_power = repump_power;
     op_after_options.d1op_power = D1op_pwr;
     op_after_options.fpump_extratime = op_repump_extra_time;    
-    op_after_options.leave_on = 0;
-    
+    op_after_options.leave_on = 0;    
     
     % Perform optical pumping
-      curtime = opticalpumpingD1(curtime,op_after_options);    
+    curtime = opticalpumpingD1(curtime,op_after_options);    
 end        
     
 %% Remix at end: Ensure a 50/50 mixture after spin-mixture evaporation

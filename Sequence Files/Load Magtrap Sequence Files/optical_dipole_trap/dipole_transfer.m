@@ -43,8 +43,7 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     
     % Ending optical evaporation
     exp_end_pwr = getScanParameter(Evap_End_Power_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');
-    
+        seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');    
         
     % Second Stage ending evaporation power
     Evap2_End_Power_List = [0.07];    
@@ -62,13 +61,9 @@ function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein
     do_K_uwave_multi_sweeps = 0;    % do multiple uWave sweeps of 40K
     do_Rb_uwave_spectroscopy = 0;   % do uWave Spectroscopy of 87Rb
     do_RF_spectroscopy = 0;         % do spectroscopy with DDS 
-    do_singleshot_spectroscopy = 0; % do uwave spectroscopy using mF states to shelve population
     do_field_ramps = 0;             % Ramp shim and FB fields without spectroscopy
     K_repump_pulse = 0;             % Get rid of F = 7/2 Potassium
     K_probe_pulse = 0;              % Get rid of F = 9/2 Potassium
-    DMD_in_XDT = 0;
-    Kill_Beam_Alignment = 0;        %Pulse Kill beam on for whatever needs to be aligned.  
-    Raman_Vertical_Alignment = 0;   %Pulse Vertical Raman beam on for alignment. 
     ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
     k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
     ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
@@ -1227,120 +1222,120 @@ curtime = calctime(curtime,300);
 
     end
 
-    %% CDT evap
-    %RHYS - Imporant code, definitely should be kept and cleaned up.
-    if ( seqdata.flags.CDT_evap == 1 )
-        dispLineStr('Optical evaporation',curtime);
+%% CDT evap
+%RHYS - Imporant code, definitely should be kept and cleaned up.
+if ( seqdata.flags.CDT_evap == 1 )
+    dispLineStr('Optical evaporation',curtime);
 
-        % Flag to perform optical exponential optical evaporation
-        expevap = 1;
-        
-        % Flag to ramp the powers to sympathetic cooling regime
-        do_pre_ramp = 1;
+    % Flag to perform optical exponential optical evaporation
+    expevap = 1;
 
-        % Pre ramp powers to sympathtetic cooling regime
-        if do_pre_ramp 
-            disp(' Performing pre ramp to sympathetic power regime');
+    % Flag to ramp the powers to sympathetic cooling regime
+    do_pre_ramp = 1;
 
-            % Powers to ramp to 
-            dipole_preramp_time = 500;
+    % Pre ramp powers to sympathtetic cooling regime
+    if do_pre_ramp 
+        disp(' Performing pre ramp to sympathetic power regime');
 
-            disp(['     Ramp Time (ms) : ' num2str(dipole_preramp_time)]);
-            disp(['     XDT 1 init (W) : ' num2str(DT1_power(2))]);
-            disp(['     XDT 2 init (W) : ' num2str(DT2_power(2))]);            
-            disp(['     XDT 1 (W)      : ' num2str(DT1_power(3))]);
-            disp(['     XDT 2 (W)      : ' num2str(DT2_power(3))]);            
-            
-            % Ramp optical power requests to sympathetic regime
-            AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
-                    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-                    dipole_preramp_time,dipole_preramp_time,DT1_power(3));
+        % Powers to ramp to 
+        dipole_preramp_time = 500;
+
+        disp(['     Ramp Time (ms) : ' num2str(dipole_preramp_time)]);
+        disp(['     XDT 1 init (W) : ' num2str(DT1_power(2))]);
+        disp(['     XDT 2 init (W) : ' num2str(DT2_power(2))]);            
+        disp(['     XDT 1 (W)      : ' num2str(DT1_power(3))]);
+        disp(['     XDT 2 (W)      : ' num2str(DT2_power(3))]);            
+
+        % Ramp optical power requests to sympathetic regime
+        AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+                dipole_preramp_time,dipole_preramp_time,DT1_power(3));
 curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
-                    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-                    dipole_preramp_time,dipole_preramp_time,DT2_power(3));
+                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+                dipole_preramp_time,dipole_preramp_time,DT2_power(3));
+    end
+
+    if expevap
+        disp(' Performing exponential evaporation');
+        disp(['     Evap Time (ms) : ' num2str(exp_evap_time)]);
+        disp(['     tau       (ms) : ' num2str(exp_evap_time)]);
+        disp(['     XDT1 end   (W) : ' num2str(DT1_power(4))]);
+        disp(['     XDT2 end   (W) : ' num2str(DT2_power(4)*seqdata.params.XDT_area_ratio)]);
+
+
+        % NOTE: exp_end_pwr moved all the way to top of function!
+        P_dip=exp_end_pwr;
+
+        evap_exp_ramp = @(t,tt,tau,y2,y1)(y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));
+
+        dipole1_exp_pwr = 1.0;
+        dipole2_exp_pwr = 1*1; %2.2 for ODT beam sizes prior to Nov 2013, now beams have same equal area
+
+        %Turn on dimple beam near end of evaporation.
+        Dimple_in_XDT = 0;
+        if(Dimple_in_XDT)
+            Dimple_Ramp_Time = 50;
+            Dimple_Power = 0.5;
+            Dimple_On_Time_Scale = 0.8;
+            setDigitalChannel(calctime(curtime,exp_evap_time*Dimple_On_Time_Scale),'Dimple TTL',0);%0
+            AnalogFuncTo(calctime(curtime,exp_evap_time*Dimple_On_Time_Scale),'Dimple Pwr',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Dimple_Ramp_Time, Dimple_Ramp_Time, Dimple_Power); 
         end
-        
-        if expevap
-            disp(' Performing exponential evaporation');
-            disp(['     Evap Time (ms) : ' num2str(exp_evap_time)]);
-            disp(['     tau       (ms) : ' num2str(exp_evap_time)]);
-            disp(['     XDT1 end   (W) : ' num2str(DT1_power(4))]);
-            disp(['     XDT2 end   (W) : ' num2str(DT2_power(4)*seqdata.params.XDT_area_ratio)]);
 
-
-            % NOTE: exp_end_pwr moved all the way to top of function!
-            P_dip=exp_end_pwr;
-
-            evap_exp_ramp = @(t,tt,tau,y2,y1)(y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));
-
-            dipole1_exp_pwr = 1.0;
-            dipole2_exp_pwr = 1*1; %2.2 for ODT beam sizes prior to Nov 2013, now beams have same equal area
-
-            %Turn on dimple beam near end of evaporation.
-            Dimple_in_XDT = 0;
-            if(Dimple_in_XDT)
-                Dimple_Ramp_Time = 50;
-                Dimple_Power = 0.5;
-                Dimple_On_Time_Scale = 0.8;
-                setDigitalChannel(calctime(curtime,exp_evap_time*Dimple_On_Time_Scale),'Dimple TTL',0);%0
-                AnalogFuncTo(calctime(curtime,exp_evap_time*Dimple_On_Time_Scale),'Dimple Pwr',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Dimple_Ramp_Time, Dimple_Ramp_Time, Dimple_Power); 
-            end
-
-            % EXPONENTIAL RAMP 
-            AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
-                @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
-                exp_evap_time,exp_evap_time,exp_tau,DT1_power(4));
+        % EXPONENTIAL RAMP 
+        AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+            @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
+            exp_evap_time,exp_evap_time,exp_tau,DT1_power(4));
 curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
-                @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
-                exp_evap_time,exp_evap_time,exp_tau,seqdata.params.XDT_area_ratio*DT2_power(4));
-          
-          
-            dipole_oscillation = 0;
-            % Oscillate trap after evaporation
-            if dipole_oscillation
-                disp(' Oscillating dipole depths.');
-                
-                % Oscillate with a sinuisoidal function
-                dip_osc = @(t,freq,y2,y1)(y1 +y2*sin(2*pi*freq*t/1000));
+            @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
+            exp_evap_time,exp_evap_time,exp_tau,seqdata.params.XDT_area_ratio*DT2_power(4));
 
-                dip_osc_time = 500; 1000;       % Duration to modulate             
- 
-                dip_osc_offset = exp_end_pwr;   % CDT_rampup_pwr;
-                dip_osc_amp = 0.05;             % Oscillation amplitude
-                dip_osc_freq_list = [400:10:500 650];
-                dip_osc_freq = getScanParameter(dip_osc_freq_list,seqdata.scancycle,seqdata.randcyclelist,'dip_osc_freq');
 
-                % Modify time slightly to ensure complete cycles
-                Ncycle = ceil((dip_osc_time*1E-3)*dip_osc_freq);
-                dip_osc_time = 1E3*(Ncycle/dip_osc_freq);
-                
-                disp(['     Frequency (Hz) : ' num2str(dip_osc_freq)]);
-                disp(['     Offset     (W) : ' num2str(dip_osc_offset)]);
-                disp(['     Amplitude  (W) : ' num2str(dip_osc_amp)]);
-                disp(['     Time      (ms) : ' num2str(dip_osc_time)]);                
-                
-                %oscillate dipole 1 
-                AnalogFunc(calctime(curtime,0),'dipoleTrap1',@(t,freq,y2,y1)(dip_osc(t,freq,y2,y1)),dip_osc_time,dip_osc_freq,dip_osc_amp,dip_osc_offset);
-                %oscillate dipole 2 
+        dipole_oscillation = 0;
+        % Oscillate trap after evaporation
+        if dipole_oscillation
+            disp(' Oscillating dipole depths.');
+
+            % Oscillate with a sinuisoidal function
+            dip_osc = @(t,freq,y2,y1)(y1 +y2*sin(2*pi*freq*t/1000));
+
+            dip_osc_time = 500; 1000;       % Duration to modulate             
+
+            dip_osc_offset = exp_end_pwr;   % CDT_rampup_pwr;
+            dip_osc_amp = 0.05;             % Oscillation amplitude
+            dip_osc_freq_list = [400:10:500 650];
+            dip_osc_freq = getScanParameter(dip_osc_freq_list,seqdata.scancycle,seqdata.randcyclelist,'dip_osc_freq');
+
+            % Modify time slightly to ensure complete cycles
+            Ncycle = ceil((dip_osc_time*1E-3)*dip_osc_freq);
+            dip_osc_time = 1E3*(Ncycle/dip_osc_freq);
+
+            disp(['     Frequency (Hz) : ' num2str(dip_osc_freq)]);
+            disp(['     Offset     (W) : ' num2str(dip_osc_offset)]);
+            disp(['     Amplitude  (W) : ' num2str(dip_osc_amp)]);
+            disp(['     Time      (ms) : ' num2str(dip_osc_time)]);                
+
+            %oscillate dipole 1 
+            AnalogFunc(calctime(curtime,0),'dipoleTrap1',@(t,freq,y2,y1)(dip_osc(t,freq,y2,y1)),dip_osc_time,dip_osc_freq,dip_osc_amp,dip_osc_offset);
+            %oscillate dipole 2 
 %                 curtime = AnalogFunc(calctime(curtime,0),'dipoleTrap2',@(t,freq,y2,y1)(dip_osc(t,freq,y2,y1)),dip_osc_time,dip_osc_freq,dip_osc_amp,dip_osc_offset);    
 
-                % Advance Time
-                curtime=calctime(curtime,dip_osc_time);
-                % Trigger the scope 
-                DigitalPulse(curtime,'ScopeTrigger',10,1);
+            % Advance Time
+            curtime=calctime(curtime,dip_osc_time);
+            % Trigger the scope 
+            DigitalPulse(curtime,'ScopeTrigger',10,1);
 
 curtime = calctime(curtime,100);
 
-            end
+        end
 
 curtime = calctime(curtime,0); %100      
-            %this time gets passed out of function to keep cycle constant time
-            dip_holdtime=25000-exp_evap_time;
-       
-        end
-    else
-        dip_holdtime=25000;
+        %this time gets passed out of function to keep cycle constant time
+        dip_holdtime=25000-exp_evap_time;
+
     end
+else
+    dip_holdtime=25000;
+end
 
 %% Two Stage High Field Evaporation
 % This evaporates at high field from the initial evaporation
@@ -2105,253 +2100,161 @@ curtime = calctime(curtime, 100);
 
     end
 
-    %% uWave single shot spectroscopy
-    %RHYS - Stefan's single-shot spectroscopy module. Cool, but never really
-    %used.
-    if ( do_singleshot_spectroscopy ) % does an rf pulse or sweep for spectroscopy
 
-curtime = uwave_singleshot_spectroscopy(calctime(curtime,0)); 
-
-    end   
-
-    %% Get rid of F = 7/2 K using a repump pulse
-    %RHYS - Could be useful
-    if K_repump_pulse
+%% Get rid of F = 7/2 K using a repump pulse
+%RHYS - Could be useful
+if K_repump_pulse
 
 curtime = calctime(curtime,10);
 
-        %Open Repump Shutter
-        setDigitalChannel(calctime(curtime,-10),3,1);  
-        %turn repump back up
-        setAnalogChannel(calctime(curtime,-10),25,0.7);
+    %Open Repump Shutter
+    setDigitalChannel(calctime(curtime,-10),3,1);  
+    %turn repump back up
+    setAnalogChannel(calctime(curtime,-10),25,0.7);
 
-        %repump TTL
-        curtime = DigitalPulse(calctime(curtime,0),7,1,0); 
+    %repump TTL
+    curtime = DigitalPulse(calctime(curtime,0),7,1,0); 
 
-        %Close Repump Shutter
-        setDigitalChannel(calctime(curtime,0),3,0);
-        %turn repump back down
-        setAnalogChannel(calctime(curtime,0),25,0.0);
-    else
-    end
+    %Close Repump Shutter
+    setDigitalChannel(calctime(curtime,0),3,0);
+    %turn repump back down
+    setAnalogChannel(calctime(curtime,0),25,0.0);
+end
 
-    %% Get rid of F = 9/2 K using a probe pulse
-    %RHYS - Could be useful.
-    if K_probe_pulse
+%% Get rid of F = 9/2 K using a probe pulse
+%RHYS - Could be useful.
+if K_probe_pulse
 
-        clear('ramp');
+    clear('ramp');
 
-        %First, ramp on a quantizing shim.    
-        ramp.shim_ramptime = 50;
-        ramp.shim_ramp_delay = -10; 
-        ramp.xshim_final = getChannelValue(seqdata,27,1,0);
-        ramp.yshim_final = 1.61;%0.6;
-        y_shim_temp = getChannelValue(seqdata,19,1,0);
-        ramp.zshim_final = getChannelValue(seqdata,28,1,0);
+    %First, ramp on a quantizing shim.    
+    ramp.shim_ramptime = 50;
+    ramp.shim_ramp_delay = -10; 
+    ramp.xshim_final = getChannelValue(seqdata,27,1,0);
+    ramp.yshim_final = 1.61;%0.6;
+    y_shim_temp = getChannelValue(seqdata,19,1,0);
+    ramp.zshim_final = getChannelValue(seqdata,28,1,0);
 
-        %Ramp down Feshbach concurrently.
-        ramp.fesh_ramptime = 50;
-        ramp.fesh_ramp_delay = -0;
-        ramp.fesh_final = 0.0116;%before 2017-1-6 0.0001; %18
-        fesh_temp = getChannelValue(seqdata,37,1,0);
+    %Ramp down Feshbach concurrently.
+    ramp.fesh_ramptime = 50;
+    ramp.fesh_ramp_delay = -0;
+    ramp.fesh_final = 0.0116;%before 2017-1-6 0.0001; %18
+    fesh_temp = getChannelValue(seqdata,37,1,0);
 
 curtime =  ramp_bias_fields(calctime(curtime,0), ramp);
 
-        k_probe_scale = 1;
-        kill_detuning = 40;  %400ER: 33
-        kill_probe_pwr = 0.6*k_probe_scale*0.17;   %0.2  0.22   4*k_probe_scale*0.17
-        kill_time = 4;
+    k_probe_scale = 1;
+    kill_detuning = 40;  %400ER: 33
+    kill_probe_pwr = 0.6*k_probe_scale*0.17;   %0.2  0.22   4*k_probe_scale*0.17
+    kill_time = 4;
 
 
-        %set probe detuning
-        setAnalogChannel(calctime(curtime,-10),'K Probe/OP FM',190); %195
-        %set trap AOM detuning to change probe
-        setAnalogChannel(calctime(curtime,-10),'K Trap FM',kill_detuning); %54.5
+    %set probe detuning
+    setAnalogChannel(calctime(curtime,-10),'K Probe/OP FM',190); %195
+    %set trap AOM detuning to change probe
+    setAnalogChannel(calctime(curtime,-10),'K Trap FM',kill_detuning); %54.5
 
-        %open K probe shutter
-        setDigitalChannel(calctime(curtime,-5),30,1); %0=closed, 1=open
-        %turn up analog
-        setAnalogChannel(calctime(curtime,-5),29,kill_probe_pwr);
-        %set TTL off initially
-        setDigitalChannel(calctime(curtime,-5),9,1);
+    %open K probe shutter
+    setDigitalChannel(calctime(curtime,-5),30,1); %0=closed, 1=open
+    %turn up analog
+    setAnalogChannel(calctime(curtime,-5),29,kill_probe_pwr);
+    %set TTL off initially
+    setDigitalChannel(calctime(curtime,-5),9,1);
 
-        %pulse beam with TTL
+    %pulse beam with TTL
 curtime = DigitalPulse(calctime(curtime,0),9,kill_time,0);
 
-        %close K probe shutter
-        setDigitalChannel(calctime(curtime,0),30,0);
+    %close K probe shutter
+    setDigitalChannel(calctime(curtime,0),30,0);
 
-        uwave_back = 1; % do a field ramp for spectroscopy
+    uwave_back = 1; % do a field ramp for spectroscopy
 
-        if uwave_back % if a coil value is not set, this coil will not be changed from its current value
-            %shim settings for spectroscopy
-            clear('ramp');
-            ramp.shim_ramptime = 50;
-            ramp.shim_ramp_delay = -10; % ramp earlier than FB field if FB field is ramped to zero
+    if uwave_back % if a coil value is not set, this coil will not be changed from its current value
+        %shim settings for spectroscopy
+        clear('ramp');
+        ramp.shim_ramptime = 50;
+        ramp.shim_ramp_delay = -10; % ramp earlier than FB field if FB field is ramped to zero
 
-            getChannelValue(seqdata,27,1,0);
-            getChannelValue(seqdata,19,1,0);
-            getChannelValue(seqdata,28,1,0);
+        getChannelValue(seqdata,27,1,0);
+        getChannelValue(seqdata,19,1,0);
+        getChannelValue(seqdata,28,1,0);
 
-            %Give ramp shim values if we want to do spectroscopy using the
-            %shims instead of FB coil. If nothing set here, then
-            %ramp_bias_fields just takes the getChannelValue (which is set to
-            %field zeroing values)
-            %ramp.xshim_final = 0.146; %0.146
-            %ramp.yshim_final = -0.0517;
-            %ramp.zshim_final = 1.5;
+        %Give ramp shim values if we want to do spectroscopy using the
+        %shims instead of FB coil. If nothing set here, then
+        %ramp_bias_fields just takes the getChannelValue (which is set to
+        %field zeroing values)
+        %ramp.xshim_final = 0.146; %0.146
+        %ramp.yshim_final = -0.0517;
+        %ramp.zshim_final = 1.5;
 
-            % FB coil settings for spectroscopy
-            ramp.fesh_ramptime = 50;
-            ramp.fesh_ramp_delay = -0;
-            ramp.fesh_final =41.9507;%before 2017-1-6 2*22.6; %22.6
-            ramp.settling_time = 200;
+        % FB coil settings for spectroscopy
+        ramp.fesh_ramptime = 50;
+        ramp.fesh_ramp_delay = -0;
+        ramp.fesh_final =41.9507;%before 2017-1-6 2*22.6; %22.6
+        ramp.settling_time = 200;
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
 
-            %Redo original sweep, but longer to transfer all atoms
-            spect_pars.pulse_length = 30; % also is sweep length
-            spect_type = 1; %1: sweeps, 2: pulse
+        %Redo original sweep, but longer to transfer all atoms
+        spect_pars.pulse_length = 30; % also is sweep length
+        spect_type = 1; %1: sweeps, 2: pulse
 
-            addOutputParam('freq_val',spect_pars.freq)
+        addOutputParam('freq_val',spect_pars.freq)
 
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
 
-        end
-    else
     end
+else
+end
 
 
-    %% Ramp XDT Up for Lattice Alignment
-    %RHYS - This usually gets used. Can clean. Also contains options for
-    %assessing XDT trap frequency, which should be separated back out into one
-    %of the other two modules that already do this.
+%% Ramp XDT Up for Lattice Alignment
+%RHYS - This usually gets used. Can clean. Also contains options for
+%assessing XDT trap frequency, which should be separated back out into one
+%of the other two modules that already do this.
 
-    %Ramp dipole on before pulsing the lattice beam. This should allow for
-    %better alignment of lattice to the potassium cloud, avoiding issue of
-    %gravitational sag for Rb. The XDT is then snapped off after the
-    %lattice pulse. 
+%Ramp dipole on before pulsing the lattice beam. This should allow for
+%better alignment of lattice to the potassium cloud, avoiding issue of
+%gravitational sag for Rb. The XDT is then snapped off after the
+%lattice pulse. 
 
-    if (ramp_XDT_after_evap && seqdata.flags. CDT_evap == 1)
-        dispLineStr('Ramping XDTs back on.',curtime);
-       
-       
-        power_list = [0.3];
-        power_val = getScanParameter(power_list,seqdata.scancycle,...
-            seqdata.randcyclelist,'power_val','W');
+if (ramp_XDT_after_evap && seqdata.flags. CDT_evap == 1)
+    dispLineStr('Ramping XDTs back on.',curtime);
 
-        dip_1 = power_val; %1.5
-        dip_2 = power_val;XDT2_power_func(dip_1);
-        
-        % 2020/01/26 ramp to full power
+
+    power_list = [0.3];
+    power_val = getScanParameter(power_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'power_val','W');
+
+    dip_1 = power_val; %1.5
+    dip_2 = power_val;XDT2_power_func(dip_1);
+
+    % 2020/01/26 ramp to full power
 %         dip_1 = P1;
 %         dip_2 = P2;
 % 
 %         
-        disp(['     XDT 1 (W) ' num2str(dip_1)]);
-        disp(['     XDT 2 (W) ' num2str(dip_2)]);
+    disp(['     XDT 1 (W) ' num2str(dip_1)]);
+    disp(['     XDT 2 (W) ' num2str(dip_2)]);
 
-        
-       % 2021/05/12 what is dip_sweep for?!
-        %dip_1 = 1;
-        dip_sweep = 0.00;
-        dip_end_ramptime_list =[1500];
-        dip_ramptime = getScanParameter(dip_end_ramptime_list,seqdata.scancycle,seqdata.randcyclelist,'dip_end_ramptime');
-        dip_rampstart_list = [0];
-        dip_rampstart = getScanParameter(dip_rampstart_list,seqdata.scancycle,seqdata.randcyclelist,'dip_on_time');
-        
-        dip_waittime_list = [0];
-        dip_waittime = getScanParameter(dip_waittime_list,seqdata.scancycle,seqdata.randcyclelist,'dip_hold_time');
-        
-        AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_1-dip_sweep/2);
+
+   % 2021/05/12 what is dip_sweep for?!
+    %dip_1 = 1;
+    dip_sweep = 0.00;
+    dip_end_ramptime_list =[1500];
+    dip_ramptime = getScanParameter(dip_end_ramptime_list,seqdata.scancycle,seqdata.randcyclelist,'dip_end_ramptime');
+    dip_rampstart_list = [0];
+    dip_rampstart = getScanParameter(dip_rampstart_list,seqdata.scancycle,seqdata.randcyclelist,'dip_on_time');
+
+    dip_waittime_list = [0];
+    dip_waittime = getScanParameter(dip_waittime_list,seqdata.scancycle,seqdata.randcyclelist,'dip_hold_time');
+
+    AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_1-dip_sweep/2);
 curtime = AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_2-dip_sweep/2);
 curtime = calctime(curtime,dip_waittime);
 
-    end
+end
 
-%% DMD in XDT 
-    %RHYS - Is this desirable?
-    if DMD_in_XDT
-        ScopeTriggerPulse(curtime,'DMD pulse');
-
-        offset_time=-200;-400;
-        DMD_power_val_list = [1]; %Do not exceed 2 here
-        DMD_power_val = getScanParameter(DMD_power_val_list,...
-            seqdata.scancycle,seqdata.randcyclelist,'DMD_power_val');
-        DMD_ramp_time = 100;
-        DMD_on_time_list = [300];
-        DMD_on_time = getScanParameter(DMD_on_time_list,seqdata.scancycle,seqdata.randcyclelist,'DMD_on_time');
-%         setAnalogChannel(calctime(curtime,-1000),'DMD Power',2);
-        setDigitalChannel(calctime(curtime,-10+offset_time),'DMD Shutter',0);%0 on 1 off
-        setDigitalChannel(calctime(curtime,-100+offset_time),'DMD TTL',0);%1 off 0 on
-        setDigitalChannel(calctime(curtime,0+offset_time),'DMD TTL',1); %pulse time does not matter
-        setDigitalChannel(calctime(curtime,-20+offset_time),'DMD AOM TTL',0);
-        setDigitalChannel(calctime(curtime,-20+offset_time),'DMD PID holder',1);
-%         setAnalogChannel(calctime(curtime,-20+offset_time),'DMD Power',0);
-        AnalogFuncTo(calctime(curtime,-30+offset_time),'DMD Power',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 1, 1, 0);
-        setDigitalChannel(calctime(curtime,0+offset_time),'DMD AOM TTL',1); %1 on 0 off 
-        setDigitalChannel(calctime(curtime,0+offset_time),'DMD PID holder',0);
-curtime = AnalogFuncTo(calctime(curtime,0+offset_time),'DMD Power',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), ...
-    DMD_ramp_time, DMD_ramp_time, DMD_power_val);
-% curtime = calctime(curtime,DMD_on_time)
-%curtime = AnalogFuncTo(calctime(curtime,0),'DMD Power',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, 0.3);
-%         setAnalogChannel(calctime(curtime,DMD_on_time+DMD_ramp_time),'DMD Power',-0.1);
-% curtime = AnalogFuncTo(calctime(curtime,0),'DMD Power',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, 0);
-        AnalogFuncTo(calctime(curtime,DMD_on_time),'DMD Power',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-            DMD_ramp_time, DMD_ramp_time, -0.1);
-        setDigitalChannel(calctime(curtime,DMD_on_time+DMD_ramp_time),'DMD AOM TTL',0); %1 on 0 off
-        setDigitalChannel(calctime(curtime,DMD_on_time+DMD_ramp_time+10),'DMD Shutter',1);
-        setDigitalChannel(calctime(curtime,DMD_on_time+DMD_ramp_time+20),'DMD AOM TTL',1);
-        setAnalogChannel(calctime(curtime,DMD_on_time+DMD_ramp_time+20),'DMD Power',2);
-% curtime = calctime(curtime,DMD_on_time)
-curtime = calctime(curtime,DMD_on_time-100); -50;
-        
-%         DMD_on_time_list = [80];
-%     DMD_on_time = getScanParameter(DMD_on_time_list,...
-%         seqdata.scancycle,seqdata.randcyclelist,'DMD_on_time','ms');
-%     
-%     DMD_ramp_time = 20; %10
-%     lat_hold_time_list = 50;%50 sept28
-%     lat_hold_time = getScanParameter(lat_hold_time_list,...
-%         seqdata.scancycle,seqdata.randcyclelist,'lattice_hold_time');%maximum is 4
-%     lat_rampup_time = 1*[50,DMD_on_time+DMD_ramp_time-20,50,2,50,lat_hold_time]; 
-% % % %     lat_rampup_time = 1*[50,2+DMD_on_time+DMD_ramp_time,10,2,50,lat_hold_time];
-% %     lat_rampup_time = 1*[20,30,30,10,50,lat_hold_time]; 
-% % % % %     
-% % % % % % % % % % %     
-%     offset_time = 40;
-%     DMD_power_val_list = 2; %2V is roughly the max now 
-%     DMD_power_val = getScanParameter(DMD_power_val_list,...
-%         seqdata.scancycle,seqdata.randcyclelist,'DMD_power_val');
-%     % setDigitalChannel(calctime(curtime,-220),'DMD TTL',0);%1 off 0 on
-%     % setDigitalChannel(calctime(curtime,-220+100),'DMD TTL',1); %pulse time does not matter
-%     % setDigitalChannel(calctime(curtime,0),'DMD AOM TTL',1);
-%     % % setAnalogChannel(calctime(curtime,0),'DMD Power',3.5);
-%     % AnalogFuncTo(calctime(curtime,0),'DMD Power',...
-%     %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, DMD_power_val);
-%     % setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time),'DMD Power',-5);
-%     % setDigitalChannel(calctime(curtime,0+DMD_on_time+ DMD_ramp_time),'DMD AOM TTL',0);%0 off 1 on
-% 
-% 
-%     setDigitalChannel(calctime(curtime,-10 +offset_time),'DMD Shutter',0);%0 on 1 off
-%     setDigitalChannel(calctime(curtime,-100+offset_time),'DMD TTL',0);
-%     setDigitalChannel(calctime(curtime,0+offset_time),'DMD TTL',1);
-%     setDigitalChannel(calctime(curtime,-20+offset_time),'DMD AOM TTL',0);
-%     setAnalogChannel(calctime(curtime,-20+offset_time),'DMD Power',-0.1);
-%     setDigitalChannel(calctime(curtime,0+offset_time),'DMD AOM TTL',1);%1 on 0 off
-%     AnalogFuncTo(calctime(curtime,0+offset_time),'DMD Power',...
-%         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, DMD_power_val);
-% 
-%     % curtime = calctime(curtime,DMD_on_time + DMD_ramp_time);
-%     % curtime = AnalogFuncTo(calctime(curtime,0),'DMD Power',...
-%     %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), DMD_ramp_time, DMD_ramp_time, -0.1);
-%     setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+offset_time),'DMD Power',-0.1);
-%     setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+offset_time),'DMD AOM TTL',0);
-%     setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+10+offset_time),'DMD Shutter',1);
-%     setDigitalChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+20+offset_time),'DMD AOM TTL',1);
-%     setAnalogChannel(calctime(curtime,0+DMD_on_time+DMD_ramp_time+20+offset_time),'DMD Power',3);
-    end 
 %% D1 Optical Pumping in ODT
 % After optical evaporation, ensure mF spin polarization via D1 optical
 % pumping.
@@ -2744,88 +2647,8 @@ curtime=calctime(curtime,50);
     end
 
 
-    %% Pulse kill beam for alignment
-    %RHYS - Can be useful. Pretty sure it exists in lattice too though.
-    if Kill_Beam_Alignment
 
-        %kill_probe_pwr = 1;
-        %kill_time = 2000;
-        %pulse_offset_time = 0;
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        kill_probe_pwr = 1;
-        kill_time = 10;
-        pulse_offset_time = 0;
-
-        %set TTL off initially
-        setDigitalChannel(calctime(curtime,-20),'Kill TTL',0); % 0 = power off; 1=  power on
-        %open K probe shutter
-        setDigitalChannel(calctime(curtime,-10),'Downwards D2 Shutter',1); %0=closed, 1=open
-
-        %turn AOM on
-        setDigitalChannel(calctime(curtime,0),'Kill TTL',1);
-
-curtime=calctime(curtime,kill_time);
-        %turn AOM off
-        setDigitalChannel(calctime(curtime,0),'Kill TTL',0);
-
-        %close K probe shutter
-        setDigitalChannel(calctime(curtime,0),'Downwards D2 Shutter',0); %0=closed, 1=open
-        %turn AOM on
-        setDigitalChannel(calctime(curtime,500),'Kill TTL',1); 
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%open K probe shutter
-        %setDigitalChannel(calctime(curtime,pulse_offset_time-10),'Downwards D2 Shutter',1); %0=closed, 1=open
-    
-        %%set TTL off initially
-        %setDigitalChannel(calctime(curtime,pulse_offset_time-20),'Kill TTL',1);%1=  power on
-    
-        %%pulse beam with TTL
-        %DigitalPulse(calctime(curtime,pulse_offset_time),'Kill TTL',kill_time,0);
-    
-        %%close K probe shutter
-        %setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time + 1),'Downwards D2 Shutter',0);
-     
-        %%set kill AOM back on
-%curtime = setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time + 5),'Kill TTL',0);
-
-    end
-
-    
- %% Vertical Raman Alignment
- if Raman_Vertical_Alignment
-     
-     curtime=calctime(curtime,50);
-     
-     Device_id = 1;
-     Raman_vert_freq = 110*1E6;
-     Raman_vert_pwr = 0.8;
-     Raman_vert_offset = 0;
-     str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',Raman_vert_freq,Raman_vert_pwr,Raman_vert_offset);
-    
-     addVISACommand(Device_id, str);
-     
-     setDigitalChannel(calctime(curtime,-50),'Raman TTL 2a',0);
-     setDigitalChannel(calctime(curtime,-50),'Raman TTL 2',0);
-     setDigitalChannel(calctime(curtime,-50),'Raman TTL 3a',0);
-     setDigitalChannel(calctime(curtime,-50),'Raman TTL 3',0);
-     setDigitalChannel(calctime(curtime,-50),'Raman TTL 1',0);
-     
-     setDigitalChannel(calctime(curtime,-5),'Raman Shutter',1);
-     
-     raman_time_list = [1];
-     raman_time = getScanParameter(raman_time_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'raman_time');
-    
-     DigitalPulse(calctime(curtime,0),'Raman TTL 2',raman_time,1);
-     DigitalPulse(calctime(curtime,0),'Raman TTL 2a',raman_time,1);
-     
-     setDigitalChannel(calctime(curtime,raman_time),'Raman Shutter',0);
-     setDigitalChannel(calctime(curtime,raman_time),'Raman TTL 2a',1);
-     setDigitalChannel(calctime(curtime,raman_time),'Raman TTL 2',1);
-     setDigitalChannel(calctime(curtime,raman_time),'Raman TTL 3a',1);
-     setDigitalChannel(calctime(curtime,raman_time),'Raman TTL 3',1);
-     setDigitalChannel(calctime(curtime,raman_time),'Raman TTL 1',1);     
- end 
+  
  
     %% Keep XDT On for Some Time
     %RHYS - Either hold for some time after using dipole trap kick, or just

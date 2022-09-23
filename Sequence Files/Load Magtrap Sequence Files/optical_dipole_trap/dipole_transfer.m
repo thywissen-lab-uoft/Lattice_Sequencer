@@ -1,13 +1,7 @@
 function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein, I_QP, V_QP,I_shim)
-%RHYS - This code, probably originally intended to just load the dipole
-%trap, now includes everything anyone would ever want to do in a dipole
-%trap, including spin-flips/spectroscopy, evaporation, and a number of
-%specialized or obsolete sequences. I would trim it back extensively, move
-%hardcoded parameters out, and keep specialized sequences as optional
-%xdt-specific flags to call.
 
-    curtime = timein;
-    global seqdata;
+curtime = timein;
+global seqdata;
 
 %% Flags
 %Dipole Loading Flags
@@ -20,12 +14,6 @@ do_qp_ramp_down1 = 1;%1
 do_qp_ramp_down2 = 1;%1
 ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 %ramp_func = @(t,tt,y2,y1)(minimum_jerk(t,tt,y2-y1)+y1); 
-
-%After Loading the XDT
-%--------------------
-%RHYS - Move all of these flags out of this function, and declare them
-%in the seqdata structure to be passed in.  
-
 
 %Evaporation in the XDT
 %-------------------- 
@@ -50,13 +38,21 @@ exp_end_pwr2 = getScanParameter(Evap2_End_Power_List,...
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 ramp_XDT_up = 0;                % Ramp dipole back up after evaporation before any further physics 
 do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscillations for temperature measurement
-seqdata.flags.get_rid_of_Rb = 1;% Get rid of Rb at end of evap (only happens when CDT_evap = 1
+
+
+seqdata.flags.kill_Rb_after_evap = 1;   % Remove Rb after optical evaporation
+seqdata.flags.kill_Rb_before_evap = 0;
+
+seqdata.flags.kill_K7_before_evap = 0;  % remove 7/2 K before optical evaporation
+seqdata.flags.kill_K7_after_evap = 0;   % remove 7/2 K after optical evaporation
+
+
 do_K_uwave_spectroscopy = 0;    % do uWave Spectroscopy of 40K
 do_K_uwave_multi_sweeps = 0;    % do multiple uWave sweeps of 40K
 do_Rb_uwave_spectroscopy = 0;   % do uWave Spectroscopy of 87Rb
 do_RF_spectroscopy = 0;         % do spectroscopy with DDS 
 do_field_ramps = 0;             % Ramp shim and FB fields without spectroscopy
-K_repump_pulse = 0;             % Get rid of F = 7/2 Potassium
+K_repump_pulse = 0;             
 ramp_XDT_after_evap = 0;        %Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
 k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
 ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
@@ -712,10 +708,7 @@ curtime = DigitalPulse(calctime(curtime,0),24,pulse_time,0); % pulse beam with T
         seqdata.scancycle,seqdata.randcyclelist,'uwave_rf_hold_time','ms');
 curtime = calctime(curtime,wait_time);
 end 
- 
-
-
-    
+     
 %% 40K RF Sweep Init
 %Sweep 40K to |9/2,-9/2> before optical evaporation   
 
@@ -1117,7 +1110,7 @@ end
 % After optical evaporation, it is useful to only have K in the trap. Do
 % this by pulsing resonant Rb light
 
-if (seqdata.flags.get_rid_of_Rb && seqdata.flags. CDT_evap == 1)
+if (seqdata.flags.kill_Rb_after_evap && seqdata.flags. CDT_evap == 1)
 
     %repump atoms from F=1 to F=2, and blow away these F=2 atoms with
     %the probe
@@ -1677,23 +1670,25 @@ end
 
 
 %% Get rid of F = 7/2 K using a repump pulse
-%RHYS - Could be useful
-if K_repump_pulse
 
+if seqdata.flags.kill_K7_after_evap   
+    
 curtime = calctime(curtime,10);
 
     %Open Repump Shutter
-    setDigitalChannel(calctime(curtime,-10),3,1);  
+    setDigitalChannel(calctime(curtime,-10),'K Repump Shutter',1);  
+    
     %turn repump back up
-    setAnalogChannel(calctime(curtime,-10),25,0.7);
+    setAnalogChannel(calctime(curtime,-10),'K Repump AM',0.7);
 
     %repump TTL
-    curtime = DigitalPulse(calctime(curtime,0),7,1,0); 
+    curtime = DigitalPulse(calctime(curtime,0),'K Repump TTL',1,0); 
 
     %Close Repump Shutter
-    setDigitalChannel(calctime(curtime,0),3,0);
+    setDigitalChannel(calctime(curtime,0),'K Repump Shutter',0);
+    
     %turn repump back down
-    setAnalogChannel(calctime(curtime,0),25,0.0);
+    setAnalogChannel(calctime(curtime,0),'K Repump AM',0.0);
 end
 
 
@@ -1974,45 +1969,7 @@ curtime=calctime(curtime,rabi_pars.pulse_length);
 %     curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
 %     curtime = calctime(curtime,30);
 end
-    %% Get Rid of Rb at the Very Very End
-    get_rid_of_Rb_at_the_end = 0;
-    %RHYS - Not sure why this would be useful.
-    if (get_rid_of_Rb_at_the_end && seqdata.flags. CDT_evap == 1)
 
-        %repump atoms from F=1 to F=2, and blow away these F=2 atoms with
-        %the probe
-        %open shutter
-        %probe
-        setDigitalChannel(calctime(curtime,-10),25,1); %0=closed, 1=open
-        %repump
-        setDigitalChannel(calctime(curtime,-10),5,1);
-        %open analog
-        %probe
-        setAnalogChannel(calctime(curtime,-10),36,0.7);
-        %repump (keep off since no TTL)
-
-        %set TTL
-        %probe
-        setDigitalChannel(calctime(curtime,-10),24,1);
-        %repump doesn't have one
-
-        %set detuning (Make sure that the laser is not coming from OP
-        %resonance... it will take ~75ms to reach the cycling transition)
-        setAnalogChannel(calctime(curtime,-10),34,6590-237);
-
-        %pulse beam with TTL 
-        %TTL probe pulse
-        DigitalPulse(calctime(curtime,0),24,5,0);
-        %repump pulse
-        setAnalogChannel(calctime(curtime,0),2,0.7);
-curtime = setAnalogChannel(calctime(curtime,5),2,0.0);
-
-        %close shutter
-        setDigitalChannel(calctime(curtime,0),25,0); %0=closed, 1=open
-curtime = setDigitalChannel(calctime(curtime,0),5,0);
-
-curtime=calctime(curtime,50);
-    end
 
     %% Kick the dipole trap
     %RHYS - An alterative way to measure trap frequency using a piezo mirror to

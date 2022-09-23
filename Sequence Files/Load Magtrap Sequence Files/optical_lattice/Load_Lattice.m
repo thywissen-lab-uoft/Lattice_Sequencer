@@ -678,6 +678,7 @@ end
 %% K uWave Spectroscopy
 
 if seqdata.flags.lattice_uWave_spec
+    
      dispLineStr('uWave_K_Spectroscopy',curtime);
    
     % Frequency
@@ -721,7 +722,7 @@ if seqdata.flags.lattice_uWave_spec
     
     % Do you sweep back after a variable hold time?
     spec_pars.doSweepBack = 1;
-    uwave_hold_time_list = [600 700 800 900 1000];
+    uwave_hold_time_list = [500];
     uwave_hold_time  = getScanParameter(uwave_hold_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'hold_time','ms');     
     spec_pars.HoldTime = uwave_hold_time;

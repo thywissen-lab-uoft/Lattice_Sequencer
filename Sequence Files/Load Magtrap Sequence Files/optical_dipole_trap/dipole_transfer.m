@@ -1476,60 +1476,6 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
 %curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars); % check rf_uwave_spectroscopy to see what struct spect_pars may contain
 end
 
-%% Tilt Evaporation
-%RHYS - An attempt to evaporate in the dipole trap by keeping a larger trap
-%depth (for higher density) and tilting atoms out with a gradient. Was
-%never better than the current evaporation method.
-if tilt_evaporation
-
-    %FB coil settings for spectroscopy
-    ramp.fesh_ramptime = 50;
-    ramp.fesh_ramp_delay = -0;
-    ramp.fesh_final = 10.49632;%before 2017-1-6 0.5*22.6; %22.6
-    addOutputParam('PSelect_FB',ramp.fesh_final)
-
-    qp_time_list = [1 1000 3000 6000 9000 12000];
-
-    %QP coil settings for spectroscopy
-    ramp.QP_ramptime = getScanParameter(qp_time_list,seqdata.scancycle,seqdata.randcyclelist,'qpTIME');%150 %This controls what fraction of the ramp is actually performed.
-    ramp.QP_ramp_delay = 60;
-    ramp.QP_final =  4.5*1.78; %12 works well for XDT power of 1, 24 for XDT power of 2 (although this is a lot of current). 
-    %These two parameters define the shape - the time constant, and
-    %how long it takes to get to max amplitude. 
-    ramp.QP_ramp_tau = 5000; %4000 from side
-    ramp.QP_ramptotaltime = 12000;
-    ramp.QP_ramp_type = 'Exponential';
-
-    ramp.shim_ramptime = ramp.QP_ramptime; %150 %This controls what fraction of the ramp is actually performed.
-    ramp.shim_ramp_delay = ramp.QP_ramp_delay;
-    ramp.xshim_final = ramp.QP_final / QP_value * (seqdata.params. plug_shims(1) - seqdata.params. shim_zero(1)) + seqdata.params. shim_zero(1); %5.5 from side
-    ramp.yshim_final = ramp.QP_final / QP_value * (seqdata.params. plug_shims(2) - seqdata.params. shim_zero(2)) + seqdata.params. shim_zero(2);
-    ramp.zshim_final = ramp.QP_final / QP_value * (seqdata.params. plug_shims(3) - seqdata.params. shim_zero(3)) + seqdata.params. shim_zero(3);
-    %These two parameters define the shape - the time constant, and
-    %how long it takes to get to max amplitude. 
-    ramp.shim_ramp_tau = ramp.QP_ramp_tau ; %4000 from side
-    ramp.shim_ramptotaltime = ramp.QP_ramptotaltime;
-    ramp.shim_ramp_type = ramp.QP_ramp_type;
-
-    ramp.settling_time = 150; %200
-
-curtime = ramp_bias_fields(calctime(curtime,0), ramp); %
-
-    %Wait some variable amount of time.
-curtime = calctime(curtime, 100);
-
-            clear('ramp')
-            % QP coil settings for spectroscopy
-            ramp.QP_ramptime = 150; %150
-            ramp.QP_ramp_delay = 60;
-            ramp.QP_final =  0*1.78; %7
-            ramp.settling_time = 150; %200
-
-curtime = ramp_bias_fields(calctime(curtime,0), ramp); %
-
-end
-
-
 
 %% Ramp XDT Up for Lattice Alignment
 %RHYS - This usually gets used. Can clean. Also contains options for

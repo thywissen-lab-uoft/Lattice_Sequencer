@@ -14,7 +14,7 @@ lattice_flags(timein);
 
 curtime = timein;
 lattices = {'xLattice','yLattice','zLattice'};
-seqdata.params. XDT_area_ratio = 1; %RHYS - Why is this defined here again?
+seqdata.params.XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 
 
 %% Lattice Flags    
@@ -28,8 +28,8 @@ do_lattice_ramp_1 = 1;            % Load the lattices
 
 do_lattice_mod = 0;               % Amplitude modulation spectroscopy             
 
-do_rotate_waveplate_2 = 0;        % Second waveplate rotation 95% 
-do_lattice_ramp_2 = 0;            % Secondary lattice ramp for fluorescence imaging
+do_rotate_waveplate_2 = 1;        % Second waveplate rotation 95% 
+do_lattice_ramp_2 = 1;            % Secondary lattice ramp for fluorescence imaging
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -45,7 +45,7 @@ seqdata.flags.do_conductivity = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.lattice_uWave_spec = 1;
+seqdata.flags.lattice_uWave_spec = 0;
 
 do_K_uwave_spectroscopy_old = 0;        % (3786) keep
 do_RF_spectroscopy = 0;                 % (3952,4970)
@@ -61,8 +61,9 @@ do_RF_spectroscopy = 0;                 % (3952,4970)
 seqdata.flags.lattice_do_optical_pumping = 0;                 % (1426) keep : optical pumping in lattice  
 seqdata.flags.do_plane_selection = 0;                 % Plane selection flag
 
+
 % Actual fluorsence image flag
-Raman_transfers = 0;                                % (4727)            keep : apply fluorescence imaging light
+Raman_transfers = 1;                                % (4727)            keep : apply fluorescence imaging light
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other Parameters
@@ -219,8 +220,8 @@ if do_lattice_ramp_1
             
             %Select the lattice direction to load
 %             direction = 'X';
-%             direction = 'Y';
-            direction = 'Z';
+            direction = 'Y';
+%             direction = 'Z';
             switch direction
                 case 'X'
                   latt_depth=...
@@ -622,7 +623,7 @@ end
 
 if seqdata.flags.do_plane_selection
     dispLineStr('Plane Selection',curtime);      
-    plane_selection(timein)
+    curtime = plane_selection(curtime);
 end
 
 %% Field Ramps BEFORE uWave/RF Spectroscopy
@@ -721,8 +722,8 @@ if seqdata.flags.lattice_uWave_spec
     spec_pars.GPIB = 30;                        % SRS GPIB Address    
     
     % Do you sweep back after a variable hold time?
-    spec_pars.doSweepBack = 1;
-    uwave_hold_time_list = [500];
+    spec_pars.doSweepBack = 0;
+    uwave_hold_time_list = [0];
     uwave_hold_time  = getScanParameter(uwave_hold_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'hold_time','ms');     
     spec_pars.HoldTime = uwave_hold_time;
@@ -836,7 +837,7 @@ end
 % Newport regulation boxes.
 
 if do_lattice_mod
-   [curtime] = lattice_am_spectroscopy(curtime);
+   curtime = lattice_am_spectroscopy(curtime);
 end
 
 
@@ -954,8 +955,8 @@ end
 %
 %  - 2022/07/04 - EIT Probe 2 gets 60% transfer w 100us pulse time
 %  - 2022/07/04 - EIT Prboe 1 gets 80% transfer w 100us pulse time
-%  - 2022/07/04 - F pump gets 
-%
+%  - 2022/09/26 - F pump gets 57% transfer back to F=9/2 w 0.1V and 1ms  
+
 % NOTES ON THE PHYSICS
 %
 % RAMAN :
@@ -978,25 +979,25 @@ if (Raman_transfers == 1)
     horizontal_plane_select_params.Fake_Pulse = 0;
     
     
-    Raman_On_Time_List =[1];[2000];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
+    Raman_On_Time_List =[2000];[2000];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
 
    % uWave or Raman Tranfers
    % 1: uwave, 2: Raman 3:Raman with field sweep
-    horizontal_plane_select_params.Microwave_Or_Raman = 1; 
+    horizontal_plane_select_params.Microwave_Or_Raman = 2; %Set to 2 in order for iXon triggers to happen
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%% EIT Settings %%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     % Do you want the EIT beams to pulse?
-    horizontal_plane_select_params.Use_EIT_Beams = 0;    
+    horizontal_plane_select_params.Use_EIT_Beams = 1;    
     
 %     horizontal_plane_select_params.Enable_FPump = 0;
 %     horizontal_plane_select_params.Enable_EITProbe = 0;
 %     horizontal_plane_select_params.Enable_Raman = 0 ;
     
     %%%% F Pump Power %%%
-    F_Pump_List = [0.6];[.7];[0.6];[1.1];1.1;[1.2];0.7;[0.8];[.9];
+    F_Pump_List = [0.6];[0.6];[.7];[0.6];[1.1];1.1;[1.2];0.7;[0.8];[.9];
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,...
         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V'); %1.4; (1.2 is typically max)
         
@@ -1023,7 +1024,7 @@ if (Raman_transfers == 1)
         getScanParameter(Raman_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Freq','kHz')/1000;
 
     % Raman Rigol Mode
-    horizontal_plane_select_params.Rigol_Mode = 'Sweep';  %'Sweep', 'Pulse', 'Modulate'
+    horizontal_plane_select_params.Rigol_Mode = 'Pulse';  %'Sweep', 'Pulse', 'Modulate'
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%% MICROWAVE SETTINGS %%%%%%%%%
@@ -1124,6 +1125,9 @@ curtime = do_horizontal_plane_selection(curtime, ...
     
     dispLineStr('do_horizontal_plane_selection execution finished at',curtime);
 end
+
+%% Extra Wait For funsies
+% curtime = calctime(curtime,50);
 
 %% High Field transfers + Imaging
 

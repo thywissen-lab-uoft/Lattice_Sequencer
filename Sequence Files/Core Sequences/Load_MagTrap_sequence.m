@@ -99,7 +99,7 @@ iXon_movie = 0; %Take a multiple frame movie?
 seqdata.flags.image_atomtype = 1;   % 0: Rb; 1:K; 2: K+Rb (double shutter)
 seqdata.flags.image_loc = 1;        % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.img_direction = 0;    % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
-seqdata.flags.do_stern_gerlach = 1; % 1: Do a gradient pulse at the beginning of ToF
+seqdata.flags.do_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of ToF
 seqdata.flags.iXon = 0;             % use iXon camera to take an absorption image (only vertical)
 seqdata.flags.do_F1_pulse = 0;      % repump Rb F=1 before/during imaging
 
@@ -110,7 +110,7 @@ seqdata.flags.High_Field_Imaging = 0;
 seqdata.flags.In_Trap_imaging = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging
-tof_list = [15];
+tof_list = [25];
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
@@ -181,13 +181,13 @@ seqdata.params.ODT_zeros = [-0.04,-0.04];
 seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
 seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 0;  % uWave Frequency sweep Rb 2-->1
 seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
-seqdata.flags.do_D1OP_before_evap= 0;           % D1 pump to purify
+seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
 seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
     
 seqdata.flags.kill_Rb_before_evap = 0;   % Remove Rb before optical evaporation
 seqdata.flags.kill_K7_before_evap = 0;   % Remove 7/2 K before optical evaporation (untested)
 
-seqdata.flags.kill_Rb_after_evap  = 1;   % Remove Rb after optical evaporation
+seqdata.flags.kill_Rb_after_evap  = 0;   % Remove Rb after optical evaporation
 seqdata.flags.kill_K7_after_evap  = 0;   % Remove 7/2 K after optical evaporation (untested)
 
 % Optical Evaporation

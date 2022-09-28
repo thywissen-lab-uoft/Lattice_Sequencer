@@ -8,7 +8,7 @@ end
     
     dispLineStr('Amplitude Modulation Spectroscopy',curtime)
     
-    lattice_ramp = 1; %if we need to ramp up the lattice for am spec
+    lattice_ramp = 0; %if we need to ramp up the lattice for am spec
     if lattice_ramp
         AM_spec_latt_depth = paramGet('AM_spec_depth');
         AM_spec_direction = paramGet('AM_direction');
@@ -41,6 +41,9 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
             addOutputParam('adwin_am_spec_Z',z_latt_voltage);
 
 curtime = calctime(curtime,50);  %extra wait time
+    else 
+        AM_spec_direction = 'X';
+        AM_spec_latt_depth = 100;
     end
         
     % Turn off ODTs before modulation (if not already off)
@@ -49,7 +52,9 @@ curtime = calctime(curtime,50);  %extra wait time
         AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50,50,-1);
         AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50,50,-1);
 curtime = calctime (curtime,50);
-    end 
+    end
+    
+    curtime=calctime(curtime,100);
  
     mod_freq = paramGet('AM_spec_freq');    
     mod_time = 3;%0.2; %Closer to 100ms to kill atoms, 3ms for band excitations only. 
@@ -130,7 +135,6 @@ curtime = calctime (curtime,50);
             % Shift for frequency dependence
             mod_amp = mod_amp+d_amp;
             
-            
             ch_on.AMPLITUDE = mod_amp;
             % Program the Rigols for modulation
             programRigol(addr_mod_xy,ch_off,ch_on);  % Turn off x mod, turn on y mod
@@ -165,6 +169,9 @@ curtime = calctime (curtime,50);
             % Program the Rigols for modulation
             programRigol(addr_mod_xy,ch_off,ch_off);  % Turn off xy mod
             programRigol(addr_z,[],ch_on);            % Turn on z mod
+        otherwise
+            disp('not modulating');
+            mod_amp = 0;
     end
     
     addOutputParam('mod_amp',mod_amp);
@@ -174,7 +181,7 @@ curtime = calctime (curtime,50);
     % Trigger and wait
     setDigitalChannel(calctime(curtime,0),'Lattice FM',1); 
     curtime = setDigitalChannel(calctime(curtime,mod_time),'Lattice FM',0);
-    ScopeTriggerPulse(calctime(curtime,0),'Lattice_Mod');
+    ScopeTriggerPulse(calctime(curtime,-.02),'Lattice_Mod');
 
 
 curtime = calctime(curtime,1);

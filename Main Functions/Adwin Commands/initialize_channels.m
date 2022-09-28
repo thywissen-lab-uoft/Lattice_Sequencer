@@ -77,7 +77,7 @@ seqdata.digchannels(35).name = 'D1 TTL';            %TTL for the EIT probe AOMs;
 seqdata.digchannels(36).name = 'EIT Shutter';       %Shutter for EIT probe beam paths
 seqdata.digchannels(37).name = 'Shim Multiplexer';  % 0 = MOT Shims (unipolar), 1: Science shim coils ???
 seqdata.digchannels(37).resetvalue = 0; 
-seqdata.digchannels(38).name = 'FPump Direct';      % 0 off, 1 on
+seqdata.digchannels(38).name = 'FPump Direct';      % 0 regulate, 1 don't regulate
 seqdata.digchannels(39).name = 'K uWave TTL';       % 0 off, 1 on
 seqdata.digchannels(40).name = 'K/Rb uWave Transfer'; %0 = K, 1 = Rb
 seqdata.digchannels(40).resetvalue = 0;
@@ -100,7 +100,7 @@ seqdata.digchannels(53).name = 'K uWave Source'; % Diverts SRS to uWave or RF (0
 seqdata.digchannels(54).name = 'F Pump TTL'; %Seperate TTL for Vertical / Long beams 
 seqdata.digchannels(55).name = 'Downwards D2 Shutter'; %Shutter for Rb and K repump in science cell. (0 = close, 1 = Open).
 seqdata.digchannels(56).name = 'ACync Master'; %Master pulse for ACync Board
-seqdata.digchannels(57).name = 'D1 OP TTL'; %0: off; 1: on;
+seqdata.digchannels(57).name = 'D1 OP TTL'; % AOM control 0: off; 1: on;
 seqdata.digchannels(58).name = 'Raman Shutter'; %0: off, 1: on
 seqdata.digchannels(59).name = 'Kill TTL'; %0:off, 1: on. 
 seqdata.digchannels(60).name = 'Raman TTL 1'; % Raman 1 (V) ZASWA(P2;1=on) + Rigol Trigger (CH1)
@@ -137,7 +137,7 @@ seqdata.digchannels(76).resetvalue = 0;
 seqdata.digchannels(77).name = 'ODT Rigol Trigger'; %unused
 seqdata.digchannels(78).name = 'DDS Rb Trap Trigger'; % To trigger the DDS that sets the offset lock
 seqdata.digchannels(79).name = 'PA TTL';     % For testing Vortex as PA laser (1: ON)
-seqdata.digchannels(80).name = 'PA Shutter'; % For testing Vortex as PA laser (1: ON)
+seqdata.digchannels(80).name = 'PA Shutter'; % For testing Vortex as PA laser (0: ON)
 seqdata.digchannels(81).name = 'Channel 81'; %unused
 seqdata.digchannels(82).name = 'Channel 82'; %unused
 seqdata.digchannels(83).name = 'Channel 83'; %unused

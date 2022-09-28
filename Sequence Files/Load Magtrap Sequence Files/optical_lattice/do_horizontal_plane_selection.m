@@ -163,8 +163,10 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
         
 field_shift_time = 20;                  % time to shift the field to the initial value for the sweep (and from the final value)
 field_shift_settle = 40;                % settling time after initial and final field shifts
-    
+ 
+
     if (opt.Microwave_Or_Raman == 1)
+%%   
 
         %Settings for plane selection
         spect_pars.freq = opt.Selection_Frequency;
@@ -347,6 +349,8 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
 %         DigitalPulse(calctime(curtime,-5),'D1 Shutter',F_Pump_Time+10,1);
 %         DigitalPulse(calctime(curtime,F_Pump_Time),'F Pump TTL',10,1);
 %         setAnalogChannel(calctime(curtime,F_Pump_Time),'F Pump',-1);
+
+%%
     elseif (opt.Microwave_Or_Raman == 2)
         % Program Rigol generator
         if strcmp(opt.Rigol_Mode, 'Sweep')
@@ -363,59 +367,65 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
                 1/opt.Modulation_Time, opt.Raman_AOM_Frequency, abs(opt.Selection_Range), opt.Raman_Power1, opt.Raman_Power2);            
         end
         
-        addVISACommand(1, str); 
-        if opt.Use_EIT_Beams
-            %Turn on EIT beams.
-            %Turn off F-Pump and probe AOMs before use. 
-            setAnalogChannel(calctime(curtime,-10),'F Pump',-1);
-            setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
-            
-            
-            setDigitalChannel(calctime(curtime,-10),'D1 TTL',0);
-            
-            %Open shutters just before beams turn on.
-            setDigitalChannel(calctime(curtime,-5),'EIT Shutter',1);
-            setDigitalChannel(calctime(curtime,-5),'D1 Shutter',1);
-            
-            %Set F-pump on and enable feedback, turn on probe AOM also.
-            setAnalogChannel(calctime(curtime,0),'F Pump',opt.F_Pump_Power);
-            setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
-            setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
-            setDigitalChannel(calctime(curtime,0),'D1 TTL',1);            
-        end
-        %Raman excitation beam AOM-shutter sequence.
-        DigitalPulse(calctime(curtime,-150),'Raman TTL 1',150,0);
-        DigitalPulse(calctime(curtime,-150),'Raman TTL 2',150,0);
-        DigitalPulse(calctime(curtime,-150),'Raman TTL 2a',150,0);
+        if opt.Microwave_Pulse_Length>0
 
-        DigitalPulse(calctime(curtime,-150),'Raman TTL 3',5200,0);
-        DigitalPulse(calctime(curtime,-150),'Raman TTL 3a',5200,0);
+            addVISACommand(1, str); 
+            if opt.Use_EIT_Beams
+                %Turn on EIT beams.
+                %Turn off F-Pump and probe AOMs before use. 
+                setAnalogChannel(calctime(curtime,-10),'F Pump',-1);
+                setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
+
+
+                setDigitalChannel(calctime(curtime,-10),'D1 TTL',0);
+
+                %Open shutters just before beams turn on.
+                setDigitalChannel(calctime(curtime,-5),'EIT Shutter',1);
+                setDigitalChannel(calctime(curtime,-5),'D1 Shutter',1);
+
+                %Set F-pump on and enable feedback, turn on probe AOM also.
+                setAnalogChannel(calctime(curtime,0),'F Pump',opt.F_Pump_Power);
+                setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
+                setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
+                setDigitalChannel(calctime(curtime,0),'D1 TTL',1);            
+            end
+            %Raman excitation beam AOM-shutter sequence.
+            DigitalPulse(calctime(curtime,-150),'Raman TTL 1',150,0);
+            DigitalPulse(calctime(curtime,-150),'Raman TTL 2',150,0);
+            DigitalPulse(calctime(curtime,-150),'Raman TTL 2a',150,0);
+
+            DigitalPulse(calctime(curtime,-150),'Raman TTL 3',5200,0);
+            DigitalPulse(calctime(curtime,-150),'Raman TTL 3a',5200,0);
+
+            DigitalPulse(calctime(curtime,-100),'Raman Shutter',...
+                opt.Microwave_Pulse_Length+3100,1);% CF 2021/03/30 new shutter
+
+            DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL 1',3050,0);
+            DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL 2',3050,0);
+            DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL 2a',3050,0);
+
+
+            if opt.Use_EIT_Beams
+                %Turn off EIT beams.
+                %Turn off AOMs.
+                setAnalogChannel(calctime(curtime,opt.Microwave_Pulse_Length),'F Pump',-1);
+                setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length),'F Pump TTL',1);
+                setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length),'FPump Direct',1);
+                setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length),'D1 TTL',0);
+                %Close shutters after AOMs off.
+                setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length+5),'EIT Shutter',0);
+                setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length+5),'D1 Shutter',0);            
+                %Turn AOMs back on for stability. 
+                setAnalogChannel(calctime(curtime,opt.Microwave_Pulse_Length+10),'F Pump',9.99);
+                setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length+10),'F Pump TTL',0);
+                setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length+10),'D1 TTL',1);
+    %             DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'D1 OP TTL',10,0);
+    curtime =   calctime(curtime,opt.Microwave_Pulse_Length);
+            end        
+        end
         
-        DigitalPulse(calctime(curtime,-100),'Raman Shutter',...
-            opt.Microwave_Pulse_Length+3100,1);% CF 2021/03/30 new shutter
-
-        DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL 1',3050,0);
-        DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL 2',3050,0);
-        DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'Raman TTL 2a',3050,0);
-
-
-        if opt.Use_EIT_Beams
-            %Turn off EIT beams.
-            %Turn off AOMs.
-            setAnalogChannel(calctime(curtime,opt.Microwave_Pulse_Length),'F Pump',-1);
-            setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length),'F Pump TTL',1);
-            setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length),'FPump Direct',1);
-            setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length),'D1 TTL',0);
-            %Close shutters after AOMs off.
-            setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length+5),'EIT Shutter',0);
-            setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length+5),'D1 Shutter',0);            
-            %Turn AOMs back on for stability. 
-            setAnalogChannel(calctime(curtime,opt.Microwave_Pulse_Length+10),'F Pump',9.99);
-            setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length+10),'F Pump TTL',0);
-            setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length+10),'D1 TTL',1);
-%             DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'D1 OP TTL',10,0);
-curtime =   calctime(curtime,opt.Microwave_Pulse_Length);
-        end
+        
+        
         if (opt.Fluorescence_Image == 1)
             iXon_FluorescenceImage(curtime,'ExposureOffsetTime',opt.Microwave_Pulse_Length,'ExposureDelay',0,'FrameTime',opt.Microwave_Pulse_Length/opt.Num_Frames,'NumFrames',opt.Num_Frames)
         end     
@@ -423,7 +433,7 @@ curtime =   calctime(curtime,opt.Microwave_Pulse_Length);
         
         
     elseif (opt.Microwave_Or_Raman == 3)  %doing Raman transfers with field sweeps
-        
+        %%
         spect_pars.pulse_length = opt.Microwave_Pulse_Length;
         
         
@@ -503,13 +513,14 @@ curtime =   calctime(curtime,opt.Microwave_Pulse_Length);
     
     
     end
-
+%%
    
 if opt.Double_Selection
     %Leave extra time for the large change in shim field
     curtime = calctime(curtime,opt.Shim_Rotation_Time+field_shift_settle);
 end
 
+%%
     
 %Remove unwanted atoms with resonant D2 light down through the microscope
 if opt.Resonant_Light_Removal
@@ -539,6 +550,8 @@ curtime = DigitalPulse(calctime(curtime,pulse_offset_time),9,kill_time,0);
     setDigitalChannel(calctime(curtime,2),'K Probe/OP shutter',0);
     
 end
+
+%%
 
 %Transfer atoms back into F=9/2 after removal of unselected planes
 if opt.Final_Transfer

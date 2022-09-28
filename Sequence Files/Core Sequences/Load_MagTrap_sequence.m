@@ -103,14 +103,14 @@ seqdata.flags.do_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of
 seqdata.flags.iXon = 0;             % use iXon camera to take an absorption image (only vertical)
 seqdata.flags.do_F1_pulse = 0;      % repump Rb F=1 before/during imaging
 
-seqdata.flags.High_Field_Imaging = 0;
+seqdata.flags.High_Field_Imaging = 1;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
 
 seqdata.flags.In_Trap_imaging = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging
-tof_list = [25];
+tof_list = [15];
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
@@ -187,7 +187,7 @@ seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
 seqdata.flags.kill_Rb_before_evap = 0;   % Remove Rb before optical evaporation
 seqdata.flags.kill_K7_before_evap = 0;   % Remove 7/2 K before optical evaporation (untested)
 
-seqdata.flags.kill_Rb_after_evap  = 0;   % Remove Rb after optical evaporation
+seqdata.flags.kill_Rb_after_evap  = 1;   % Remove Rb after optical evaporation
 seqdata.flags.kill_K7_after_evap  = 0;   % Remove 7/2 K after optical evaporation (untested)
 
 % Optical Evaporation

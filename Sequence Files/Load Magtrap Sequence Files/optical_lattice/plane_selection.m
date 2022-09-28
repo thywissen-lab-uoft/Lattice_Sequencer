@@ -159,7 +159,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     
     % SRS settings (may be overwritten later)
     uWave_opts=struct;
-    uWave_opts.Address=28;                        % K uWave ("SRS B");
+    uWave_opts.Address=30;                        % K uWave ("SRS B");
     uWave_opts.Frequency=1606.75+freq_offset*1E-3;% Frequency in MHz
     uWave_opts.Power= 15;%15                      % Power in dBm
     uWave_opts.Enable=1;                          % Enable SRS output    
@@ -322,7 +322,7 @@ ScopeTriggerPulse(curtime,'Plane Select');
 
 
         % Determine the range of the sweep
-        uWave_delta_freq_list= [130] /1000;
+        uWave_delta_freq_list= [40] /1000; 130;
         uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq','kHz');
         

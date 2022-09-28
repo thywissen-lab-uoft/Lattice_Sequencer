@@ -440,82 +440,7 @@ switch flags.image_atomtype
                 DigitalPulse(calctime(curtime,params.timings.time_diff_two_absorp_pulses...
                     +pulse_length+extra_wait_time),...
                     'K High Field Probe',pulse_length,0);
-                if flags.Image_Both97
-                    %%%%%%%%%%%%%%%%%%%%%%%%%%rf pulse
-%                     mF1=-9/2;
-%                     mF2=-7/2;    
-% 
-%                     disp(' Rabi Oscillations Manual');
-%                     clear('rabi');
-%                     rabi=struct;          
-% 
-%                     Boff = 0.11;
-%                     B = seqdata.params.HF_probe_fb+ Boff;
-%                     rf_list =[0]+...
-%                         (BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6;
-%                     rabi.freq = getScanParameter(rf_list,seqdata.scancycle,...
-%                         seqdata.randcyclelist,'rf_rabi_freq_HF','MHz');[0.0151];
-%                     power_list =  [8];
-%                     rabi.power = getScanParameter(power_list,...
-%                         seqdata.scancycle,seqdata.randcyclelist,'rf_rabi_power_HF','V');            
-%             %             rf_pulse_length_list = [0.5]/15;
-%                     rabi.wait_time = [0.01];
-% 
-%                     if (rabi.freq < 10)
-%                          error('Incorrect RF frequency calculation!! MATLAB IS STUPID! >:(')
-%                     end
-% 
-%                     rf_pulse_length_list = [0.01:0.01:0.1]; 
-% 
-%                     rabi.pulse_length = getScanParameter(rf_pulse_length_list,...
-%                         seqdata.scancycle,seqdata.randcyclelist,'rf_rabi_time_HF','ms');  % also is sweep length  0.5               
-% 
-%                     % Define the frequency
-%                     dTP=0.1;
-%                     DDS_ID=1; 
-%                     sweep=[DDS_ID 1E6*rabi.freq 1E6*rabi.freq rabi.pulse_length+2];
-% 
-% 
-%                     % Preset RF Power
-%                     setAnalogChannel(calctime(curtime,...
-%                         rabi.wait_time + pulse_length + extra_wait_time-5),'RF Gain',rabi.power);         
-%                     setDigitalChannel(calctime(curtime,rabi.wait_time + pulse_length + extra_wait_time-5),'RF/uWave Transfer',0);             
-% 
-%                     % Enable the ACync
-%                     do_ACync_rf = 0;
-%                     if do_ACync_rf
-%                         ACync_start_time = calctime(curtime,1);
-%                         ACync_end_time = calctime(curtime,1+rabi.pulse_length+35);
-%                         curtime=setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
-%                         setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);                
-%                     end         
-% 
-%                     % Apply the RF
-%                     if rabi.pulse_length>0                
-%                         % Trigger the DDS 1 ms ahead of time
-%                         DigitalPulse(calctime(curtime, ...
-%                             rabi.wait_time + pulse_length + extra_wait_time - 1),'DDS ADWIN Trigger',dTP,1);  
-%                         seqdata.numDDSsweeps=seqdata.numDDSsweeps+1;               
-%                         seqdata.DDSsweeps(seqdata.numDDSsweeps,:)=sweep;     
-% 
-%                         % Turn on RF
-%                         setDigitalChannel(calctime(...
-%                             curtime, rabi.wait_time + pulse_length + extra_wait_time),'RF TTL',1);      
-% 
-%                         % Advance by pulse time
-% %                         curtime=calctime(curtime,rabi.pulse_length);
-% 
-%                         % Turn off RF
-%                         setDigitalChannel(calctime(...
-%                             curtime,rabi.wait_time + ...
-%                             extra_wait_time + pulse_length + rabi.pulse_length),'RF TTL',0);      
-%                     end
-% 
-%                     % Lower the power
-%                     setAnalogChannel(calctime(curtime,...
-%                         rabi.wait_time + pulse_length + extra_wait_time + rabi.pulse_length + 1),'RF Gain',-10); 
-%                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%rf pulse
-                    
+                if flags.Image_Both97                   
 
                     mF1=-9/2;   % Lower energy spin state
                     mF2=-7/2;   % Higher energy spin state
@@ -523,17 +448,13 @@ switch flags.image_atomtype
                     % Get the center frequency
                     Boff = 0.11;
                     B = seqdata.params.HF_probe_fb+ Boff;
-                    rf_tof_shift_list = [57]; % 57 is typical
+                    rf_tof_shift_list = [-30:5:25]; % 57 is typical
                     rf_tof_shift = getScanParameter(rf_tof_shift_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_tof_shift','kHz');
                     
                     rf_tof_freq =  rf_tof_shift*1e-3 +... 
                         abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);   
-                    addOutputParam('rf_tof_freq',rf_tof_freq,'MHz');
-                    
-%                     rf_tof_freq = getScanParameter(rf_tof_freq_list,seqdata.scancycle,...
-%                         seqdata.randcyclelist,'rf_tof_freq','MHz'); 57;61;
-                    
+                    addOutputParam('rf_tof_freq',rf_tof_freq,'MHz');  
 
                     if (rf_tof_freq < 1)
                          error('Incorrect RF frequency calculation!! MATLAB IS STUPID! >:(')
@@ -713,10 +634,7 @@ switch flags.image_atomtype
                                     20*sech(2*beta*(t-0.5*sweep_time)/sweep_time),...
                                     sweep_time,sweep_time,beta);
 
-                                % Wait for Sweep
-    %                             curtime = calctime(curtime,rf_tof_pulse_length);
-
-                                % Turn off the uWave
+                                % Turn off the RF
                                 setDigitalChannel(calctime(curtime,...
                                     rf_wait_time + pulse_length + extra_wait_time+rf_tof_pulse_length),'RF TTL',0); 
 

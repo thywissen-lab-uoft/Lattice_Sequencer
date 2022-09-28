@@ -5550,9 +5550,11 @@ end
     
 %%
 
-setAnalogChannel(calctime(curtime,0),'F Pump',0.2)
-setDigitalChannel(calctime(curtime,0),'F Pump TTL',0)
-setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
+setAnalogChannel(calctime(curtime,0),'uWave FM/AM',1)
+% setDigitalChannel(calctime(curtime,0),'F Pump TTL',0)
+% setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
+
+% setDigitalChannel(calctime(curtime,0),'PA Shutter',1)
 
 timeout = curtime;
 % SelectScopeTrigger('lattice_on');

@@ -1,5 +1,5 @@
 function [curtime] = lattice_HF(timein)
-
+global seqdata
 curtime = timein;
  % Typical Experimental Sequence
     % - Ramp lattices up to 200Er
@@ -8,10 +8,10 @@ curtime = timein;
     
     dispLineStr('Ramping High Field in Lattice',curtime);
 
-    if do_plane_selection   
-        error('PLANE SELECTION AND HF IMAGING MAY MAKE THE FB COIL TOO HOT')
-    end
-    
+%     if do_plane_selection   
+%         error('PLANE SELECTION AND HF IMAGING MAY MAKE THE FB COIL TOO HOT')
+%     end
+%     
     ScopeTriggerPulse(curtime,'Lattice HF');
 
     time_in_HF_imaging = curtime;
@@ -28,7 +28,7 @@ curtime = timein;
     %%%%% High Field Flags %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
     % Lattice ramps
-    lattice_ramp_init               = 1;       % Initial lattice ramp
+    lattice_ramp_init               = 0;       % Initial lattice ramp
     lattice_ramp_2                  = 0;       % Secondary lattice ramp before spectroscopy
     lattice_ramp_3                  = 0;       % between raman and rf spectroscopy
 
@@ -79,10 +79,11 @@ curtime = timein;
         HF_latt_ramptime_list = [50];
         HF_latt_ramptime = getScanParameter(HF_latt_ramptime_list,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_latt_ramptime','ms');
-
         
-%New calibrations from Feb 18
- AnalogFuncTo(calctime(curtime,T0),'xLattice',...
+        T0 = 0; %pointless offset time
+        
+        %New calibrations from Feb 18
+        AnalogFuncTo(calctime(curtime,T0),'xLattice',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
             HF_latt_ramptime, HF_latt_ramptime, (HF_latt_depth-5.057)/0.898);   
         AnalogFuncTo(calctime(curtime,T0),'yLattice',...
@@ -232,8 +233,10 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
 curtime = calctime(curtime, Raman_on_time+(raman_buffer_time)*2);
 
     end   
+    
+    %% RF Sweep -9 to -7
 
-    % RF Sweep -9 to -7
+    % 
     if rf_97_flip_init
         clear('sweep');
         Boff = 0.11;
@@ -265,7 +268,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
         end        
 curtime = calctime(curtime,35);
     end
-
+%%
     % Lattice ramp
     if lattice_ramp_2
         HF_Raman_latt_depth_list = [50];
@@ -293,7 +296,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
     %%%%% Perform Spectroscopy Measurements %%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    
+    %%
     
     if pulse_raman
         %only useful in conjuction with raman spec code below. Otherwise
@@ -325,7 +328,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
         end
     end
     
-    
+    %%
     % Raman spectrscopy
     if do_raman_spectroscopy
 
@@ -484,7 +487,7 @@ curtime = calctime(curtime, Raman_on_time);
     
     
     end
-
+%%
     % Raman spectroscopy 2
     if raman_short_sweep
         %R2 beam settings
@@ -623,7 +626,7 @@ curtime = calctime(curtime, Raman_on_time);
 
          end
     end
-     
+     %%
     %Do rf transfer from -7/2 to -5/2
     if spin_flip_7_5
         clear('sweep');
@@ -671,7 +674,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
 curtime = calctime(curtime,50);
 
     end
-        
+   %%     
     % Feshbach field ramp Another
     if field_ramp_2
         clear('ramp');
@@ -716,7 +719,7 @@ curtime = calctime(curtime,HF_wait_time);
     seqdata.params.HF_probe_fb = HF_FeshValue_Spectroscopy;
 
     end         
-
+%%
     if lattice_ramp_3
         HF_spec_latt_depth_list = [300];
         HF_spec_latt_depth = getScanParameter(HF_spec_latt_depth_list,...
@@ -752,7 +755,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
 
 curtime = calctime(curtime,5);  %extra wait time
     end
-     
+     %%
    % RF Rabi Oscillations
     if rf_rabi_manual
         mF1=-7/2;
@@ -843,7 +846,7 @@ curtime = calctime(curtime,5);  %extra wait time
         end
        
     end  
-    
+    %%
     % RF Sweep Spectroscopy
     if do_rf_spectroscopy
         dispLineStr('RF Sweep Spectroscopy',curtime);
@@ -969,8 +972,8 @@ curtime = calctime(curtime,5);  %extra wait time
                 sweep_time = rf_pulse_length;
 
                 rf_srs_opts = struct;
-                rf_srs_opts.Address='192.168.1.121';                       % K uWave ("SRS B");
-                rf_srs_opts.EnableBNC=1;                         % Enable SRS output 
+                rf_srs_opts.Address = 30;'192.168.1.121';          % K uWave ("SRS B");
+                rf_srs_opts.EnableBNC = 1;                         % Enable SRS output 
                 rf_srs_opts.PowerBNC = rf_srs_power;                           
                 rf_srs_opts.Frequency = rf_freq_HF;
                 % Calculate the beta parameter
@@ -1070,7 +1073,7 @@ curtime = calctime(curtime,5);  %extra wait time
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%% Post Spectropscy Operations %%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+    %%
     if do_rf_post_spectroscopy
         dispLineStr('RF Sweep Spectroscopy',curtime);
         mF1=-7/2;   % Lower energy spin state
@@ -1282,7 +1285,7 @@ curtime = calctime(curtime,5);  %extra wait time
                 
         end  
     end
-               
+      %%         
     if do_raman_spectroscopy_post_rf
         reset_rigol=0;
         if reset_rigol 
@@ -1346,11 +1349,7 @@ curtime = calctime(curtime,5);  %extra wait time
 
             end 
 
-       end
-
-%             Pulse_Time_2_list = [0.5];
-%             Pulse_Time_2 = getScanParameter(Pulse_Time_2_list,...
-%             seqdata.scancycle,seqdata.randcyclelist,'Pulse_Time_2','ms');
+        end
         Raman_on_time_2 = Pulse_Time; %ms 
 
         %Raman spectroscopy AOM-shutter sequence
@@ -1358,17 +1357,11 @@ curtime = calctime(curtime,5);  %extra wait time
         raman_buffer_time = 10;
         shutter_buffer_time = 5;
 
-%         setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman TTL 1',0); %turn off R1 AOM
-%         setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman TTL 2',0); %turn off R2 AOM
-%         setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman TTL 3',0); %turn off R3 AOM
-%         setDigitalChannel(calctime(curtime,-shutter_buffer_time),'Raman Shutter',1); %turn on shutter
-        
         setDigitalChannel(calctime(curtime,0),'Raman TTL 2',1); %turn on R2
         setDigitalChannel(calctime(curtime,0),'Raman TTL 2a',1); %turn on R2
 
         setDigitalChannel(calctime(curtime,0),'Raman TTL 3',1); %turn on R3
         setDigitalChannel(calctime(curtime,0),'Raman TTL 3a',1); %turn on R3
-
         
         setDigitalChannel(calctime(curtime,Raman_on_time_2),'Raman TTL 2',0); %turn off R2
         setDigitalChannel(calctime(curtime,Raman_on_time_2),'Raman TTL 2a',0); %turn off R2
@@ -1397,7 +1390,7 @@ curtime=calctime(curtime,35);
            
            
     end   
-    
+    %%
     % RF shift register
     if shift_reg_at_HF
         dispLineStr('Shift register high field in Lattice',curtime);
@@ -1430,10 +1423,9 @@ curtime=calctime(curtime,35);
         for kk=1:n_sweeps
             disp([' Sweep Number ' num2str(kk) ]);
             curtime = rf_uwave_spectroscopy(calctime(curtime,20),3,sweep_pars);%3: sweeps, 4: pulse
-        end     
-
+        end   
     end
-        
+       %% 
     % RF Sweep flip 9 <-->7 then 7<-->5
     if spin_flip_9_7_5
         clear('sweep');
@@ -1498,6 +1490,7 @@ curtime = calctime(curtime,10);
 
 % seqdata.params.HF_probe_fb = seqdata.params.HF_fb;
 
+%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%% Prepare for Imaging %%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

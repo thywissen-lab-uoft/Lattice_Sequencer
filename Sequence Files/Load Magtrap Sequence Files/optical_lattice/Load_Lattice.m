@@ -26,10 +26,10 @@ seqdata.params.XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 do_rotate_waveplate_1 = 1;        % First waveplate rotation for 90%
 do_lattice_ramp_1 = 1;            % Load the lattices
 
-do_lattice_mod = 0;               % Amplitude modulation spectroscopy             
+seqdata.flags.do_lattice_am_spec = 0;               % Amplitude modulation spectroscopy             
 
-do_rotate_waveplate_2 = 1;        % Second waveplate rotation 95% 
-do_lattice_ramp_2 = 1;            % Secondary lattice ramp for fluorescence imaging
+do_rotate_waveplate_2 = 0;        % Second waveplate rotation 95% 
+do_lattice_ramp_2 = 0;            % Secondary lattice ramp for fluorescence imaging
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -63,7 +63,7 @@ seqdata.flags.do_plane_selection = 0;                 % Plane selection flag
 
 
 % Actual fluorsence image flag
-Raman_transfers = 1;                                % (4727)            keep : apply fluorescence imaging light
+seqdata.flags.Raman_transfers = 0;                                % (4727)            keep : apply fluorescence imaging light
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other Parameters
@@ -220,8 +220,8 @@ if do_lattice_ramp_1
             
             %Select the lattice direction to load
 %             direction = 'X';
-            direction = 'Y';
-%             direction = 'Z';
+%             direction = 'Y';
+            direction = 'Z';
             switch direction
                 case 'X'
                   latt_depth=...
@@ -836,7 +836,7 @@ end
 % done by programming a Rigol generator that goes into the sum input of the
 % Newport regulation boxes.
 
-if do_lattice_mod
+if seqdata.flags.do_lattice_am_spec
    curtime = lattice_am_spectroscopy(curtime);
 end
 
@@ -861,7 +861,7 @@ if do_lattice_ramp_2
     ScopeTriggerPulse(curtime,'lattice_ramp_2');
 
     % 
-    imaging_depth_list = [600]; 
+    imaging_depth_list = [675]; 
     imaging_depth = getScanParameter(imaging_depth_list,seqdata.scancycle,...
         seqdata.randcyclelist,'FI_latt_depth','Er'); 
 
@@ -969,7 +969,7 @@ end
 % ideal parmeters relate the (1) magnetic field (2) F-pump power (3) F-pump
 % alignment (4) Single photon detuning
 
-if (Raman_transfers == 1)
+if (seqdata.flags.Raman_transfers == 1)
     dispLineStr('Raman Transfer',curtime);
 
     %During imaging, generate about a 4.4G horizontal field. Both shims get
@@ -997,7 +997,7 @@ if (Raman_transfers == 1)
 %     horizontal_plane_select_params.Enable_Raman = 0 ;
     
     %%%% F Pump Power %%%
-    F_Pump_List = [0.6];[0.6];[.7];[0.6];[1.1];1.1;[1.2];0.7;[0.8];[.9];
+    F_Pump_List = [.6];[0.6];
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,...
         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V'); %1.4; (1.2 is typically max)
         
@@ -1127,7 +1127,7 @@ curtime = do_horizontal_plane_selection(curtime, ...
 end
 
 %% Extra Wait For funsies
-% curtime = calctime(curtime,50);
+curtime = calctime(curtime,25);
 
 %% High Field transfers + Imaging
 

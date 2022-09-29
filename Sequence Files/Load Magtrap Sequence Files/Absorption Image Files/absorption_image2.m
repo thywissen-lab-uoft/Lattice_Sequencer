@@ -447,8 +447,8 @@ switch flags.image_atomtype
 
                     % Get the center frequency
                     Boff = 0.11;
-                    B = seqdata.params.HF_probe_fb+ Boff;
-                    rf_tof_shift_list = [80:5:110]; % 57 is typical
+                    B = seqdata.params.HF_probe_fb + Boff;
+                    rf_tof_shift_list = [57]; % 57 is typical
                     rf_tof_shift = getScanParameter(rf_tof_shift_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_tof_shift','kHz');
                     
@@ -461,7 +461,7 @@ switch flags.image_atomtype
                     end
 
                     % RF Frequency Sweep
-                    rf_tof_delta_freq_list = [12]*1e-3;12;
+                    rf_tof_delta_freq_list = 12e-3;[12]*1e-3;12;
                     rf_tof_delta_freq = getScanParameter(rf_tof_delta_freq_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_tof_delta_freq','MHz');
 %                     delta_freq= 0.05; %0.02            
@@ -586,7 +586,7 @@ switch flags.image_atomtype
                                 sweep_time = rf_tof_pulse_length;
 
                                 rf_srs_opts = struct;
-                                rf_srs_opts.Address=28;                       % K uWave ("SRS B");
+                                rf_srs_opts.Address=30;                       
                                 rf_srs_opts.EnableBNC=1;                         % Enable SRS output 
                                 rf_srs_opts.PowerBNC = rf_tof_srs_power;                           
                                 rf_srs_opts.Frequency = rf_tof_freq;
@@ -605,6 +605,10 @@ switch flags.image_atomtype
 
                                 % Set RF Source to SRS
                                 setDigitalChannel(calctime(curtime,-5),'RF Source',1);
+                                
+                                % Set RF Source to SRS
+                                setDigitalChannel(calctime(curtime,-5),'SRS Source',1);
+                                
 
                                 % Set SRS Direction to RF
                                 setDigitalChannel(calctime(curtime,-5),'K uWave Source',0);

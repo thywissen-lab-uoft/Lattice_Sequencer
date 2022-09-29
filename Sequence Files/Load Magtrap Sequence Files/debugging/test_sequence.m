@@ -5549,8 +5549,24 @@ end
 % setAnalogChannel(calctime(curtime,-20),'uWave FM/AM',-1);    
     
 %%
+setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',0); 
 
 setAnalogChannel(calctime(curtime,0),'uWave FM/AM',1)
+% Set RF Source to SRS
+setDigitalChannel(calctime(curtime,0),'RF Source',1);
+
+% Set SRS Direction to RF
+setDigitalChannel(calctime(curtime,0),'K uWave Source',0);
+
+% Set RF power to low
+setAnalogChannel(calctime(curtime,0),'RF Gain',-8);
+
+% Set initial modulation
+setAnalogChannel(calctime(curtime,0),'uWave FM/AM',1);
+% Turn on the RF
+setDigitalChannel(calctime(curtime,0),'RF TTL',1);    
+
+    
 % setDigitalChannel(calctime(curtime,0),'F Pump TTL',0)
 % setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
 

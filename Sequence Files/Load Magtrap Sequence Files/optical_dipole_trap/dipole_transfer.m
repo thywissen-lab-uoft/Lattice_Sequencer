@@ -20,7 +20,7 @@ ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 dipole_holdtime_before_evap = 0;    % not a flag but a value
 ramp_Feshbach_B_before_CDT_evap = 0;
 
-Evap_End_Power_List = [0.07];0.07;[0.08];
+Evap_End_Power_List = [0.065];0.07;[0.08];
 
 % Ending optical evaporation
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...

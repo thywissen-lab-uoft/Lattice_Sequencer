@@ -20,10 +20,8 @@ curtime = timein;
     Boff = 0.11;
     B = HF_FeshValue_Initial+ Boff+ 2.35*zshim;       
   
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%% High Field Flags %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%      
-    
+    %% Flags
+
     % Initialization of Field And Lattice
     lattice_ramp_1                  = 0;       % Initial lattice ramp    
     field_ramp_init                 = 1;       % Ramp field away from initial  
@@ -48,14 +46,14 @@ curtime = timein;
     
     % More RF Stuff (?)
     rf_rabi_manual                  = 0;
-    do_rf_spectroscopy              = 0; 
+    do_rf_spectroscopy              = 1; 
     do_rf_post_spectroscopy         = 0; 
         
     do_raman_spectroscopy_post_rf   = 0;        % Raman Spectroscopy
     
     % Feshbach field ramps
     field_ramp_img                  = 1;       % Ramp field for imaging
-     
+    
     % Other RF Manipulations
     shift_reg_at_HF                 = 0;
     spin_flip_9_7_5                 = 0;
@@ -858,7 +856,7 @@ curtime = calctime(curtime,5);  %extra wait time
         Boff = 0.11;
         B = HF_FeshValue_Initial +Boff + 2.35*zshim; 
         
-        rf_shift_list = [-9:1:1];       
+        rf_shift_list = [-46:2:-30  -16:2:2];       
         rf_shift = getScanParameter(rf_shift_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_freq_HF_shift','kHz');
          
@@ -973,7 +971,7 @@ curtime = calctime(curtime,5);  %extra wait time
                 sweep_time = rf_pulse_length;
 
                 rf_srs_opts = struct;
-                rf_srs_opts.Address = 30;'192.168.1.121';          % K uWave ("SRS B");
+                rf_srs_opts.Address = 28;          
                 rf_srs_opts.EnableBNC = 1;                         % Enable SRS output 
                 rf_srs_opts.PowerBNC = rf_srs_power;                           
                 rf_srs_opts.Frequency = rf_freq_HF;
@@ -989,6 +987,9 @@ curtime = calctime(curtime,5);  %extra wait time
                 % Enable uwave frequency sweep
                 rf_srs_opts.EnableSweep=1;                    
                 rf_srs_opts.SweepRange=abs(delta_freq);     
+                
+                % Set SRS Source post spec
+                setDigitalChannel(calctime(curtime,-5),'SRS Source post spec',0);
                 
                 % Set SRS Source to the new one
                 setDigitalChannel(calctime(curtime,-5),'SRS Source',0);
@@ -1523,7 +1524,6 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 
     seqdata.params.HF_probe_fb = HF_FeshValue_Final;
 end
-
 
 %% Ending
 

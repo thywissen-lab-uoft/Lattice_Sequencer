@@ -103,7 +103,7 @@ seqdata.flags.do_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of
 seqdata.flags.iXon = 0;             % use iXon camera to take an absorption image (only vertical)
 seqdata.flags.do_F1_pulse = 0;      % repump Rb F=1 before/during imaging
 
-seqdata.flags.High_Field_Imaging = 1;
+seqdata.flags.High_Field_Imaging =1;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
 
@@ -247,8 +247,72 @@ if seqdata.flags.image_loc == 0 %MOT cell imaging
     seqdata.flags.pulse_lattice_for_alignment = 0;
 end
 
+%% PA Laser Lock Detuning
 
-%% Set Objective Piezo Voltage
+dispLineStr('Updating PA Request',curtime);
+
+% K D2 line
+PA_resonance = 391016.296050;
+PA_resonance = 391016.821;
+
+PA_detuning_list = [-54:.05:-52];
+PA_detuning_list=round(PA_detuning_list,6); % round to nearest kHz
+
+
+% Scan randomly
+% PA_detuning = getScanParameter(PA_detuning_list, ...
+%     seqdata.scancycle, seqdata.randcyclelist, 'PA_detuning','GHz');
+
+% PA_detuning = paramGet('detuning');
+
+PA_detuning = -49.6;
+
+% Scan in order
+% PA_detuning = getScanParameter(PA_detuning_list, ...
+% seqdata.scancycle, 1:length(PA_detuning_list), 'PA_detuning','GHz');%5
+% 
+
+PA_freq = PA_resonance + PA_detuning;
+PA_freq = round(PA_freq,6); % round to nearest kHz
+
+addOutputParam('PA_freq',PA_freq,'GHz');
+
+lockSetFileName ='Y:\wavemeter_amar\lock_freq.txt';
+
+isFreqUpdated = 0;
+
+
+updateTime=0;
+disp(['writing PA freq to file ' num2str(PA_freq,12)]);
+tic;
+while ~isFreqUpdated && updateTime<2    
+    try
+        [fileID,errmsg] = fopen(lockSetFileName,'w');
+        if ~isequal(fileID,-1)
+           fprintf(fileID,'%s',num2str(PA_freq,12)); 
+        end
+        fclose(fileID);
+        
+        text = fileread(lockSetFileName);
+        
+        textNum = str2num(text);
+        
+        disp(textNum);
+        
+        if isequal(textNum,PA_freq)
+            isFreqUpdated = 1;
+            disp('Written frequency is the same as the text file');
+        end
+
+        updateTime = toc;
+    end
+end
+if updateTime>=2
+   warning('may have not updated the frequency'); 
+end
+disp('--------------------');
+
+%% Set Objective Piezo VoltageS
 % If the cloud moves up, the voltage must increase to refocus
 %  (as the experiment warms up, selected plane tends to move up a bit)
 

@@ -100,7 +100,7 @@ else
     %convert time into the number of update cycles
     endtime = calctime(0,tt);
 
-    if (channel==43 || channel==44 || channel==45 || channel==47  || channel==52 || channel==28 || channel==6 || channel== 39) %lattices and Raman VVA
+    if (channel==43 || channel==44 || channel==45 || channel==47  || channel==52 || channel==28 || channel==6 || channel== 39 || channel==33) %lattices and Raman VVA
         % ramp lattice channels with smaller steps to avoid heating (put 30kHz
         % filter on AM input of ALPS)
         if endtime <= 1000;

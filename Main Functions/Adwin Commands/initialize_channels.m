@@ -524,7 +524,7 @@ end
     seqdata.analogchannels(32).voltagefunc{3} = @(a)((a-151.64)/8.2101);
     
     % channel 33 (unused)
-    seqdata.analogchannels(33).name = 'Channel 33';
+    seqdata.analogchannels(33).name = 'Vortex Current Mod';
     seqdata.analogchannels(33).minvoltage = -10;
     seqdata.analogchannels(33).maxvoltage = 10;
     seqdata.analogchannels(33).defaultvoltagefunc = 2; 

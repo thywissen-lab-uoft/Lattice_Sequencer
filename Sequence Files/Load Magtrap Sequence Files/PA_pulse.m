@@ -5,37 +5,63 @@ function [curtime] = PA_pulse(timein)
 global seqdata;
 curtime = timein;
 
+if timein ==0
+   curtime = calctime(curtime,100); 
+   setAnalogChannel(curtime,'Unused',0);
 
-% Shutter 1 is usually closed (light not allowed)
-setDigitalChannel(0,'Vortex Shutter 1',0);
+end
 
-% Shutter 2 is nominally open (light allowed)
-setDigitalChannel(0,'Vortex Shutter 2',1);
 
-tD1 = -2.75;
-tD2 = -2.85;
-% 
-% tD1=0;
-% tD2=0;
+setDigitalChannel(0,'PA Shutter',1); % Shutter is closed
 
-pulse_time_list = [0];
+setDigitalChannel(0,'PA TTL',1); % AOM is on
+
+
+setAnalogChannel(0,'Vortex Current Mod',0);
+seqdata.analogchannels(33).name = 'Vortex Current Mod';
+tD = -3.5;
+
+pulse_time_list = [0:0.05:0.5 0.6 0.7 0.8 0.9 1];1;
 pulse_time = getScanParameter(pulse_time_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'pulse_time');
+    seqdata.scancycle,seqdata.randcyclelist,'pulse_time','ms');
+
+% pulse_time = paramGet('pulse_time');
 
 if pulse_time>0
 
-    % Let light through with Shutter 1
-    setDigitalChannel(calctime(curtime,tD1),'Vortex Shutter 1',1);
-
-    % Stop light with shutter 2
-    setDigitalChannel(calctime(curtime,tD2+pulse_time),'Vortex Shutter 2',0);
-
-    % Reset 1000 ms later
-    setDigitalChannel(calctime(curtime,1000),'Vortex Shutter 1',0);
-    setDigitalChannel(calctime(curtime,1020),'Vortex Shutter 2',1);
+    % Turn OFF AOM
+    setDigitalChannel(calctime(curtime,tD-1),'PA TTL',0);
     
-    curtime = calctime(curtime,pulse_time);
+    % Open the shutter
+    setDigitalChannel(calctime(curtime,tD),'PA Shutter',0);
+
+    % Turn on AOM
+    setDigitalChannel(calctime(curtime,0),'PA TTL',1);
+    
+%     mod_val = 2.5;
+%     AnalogFuncTo(calctime(curtime,0),'Vortex Current Mod',...
+%         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), pulse_time, pulse_time, mod_val);
+        
+
+    % Advance Time
+    curtime=calctime(curtime,pulse_time);
+    
+    % Turn off AOM
+    setDigitalChannel(calctime(curtime,0),'PA TTL',0);    
+        
+    % Reset Current Modulation
+%     setAnalogChannel(calctime(curtime,0),'Vortex Current Mod',0);    
+    
+    % Close Shutter
+    setDigitalChannel(calctime(curtime,5),'PA Shutter',1);
+
+    % Turn on AOM
+    setDigitalChannel(calctime(curtime,9),'PA TTL',1);
+
 end
+
+% Wait 20 ms
+curtime = calctime(curtime,20);
 
 end
 

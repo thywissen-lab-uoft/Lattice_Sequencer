@@ -40,22 +40,35 @@ ptypes = struct;         % Structure which contains boolean of random for each p
 % ptypes.Raman_H1_Voltage = 'random';
 %% Lattice High Field
 
-params.AM_spec_depth                   = [100];
-punits.AM_spec_depth = 'Er';
-ptypes.AM_spec_depth = 'ordered';
-% % 
-params.AM_direction                   = ['Y'];
-punits.AM_direction = '';
-ptypes.AM_direction = 'ordered';
+params.detuning = [-41.9 -41.8 -41.6];
+punits.detuning = 'GHz';
+ptypes.detuning = 'ordered';
+
+% params.rf_shift = [repelem(-46:2:-26,3) -14:2:0];
+params.rf_shift = [-33];
+punits.rf_shift = 'kHz';
+ptypes.rf_shift = 'random';
+
+params.pulse_time = [repelem(0:0.05:1,3)];
+punits.pulse_time = 'ms';
+ptypes.pulse_time = 'random';
+
+% params.AM_spec_depth                   = [100];
+% punits.AM_spec_depth = 'Er';
+% ptypes.AM_spec_depth = 'ordered';
+% % % 
+% params.AM_direction                   = ['Y'];
+% punits.AM_direction = '';
+% ptypes.AM_direction = 'ordered';
 % % % 
 % % % % %    300 = [260:5:340 295:1:325]*1e3; 48 points
 % % % % %     200 = [200:5:300]*1e3; 57 points
 % % % % %     100 = [100:10:180 140:1:165]*1e3; 43 points
 % % % % %     60 = [70:5:150 110:1:145]*1e3; 53 points
 % % % % %     250 [220:5:320 260:1:285]*1e3
-params.AM_spec_freq                   = [80 90]*1e3;
-punits.AM_spec_freq = 'Hz';
-ptypes.AM_spec_freq = 'random';
+% params.AM_spec_freq                   = [80 90]*1e3;
+% punits.AM_spec_freq = 'Hz';
+% ptypes.AM_spec_freq = 'random';
 
 
 % params.Raman_freq                   = [10:2.5:40];

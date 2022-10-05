@@ -150,6 +150,7 @@ disp('Converting analog voltages to b16 ...');
 
 % Convert analog voltage commands [-10V, 10V] into [0 2^16] for adwin write
 analogAdwin = seqdata.analogadwinlist;
+
 analogAdwin(:,3) = (seqdata.analogadwinlist(:,3)+10)/20*2^(16);
 
 

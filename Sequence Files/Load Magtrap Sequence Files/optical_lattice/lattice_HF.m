@@ -58,6 +58,8 @@ curtime = timein;
     shift_reg_at_HF                 = 0;
     spin_flip_9_7_5                 = 0;
     spin_flip_9_7_post_spectroscopy = 0;
+    
+    doPA_pulse = 1;
 
 %% Lattice ramp Init
 % Ramp the lattices to their initial depth
@@ -845,6 +847,12 @@ curtime = calctime(curtime,5);  %extra wait time
        
     end  
     
+%% PA Pulse
+
+if doPA_pulse
+   curtime = PA_pulse(curtime); 
+end
+    
 %% RF Sweep Spectroscopy
     
     if do_rf_spectroscopy
@@ -855,10 +863,14 @@ curtime = calctime(curtime,5);  %extra wait time
         % Get the center frequency
         Boff = 0.11;
         B = HF_FeshValue_Initial +Boff + 2.35*zshim; 
-        
-        rf_shift_list = [-46:2:-30  -16:2:2];       
-        rf_shift = getScanParameter(rf_shift_list,seqdata.scancycle,...
-                        seqdata.randcyclelist,'rf_freq_HF_shift','kHz');
+%         
+%         rf_shift_list = [-50:2:-28 -16:2:2];       
+         rf_shift_list = [-33];   
+         rf_shift = getScanParameter(rf_shift_list,seqdata.scancycle,...
+                         seqdata.randcyclelist,'rf_freq_HF_shift','kHz');
+                    
+%         rf_shift = paramGet('rf_shift');
+    
          
 %             rf_shift = paramGet('rf_freq_HF_shift');
 %         rf_shift = 10;
@@ -1523,6 +1535,43 @@ if field_ramp_img
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
 
     seqdata.params.HF_probe_fb = HF_FeshValue_Final;
+    
+     rampGradient  = 0;
+     if rampGradient
+        % Current / Field gradient to ramp to (unsure of units)
+        QP_Coil_15 = 1;
+
+        % Make sure QP coils are off
+        setAnalogChannel(curtime,'Coil 15',0);
+        setAnalogChannel(curtime,'Coil 16',0);
+        setDigitalChannel(curtime, 'Coil 16 TTL', 1);
+
+        curtime = calctime(curtime,10);
+        
+        % Set switches to enable current through coil 15
+        setDigitalChannel(curtime,'Kitten Relay',1);
+        setDigitalChannel(curtime,'15/16 Switch',0);
+        curtime = calctime(curtime,10);
+
+        % Allow current to pass through the kitten
+        setAnalogChannel(curtime,'kitten',6.52,1);
+        
+        % voltage FF on delta supply    
+        QP_FF = 23*(QP_Coil_15/30); 
+            
+        % Ramp up transport supply voltage
+        ramp_time = 50;
+        AnalogFuncTo(curtime,'Transport FF',@(t,tt,y1,y2) ...
+            (ramp_linear(t,tt,y1,y2)),QP_FF,ramp_time,QP_FF);       
+        
+        AnalogFuncTo(curtime,'Coil 15',@(t,tt,y1,y2) ...
+            (ramp_linear(t,tt,y1,y2)),QP_Coil_15,ramp_time,QP_Coil_15);
+        
+        curtime = calctime(curtime,50);
+
+         
+     end
+    
 end
 
 %% Ending

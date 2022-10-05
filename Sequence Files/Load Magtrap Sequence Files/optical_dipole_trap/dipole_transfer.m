@@ -1633,8 +1633,9 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 end
     
-%% Ramp FB field up to 200G for High Field Imaging after ODT
-    
+%% Dipole Trap High Field Operations 1
+% Perform operations in the dipole trap at high magnetic field.
+
 if (seqdata.flags.High_Field_Imaging && ~seqdata.flags.load_lattice )         
     curtime = dipole_high_field_a(curtime);  
 end

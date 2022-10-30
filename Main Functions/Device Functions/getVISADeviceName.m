@@ -19,17 +19,21 @@ devices = {'USB0::0x1AB1::0x0641::DG4E180900374::INSTR', ...
            'USB0::0x1AB1::0x0641::DG4E221100173::INSTR', ...
            'USB0::0x1AB1::0x0641::DG4E221100169::INSTR', ...
            'USB0::0x1AB1::0x0641::DG4E225202524::INSTR', ...
+           'USB0::0x1AB1::0x0641::DG4E224101686::INSTR', ...
            'getVISADeviceName::AddNewDevice'};       
       
        
-% devices(1) DG4E180900374 is the Raman 1 (V) and Raman 2 (H1)
-% devices(2) DG4E160900481 is the Rigol for conductivity modulation
-% devices(5) DG4E221100174 is the Rigol for AM spec and Z lattice regulation
-% devices(6) DG4E221600305 is for two high field imaging beams
-% devices(7) DG4E221100173 is for D1 lock and Raman 3 (H2)
-% devices(8) DG4E221100169 is for upwards K kill beam
-% devices(9) DG4E225202524 is for X & Y lattice modulation(new, 02/02/2022)
-      
+% devices(01) DG4E180900374 is the Raman 1 (V) and Raman 2 (H1)
+% devices(02) DG4E160900481 is the Rigol for conductivity modulation
+% devices(03) 
+% devices(04) 
+% devices(05) DG4E221100174 is the Rigol for AM spec and Z lattice regulation
+% devices(06) DG4E221600305 is for two high field imaging beams
+% devices(07) DG4E221100173 is for D1 lock and Raman 3 (H2)
+% devices(08) DG4E221100169 is for upwards K kill beam
+% devices(09) DG4E225202524 is for X & Y lattice modulation(new, 02/02/2022)
+% devices(10) DG4E224101686 is DMD/PA (10/26/2022)
+
 out = '';
 
 if num > length(devices);

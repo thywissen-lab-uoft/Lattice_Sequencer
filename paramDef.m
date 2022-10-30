@@ -40,18 +40,19 @@ ptypes = struct;         % Structure which contains boolean of random for each p
 % ptypes.Raman_H1_Voltage = 'random';
 %% Lattice High Field
 
-params.detuning = [-41.9 -41.8 -41.6];
+params.detuning = [-49.6];
 punits.detuning = 'GHz';
 ptypes.detuning = 'ordered';
 
 % params.rf_shift = [repelem(-46:2:-26,3) -14:2:0];
-params.rf_shift = [-33];
+params.rf_shift = [-35];
 punits.rf_shift = 'kHz';
 ptypes.rf_shift = 'random';
 
-params.pulse_time = [repelem(0:0.05:1,3)];
-punits.pulse_time = 'ms';
-ptypes.pulse_time = 'random';
+
+% params.pulse_time = [1];
+% punits.pulse_time = 'ms';
+% ptypes.pulse_time = 'random';
 
 % params.AM_spec_depth                   = [100];
 % punits.AM_spec_depth = 'Er';

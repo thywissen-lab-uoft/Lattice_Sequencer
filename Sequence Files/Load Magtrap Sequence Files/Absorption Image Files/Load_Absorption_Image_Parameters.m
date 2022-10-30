@@ -71,9 +71,10 @@ function params = Load_Absorption_Image_Parameters()
     
     %% HF imaging
 %     % Potassium -HF -Xcam : settting the DP HF imaging AOM freq
-    kHFdet_shift_list = [-8];%-1
+%     kHFdet_shift_list = [-8];%195G
+    kHFdet_shift_list = [-9];%207G (FB 204G + zshim 3G)
     kHFdet_shift = getScanParameter(kHFdet_shift_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'HF_kdet_shift');
+        seqdata.randcyclelist,'HF_kdet_shift','MHz');
 
 
 %     params.detunings.K.X.negative9.HF.normal = -7 -0.4;
@@ -122,14 +123,14 @@ function params = Load_Absorption_Image_Parameters()
     SG_QP_val = getScanParameter(SG_QP_val_list,seqdata.scancycle,seqdata.randcyclelist,'SG_QP_val');
     
 % %    mF Stern Gerlach For |9,-9> vs |9,-7> low field (15ms TOF K)
-%     params.SG.SG_QP_val = 7.5*1.78;
-%     params.SG.SG_QP_pulsetime = 5;
-%     params.SG.SG_QP_ramptime =2;
+    params.SG.SG_QP_val = 7.5*1.78;
+    params.SG.SG_QP_pulsetime = 5;
+    params.SG.SG_QP_ramptime =2;
  
 % %     % F Stern Gerlach : |9,-9> vs |7,-7> low field (~20G) (15ms TOF)
-    params.SG.SG_QP_val = 1.78*5;
-    params.SG.SG_QP_pulsetime = 2; 
-    params.SG.SG_QP_ramptime =1; 
+%     params.SG.SG_QP_val = 1.78*5;
+%     params.SG.SG_QP_pulsetime = 2; 
+%     params.SG.SG_QP_ramptime =1; 
     
     % Stern Gerlach feed forward
     params.SG.SG_QP_FF = 23*(params.SG.SG_QP_val/30); % voltage FF on delta supplySS
@@ -140,7 +141,7 @@ function params = Load_Absorption_Image_Parameters()
     %% Timing parameters
     params.timings.tof = seqdata.params.tof;
     params.timings.pulse_length = 0.3;
-    params.timings.time_diff_two_absorp_pulses = 1;0.05; % time delay for the 2nd light pulse
+    params.timings.time_diff_two_absorp_pulses = 1;1;0.05; % time delay for the 2nd light pulse
     params.timings.K_OP_time = 0.3;
     params.timings.k_detuning_shift_time = 0.5;
     params.timings.rb_detuning_shift_time.MOT = 4;

@@ -4728,26 +4728,26 @@ end
 % setAnalogChannel(calctime(curtime,0),59,0); %0.11
 
 %% ODT test
-% curtime = calctime(curtime,100);
-% setDigitalChannel(calctime(curtime,-10),'XDT Direct Control',0);
-% setDigitalChannel(calctime(curtime,-10),'XDT TTL',0);
-% setAnalogChannel(calctime(curtime,0),'ZeroVolts',0); 
-% % % % % % Choose the power limits
-% ODT1powerLOW=-0.04;
-% ODT1powerHIGH = 0.07;
-% % % % 
-% ODT2powerLOW=-0.04;
-% ODT2powerHIGH = 0.07;
-% % % % 
-% % % % % % setAnalogChannel(curtime,'dipoleTrap1',-0.025); 
-% AnalogFunc(calctime(curtime,0),'dipoleTrap1',...
-%     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),100,100,ODT1powerLOW,ODT1powerHIGH);
-%     
-% AnalogFunc(calctime(curtime,0),'dipoleTrap2',...
-%     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),100,100,ODT2powerLOW,ODT2powerHIGH);
-% % % % 
-% curtime = calctime(curtime,1000);
-% 
+curtime = calctime(curtime,100);
+setDigitalChannel(calctime(curtime,-10),'XDT Direct Control',0);
+setDigitalChannel(calctime(curtime,-10),'XDT TTL',0);
+setAnalogChannel(calctime(curtime,0),'ZeroVolts',0); 
+% % % % % Choose the power limits
+ODT1powerLOW=-0.04;
+ODT1powerHIGH = 0.01;
+% % % 
+ODT2powerLOW=-0.04;
+ODT2powerHIGH = 0.1;
+% % % 
+% % % % % setAnalogChannel(curtime,'dipoleTrap1',-0.025); 
+AnalogFunc(calctime(curtime,0),'dipoleTrap1',...
+    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),100,100,ODT1powerLOW,ODT1powerHIGH);
+    
+AnalogFunc(calctime(curtime,0),'dipoleTrap2',...
+    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),100,100,ODT2powerLOW,ODT2powerHIGH);
+% % % 
+curtime = calctime(curtime,1000);
+
 % setAnalogChannel(curtime,'dipoleTrap1',ODT1powerLOW); 
 % setAnalogChannel(curtime,'dipoleTrap2',ODT2powerLOW);
 % setDigitalChannel(calctime(curtime,10),'XDT TTL',1);
@@ -4755,7 +4755,7 @@ end
 
 
 % setAnalogChannel(curtime,54,0);
-% 
+
 % curtime = calctime(curtime,5000);
 % setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
 % setAnalogChannel(curtime,'dipoleTrap1',-10,1); 
@@ -5566,15 +5566,26 @@ end
 % % Turn on the RF
 % setDigitalChannel(calctime(curtime,0),'RF TTL',1);    
 
-setAnalogChannel(calctime(curtime,0),'Vortex Current Mod',0)
+%setAnalogChannel(calctime(curtime,0),'Vortex Current Mod',0)
 
 % setDigitalChannel(calctime(curtime,0),'F Pump TTL',0)
 % setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
 
 % setDigitalChannel(calctime(curtime,0),'PA Shutter',1)
 
+% setAnalogChannel(calctime(curtime,0),'zLattice',-10,1);
+% setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);
+% 
+% setDigitalChannel(0,'PA Shutter',1); %0 open
+% 
+% setDigitalChannel(0,'PA TTL',1); 
+% 
+% setAnalogChannel(calctime(curtime,0),'uWave FM/AM',1)
+
+% curtime = PA_pulse(curtime); 
+
 timeout = curtime;
-% SelectScopeTrigger('lattice_on');
+% SelectScopeTrigger('PA_Pulse');
 
 
 

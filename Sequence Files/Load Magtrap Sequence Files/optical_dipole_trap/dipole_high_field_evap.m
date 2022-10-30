@@ -84,7 +84,8 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     if expevap2
         exp_evap2_time = 5000;
         tau2 = exp_evap2_time;
-        P1_end = exp_end_pwr2;    
+%         P1_end = exp_end_pwr2;    
+        P1_end = seqdata.params.exp_end_pwr2;
         P2_end = P1_end*seqdata.params.XDT_area_ratio;    
 
         % Display evaporation parameters

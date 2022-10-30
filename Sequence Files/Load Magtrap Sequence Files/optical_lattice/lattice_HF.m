@@ -46,6 +46,7 @@ curtime = timein;
     
     % More RF Stuff (?)
     rf_rabi_manual                  = 0;
+    doPA_pulse                      = 1;
     do_rf_spectroscopy              = 1; 
     do_rf_post_spectroscopy         = 0; 
         
@@ -59,7 +60,7 @@ curtime = timein;
     spin_flip_9_7_5                 = 0;
     spin_flip_9_7_post_spectroscopy = 0;
     
-    doPA_pulse = 1;
+  
 
 %% Lattice ramp Init
 % Ramp the lattices to their initial depth
@@ -864,7 +865,7 @@ end
         Boff = 0.11;
         B = HF_FeshValue_Initial +Boff + 2.35*zshim; 
 %         
-%         rf_shift_list = [-50:2:-28 -16:2:2];       
+     
          rf_shift_list = [-33];   
          rf_shift = getScanParameter(rf_shift_list,seqdata.scancycle,...
                          seqdata.randcyclelist,'rf_freq_HF_shift','kHz');

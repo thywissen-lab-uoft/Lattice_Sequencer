@@ -438,7 +438,7 @@ switch flags.image_atomtype
             if flags.Two_Imaging_Pulses==1 && flags.Spin_Flip_79_in_Tof == 1
                 % Pulse the imaging beam again
                 DigitalPulse(calctime(curtime,params.timings.time_diff_two_absorp_pulses...
-                    +pulse_length+extra_wait_time),...
+                    +pulse_length+extra_wait_time),...                                                                                                                
                     'K High Field Probe',pulse_length,0);
                 if flags.Image_Both97                   
 
@@ -448,7 +448,9 @@ switch flags.image_atomtype
                     % Get the center frequency
                     Boff = 0.11;
                     B = seqdata.params.HF_probe_fb + Boff;
-                    rf_tof_shift_list = [57]; % 57 is typical
+                    
+%                     rf_tof_shift_list = [57]; % 195G
+                    rf_tof_shift_list = [45]; % 207G = 204G FB + 3G zshim
                     rf_tof_shift = getScanParameter(rf_tof_shift_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_tof_shift','kHz');
                     
@@ -461,14 +463,14 @@ switch flags.image_atomtype
                     end
 
                     % RF Frequency Sweep
-                    rf_tof_delta_freq_list = 12e-3;[12]*1e-3;12;
+                    rf_tof_delta_freq_list = [20]*1e-3;[12]*1e-3;12;
                     rf_tof_delta_freq = getScanParameter(rf_tof_delta_freq_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_tof_delta_freq','MHz');
 %                     delta_freq= 0.05; %0.02            
 %                     addOutputParam('rf_delta_freq_HF',delta_freq,'MHz');
 
                     % RF Pulse Time
-                    rf_tof_pulse_length_list = [1];%1
+                    rf_tof_pulse_length_list = [1];[1];%1
                     rf_tof_pulse_length = getScanParameter(rf_tof_pulse_length_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_tof_pulse_length','ms');
                     

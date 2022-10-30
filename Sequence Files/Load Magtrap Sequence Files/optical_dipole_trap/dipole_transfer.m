@@ -20,7 +20,7 @@ ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 dipole_holdtime_before_evap = 0;    % not a flag but a value
 ramp_Feshbach_B_before_CDT_evap = 0;
 
-Evap_End_Power_List = [0.065];0.07;[0.08];
+Evap_End_Power_List = [0.07];[0.065];0.07;[0.08];
 
 % Ending optical evaporation
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...
@@ -29,7 +29,7 @@ exp_end_pwr = getScanParameter(Evap_End_Power_List,...
 % Second Stage ending evaporation power
 Evap2_End_Power_List = [0.07];    
 % Ending optical evaporation
-exp_end_pwr2 = getScanParameter(Evap2_End_Power_List,...
+seqdata.params.exp_end_pwr2 = getScanParameter(Evap2_End_Power_List,...
     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power2','W');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -42,7 +42,7 @@ do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscill
 % Spectroscopy after Evaporation
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-ramp_XDT_after_evap = 0;        % Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
+ramp_XDT_after_evap = 1;        % Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
 k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
 ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
 uWave_K_Spectroscopy = 0;
@@ -64,7 +64,7 @@ end
 XDT2_power_func = @(x) x;
 
 % Initial XDT power
-P12_list = [1.4];1.4;
+P12_list = [1.6];1.4;
 P12 = getScanParameter(P12_list,seqdata.scancycle,...
     seqdata.randcyclelist,'XDT_initial_power','W');
 P1 = P12;
@@ -98,6 +98,11 @@ DT1_power = 1*[P1 P1 P1e xdt1_end_power];
 %     DT1_power = -1*[1         1        1          1]; 
 DT2_power = 1*[P2 P2 P2e xdt2_end_power];  
 %     DT2_power = -1*[1         1        1          1];  
+
+% Plug Shim Z Slope delta
+dCz_list = [-.0025];
+dCz = getScanParameter(dCz_list,seqdata.scancycle,...
+    seqdata.randcyclelist,'dCz','arb.');  
 
 %% Special Flags
 % CF : I have no idea what this is for
@@ -212,7 +217,7 @@ end
         
         Cx = seqdata.params.plug_shims_slopes(1);
         Cy = seqdata.params.plug_shims_slopes(2);
-        Cz = seqdata.params.plug_shims_slopes(3);
+        Cz = seqdata.params.plug_shims_slopes(3)+dCz;
         
         dIx=dI_QP*Cx;
         dIy=dI_QP*Cy;
@@ -304,7 +309,7 @@ end
         
         Cx = seqdata.params.plug_shims_slopes(1);
         Cy = seqdata.params.plug_shims_slopes(2);
-        Cz = seqdata.params.plug_shims_slopes(3);         
+        Cz = seqdata.params.plug_shims_slopes(3)+dCz;         
         
         dIx=dI_QP*Cx;
         dIy=dI_QP*Cy;
@@ -1107,9 +1112,12 @@ if (seqdata.flags.CDT_evap_2_high_field==1)
     curtime = dipole_high_field_evap(timein);       
 end
 
-%% Ramp Dipole Back Up Before Spectroscopy
-%RHYS - Hmmm, sure. 
+%% Ramp Dipole Back Up
+
+
 if ramp_XDT_up
+    dispLineStr('Ramping XDT Power Back Up',curtime);    
+
     dip_1 = .1; %1.5
     dip_2 = .1; %1.5
     dip_ramptime = 1000; %1000
@@ -1190,7 +1198,7 @@ end
 if (ramp_XDT_after_evap && seqdata.flags.CDT_evap == 1)
     dispLineStr('Ramping XDTs back on.',curtime);
 
-    power_list = [0.3];
+    power_list = [0.1];
     power_val = getScanParameter(power_list,seqdata.scancycle,...
         seqdata.randcyclelist,'power_val','W');
 
@@ -1636,7 +1644,9 @@ end
 %% Dipole Trap High Field Operations 1
 % Perform operations in the dipole trap at high magnetic field.
 
-if (seqdata.flags.High_Field_Imaging && ~seqdata.flags.load_lattice )         
+if (seqdata.flags.dipole_high_field_a)    
+    dispLineStr('Dipole Trap High Field a',curtime);
+
     curtime = dipole_high_field_a(curtime);  
 end
      

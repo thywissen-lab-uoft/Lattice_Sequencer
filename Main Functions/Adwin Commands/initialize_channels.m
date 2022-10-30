@@ -585,7 +585,8 @@ seqdata.analogchannels(38).defaultvoltagefunc = 4;
 % seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.22626)/2.86651); %2020-01-28 1V/W
 % seqdata.analogchannels(38).voltagefunc{4} = @(a)((0.2713+a)/3.2189); %2020-02-23
 % seqdata.analogchannels(38).voltagefunc{4} = @(a)(5.9026*a + 0.1953); %2022-01-12
-seqdata.analogchannels(38).voltagefunc{4} = @(a)(5.4671*a + 0.0429); %2022-03-25
+% seqdata.analogchannels(38).voltagefunc{4} = @(a)(5.4671*a + 0.0429); %2022-03-25
+seqdata.analogchannels(38).voltagefunc{4} = @(P)(4.7504*P + 0.00807); %2022-10-25
 
 %channel 39 (RF Gain control)
 seqdata.analogchannels(39).name = 'RF Gain';
@@ -607,7 +608,8 @@ seqdata.analogchannels(40).defaultvoltagefunc = 4;
 % seqdata.analogchannels(40).voltagefunc{4} = @(a)(2.06636*a+0.144332); %calibrated 2021-01-26
 % seqdata.analogchannels(40).voltagefunc{4} = @(a)(a-0.0031)/0.5272; %calibrated 2021-02-23
 % seqdata.analogchannels(40).voltagefunc{4} = @(a)(5.2592*a + 0.1741); %2022-01-12
-seqdata.analogchannels(40).voltagefunc{4} = @(a)(6.2123*a + 0.0359); %2022-03-25
+seqdata.analogchannels(40).voltagefunc{4} = @(P) (6.2123*P + 0.0359); %2022-03-25
+
 
 %Channel 41 (motorized waveplate for dipole/lattice power dist)
 seqdata.analogchannels(41).name = 'latticeWaveplate';

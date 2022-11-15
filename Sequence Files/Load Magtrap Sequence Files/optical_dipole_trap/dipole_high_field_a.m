@@ -74,14 +74,15 @@ curtime = timein;
     time_in_HF_imaging = curtime;
     
     % Initial Ramp to high magnetic field
-    ramp_field_1            = 1;    
+    ramp_field_1            = 1;       
     
-    mix_at_high_field       = 0;  
+    % If spin pure make mixture at high field
+    mix_7_9                 = 0;  
     
     % Spin Manipulations for attractive with initial mixture
-    spin_flip_7_5           = 0;        % 7 to 5 to avoid fesbach
+    flip_7_5                = 0;        % 7 to 5 to avoid fesbach
     ramp_field_2            = 0;        % Ramp above feshbach
-    spin_flip_7_5_again     = 0;        % 5 to 7 for science mixture
+    flip_7_5_again          = 0;        % 5 to 7 for science mixture
         
     % Ramp to science magnetic field
     ramp_field_3            = 0;    
@@ -124,14 +125,13 @@ curtime = timein;
     curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
         ScopeTriggerPulse(curtime,'FB_ramp');
 
-      seqdata.params.HF_fb = HF_FeshValue_Initial;
-    
+      seqdata.params.HF_fb = HF_FeshValue_Initial;    
     end  
     
 
 %% Create -9/2, -7/2 Spin Mixture at High Field
 
-    if mix_at_high_field
+    if mix_7_9
             %Do RF Sweep
         clear('sweep');
 
@@ -195,7 +195,7 @@ curtime = timein;
 
 %%  rf transfer from -7/2 to -5/2
         
-    if spin_flip_7_5
+    if flip_7_5
         dispLineStr('RF transfer -7/2 to -5/2',curtime);
 
         clear('sweep');
@@ -280,7 +280,7 @@ curtime = rampMagneticFields(calctime(curtime,0), ramp);
 
  
  %% RF 75 Flip again
-  if spin_flip_7_5_again
+  if flip_7_5_again
         dispLineStr('RF transfer -7/2 to -5/2',curtime);
 
       

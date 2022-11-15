@@ -28,8 +28,8 @@ curtime = timein;
 % (2) transfer 7 to 5 to avoid feshbach
 % (3) ramp to above feshbach
 % (4) transfer 5 to 7 to make mixture
-%
-%
+
+
 %%%%%%HIGH FIELD PA MEASUREMENTS IN THE XDT%%%%%%%%%
 %
 %%%ATTRACTIVE SIDE%%
@@ -73,21 +73,24 @@ curtime = timein;
           
     time_in_HF_imaging = curtime;
     
-    ramp_field_1 = 1;    
-    mix_at_high_field = 0;    
+    % Initial Ramp to high magnetic field
+    ramp_field_1            = 1;    
     
-    spin_flip_7_5 = 0;      
-    ramp_field_2 = 0;
-    spin_flip_7_5_again= 0;
+    mix_at_high_field       = 0;  
+    
+    % Spin Manipulations for attractive with initial mixture
+    spin_flip_7_5           = 0;        % 7 to 5 to avoid fesbach
+    ramp_field_2            = 0;        % Ramp above feshbach
+    spin_flip_7_5_again     = 0;        % 5 to 7 for science mixture
         
-
-    ramp_field_3 =  0;    
-    spin_flip_7_5_3 = 0;
+    % Ramp to science magnetic field
+    ramp_field_3            = 0;    
     
-    doPA_pulse    = 0;
+    % Perform a PA pulse in the XDT at high field
+    doPA_pulse_in_XDT       = 0;
 
-    ramp_field_for_imaging = 1;
-    spin_flip_7_5_4 = 0;
+    % Ramp field to imaging field
+    ramp_field_for_imaging  = 1;
 
 %% Feshbach Field Ramp
 % Ramp the feshbach field to the initial high value (and set the z-shim)
@@ -366,44 +369,9 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 curtime = calctime(curtime,HF_wait_time);
   
      end
-%% Spin Flip 75 Number 3 
-% What is this? uhh some kind of shift register operation?
-    if spin_flip_7_5_3
-        clear('sweep');
-        mF1=-7/2;   % Lower energy spin state
-        mF2=-5/2;   % Higher energy spin state
 
-        % Get the center frequency
-        B = HF_FeshValue_Initial +2.35*zshim+0.11; 
-        rf_list =  [0] +...
-            abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
-        sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,...
-            seqdata.randcyclelist,'rf_freq_HF_3','MHz');
-        disp(sweep_pars.freq)
-
-        sweep_pars.power =  [0];
-        delta_freq = 0.1; 0.025;0.1;
-        sweep_pars.delta_freq = delta_freq;
-        rf_pulse_length_list = 10;5;20;
-        sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5               
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-
-%double pulse sequence
-curtime = calctime(curtime,35);
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-curtime = calctime(curtime,50);
-
-        do_ACync_rf = 0;
-            if do_ACync_rf
-                ACync_start_time = calctime(curtime,-80);
-                ACync_end_time = calctime(curtime,2*sweep_pars.pulse_length+50);
-                setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
-                setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
-            end
-    end
- 
   %% PA Pulse
-if doPA_pulse
+if doPA_pulse_in_XDT
    curtime = PA_pulse(curtime); 
 end
  %% Ramp field for imaging
@@ -433,35 +401,9 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 
         seqdata.params.HF_probe_fb = HF_FeshValue_Final +2.35*zshim;
    end
-%% Spin Flip 75 Number 4
- if spin_flip_7_5_4
-        clear('sweep');
-        mF1=-7/2;   % Lower energy spin state
-        mF2=-5/2;   % Higher energy spin state
 
-        % Get the center frequency
-        B = seqdata.params.HF_probe_fb; 
-        rf_list =  [0] +...
-            abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
-        sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,...
-            seqdata.randcyclelist,'rf_freq_HF','MHz');
-        disp(sweep_pars.freq)
-
-        sweep_pars.power =  [0];
-        delta_freq = 0.1; 
-        sweep_pars.delta_freq = delta_freq;
-        rf_pulse_length_list = 10;5;20;
-        sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5               
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-
-    do_ACync_rf = 0;
-        if do_ACync_rf
-            ACync_start_time = calctime(curtime,-80);
-            ACync_end_time = calctime(curtime,2*sweep_pars.pulse_length+50);
-            setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
-            setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
-        end
-  end
+  
+ %% Ending operation
 
  HF5_wait_time_list = [35];
  HF5_wait_time = getScanParameter(HF5_wait_time_list,...

@@ -462,8 +462,10 @@ switch flags.image_atomtype
                     Boff = 0.11;
                     B = seqdata.params.HF_probe_fb + Boff;
                     
+                    %rf_tof_shift 45-->att
+                    
                     if (flags.HighField_Attractive)
-                        rf_tof_shift_list = [125];[45];125 % 207G = 204G FB + 3G zshim; 45kHz for 15ms TOF, 125kHz for 21ms TOF
+                        rf_tof_shift_list = [45];[45];125 % 207G = 204G FB + 3G zshim; 45kHz for 15ms TOF, 125kHz for 21ms TOF
                     else
                         rf_tof_shift_list = [57]; % 195G
                     end

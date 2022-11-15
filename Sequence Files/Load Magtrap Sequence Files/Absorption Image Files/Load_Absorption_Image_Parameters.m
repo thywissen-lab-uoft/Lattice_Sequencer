@@ -79,6 +79,7 @@ function params = Load_Absorption_Image_Parameters()
 
 %     params.detunings.K.X.negative9.HF.normal = -7 -0.4;
 %    %195G:-1.5 206:-0.4
+   
     params.detunings.K.X.negative9.HF.normal = [-8];%195G
     params.detunings.K.X.negative9.HF.attractive = [-8.5];[-9]; %[-9] %for 207G 15ms TOF; [-8.5] for 207G 21 ms
     

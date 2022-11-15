@@ -45,7 +45,7 @@ do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscill
 % Spectroscopy after Evaporation
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-ramp_XDT_after_evap = 0;        % Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
+ramp_XDT_after_evap = 1;        % Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
 k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
 ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
 uWave_K_Spectroscopy = 0;

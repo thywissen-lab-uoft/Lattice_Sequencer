@@ -46,7 +46,7 @@ curtime = timein;
     
     % More RF Stuff (?)
     rf_rabi_manual                  = 0;
-    doPA_pulse                      = 1;
+    doPA_pulse                      = 0;
     do_rf_spectroscopy              = 1; 
     do_rf_post_spectroscopy         = 0; 
         
@@ -97,7 +97,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
     
     if field_ramp_init
         % Feshbach Field ramp
-        HF_FeshValue_Initial_List = [200]; [197];
+        HF_FeshValue_Initial_List = [207]; [197];
         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_Lattice','G');
         
@@ -863,7 +863,7 @@ end
 
         % Get the center frequency
         Boff = 0.11;
-        B = HF_FeshValue_Initial +Boff + 2.35*zshim; 
+        B = HF_FeshValue_Initial + Boff + 2.35*zshim; 
 %         
      
          rf_shift_list = [-33];   
@@ -1516,7 +1516,7 @@ curtime = calctime(curtime,10);
 if field_ramp_img
 
     % Feshbach Field ramp Field ramp
-    HF_FeshValue_Final_List = 195;
+    HF_FeshValue_Final_List = 207;195;
     HF_FeshValue_Final = getScanParameter(HF_FeshValue_Final_List,...
     seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Final_Lattice','G');
 

@@ -69,8 +69,7 @@ curtime = timein;
 % 
 
 
-%% Flags
-          
+%% Flags          
     time_in_HF_imaging = curtime;
     
     % Initial Ramp to high magnetic field
@@ -91,7 +90,7 @@ curtime = timein;
     doPA_pulse_in_XDT       = 0;
 
     % Ramp field to imaging field
-    ramp_field_for_imaging  = 1;
+    ramp_field_for_imaging  = 0;
 
 %% Feshbach Field Ramp
 % Ramp the feshbach field to the initial high value (and set the z-shim)
@@ -100,7 +99,7 @@ curtime = timein;
         zshim = [3]/2.35; %1.28V = 3G
         
         dispLineStr('Ramping High Field in XDT',curtime);
-        HF_FeshValue_Initial_List = [206];[192];[201.5]; %200.5 201 201.5
+        HF_FeshValue_Initial_List = [206];[192];
         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_ODT','G');
 
@@ -122,10 +121,10 @@ curtime = timein;
         disp([' Settling Time (ms) : ' num2str(ramp.settling_time)]);
 
         
-    curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
         ScopeTriggerPulse(curtime,'FB_ramp');
 
-      seqdata.params.HF_fb = HF_FeshValue_Initial;    
+        seqdata.params.HF_fb = HF_FeshValue_Initial;    
     end  
     
 
@@ -193,7 +192,7 @@ curtime = timein;
     end
     
 
-%%  rf transfer from -7/2 to -5/2
+%%  RF transfer from -7/2 to -5/2
         
     if flip_7_5
         dispLineStr('RF transfer -7/2 to -5/2',curtime);

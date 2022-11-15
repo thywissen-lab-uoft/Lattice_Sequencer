@@ -20,6 +20,9 @@ PA_rel_pow_list = [1];
 PA_rel_pow = getScanParameter(PA_rel_pow_list,...
     seqdata.scancycle,seqdata.randcyclelist,'PA_rel_pow','arb');
 
+% PA_rel_pow = paramGet('PA_rel_pow');
+% addOutputParam('PA_rel_pow',PA_rel_pow,'arb.');
+
 PA_pow = PA_rel_pow*V0;
 
 addOutputParam('PA_pow',PA_pow,'V');
@@ -46,11 +49,16 @@ setAnalogChannel(0,'Vortex Current Mod',0);
 seqdata.analogchannels(33).name = 'Vortex Current Mod';
 tD = -3.5;
 
-pulse_time_list = [10];1;%ms
+pulse_time_list = [4];1;%ms
 pulse_time = getScanParameter(pulse_time_list,...
     seqdata.scancycle,seqdata.randcyclelist,'pulse_time','ms');
 
+
+% %Tmax = 7 + ((60-7)/(207-201))*(paramGet('PA_FB_field') + 3 - 201);
+% Tmax = 1000;
 % pulse_time = paramGet('pulse_time');
+% addOutputParam('pulse_time',pulse_time,'ms');
+
 
 fake_pulse = 0;
 

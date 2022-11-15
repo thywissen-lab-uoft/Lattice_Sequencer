@@ -20,7 +20,10 @@ ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 dipole_holdtime_before_evap = 0;    % not a flag but a value
 ramp_Feshbach_B_before_CDT_evap = 0;
 
-Evap_End_Power_List = [0.07];[0.065];0.07;[0.08];
+Evap_End_Power_List = [0.07];[0.06];0.065;[0.08];
+
+% Levitation Field During evaporation TESTING
+do_levitate_evap = 0;
 
 % Ending optical evaporation
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...
@@ -42,7 +45,7 @@ do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscill
 % Spectroscopy after Evaporation
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-ramp_XDT_after_evap = 1;        % Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
+ramp_XDT_after_evap = 0;        % Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
 k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
 ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
 uWave_K_Spectroscopy = 0;
@@ -82,7 +85,7 @@ xdt1_end_power = exp_end_pwr;
 xdt2_end_power = XDT2_power_func(exp_end_pwr);
 
 % Evaporation Time
-Time_List =  [18]*1e3; % [15000] for normal experiment
+Time_List =  [18]*1e3; 18;% [15000] for normal experiment
 Evap_time = getScanParameter(Time_List,seqdata.scancycle,...
     seqdata.randcyclelist,'evap_time','ms');   
 exp_evap_time = Evap_time;      
@@ -986,8 +989,54 @@ if ramp_Feshbach_B_before_CDT_evap
 end
  
   
+%% Ramp QP for levitation
+% During optical evaporation, the maximum power for sympathetic evaporation
+% is limited because the stark shift for K is greater than Rb.  To allow
+% for efficient evaporation at high optical powers, apply a levitation
+% gradient which prevents K from falling out of the trap, while still
+% allowing Rb to fall from gravity.
 
+% TESTING HAS NOT WORKIGN YET
+if do_levitate_evap
+    % Value to Ramp Coil 15
+    val = 0.1;  
+    
+    % Ramp Time
+    ramp_time = 100;
+    
+    curtime = calctime(curtime,50);
+    
+    % Make sure Coil 15 and Coil 16 are low
+    setAnalogChannel(calctime(curtime,0),'Coil 15',0,1);
+    setAnalogChannel(calctime(curtime,0),'Coil 16',0);
 
+    
+    
+    % Disable QP mode of current control
+    setDigitalChannel(curtime,'15/16 Switch',0);
+    
+    % Enable Kitten
+    setDigitalChannel(curtime,'Kitten Relay',1);
+    
+    % Wait for relay to switch
+    curtime = calctime(curtime,50);
+
+    
+    % Turn on Kitten
+    setAnalogChannel(calctime(curtime,0),'Kitten',6.52,1);
+    curtime = calctime(curtime,10);
+        
+    % Ramp on Coil 15
+    AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        ramp_time,ramp_time,val,2);  
+    
+    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        ramp_time,ramp_time,val,1);     
+    
+
+end
 
 %% CDT evap
 %RHYS - Imporant code, definitely should be kept and cleaned up.
@@ -1104,6 +1153,39 @@ else
     dip_holdtime=25000;
 end
 
+%% Unramp Gradient
+
+if do_levitate_evap
+    ramp_time_1 = 100;
+    ramp_time_2 = 10;
+    
+    % Ramp off Coil 15
+    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        ramp_time_1,ramp_time_1,0,1);     
+    
+    % Make sure Coil 16 and kitten are low
+    AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        ramp_time_2,ramp_time_2,0);  
+    curtime = AnalogFuncTo(calctime(curtime,0),'Kitten',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        ramp_time_2,ramp_time_2,0,1);   
+    
+    % Enable QP mode of current control
+    setDigitalChannel(curtime,'15/16 Switch',1);
+    
+    % Disable Kitten
+    setDigitalChannel(curtime,'Kitten Relay',0);
+    
+    % Disable Transport FF
+    setAnalogChannel(calctime(curtime,0),'Transport FF',0);
+
+    % Wait for relay to switch
+    curtime = calctime(curtime,50); 
+end
+
+
 %% Two Stage High Field Evaporation
 % This evaporates at high field from the initial evaporation
 
@@ -1198,7 +1280,7 @@ end
 if (ramp_XDT_after_evap && seqdata.flags.CDT_evap == 1)
     dispLineStr('Ramping XDTs back on.',curtime);
 
-    power_list = [0.1];
+    power_list = [0.1]; 0.1;
     power_val = getScanParameter(power_list,seqdata.scancycle,...
         seqdata.randcyclelist,'power_val','W');
 

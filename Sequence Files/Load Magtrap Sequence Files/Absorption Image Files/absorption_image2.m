@@ -238,8 +238,13 @@ else
     
     setAnalogChannel(calctime(curtime,params.timings.tof-params.timings.k_detuning_shift_time),...
             'K Trap FM',K_detuning+(seqdata.params.HF_probe_fb-190)*0.675*2+offset);
-
-    HF_prob_freq9 =  params.detunings.K.X.negative9.HF.normal;
+    
+    if (flags.HighField_Attractive)
+        HF_prob_freq9 =  params.detunings.K.X.negative9.HF.attractive;
+    else
+        HF_prob_freq9 =  params.detunings.K.X.negative9.HF.normal;
+    end
+    
     HF_prob_freq7 =  params.detunings.K.X.negative7.HF.normal;
 
     % Frequency of rigol is based on the relative shift
@@ -252,7 +257,7 @@ else
         'HF_prob_pwr1','V');
 
     % Power in -9 beam
-    pow2_list = [1.2];  %1.1      
+    pow2_list = [0.9];[2.0];[1.2]; [0.01:0.04:1.2];[1.2];  %1.1      
     pow2 = getScanParameter(pow2_list,seqdata.scancycle,seqdata.randcyclelist,...
         'HF_prob_pwr2','V');
 
@@ -339,7 +344,7 @@ end
 % Update curtime to the imaging time (add the tof).
 curtime = calctime(curtime,params.timings.tof);
 
-    tD_list = [-20];
+    tD_list = [-20];-20;
 tD=getScanParameter(tD_list,seqdata.scancycle,...
     seqdata.randcyclelist,'pixel_delay','us');
 
@@ -354,6 +359,14 @@ curtime = calctime(curtime,200);
 
 % Take the second absorption image without atoms
 do_abs_pulse2(curtime,params,flags,K_power,tof_krb_diff,tD*1e-3);
+
+%% Dark Image
+
+if flags.TakeDarkImage
+    curtime = calctime(curtime,250);
+    DigitalPulse(curtime,'PixelFly Trigger',1,1); 
+    curtime = calctime(curtime,100);
+end
 
 %% Turn Probe and Repump off
 
@@ -449,8 +462,12 @@ switch flags.image_atomtype
                     Boff = 0.11;
                     B = seqdata.params.HF_probe_fb + Boff;
                     
-%                     rf_tof_shift_list = [57]; % 195G
-                    rf_tof_shift_list = [45]; % 207G = 204G FB + 3G zshim
+                    if (flags.HighField_Attractive)
+                        rf_tof_shift_list = [125];[45];125 % 207G = 204G FB + 3G zshim; 45kHz for 15ms TOF, 125kHz for 21ms TOF
+                    else
+                        rf_tof_shift_list = [57]; % 195G
+                    end
+                    
                     rf_tof_shift = getScanParameter(rf_tof_shift_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_tof_shift','kHz');
                     
@@ -463,7 +480,7 @@ switch flags.image_atomtype
                     end
 
                     % RF Frequency Sweep
-                    rf_tof_delta_freq_list = [20]*1e-3;[12]*1e-3;12;
+                    rf_tof_delta_freq_list = [20]*1e-3;[20]*1e-3;[12]*1e-3;12; %20kHz for 15ms TOF
                     rf_tof_delta_freq = getScanParameter(rf_tof_delta_freq_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_tof_delta_freq','MHz');
 %                     delta_freq= 0.05; %0.02            
@@ -475,7 +492,7 @@ switch flags.image_atomtype
                         seqdata.randcyclelist,'rf_tof_pulse_length','ms');
                     
                     % RF Gain Amplitude
-                    rf_tof_gain_list = [9];
+                    rf_tof_gain_list = [9];[9];
                     rf_tof_gain = getScanParameter(rf_tof_gain_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_tof_gain','arb');
 
@@ -483,8 +500,9 @@ switch flags.image_atomtype
                     rf_off_voltage=-10;-9.9;
                     
 %                     sweep_type = 'DDS';
-                    sweep_type = 'SRS_HS1';
-                    
+%                     sweep_type = 'SRS_HS1';
+                     sweep_type = 'SRS_LINEAR';
+
                     switch sweep_type
                         case 'DDS'   
                             rf_wait_time = 0.05;
@@ -625,7 +643,7 @@ switch flags.image_atomtype
                                 setDigitalChannel(calctime(curtime,...
                                     rf_wait_time + pulse_length + extra_wait_time),'RF TTL',1);    
 
-                                % Ramp the SRS modulation using a TANH
+                                % Ramp the SRS modulation using linear
                                 % At +-1V input for +- full deviation
                                 % The last argument means which votlage fucntion to use
                                 AnalogFunc(calctime(curtime,...
@@ -639,6 +657,81 @@ switch flags.image_atomtype
                                     @(t,T,beta) -10 + ...
                                     20*sech(2*beta*(t-0.5*sweep_time)/sweep_time),...
                                     sweep_time,sweep_time,beta);
+
+                                % Turn off the RF
+                                setDigitalChannel(calctime(curtime,...
+                                    rf_wait_time + pulse_length + extra_wait_time+rf_tof_pulse_length),'RF TTL',0); 
+
+                                % Turn off VVA
+                                setAnalogChannel(calctime(curtime,...
+                                    rf_wait_time + pulse_length + extra_wait_time+rf_tof_pulse_length),'RF Gain',rf_off_voltage);
+
+                                % Set RF Source to SRS
+                                setDigitalChannel(calctime(curtime,...
+                                    rf_wait_time + pulse_length + extra_wait_time+rf_tof_pulse_length+1),'RF Source',0);
+
+                                % Program the SRS
+                                programSRS_BNC(rf_srs_opts); 
+                                params.isProgrammedSRS = 1;
+                            end
+                            
+                        case 'SRS_LINEAR'
+                            
+                            if isfield(params,'isProgrammedSRS') && params.isProgrammedSRS == 0
+                                rf_wait_time = 0.00;   
+
+                                disp('LINEAR SRS Sweep Pulse');  
+
+                                rf_tof_srs_power_list = [12];
+                                rf_tof_srs_power = getScanParameter(rf_tof_srs_power_list,seqdata.scancycle,...
+                                    seqdata.randcyclelist,'rf_tof_srs_power','dBm');
+
+                                sweep_time = rf_tof_pulse_length;
+
+                                rf_srs_opts = struct;
+                                rf_srs_opts.Address=30;                       
+                                rf_srs_opts.EnableBNC=1;                         % Enable SRS output 
+                                rf_srs_opts.PowerBNC = rf_tof_srs_power;                           
+                                rf_srs_opts.Frequency = rf_tof_freq;     
+
+                                disp(['     Freq Center  : ' num2str(rf_tof_freq) ' MHz']);
+                                disp(['     Freq Delta   : ' num2str(rf_tof_delta_freq*1E3) ' kHz']);
+                                disp(['     Pulse Time   : ' num2str(rf_tof_pulse_length) ' ms']);
+
+                                % Enable uwave frequency sweep
+                                rf_srs_opts.EnableSweep=1;                    
+                                rf_srs_opts.SweepRange=abs(rf_tof_delta_freq);  
+
+                                % Set RF Source to SRS
+                                setDigitalChannel(calctime(curtime,-5),'RF Source',1);
+                                
+                                % Set RF Source to SRS
+                                setDigitalChannel(calctime(curtime,-5),'SRS Source',1);                                
+
+                                % Set SRS Direction to RF
+                                setDigitalChannel(calctime(curtime,-5),'K uWave Source',0);
+
+                                % Set RF power to low
+                                setAnalogChannel(calctime(curtime,-5),'RF Gain',rf_off_voltage);
+
+                                % Set initial modulation
+                                setAnalogChannel(calctime(curtime,-5),'uWave FM/AM',1);
+
+                                % Turn on the RF
+                                setDigitalChannel(calctime(curtime,...
+                                    rf_wait_time + pulse_length + extra_wait_time),'RF TTL',1);    
+
+                                % At +-1V input for +- full deviation
+                                % The last argument means which votlage fucntion to use
+                                AnalogFunc(calctime(curtime,...
+                                    rf_wait_time + pulse_length + extra_wait_time),...
+                                    'uWave FM/AM',...
+                                    @(t,T) 1-2*t/T,...
+                                    sweep_time,sweep_time,1);
+                                
+                                setAnalogChannel(calctime(curtime,...
+                                    rf_wait_time + pulse_length + extra_wait_time),...
+                                    'RF Gain',10);
 
                                 % Turn off the RF
                                 setDigitalChannel(calctime(curtime,...

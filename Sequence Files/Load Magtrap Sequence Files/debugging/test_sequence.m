@@ -4734,10 +4734,10 @@ setDigitalChannel(calctime(curtime,-10),'XDT TTL',0);
 setAnalogChannel(calctime(curtime,0),'ZeroVolts',0); 
 % % % % % Choose the power limits
 ODT1powerLOW=-0.04;
-ODT1powerHIGH = 0.01;
+ODT1powerHIGH = .07;
 % % % 
 ODT2powerLOW=-0.04;
-ODT2powerHIGH = 0.1;
+ODT2powerHIGH = .07;
 % % % 
 % % % % % setAnalogChannel(curtime,'dipoleTrap1',-0.025); 
 AnalogFunc(calctime(curtime,0),'dipoleTrap1',...
@@ -5561,10 +5561,12 @@ end
 % % Set RF power to low
 % setAnalogChannel(calctime(curtime,0),'RF Gain',-8);
 % 
-% % Set initial modulation
+% Set initial modulation
 % setAnalogChannel(calctime(curtime,0),'uWave FM/AM',1);
-% % Turn on the RF
-% setDigitalChannel(calctime(curtime,0),'RF TTL',1);    
+% Turn on the RF
+% setDigitalChannel(calctime(curtime,0),'K High Field Probe',1); 
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); 
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.15)
 
 %setAnalogChannel(calctime(curtime,0),'Vortex Current Mod',0)
 
@@ -5583,6 +5585,7 @@ end
 % setAnalogChannel(calctime(curtime,0),'uWave FM/AM',1)
 
 % curtime = PA_pulse(curtime); 
+DigitalPulse(calctime(curtime,10),'PixelFly Trigger',1,1);
 
 timeout = curtime;
 % SelectScopeTrigger('PA_Pulse');

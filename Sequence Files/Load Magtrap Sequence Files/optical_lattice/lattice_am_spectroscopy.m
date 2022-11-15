@@ -28,23 +28,23 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
             AM_spec_latt_ramptime, AM_spec_latt_ramptime, AM_spec_latt_depth); 
         
-            x_latt_voltage = getChannelValue(seqdata,'xLattice',1,1);
-            y_latt_voltage = getChannelValue(seqdata,'yLattice',1,1);
-            z_latt_voltage = getChannelValue(seqdata,'zLattice',1,1);    
-            
-            disp(x_latt_voltage);
-            disp(y_latt_voltage);
-            disp(z_latt_voltage);            
-            
-            addOutputParam('adwin_am_spec_X',x_latt_voltage);
-            addOutputParam('adwin_am_spec_Y',y_latt_voltage);
-            addOutputParam('adwin_am_spec_Z',z_latt_voltage);
+
 
 curtime = calctime(curtime,50);  %extra wait time
     else 
         AM_spec_direction = 'X';
         AM_spec_latt_depth = 100;
+        addOutputParam('AM_spec_depth',AM_spec_latt_depth);
     end
+
+    x_latt_voltage = getChannelValue(seqdata,'xLattice',1,1);
+    y_latt_voltage = getChannelValue(seqdata,'yLattice',1,1);
+    z_latt_voltage = getChannelValue(seqdata,'zLattice',1,1);    
+
+
+    addOutputParam('adwin_am_spec_X',x_latt_voltage);
+    addOutputParam('adwin_am_spec_Y',y_latt_voltage);
+    addOutputParam('adwin_am_spec_Z',z_latt_voltage);
         
     % Turn off ODTs before modulation (if not already off)
     switch_off_XDT_before_Lat_modulation = 0;

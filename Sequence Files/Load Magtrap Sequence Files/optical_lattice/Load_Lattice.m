@@ -26,7 +26,7 @@ seqdata.params.XDT_area_ratio = 1; %RHYS - Why is this defined here again?
 do_rotate_waveplate_1 = 1;        % First waveplate rotation for 90%
 do_lattice_ramp_1 = 1;            % Load the lattices
 
-seqdata.flags.do_lattice_am_spec = 0;               % Amplitude modulation spectroscopy             
+seqdata.flags.do_lattice_am_spec = 1;               % Amplitude modulation spectroscopy             
 
 do_rotate_waveplate_2 = 0;        % Second waveplate rotation 95% 
 do_lattice_ramp_2 = 0;            % Secondary lattice ramp for fluorescence imaging

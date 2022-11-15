@@ -72,14 +72,15 @@ function params = Load_Absorption_Image_Parameters()
     %% HF imaging
 %     % Potassium -HF -Xcam : settting the DP HF imaging AOM freq
 %     kHFdet_shift_list = [-8];%195G
-    kHFdet_shift_list = [-9];%207G (FB 204G + zshim 3G)
+    kHFdet_shift_list = [0];
     kHFdet_shift = getScanParameter(kHFdet_shift_list,seqdata.scancycle,...
         seqdata.randcyclelist,'HF_kdet_shift','MHz');
 
 
 %     params.detunings.K.X.negative9.HF.normal = -7 -0.4;
 %    %195G:-1.5 206:-0.4
-    params.detunings.K.X.negative9.HF.normal = kHFdet_shift;-7-0.4; %-1.5
+    params.detunings.K.X.negative9.HF.normal = [-8];%195G
+    params.detunings.K.X.negative9.HF.attractive = [-8.5];[-9]; %[-9] %for 207G 15ms TOF; [-8.5] for 207G 21 ms
     
     params.detunings.K.X.negative9.HF.SG = -4.5; %
     
@@ -95,7 +96,7 @@ function params = Load_Absorption_Image_Parameters()
     params.k_repump_shift.positive = 28;
     params.k_repump_shift.negative = 21;21;
     %% Probe beam powers
-    K_probe_pwr_list = [0.15];%.15;%[0.5];
+    K_probe_pwr_list = [0.12];%.15;%[0.5];
     K_probe_pwr = getScanParameter(K_probe_pwr_list,seqdata.scancycle,...
         seqdata.randcyclelist,'K_probe_pwr','V');
     

@@ -40,19 +40,37 @@ ptypes = struct;         % Structure which contains boolean of random for each p
 % ptypes.Raman_H1_Voltage = 'random';
 %% Lattice High Field
 
-params.detuning = [-49.6];
-punits.detuning = 'GHz';
-ptypes.detuning = 'ordered';
+% params.detuning = [-49.6];
+% punits.detuning = 'GHz';
+% ptypes.detuning = 'ordered';
+% 
+% % params.rf_shift = [repelem(-46:2:-26,3) -14:2:0];
+% params.rf_shift = [-35];
+% punits.rf_shift = 'kHz';
+% ptypes.rf_shift = 'random';
 
-% params.rf_shift = [repelem(-46:2:-26,3) -14:2:0];
-params.rf_shift = [-35];
-punits.rf_shift = 'kHz';
-ptypes.rf_shift = 'random';
+% params.do_fake = [0,1];
+% ptypes.do_fake = 'ordered';
+
+% params.PA_FB_field = [204]; %+3G from zshim
+
+% punits.PA_FB_field = 'G';
+% ptypes.PA_FB_field = 'ordered';
+
+%params.PA_pulse_time_rel = [repelem([linspace(0,1,10) 1.25 1.5 2 4],3)];
+% params.PA_pulse_time_rel = 1;
+% 
+% punits.PA_pulse_time_rel = 'arb.';
+% ptypes.PA_pulse_time_rel = 'random';
 
 
-% params.pulse_time = [1];
+% params.pulse_time = [repelem([0:2:38 40:20:120],2)];
 % punits.pulse_time = 'ms';
 % ptypes.pulse_time = 'random';
+% 
+% params.PA_rel_pow = [1 0.5 0.25 0.1];
+% punits.PA_rel_pow = 'arb.';
+% ptypes.PA_rel_pow = 'ordered';
 
 % params.AM_spec_depth                   = [100];
 % punits.AM_spec_depth = 'Er';
@@ -67,9 +85,9 @@ ptypes.rf_shift = 'random';
 % % % % %     100 = [100:10:180 140:1:165]*1e3; 43 points
 % % % % %     60 = [70:5:150 110:1:145]*1e3; 53 points
 % % % % %     250 [220:5:320 260:1:285]*1e3
-% params.AM_spec_freq                   = [80 90]*1e3;
-% punits.AM_spec_freq = 'Hz';
-% ptypes.AM_spec_freq = 'random';
+params.AM_spec_freq = [165:1:180]*1e3;
+punits.AM_spec_freq = 'Hz';
+ptypes.AM_spec_freq = 'random';
 
 
 % params.Raman_freq                   = [10:2.5:40];
@@ -80,9 +98,9 @@ ptypes.rf_shift = 'random';
 % punits.latt_depth = 'Er';
 % ptypes.latt_depth = 'ordered';
 % 
-params.HF_wait_time_5 =[5]; [1:10];
-punits.HF_wait_time_5 = 'ms';
-ptypes.HF_wait_time_5 = 'random';
+% params.HF_wait_time_5 =[5]; [1:10];
+% punits.HF_wait_time_5 = 'ms';
+% ptypes.HF_wait_time_5 = 'random';
 
 % % 
 % params.HF_spec_latt_depth = [60];

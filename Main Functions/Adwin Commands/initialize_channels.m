@@ -609,6 +609,7 @@ seqdata.analogchannels(40).defaultvoltagefunc = 4;
 % seqdata.analogchannels(40).voltagefunc{4} = @(a)(a-0.0031)/0.5272; %calibrated 2021-02-23
 % seqdata.analogchannels(40).voltagefunc{4} = @(a)(5.2592*a + 0.1741); %2022-01-12
 seqdata.analogchannels(40).voltagefunc{4} = @(P) (6.2123*P + 0.0359); %2022-03-25
+seqdata.analogchannels(40).voltagefunc{4} = @(P) (2.9518*P + 0.013658); %2022-10-30
 
 
 %Channel 41 (motorized waveplate for dipole/lattice power dist)

@@ -6,6 +6,11 @@ function flags = Load_Absorption_Image_Flags()
     flags.condition = 'normal'; %'normal', 'in_trap', 'QP_imaging', 'SG', 'short_tof'
     flags.negative_imaging_shim = 'positive'; %0 = positive states 1 = negative states %Automatically set by K_RF_Sweep flag
     
+    %% Dark Image for
+    
+    flags.TakeDarkImage = 1;
+    
+    
     %% Temporary kluge to work with Load_MagTrap_sequence
     global seqdata;
     
@@ -59,6 +64,12 @@ flags.High_Field_Imaging = seqdata.flags.High_Field_Imaging || seqdata.flags.CDT
 % 1 : Image -9 in single shutter
 % 2 : Image -7 in single shutter
 flags.HighFieldType=0; % Not implemented yet
+
+% Image on attractive or repulsive side of 97 resonance 
+% Set up for 15ms TOF
+% 0 = image at 195G
+% 1 = image at 207G
+flags.HighField_Attractive = 1;
 
 flags.Two_Imaging_Pulses = 1;
 flags.Image_Negative9 = 0;

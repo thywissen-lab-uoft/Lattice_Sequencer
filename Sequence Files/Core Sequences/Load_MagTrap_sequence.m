@@ -106,14 +106,14 @@ seqdata.flags.do_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of
 seqdata.flags.iXon = 0;             % use iXon camera to take an absorption image (only vertical)
 seqdata.flags.do_F1_pulse = 0;      % repump Rb F=1 before/during imaging
 
-seqdata.flags.High_Field_Imaging = 1;
+seqdata.flags.High_Field_Imaging = 0;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
 
 seqdata.flags.In_Trap_imaging = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging
-tof_list = [15];
+tof_list = [25];
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
@@ -169,7 +169,7 @@ RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1A_finalfreq','MHz');
 
 % RF1B Final Frequency
-RF_1B_Final_Frequency_list = [1];1;%0.8,0.4 1
+RF_1B_Final_Frequency_list = [.9];1;%0.8,0.4 1
 RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq','MHz');
  
@@ -185,7 +185,7 @@ seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
 seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 0;  % uWave Frequency sweep Rb 2-->1
 seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
 seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
-seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
+seqdata.flags.mix_at_beginning = 1;             % RF Mixing -9-->-9+-7
     
 seqdata.flags.kill_Rb_before_evap = 0;   % Remove Rb before optical evaporation
 seqdata.flags.kill_K7_before_evap = 0;   % Remove 7/2 K before optical evaporation (untested)
@@ -203,7 +203,9 @@ seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 
 % High Field Evaporation (not used yet; for near BEC/BCS)
 seqdata.flags.CDT_evap_2_high_field = 0;    
-seqdata.flags.dipole_high_field_a = 1;
+
+% XDT High Field Experiments
+seqdata.flags.dipole_high_field_a = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OPTICAL LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -234,11 +236,11 @@ seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing/align
 %%% OPTICAL LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % scope_trigger = 'lattice_ramp_1';
-% scope_trigger = 'Lattice_Mod';
+scope_trigger = 'Lattice_Mod';
 % scope_trigger = 'FB_ramp';
 % scope_trigger = 'lattice_off';
 % scope_trigger = 'Raman Beams On';
-scope_trigger = 'PA_Pulse';
+% scope_trigger = 'PA_Pulse';
 
 %% Set switches for predefined scenarios
 
@@ -260,7 +262,10 @@ dispLineStr('Updating PA Request',curtime);
 PA_resonance = 391016.296050;
 PA_resonance = 391016.821;
 
-PA_detuning_list = [-53.15 -53.1 -52.85];[-49.57];
+PA_detuning_list = [-49.555];[-44.16:0.01:-44.12]+0.005;[-41.8:0.01:-41.3];[-49.555];[-49.6:0.01:-49.5];
+
+% PA_detuning_list =  -44.6+[-.15:.01:.15];
+
 
 PA_detuning_list=round(PA_detuning_list,6); % round to nearest kHz
 
@@ -271,11 +276,10 @@ PA_detuning = getScanParameter(PA_detuning_list, ...
 
 % PA_detuning = paramGet('detuning');
 
-% PA_detuning = -49.6;
 
 % Scan in order
 % PA_detuning = getScanParameter(PA_detuning_list, ...
-% seqdata.scancycle, 1:length(PA_detuning_list), 'PA_detuning','GHz');%5
+%     seqdata.scancycle, 1:length(PA_detuning_list), 'PA_detuning','GHz');%5
 % 
 
 PA_freq = PA_resonance + PA_detuning;

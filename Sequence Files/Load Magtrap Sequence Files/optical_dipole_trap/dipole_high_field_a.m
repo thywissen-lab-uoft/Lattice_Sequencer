@@ -11,7 +11,7 @@ curtime = timein;
 %   resonsnace (202.1 G)
 %
 %
-% LOADING THE LATTICE ON ATTRACTIVE SIDE
+% %%%%%%%%LOADING THE LATTICE ON ATTRACTIVE SIDE%%%%%%%%%%%%
 %
 % To load the optical lattice on the attracive side of the 97 resonance, we
 % ramp the Feshbach field to high field (~190 G) and then perform a RF
@@ -24,14 +24,53 @@ curtime = timein;
 % To do this, the following flags are ("typcailly") used :
 %
 % ramp_field_1, spin_flip_7_5, ramp_field_2, spin_flip_7_5_again
-        
+%
+%
+%%%%%%HIGH FIELD PA MEASUREMENTS IN THE XDT%%%%%%%%%
+%
+%%%ATTRACTIVE SIDE%%
+%The different procedures for taking PA measurements on the attractive side in the XDT
+%are as follows:
+%   Procedure 1: Creating the mixture at high field.
+%
+%   (1) Starting with a spin-polarized gas, ramp the field to 209G
+%   (ramp_field_1)
+%   (2) Then create a spin mixture at 209G via multiple RF sweeps
+%   (mix_at_high_field)
+%   (3) Ramp to the desired science field where the PA pulse will occur
+%   (ramp_field_3)
+%   (4) Perform the PA pulse (doPA_pulse)
+%   (5) Ramp the field to 207G for imaging (ramp_field_for_imaging)
+%
+%   Procedure 2: Creating the mixture at low field
+%
+%   (1) Starting with a spin-mixed gas of -9/2 and -7/2 atoms, ramp the
+%   field to 195 G (ramp_field_1)
+%   (2) Perform an RF sweep to transfer -7/2 atoms to -5/2 (spin_flip_7_5)
+%   (3) Ramp the field to 207 G (ramp_field_2)
+%   (4) Flip the -5/2 atoms back to -7/2 (spin_flip_7_5_again)
+%   (5) Ramp to the desired science field where the PA pulse will occur
+%   (ramp_field_3)
+%   (6) Perform the PA pulse (doPA_pulse)
+%   (7) Ramp the field to 207G for imaging (ramp_field_for_imaging)
+%
+%%%REPULSIVE SIDE%%   
+% This is the procedure for performing PA measurements on the repulsive
+% side of the resonance:
+% 
+%   (1) Starting with a spin-mixture of -9/2 and -7/2 atoms, ramp the field
+%   to the desired value where the PA pulse will occur (ramp_field_1)
+%   (2) Perform the PA pulse (doPA_pulse)
+%   (3)Ramp the field to 195 G for imaging (ramp_field_for_imaging)
+% 
+
+
 %% Flags
           
     time_in_HF_imaging = curtime;
     
-    ramp_field_1 = 1;
-    
-    mix_at_high_field = 1;
+    ramp_field_1 = 1;    
+    mix_at_high_field = 0;
 
     spin_flip_9_7 = 0;    
     do_raman_spectroscopy = 0;    
@@ -50,11 +89,11 @@ curtime = timein;
     spin_flip_9_7_again = 0;
     spin_flip_7_5_again= 0;
 
-    ramp_field_3 =  1;
+    ramp_field_3 =  0;
     
     spin_flip_7_5_3 = 0;
     
-    doPA_pulse    = 1;
+    doPA_pulse    = 0;
 
     ramp_field_for_imaging = 1;
     spin_flip_7_5_4 = 0;
@@ -66,7 +105,7 @@ curtime = timein;
         zshim = [3]/2.35; %1.28V = 3G
         
         dispLineStr('Ramping High Field in XDT',curtime);
-        HF_FeshValue_Initial_List = [206];[201.5]; %200.5 201 201.5
+        HF_FeshValue_Initial_List = [206];[192];[201.5]; %200.5 201 201.5
         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_ODT','G');
 
@@ -1241,11 +1280,11 @@ curtime = calctime(curtime,50);
     if ramp_field_3
 
         clear('ramp');
-        HF_FeshValue_List =[198]; %+3G from zshim
+        HF_FeshValue_List =[199]; %+3G from zshim
         HF_FeshValue = getScanParameter(HF_FeshValue_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_ODT_3','G');           
-%         
-%         HF_FeshValue = paramGet('HF_FeshValue_ODT_3');
+        
+%         HF_FeshValue = paramGet('PA_FB_field'); %+3G from zshim
       
         HF_FeshValue_Initial = HF_FeshValue; %For use below in spectroscopy
         seqdata.params.HF_probe_fb = HF_FeshValue; %For imaging
@@ -1274,6 +1313,8 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
      HF_wait_time_list = [0];
      HF_wait_time = getScanParameter(HF_wait_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'HF_wait_time','ms');
+    
+    addOutputParam('PA_field_close',HF_FeshValue + 2.35*zshim + 0.11,'G');
     
 curtime = calctime(curtime,HF_wait_time);
   

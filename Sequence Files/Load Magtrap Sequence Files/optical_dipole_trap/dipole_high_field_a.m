@@ -24,6 +24,10 @@ curtime = timein;
 % To do this, the following flags are ("typcailly") used :
 %
 % ramp_field_1, spin_flip_7_5, ramp_field_2, spin_flip_7_5_again
+% (1) Go to high field
+% (2) transfer 7 to 5 to avoid feshbach
+% (3) ramp to above feshbach
+% (4) transfer 5 to 7 to make mixture
 %
 %
 %%%%%%HIGH FIELD PA MEASUREMENTS IN THE XDT%%%%%%%%%
@@ -70,19 +74,14 @@ curtime = timein;
     time_in_HF_imaging = curtime;
     
     ramp_field_1 = 1;    
-    mix_at_high_field = 0;
-
-    spin_flip_9_7 = 0;    
-    spin_flip_7_5 = 0;  
-
+    mix_at_high_field = 0;    
     
+    spin_flip_7_5 = 0;      
     ramp_field_2 = 0;
-
-    spin_flip_9_7_again = 0;
     spin_flip_7_5_again= 0;
+        
 
-    ramp_field_3 =  0;
-    
+    ramp_field_3 =  0;    
     spin_flip_7_5_3 = 0;
     
     doPA_pulse    = 0;
@@ -191,58 +190,6 @@ curtime = timein;
     end
     
 
-%% Transfer -9/2 to -7/2
-
-    if spin_flip_9_7
-        clear('sweep');
-        
-        zshim = [3]/2.35; %1.28V = 3G
-        % Get the field to do the sweep at
-        B = HF_FeshValue_Initial + 0.11 + +2.35*zshim; 
-        
-        % The shift shift list
-        rf_list =  [0] +...
-            (BreitRabiK(B,9/2,-7/2) - BreitRabiK(B,9/2,-9/2))/6.6260755e-34/1E6;
-        %rf_list = 48.3758; %@209G  [6.3371]; 
-        sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,...
-            seqdata.randcyclelist,'rf_freq_HF');  
-        
-        hf_flip_97_rf_gain_list = [0];
-        
-        % RF pulse parameters
-        sweep_pars.power = getScanParameter(hf_flip_97_rf_gain_list,seqdata.scancycle,...
-            seqdata.randcyclelist,'HF_flip_97_rf_gain');
-
-        delta_freq =1;
-        sweep_pars.delta_freq = delta_freq;
-        rf_pulse_length_list = 100;
-        sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,...
-            seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5               
-
-        % Perform the spectroscopy
-        curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-        
-        % Wait a hot second
-        HF_wait_time_list = [30];
-        HF_wait_time = getScanParameter(HF_wait_time_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'HF_wait_time_ODT','ms');
-    
-curtime = calctime(curtime,HF_wait_time);
-
-        % What was the purpose of two sweeps? (There and back?)
-% curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-
-
-        % Use the ACYnc (but it refers to back in time?)
-        do_ACync_rf = 0;
-        if do_ACync_rf
-            ACync_start_time = calctime(curtime,-80);
-            ACync_end_time = calctime(curtime,2*sweep_pars.pulse_length+50);
-            setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
-            setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
-        end
-    end
-
 %%  rf transfer from -7/2 to -5/2
         
     if spin_flip_7_5
@@ -327,39 +274,7 @@ curtime = rampMagneticFields(calctime(curtime,0), ramp);
     end
 %  curtime = calctime(curtime,100);
 
- %% Spin Flip 97 again
- if spin_flip_9_7_again
-    clear('sweep');
-    B = HF_FeshValue_Initial; 
-    rf_list =  [0] +...
-        (BreitRabiK(B,9/2,-7/2) - BreitRabiK(B,9/2,-9/2))/6.6260755e-34/1E6;
-    %rf_list = 48.3758; %@209G  [6.3371]; 
-    sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'rf_freq_HF');
-    sweep_pars.power =  [0];
-    delta_freq =1;
-    sweep_pars.delta_freq = delta_freq;
-    rf_pulse_length_list = 100;
-    sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5               
 
-        % Do the RF
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-
-        % Wait a hot second
- HF_wait_time_list = [30];
- HF_wait_time = getScanParameter(HF_wait_time_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'HF_wait_time_ODT','ms');
-curtime = calctime(curtime,HF_wait_time);
-
-    % ACYNC
-    do_ACync_rf = 0;
-    if do_ACync_rf
-        ACync_start_time = calctime(curtime,-80);
-        ACync_end_time = calctime(curtime,2*sweep_pars.pulse_length+50);
-        setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
-        setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
-    end
- end
  
  %% RF 75 Flip again
   if spin_flip_7_5_again

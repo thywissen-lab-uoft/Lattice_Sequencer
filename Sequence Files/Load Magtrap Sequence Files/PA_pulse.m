@@ -49,7 +49,7 @@ setAnalogChannel(0,'Vortex Current Mod',0);
 seqdata.analogchannels(33).name = 'Vortex Current Mod';
 tD = -3.5;
 
-pulse_time_list = [4];1;%ms
+pulse_time_list = [20];1;%ms
 pulse_time = getScanParameter(pulse_time_list,...
     seqdata.scancycle,seqdata.randcyclelist,'pulse_time','ms');
 

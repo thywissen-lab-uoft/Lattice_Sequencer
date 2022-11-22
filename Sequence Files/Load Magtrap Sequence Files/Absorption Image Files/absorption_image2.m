@@ -240,9 +240,17 @@ else
             'K Trap FM',K_detuning+(seqdata.params.HF_probe_fb-190)*0.675*2+offset);
     
     if (flags.HighField_Attractive)
-        HF_prob_freq9 =  params.detunings.K.X.negative9.HF.attractive;
+        if seqdata.flags.load_lattice
+            HF_prob_freq9 = params.detunings.K.X.negative9.HF.attractive_lattice;
+        else
+            HF_prob_freq9 =  params.detunings.K.X.negative9.HF.attractive_xdt;
+        end
     else
-        HF_prob_freq9 =  params.detunings.K.X.negative9.HF.normal;
+        if seqdata.flags.load_lattice
+            HF_prob_freq9 = params.detunings.K.X.negative9.HF.repulsive_lattice;
+        else
+            HF_prob_freq9 =  params.detunings.K.X.negative9.HF.repulsive_xdt;
+        end
     end
     
     HF_prob_freq7 =  params.detunings.K.X.negative7.HF.normal;
@@ -462,16 +470,23 @@ switch flags.image_atomtype
                     Boff = 0.11;
                     B = seqdata.params.HF_probe_fb + Boff;
                     
-                    %rf_tof_shift 45-->att
                     
-                    if (flags.HighField_Attractive)
-                        rf_tof_shift_list = [45];[45];125 % 207G = 204G FB + 3G zshim; 45kHz for 15ms TOF, 125kHz for 21ms TOF
+                    if flags.HighField_Attractive
+                        if seqdata.flags.load_lattice
+                            rf_tof_shift = params.HF_rf_shift.attractive_lattice;
+                        else
+                            rf_tof_shift = params.HF_rf_shift.attractive_xdt;
+                        end
                     else
-                        rf_tof_shift_list = [57]; % 195G
+                        if seqdata.flags.load_lattice
+                            rf_tof_shift = params.HF_rf_shift.repulsive_lattice;
+                        else
+                            rf_tof_shift = params.HF_rf_shift.repulsive_xdt;
+                        end                      
+                        
                     end
+                    addOutputParam('rf_tof_shift',rf_tof_shift,'kHz');                   
                     
-                    rf_tof_shift = getScanParameter(rf_tof_shift_list,seqdata.scancycle,...
-                        seqdata.randcyclelist,'rf_tof_shift','kHz');
                     
                     rf_tof_freq =  rf_tof_shift*1e-3 +... 
                         abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);   

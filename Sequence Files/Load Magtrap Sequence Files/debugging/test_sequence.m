@@ -4734,10 +4734,10 @@ setDigitalChannel(calctime(curtime,-10),'XDT TTL',0);
 setAnalogChannel(calctime(curtime,0),'ZeroVolts',0); 
 % % % % % Choose the power limits
 ODT1powerLOW=-0.04;
-ODT1powerHIGH = .07;
+ODT1powerHIGH = 0.5;
 % % % 
 ODT2powerLOW=-0.04;
-ODT2powerHIGH = .07;
+ODT2powerHIGH = 0.5;
 % % % 
 % % % % % setAnalogChannel(curtime,'dipoleTrap1',-0.025); 
 AnalogFunc(calctime(curtime,0),'dipoleTrap1',...
@@ -4746,18 +4746,23 @@ AnalogFunc(calctime(curtime,0),'dipoleTrap1',...
 AnalogFunc(calctime(curtime,0),'dipoleTrap2',...
     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),100,100,ODT2powerLOW,ODT2powerHIGH);
 % % % 
-curtime = calctime(curtime,1000);
+curtime = calctime(curtime,10000);
 
 % setAnalogChannel(curtime,'dipoleTrap1',ODT1powerLOW); 
 % setAnalogChannel(curtime,'dipoleTrap2',ODT2powerLOW);
 % setDigitalChannel(calctime(curtime,10),'XDT TTL',1);
 % setDigitalChannel(calctime(curtime,.5),'XDT Direct Control',1);
 
+AnalogFunc(calctime(curtime,0),'dipoleTrap1',...
+    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),100,100,ODT1powerHIGH,ODT1powerLOW);
+    
+AnalogFunc(calctime(curtime,0),'dipoleTrap2',...
+    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),100,100,ODT2powerHIGH,ODT2powerLOW);
 
 % setAnalogChannel(curtime,54,0);
 
-% curtime = calctime(curtime,5000);
-% setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
+curtime = calctime(curtime,500);
+setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
 % setAnalogChannel(curtime,'dipoleTrap1',-10,1); 
 % setAnalogChannel(curtime,'dipoleTrap2',-10,1); 
 
@@ -5585,7 +5590,7 @@ end
 % setAnalogChannel(calctime(curtime,0),'uWave FM/AM',1)
 
 % curtime = PA_pulse(curtime); 
-DigitalPulse(calctime(curtime,10),'PixelFly Trigger',1,1);
+% DigitalPulse(calctime(curtime,10),'PixelFly Trigger',1,1);
 
 timeout = curtime;
 % SelectScopeTrigger('PA_Pulse');

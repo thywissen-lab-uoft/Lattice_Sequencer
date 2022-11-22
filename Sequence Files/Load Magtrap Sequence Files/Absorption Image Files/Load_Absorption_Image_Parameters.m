@@ -72,7 +72,7 @@ function params = Load_Absorption_Image_Parameters()
     %% HF imaging
 %     % Potassium -HF -Xcam : settting the DP HF imaging AOM freq
 %     kHFdet_shift_list = [-8];%195G
-    kHFdet_shift_list = [0];
+    kHFdet_shift_list = [-6.5];
     kHFdet_shift = getScanParameter(kHFdet_shift_list,seqdata.scancycle,...
         seqdata.randcyclelist,'HF_kdet_shift','MHz');
 
@@ -82,6 +82,26 @@ function params = Load_Absorption_Image_Parameters()
    
     params.detunings.K.X.negative9.HF.normal = [-8];%195G
     params.detunings.K.X.negative9.HF.attractive = [-8.5];[-9]; %[-9] %for 207G 15ms TOF; [-8.5] for 207G 21 ms
+        
+    % Detuninings
+    params.detunings.K.X.negative9.HF.repulsive_lattice = [-8];         % 15 ms tof, 195 G
+    params.detunings.K.X.negative9.HF.repulsive_xdt = [-8];             % 15 ms tof, 195 G
+    params.detunings.K.X.negative9.HF.attractive_lattice = [-7.5];[-10];[-8.5];      % 15 ms tof, 207 G
+    params.detunings.K.X.negative9.HF.attractive_xdt = [-8.5];          % 21 ms tof, 207 G
+
+    
+    
+    drf_list = [0];
+    d_rf = getScanParameter(drf_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'rf_tof_shiftshift','kHz');
+
+    % RF shifts
+    params.HF_rf_shift.repulsive_lattice = [57];        % 15 ms tof, 195 G, (zshim=0)
+    params.HF_rf_shift.repulsive_xdt = [57];            % 15 ms tof, 195 G, (zshim=0)
+    params.HF_rf_shift.attractive_lattice = [62];45;    % 15 ms tof, 207 G, (zhim=0);
+    params.HF_rf_shift.attractive_xdt = [125];          % 21 ms tof, 207 G
+    
+    
     
     params.detunings.K.X.negative9.HF.SG = -4.5; %
     

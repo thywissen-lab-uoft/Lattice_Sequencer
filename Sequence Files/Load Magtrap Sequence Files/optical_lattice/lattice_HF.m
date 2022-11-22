@@ -97,7 +97,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
     
     if field_ramp_init
         % Feshbach Field ramp
-        HF_FeshValue_Initial_List = [207]; [197];
+        HF_FeshValue_Initial_List = [204]; [197];
         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_Lattice','G');
         
@@ -866,7 +866,7 @@ end
         B = HF_FeshValue_Initial + Boff + 2.35*zshim; 
 %         
      
-         rf_shift_list = [-33];   
+         rf_shift_list = [-10:2:10];[32:2:48];   
          rf_shift = getScanParameter(rf_shift_list,seqdata.scancycle,...
                          seqdata.randcyclelist,'rf_freq_HF_shift','kHz');
                     

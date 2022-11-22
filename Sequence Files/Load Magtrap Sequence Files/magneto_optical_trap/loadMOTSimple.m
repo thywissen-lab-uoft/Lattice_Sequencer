@@ -20,7 +20,7 @@ BGrad=getScanParameter(BGrad_list,...
     seqdata.scancycle,seqdata.randcyclelist,'MOT_Gradient','??');
 
 % Rb Trap Detuning
-Rb_Trap_MOT_det_list=[-25];[-28];
+Rb_Trap_MOT_det_list=[-25];[-25];[-28];
 Rb_Trap_MOT_detuning=getScanParameter(Rb_Trap_MOT_det_list,...
     seqdata.scancycle,seqdata.randcyclelist,'Rb_Trap_MOT_detuning','MHz');
 

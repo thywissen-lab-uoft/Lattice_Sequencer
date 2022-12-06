@@ -9,57 +9,67 @@ global seqdata
 
 curtime = timein;
 curtime = calctime(curtime, 1000);
+%% Rotate waveplate
+wp_Trot1 = 600; % Rotation time during XDT
+    
+    P_RotWave_I = 0.8;
+    P_RotWave_II = 0.99;
+    
+    AnalogFunc(calctime(curtime,-100-wp_Trot1),'latticeWaveplate',...
+        @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
+        wp_Trot1,wp_Trot1,P_RotWave_I);    
 
 scope_trigger =  'lattice control test';'Rampup ODT';
-%%
-      rotation_time = 1000;   % The time to rotate the waveplate
-      P_lattice = 1; %0.5/0.9        % The fraction of power that will be transmitted 
-%       curtime = AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),rotation_time,rotation_time,P_lattice);
-      curtime = calctime(curtime,1000);
-        
-        lattice_depth = [0 0 300]; %[0 0.82 0.87]
-        ramp_time = 50;
-        voltage_func = 2;
-        zero = [-9.99,0];
 
- 
-%     % Initialize lattice depths to zero
-%     curtime = calctime(curtime,100);   
-    setAnalogChannel(calctime(curtime,-70),'yLattice',-10,1);
-    setAnalogChannel(calctime(curtime,-70),'zLattice',-10,1);
-    setAnalogChannel(calctime(curtime,-0),'xLattice',-10,1);
-% %     
-% %     % Turn on Lattice RF
-    setDigitalChannel(calctime(curtime,-5),'yLatticeOFF',0);%0: ON
-%     setDigitalChannel(calctime(curtime,-3),'yLatticeOFF',0);%0: ON
-% %     setDigitalChannel(calctime(curtime,-5),'Z Lattice TTL',0);%0:  ON
-% % 
-% %     % Enable lattice integrator feedback
-%     setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',0);% 0: Enable Feedback%     
-% % 
-% %     
-% % 
-% % Ramp up lattices
-% %     curtime = calctime(curtime,1000);
-% %     
-%         % Trigger the scope
-%     setDigitalChannel(calctime(curtime,0),'ScopeTrigger',0);
-%     setDigitalChannel(calctime(curtime,1),'ScopeTrigger',1);
-% % %     
-% %     AnalogFunc(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, zero(voltage_func),lattice_depth(1),voltage_func);
-% %     AnalogFunc(calctime(curtime,0),'xLattice',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, 0,lattice_depth(1));
-% % %     
-% %     curtime = AnalogFunc(calctime(curtime,0),'yLattice',...
-% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, -0.7,lattice_depth(2));
-%     curtime = AnalogFunc(calctime(curtime,0),'zLattice',...
-%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, zero(voltage_func),lattice_depth(3),voltage_func);
-% %     curtime = AnalogFunc(calctime(curtime,0),'zLattice',...
-% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ramp_time, ramp_time, zero(voltage_func),0,1);
-% % % 
-%     curtime = calctime(curtime,100);
-% %     
-% % %     setAnalogChannel(calctime(curtime,0),44,0.05,1);
+%% Set Lattices to Zero Value
+    L0=seqdata.params.lattice_zero;  
+    
+    setAnalogChannel(calctime(curtime,-60),'Lattice Feedback Offset', -9.8,1);
+
+    
+    setDigitalChannel(calctime(curtime,0),'yLatticeOFF',0); % 0 : All on, 1 : All off
+
+  % Ramp xLattice to the first value ("0Er")
+    setAnalogChannel(calctime(curtime,0),'xLattice',L0(1));
+
+    % Ramp yLattice to the first value ("0Er")
+    setAnalogChannel(calctime(curtime,0),'yLattice',L0(2));
+
+    
+    % Ramp zLattice to the first value ("0Er")
+    setAnalogChannel(calctime(curtime,0),'zLattice',L0(3));
+
+    curtime = calctime(curtime,100);
+%%  Ramp Lattices Up
+
+
+Xdepth = 100;
+Ydepth = 100;
+Zdepth = 100;
+tramp = 100;
+
+
+
+AnalogFuncTo(calctime(curtime,0),'xLattice', @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+    tramp, tramp, Xdepth);
+AnalogFuncTo(calctime(curtime,0),'yLattice', @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+    tramp, tramp, Ydepth); 
+curtime = AnalogFuncTo(calctime(curtime,0),'zLattice', @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+    tramp, tramp, Zdepth);
+
+%  % Ramp xLattice to the first value ("0Er")
+%     setAnalogChannel(calctime(curtime,0),'xLattice',L0(1));
 % 
+%     % Ramp yLattice to the first value ("0Er")
+%     setAnalogChannel(calctime(curtime,0),'yLattice',L0(2));
+% 
+%     
+%     % Ramp zLattice to the first value ("0Er")
+%     setAnalogChannel(calctime(curtime,0),'zLattice',L0(3));
+% % setAnalogChannel(calctime(curtime,0),'xLattice',5,1);
+
+%%
+
 
 do_lattice_mod = 0;
 if do_lattice_mod

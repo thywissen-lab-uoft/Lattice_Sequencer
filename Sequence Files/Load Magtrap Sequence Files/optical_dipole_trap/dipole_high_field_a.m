@@ -80,7 +80,7 @@ curtime = timein;
     
     % Spin Manipulations for attractive with initial mixture
     flip_7_5                = 0;        % 7 to 5 to avoid fesbach
-    ramp_field_2            = 0;        % Ramp above feshbach
+    ramp_field_2            = 1;        % Ramp above feshbach
     flip_7_5_again          = 0;        % 5 to 7 for science mixture
         
     % Ramp to science magnetic field
@@ -96,10 +96,10 @@ curtime = timein;
 % Ramp the feshbach field to the initial high value (and set the z-shim)
     if ramp_field_1
         
-        zshim = [3]/2.35; %1.28V = 3G
+        zshim = [0]/2.35; %1.28V = 3G
         
         dispLineStr('Ramping High Field in XDT',curtime);
-        HF_FeshValue_Initial_List = [206];[192];
+        HF_FeshValue_Initial_List = 190;[206];
         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_ODT','G');
 
@@ -201,7 +201,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
         mF1=-7/2;   % Lower energy spin state
         mF2=-5/2;   % Higher energy spin state
         
-        zshim = [3]/2.35; %1.28V = 3G
+        zshim = [0]/2.35; %1.28V = 3G
         
         % Get the center frequency
         B = HF_FeshValue_Initial + 0.11 + 2.35*zshim; 
@@ -252,13 +252,13 @@ seqdata.params.HF_probe_fb = HF_FeshValue_Initial;
    if ramp_field_2
         dispLineStr('Secondary Field Ramp',curtime);
         % Fesahbach Field ramp
-        HF_FeshValue_Final_List = [204];% 206 207 208 209 210 211
+        HF_FeshValue_Final_List = [207];% 206 207 208 209 210 211
         HF_FeshValue_Final = getScanParameter(HF_FeshValue_Final_List,...
         seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Final_ODT','G');
 
         % Define the ramp structure
         ramp=struct;
-        ramp.FeshRampTime = 100;
+        ramp.FeshRampTime = 100;10;100;
         ramp.FeshRampDelay = -0;
         ramp.FeshValue = HF_FeshValue_Final;
         ramp.SettlingTime = 50; 50;    
@@ -287,7 +287,7 @@ curtime = rampMagneticFields(calctime(curtime,0), ramp);
         mF1=-7/2;   % Lower energy spin state
         mF2=-5/2;   % Higher energy spin state
 
-        zshim = [3]/2.35; %1.28V = 3G
+        zshim = [0]/2.35; %1.28V = 3G
         
         % Get the center frequency
         B = HF_FeshValue_Initial +0.11 +2.35*zshim; 
@@ -329,7 +329,7 @@ curtime = calctime(curtime,50);
     if ramp_field_3
 
         clear('ramp');
-        HF_FeshValue_List =[199]; %+3G from zshim
+        HF_FeshValue_List =[203]; %+3G from zshim
         HF_FeshValue = getScanParameter(HF_FeshValue_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_ODT_3','G');           
         
@@ -338,7 +338,7 @@ curtime = calctime(curtime,50);
         HF_FeshValue_Initial = HF_FeshValue; %For use below in spectroscopy
         seqdata.params.HF_probe_fb = HF_FeshValue; %For imaging
 
-        zshim_list = [3]/2.35;
+        zshim_list = [0]/2.35;
         zshim = getScanParameter(zshim_list,...
     seqdata.scancycle,seqdata.randcyclelist,'HF_shimvalue_ODT_3','V');
         
@@ -379,7 +379,7 @@ end
     zshim = [3]/2.35;
 
     % Fesahbach Field ramp
-    HF_FeshValue_Final_List = [204]; % 206 207 208 209 210 211
+    HF_FeshValue_Final_List = [204]; [204]; % 206 207 208 209 210 211
     HF_FeshValue_Final = getScanParameter(HF_FeshValue_Final_List,...
     seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Imaging_ODT','G');
  

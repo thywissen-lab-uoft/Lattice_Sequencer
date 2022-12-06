@@ -509,7 +509,7 @@ switch flags.image_atomtype
                         seqdata.randcyclelist,'rf_tof_pulse_length','ms');
                     
                     % RF Gain Amplitude
-                    rf_tof_gain_list = [9];[9];
+                    rf_tof_gain_list = [9.9];[9];
                     rf_tof_gain = getScanParameter(rf_tof_gain_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_tof_gain','arb');
 

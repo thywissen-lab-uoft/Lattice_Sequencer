@@ -182,9 +182,9 @@ RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
 seqdata.flags.do_dipole_trap = 1; 
 seqdata.params.ODT_zeros = [-0.04,-0.04];
 seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
-seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 0;  % uWave Frequency sweep Rb 2-->1
+seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 0; % uWave Frequency sweep Rb 2-->1
 seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
-seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
+seqdata.flags.do_D1OP_before_evap= 0;           % D1 pump to purify
 seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
     
 seqdata.flags.kill_Rb_before_evap = 0;   % Remove Rb before optical evaporation
@@ -206,6 +206,9 @@ seqdata.flags.CDT_evap_2_high_field = 0;
 
 % XDT High Field Experiments
 seqdata.flags.dipole_high_field_a = 1;
+
+% Take a second PA pulse after absorption imaging to calibrate PA power
+seqdata.flags.do_calibrate_PA = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OPTICAL LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -235,12 +238,13 @@ seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing/align
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OPTICAL LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% scope_trigger = 'lattice_ramp_1';
-scope_trigger = 'Lattice_Mod';
+% scope_trigger = 'rf_spectroscopy';
+% scope_trigger = 'Lattice_Mod';
 % scope_trigger = 'FB_ramp';
+% scope_trigger = 'lattice_ramp_2';
 % scope_trigger = 'lattice_off';
 % scope_trigger = 'Raman Beams On';
-% scope_trigger = 'PA_Pulse';
+scope_trigger = 'PA_Pulse';
 
 %% Set switches for predefined scenarios
 
@@ -262,8 +266,8 @@ dispLineStr('Updating PA Request',curtime);
 PA_resonance = 391016.296050;
 PA_resonance = 391016.821;
 
-PA_detuning_list = [-49.555];[-44.16:0.01:-44.12]+0.005;[-41.8:0.01:-41.3];[-49.555];[-49.6:0.01:-49.5];
-
+PA_detuning_list = [-43.5];[-43.55:0.01:-43.4];[-44.16:0.01:-44.12]+0.005;[-41.8:0.01:-41.3];[-49.555];[-49.6:0.01:-49.5];
+PA_detuning_list=-49.555;
 % PA_detuning_list =  -44.6+[-.15:.01:.15];
 
 
@@ -561,9 +565,6 @@ setAnalogChannel(calctime(curtime,0),'Z Shim',0.0,2); %2
 
     % Open kitten relay
     curtime = setDigitalChannel(curtime,'Kitten Relay',1);
-
-    % Trigger Labjack for monitoring currents
-    DigitalPulse(calctime(curtime,-500),'Transport LabJack Trigger',100,0);
     
     %Turn shim multiplexer to Science shims
     setDigitalChannel(calctime(curtime,1000),37,1); 
@@ -1066,6 +1067,13 @@ curtime = iXon_FluorescenceImage(curtime,'ExposureOffsetTime',molasses_offset,'E
     %RHYS - the next bits of post-sequence code are useful (well, if the
     %demagnetization stuff actually does anything). Could be wrapped into a
     %function. 
+    
+%% Post-sequence: Pulse the PA laser again for labjack power measurement
+    if seqdata.flags.do_calibrate_PA == 1
+    
+       curtime = PA_pulse(curtime,2); 
+    
+    end
 
 %% Post-sequence: rotate diople trap waveplate to default value
 

@@ -33,7 +33,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
 curtime = calctime(curtime,50);  %extra wait time
     else 
         AM_spec_direction = 'X';
-        AM_spec_latt_depth = 100;
+        AM_spec_latt_depth = 200;
         addOutputParam('AM_spec_depth',AM_spec_latt_depth);
     end
 

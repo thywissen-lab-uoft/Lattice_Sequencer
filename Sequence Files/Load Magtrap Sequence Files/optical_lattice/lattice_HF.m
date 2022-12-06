@@ -46,8 +46,8 @@ curtime = timein;
     
     % More RF Stuff (?)
     rf_rabi_manual                  = 0;
-    doPA_pulse                      = 0;
-    do_rf_spectroscopy              = 1; 
+    doPA_pulse                      = 1;
+    do_rf_spectroscopy              = 0; 
     do_rf_post_spectroscopy         = 0; 
         
     do_raman_spectroscopy_post_rf   = 0;        % Raman Spectroscopy
@@ -97,12 +97,13 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
     
     if field_ramp_init
         % Feshbach Field ramp
-        HF_FeshValue_Initial_List = [204]; [197];
+        HF_FeshValue_Initial_List = [206]; [197];
         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_Lattice','G');
         
-%         HF_FeshValue_Initial = paramGet('HF_FeshValue_Initial');
-
+        
+        HF_FeshValue_Initial = paramGet('HF_FeshValue_Initial_Lattice');
+%         addOutp
         
         zshim_list = [0];
         zshim = getScanParameter(zshim_list,...
@@ -858,6 +859,8 @@ end
     
     if do_rf_spectroscopy
         dispLineStr('RF Sweep Spectroscopy',curtime);
+        ScopeTriggerPulse(curtime,'rf_spectroscopy');
+        
         mF1=-7/2;   % Lower energy spin state
         mF2=-5/2;   % Higher energy spin state
 
@@ -866,7 +869,8 @@ end
         B = HF_FeshValue_Initial + Boff + 2.35*zshim; 
 %         
      
-         rf_shift_list = [-10:2:10];[32:2:48];   
+         rf_shift_list = [62];
+%          rf_shift_list= 10;
          rf_shift = getScanParameter(rf_shift_list,seqdata.scancycle,...
                          seqdata.randcyclelist,'rf_freq_HF_shift','kHz');
                     
@@ -885,29 +889,35 @@ end
         end
 
         % Define the sweep parameters
-        delta_freq= 0.0025; %0.00125; %.0025;  in MHz            
-        addOutputParam('rf_delta_freq_HF',delta_freq,'MHz');
+        delta_freq_SRS= 0.0025; 0.0025; %0.00125; %.0025;  in MHz            
+        addOutputParam('rf_delta_freq_HF_SRS',delta_freq_SRS,'MHz');
+        
+        delta_freq_DDS = 0.01;
+        addOutputParam('rf_delta_freq_HF_DDS',delta_freq_DDS,'MHz');
 
         % RF Pulse 
-        rf_pulse_length_list = 2; %ms
+        rf_pulse_length_list = 1; 2; %ms
         rf_pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,...
             seqdata.randcyclelist,'rf_pulse_length');
         
-%         sweep_type = 'DDS';
-        sweep_type = 'SRS_HS1';
+        sweep_type = 'DDS';
+%         sweep_type = 'SRS_HS1';
         
         switch sweep_type
             case 'DDS'
                 freq_list=rf_freq_HF+[...
-                    -0.5*delta_freq ...
-                    -0.5*delta_freq ...
-                    0.5*delta_freq ...
-                    0.5*delta_freq];            
+                    -0.5*delta_freq_DDS ...
+                    -0.5*delta_freq_DDS ...
+                    0.5*delta_freq_DDS ...
+                    0.5*delta_freq_DDS];            
                 pulse_list=[2 rf_pulse_length 2];
 
                 % Max rabi frequency in volts (uncalibrated for now)
                 off_voltage=-10;
-                peak_voltage=2.5;
+                
+                peak_voltage_list = 2.5;
+                peak_voltage = getScanParameter(peak_voltage_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'DDS_RF_HFspec_gain', 'V');
 
                 % Display the sweep settings
                 disp([' Freq Center    (MHz) : [' num2str(rf_freq_HF) ']']);
@@ -993,13 +1003,13 @@ end
                 addOutputParam('rf_HS1_beta',beta);
 
                 disp(['     Freq Center  : ' num2str(rf_freq_HF) ' MHz']);
-                disp(['     Freq Delta   : ' num2str(delta_freq*1E3) ' kHz']);
+                disp(['     Freq Delta   : ' num2str(delta_freq_SRS*1E3) ' kHz']);
                 disp(['     Pulse Time   : ' num2str(rf_pulse_length) ' ms']);
                 disp(['     Beta         : ' num2str(beta)]);
 
                 % Enable uwave frequency sweep
                 rf_srs_opts.EnableSweep=1;                    
-                rf_srs_opts.SweepRange=abs(delta_freq);     
+                rf_srs_opts.SweepRange=abs(delta_freq_SRS);     
                 
                 % Set SRS Source post spec
                 setDigitalChannel(calctime(curtime,-5),'SRS Source post spec',0);
@@ -1113,7 +1123,7 @@ end
        
 
         % Define the sweep parameters
-%         delta_freq= 0.025; %.0025;  in MHz            
+        delta_freq= 0.025; %.0025;  in MHz            
         addOutputParam('rf_delta_freq_HF',delta_freq,'MHz');
 
         % RF Pulse 

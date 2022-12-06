@@ -5,16 +5,16 @@ global seqdata
 %% Zero optical power calibration
 % These voltages are the "zero" lattice levels.  Use these values when
 % ramping up the lattice from totally zero power to smooth out ramps.
-xLattice0_list = [-0.98];[-0.85];[-1.64];
+xLattice0_list = -0.84;-0.93;[-0.95];[-0.85];[-1.64];
 xLattice0 = getScanParameter(xLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'xLatt0');
 
-yLattice0_list =  -0.65;-0.58;%-0.955;-1.05;[-1.15];
+yLattice0_list = -0.61;-0.6;-0.58;%-0.955;-1.05;[-1.15];
 yLattice0 = getScanParameter(yLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'yLatt0');
 
-zLattice0_list = -0.42;0.35;0.26;0.46;[0.40];0.44;
-zLattice0_list = -0.45;0.03;
+zLattice0_list = -0.43; -0.42;0.35;0.26;0.46;[0.40];0.44;
+zLattice0_list = -0.4;-0.45;0.03;
 zLattice0 = getScanParameter(zLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'zLatt0');  
 % These parameters could be super sensitive to cause spikes and kill atoms
@@ -31,7 +31,7 @@ x_m1 = 48.2126;
 x_b1 = -9.6744;
 x_m2 = 4.0806;
 x_b2 = 1.1235;
-x_ErPerW = 372;
+x_ErPerW = 330;372; %12/01/22 = 330
 
 x_power2voltage = @(P) (P*x_m1 + x_b1).*(P < x_p_threshold) + ...
     (P*x_m2 + x_b2).*(P >= x_p_threshold);
@@ -76,7 +76,7 @@ latt_calib(2).P_threshold = y_p_threshold;
 z_power2voltage = @(P) (P*22.724471 - 9.74512).*(P < 0.527164) + ...
     (P*1.696746 + 1.339949).*(P >= 0.527164);
 
-z_ErPerW = 193;186; %11/14/22
+z_ErPerW = 176;193;186; %12/01/22 = 176; %11/14/22 = 193
 
 % x_lattice2voltage = @(U) x_power2voltage(U/x_ErPerW); 
 zLattice = @(U) z_power2voltage(U/z_ErPerW);

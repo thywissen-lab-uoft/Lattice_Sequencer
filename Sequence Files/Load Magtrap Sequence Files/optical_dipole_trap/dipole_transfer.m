@@ -20,7 +20,7 @@ ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 dipole_holdtime_before_evap = 0;    % not a flag but a value
 ramp_Feshbach_B_before_CDT_evap = 0;
 
-Evap_End_Power_List = [0.07];[0.06];0.065;[0.08];
+Evap_End_Power_List = [0.06];[0.06];0.065;[0.08];
 
 % Levitation Field During evaporation TESTING
 do_levitate_evap = 0;
@@ -67,7 +67,7 @@ end
 XDT2_power_func = @(x) x;
 
 % Initial XDT power
-P12_list = [1.6];1.4;
+P12_list = [1.5];[1.6];[1.6];1.4;
 P12 = getScanParameter(P12_list,seqdata.scancycle,...
     seqdata.randcyclelist,'XDT_initial_power','W');
 P1 = P12;
@@ -407,13 +407,13 @@ if ( seqdata.flags.do_Rb_uwave_transfer_in_ODT)
     dispLineStr('uWave Rb 2-->1',curtime);
     
     init_ramp_fields = 1; % Ramp field to starting value?
-    do_F2_blowaway = 1; % Remove remaining F=2 atoms after transfer?
+    do_F2_blowaway = 1 ; % Remove remaining F=2 atoms after transfer?
 
 
     %%%%%%%%%%%%%%%%%%%%%%%%
     % Program the SRS
     %%%%%%%%%%%%%%%%%%%%%%%
-    % Use this code if using the SRS (instead of the Anritsu) to
+    % Use this code if using the SRS (inSstead of the Anritsu) to
     % transfer atoms
 
     Rb_SRS=struct;
@@ -431,7 +431,7 @@ if ( seqdata.flags.do_Rb_uwave_transfer_in_ODT)
     % Field Sweep settings
     %%%%%%%%%%%%%%%%%%%%%%%        
     % Center feshbach field
-    mean_field_list = 19.432;
+    mean_field_list =19.432;
     mean_field = getScanParameter(mean_field_list,seqdata.scancycle,...
         seqdata.randcyclelist,'Rb_Transfer_Field','G');
 
@@ -500,6 +500,7 @@ curtime  =  AnalogFuncTo(calctime(curtime,0),'FB current',...
 
     % Switch Rb microwave source to Sextupled SRS for whatever follows
     setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',1); %0 = Anritsu, 1 = Sextupler    
+        
     
     %%%%%%%%%%%%%%%%%%%%%%%%
     % F=2 Pulse Blow Away
@@ -732,10 +733,10 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
     disp(' Applying RF sweep to transfer K state.');
     
     % RF Sweep Settings
-    k_rf_freq_list = [6.05];
+    k_rf_freq_list = [6.1];[6.05];
     k_rf_pulsetime_list = [100];100;
     k_rf_power_list = [-3];0;-3;
-    k_rf_delta_list=[-1];-0.5;   
+    k_rf_delta_list=[-1.2];[-1];-0.5;   
     
     clear('sweep');
     sweep=struct;

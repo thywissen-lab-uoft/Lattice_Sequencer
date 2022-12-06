@@ -13,10 +13,10 @@ function params = Load_Absorption_Image_Parameters()
     params.detunings.K.X.negative.normal = 32.6; %(32.6) for DFG, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
     
     % for mF stern gerlach
-%     params.detunings.K.X.negative.SG = 34.5; 
+    params.detunings.K.X.negative.SG = 34.5; 
     
     % for F stern gerlach
-    params.detunings.K.X.negative.SG = 35.5; 
+%     params.detunings.K.X.negative.SG = 35.5; 
     
     % Lattice F Stern Gerlach, TOF = 15 ms
 %     params.detunings.K.X.negative.SG = 35.5+kdet_shift;
@@ -83,7 +83,7 @@ function params = Load_Absorption_Image_Parameters()
     params.detunings.K.X.negative9.HF.normal = [-8];%195G
     params.detunings.K.X.negative9.HF.attractive = [-8.5];[-9]; %[-9] %for 207G 15ms TOF; [-8.5] for 207G 21 ms
         
-    % Detuninings
+    % Detunings
     params.detunings.K.X.negative9.HF.repulsive_lattice = [-8];         % 15 ms tof, 195 G
     params.detunings.K.X.negative9.HF.repulsive_xdt = [-8];             % 15 ms tof, 195 G
     params.detunings.K.X.negative9.HF.attractive_lattice = [-7.5];[-10];[-8.5];      % 15 ms tof, 207 G
@@ -97,7 +97,7 @@ function params = Load_Absorption_Image_Parameters()
 
     % RF shifts
     params.HF_rf_shift.repulsive_lattice = [57];        % 15 ms tof, 195 G, (zshim=0)
-    params.HF_rf_shift.repulsive_xdt = [57];            % 15 ms tof, 195 G, (zshim=0)
+    params.HF_rf_shift.repulsive_xdt = 52.5;[57];            % 15 ms tof, 195 G, (zshim=0)
     params.HF_rf_shift.attractive_lattice = [62];45;    % 15 ms tof, 207 G, (zhim=0);
     params.HF_rf_shift.attractive_xdt = [125];          % 21 ms tof, 207 G
     

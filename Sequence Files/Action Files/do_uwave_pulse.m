@@ -22,7 +22,7 @@ curtime = timein;
     transfer_switch_delay = -50; % how much earlier to switch the transfer switches
     
     %Make sure RF is off
-    setDigitalChannel(calctime(curtime,0),19,0);
+    setDigitalChannel(calctime(curtime,0),'RF TTL',0);
 
     %Make sure that RF/uWave switch is set to allow uWaves through through
     if ~(getChannelValue(seqdata,'RF/uWave Transfer',0) == 1)

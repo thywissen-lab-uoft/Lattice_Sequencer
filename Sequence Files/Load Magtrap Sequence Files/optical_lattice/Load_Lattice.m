@@ -29,7 +29,7 @@ do_lattice_ramp_1 = 1;            % Load the lattices
 seqdata.flags.do_lattice_am_spec = 0;               % Amplitude modulation spectroscopy             
 
 do_rotate_waveplate_2 = 0;        % Second waveplate rotation 95% 
-do_lattice_ramp_2 = 0;            % Secondary lattice ramp for fluorescence imaging
+do_lattice_ramp_2 = 0 ;            % Secondary lattice ramp for fluorescence imaging
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -152,7 +152,7 @@ if do_lattice_ramp_1
                 'initial_latt_depth','Er');
             
             % Final lattice depth to ramp to
-            U = 100;
+            U = 200;
 
             %%% Lattice %%%
             % Ramp the optical powers of the lattice
@@ -861,7 +861,7 @@ if do_lattice_ramp_2
     ScopeTriggerPulse(curtime,'lattice_ramp_2');
 
     % 
-    imaging_depth_list = [675]; 
+    imaging_depth_list = [200]; [675]; 
     imaging_depth = getScanParameter(imaging_depth_list,seqdata.scancycle,...
         seqdata.randcyclelist,'FI_latt_depth','Er'); 
 

@@ -112,7 +112,7 @@ seqdata.digchannels(63).name = 'XDT Direct Control'; %0: off, 1:on
 % seqdata.digchannels(63).name = 'Plug Mode Switch';%'plug mode switch'; %1: manual mode, 0:Auto mode
 seqdata.digchannels(64).name = 'K Sci Repump'; %K repump in science chamber 
 seqdata.digchannels(65).name = 'K D1 GM Shutter 2'; % Second D1 GM shutter
-seqdata.digchannels(66).name = 'Transport LabJack Trigger'; %unused
+seqdata.digchannels(66).name = 'PA LabJack Trigger'; %labjack trigger for the PA calibration pulse
 seqdata.digchannels(67).name = 'Raman TTL 3'; % Raman H2 Rigol Trigger (CH2)
 seqdata.digchannels(68).name = 'Raman TTL 2'; % Raman H1 Rigol Trigger (CH2)
 seqdata.digchannels(69).name = 'HF freq source'; % 0: Rigol Ch1, 1: Rigol Ch2
@@ -608,8 +608,9 @@ seqdata.analogchannels(40).defaultvoltagefunc = 4;
 % seqdata.analogchannels(40).voltagefunc{4} = @(a)(2.06636*a+0.144332); %calibrated 2021-01-26
 % seqdata.analogchannels(40).voltagefunc{4} = @(a)(a-0.0031)/0.5272; %calibrated 2021-02-23
 % seqdata.analogchannels(40).voltagefunc{4} = @(a)(5.2592*a + 0.1741); %2022-01-12
-seqdata.analogchannels(40).voltagefunc{4} = @(P) (6.2123*P + 0.0359); %2022-03-25
-seqdata.analogchannels(40).voltagefunc{4} = @(P) (2.9518*P + 0.013658); %2022-10-30
+% seqdata.analogchannels(40).voltagefunc{4} = @(P) (6.2123*P + 0.0359); %2022-03-25
+% seqdata.analogchannels(40).voltagefunc{4} = @(P) (2.9518*P + 0.013658); %2022-10-30
+seqdata.analogchannels(40).voltagefunc{4} = @(P) (3.0738*P + 0.03); %2022-11-21
 
 
 %Channel 41 (motorized waveplate for dipole/lattice power dist)

@@ -5,7 +5,24 @@ params = struct;        % Structure which contains all values for a parameter
 punits = struct;       % Structure which contains the unit for each parameter
 
 ptypes = struct;         % Structure which contains boolean of random for each parameter
-% Is a particular parameter run randomly? Or in order?
+
+% Descriptions
+%
+% params.(var_name) - the list of values that defines the vector
+% punits.(var_name) - a string which defines the units, for plotting
+%                       purposes only
+% ptypes.(var_name) - how the variable is scanned
+%                       - 'ordered' : scan the variable in order and
+%                       independently of all other variables
+%                       - 'random' : scan the variable in random order and
+%                       independently of all other variables
+%                       - 'var_name2' : scan the variable in concert with
+%                       another variable 'var_name2'
+%                       For example if you have two param lists A and B and
+%                       the sequencer chooses an index I to run. The values
+%                       chosen will be A(I) and B(I). To run properly A and
+%                       B MUST be the same length.
+
 
 %% Micrscope Stuff
 
@@ -38,6 +55,33 @@ ptypes = struct;         % Structure which contains boolean of random for each p
 % params.Raman_H1_Voltage = linspace(.1,1,10);
 % punits.Raman_H1_Voltage = 'V';
 % ptypes.Raman_H1_Voltage = 'random';
+
+%% Lattice High Field PA
+
+params.HF_FeshValue_Initial_Lattice = [203]; 
+punits.HF_FeshValue_Initial_Lattice = 'G';
+ptypes.HF_FeshValue_Initial_Lattice = 'ordered';
+% 
+
+%%% For defining time in a relative sort of way
+% params.pulse_time_rel = [linspace(0,1,20)  1.5 2 3 3.5];
+% punits.pulse_time_rel = 'arb';
+% ptypes.pulse_time_rel = 'random';
+% 
+% params.pulse_time_max = [1];
+% punits.pulse_time_max = 'arb';
+% ptypes.pulse_time_max = 'random';
+
+
+% For defining it absolutely
+params.pulse_time = [0 100 200 400 500 600 800 1000 1100];
+punits.pulse_time = 'ms';
+ptypes.pulse_time = 'random';
+
+% Control voltage
+params.PA_rel_pow = [0.5];
+punits.PA_rel_pow = 'V';
+ptypes.PA_rel_pow = 'ordered';
 %% Lattice High Field
 
 % params.detuning = [-49.6];
@@ -72,11 +116,11 @@ ptypes = struct;         % Structure which contains boolean of random for each p
 % punits.PA_rel_pow = 'arb.';
 % ptypes.PA_rel_pow = 'ordered';
 
-% params.AM_spec_depth                   = [100];
+% params.AM_spec_depth                   = [200];
 % punits.AM_spec_depth = 'Er';
 % ptypes.AM_spec_depth = 'ordered';
-% % % 
-% params.AM_direction                   = ['Y'];
+% % % % 
+% params.AM_direction                   = ['X'];
 % punits.AM_direction = '';
 % ptypes.AM_direction = 'ordered';
 % % % 
@@ -85,10 +129,10 @@ ptypes = struct;         % Structure which contains boolean of random for each p
 % % % % %     100 = [100:10:180 140:1:165]*1e3; 43 points
 % % % % %     60 = [70:5:150 110:1:145]*1e3; 53 points
 % % % % %     250 [220:5:320 260:1:285]*1e3
-params.AM_spec_freq = [165:1:180]*1e3;
-punits.AM_spec_freq = 'Hz';
-ptypes.AM_spec_freq = 'random';
-
+% params.AM_spec_freq = [217.5:5:232.5]*1e3;[217.5:5:247.5]*1e3;[165:1:180]*1e3;
+% punits.AM_spec_freq = 'Hz';
+% ptypes.AM_spec_freq = 'random';
+% 
 
 % params.Raman_freq                   = [10:2.5:40];
 % punits.Raman_freq = 'kHz';

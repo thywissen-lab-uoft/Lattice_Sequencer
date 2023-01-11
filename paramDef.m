@@ -56,12 +56,12 @@ ptypes = struct;         % Structure which contains boolean of random for each p
 % punits.Raman_H1_Voltage = 'V';
 % ptypes.Raman_H1_Voltage = 'random';
 
-%% Lattice High Field PA
+%% Photoassociation Pulses
 
-params.HF_FeshValue_Initial_Lattice = [203]; 
-punits.HF_FeshValue_Initial_Lattice = 'G';
-ptypes.HF_FeshValue_Initial_Lattice = 'ordered';
-% 
+% If using the lattice, this variable SHOULD be assigned to the field
+% params.HF_FeshValue_Initial_Lattice = [206]; 
+% punits.HF_FeshValue_Initial_Lattice = 'G';
+% ptypes.HF_FeshValue_Initial_Lattice = 'ordered';
 
 %%% For defining time in a relative sort of way
 % params.pulse_time_rel = [linspace(0,1,20)  1.5 2 3 3.5];
@@ -74,14 +74,15 @@ ptypes.HF_FeshValue_Initial_Lattice = 'ordered';
 
 
 % For defining it absolutely
-params.pulse_time = [0 100 200 400 500 600 800 1000 1100];
-punits.pulse_time = 'ms';
-ptypes.pulse_time = 'random';
+%params.pulse_time = [0:1:15];
+% params.pulse_time = [0];
+% punits.pulse_time = 'ms';
+% ptypes.pulse_time = 'random';
 
 % Control voltage
-params.PA_rel_pow = [0.5];
-punits.PA_rel_pow = 'V';
-ptypes.PA_rel_pow = 'ordered';
+% params.PA_rel_pow = 0.35; 0.1;
+% punits.PA_rel_pow = 'V';
+% ptypes.PA_rel_pow = 'ordered';
 %% Lattice High Field
 
 % params.detuning = [-49.6];
@@ -107,12 +108,12 @@ ptypes.PA_rel_pow = 'ordered';
 % punits.PA_pulse_time_rel = 'arb.';
 % ptypes.PA_pulse_time_rel = 'random';
 
-
-% params.pulse_time = [repelem([0:2:38 40:20:120],2)];
+% 
+% params.pulse_time = [0.7];
 % punits.pulse_time = 'ms';
 % ptypes.pulse_time = 'random';
-% 
-% params.PA_rel_pow = [1 0.5 0.25 0.1];
+% % 
+% params.PA_rel_pow = [.25];
 % punits.PA_rel_pow = 'arb.';
 % ptypes.PA_rel_pow = 'ordered';
 
@@ -120,18 +121,18 @@ ptypes.PA_rel_pow = 'ordered';
 % punits.AM_spec_depth = 'Er';
 % ptypes.AM_spec_depth = 'ordered';
 % % % % 
-% params.AM_direction                   = ['X'];
-% punits.AM_direction = '';
-% ptypes.AM_direction = 'ordered';
+params.AM_direction                   = ['X'];
+punits.AM_direction = '';
+ptypes.AM_direction = 'ordered';
 % % % 
 % % % % %    300 = [260:5:340 295:1:325]*1e3; 48 points
 % % % % %     200 = [200:5:300]*1e3; 57 points
 % % % % %     100 = [100:10:180 140:1:165]*1e3; 43 points
 % % % % %     60 = [70:5:150 110:1:145]*1e3; 53 points
 % % % % %     250 [220:5:320 260:1:285]*1e3
-% params.AM_spec_freq = [217.5:5:232.5]*1e3;[217.5:5:247.5]*1e3;[165:1:180]*1e3;
-% punits.AM_spec_freq = 'Hz';
-% ptypes.AM_spec_freq = 'random';
+params.AM_spec_freq = [237.5:5:267.5]*1e3;[235:2:241]*1e3; [217.5:5:247.5]*1e3;[165:1:180]*1e3;
+punits.AM_spec_freq = 'Hz';
+ptypes.AM_spec_freq = 'random';
 % 
 
 % params.Raman_freq                   = [10:2.5:40];

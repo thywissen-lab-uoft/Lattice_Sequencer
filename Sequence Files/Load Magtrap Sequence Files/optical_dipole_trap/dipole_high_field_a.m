@@ -49,7 +49,7 @@ curtime = timein;
 %   Procedure 2: Creating the mixture at low field
 %
 %   (1) Starting with a spin-mixed gas of -9/2 and -7/2 atoms, ramp the
-%   field to 195 G (ramp_field_1)
+%   field to 190 G (ramp_field_1)
 %   (2) Perform an RF sweep to transfer -7/2 atoms to -5/2 (spin_flip_7_5)
 %   (3) Ramp the field to 207 G (ramp_field_2)
 %   (4) Flip the -5/2 atoms back to -7/2 (spin_flip_7_5_again)
@@ -79,9 +79,9 @@ curtime = timein;
     mix_7_9                 = 0;  
     
     % Spin Manipulations for attractive with initial mixture
-    flip_7_5                = 0;        % 7 to 5 to avoid fesbach
-    ramp_field_2            = 1;        % Ramp above feshbach
-    flip_7_5_again          = 0;        % 5 to 7 for science mixture
+    flip_7_5                = 1;        % 7 to 5 to avoid fesbach
+    ramp_field_2            = 1;        % Ramp above feshbach (attractive)
+    flip_7_5_again          = 1;        % 5 to 7 for science mixture
         
     % Ramp to science magnetic field
     ramp_field_3            = 0;    
@@ -90,7 +90,8 @@ curtime = timein;
     doPA_pulse_in_XDT       = 0;
 
     % Ramp field to imaging field
-    ramp_field_for_imaging  = 0;
+    ramp_field_for_imaging_attractive  = 0;
+    ramp_field_for_imaging_repulsive  = 0;
 
 %% Feshbach Field Ramp
 % Ramp the feshbach field to the initial high value (and set the z-shim)
@@ -329,7 +330,7 @@ curtime = calctime(curtime,50);
     if ramp_field_3
 
         clear('ramp');
-        HF_FeshValue_List =[203]; %+3G from zshim
+        HF_FeshValue_List =[200]; %+3G from zshim
         HF_FeshValue = getScanParameter(HF_FeshValue_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_ODT_3','G');           
         
@@ -373,13 +374,13 @@ curtime = calctime(curtime,HF_wait_time);
 if doPA_pulse_in_XDT
    curtime = PA_pulse(curtime); 
 end
- %% Ramp field for imaging
-   if ramp_field_for_imaging
+ %% Ramp field for imaging on attractive side
+   if ramp_field_for_imaging_attractive
        
-    zshim = [3]/2.35;
+    zshim = [0]/2.35;
 
     % Fesahbach Field ramp
-    HF_FeshValue_Final_List = [204]; [204]; % 206 207 208 209 210 211
+    HF_FeshValue_Final_List = [207]; [204]; % 206 207 208 209 210 211
     HF_FeshValue_Final = getScanParameter(HF_FeshValue_Final_List,...
     seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Imaging_ODT','G');
  
@@ -401,7 +402,34 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
         seqdata.params.HF_probe_fb = HF_FeshValue_Final +2.35*zshim;
    end
 
-  
+   %% Ramp field for imaging on repulsive side
+   if ramp_field_for_imaging_repulsive
+       
+    zshim = [0]/2.35;
+
+    % Fesahbach Field ramp
+    HF_FeshValue_Final_List = [195]; 
+    HF_FeshValue_Final = getScanParameter(HF_FeshValue_Final_List,...
+    seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Imaging_ODT','G');
+ 
+ % Define the ramp structure
+        ramp=struct;
+        ramp.shim_ramptime = 50;
+        ramp.shim_ramp_delay = 0; % ramp earlier than FB field if needed
+        ramp.xshim_final = seqdata.params.shim_zero(1); 
+        ramp.yshim_final = seqdata.params.shim_zero(2);
+        ramp.zshim_final = seqdata.params.shim_zero(3) + zshim;
+        % FB coil 
+        ramp.fesh_ramptime = 50;
+        ramp.fesh_ramp_delay = 0;
+        ramp.fesh_final = HF_FeshValue_Final;
+        ramp.settling_time = 50;    
+        
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+
+        seqdata.params.HF_probe_fb = HF_FeshValue_Final +2.35*zshim;
+   end
+   
  %% Ending operation
 
  HF5_wait_time_list = [35];

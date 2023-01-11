@@ -106,14 +106,14 @@ seqdata.flags.do_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of
 seqdata.flags.iXon = 0;             % use iXon camera to take an absorption image (only vertical)
 seqdata.flags.do_F1_pulse = 0;      % repump Rb F=1 before/during imaging
 
-seqdata.flags.High_Field_Imaging = 1;
+seqdata.flags.High_Field_Imaging = 0;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
 
 seqdata.flags.In_Trap_imaging = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging
-tof_list = [15];
+tof_list = [25]; %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
@@ -185,7 +185,7 @@ seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
 seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 0; % uWave Frequency sweep Rb 2-->1
 seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
 seqdata.flags.do_D1OP_before_evap= 0;           % D1 pump to purify
-seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
+seqdata.flags.mix_at_beginning = 1;             % RF Mixing -9-->-9+-7
     
 seqdata.flags.kill_Rb_before_evap = 0;   % Remove Rb before optical evaporation
 seqdata.flags.kill_K7_before_evap = 0;   % Remove 7/2 K before optical evaporation (untested)
@@ -205,17 +205,17 @@ seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 seqdata.flags.CDT_evap_2_high_field = 0;    
 
 % XDT High Field Experiments
-seqdata.flags.dipole_high_field_a = 1;
+seqdata.flags.dipole_high_field_a = 0;
 
 % Take a second PA pulse after absorption imaging to calibrate PA power
-seqdata.flags.do_calibrate_PA = 1;
+seqdata.flags.do_calibrate_PA = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OPTICAL LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Optical lattice
-seqdata.flags.load_lattice = 1; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
+seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
 seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
 seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 
@@ -239,12 +239,12 @@ seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing/align
 %%% OPTICAL LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % scope_trigger = 'rf_spectroscopy';
-% scope_trigger = 'Lattice_Mod';
+scope_trigger = 'Lattice_Mod';
 % scope_trigger = 'FB_ramp';
-% scope_trigger = 'lattice_ramp_2';
+% scope_trigger = 'lattice_ramp_1';
 % scope_trigger = 'lattice_off';
 % scope_trigger = 'Raman Beams On';
-scope_trigger = 'PA_Pulse';
+% scope_trigger = 'PA_Pulse';
 
 %% Set switches for predefined scenarios
 
@@ -263,29 +263,21 @@ end
 dispLineStr('Updating PA Request',curtime);
 
 % K D2 line
-PA_resonance = 391016.296050;
 PA_resonance = 391016.821;
 
-PA_detuning_list = [-43.5];[-43.55:0.01:-43.4];[-44.16:0.01:-44.12]+0.005;[-41.8:0.01:-41.3];[-49.555];[-49.6:0.01:-49.5];
-PA_detuning_list=-49.555;
-% PA_detuning_list =  -44.6+[-.15:.01:.15];
+% Define the detuning list
+% PA_detuning_list= -49.555; -49.578; -49.555;
 
+PA_detuning_list = -49.539;
 
-PA_detuning_list=round(PA_detuning_list,6); % round to nearest kHz
-
+ % round to nearest kHz
+PA_detuning_list=round(PA_detuning_list,6);
 
 % Scan randomly
 PA_detuning = getScanParameter(PA_detuning_list, ...
     seqdata.scancycle, seqdata.randcyclelist, 'PA_detuning','GHz');
 
-% PA_detuning = paramGet('detuning');
-
-
-% Scan in order
-% PA_detuning = getScanParameter(PA_detuning_list, ...
-%     seqdata.scancycle, 1:length(PA_detuning_list), 'PA_detuning','GHz');%5
-% 
-
+% Convert detuning into laser frequency
 PA_freq = PA_resonance + PA_detuning;
 PA_freq = round(PA_freq,6); % round to nearest kHz
 
@@ -482,10 +474,10 @@ programRigol(addr_z,[],ch_off);             % Turn off z mod
 %% Make sure Shim supply relay is on
 
 %Turn on MOT Shim Supply Relay
-setDigitalChannel(calctime(curtime,0),33,1);
+setDigitalChannel(calctime(curtime,0),'Shim Relay',1);
 
 %Turn shim multiplexer to MOT shims    
-setDigitalChannel(calctime(curtime,0),37,0);  
+setDigitalChannel(calctime(curtime,0),'Shim Multiplexer',0);  
 
 %% Load the MOT
 % Dump out the saved MOT and reload it
@@ -542,9 +534,9 @@ if ~(seqdata.flags.image_type==4 )
     %code readability. 
 
     %optimize shims for loading into mag trap
-    setAnalogChannel(calctime(curtime,0.01),'Y Shim',yshim2,3); %1.25
-    setAnalogChannel(calctime(curtime,0.01),'X Shim',xshim2,2); %0.3 
-    setAnalogChannel(calctime(curtime,0.01),'Z Shim',zshim2,2); %0.2
+    setAnalogChannel(calctime(curtime,0.01),'Y MOT Shim',yshim2,3); %1.25
+    setAnalogChannel(calctime(curtime,0.01),'X MOT Shim',xshim2,2); %0.3 
+    setAnalogChannel(calctime(curtime,0.01),'Z MOT Shim',zshim2,2); %0.2
 
     %RHYS - the second important function, which loads the MOT into the magtrap. 
 
@@ -552,10 +544,11 @@ curtime = Load_MagTrap_from_MOT(curtime);
 
 end
 
+%**Should be set to zero volts to fully turn off the shims (use volt func 1)
 %turn off shims
-setAnalogChannel(calctime(curtime,0),'Y Shim',0.0,3); %3
-setAnalogChannel(calctime(curtime,0),'X Shim',0.0,2); %2
-setAnalogChannel(calctime(curtime,0),'Z Shim',0.0,2); %2
+setAnalogChannel(calctime(curtime,0),'Y MOT Shim',0.0,3); %3
+setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.0,2); %2
+setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.0,2); %2
 
 %% Transport 
 % Use the CATS to mangetically transport the atoms from the MOT cell to the
@@ -567,15 +560,15 @@ setAnalogChannel(calctime(curtime,0),'Z Shim',0.0,2); %2
     curtime = setDigitalChannel(curtime,'Kitten Relay',1);
     
     %Turn shim multiplexer to Science shims
-    setDigitalChannel(calctime(curtime,1000),37,1); 
+    setDigitalChannel(calctime(curtime,1000),'Shim Multiplexer',1); 
     
     %Close Science Cell Shim Relay for Plugged QP Evaporation
     setDigitalChannel(calctime(curtime,800),'Bipolar Shim Relay',1);
     
     %Turn Shims to Science cell zero values
-    setAnalogChannel(calctime(curtime,1000),27,0,3); %3
-    setAnalogChannel(calctime(curtime,1000),28,0,3); %3
-    setAnalogChannel(calctime(curtime,1000),19,0,4); %4
+    setAnalogChannel(calctime(curtime,1000),'X Shim',0,3); %3
+    setAnalogChannel(calctime(curtime,1000),'Z Shim',0,3); %3
+    setAnalogChannel(calctime(curtime,1000),'Y Shim',0,4); %4
 
     % Scope trigger
     ScopeTriggerPulse(calctime(curtime,0),'Start Transport');

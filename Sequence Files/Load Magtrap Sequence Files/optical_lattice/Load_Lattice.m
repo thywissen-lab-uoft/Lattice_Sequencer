@@ -219,9 +219,9 @@ if do_lattice_ramp_1
             % Simple square ramp of only one lattice 
             
             %Select the lattice direction to load
-%             direction = 'X';
+            direction = 'X';
 %             direction = 'Y';
-            direction = 'Z';
+%             direction = 'Z';
             switch direction
                 case 'X'
                   latt_depth=...
@@ -861,7 +861,7 @@ if do_lattice_ramp_2
     ScopeTriggerPulse(curtime,'lattice_ramp_2');
 
     % 
-    imaging_depth_list = [200]; [675]; 
+    imaging_depth_list = [400]; [675]; 
     imaging_depth = getScanParameter(imaging_depth_list,seqdata.scancycle,...
         seqdata.randcyclelist,'FI_latt_depth','Er'); 
 
@@ -900,11 +900,12 @@ if do_lattice_ramp_2
 curtime =   calctime(curtime,lat_rampup_imaging_time(j));
     end
     
-    % Turn of dipole traps
-    setAnalogChannel(calctime(curtime,0),'dipoleTrap1',0);
-    setAnalogChannel(calctime(curtime,0),'dipoleTrap2',0);
-    setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
-
+    % Turn off dipole traps
+    if seqdata.flags.Raman_transfers
+        setAnalogChannel(calctime(curtime,0),'dipoleTrap1',0);
+        setAnalogChannel(calctime(curtime,0),'dipoleTrap2',0);
+        setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
+    end
 
     deep_latt_holdtime_list = [50];
     deep_latt_holdtime = getScanParameter(deep_latt_holdtime_list,seqdata.scancycle,seqdata.randcyclelist,'deep_latt_holdtime'); 
@@ -979,7 +980,7 @@ if (seqdata.flags.Raman_transfers == 1)
     horizontal_plane_select_params.Fake_Pulse = 0;
     
     
-    Raman_On_Time_List =[2000];[2000];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
+    Raman_On_Time_List =[0.2];[2000];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
 
    % uWave or Raman Tranfers
    % 1: uwave, 2: Raman 3:Raman with field sweep

@@ -5589,16 +5589,31 @@ end
 % 
 % setDigitalChannel(0,'PA TTL',1); 
 % 
-setAnalogChannel(calctime(curtime,0),'uWave FM/AM',1)
-
+% setAnalogChannel(calctime(curtime,0),'uWave FM/AM',1)
+% setDigitalChannel(curtime,'UV LED',1); 
 % curtime = PA_pulse(curtime); 
 % DigitalPulse(calctime(curtime,10),'PixelFly Trigger',1,1);
 % setDigitalChannel(calctime(curtime,0),'Rb uWave TTL',0)
 % setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',1)
 % setDigitalChannel(calctime(curtime,0),'K/Rb uWave Transfer',1)
 % setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',0)
-setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',1)
-  setAnalogChannel(calctime(curtime,0),'Rb Repump AM',0);
+% setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',1)
+%   setAnalogChannel(calctime(curtime,0),'Rb Repump AM',0);
+
+
+setAnalogChannel(calctime(curtime,0),'X MOT Shim',0,1)
+setAnalogChannel(calctime(curtime,0),'Y MOT Shim',0,1)
+setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0,1)
+
+setAnalogChannel(calctime(curtime,0),'X Shim',0,1)
+setAnalogChannel(calctime(curtime,0),'Y Shim',0,1)
+setAnalogChannel(calctime(curtime,0),'Z Shim',0,1)
+
+% setAnalogChannel(calctime(curtime,1000),'X Shim',0,1)
+% setAnalogChannel(calctime(curtime,1000),'Y Shim',0,1)
+% setAnalogChannel(calctime(curtime,1000),'Z Shim',0,1)
+
+
 timeout = curtime;
 % SelectScopeTrigger('PA_Pulse');
 

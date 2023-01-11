@@ -627,7 +627,7 @@ end
 %RHYS - Always used. Already has a separate script that could be called
 %from main.
 do_optical_pumping = 1;
-if do_optical_pumping == 1;
+if do_optical_pumping == 1
     %digital trigger
     ScopeTriggerPulse(curtime,'Optical pumping');
 

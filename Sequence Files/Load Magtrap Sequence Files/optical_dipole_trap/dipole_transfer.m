@@ -45,7 +45,7 @@ do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscill
 % Spectroscopy after Evaporation
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-ramp_XDT_after_evap = 1;        % Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
+ramp_XDT_after_evap = 0;        % Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
 k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
 ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
 uWave_K_Spectroscopy = 0;
@@ -1281,9 +1281,9 @@ end
 if (ramp_XDT_after_evap && seqdata.flags.CDT_evap == 1)
     dispLineStr('Ramping XDTs back on.',curtime);
 
-    power_list = [0.1]; 0.1;
+    power_list = 0.1;
     power_val = getScanParameter(power_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'power_val','W');
+        seqdata.randcyclelist,'XDT_rampup_power','W');
 
     dip_1 = power_val; %1.5
     dip_2 = power_val;XDT2_power_func(dip_1);

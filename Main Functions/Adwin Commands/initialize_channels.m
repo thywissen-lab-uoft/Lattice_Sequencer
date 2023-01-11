@@ -192,7 +192,7 @@ end
      %seqdata.analogchannels(1).voltagefunc{2} = @(a)(-a*0.0095+0);
      %seqdata.analogchannels(1).voltagefunc{2} = @(a)(a*0.101+0.0926);
           
-    %Rb repump
+    %channel 2 Rb repump
     seqdata.analogchannels(2).name = 'Rb Repump AM';
     seqdata.analogchannels(2).maxvoltage = 2;
     seqdata.analogchannels(2).voltagefunc{2} = @(a)(2*a);
@@ -370,12 +370,11 @@ end
     seqdata.analogchannels(19).minvoltage = -5;
     seqdata.analogchannels(19).maxvoltage = 10; 
     % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents  
-    seqdata.analogchannels(19).voltagefunc{2} = @(a) (a+.293)/.77;      
+    seqdata.analogchannels(19).voltagefunc{2} = @(a) (a+.293)/.77;  %MOT shim calibration; a=current in Amps    
     
     seqdata.analogchannels(19).defaultvoltagefunc = 3; %3 BIPOLAR SHIM SUPPLY CHANGE
     %'Field' in G (not well calibrated)
     seqdata.analogchannels(19).voltagefunc{3} = @(a)(a*1.1875+0.52); % calibration for Shimmer control
-    %seqdata.analogchannels(19).voltagefunc{4} = @(a)(a*0.3692-0.02); % calibration for bip source control
     seqdata.analogchannels(19).voltagefunc{5} = @(a)(a*0.3692-0.006); % calibration for bip source control after replacing pos side transistor
     seqdata.analogchannels(19).voltagefunc{4} = @(a)(0.9271*a-0.0327); % Amps: new shim supplies, calibrated to match old shim supply voltagefunc
     %Bipolar Shims (Alan's Box)
@@ -460,7 +459,7 @@ end
     
     % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents  
     seqdata.analogchannels(27).defaultvoltagefunc = 2;
-    seqdata.analogchannels(27).voltagefunc{2} = @(a) (a+.268)/.842;
+    seqdata.analogchannels(27).voltagefunc{2} = @(a) (a+.268)/.842;  %MOT shim calibration; a=current in Amps
         
     seqdata.analogchannels(27).voltagefunc{4} = @(a)((a-0.081)/0.91); %Amps: When used to control bipolar supply  a*0.506-0.013 for old supply
     seqdata.analogchannels(27).voltagefunc{3} = @(a)(1.0536*a-0.1132); % Amps: new shim supplies, calibrated to match old shim supply voltagefunc
@@ -471,7 +470,7 @@ end
     seqdata.analogchannels(28).maxvoltage = 10;
     % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents
     seqdata.analogchannels(28).defaultvoltagefunc = 2;
-    seqdata.analogchannels(28).voltagefunc{2} = @(a)(a+.266)/.819;
+    seqdata.analogchannels(28).voltagefunc{2} = @(a)(a+.266)/.819;  %MOT shim calibration; a=current in Amps
     
     
     seqdata.analogchannels(28).voltagefunc{4} = @(a)((a-0*0.115)/0.977);   %a*0.506-0.013 for old supply
@@ -530,292 +529,321 @@ end
     seqdata.analogchannels(33).defaultvoltagefunc = 2; 
     seqdata.analogchannels(33).voltagefunc{2} = @(a)(a);%
 
-%channel 34 (Rb Offset frequency)
-seqdata.analogchannels(34).name = 'Rb Beat Note FM';
-seqdata.analogchannels(34).minvoltage = 0;
-seqdata.analogchannels(34).maxvoltage = 10;
-seqdata.analogchannels(34).defaultvoltagefunc = 2;
+    %channel 34 (Rb Offset frequency)
+    seqdata.analogchannels(34).name = 'Rb Beat Note FM';
+    seqdata.analogchannels(34).minvoltage = 0;
+    seqdata.analogchannels(34).maxvoltage = 10;
+    seqdata.analogchannels(34).defaultvoltagefunc = 2;
 
-Rb_Trap_Frequency_Offset = 7; %9 Frequency offset for all Rb trap/probe beams in MHz.
-seqdata.analogchannels(34).voltagefunc{2} = @(a)((a*1-4418.47 + Rb_Trap_Frequency_Offset)/541.355);
+    Rb_Trap_Frequency_Offset = 7; %9 Frequency offset for all Rb trap/probe beams in MHz.
+    seqdata.analogchannels(34).voltagefunc{2} = @(a)((a*1-4418.47 + Rb_Trap_Frequency_Offset)/541.355);
 
-%channel 35 (Rb Offset FF)
-seqdata.analogchannels(35).name = 'Rb Beat Note FF';
-seqdata.analogchannels(35).minvoltage = -10;
-seqdata.analogchannels(35).maxvoltage = 10;
-seqdata.analogchannels(35).defaultvoltagefunc = 2;
-seqdata.analogchannels(35).voltagefunc{2} = @(a)((-a*0.00401));
+    %channel 35 (Rb Offset FF)
+    seqdata.analogchannels(35).name = 'Rb Beat Note FF';
+    seqdata.analogchannels(35).minvoltage = -10;
+    seqdata.analogchannels(35).maxvoltage = 10;
+    seqdata.analogchannels(35).defaultvoltagefunc = 2;
+    seqdata.analogchannels(35).voltagefunc{2} = @(a)((-a*0.00401));
 
-%channel 36 (Rb Probe/OP AOM AM control)
-seqdata.analogchannels(36).name = 'Rb Probe/OP AM';
-seqdata.analogchannels(36).minvoltage = -10;
-seqdata.analogchannels(36).maxvoltage = 10;
-seqdata.analogchannels(36).defaultvoltagefunc = 2;
-seqdata.analogchannels(36).voltagefunc{2} = @(a)(a*5 - 2.5); %a is percentage of max power, scaled to -2.5V to 2.5V for Rigol AM
+    %channel 36 (Rb Probe/OP AOM AM control)
+    seqdata.analogchannels(36).name = 'Rb Probe/OP AM';
+    seqdata.analogchannels(36).minvoltage = -10;
+    seqdata.analogchannels(36).maxvoltage = 10;
+    seqdata.analogchannels(36).defaultvoltagefunc = 2;
+    seqdata.analogchannels(36).voltagefunc{2} = @(a)(a*5 - 2.5); %a is percentage of max power, scaled to -2.5V to 2.5V for Rigol AM
 
-%channel 37 (Feshbach Current)
-    %set to -0.5 when 'resting' to avoid a current spike when the digital
-    %switch opens
-    %set to 0 after the digital switch opens AND at least 100ms before
-    %ramping on the coil to ensure a smooth ramp
-seqdata.analogchannels(37).name = 'FB current';
-seqdata.analogchannels(37).minvoltage = -0.5;
-seqdata.analogchannels(37).maxvoltage = 10;
-seqdata.analogchannels(37).resetvalue = [-0.5 1];
-seqdata.analogchannels(37).defaultvoltagefunc = 2; %2 (changed to 3 to try smoothing low fields)
-seqdata.analogchannels(37).voltagefunc{2} = @(a)((a-0.03939)/27.8636);%before 2017-1-5, @(a)(a*0.0333-0.001); % use when [dch-44, dch-45] = [0,0]
-%seqdata.analogchannels(37).voltagefunc{2} = @(a)(a*0.0333+0.00333); %karl servo calibration
-seqdata.analogchannels(37).voltagefunc{3} = @(a)(11/30*a - 6.6667); % use when [dch-44, dch-45] = [1,0]
-% seqdata.analogchannels(37).voltagefunc{4} = @(a)(a*0.0333*9+0.00); % use when [dch-44, dch-45] = [0,1]
-seqdata.analogchannels(37).voltagefunc{4} = @(a)(a*0.03365*9+0.0); % use when [dch-44, dch-45] = [0,1]
-seqdata.analogchannels(37).voltagefunc{5} = @(a)((11/30*a - 6.6667)*9); % use when [dch-44, dch-45] = [1,1]
-seqdata.analogchannels(37).voltagefunc{6} = @(a)(a*0.0333*7+0.00); % use when inserting a 1/7 voltage divider
-   
-%channel 38 (dipole 2 trap power)
-seqdata.analogchannels(38).name = 'dipoleTrap2';
-seqdata.analogchannels(38).minvoltage = -10;
-seqdata.analogchannels(38).maxvoltage = 10; 
-% seqdata.analogchannels(38).resetvalue = [-0.0,1];
-seqdata.analogchannels(38).defaultvoltagefunc = 4;
-%seqdata.analogchannels(38).voltagefunc{2} = @(a)(a*0.2831-0.0);
-% seqdata.analogchannels(38).voltagefunc{3} = @(a)((a-0.001)/2.845);  % calibrated: 2013-11-28 ; Power in Watts
-% seqdata.analogchannels(38).voltagefunc{2} = @(a)(a./2.98 + 0.0191);  % calibrated: 2014-04-16; P in W (after telescope); Monitor PD: P/mW = 2.356 V/mV + 0.1
-% seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.2043)/2.2396); %2020-06-8
-% seqdata.analogchannels(38).voltagefunc{4} = @(a)(0.445169*a+0.0863101); %2020-01-26
-% seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.22626)/2.86651); %2020-01-28 1V/W
-% seqdata.analogchannels(38).voltagefunc{4} = @(a)((0.2713+a)/3.2189); %2020-02-23
-% seqdata.analogchannels(38).voltagefunc{4} = @(a)(5.9026*a + 0.1953); %2022-01-12
-% seqdata.analogchannels(38).voltagefunc{4} = @(a)(5.4671*a + 0.0429); %2022-03-25
-seqdata.analogchannels(38).voltagefunc{4} = @(P)(4.7504*P + 0.00807); %2022-10-25
+    %channel 37 (Feshbach Current)
+        %set to -0.5 when 'resting' to avoid a current spike when the digital
+        %switch opens
+        %set to 0 after the digital switch opens AND at least 100ms before
+        %ramping on the coil to ensure a smooth ramp
+    seqdata.analogchannels(37).name = 'FB current';
+    seqdata.analogchannels(37).minvoltage = -0.5;
+    seqdata.analogchannels(37).maxvoltage = 10;
+    seqdata.analogchannels(37).resetvalue = [-0.5 1];
+    seqdata.analogchannels(37).defaultvoltagefunc = 2; %2 (changed to 3 to try smoothing low fields)
+    seqdata.analogchannels(37).voltagefunc{2} = @(a)((a-0.03939)/27.8636);%before 2017-1-5, @(a)(a*0.0333-0.001); % use when [dch-44, dch-45] = [0,0]
+    %seqdata.analogchannels(37).voltagefunc{2} = @(a)(a*0.0333+0.00333); %karl servo calibration
+    seqdata.analogchannels(37).voltagefunc{3} = @(a)(11/30*a - 6.6667); % use when [dch-44, dch-45] = [1,0]
+    % seqdata.analogchannels(37).voltagefunc{4} = @(a)(a*0.0333*9+0.00); % use when [dch-44, dch-45] = [0,1]
+    seqdata.analogchannels(37).voltagefunc{4} = @(a)(a*0.03365*9+0.0); % use when [dch-44, dch-45] = [0,1]
+    seqdata.analogchannels(37).voltagefunc{5} = @(a)((11/30*a - 6.6667)*9); % use when [dch-44, dch-45] = [1,1]
+    seqdata.analogchannels(37).voltagefunc{6} = @(a)(a*0.0333*7+0.00); % use when inserting a 1/7 voltage divider
 
-%channel 39 (RF Gain control)
-seqdata.analogchannels(39).name = 'RF Gain';
-seqdata.analogchannels(39).minvoltage = -10;
-seqdata.analogchannels(39).maxvoltage = 10;
-seqdata.analogchannels(39).defaultvoltagefunc = 2;
-seqdata.analogchannels(39).voltagefunc{2} = @(a)(a);
-% seqdata.analogchannels(39).voltagefunc{2} = @(a) (a--10)/20*10;
-    
-%channel 40 (dipole 1 trap power)
-seqdata.analogchannels(40).name = 'dipoleTrap1';
-seqdata.analogchannels(40).minvoltage = -10;
-seqdata.analogchannels(40).maxvoltage = 10;
-% seqdata.analogchannels(40).resetvalue = [-0.0,1];
-seqdata.analogchannels(40).defaultvoltagefunc = 4;
-% seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.00226)/0.60811); %calibrated 2019-07-27
-% seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.08475)/0.54452); %calibrated 2020-01-28 2V/W
-% seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.0813)/0.5425); %calibrated 2020-06-8
-% seqdata.analogchannels(40).voltagefunc{4} = @(a)(2.06636*a+0.144332); %calibrated 2021-01-26
-% seqdata.analogchannels(40).voltagefunc{4} = @(a)(a-0.0031)/0.5272; %calibrated 2021-02-23
-% seqdata.analogchannels(40).voltagefunc{4} = @(a)(5.2592*a + 0.1741); %2022-01-12
-% seqdata.analogchannels(40).voltagefunc{4} = @(P) (6.2123*P + 0.0359); %2022-03-25
-% seqdata.analogchannels(40).voltagefunc{4} = @(P) (2.9518*P + 0.013658); %2022-10-30
-seqdata.analogchannels(40).voltagefunc{4} = @(P) (3.0738*P + 0.03); %2022-11-21
+    %channel 38 (dipole 2 trap power)
+    seqdata.analogchannels(38).name = 'dipoleTrap2';
+    seqdata.analogchannels(38).minvoltage = -10;
+    seqdata.analogchannels(38).maxvoltage = 10; 
+    % seqdata.analogchannels(38).resetvalue = [-0.0,1];
+    seqdata.analogchannels(38).defaultvoltagefunc = 4;
+    %seqdata.analogchannels(38).voltagefunc{2} = @(a)(a*0.2831-0.0);
+    % seqdata.analogchannels(38).voltagefunc{3} = @(a)((a-0.001)/2.845);  % calibrated: 2013-11-28 ; Power in Watts
+    % seqdata.analogchannels(38).voltagefunc{2} = @(a)(a./2.98 + 0.0191);  % calibrated: 2014-04-16; P in W (after telescope); Monitor PD: P/mW = 2.356 V/mV + 0.1
+    % seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.2043)/2.2396); %2020-06-8
+    % seqdata.analogchannels(38).voltagefunc{4} = @(a)(0.445169*a+0.0863101); %2020-01-26
+    % seqdata.analogchannels(38).voltagefunc{4} = @(a)((a+0.22626)/2.86651); %2020-01-28 1V/W
+    % seqdata.analogchannels(38).voltagefunc{4} = @(a)((0.2713+a)/3.2189); %2020-02-23
+    % seqdata.analogchannels(38).voltagefunc{4} = @(a)(5.9026*a + 0.1953); %2022-01-12
+    % seqdata.analogchannels(38).voltagefunc{4} = @(a)(5.4671*a + 0.0429); %2022-03-25
+    seqdata.analogchannels(38).voltagefunc{4} = @(P)(4.7504*P + 0.00807); %2022-10-25
 
+    %channel 39 (RF Gain control)
+    seqdata.analogchannels(39).name = 'RF Gain';
+    seqdata.analogchannels(39).minvoltage = -10;
+    seqdata.analogchannels(39).maxvoltage = 10;
+    seqdata.analogchannels(39).defaultvoltagefunc = 2;
+    seqdata.analogchannels(39).voltagefunc{2} = @(a)(a);
+    % seqdata.analogchannels(39).voltagefunc{2} = @(a) (a--10)/20*10;
 
-%Channel 41 (motorized waveplate for dipole/lattice power dist)
-seqdata.analogchannels(41).name = 'latticeWaveplate';
-seqdata.analogchannels(41).minvoltage = 0;
-seqdata.analogchannels(41).maxvoltage = 5.5;
-%Voltage Functions - Calibrated as of Jan 2013
-    %Specify the angle to move from the home position, in degrees:
-    seqdata.analogchannels(41).voltagefunc{2} = @(a)(a/9.36);
-    %Specify the percent of power to transmit to the lattice AOMs:
-    %   assumes that the home position (0V) is at min transmission to
-    %   lattice AOMS (all reflected from PBS to dipole beams)
-    %   argument is the desired transmission expressed in [0,1]
-    seqdata.analogchannels(41).voltagefunc{3} = @(a)(0.5*asind(sqrt(a))/9.36); 
-    
-%channel 42 (Objective Piezo Z control)
-seqdata.analogchannels(42).name = 'objective Piezo Z';
-seqdata.analogchannels(42).minvoltage = -2;
-seqdata.analogchannels(42).maxvoltage = 10;
-
-%channel 43 (Z lattice AM control)
-seqdata.analogchannels(43).name = 'zLattice';
-seqdata.analogchannels(43).minvoltage = -10;
-seqdata.analogchannels(43).maxvoltage = 10;
-seqdata.analogchannels(43).resetvalue = [-10,1];
-seqdata.analogchannels(43).defaultvoltagefunc = 2;
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)((a+8.5772)/89.2457); % 2021/04/23 0.4 is for atom scale to be changed
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)((a+7.9602)/88.725); % 2021/04/23 0.4 is for atom scale to be changed
-% seqdata.analogchannels(43).voltagefunc{2} = @(a)((a+7.9551)/244.94);
-
-% 2021/08/03 Separate calibration
-[~,~,seqdata.analogchannels(43).voltagefunc{2}] = lattice_calibrations;
-
-%channel 44 (Y lattice AM control)
-% 2021/10/15 CH 44 .We measured the voltage directly rom the adwin, and see 3 mV
-% pk-pk noise on the voltage
-seqdata.analogchannels(44).name = 'yLattice';
-seqdata.analogchannels(44).minvoltage = -10;
-seqdata.analogchannels(44).maxvoltage = 10;
-seqdata.analogchannels(44).resetvalue = [-10,1]; %Issue in the circuit when asking for -10V, causes siren
-seqdata.analogchannels(44).defaultvoltagefunc = 2;
-% seqdata.analogchannels(44).voltagefunc{2} = @(a)(a+8.6812)/141.2965;% 2021/04/23
-
-% 2021/08/03 Separate calibration
-[~,seqdata.analogchannels(44).voltagefunc{2},~] = lattice_calibrations;
-
-% seqdata.analogchannels(44).voltagefunc{2} = @(a)(a-5.0878)/432.98;%28 June, 2017
-% seqdata.analogchannels(44).voltagefunc{2} = @(a)(max(2.27178*log10(max(a,1E-9))-2.77493,-10));%28 June, 2017
-
-%channel 45 (X lattice AM control)
-seqdata.analogchannels(45).name = 'xLattice';
-seqdata.analogchannels(45).minvoltage = -10;
-seqdata.analogchannels(45).maxvoltage = 10;
-seqdata.analogchannels(45).resetvalue = [-10,1];
-seqdata.analogchannels(45).defaultvoltagefunc = 2;
-% seqdata.analogchannels(45).voltagefunc{2} = @(a)((a-2.7+5.61047)/473.44593);
-
-% seqdata.analogchannels(45).voltagefunc{2} = @(a)((a+1.9553)/555.47);
-% seqdata.analogchannels(45).voltagefunc{2} = @(a)(a+8.28)/117.3;% 2021/05/04
-
-% 2021/08/03 Separate calibration
-[seqdata.analogchannels(45).voltagefunc{2},~,~] = lattice_calibrations;
+    %channel 40 (dipole 1 trap power)
+    seqdata.analogchannels(40).name = 'dipoleTrap1';
+    seqdata.analogchannels(40).minvoltage = -10;
+    seqdata.analogchannels(40).maxvoltage = 10;
+    % seqdata.analogchannels(40).resetvalue = [-0.0,1];
+    seqdata.analogchannels(40).defaultvoltagefunc = 4;
+    % seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.00226)/0.60811); %calibrated 2019-07-27
+    % seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.08475)/0.54452); %calibrated 2020-01-28 2V/W
+    % seqdata.analogchannels(40).voltagefunc{4} = @(a)((a+0.0813)/0.5425); %calibrated 2020-06-8
+    % seqdata.analogchannels(40).voltagefunc{4} = @(a)(2.06636*a+0.144332); %calibrated 2021-01-26
+    % seqdata.analogchannels(40).voltagefunc{4} = @(a)(a-0.0031)/0.5272; %calibrated 2021-02-23
+    % seqdata.analogchannels(40).voltagefunc{4} = @(a)(5.2592*a + 0.1741); %2022-01-12
+    % seqdata.analogchannels(40).voltagefunc{4} = @(P) (6.2123*P + 0.0359); %2022-03-25
+    % seqdata.analogchannels(40).voltagefunc{4} = @(P) (2.9518*P + 0.013658); %2022-10-30
+    seqdata.analogchannels(40).voltagefunc{4} = @(P) (3.0738*P + 0.03); %2022-11-21
 
 
-% seqdata.analogchannels(45).voltagefunc{2} = @(a)(max(2.21374*log10(max((a),1E-9))-2.59682,-10)); %June 28, 2017.
-% seqdata.analogchannels(45).voltagefunc{2} = @(a)(max(2.19994*log10(max((a-0.29448)/0.96966,1E-9))-2.6174,-10)); %June 22, 2017.
-% seqdata.analogchannels(45).voltagefunc{2} = @(a)(max(2.20008*log10(max(a,1E-9))-2.66132,-10)); %May 18, 2017.
-% seqdata.analogchannels(45).voltagefunc{2} = @(a)(max(2.2302*log10(max(a,1E-9))-2.8148,-10)); %Feb 28, 2017.
-% seqdata.analogchannels(45).voltagefunc{2} = @(a)(max(log10(max((a-2.09029+2)/19.17685,1e-9))/0.45223,-10));
-% seqdata.analogchannels(45).voltagefunc{2} = @(a)(max(log10(max((a-2.23564)/18.74356,1e-9))/0.45462,-10));
-% seqdata.analogchannels(45).voltagefunc{2} = @(a)(max((log(max((0.67911*a + 1.28809E-4 * a.^2)*0.00041,1e-9)*1000)/log(10)-0.5577)/0.29395,-10));
+    %Channel 41 (motorized waveplate for dipole/lattice power dist)
+    seqdata.analogchannels(41).name = 'latticeWaveplate';
+    seqdata.analogchannels(41).minvoltage = 0;
+    seqdata.analogchannels(41).maxvoltage = 5.5;
+    %Voltage Functions - Calibrated as of Jan 2013
+        %Specify the angle to move from the home position, in degrees:
+        seqdata.analogchannels(41).voltagefunc{2} = @(a)(a/9.36);
+        %Specify the percent of power to transmit to the lattice AOMs:
+        %   assumes that the home position (0V) is at min transmission to
+        %   lattice AOMS (all reflected from PBS to dipole beams)
+        %   argument is the desired transmission expressed in [0,1]
+        seqdata.analogchannels(41).voltagefunc{3} = @(a)(0.5*asind(sqrt(a))/9.36); 
 
-%channel 46 (FM for uWave Source)
-seqdata.analogchannels(46).name = 'uWave FM/AM';
-seqdata.analogchannels(46).minvoltage = -2;
-seqdata.analogchannels(46).maxvoltage = 2;
-seqdata.analogchannels(46).resetvalue = [0,1];
-seqdata.analogchannels(46).defaultvoltagefunc = 2; 
-seqdata.analogchannels(46).voltagefunc{2} = @(a)(a); % Use a 10x Voltage Divider before connecting to SRS
-% IS THERE ACTUALLY A 10x voltage divider in place?
+    %channel 42 (Objective Piezo Z control)
+    seqdata.analogchannels(42).name = 'objective Piezo Z';
+    seqdata.analogchannels(42).minvoltage = -2;
+    seqdata.analogchannels(42).maxvoltage = 10;
 
+    %channel 43 (Z lattice AM control)
+    seqdata.analogchannels(43).name = 'zLattice';
+    seqdata.analogchannels(43).minvoltage = -10;
+    seqdata.analogchannels(43).maxvoltage = 10;
+    seqdata.analogchannels(43).resetvalue = [-10,1];
+    seqdata.analogchannels(43).defaultvoltagefunc = 2;
+    % seqdata.analogchannels(43).voltagefunc{2} = @(a)((a+8.5772)/89.2457); % 2021/04/23 0.4 is for atom scale to be changed
+    % seqdata.analogchannels(43).voltagefunc{2} = @(a)((a+7.9602)/88.725); % 2021/04/23 0.4 is for atom scale to be changed
+    % seqdata.analogchannels(43).voltagefunc{2} = @(a)((a+7.9551)/244.94);
 
-% %channel 47 (D1 AM Control)
-% CF : Needs better descriptor. Multiple D1 light in the sequence
-% CF : 2022/09/20 This controls the optical pumping AOM (but could control
-% other things?)
-seqdata.analogchannels(47).name = 'D1 AM';
-seqdata.analogchannels(47).minvoltage = 0;
-seqdata.analogchannels(47).maxvoltage = 10;
+    % 2021/08/03 Separate calibration
+    [~,~,seqdata.analogchannels(43).voltagefunc{2}] = lattice_calibrations;
 
+    %channel 44 (Y lattice AM control)
+    % 2021/10/15 CH 44 .We measured the voltage directly rom the adwin, and see 3 mV
+    % pk-pk noise on the voltage
+    seqdata.analogchannels(44).name = 'yLattice';
+    seqdata.analogchannels(44).minvoltage = -10;
+    seqdata.analogchannels(44).maxvoltage = 10;
+    seqdata.analogchannels(44).resetvalue = [-10,1]; %Issue in the circuit when asking for -10V, causes siren
+    seqdata.analogchannels(44).defaultvoltagefunc = 2;
+    % seqdata.analogchannels(44).voltagefunc{2} = @(a)(a+8.6812)/141.2965;% 2021/04/23
 
-%channel 48 (Unused)
-seqdata.analogchannels(48).name = 'Lattice Feedback Offset';
-seqdata.analogchannels(48).minvoltage = -10;
-seqdata.analogchannels(48).maxvoltage = 10;
-seqdata.analogchannels(48).defaultvoltagefunc = 2; 
-% seqdata.analogchannels(48).resetvalue = [-9.8,1];
-seqdata.analogchannels(48).voltagefunc{2} = @(a)(a);
-% 2021/10/15 We measured the voltage directlyf rom the adwin, and see 3 mV
-% pk-pk noise on the voltage
+    % 2021/08/03 Separate calibration
+    [~,seqdata.analogchannels(44).voltagefunc{2},~] = lattice_calibrations;
 
+    % seqdata.analogchannels(44).voltagefunc{2} = @(a)(a-5.0878)/432.98;%28 June, 2017
+    % seqdata.analogchannels(44).voltagefunc{2} = @(a)(max(2.27178*log10(max(a,1E-9))-2.77493,-10));%28 June, 2017
 
-% bipolar
-    %A voltage of 0.4V gives best diffraction, higher voltages overdrive
-    %the AOM\
-    
-%channel 49 (D1 EOM Amplitude)
-% CF : Needs better descriptor. Multiple D1 light in the sequence (I assume
-% this is for GM?)
-seqdata.analogchannels(49).name = 'D1 EOM';
-seqdata.analogchannels(49).minvoltage = -1;
-seqdata.analogchannels(49).maxvoltage = 10;
+    %channel 45 (X lattice AM control)
+    seqdata.analogchannels(45).name = 'xLattice';
+    seqdata.analogchannels(45).minvoltage = -10;
+    seqdata.analogchannels(45).maxvoltage = 10;
+    seqdata.analogchannels(45).resetvalue = [-10,1];
+    seqdata.analogchannels(45).defaultvoltagefunc = 2;
+    % seqdata.analogchannels(45).voltagefunc{2} = @(a)((a-2.7+5.61047)/473.44593);
 
-%channel 50 (K Repump FM)
-seqdata.analogchannels(50).name = 'K Repump FM';
-seqdata.analogchannels(50).minvoltage = 0;
-seqdata.analogchannels(50).maxvoltage = 10;
-% K_repump_offset_list = [5];
-% K_repump_offset = getScanParameter(K_repump_offset_list,seqdata.scancycle,seqdata.randcyclelist,'K_trap_offset');
-seqdata.analogchannels(50).voltagefunc{2} = @(a)(4.664 - 0.0285*(a-K_repump_freq_offset/2)); %Repump detuning (in real MHz) from typical set value
+    % seqdata.analogchannels(45).voltagefunc{2} = @(a)((a+1.9553)/555.47);
+    % seqdata.analogchannels(45).voltagefunc{2} = @(a)(a+8.28)/117.3;% 2021/05/04
 
-%channel 51 (F Pump)
-seqdata.analogchannels(51).name = 'F Pump';
-% seqdata.analogchannels(51).resetvalue = [-0.1,1];
-seqdata.analogchannels(51).minvoltage = -10;
-seqdata.analogchannels(51).maxvoltage = 10;
-
-%channel 52 (Dimple Pwr)
-seqdata.analogchannels(52).name = 'Dimple Pwr';
-seqdata.analogchannels(52).minvoltage = -10;
-seqdata.analogchannels(52).maxvoltage = 10;
-
-%channel 53 (VVA for Ramping uWave Power)
-seqdata.analogchannels(53).name = 'uWave VVA';
-seqdata.analogchannels(53).minvoltage = -1;
-seqdata.analogchannels(53).maxvoltage = 10;
-seqdata.analogchannels(53).defaultvoltagefunc = 1; 
-seqdata.analogchannels(53).voltagefunc{1} = @(a) a; 
-
-% Define the relative envelope function using the spec sheet of the VVA
-% ZX73-2500-S+.  This was shown to get a good prediction of the rabi
-% frequency on 2021.06.11
-vva_spec=[0 1 1.5 2 3 4 6 8 10;
-    41.94 41.83 33.91 23.06 15.69 12.46 8.9 6.5 4.48];
-xf=vva_spec(1,:);
-yf=sqrt(10.^(-vva_spec(2,:)*.1)/10^(-4.48*.1));yf(1)=0;
-seqdata.analogchannels(53).voltagefunc{2} = @(a) interp1(yf,xf,a,'pchip');
+    % 2021/08/03 Separate calibration
+    [seqdata.analogchannels(45).voltagefunc{2},~,~] = lattice_calibrations;
 
 
-%channel 54 (Piezo mirror controller, channel X)
-seqdata.analogchannels(54).name = 'Piezo mirror X';
-seqdata.analogchannels(54).minvoltage = -0.15;
-seqdata.analogchannels(54).maxvoltage = 10;
-seqdata.analogchannels(54).defaultvoltagefunc = 2; 
-seqdata.analogchannels(54).voltagefunc{2} = @(a)((a-0.7)/15.18);
+    % seqdata.analogchannels(45).voltagefunc{2} = @(a)(max(2.21374*log10(max((a),1E-9))-2.59682,-10)); %June 28, 2017.
+    % seqdata.analogchannels(45).voltagefunc{2} = @(a)(max(2.19994*log10(max((a-0.29448)/0.96966,1E-9))-2.6174,-10)); %June 22, 2017.
+    % seqdata.analogchannels(45).voltagefunc{2} = @(a)(max(2.20008*log10(max(a,1E-9))-2.66132,-10)); %May 18, 2017.
+    % seqdata.analogchannels(45).voltagefunc{2} = @(a)(max(2.2302*log10(max(a,1E-9))-2.8148,-10)); %Feb 28, 2017.
+    % seqdata.analogchannels(45).voltagefunc{2} = @(a)(max(log10(max((a-2.09029+2)/19.17685,1e-9))/0.45223,-10));
+    % seqdata.analogchannels(45).voltagefunc{2} = @(a)(max(log10(max((a-2.23564)/18.74356,1e-9))/0.45462,-10));
+    % seqdata.analogchannels(45).voltagefunc{2} = @(a)(max((log(max((0.67911*a + 1.28809E-4 * a.^2)*0.00041,1e-9)*1000)/log(10)-0.5577)/0.29395,-10));
 
-%channel 55 (Piezo mirror controller, channel Y)
-seqdata.analogchannels(55).name = 'Piezo mirror Y';
-seqdata.analogchannels(55).minvoltage = -0.15;
-seqdata.analogchannels(55).maxvoltage = 10;
-seqdata.analogchannels(55).defaultvoltagefunc = 2; 
-seqdata.analogchannels(55).voltagefunc{2} = @(a)((a-1.7)/15.04);
+    %channel 46 (FM for uWave Source)
+    seqdata.analogchannels(46).name = 'uWave FM/AM';
+    seqdata.analogchannels(46).minvoltage = -2;
+    seqdata.analogchannels(46).maxvoltage = 2;
+    seqdata.analogchannels(46).resetvalue = [0,1];
+    seqdata.analogchannels(46).defaultvoltagefunc = 2; 
+    seqdata.analogchannels(46).voltagefunc{2} = @(a)(a); % Use a 10x Voltage Divider before connecting to SRS
+    % IS THERE ACTUALLY A 10x voltage divider in place?
 
-%channel 56 (Piezo mirror controller, channel Z)
-seqdata.analogchannels(56).name = 'Piezo mirror Z';
-seqdata.analogchannels(56).minvoltage = -10;
-seqdata.analogchannels(56).maxvoltage = 10;
-seqdata.analogchannels(56).defaultvoltagefunc = 2; 
-seqdata.analogchannels(56).voltagefunc{2} = @(a)(a);
 
-%channel 57 (XDT1 Piezo Mirror Mod)
-seqdata.analogchannels(57).name = 'XDT1 Piezo';
-seqdata.analogchannels(57).minvoltage = -10;
-seqdata.analogchannels(57).maxvoltage = 10;
-seqdata.analogchannels(57).defaultvoltagefunc = 2; 
-seqdata.analogchannels(57).voltagefunc{2} = @(a)(a);
+    % %channel 47 (D1 AM Control)
+    % CF : Needs better descriptor. Multiple D1 light in the sequence
+    % CF : 2022/09/20 This controls the optical pumping AOM (but could control
+    % other things?)
+    seqdata.analogchannels(47).name = 'D1 AM';
+    seqdata.analogchannels(47).minvoltage = 0;
+    seqdata.analogchannels(47).maxvoltage = 10;
 
-%channel 58 (XDT2 Piezo Mirror Mod)
-seqdata.analogchannels(58).name = 'XDT2 Piezo';
-seqdata.analogchannels(58).minvoltage = -10;
-seqdata.analogchannels(58).maxvoltage = 10;
-seqdata.analogchannels(58).defaultvoltagefunc = 2; 
-seqdata.analogchannels(58).voltagefunc{2} = @(a)(a);
 
-%channel 59 (Not functional??)
-seqdata.analogchannels(59).name = 'DMD Power';
-seqdata.analogchannels(59).minvoltage = -10;
-seqdata.analogchannels(59).maxvoltage = 10;
-seqdata.analogchannels(59).defaultvoltagefunc = 2; 
-seqdata.analogchannels(59).voltagefunc{2} = @(a)(a);
-    
-%channel 60 (Compensation Beam Power Control)
-seqdata.analogchannels(60).name = 'UV Lamp 2'; % unused
-seqdata.analogchannels(60).minvoltage = -10;
-seqdata.analogchannels(60).maxvoltage = 10;
-seqdata.analogchannels(60).defaultvoltagefunc = 2; 
-seqdata.analogchannels(60).voltagefunc{2} = @(a)(a);% 
+    %channel 48 (Unused)
+    seqdata.analogchannels(48).name = 'Lattice Feedback Offset';
+    seqdata.analogchannels(48).minvoltage = -10;
+    seqdata.analogchannels(48).maxvoltage = 10;
+    seqdata.analogchannels(48).defaultvoltagefunc = 2; 
+    % seqdata.analogchannels(48).resetvalue = [-9.8,1];
+    seqdata.analogchannels(48).voltagefunc{2} = @(a)(a);
+    % 2021/10/15 We measured the voltage directlyf rom the adwin, and see 3 mV
+    % pk-pk noise on the voltage
 
-%channel 61 ((0V noise cancelling channel for ODTs)
-seqdata.analogchannels(61).name = 'ZeroVolts'; %0: MOT; 1: Gray Molasses
-seqdata.analogchannels(61).minvoltage = -10;
-seqdata.analogchannels(61).maxvoltage = 10;
-seqdata.analogchannels(61).resetvalue = [0,1];
-seqdata.analogchannels(61).defaultvoltagefunc = 1; 
-seqdata.analogchannels(61).voltagefunc{2} = @(a)(a);% 
+
+    % bipolar
+        %A voltage of 0.4V gives best diffraction, higher voltages overdrive
+        %the AOM\
+
+    %channel 49 (D1 EOM Amplitude)
+    % CF : Needs better descriptor. Multiple D1 light in the sequence (I assume
+    % this is for GM?)
+    seqdata.analogchannels(49).name = 'D1 EOM';
+    seqdata.analogchannels(49).minvoltage = -1;
+    seqdata.analogchannels(49).maxvoltage = 10;
+
+    %channel 50 (K Repump FM)
+    seqdata.analogchannels(50).name = 'K Repump FM';
+    seqdata.analogchannels(50).minvoltage = 0;
+    seqdata.analogchannels(50).maxvoltage = 10;
+    % K_repump_offset_list = [5];
+    % K_repump_offset = getScanParameter(K_repump_offset_list,seqdata.scancycle,seqdata.randcyclelist,'K_trap_offset');
+    seqdata.analogchannels(50).voltagefunc{2} = @(a)(4.664 - 0.0285*(a-K_repump_freq_offset/2)); %Repump detuning (in real MHz) from typical set value
+
+    %channel 51 (F Pump)
+    seqdata.analogchannels(51).name = 'F Pump';
+    % seqdata.analogchannels(51).resetvalue = [-0.1,1];
+    seqdata.analogchannels(51).minvoltage = -10;
+    seqdata.analogchannels(51).maxvoltage = 10;
+
+    %channel 52 (Dimple Pwr)
+    seqdata.analogchannels(52).name = 'Dimple Pwr';
+    seqdata.analogchannels(52).minvoltage = -10;
+    seqdata.analogchannels(52).maxvoltage = 10;
+
+    %channel 53 (VVA for Ramping uWave Power)
+    seqdata.analogchannels(53).name = 'uWave VVA';
+    seqdata.analogchannels(53).minvoltage = -1;
+    seqdata.analogchannels(53).maxvoltage = 10;
+    seqdata.analogchannels(53).defaultvoltagefunc = 1; 
+    seqdata.analogchannels(53).voltagefunc{1} = @(a) a; 
+
+    % Define the relative envelope function using the spec sheet of the VVA
+    % ZX73-2500-S+.  This was shown to get a good prediction of the rabi
+    % frequency on 2021.06.11
+    vva_spec=[0 1 1.5 2 3 4 6 8 10;
+        41.94 41.83 33.91 23.06 15.69 12.46 8.9 6.5 4.48];
+    xf=vva_spec(1,:);
+    yf=sqrt(10.^(-vva_spec(2,:)*.1)/10^(-4.48*.1));yf(1)=0;
+    seqdata.analogchannels(53).voltagefunc{2} = @(a) interp1(yf,xf,a,'pchip');
+
+
+    %channel 54 (Piezo mirror controller, channel X)
+    seqdata.analogchannels(54).name = 'Piezo mirror X';
+    seqdata.analogchannels(54).minvoltage = -0.15;
+    seqdata.analogchannels(54).maxvoltage = 10;
+    seqdata.analogchannels(54).defaultvoltagefunc = 2; 
+    seqdata.analogchannels(54).voltagefunc{2} = @(a)((a-0.7)/15.18);
+
+    %channel 55 (Piezo mirror controller, channel Y)
+    seqdata.analogchannels(55).name = 'Piezo mirror Y';
+    seqdata.analogchannels(55).minvoltage = -0.15;
+    seqdata.analogchannels(55).maxvoltage = 10;
+    seqdata.analogchannels(55).defaultvoltagefunc = 2; 
+    seqdata.analogchannels(55).voltagefunc{2} = @(a)((a-1.7)/15.04);
+
+    %channel 56 (Piezo mirror controller, channel Z)
+    seqdata.analogchannels(56).name = 'Piezo mirror Z';
+    seqdata.analogchannels(56).minvoltage = -10;
+    seqdata.analogchannels(56).maxvoltage = 10;
+    seqdata.analogchannels(56).defaultvoltagefunc = 2; 
+    seqdata.analogchannels(56).voltagefunc{2} = @(a)(a);
+
+    %channel 57 (XDT1 Piezo Mirror Mod) %Disconnected
+    seqdata.analogchannels(57).name = 'XDT1 Piezo';
+    seqdata.analogchannels(57).minvoltage = -10;
+    seqdata.analogchannels(57).maxvoltage = 10;
+    seqdata.analogchannels(57).defaultvoltagefunc = 2; 
+    seqdata.analogchannels(57).voltagefunc{2} = @(a)(a);
+
+    %channel 58 (XDT2 Piezo Mirror Mod) %Disconnected
+    seqdata.analogchannels(58).name = 'XDT2 Piezo';
+    seqdata.analogchannels(58).minvoltage = -10;
+    seqdata.analogchannels(58).maxvoltage = 10;
+    seqdata.analogchannels(58).defaultvoltagefunc = 2; 
+    seqdata.analogchannels(58).voltagefunc{2} = @(a)(a);
+
+    %channel 59 (Not functional??)
+    seqdata.analogchannels(59).name = 'DMD Power';
+    seqdata.analogchannels(59).minvoltage = -10;
+    seqdata.analogchannels(59).maxvoltage = 10;
+    seqdata.analogchannels(59).defaultvoltagefunc = 2; 
+    seqdata.analogchannels(59).voltagefunc{2} = @(a)(a);
+
+    %channel 60 (Compensation Beam Power Control) %Disconnected
+    seqdata.analogchannels(60).name = 'UV Lamp 2'; % unused
+    seqdata.analogchannels(60).minvoltage = -10;
+    seqdata.analogchannels(60).maxvoltage = 10;
+    seqdata.analogchannels(60).defaultvoltagefunc = 2; 
+    seqdata.analogchannels(60).voltagefunc{2} = @(a)(a);% 
+
+    %channel 61 ((0V noise cancelling channel for ODTs)
+    seqdata.analogchannels(61).name = 'ZeroVolts'; %0: MOT; 1: Gray Molasses
+    seqdata.analogchannels(61).minvoltage = -10;
+    seqdata.analogchannels(61).maxvoltage = 10;
+    seqdata.analogchannels(61).resetvalue = [0,1];
+    seqdata.analogchannels(61).defaultvoltagefunc = 1; 
+    seqdata.analogchannels(61).voltagefunc{2} = @(a)(a);% 
+
+    %channel 62 (X MOT Shim)
+    seqdata.analogchannels(62).name = 'X MOT Shim';
+    seqdata.analogchannels(62).minvoltage = 0;
+    seqdata.analogchannels(62).maxvoltage = 10;
+    % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents  
+    seqdata.analogchannels(62).defaultvoltagefunc = 2;
+    seqdata.analogchannels(62).voltagefunc{2} = @(a) (a+.268)/.842;  %old MOT shim calibration; a=current in Amps
+
+
+    %channel 63 ( Y MOT Shim )
+    % This analog channel controls the Y MOT shim.
+    seqdata.analogchannels(63).name = 'Y MOT Shim';
+    seqdata.analogchannels(63).minvoltage = 0;
+    seqdata.analogchannels(63).maxvoltage = 10; 
+    % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents  
+    seqdata.analogchannels(63).voltagefunc{2} = @(a) (a+.293)/.77;  %old MOT shim calibration; a=current in Amps
+    seqdata.analogchannels(63).defaultvoltagefunc = 3; %3 BIPOLAR SHIM SUPPLY CHANGE
+    %'Field' in G (not well calibrated)
+    seqdata.analogchannels(63).voltagefunc{3} = @(a)(a*1.1875+0.52); % calibration for Shimmer control
+
+    %channel 64 (Z MOT Shim)
+    seqdata.analogchannels(64).name = 'Z MOT Shim';
+    seqdata.analogchannels(64).minvoltage = 0;
+    seqdata.analogchannels(64).maxvoltage = 10;
+    % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents
+    seqdata.analogchannels(64).defaultvoltagefunc = 2;
+    seqdata.analogchannels(64).voltagefunc{2} = @(a)(a+.266)/.819;  %old MOT shim calibration; a=current in Amps
+
 
 % create cell arrays with channel names for lookup
 for i = 1:length(seqdata.digchannels)

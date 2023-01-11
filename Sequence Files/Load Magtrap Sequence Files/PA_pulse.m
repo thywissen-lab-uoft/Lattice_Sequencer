@@ -102,11 +102,11 @@ if pulse_number == 2
     DigitalPulse(calctime(curtime,1),'PA LabJack Trigger',1,1)
 end
 if pulse_number == 1
-    fake_pulse = 0; %vary this parameter if you want a fake pulse
+    fake_pulse = 0; % 1: fake, 0: not fake ;vary this parameter if you want a fake pulse
 else
     fake_pulse = 0; %this should remain 0
 end
-
+fake_pulse = 0;
 if pulse_time>0 
     if fake_pulse == 0
         % Turn OFF AOM

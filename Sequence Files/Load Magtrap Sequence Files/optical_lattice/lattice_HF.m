@@ -23,42 +23,43 @@ curtime = timein;
     %% Flags
 
     % Initialization of Field And Lattice
-    lattice_ramp_1                  = 0;       % Initial lattice ramp    
-    field_ramp_init                 = 1;       % Ramp field away from initial  
+    lattice_ramp_1                    = 0;       % Initial lattice ramp    
+    field_ramp_init                   = 1;       % Ramp field away from initial  
     
     % Initial Spectroscopy 
-    do_raman_phantom                = 0;       % Apply a phatom Raman pulse to kill atoms
-    rf_97_flip_init                 = 0;       % RF Pre Flip 9<-->7data.params       
+    do_raman_phantom                  = 0;       % Apply a phatom Raman pulse to kill atoms
+    rf_97_flip_init                   = 0;       % RF Pre Flip 9<-->7data.params       
     
     % Initialize p-wave state
-    lattice_ramp_2                  = 0;       % Secondary lattice ramp before spectroscopy
-    pulse_raman                     = 0;       % apply a Raman pulse with only the R2 beam
-    do_raman_spectroscopy           = 0; 
+    lattice_ramp_2                    = 0;       % Secondary lattice ramp before spectroscopy
+    pulse_raman                       = 0;       % apply a Raman pulse with only the R2 beam
+    do_raman_spectroscopy             = 0; 
 
     % Alternative Raman preparation (??)
-    raman_short_sweep               = 0;
+    raman_short_sweep                 = 0;
     
-    spin_flip_7_5                   = 0;       % 75 spectroscpoy/flip
+    spin_flip_7_5                     = 0;       % 75 spectroscpoy/flip
     
     % Field and Lattice Ramp
-    field_ramp_2                    = 0;       % ramp field after raman before rf spectroscopy   
-    lattice_ramp_3                  = 0;       % between raman and rf spectroscopy
+    field_ramp_2                      = 0;       % ramp field after raman before rf spectroscopy   
+    lattice_ramp_3                    = 0;       % between raman and rf spectroscopy
     
     % More RF Stuff (?)
-    rf_rabi_manual                  = 0;
-    doPA_pulse                      = 1;
-    do_rf_spectroscopy              = 0; 
-    do_rf_post_spectroscopy         = 0; 
+    rf_rabi_manual                    = 0;
+    doPA_pulse                        = 1;
+    do_rf_spectroscopy                = 0; 
+    do_rf_post_spectroscopy           = 0; 
         
-    do_raman_spectroscopy_post_rf   = 0;        % Raman Spectroscopy
+    do_raman_spectroscopy_post_rf     = 0;        % Raman Spectroscopy
     
     % Feshbach field ramps
-    field_ramp_img                  = 1;       % Ramp field for imaging
+    ramp_field_for_imaging_attractive = 1;       % Ramp field for imaging on attractive side
+    ramp_field_for_imaging_repulsive  = 0;       % Ramp field for imaging on repulsive side
     
     % Other RF Manipulations
-    shift_reg_at_HF                 = 0;
-    spin_flip_9_7_5                 = 0;
-    spin_flip_9_7_post_spectroscopy = 0;
+    shift_reg_at_HF                   = 0;
+    spin_flip_9_7_5                   = 0;
+    spin_flip_9_7_post_spectroscopy   = 0;
     
   
 
@@ -96,11 +97,14 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
     %% Feshbach ramp
     
     if field_ramp_init
-        % Feshbach Field ramp
-        HF_FeshValue_Initial_List = [206]; [197];
-        HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
-            seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_Lattice','G');
+        dispLineStr('Initial Field Ramp',curtime);
+
         
+        % Feshbach Field ramp
+%         HF_FeshValue_Initial_List = [207]; [197];
+%         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
+%             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_Lattice','G');
+%         
         
         HF_FeshValue_Initial = paramGet('HF_FeshValue_Initial_Lattice');
 %         addOutp
@@ -1519,14 +1523,14 @@ curtime = calctime(curtime,10);
 
 % seqdata.params.HF_probe_fb = seqdata.params.HF_fb;
 
-%% High Field Imaging Field Ramp
-% Imaging is performed at a "standard" field value of 195 G for time of
+%% High Field Imaging Field Ramp (attractive side of resonance)
+% Imaging is performed at a "standard" field value of 207 G for time of
 % flight. Ramp the magnetic field when all manipulations are complete.
 
-if field_ramp_img
+if ramp_field_for_imaging_attractive
 
     % Feshbach Field ramp Field ramp
-    HF_FeshValue_Final_List = 207;195;
+    HF_FeshValue_Final_List = 207;
     HF_FeshValue_Final = getScanParameter(HF_FeshValue_Final_List,...
     seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Final_Lattice','G');
 
@@ -1582,6 +1586,35 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 
          
      end
+    
+end
+%% High Field Imaging Field Ramp (repulsive side of resonance)
+% Imaging is performed at a "standard" field value of 195 G for time of
+% flight. Ramp the magnetic field when all manipulations are complete.
+if ramp_field_for_imaging_repulsive
+    
+    % Feshbach Field ramp Field ramp
+    HF_FeshValue_Final_List = 195;
+    HF_FeshValue_Final = getScanParameter(HF_FeshValue_Final_List,...
+    seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Final_Lattice','G');
+
+    % Define the ramp structure
+    ramp=struct;
+    ramp.shim_ramptime = 100;
+    ramp.shim_ramp_delay = 0; % ramp earlier than FB field if needed
+    ramp.xshim_final = seqdata.params.shim_zero(1); 
+    ramp.yshim_final = seqdata.params.shim_zero(2);
+    ramp.zshim_final = seqdata.params.shim_zero(3);
+    % FB coil 
+    ramp.fesh_ramptime = 100;
+    ramp.fesh_ramp_delay = 0;
+    ramp.fesh_final = HF_FeshValue_Final;
+    ramp.settling_time = 50;    
+
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+
+    seqdata.params.HF_probe_fb = HF_FeshValue_Final;
+    
     
 end
 

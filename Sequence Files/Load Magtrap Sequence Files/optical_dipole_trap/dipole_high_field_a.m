@@ -116,10 +116,6 @@ curtime = timein;
         setDigitalChannel(curtime,'15/16 Switch',0); 
         curtime = calctime(curtime,10);
 
-        % Make Sure Coil 16 is off
-        setDigitalChannel(curtime,'Coil 16 TTL',0)
-        curtime = calctime(curtime,10);
-        
         % Turn on reverse QP switch
         setDigitalChannel(curtime,'Reverse QP Switch',1);
         curtime = calctime(curtime,10);

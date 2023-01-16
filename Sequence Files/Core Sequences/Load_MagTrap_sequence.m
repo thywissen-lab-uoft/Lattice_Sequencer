@@ -948,42 +948,35 @@ dispLineStr('Turning off coils and traps.',curtime);
     end    
     
     %Turn off QP Coils
-    setAnalogChannel(calctime(curtime,0),'Coil 15',0,1); %15
-    curtime = setAnalogChannel(calctime(curtime,0),'Coil 16',0,1); %16
-    curtime = setAnalogChannel(curtime,'kitten',0,1); %kitten
-    
-    
- 
+    setAnalogChannel(calctime(curtime,0),'Coil 15',0,1);            % C15
+    curtime = setAnalogChannel(calctime(curtime,0),'Coil 16',0,1);  % C16
+    curtime = setAnalogChannel(curtime,'kitten',0,1);               % Kitten    
 
     %MOT/QCoil TTL (separate switch for coil 15 (TTL) and 16 (analog))
-    %Coil 16 fast switch
-    %setDigitalChannel(curtime,21,1);
     qp_switch1_delay_time = 0;
     
     if I_kitt == 0
         %use fast switch
-        setDigitalChannel(curtime,'Coil 16 TTL',1);
-        setDigitalChannel(calctime(curtime,500),'Coil 16 TTL',0); 
+        setDigitalChannel(curtime,'Coil 16 TTL',1); % Turn off Coil 16
+        setDigitalChannel(calctime(curtime,500),'Coil 16 TTL',0); % Turn on Coil 16
     else
         %Cannot use Coil 16 fast switch if atoms have not be transferred to
         %imaging direction!
     end
     
     %turn off 15/16 switch (10 ms later)
-    setDigitalChannel(calctime(curtime,qp_switch1_delay_time),22,0);
+    setDigitalChannel(calctime(curtime,qp_switch1_delay_time),'15/16 Switch',0);
 
 
     if ( seqdata.flags. do_dipole_trap ~= 0 )
    
-        if seqdata.flags. do_dipole_trap == 2
-    
+        if seqdata.flags. do_dipole_trap == 2    
             %Leave ODT on during 15ms TOF
             setDigitalChannel(calctime(curtime,25),'XDT TTL',1);
             %turn off dipole trap 1
             setAnalogChannel(calctime(curtime,25),40,0,1);
             %turn off dipole trap 2
-            setAnalogChannel(calctime(curtime,25),38,0,1);
-        
+            setAnalogChannel(calctime(curtime,25),38,0,1);        
         end
         
         if seqdata.flags. do_dipole_trap == 1

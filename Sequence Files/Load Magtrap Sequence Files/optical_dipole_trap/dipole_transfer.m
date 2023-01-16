@@ -45,7 +45,7 @@ do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscill
 % Spectroscopy after Evaporation
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-ramp_XDT_after_evap = 0;        % Ramp XDT up after evaporation to keep Rb and K at same location for lattice aligment              
+ramp_XDT_after_evap = 1;                  
 k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
 ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
 uWave_K_Spectroscopy = 0;
@@ -1207,8 +1207,10 @@ if ramp_XDT_up
     dip_rampstart = 0;
     dip_waittime = 500;
 
-    AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_1);
-    AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_2);
+    AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_1);
+    AnalogFuncTo(calctime(curtime,dip_rampstart),...
+        'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_2);
 curtime = calctime(curtime,dip_rampstart+dip_ramptime+dip_waittime);
 end
 
@@ -1281,7 +1283,7 @@ end
 if (ramp_XDT_after_evap && seqdata.flags.CDT_evap == 1)
     dispLineStr('Ramping XDTs back on.',curtime);
 
-    power_list = 0.1;
+    power_list = [.1];
     power_val = getScanParameter(power_list,seqdata.scancycle,...
         seqdata.randcyclelist,'XDT_rampup_power','W');
 
@@ -1745,11 +1747,7 @@ if ramp_QP_FB_and_back
     HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
         seqdata.scancycle,seqdata.randcyclelist,'HF_Fesh_RampUpDown','G');
     
-    % QP Value to ramp to
-    HF_QP_List =[0:.005:.05];
-    HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
-        seqdata.randcyclelist,'HF_QP_RampUpDown','A');   
-    
+
     clear('ramp');
     
     % Ramp the Feshbach Coils.
@@ -1758,15 +1756,93 @@ if ramp_QP_FB_and_back
     ramp.FeshValue = HF_FeshValue_Initial;
     ramp.SettlingTime = 50; 
     
-    % Ramp the QP Coils
-    ramp.QPRampTime = ramp.FeshRampTime;
-    ramp.QPValue = HF_QP;    
+    doRampQPPre=1;
+    if doRampQPPre
+        % QP Value to ramp to
+        HF_QP_List =0.2;
+        HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
+        seqdata.randcyclelist,'HF_QP15_RampUpDown','V');   
 
-    disp(['     Ramp Time     (ms) : ' num2str(ramp.FeshRampTime)]);
-    disp(['     Settling Time (ms) : ' num2str(ramp.SettlingTime)]);
-    disp(['     Fesh Value     (G) : ' num2str(ramp.FeshValue)]);
-    disp(['     QP Value       (A) : ' num2str(ramp.QPValue)]);   
+    
+        % Ramp C16 and C15 to off values
+        pre_ramp_time = 100;
+        AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,-7);    
+        curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0.062,1); 
+    
+          
+        curtime = calctime(curtime,50);
+        % Turn off 15/16 switch
+        setDigitalChannel(curtime,'15/16 Switch',0); 
+        curtime = calctime(curtime,10);
 
+        % Make Sure Coil 16 is off
+        setDigitalChannel(curtime,'Coil 16 TTL',0)
+        curtime = calctime(curtime,10);
+        
+        % Turn on reverse QP switch
+        setDigitalChannel(curtime,'Reverse QP Switch',1);
+        curtime = calctime(curtime,10);
+            
+        % Ramp up transport supply voltage
+        QP_FFValue = 23*(HF_QP/.125/30); % voltage FF on delta supply
+        curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+            100,100,QP_FFValue);
+        curtime = calctime(curtime,50);
+
+        
+        qp_ramp_time = 200;
+        curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,HF_QP,1); 
+    end
+    
+    doRampQP = 0;
+    doReverse = 0;
+    if doRampQP        
+  
+        
+        curtime = calctime(curtime,100);
+        if doReverse
+            % QP Value to ramp to
+            HF_QP_List =[.1];
+            HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
+                seqdata.randcyclelist,'HF_QP15_RampUpDown','V');   
+            pre_ramp_time = 50;       
+
+            AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0.062,1);        
+            
+            % Turn on reverse QP switch
+            setDigitalChannel(curtime,'Reverse QP Switch',1);
+            % Turn off 15/16 switch
+            setDigitalChannel(curtime,'15/16 Switch',0);
+             ramp.QPReverse = 1;
+        else
+            % QP Value to ramp to
+            HF_QP_List =[1];
+            HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
+                seqdata.randcyclelist,'HF_QP16_RampUpDown','A');   
+
+            
+            % Turn off reverse QP switch
+            setDigitalChannel(curtime,'Reverse QP Switch',0);
+            % Turn on 15/16 switch
+            setDigitalChannel(curtime,'15/16 Switch',1);
+            ramp.QPReverse = 0;
+        end
+        curtime = calctime(curtime,100);
+        
+        % Ramp the QP Coils
+         ramp.QPRampTime = ramp.FeshRampTime;
+         ramp.QPValue = HF_QP;    
+     
+         disp(['     Ramp Time     (ms) : ' num2str(ramp.FeshRampTime)]);
+         disp(['     Settling Time (ms) : ' num2str(ramp.SettlingTime)]);
+         disp(['     Fesh Value     (G) : ' num2str(ramp.FeshValue)]);
+         disp(['     QP Value       (A) : ' num2str(ramp.QPValue)]);   
+    end
 curtime = rampMagneticFields(calctime(curtime,0), ramp);
 
     wait_time = 50;
@@ -1781,11 +1857,49 @@ curtime = calctime(curtime,wait_time);
     ramp.FeshRampDelay = 0;   
     ramp.FeshValue = 20;
     
-    % Ramp the QP Coils
+    % Ramp the QP Coils off
     ramp.QPRampTime = ramp.FeshRampTime;
-    ramp.QPValue = 0;    
+    
+    if doRampQP
+        if doReverse
+            ramp.QPReverse = 1;
+            ramp.QPValue = 0.062;    
+
+        else
+            ramp.QPReverse = 0;
+            ramp.QPValue = 0;  
+        end 
+    end
     
     curtime = rampMagneticFields(calctime(curtime,0), ramp);
+    
+    if doRampQPPre
+        curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,0.062,1);  
+        
+        curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+            5,5,0);
+        
+        
+    end
+    
+    % Go back to "normal" configuration
+    curtime = calctime(curtime,10);
+    % Turn off reverse QP switch
+    setDigitalChannel(curtime,'Reverse QP Switch',0);
+    curtime = calctime(curtime,10);
+
+    % Turn on 15/16 switch
+    setDigitalChannel(curtime,'15/16 Switch',1);
+    curtime = calctime(curtime,10);
+
+        % Renable Coil 16
+    setDigitalChannel(curtime,'Coil 16 TTL',1)
+    curtime = calctime(curtime,10);
+
+
+
 end
 %% The End!
 

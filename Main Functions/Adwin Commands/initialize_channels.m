@@ -76,6 +76,8 @@ seqdata.digchannels(34).name = 'yLatticeOFF';       % Controls all 3 lattice bea
 seqdata.digchannels(35).name = 'D1 TTL';            %TTL for the EIT probe AOMs; 1: ON; 0 : OFF
 seqdata.digchannels(36).name = 'EIT Shutter';       %Shutter for EIT probe beam paths
 seqdata.digchannels(37).name = 'Reverse QP Switch';  %MOSFET to switch direction of QP  
+seqdata.digchannels(37).resetvalue = 0;
+
 seqdata.digchannels(38).name = 'FPump Direct';      % 0 regulate, 1 don't regulate
 seqdata.digchannels(39).name = 'K uWave TTL';       % 0 off, 1 on
 seqdata.digchannels(40).name = 'K/Rb uWave Transfer'; %0 = K, 1 = Rb

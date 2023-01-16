@@ -62,7 +62,8 @@ opt = struct('ShimRampTime', 50, ... time to ramp shims
              'QP_FFRampDelay', 0, ... delay (with respect to timein) for QP voltage ramp
              'QPValue', [], ... final value for QP
              'QP_FFValue', [], ... final value for QP voltage
-             'SettlingTime', 100 ... waittime at the end of the ramps
+             'SettlingTime', 100, ... waittime at the end of the ramps
+             'QPReverse',0 ... % Whether to use Coil 15 or Coil 16 for QP Control
              );
          
 %% checking inputs (edit with care!)
@@ -204,22 +205,44 @@ end
     
     %Set Quadrupole field
     if ~isempty(opt.QPValue)
-
+            % Calculate the necessary feed foward value
             opt.QP_FFValue = 23*(opt.QPValue/30); % voltage FF on delta supply
             
             % Ramp up transport supply voltage
-            AnalogFuncTo(calctime(curtime,opt.QP_FFRampDelay),18,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),opt.QP_FFRampTime,opt.QP_FFRampTime,opt.QP_FFValue);
+            AnalogFuncTo(calctime(curtime,opt.QP_FFRampDelay),'Transport FF',...
+                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+                opt.QP_FFRampTime,opt.QP_FFRampTime,opt.QP_FFValue);
             
-            % Ramp QP coil current, unless it is going from 0 to 0. 
-            if ~(getChannelValue(seqdata,1,1,0) == 0 && opt.QPValue == 0)
-                setDigitalChannel(calctime(curtime,opt.QPRampDelay), 21, 0); % fast QP, 1 is off
-                AnalogFuncTo(calctime(curtime,opt.QPRampDelay),1,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),opt.QPRampTime,opt.QPRampTime,opt.QPValue);
-            end
+            if ~opt.QPReverse
             
-            % Switching off QP fields
-            if (opt.QPValue == 0)
-                setDigitalChannel(calctime(curtime,opt.QPRampDelay+opt.QPRampTime), 21, 1); % fast QP, 1 is off
-                setAnalogChannel(calctime(curtime,opt.QPRampDelay+opt.QPRampTime + 5),1,0); %1 % built in 5ms delay for turning QP control to true zero
+                % Ramp QP coil current, unless it is going from 0 to 0. 
+                if ~(getChannelValue(seqdata,'Coil 16',1,0) == 0 && opt.QPValue == 0)
+                    setDigitalChannel(calctime(curtime,opt.QPRampDelay), 'Coil 16 TTL', 0); % fast QP, 1 is off
+                    AnalogFuncTo(calctime(curtime,opt.QPRampDelay),'Coil 16',...
+                        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),opt.QPRampTime,opt.QPRampTime,opt.QPValue);    
+                end
+
+                % Switching off QP fields
+                if (opt.QPValue == 0)
+                    setDigitalChannel(calctime(curtime,opt.QPRampDelay+opt.QPRampTime),...
+                        'Coil 16 TTL', 1); % fast QP, 1 is off
+                    setAnalogChannel(calctime(curtime,opt.QPRampDelay+opt.QPRampTime + 5),...
+                        'Coil 16',0); %1 % built in 5ms delay for turning QP control to true zero
+                end
+                
+            else               
+                            
+                % Ramp QP coil current, unless it is going from 0 to 0. 
+                if ~(getChannelValue(seqdata,'Coil 15',1,0) == 0 && opt.QPValue == 0)
+                    AnalogFuncTo(calctime(curtime,opt.QPRampDelay),'Coil 15',...
+                        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),opt.QPRampTime,opt.QPRampTime,opt.QPValue,1);    
+                end
+
+                % Switching off QP fields
+                if (opt.QPValue == 0)
+                    setAnalogChannel(calctime(curtime,opt.QPRampDelay+opt.QPRampTime + 5),...
+                        'Coil 15',0,1); %1 % built in 5ms delay for turning QP control to true zero
+                end
             end
     else
         opt.QPRampDelay = 0; % for calculation of total time

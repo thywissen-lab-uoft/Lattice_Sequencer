@@ -72,6 +72,9 @@ curtime = timein;
 %% Flags          
     time_in_HF_imaging = curtime;
     
+    % Ramp up the QP Coils for gradient cancel
+    ramp_QP_gradient_cancel = 1;
+    
     % Initial Ramp to high magnetic field
     ramp_field_1            = 1;       
     
@@ -79,9 +82,9 @@ curtime = timein;
     mix_7_9                 = 0;  
     
     % Spin Manipulations for attractive with initial mixture
-    flip_7_5                = 1;        % 7 to 5 to avoid fesbach
-    ramp_field_2            = 1;        % Ramp above feshbach (attractive)
-    flip_7_5_again          = 1;        % 5 to 7 for science mixture
+    flip_7_5                = 0;        % 7 to 5 to avoid fesbach
+    ramp_field_2            = 0;        % Ramp above feshbach (attractive)
+    flip_7_5_again          = 0;        % 5 to 7 for science mixture
         
     % Ramp to science magnetic field
     ramp_field_3            = 0;    
@@ -91,8 +94,48 @@ curtime = timein;
 
     % Ramp field to imaging field
     ramp_field_for_imaging_attractive  = 0;
-    ramp_field_for_imaging_repulsive  = 0;
+    ramp_field_for_imaging_repulsive  = 1;
 
+    %% QP Coil Gradient Cancel
+    
+       if ramp_QP_gradient_cancel
+        % QP Value to ramp to
+        HF_QP_List =0.2;
+        HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
+        seqdata.randcyclelist,'HF_QPReverse','V');  
+    
+        % Ramp C16 and C15 to off values
+        pre_ramp_time = 100;
+        AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,-7);    
+        curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0.062,1); 
+              
+        curtime = calctime(curtime,50);
+        % Turn off 15/16 switch
+        setDigitalChannel(curtime,'15/16 Switch',0); 
+        curtime = calctime(curtime,10);
+
+        % Make Sure Coil 16 is off
+        setDigitalChannel(curtime,'Coil 16 TTL',0)
+        curtime = calctime(curtime,10);
+        
+        % Turn on reverse QP switch
+        setDigitalChannel(curtime,'Reverse QP Switch',1);
+        curtime = calctime(curtime,10);
+            
+        % Ramp up transport supply voltage
+        QP_FFValue = 23*(HF_QP/.125/30); % voltage FF on delta supply
+        curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+            100,100,QP_FFValue);
+        curtime = calctime(curtime,50);
+        
+        qp_ramp_time = 200;
+        curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,HF_QP,1); 
+       end
+    
 %% Feshbach Field Ramp
 % Ramp the feshbach field to the initial high value (and set the z-shim)
     if ramp_field_1

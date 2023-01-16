@@ -75,8 +75,7 @@ seqdata.digchannels(33).name = 'Shim Relay';        % 1 = on (MOT Shims)
 seqdata.digchannels(34).name = 'yLatticeOFF';       % Controls all 3 lattice beams (i.e. Lattice TTL)
 seqdata.digchannels(35).name = 'D1 TTL';            %TTL for the EIT probe AOMs; 1: ON; 0 : OFF
 seqdata.digchannels(36).name = 'EIT Shutter';       %Shutter for EIT probe beam paths
-seqdata.digchannels(37).name = 'Shim Multiplexer';  % 0 = MOT Shims (unipolar), 1: Science shim coils ???
-seqdata.digchannels(37).resetvalue = 0; 
+seqdata.digchannels(37).name = 'Reverse QP Switch';  %MOSFET to switch direction of QP  
 seqdata.digchannels(38).name = 'FPump Direct';      % 0 regulate, 1 don't regulate
 seqdata.digchannels(39).name = 'K uWave TTL';       % 0 off, 1 on
 seqdata.digchannels(40).name = 'K/Rb uWave Transfer'; %0 = K, 1 = Rb
@@ -372,10 +371,10 @@ end
     % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents  
     seqdata.analogchannels(19).voltagefunc{2} = @(a) (a+.293)/.77;  %MOT shim calibration; a=current in Amps    
     
-    seqdata.analogchannels(19).defaultvoltagefunc = 3; %3 BIPOLAR SHIM SUPPLY CHANGE
+    seqdata.analogchannels(19).defaultvoltagefunc = 4; %3 BIPOLAR SHIM SUPPLY CHANGE
     %'Field' in G (not well calibrated)
     seqdata.analogchannels(19).voltagefunc{3} = @(a)(a*1.1875+0.52); % calibration for Shimmer control
-    seqdata.analogchannels(19).voltagefunc{5} = @(a)(a*0.3692-0.006); % calibration for bip source control after replacing pos side transistor
+%     seqdata.analogchannels(19).voltagefunc{5} = @(a)(a*0.3692-0.006); % calibration for bip source control after replacing pos side transistor
     seqdata.analogchannels(19).voltagefunc{4} = @(a)(0.9271*a-0.0327); % Amps: new shim supplies, calibrated to match old shim supply voltagefunc
     %Bipolar Shims (Alan's Box)
     %Max Positive Current = 4A (Supply is HP 6286A)
@@ -458,7 +457,7 @@ end
     seqdata.analogchannels(27).maxvoltage = 10;
     
     % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents  
-    seqdata.analogchannels(27).defaultvoltagefunc = 2;
+    seqdata.analogchannels(27).defaultvoltagefunc = 3;
     seqdata.analogchannels(27).voltagefunc{2} = @(a) (a+.268)/.842;  %MOT shim calibration; a=current in Amps
         
     seqdata.analogchannels(27).voltagefunc{4} = @(a)((a-0.081)/0.91); %Amps: When used to control bipolar supply  a*0.506-0.013 for old supply
@@ -469,7 +468,7 @@ end
     seqdata.analogchannels(28).minvoltage = -10;
     seqdata.analogchannels(28).maxvoltage = 10;
     % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents
-    seqdata.analogchannels(28).defaultvoltagefunc = 2;
+    seqdata.analogchannels(28).defaultvoltagefunc = 3;
     seqdata.analogchannels(28).voltagefunc{2} = @(a)(a+.266)/.819;  %MOT shim calibration; a=current in Amps
     
     
@@ -832,9 +831,10 @@ end
     seqdata.analogchannels(63).maxvoltage = 10; 
     % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents  
     seqdata.analogchannels(63).voltagefunc{2} = @(a) (a+.293)/.77;  %old MOT shim calibration; a=current in Amps
-    seqdata.analogchannels(63).defaultvoltagefunc = 3; %3 BIPOLAR SHIM SUPPLY CHANGE
-    %'Field' in G (not well calibrated)
     seqdata.analogchannels(63).voltagefunc{3} = @(a)(a*1.1875+0.52); % calibration for Shimmer control
+    seqdata.analogchannels(63).defaultvoltagefunc = 2;
+    %'Field' in G (not well calibrated)
+ 
 
     %channel 64 (Z MOT Shim)
     seqdata.analogchannels(64).name = 'Z MOT Shim';

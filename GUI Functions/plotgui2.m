@@ -16,6 +16,7 @@ switch nargin
     case 1
         seqdata=sdata;
         [aTraces, dTraces]=generateTraces(sdata); 
+        
         Tseq=getSequenceDuration;
     case 0
         if isfield(seqdata,'analogchannels') && ...
@@ -124,7 +125,7 @@ for ll=1:ceil(length(dCh)/20)
     mD(ll)=uimenu(m2,'text',str);
     for ii=1:20
         ind=(ll-1)*20+ii;        
-        if ind<length(dCh)
+        if ind<=length(dCh)
             tstr=['d' num2str(dCh(ind).channel,'%02.f') ' ' dCh(ind).name];
             uimenu(mD(ll),'text',tstr,'callback',...
                 {@addDigitalChannelW,[ll dCh(ind).channel]}); 
@@ -138,7 +139,8 @@ for ll=1:ceil(length(aCh)/20)
     mA(ll)=uimenu(m3,'text',str);
     for ii=1:20
         ind=(ll-1)*20+ii;        
-        if ind<length(aCh)
+        if ind<=length(aCh)
+
             tstr=['a' num2str(aCh(ind).channel,'%02.f') ' ' aCh(ind).name];
             uimenu(mA(ll),'text',tstr,...
                 'callback',{@addAnalogChannelW,[ll aCh(ind).channel]}); 

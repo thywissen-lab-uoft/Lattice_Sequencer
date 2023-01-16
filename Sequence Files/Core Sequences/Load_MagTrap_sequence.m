@@ -476,9 +476,6 @@ programRigol(addr_z,[],ch_off);             % Turn off z mod
 %Turn on MOT Shim Supply Relay
 setDigitalChannel(calctime(curtime,0),'Shim Relay',1);
 
-%Turn shim multiplexer to MOT shims    
-setDigitalChannel(calctime(curtime,0),'Shim Multiplexer',0);  
-
 %% Load the MOT
 % Dump out the saved MOT and reload it
 
@@ -558,9 +555,6 @@ setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.0,2); %2
 
     % Open kitten relay
     curtime = setDigitalChannel(curtime,'Kitten Relay',1);
-    
-    %Turn shim multiplexer to Science shims
-    setDigitalChannel(calctime(curtime,1000),'Shim Multiplexer',1); 
     
     %Close Science Cell Shim Relay for Plugged QP Evaporation
     setDigitalChannel(calctime(curtime,800),'Bipolar Shim Relay',1);
@@ -1060,6 +1054,13 @@ curtime = iXon_FluorescenceImage(curtime,'ExposureOffsetTime',molasses_offset,'E
     %RHYS - the next bits of post-sequence code are useful (well, if the
     %demagnetization stuff actually does anything). Could be wrapped into a
     %function. 
+    
+%% Set the Science Shims to Zero Current (0V adwin signal)   
+
+    % Set the shim values to zero
+    setAnalogChannel(calctime(curtime,0),'X Shim',0,1);
+    setAnalogChannel(calctime(curtime,0),'Y Shim',0,1);
+    setAnalogChannel(calctime(curtime,0),'Z Shim',0,1);
     
 %% Post-sequence: Pulse the PA laser again for labjack power measurement
     if seqdata.flags.do_calibrate_PA == 1

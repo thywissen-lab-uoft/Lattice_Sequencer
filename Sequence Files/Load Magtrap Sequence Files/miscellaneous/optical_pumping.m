@@ -52,19 +52,19 @@ rb_op_detuning = getScanParameter(rb_op_detuning_list,...
 % zshim=getScanParameter(zshims,seqdata.scancycle,seqdata.randcyclelist,'op_zshim');
 
 % Old configuration
-% setAnalogChannel(calctime(curtime,0.0),'Y Shim',3.3,2); % 3.3
+% setAnalogChannel(calctime(curtime,0.0),'Y MOT Shim',3.3,2); % 3.3
 %turn on the X (left/right) shim 
-% setAnalogChannel(calctime(curtime,0.0),'X Shim',0.2,2); % 0.2,2
+% setAnalogChannel(calctime(curtime,0.0),'X MOT Shim',0.2,2); % 0.2,2
 %turn on the Z (top/bottom) shim 
-% setAnalogChannel(calctime(curtime,0.0),'Z Shim',0.2,2); %0.0
+% setAnalogChannel(calctime(curtime,0.0),'Z MOT Shim',0.2,2); %0.0
 
 % xshims=0:.5:4;
 % xshim=getScanParameter(xshims,seqdata.scancycle,seqdata.randcyclelist,'op_xshim');
 
 % For pumping along X axis
-setAnalogChannel(calctime(curtime,0.0),'X Shim',3.5,2); % 3.3
-setAnalogChannel(calctime(curtime,0.0),'Y Shim',0.0,2); % 0.2,2
-setAnalogChannel(calctime(curtime,0.0),'Z Shim',0.0,2); %0.0
+setAnalogChannel(calctime(curtime,0.0),'X MOT Shim',3.5,2); % 3.3
+setAnalogChannel(calctime(curtime,0.0),'Y MOT Shim',0.0,2); % 0.2,2
+setAnalogChannel(calctime(curtime,0.0),'Z MOT Shim',0.0,2); %0.0
 
 
 %Turn repump back up

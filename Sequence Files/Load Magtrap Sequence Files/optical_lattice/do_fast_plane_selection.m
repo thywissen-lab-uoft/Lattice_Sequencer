@@ -145,11 +145,11 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
     
     if (opt.Sweep_About_Central_Frequency)
         %Shift field down and up by half of the desired width
-        z_shim_sweep_center = getChannelValue(seqdata,28,1,0);
+        z_shim_sweep_center = getChannelValue(seqdata,'Z Shim',1,0);
         z_shim_sweep_start = z_shim_sweep_center-1*dBz/2;
         z_shim_sweep_final = z_shim_sweep_center+1*dBz/2;
     else %Start at current field and ramp up
-        z_shim_sweep_start = getChannelValue(seqdata,28,1,0);
+        z_shim_sweep_start = getChannelValue(seqdata,'Z Shim',1,0);
         z_shim_sweep_center = z_shim_sweep_start+dBz/2;
         z_shim_sweep_final = z_shim_sweep_start+1*dBz;
     end

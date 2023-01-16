@@ -50,11 +50,11 @@ global seqdata;
 
     %turn on shims
         %turn on the Y (quantizing) shim 
-        setAnalogChannel(calctime(curtime,-1),'Y Shim',img_yshim); 
+        setAnalogChannel(calctime(curtime,-1),'Y MOT Shim',img_yshim,3); 
         %turn on the X (left/right) shim 
-        setAnalogChannel(calctime(curtime,-1),'X Shim',img_xshim); 
+        setAnalogChannel(calctime(curtime,-1),'X MOT Shim',img_xshim,2); 
         %turn on the Z (top/bottom) shim 
-        setAnalogChannel(calctime(curtime,-1),'Z Shim',img_zshim); 
+        setAnalogChannel(calctime(curtime,-1),'Z MOT Shim',img_zshim,2); 
  
 %% turn on trap and repump beams        
         

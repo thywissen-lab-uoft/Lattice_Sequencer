@@ -54,10 +54,7 @@ initialize_channels();
 %% Make sure Shim supply relay is on
 
 %Turn on MOT Shim Supply Relay
-    SetDigitalChannel(calctime(curtime,0),33,1);
-
-%Turn shim multiplexer to MOT shims    
-    setDigitalChannel(calctime(curtime,0),37,0);    
+    SetDigitalChannel(calctime(curtime,0),33,1);  
 
 %% Prepare to Load into the Magnetic Trap
 
@@ -86,7 +83,7 @@ curtime = Prepare_MOT_for_MagTrap(curtime);
     setDigitalChannel(calctime(curtime,0),'Rb Repump Imaging',0);
 
     %set Quantizing shim back after optical pumping
-    setAnalogChannel(calctime(curtime,0),'Y Shim',0.9);
+    setAnalogChannel(calctime(curtime,0),'Y MOT Shim',0.9);
 
 %% Load into Magnetic Trap
 
@@ -99,9 +96,9 @@ curtime = Prepare_MOT_for_MagTrap(curtime);
         zshim2 = 0.0; %0.3  0.0 Dec 4th 2013
 
         % optimized shims for loading into mag trap
-        setAnalogChannel(calctime(curtime,0.01),'Y Shim',yshim2,3); %1.25
-        setAnalogChannel(calctime(curtime,0.01),'X Shim',xshim2,2); %0.3 
-        setAnalogChannel(calctime(curtime,0.01),'Z Shim',zshim2,2); %0.2
+        setAnalogChannel(calctime(curtime,0.01),'Y MOT Shim',yshim2,3); %1.25
+        setAnalogChannel(calctime(curtime,0.01),'X MOT Shim',xshim2,2); %0.3 
+        setAnalogChannel(calctime(curtime,0.01),'Z MOT Shim',zshim2,2); %0.2
         
 
 curtime = Load_MagTrap_from_MOT(curtime);
@@ -114,9 +111,9 @@ curtime     = calctime(curtime,1000);
     end
         
     %turn off shims
-    setAnalogChannel(calctime(curtime,0),'Y Shim',0.0,3); %3
-    setAnalogChannel(calctime(curtime,0),'X Shim',0.0,2); %2
-    setAnalogChannel(calctime(curtime,0),'Z Shim',0.0,2); %2
+    setAnalogChannel(calctime(curtime,0),'Y MOT Shim',0.0,3); %3
+    setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.0,2); %2
+    setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.0,2); %2
    
 
 %% Transport 
@@ -152,7 +149,7 @@ curtime = Load_MOT(calctime(curtime,mot_wait_time),[rb_MOT_detuning k_MOT_detuni
 ScopeTriggerPulse(curtime,'MOT Recapture')
       
 %set relay back
-curtime = setDigitalChannel(calctime(curtime,10),28,0);
+curtime = setDigitalChannel(calctime(curtime,10),'Z MOT Shim',0);
 
 
 

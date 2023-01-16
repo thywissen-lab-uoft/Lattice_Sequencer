@@ -82,23 +82,23 @@ curtime = timein;
     %Set shim fields    
     if isfield(p,'xshim_final')
         if strcmp(p.shim_ramp_type, 'Linear')
-            AnalogFuncTo(calctime(curtime,p.shim_ramp_delay),27,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),p.shim_ramptime,p.shim_ramptime,p.xshim_final,3);
+            AnalogFuncTo(calctime(curtime,p.shim_ramp_delay),'X Shim',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),p.shim_ramptime,p.shim_ramptime,p.xshim_final,3);
         elseif strcmp(p.shim_ramp_type, 'Exponential')
-            AnalogFuncTo(calctime(curtime,p.shim_ramp_delay),27,@(t,tt,y1,y2,tau)(ramp_exponential(t,tt,y1,y2,tau)),p.shim_ramptime,p.shim_ramptotaltime,p.xshim_final,p.shim_ramp_tau,3);            
+            AnalogFuncTo(calctime(curtime,p.shim_ramp_delay),'X Shim',@(t,tt,y1,y2,tau)(ramp_exponential(t,tt,y1,y2,tau)),p.shim_ramptime,p.shim_ramptotaltime,p.xshim_final,p.shim_ramp_tau,3);            
         end
     end
     if isfield(p,'yshim_final')
         if strcmp(p.shim_ramp_type, 'Linear')
-            AnalogFuncTo(calctime(curtime,p.shim_ramp_delay),19,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),p.shim_ramptime,p.shim_ramptime,p.yshim_final,4);
+            AnalogFuncTo(calctime(curtime,p.shim_ramp_delay),'Y Shim',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),p.shim_ramptime,p.shim_ramptime,p.yshim_final,4);
         elseif strcmp(p.shim_ramp_type, 'Exponential')
-            AnalogFuncTo(calctime(curtime,p.shim_ramp_delay),19,@(t,tt,y1,y2,tau)(ramp_exponential(t,tt,y1,y2,tau)),p.shim_ramptime,p.shim_ramptotaltime,p.yshim_final,p.shim_ramp_tau,4);            
+            AnalogFuncTo(calctime(curtime,p.shim_ramp_delay),'Y Shim',@(t,tt,y1,y2,tau)(ramp_exponential(t,tt,y1,y2,tau)),p.shim_ramptime,p.shim_ramptotaltime,p.yshim_final,p.shim_ramp_tau,4);            
         end
     end
     if isfield(p,'zshim_final')
         if strcmp(p.shim_ramp_type, 'Linear')
-            AnalogFuncTo(calctime(curtime,p.shim_ramp_delay),28,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),p.shim_ramptime,p.shim_ramptime,p.zshim_final,3);
+            AnalogFuncTo(calctime(curtime,p.shim_ramp_delay),'Z Shim',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),p.shim_ramptime,p.shim_ramptime,p.zshim_final,3);
         elseif strcmp(p.shim_ramp_type, 'Exponential')
-            AnalogFuncTo(calctime(curtime,p.shim_ramp_delay),28,@(t,tt,y1,y2,tau)(ramp_exponential(t,tt,y1,y2,tau)),p.shim_ramptime,p.shim_ramptotaltime,p.zshim_final,p.shim_ramp_tau,3);            
+            AnalogFuncTo(calctime(curtime,p.shim_ramp_delay),'Z Shim',@(t,tt,y1,y2,tau)(ramp_exponential(t,tt,y1,y2,tau)),p.shim_ramptime,p.shim_ramptotaltime,p.zshim_final,p.shim_ramp_tau,3);            
         end
     end
 

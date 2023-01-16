@@ -40,14 +40,14 @@ curtime = calctime(curtime,20);
     end
 curtime = calctime(curtime,FB_ramptime+FB_waittime);
 
-    zShimVal = getChannelValue(seqdata,28,1);
+    zShimVal = getChannelValue(seqdata,'Z Shim',1);
     zShim_ramptime = 200;
     zShim_amplitude = 1.2;
     zShim_frequency = 0.2;
 
     ramp_fun = @(t,tt,A,f)(A*sqrt(2*exp(1))*(4*t/tt).*exp(-(4*t/tt).^2).*sin(2*pi*f*t));
     
-curtime = AnalogFunc(calctime(curtime,0),28,@(t,tt,A,f)(ramp_fun(t,tt,A,f)+zShimVal),zShim_ramptime,zShim_ramptime,zShim_amplitude,zShim_frequency,3);
+curtime = AnalogFunc(calctime(curtime,0),'Z Shim',@(t,tt,A,f)(ramp_fun(t,tt,A,f)+zShimVal),zShim_ramptime,zShim_ramptime,zShim_amplitude,zShim_frequency,3);
     
     
 timeout = calctime(curtime,0);

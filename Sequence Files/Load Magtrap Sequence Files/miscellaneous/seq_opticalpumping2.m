@@ -38,11 +38,11 @@ rb_op_detuning = rb_op_detuning_set(seqdata.flags.Rb_Probe_Order);
 % CF : Let's make sure to put the appropriate voltagefunc in shim calls
 
 %turn on the Y (quantizing) shim
-setAnalogChannel(calctime(curtime,0.0),'Y Shim',3.5,2); 
+setAnalogChannel(calctime(curtime,0.0),'Y MOT Shim',3.5,2); 
 %turn on the X (left/right) shim 
-setAnalogChannel(calctime(curtime,0.0),'X Shim',0.1,2); 
+setAnalogChannel(calctime(curtime,0.0),'X MOT Shim',0.1,2); 
 %turn on the Z (top/bottom) shim 
-setAnalogChannel(calctime(curtime,0.0),'Z Shim',0.0,2);
+setAnalogChannel(calctime(curtime,0.0),'Z MOT Shim',0.0,2);
 
 %% Turn repumper light on 
 % Turn on the MOT repumper light to repump during optical pumping

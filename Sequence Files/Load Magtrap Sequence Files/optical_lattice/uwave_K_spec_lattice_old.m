@@ -49,7 +49,7 @@ global seqdata
             field_shift_offset = 25;
             field_shift_time = 5;5;
             
-            z_shim_sweep_center = getChannelValue(seqdata,28,1,0);
+            z_shim_sweep_center = getChannelValue(seqdata,'Z Shim',1,0);
             z_shim_sweep_start = z_shim_sweep_center-dBz/2;
             z_shim_sweep_final = z_shim_sweep_center+dBz/2;
             
@@ -111,7 +111,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
                 field_shift_offset = 25;
                 field_shift_time = 5;5;
 
-                z_shim_sweep_center = getChannelValue(seqdata,28,1,0);
+                z_shim_sweep_center = getChannelValue(seqdata,' Z Shim',1,0);
                 z_shim_sweep_start = z_shim_sweep_center-dBz/2;
                 z_shim_sweep_final = z_shim_sweep_center+dBz/2;
 

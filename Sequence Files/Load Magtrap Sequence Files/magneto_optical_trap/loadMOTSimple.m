@@ -38,12 +38,7 @@ K_Repump_MOT_detuning = getScanParameter(K_Repump_MOT_detuning_list,...
     seqdata.scancycle,seqdata.randcyclelist,'K_Repump_MOT_detuning'); 
 
 
-%% Turn shim multiplexer to MOT shims    
-% The shim controller controls both the MOT and Science chamber shims. Make
-% sure the shim controller is set to control the MOT shis.
-
-% Shim controller switch
-setDigitalChannel(curtime,'Shim Multiplexer',0); 
+%% Keep Bipolar Shim Relay On 
 
 %Don't close relay for Science Cell Shims because of current spikes
 setDigitalChannel(curtime,'Bipolar Shim Relay',1);
@@ -120,14 +115,14 @@ disp(' Setting MOT Shim values');
 setDigitalChannel(calctime(curtime,0),'Shim Relay',1);
 
 % Rb optimized shim values
-setAnalogChannel(calctime(curtime,0),'X Shim',0.2,2);
-setAnalogChannel(calctime(curtime,0),'Y Shim',2.0,2);
-setAnalogChannel(calctime(curtime,0),'Z Shim',0.9,2);
+setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.2,2);
+setAnalogChannel(calctime(curtime,0),'Y MOT Shim',2.0,2);
+setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.9,2);
 
 % K optimized shim values
-% setAnalogChannel(calctime(curtime,0),'X Shim',0.0 ,2);  0.2;
-% setAnalogChannel(calctime(curtime,0),'Y Shim', 0.0  ,2); 2;
-% setAnalogChannel(calctime(curtime,0),'Z Shim',0.2 ,2);  0.9;
+% setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.0 ,2);  0.2;
+% setAnalogChannel(calctime(curtime,0),'Y MOT Shim', 0.0  ,2); 2;
+% setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.2 ,2);  0.9;
 
 %% UV ON : LIAD
 % Turn on UV cataract-inducing light.

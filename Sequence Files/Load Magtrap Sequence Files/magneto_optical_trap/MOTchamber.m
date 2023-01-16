@@ -74,9 +74,9 @@ setDigitalChannel(calctime(curtime,0),'Shim Relay',1);
 % The MOT shims in AMPS
 % shims=0:0.1:.5;
 % shim=getScanParameter(shims,seqdata.scancycle,seqdata.randcyclelist,'MOT_yshim');
-curtime = setAnalogChannel(calctime(curtime,0),'X Shim',0.2 ,2);  0.2;
-curtime = setAnalogChannel(calctime(curtime,0),'Y Shim', 2.0  ,2); 2;
-curtime = setAnalogChannel(calctime(curtime,0),'Z Shim',0.9 ,2);  0.9;
+curtime = setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.2 ,2);  0.2;
+curtime = setAnalogChannel(calctime(curtime,0),'Y MOT Shim', 2.0  ,2); 2;
+curtime = setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.9 ,2);  0.9;
 
 %%%%%%%%%%%%%% Advance time %%%%%%%%%%%%%%%%
 curtime = calctime(curtime,MOT_time);
@@ -137,9 +137,9 @@ addOutputParam('rb_cmot_repump_power',rb_cmot_repump_power);
 %%%%%%%%%%%%%%%% Set CMOT Shims %%%%%%%%%%%%%%%%
 % We have experimentally found that the "best" CMOT shims are the ones that
 % match the MOT, but this can nominally be different
-% setAnalogChannel(calctime(curtime,-2),'Y Shim',0.84,2); 
-% setAnalogChannel(calctime(curtime,-2),'X Shim',0.25,2); 
-% setAnalogChannel(calctime(curtime,-2),'Z Shim',0.00,2);
+% setAnalogChannel(calctime(curtime,-2),'Y MOT Shim',0.84,2); 
+% setAnalogChannel(calctime(curtime,-2),'X MOT Shim',0.25,2); 
+% setAnalogChannel(calctime(curtime,-2),'Z MOT Shim',0.00,2);
 
 %%%%%%%%%%%%%%%% Set CMOT Rb Beams %%%%%%%%%%%%%%%%
 setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',6590+rb_cMOT_detuning); 
@@ -185,9 +185,9 @@ if doMol
 setAnalogChannel(calctime(curtime,0),'MOT Coil',0,1);   
 
 % Set the shims
-setAnalogChannel(calctime(curtime,0),'X Shim',0.15,2); %0.15
-setAnalogChannel(calctime(curtime,0),'Y Shim',0.15,2); %0.15
-setAnalogChannel(calctime(curtime,0),'Z Shim',0.00,2); %0.00
+setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.15,2); %0.15
+setAnalogChannel(calctime(curtime,0),'Y MOT Shim',0.15,2); %0.15
+setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.00,2); %0.00
 
 % Wait for fields to turn off (testing)
 curtime=calctime(curtime,0);  
@@ -272,9 +272,9 @@ if doMol2
 setAnalogChannel(calctime(curtime,0),'MOT Coil',0,1);   
 
 % Set the shims to the nominal "zero field"
-setAnalogChannel(calctime(curtime,0),'X Shim',0.15,2); %0.15
-setAnalogChannel(calctime(curtime,0),'Y Shim',0.15,2); %0.15
-setAnalogChannel(calctime(curtime,0),'Z Shim',0.00,2); %0.00
+setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.15,2); %0.15
+setAnalogChannel(calctime(curtime,0),'Y MOT Shim',0.15,2); %0.15
+setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.00,2); %0.00
 
 % Wait for fields to turn off
 curtime=calctime(curtime,0);  % Currently set to zero as it hasn't made a difference
@@ -371,9 +371,9 @@ if loadMT
 %     curtime = calctime(curtime,100);    
 
     % Set the shims away from pumping values back to "zero" field
-    setAnalogChannel(calctime(curtime,0),'X Shim',0.15,2); % 0.15
-    setAnalogChannel(calctime(curtime,0),'Y Shim',0.15,2); % 0.15
-    setAnalogChannel(calctime(curtime,0),'Z Shim',0.00,2); % 0.0    
+    setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.15,2); % 0.15
+    setAnalogChannel(calctime(curtime,0),'Y MOT Shim',0.15,2); % 0.15
+    setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.00,2); % 0.0    
     
     
     % Hold in magnetic trap if desired

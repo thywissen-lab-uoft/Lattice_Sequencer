@@ -220,7 +220,7 @@ curtime = calctime(curtime,200); % wait to allow SRS to settle at new frequency
             field_shift_time = 20; % time to shift the field to the initial value for the sweep (and from the final value)
             field_shift_settle = 40; % settling time after initial and final field shifts
 
-            z_shim_sweep_center = getChannelValue(seqdata,28,1,0);
+            z_shim_sweep_center = getChannelValue(seqdata,'Z Shim',1,0);
             z_shim_sweep_start = z_shim_sweep_center-1*dBz/2;
             z_shim_sweep_final = z_shim_sweep_center+1*dBz/2;
 
@@ -408,11 +408,11 @@ curtime = calctime(curtime,75);
 
         if (Cycle_About_Freq_Val)
             %Shift field down and up by half of the desired width
-            z_shim_sweep_center = getChannelValue(seqdata,28,1,0);
+            z_shim_sweep_center = getChannelValue(seqdata,'Z Shim',1,0);
             z_shim_sweep_start = z_shim_sweep_center-1*dBz/2;
             z_shim_sweep_final = z_shim_sweep_center+1*dBz/2;
         else %Start at current field and ramp up
-            z_shim_sweep_center = getChannelValue(seqdata,28,1,0);
+            z_shim_sweep_center = getChannelValue(seqdata,'Z Shim',1,0);
             z_shim_sweep_start = z_shim_sweep_center;
             z_shim_sweep_final = z_shim_sweep_center+1*dBz;
         end
@@ -578,7 +578,7 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
         field_shift_time = 10; % time to shift the field to the initial value for the sweep (and from the final value)
         field_shift_settle = spect_pars.AM_ramp_time + 10; % settling time after initial and final field shifts
 
-        z_shim_sweep_center = getChannelValue(seqdata,28,1,0);
+        z_shim_sweep_center = getChannelValue(seqdata,'Z Shim',1,0);
         z_shim_sweep_start = z_shim_sweep_center-1*dBz/2;
         z_shim_sweep_final = z_shim_sweep_center+1*dBz/2;
 

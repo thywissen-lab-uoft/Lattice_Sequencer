@@ -655,7 +655,7 @@ if ( do_K_uwave_spectroscopy_old || ...
         ramp.xshim_final = 0.1585; 
         ramp.yshim_final = -0.0432;
         ramp.zshim_final = -0.0865; 
-        addOutputParam('shim_value',ramp.zshim_final - getChannelValue(seqdata,28,1,0))        
+        addOutputParam('shim_value',ramp.zshim_final - getChannelValue(seqdata,'Z Shim',1,0))        
 
         % FB coil settings for spectroscopy
         ramp.fesh_ramptime = 50;
@@ -803,17 +803,17 @@ curtime = calctime(curtime,100);
         ramp.shim_ramptime = 50;
         ramp.shim_ramp_delay = -100; % ramp earlier than FB field if FB field is ramped to zero
        
-        getChannelValue(seqdata,27,1,0);
-        getChannelValue(seqdata,19,1,0);
-        getChannelValue(seqdata,28,1,0);
+        getChannelValue(seqdata,'X Shim',1,0);
+        getChannelValue(seqdata,'Y Shim',1,0);
+        getChannelValue(seqdata,'Z Shim',1,0);
         
         %Give ramp shim values if we want to do spectroscopy using the
         %shims instead of FB coil. If nothing set here, then
         %ramp_bias_fields just takes the getChannelValue (which is set to
         %field zeroing values)
-        ramp.xshim_final = getChannelValue(seqdata,27,1,0);
-        ramp.yshim_final = getChannelValue(seqdata,19,1,0);
-        ramp.zshim_final = getChannelValue(seqdata,28,1,0);
+        ramp.xshim_final = getChannelValue(seqdata,'X Shim',1,0);
+        ramp.yshim_final = getChannelValue(seqdata,'Y Shim',1,0);
+        ramp.zshim_final = getChannelValue(seqdata,'Z Shim',1,0);
         
         % FB coil settings for spectroscopy
         ramp.fesh_ramptime = 50;

@@ -95,11 +95,11 @@ setDigitalChannel(calctime(curtime,0),'Shim Relay',1);
 % THE NAMES OF THE SHIMS MAKE NO SESNSE
 
 %turn on the Y (quantizing) shim 
-curtime = setAnalogChannel(calctime(curtime,0),19,1.6,1);  1.6;
+curtime = setAnalogChannel(calctime(curtime,0),'Y MOT Shim',1.6,1);  1.6;
 %turn on the X (left/right) shim 
-curtime = setAnalogChannel(calctime(curtime,0),27,0.4,1);  0.4;
+curtime = setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.4,1);  0.4;
 %turn on the Z (top/bottom) shim 
-curtime = setAnalogChannel(calctime(curtime,0),28,1.6,1);  1.6;
+curtime = setAnalogChannel(calctime(curtime,0),'Z MOT Shim',1.6,1);  1.6;
 
 %turn on the Z (top/bottom) shim via bipolar supply
 %curtime = setAnalogChannel(calctime(curtime,0),47,0.42,1);   
@@ -155,9 +155,9 @@ zshim_comp = 0.6;0.425;0.42;0.42;%0.42;
 
     % CMOT shim values (CF thinks these should be identical to the MOT ones
     % ideally)    
-setAnalogChannel(calctime(curtime,-2),'Y Shim',yshim_comp); %1.25
-setAnalogChannel(calctime(curtime,-2),'X Shim',xshim_comp); %0.3 
-setAnalogChannel(calctime(curtime,-2),'Z Shim',0); %0.2
+setAnalogChannel(calctime(curtime,-2),'Y MOT Shim',yshim_comp,2); %1.25
+setAnalogChannel(calctime(curtime,-2),'X MOT Shim',xshim_comp,2); %0.3 
+setAnalogChannel(calctime(curtime,-2),'Z MOT Shim',0,2); %0.2
 
 % Change Rubidium detunings
 setAnalogChannel(calctime(curtime,cMOT_time - rb_cMOT_time),'Rb Beat Note FM',6590+rb_cMOT_detuning); 
@@ -193,9 +193,9 @@ if seqdata.flags.MOTChamber.doMol
 setAnalogChannel(curtime,'MOT Coil',0,1);   
 
 % Set the shims
-setAnalogChannel(calctime(curtime,0),'Y Shim',0.15,2); %0.3
-setAnalogChannel(calctime(curtime,0),'X Shim',0.15,2); %0.25
-setAnalogChannel(calctime(curtime,0),'Z Shim',0.00,2);%0.1
+setAnalogChannel(calctime(curtime,0),'Y MOT Shim',0.15,2); %0.3
+setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.15,2); %0.25
+setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.00,2);%0.1
 
 %%%%%%%%%%%% Turn off K D2  %%%%%%%%%%%%
 

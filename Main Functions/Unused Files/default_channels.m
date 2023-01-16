@@ -42,7 +42,7 @@ setDigitalChannel(curtime,'Shim Relay',1);%33
 setDigitalChannel(curtime,'yLatticeOFF',1);%34
 setDigitalChannel(curtime,'D1 TTL',1);%35
 setDigitalChannel(curtime,'EIT Shutter',0);%36
-setDigitalChannel(curtime,'Shim Multiplexer',0);%37
+setDigitalChannel(curtime,'Channel 37',0);%37
 setDigitalChannel(curtime,'405nm TTL',1);%38
 setDigitalChannel(curtime,'K uWave TTL',0);%39
 setDigitalChannel(curtime,'K/Rb uWave Transfer',1);%40
@@ -90,7 +90,7 @@ setAnalogChannel(curtime,'Coil 9',);%15
 setAnalogChannel(curtime,'Coil 10',);%16
 setAnalogChannel(curtime,'Coil 11',);%17
 setAnalogChannel(curtime,'Transport FF',10);%18
-setAnalogChannel(curtime,'Y Shim',0.95,1);%19
+setAnalogChannel(curtime,'Y Shim',0,1);%19
 setAnalogChannel(curtime,'Coil 14',);%20
 setAnalogChannel(curtime,'Coil 15',);%21
 setAnalogChannel(curtime,'Coil 12a',);%22
@@ -98,8 +98,8 @@ setAnalogChannel(curtime,'Coil 12b',);%23
 setAnalogChannel(curtime,'Coil 13',);%24
 setAnalogChannel(curtime,'K Repump AM',);%25
 setAnalogChannel(curtime,'K Trap AM',);%26
-setAnalogChannel(curtime,'X Shim',0.5,1);%27
-setAnalogChannel(curtime,'Z Shim',0.42,1);%28
+setAnalogChannel(curtime,'X Shim',0,1);%27
+setAnalogChannel(curtime,'Z Shim',0,1);%28
 setAnalogChannel(curtime,'K Probe/OP AM',);%29
 setAnalogChannel(curtime,'K Probe/OP FM',);%30
 setAnalogChannel(curtime,31,0);%31
@@ -133,9 +133,9 @@ setAnalogChannel(curtime,'a58',0);%58
 setAnalogChannel(curtime,'a59',0);%59
 setAnalogChannel(curtime,'a60',0);%60
 setAnalogChannel(curtime,'a61',0);%61
-setAnalogChannel(curtime,'a62',0);%62
-setAnalogChannel(curtime,'a63',0);%63
-setAnalogChannel(curtime,'a64',0);%64
+setAnalogChannel(curtime,'X MOT Shim',0.5,1);%62
+setAnalogChannel(curtime,'Y MOT Shim',0.95,1);%63
+setAnalogChannel(curtime,'Z MOT Shim',0.42,1);%64
 
 
 

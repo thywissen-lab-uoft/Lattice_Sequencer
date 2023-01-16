@@ -104,9 +104,9 @@ xshim_comp = 0.25;
 zshim_comp = 0.00;
 
 %%%%%%%%%%%%%%%% Set CMOT Shims %%%%%%%%%%%%%%%%
-% setAnalogChannel(calctime(curtime,-2),'Y Shim',0.84,2); 
-% setAnalogChannel(calctime(curtime,-2),'X Shim',0.25,2); 
-% setAnalogChannel(calctime(curtime,-2),'Z Shim',0.00,2);
+% setAnalogChannel(calctime(curtime,-2),'Y MOT Shim',0.84,2); 
+% setAnalogChannel(calctime(curtime,-2),'X MOT Shim',0.25,2); 
+% setAnalogChannel(calctime(curtime,-2),'Z MOT Shim',0.00,2);
 
 %%%%%%%%%%%%%%%% Set CMOT Rb Beams %%%%%%%%%%%%%%%%
 setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',6590+rb_cMOT_detuning); 
@@ -156,9 +156,9 @@ if doMol
 setAnalogChannel(calctime(curtime,0),'MOT Coil',0,1);   
 
 % Set the shims
-setAnalogChannel(calctime(curtime,0),'Y Shim',0.15,2); %0.15
-setAnalogChannel(calctime(curtime,0),'X Shim',0.15,2); %0.15
-setAnalogChannel(calctime(curtime,0),'Z Shim',0.00,2); %0.00
+setAnalogChannel(calctime(curtime,0),'Y MOT Shim',0.15,2); %0.15
+setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.15,2); %0.15
+setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.00,2); %0.00
 
 %%%%%%%%%%%% Turn off K D2  %%%%%%%%%%%%
 % Turn off the K D2 light
@@ -260,11 +260,11 @@ end
 %             %optimize shims for compression (put cloud at the position of the mag
 %             %trap center)
 %             %turn on the Y (quantizing) shim 
-%             setAnalogChannel(calctime(curtime,-2),'Y Shim',yshim_comp); %1.25
+%             setAnalogChannel(calctime(curtime,-2),'Y MOT Shim',yshim_comp); %1.25
 %             %turn on the X (left/right) shim
-%             setAnalogChannel(calctime(curtime,-2),'X Shim',xshim_comp); %0.3 
+%             setAnalogChannel(calctime(curtime,-2),'X MOT Shim',xshim_comp); %0.3 
 %             %turn on the Z (top/bottom) shim 
-%             setAnalogChannel(calctime(curtime,-2),'Z Shim',zshim_comp); %0.2
+%             setAnalogChannel(calctime(curtime,-2),'Z MOT Shim',zshim_comp); %0.2
 %             
 %         %Set gradient
 %             setAnalogChannel(calctime(curtime,0),'MOT Coil',10);
@@ -332,11 +332,11 @@ end
 %             %optimize shims for compression (put cloud at the position of the mag
 %             %trap center)
 %             %turn on the Y (quantizing) shim 
-%             setAnalogChannel(calctime(curtime,-2),'Y Shim',yshim_comp); %1.25
+%             setAnalogChannel(calctime(curtime,-2),'Y MOT Shim',yshim_comp); %1.25
 %             %turn on the X (left/right) shim
-%             setAnalogChannel(calctime(curtime,-2),'X Shim',xshim_comp); %0.3 
+%             setAnalogChannel(calctime(curtime,-2),'X MOT Shim',xshim_comp); %0.3 
 %             %turn on the Z (top/bottom) shim 
-%             setAnalogChannel(calctime(curtime,-2),'Z Shim',zshim_comp); %0.2
+%             setAnalogChannel(calctime(curtime,-2),'Z MOT Shim',zshim_comp); %0.2
 %             
 %             %Set gradient
 %             setAnalogChannel(calctime(curtime,0),'MOT Coil',10);
@@ -423,11 +423,11 @@ end
 %     
 %     %turn on the shims for optical pumping and/or molasses
 %     %turn on the Y (quantizing) shim 
-%     setAnalogChannel(calctime(curtime,0),'Y Shim',0.25); %0.25 for D2, 0.25 for D1
+%     setAnalogChannel(calctime(curtime,0),'Y MOT Shim',0.25); %0.25 for D2, 0.25 for D1
 %     %turn on the X (left/right) shim 
-%     setAnalogChannel(calctime(curtime,0),'X Shim',0.25); %0.2 for D2, 0.4 for D1
+%     setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.25); %0.2 for D2, 0.4 for D1
 %     %turn on the Z (top/bottom) shim 
-%     setAnalogChannel(calctime(curtime,0),'Z Shim',0.05);%0.05 %0.11 for D2, 0 for D1
+%     setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.05);%0.05 %0.11 for D2, 0 for D1
 %                                                            
 %     %set shims and detuning (atom dependent)
 %     if (seqdata.atomtype==1 || seqdata.atomtype==4)%K40
@@ -492,15 +492,15 @@ end
 %      %set shim coil values:
 % %         gray_molasses_x_shim_list=[0:0.02:0.26];%0.25
 % %         gray_molasses_x_shim= getScanParameter(gray_molasses_x_shim_list,seqdata.scancycle,seqdata.randcyclelist,'gray_molasses_x_shim');  %in MHZ
-% %         setAnalogChannel(calctime(curtime,-1),'X Shim',gray_molasses_x_shim);
+% %         setAnalogChannel(calctime(curtime,-1),'X MOT Shim',gray_molasses_x_shim);
 % %      
 % %         gray_molasses_y_shim_list=[-0.2:0.05:0.2];%0.25
 % %         gray_molasses_y_shim= getScanParameter(gray_molasses_y_shim_list,seqdata.scancycle,seqdata.randcyclelist,'gray_molasses_y_shim');  %in MHZ
-% %         setAnalogChannel(calctime(curtime,-1),'Y Shim',gray_molasses_y_shim);
+% %         setAnalogChannel(calctime(curtime,-1),'Y MOT Shim',gray_molasses_y_shim);
 % %         
 % %         gray_molasses_z_shim_list=[0.05];%0.25
 % %         gray_molasses_z_shim= getScanParameter(gray_molasses_z_shim_list,seqdata.scancycle,seqdata.randcyclelist,'gray_molasses_z_shim');  %in MHZ
-% %         setAnalogChannel(calctime(curtime,-1),'Z Shim',gray_molasses_z_shim);
+% %         setAnalogChannel(calctime(curtime,-1),'Z MOT Shim',gray_molasses_z_shim);
 %  
 %         K_molasses_repump_detuning_list = [0]; 
 %         K_molasses_repump_detuning = getScanParameter(K_molasses_repump_detuning_list,seqdata.scancycle,seqdata.randcyclelist,'K_gray_molasses_repump_det');  %in MHZ
@@ -584,11 +584,11 @@ end
 %     
 %     %Prepare shims
 %     %turn on the Y (quantizing) shim 
-%     setAnalogChannel(calctime(curtime,-1),'Y Shim',0.35); %0.25 for D2, 0.25 for D1
+%     setAnalogChannel(calctime(curtime,-1),'Y MOT Shim',0.35); %0.25 for D2, 0.25 for D1
 %     %turn on the X (left/right) shim 
-%     setAnalogChannel(calctime(curtime,-1),'X Shim',0.30); %0.2 for D2, 0.4 for D1
+%     setAnalogChannel(calctime(curtime,-1),'X MOT Shim',0.30); %0.2 for D2, 0.4 for D1
 %     %turn on the Z (top/bottom) shim 
-%     setAnalogChannel(calctime(curtime,-1),'Z Shim',0.0); %0.11 for D2, 0 for D1
+%     setAnalogChannel(calctime(curtime,-1),'Z MOT Shim',0.0); %0.11 for D2, 0 for D1
 % 
 % end
 %     

@@ -195,19 +195,19 @@ field_shift_settle = 40;                % settling time after initial and final 
 
         if (opt.Sweep_About_Central_Frequency)
             %Shift field down and up by half of the desired width
-            x_shim_sweep_center = getChannelValue(seqdata,27,1,0);
+            x_shim_sweep_center = getChannelValue(seqdata,'X Shim',1,0);
             x_shim_sweep_start = x_shim_sweep_center-1*dBx/2;
             x_shim_sweep_final = x_shim_sweep_center+1*dBx/2;
 
-            y_shim_sweep_center = getChannelValue(seqdata,19,1,0);
+            y_shim_sweep_center = getChannelValue(seqdata,'Y Shim',1,0);
             y_shim_sweep_start = y_shim_sweep_center-1*dBy/2;
             y_shim_sweep_final = y_shim_sweep_center+1*dBy/2;
         else %Start at current field and ramp up
-            x_shim_sweep_center = getChannelValue(seqdata,27,1,0);
+            x_shim_sweep_center = getChannelValue(seqdata,'X Shim',1,0);
             x_shim_sweep_start = x_shim_sweep_center;
             x_shim_sweep_final = x_shim_sweep_center+1*dBx;
 
-            y_shim_sweep_center = getChannelValue(seqdata,19,1,0);
+            y_shim_sweep_center = getChannelValue(seqdata,'Y Shim',1,0);
             y_shim_sweep_start = y_shim_sweep_center;
             y_shim_sweep_final = y_shim_sweep_center+1*dBy;
         end
@@ -447,19 +447,19 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
 
         if (opt.Sweep_About_Central_Frequency)
             %Shift field down and up by half of the desired width
-            x_shim_sweep_center = getChannelValue(seqdata,27,1,0);
+            x_shim_sweep_center = getChannelValue(seqdata,'X Shim',1,0);
             x_shim_sweep_start = x_shim_sweep_center-1*dBx/2;
             x_shim_sweep_final = x_shim_sweep_center+1*dBx/2;
 
-            y_shim_sweep_center = getChannelValue(seqdata,19,1,0);
+            y_shim_sweep_center = getChannelValue(seqdata,'Y Shim',1,0);
             y_shim_sweep_start = y_shim_sweep_center-1*dBy/2;
             y_shim_sweep_final = y_shim_sweep_center+1*dBy/2;
         else %Start at current field and ramp up
-            x_shim_sweep_center = getChannelValue(seqdata,27,1,0);
+            x_shim_sweep_center = getChannelValue(seqdata,'X Shim',1,0);
             x_shim_sweep_start = x_shim_sweep_center;
             x_shim_sweep_final = x_shim_sweep_center+1*dBx;
 
-            y_shim_sweep_center = getChannelValue(seqdata,19,1,0);
+            y_shim_sweep_center = getChannelValue(seqdata,'Y Shim',1,0);
             y_shim_sweep_start = y_shim_sweep_center;
             y_shim_sweep_final = y_shim_sweep_center+1*dBy;
         end

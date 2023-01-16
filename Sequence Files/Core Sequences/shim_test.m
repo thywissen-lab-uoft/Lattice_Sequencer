@@ -7,8 +7,6 @@ global seqdata;
 test_MOT = 0;
 test_science = 1;
 
-% setDigitalChannel(calctime(curtime,0),'Shim Multiplexer',0); %0 = MOT, 1 = science
-% setAnalogChannel(calctime(curtime,0),'Rb Repump AM',0);
 
 %Set the shim values
 x_shim_val = 0;

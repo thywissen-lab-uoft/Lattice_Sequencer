@@ -158,7 +158,7 @@ curtime = calctime(curtime,200); % wait to allow SRS to settle at new frequency
                 field_shift_time = 20; % time to shift the field to the initial value for the sweep (and from the final value)
                 field_shift_settle = 40; % settling time after initial and final field shifts
 
-                z_shim_sweep_center = getChannelValue(seqdata,28,1,0);
+                z_shim_sweep_center = getChannelValue(seqdata,'Z Shim',1,0);
                 z_shim_sweep_start = z_shim_sweep_center-1*dBz/2;
                 z_shim_sweep_final = z_shim_sweep_center+1*dBz/2;
 
@@ -271,11 +271,11 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars); % se
             
             if (Cycle_About_Freq_Val)
                 %Shift field down and up by half of the desired width
-                z_shim_sweep_center = getChannelValue(seqdata,28,1,0);
+                z_shim_sweep_center = getChannelValue(seqdata,'Z Shim',1,0);
                 z_shim_sweep_start = z_shim_sweep_center-1*dBz/2;
                 z_shim_sweep_final = z_shim_sweep_center+1*dBz/2;
             else %Start at current field and ramp up
-                z_shim_sweep_center = getChannelValue(seqdata,28,1,0);
+                z_shim_sweep_center = getChannelValue(seqdata,'Z Shim',1,0);
                 z_shim_sweep_start = z_shim_sweep_center;
                 z_shim_sweep_final = z_shim_sweep_center+1*dBz;
             end
@@ -357,9 +357,9 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
             % Ramp X and Y shims to center the QP gradient around the trap axis
             ramp.shim_ramptime = 50;
             ramp.shim_ramp_delay = -0;
-            ramp.xshim_final = getChannelValue(seqdata,27,1,0)-0.050; %-0.050 previously.
-            ramp.yshim_final = getChannelValue(seqdata,19,1,0)+0.090;
-            ramp.zshim_final = getChannelValue(seqdata,28,1,0);
+            ramp.xshim_final = getChannelValue(seqdata,'X Shim',1,0)-0.050; %-0.050 previously.
+            ramp.yshim_final = getChannelValue(seqdata,'Y Shim',1,0)+0.090;
+            ramp.zshim_final = getChannelValue(seqdata,'Z Shim',1,0);
             % QP coil settings for gradient killing
             ramp.QP_ramptime = 50;
             ramp.QP_ramp_delay = -0;

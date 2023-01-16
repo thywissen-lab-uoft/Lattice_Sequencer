@@ -448,9 +448,9 @@ if ( seqdata.flags.do_Rb_uwave_transfer_in_ODT)
         shim_ramptime_list = [2];
         shim_ramptime = getScanParameter(shim_ramptime_list,seqdata.scancycle,seqdata.randcyclelist,'shim_ramptime');
                
-        getChannelValue(seqdata,27,1,0);
-        getChannelValue(seqdata,19,1,0);
-        getChannelValue(seqdata,28,1,0);
+        getChannelValue(seqdata,'X Shim',1,0);
+        getChannelValue(seqdata,'Y Shim',1,0);
+        getChannelValue(seqdata,'Z Shim',1,0);
 
         % Ramp shims to the zero condition
         ramp = struct;
@@ -542,9 +542,9 @@ curtime = DigitalPulse(calctime(curtime,0),24,pulse_time,0); % pulse beam with T
         ramp.shim_ramptime = 50;
         ramp.shim_ramp_delay = -10; % ramp earlier than FB field if FB field is ramped to zero
 
-        getChannelValue(seqdata,27,1,0);
-        getChannelValue(seqdata,19,1,0);
-        getChannelValue(seqdata,28,1,0);
+        getChannelValue(seqdata,'X Shim',1,0);
+        getChannelValue(seqdata,'Y Shim',1,0);
+        getChannelValue(seqdata,'Z Shim',1,0);
 
         %Give ramp shim values if we want to do spectroscopy using the
         %shims instead of FB coil. If nothing set here, then

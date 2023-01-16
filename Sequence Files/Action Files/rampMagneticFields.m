@@ -145,13 +145,19 @@ end
     
     %Ramp shim fields
     if ~isempty(opt.xShimValue)
-        AnalogFuncTo(calctime(curtime,opt.ShimRampDelay),27,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),opt.ShimRampTime,opt.ShimRampTime,opt.xShimValue,3);
+        AnalogFuncTo(calctime(curtime,opt.ShimRampDelay),'X Shim',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+            opt.ShimRampTime,opt.ShimRampTime,opt.xShimValue,3);
     end
     if ~isempty(opt.yShimValue)
-        AnalogFuncTo(calctime(curtime,opt.ShimRampDelay),19,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),opt.ShimRampTime,opt.ShimRampTime,opt.yShimValue,4);
+        AnalogFuncTo(calctime(curtime,opt.ShimRampDelay),'Y Shim',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+            opt.ShimRampTime,opt.ShimRampTime,opt.yShimValue,4);
     end
     if ~isempty(opt.zShimValue)
-        AnalogFuncTo(calctime(curtime,opt.ShimRampDelay),28,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),opt.ShimRampTime,opt.ShimRampTime,opt.zShimValue,3);
+        AnalogFuncTo(calctime(curtime,opt.ShimRampDelay),'Z Shim',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+            opt.ShimRampTime,opt.ShimRampTime,opt.zShimValue,3);
     end
     
     if isempty(opt.ShimValues)

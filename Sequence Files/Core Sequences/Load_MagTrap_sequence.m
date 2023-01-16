@@ -936,13 +936,12 @@ dispLineStr('Turning off coils and traps.',curtime);
         setAnalogChannel(curtime,'MOT Coil',0,1);
     end
     
-    %turn the Magnetic Trap off
-    %set all transport coils to zero (except MOT)
+    % Turn off all transport Coils
     for i = [7 9:17 22:24 20] 
         setAnalogChannel(calctime(curtime,0),i,0,1);
-    end    
+    end   
     
-    %Turn off QP Coils
+    % Turn off QP Coils (analog control)
     setAnalogChannel(calctime(curtime,0),'Coil 15',0,1);            % C15
     curtime = setAnalogChannel(calctime(curtime,0),'Coil 16',0,1);  % C16
     curtime = setAnalogChannel(curtime,'kitten',0,1);               % Kitten    

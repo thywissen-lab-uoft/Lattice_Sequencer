@@ -935,6 +935,12 @@ dispLineStr('Turning off coils and traps.',curtime);
     %mag trap and XDT). Clean up, could be its own function. Check that
     %procedures are not out of date. 
     
+    
+    % Turn off the MOT
+    if ( seqdata.flags.image_type ~= 4 )
+        setAnalogChannel(curtime,'MOT Coil',0,1);
+    end
+    
     %turn the Magnetic Trap off
     %set all transport coils to zero (except MOT)
     for i = [7 9:17 22:24 20] 
@@ -946,10 +952,8 @@ dispLineStr('Turning off coils and traps.',curtime);
     curtime = setAnalogChannel(calctime(curtime,0),'Coil 16',0,1); %16
     curtime = setAnalogChannel(curtime,'kitten',0,1); %kitten
     
-    %MOT
-    if ( seqdata.flags.image_type ~= 4 )
-        setAnalogChannel(curtime,'MOT Coil',0,1);
-    end
+    
+ 
 
     %MOT/QCoil TTL (separate switch for coil 15 (TTL) and 16 (analog))
     %Coil 16 fast switch
@@ -958,8 +962,8 @@ dispLineStr('Turning off coils and traps.',curtime);
     
     if I_kitt == 0
         %use fast switch
-        setDigitalChannel(curtime,21,1);
-        setDigitalChannel(calctime(curtime,500),21,0); 
+        setDigitalChannel(curtime,'Coil 16 TTL',1);
+        setDigitalChannel(calctime(curtime,500),'Coil 16 TTL',0); 
     else
         %Cannot use Coil 16 fast switch if atoms have not be transferred to
         %imaging direction!

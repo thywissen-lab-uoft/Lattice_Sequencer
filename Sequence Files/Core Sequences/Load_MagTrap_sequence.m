@@ -928,13 +928,8 @@ if ( seqdata.flags.lower_atoms_after_evap == 1 )
         1,@(t,tt,dt)(dt*t/tt+I_QP),lower_transfer_time,lower_transfer_time,15-I_QP);
 end
 
-%% Turn off coils and traps.  
+%% Initiate Time of Flight  
 dispLineStr('Turning off coils and traps.',curtime);
-
-    %RHYS - Makes sure all traps are off during TOF (actually initiates TOF for
-    %mag trap and XDT). Clean up, could be its own function. Check that
-    %procedures are not out of date. 
-    
     
     % Turn off the MOT
     if ( seqdata.flags.image_type ~= 4 )
@@ -968,7 +963,7 @@ dispLineStr('Turning off coils and traps.',curtime);
     setDigitalChannel(calctime(curtime,qp_switch1_delay_time),'15/16 Switch',0);
 
 
-    % Typical XDT TOF
+    % XDT TOF
     if seqdata.flags.do_dipole_trap
         % Turn off AOMs 
         setDigitalChannel(calctime(curtime,0),'XDT TTL',1);

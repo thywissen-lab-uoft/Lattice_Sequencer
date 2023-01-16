@@ -970,31 +970,39 @@ dispLineStr('Turning off coils and traps.',curtime);
 
     if ( seqdata.flags. do_dipole_trap ~= 0 )
    
+        % Typical XDT TOF
+        if seqdata.flags. do_dipole_trap == 1
+            % Turn off AOMs 
+            setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
+            
+            % XDT1 Power Req. Off
+            setAnalogChannel(calctime(curtime,0),'dipoleTrap1',...
+                seqdata.params.ODT_zeros(1));
+            % XDT2 Power Req. Off
+            setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));
+            % I think this channel is unused now
+            setDigitalChannel(calctime(curtime,-1),'XDT Direct Control',1);
+        end        
+        
+        % 2023/01/16 CF : I think we can delete these other forms of XDT
+        % turn off since we always use XDT=1
+        
         if seqdata.flags. do_dipole_trap == 2    
-            %Leave ODT on during 15ms TOF
+            % Leave ODT on during 15ms TOF
             setDigitalChannel(calctime(curtime,25),'XDT TTL',1);
-            %turn off dipole trap 1
-            setAnalogChannel(calctime(curtime,25),40,0,1);
-            %turn off dipole trap 2
-            setAnalogChannel(calctime(curtime,25),38,0,1);        
+            % Turn off dipole trap 1
+            setAnalogChannel(calctime(curtime,25),'dipoleTrap1',0,1);
+            % Turn off dipole trap 2
+            setAnalogChannel(calctime(curtime,25),'dipoleTrap2',0,1);        
         end
         
-        if seqdata.flags. do_dipole_trap == 1
-            setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
-            %turn off dipole trap 1
-            setAnalogChannel(calctime(curtime,0),'dipoleTrap1',seqdata.params.ODT_zeros(1));
-            %turn off dipole trap 2
-%             setAnalogChannel(calctime(curtime,0),'dipoleTrap2',0,1);
-            setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));
-            setDigitalChannel(calctime(curtime,-1),'XDT Direct Control',1);
-        end    
-    
+
         if seqdata.flags. do_dipole_trap == 3
             setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
             %turn off dipole trap 1
-            setAnalogChannel(calctime(curtime,0),40,0,1);
+            setAnalogChannel(calctime(curtime,0),'dipoleTrap1',0,1);
             %turn off dipole trap 2
-            setAnalogChannel(calctime(curtime,0),38,0,1);
+            setAnalogChannel(calctime(curtime,0), 'dipoleTrap2',0,1);
         end
           
     end

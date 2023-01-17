@@ -100,7 +100,7 @@ curtime = timein;
     
        if ramp_QP_gradient_cancel
         % QP Value to ramp to
-        HF_QP_List =0.2;
+        HF_QP_List =[0.115];0.2;
         HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
         seqdata.randcyclelist,'HF_QPReverse','V');  
     
@@ -440,6 +440,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 
         seqdata.params.HF_probe_fb = HF_FeshValue_Final +2.35*zshim;
    end
+   
 
    %% Ramp field for imaging on repulsive side
    if ramp_field_for_imaging_repulsive
@@ -467,6 +468,8 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
 
         seqdata.params.HF_probe_fb = HF_FeshValue_Final +2.35*zshim;
+        
+      
    end
    
  %% Ending operation

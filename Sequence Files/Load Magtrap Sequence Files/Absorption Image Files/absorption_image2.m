@@ -161,6 +161,15 @@ if (strcmp(flags.img_direction,'X') || strcmp(flags.img_direction,'Y'))
     setAnalogChannel(calctime(curtime,params.timings.tof+50),'X Shim',0,3);
     setAnalogChannel(calctime(curtime,params.timings.tof+50),'Y Shim',0,4);
     setAnalogChannel(calctime(curtime,params.timings.tof+50),'Z Shim',0,3);
+    
+    
+    if flags.High_Field_Imaging
+        ramp_time = 100;
+        AnalogFuncTo(calctime(curtime,params.timings.tof+100),'Coil 16',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),ramp_time,ramp_time,0,1);    
+        AnalogFuncTo(calctime(curtime,params.timings.tof+100),'Coil 15',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),ramp_time,ramp_time,0,1);   
+    end
 end
 %% Prepare detunings for optional optical pumping and repump pulses, which occur before the first image.
 
@@ -497,7 +506,7 @@ switch flags.image_atomtype
                     end
 
                     % RF Frequency Sweep
-                    rf_tof_delta_freq_list = [20]*1e-3;[20]*1e-3;[12]*1e-3;12; %20kHz for 15ms TOF
+                    rf_tof_delta_freq_list = [35]*1e-3;[20]*1e-3;[12]*1e-3;12; %20kHz for 15ms TOF
                     rf_tof_delta_freq = getScanParameter(rf_tof_delta_freq_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_tof_delta_freq','MHz');
 %                     delta_freq= 0.05; %0.02            

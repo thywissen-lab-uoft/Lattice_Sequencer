@@ -106,14 +106,14 @@ seqdata.flags.do_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of
 seqdata.flags.iXon = 0;             % use iXon camera to take an absorption image (only vertical)
 seqdata.flags.do_F1_pulse = 0;      % repump Rb F=1 before/during imaging
 
-seqdata.flags.High_Field_Imaging = 1;
+seqdata.flags.High_Field_Imaging = 0;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
 
 seqdata.flags.In_Trap_imaging = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging
-tof_list = [15]; %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms
+tof_list = [25]; %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
@@ -205,7 +205,7 @@ seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 seqdata.flags.CDT_evap_2_high_field = 0;    
 
 % XDT High Field Experiments
-seqdata.flags.dipole_high_field_a = 1;
+seqdata.flags.dipole_high_field_a = 0;
 
 % Take a second PA pulse after absorption imaging to calibrate PA power
 seqdata.flags.do_calibrate_PA = 0;
@@ -941,27 +941,28 @@ dispLineStr('Turning off coils and traps.',curtime);
         setAnalogChannel(calctime(curtime,0),i,0,1);
     end   
     
-    % Turn off QP Coils (analog control)
-    setAnalogChannel(calctime(curtime,0),'Coil 15',0,1);            % C15
-    curtime = setAnalogChannel(calctime(curtime,0),'Coil 16',0,1);  % C16
-    curtime = setAnalogChannel(curtime,'kitten',0,1);               % Kitten    
+    if ~seqdata.flags.High_Field_Imaging    
+        % Turn off QP Coils (analog control)    
+        setAnalogChannel(calctime(curtime,0),'Coil 15',0,1);            % C15
+        curtime = setAnalogChannel(calctime(curtime,0),'Coil 16',0,1);  % C16
+        curtime = setAnalogChannel(curtime,'kitten',0,1);               % Kitten    
 
-    %MOT/QCoil TTL (separate switch for coil 15 (TTL) and 16 (analog))
-    qp_switch1_delay_time = 0;
-    
-    if I_kitt == 0
-        %use fast switch
-        setDigitalChannel(curtime,'Coil 16 TTL',1); % Turn off Coil 16
-        setDigitalChannel(calctime(curtime,500),'Coil 16 TTL',0); % Turn on Coil 16
-    else
-        %Cannot use Coil 16 fast switch if atoms have not be transferred to
-        %imaging direction!
+        % MOT/QCoil TTL (separate switch for coil 15 (TTL) and 16 (analog))
+        qp_switch1_delay_time = 0;
+
+        if I_kitt == 0
+            %use fast switch
+            setDigitalChannel(curtime,'Coil 16 TTL',1); % Turn off Coil 16
+            setDigitalChannel(calctime(curtime,500),'Coil 16 TTL',0); % Turn on Coil 16
+        else
+            %Cannot use Coil 16 fast switch if atoms have not be transferred to
+            %imaging direction!
+        end
+
+        % Turn off 15/16 switch (10 ms later)
+        setDigitalChannel(calctime(curtime,qp_switch1_delay_time),'15/16 Switch',0);
     end
     
-    %turn off 15/16 switch (10 ms later)
-    setDigitalChannel(calctime(curtime,qp_switch1_delay_time),'15/16 Switch',0);
-
-
     % XDT TOF
     if seqdata.flags.do_dipole_trap
         % Turn off AOMs 

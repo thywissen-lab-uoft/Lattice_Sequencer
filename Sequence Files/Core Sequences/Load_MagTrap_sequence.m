@@ -182,7 +182,6 @@ RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
 seqdata.flags.do_dipole_trap = 1; 
 seqdata.params.ODT_zeros = [-0.04,-0.04];
 
-
 % MT to XDT State Transfer
 seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
 seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 0; % uWave Frequency sweep Rb 2-->1
@@ -191,18 +190,18 @@ seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9
 % State Manipulation Before Optical Evaporation 
 seqdata.flags.xdt_d1op_start= 1;         % D1 pump to purify
 seqdata.flags.xdt_rfmix_start = 1;       % RF Mixing -9-->-9+-7    
-seqdata.flags.kill_Rb_before_evap = 0;   % Remove Rb before optical evaporation
-seqdata.flags.kill_K7_before_evap = 0;   % Remove 7/2 K before optical evaporation (untested)
+seqdata.flags.kill_Rb_before_evap = 0;   % optically remove Rb
+seqdata.flags.kill_K7_before_evap = 0;   % optical remove 7/2 K after (untested)
 
 % Optical Evaporation
 % 1: exp 2: fast linear 3: piecewise linear
 seqdata.flags.CDT_evap = 1;       
 
 % State Manipulatoin After Optical Evaporation
-seqdata.flags.xdt_d1op_end = 0;            % D1 pump
-seqdata.flags.xdt_rfmix_end = 0;                   % RF Mixing -9-->-9+-7
-seqdata.flags.kill_Rb_after_evap  = 0;   % Remove Rb after optical evaporation
-seqdata.flags.kill_K7_after_evap  = 0;   % Remove 7/2 K after optical evaporation (untested)
+seqdata.flags.xdt_d1op_end = 0;          % D1 optical pumping
+seqdata.flags.xdt_rfmix_end = 0;         % RF Mixing -9-->-9+-7
+seqdata.flags.kill_Rb_after_evap  = 0;   % optically remove Rb
+seqdata.flags.kill_K7_after_evap  = 0;   % optical remove 7/2 K after (untested)
 
 % XDT High Field Experiments
 seqdata.flags.dipole_high_field_a = 0;

@@ -72,6 +72,9 @@ curtime = timein;
 %% Flags          
     time_in_HF_imaging = curtime;
     
+    % Optical evaporation at high field
+    CDT_evap_2_high_field   = 1;
+    
     % Ramp up the QP Coils for gradient cancel
     ramp_QP_gradient_cancel = 1;
     
@@ -89,18 +92,23 @@ curtime = timein;
     % Ramp to science magnetic field
     ramp_field_3            = 0;    
     
+    % Science spin manipulations
+    flip_9_7                = 0;        % spin flip 9 to 7 for rf spec w DDS
+    do_rf_spectroscopy      = 0;        % 97 rf spec with SRS HS1
+    
     % Perform a PA pulse in the XDT at high field
     doPA_pulse_in_XDT       = 0;
 
     % Ramp field to imaging field
     ramp_field_for_imaging_attractive  = 0;
     ramp_field_for_imaging_repulsive  = 1;
+    ramp_QP_gradient_cancel_imaging = 0;
 
     %% QP Coil Gradient Cancel
     
        if ramp_QP_gradient_cancel
         % QP Value to ramp to
-        HF_QP_List =[0.115];0.2;
+        HF_QP_List =  [0.117];.14;0.115;
         HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
         seqdata.randcyclelist,'HF_QPReverse','V');  
     
@@ -139,7 +147,7 @@ curtime = timein;
         zshim = [0]/2.35; %1.28V = 3G
         
         dispLineStr('Ramping High Field in XDT',curtime);
-        HF_FeshValue_Initial_List = 190;[206];
+        HF_FeshValue_Initial_List = 195;[206]; %G
         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_ODT','G');
 
@@ -230,7 +238,54 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     curtime = calctime(curtime,50);
 
     end
+%% Two Stage High Field Evaporation
+
+% This evaporates at high field from the initial evaporation
+
+if (CDT_evap_2_high_field==1)
+    dispLineStr('Optical evaporation at high field',curtime);   
     
+    % Second Stage ending evaporation power
+    Evap2_End_Power_List = [.1];        
+    seqdata.params.exp_end_pwr2 = getScanParameter(Evap2_End_Power_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'Evap2_End_Power','W');
+    
+    % Duration of optical evaporation
+    exp_evap2_time_list = [5000];
+    exp_evap2_time = getScanParameter(exp_evap2_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'Evap2_Time','ms');
+    
+    % Tau for the optical 
+    tau2_list = [exp_evap2_time];
+    tau2 = getScanParameter(tau2_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'Evap2_tau','ms');       
+
+    P1_end = seqdata.params.exp_end_pwr2;
+    P2_end = P1_end*seqdata.params.XDT_area_ratio;    
+
+    % Display evaporation parameters
+    disp(' Performing exponential evaporation');
+    disp(['     Evap Time (ms) : ' num2str(exp_evap2_time)]);
+    disp(['     tau       (ms) : ' num2str(tau2)]);
+    disp(['     XDT1 end   (W) : ' num2str(P1_end)]);
+    disp(['     XDT2 end   (W) : ' num2str(P2_end)]);
+
+    % Ramp function
+    evap_exp_ramp = @(t,tt,tau,y2,y1) ...
+        (y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));
+
+    % Ramp the powers
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+        @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
+        exp_evap2_time,exp_evap2_time,tau2,P1_end);
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+        @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
+        exp_evap2_time,exp_evap2_time,tau2,P2_end);   
+    
+    % Advance time
+    curtime= calctime(curtime,exp_evap2_time);
+
+end
 
 %%  RF transfer from -7/2 to -5/2
         
@@ -407,8 +462,210 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     
 curtime = calctime(curtime,HF_wait_time);
   
-     end
+    end
 
+%%  RF transfer from -9/2 to -7/2
+        
+    if flip_9_7
+        dispLineStr('RF transfer -9/2 to -7/2',curtime);
+
+        clear('sweep');
+        mF1=-9/2;   % Lower energy spin state
+        mF2=-7/2;   % Higher energy spin state
+        
+        zshim = [0]/2.35; %1.28V = 3G
+        
+        % Get the center frequency
+        B = HF_FeshValue_Initial + 0.11 + 2.35*zshim; 
+        
+        rf_shift_list = [-5 5]/1000;
+        rf_shift = getScanParameter(rf_shift_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'rf_freq_HF_shift_XDT','MHz');
+                  
+        sweep_pars.freq = rf_shift +...
+            abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6); 
+        
+        
+        % Sweep parameters
+        sweep_pars.power =  [0];
+        delta_freq = 0.05; 0.025;0.1;
+        sweep_pars.delta_freq = delta_freq;
+        rf_pulse_length_list = 1;5;20;
+        sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5               
+
+        disp([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
+        disp([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
+        disp([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
+        disp([' RF Power        (V) : ' num2str(sweep_pars.power)]);
+
+        
+        
+curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
+
+        % Wait a second
+        HF6_wait_time_list = [50];
+        HF6_wait_time = getScanParameter(HF6_wait_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'HF_wait_time_6','ms');
+     curtime = calctime(curtime,HF6_wait_time);
+
+    % ACYnc usage
+    do_ACync_rf = 0;
+        if do_ACync_rf
+            ACync_start_time = calctime(curtime,-80);
+            ACync_end_time = calctime(curtime,2*sweep_pars.pulse_length+50);
+            setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
+            setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
+        end
+    end
+    
+    
+    %% RF Sweep Spectroscopy
+    
+    if do_rf_spectroscopy
+        dispLineStr('RF Sweep Spectroscopy',curtime);
+        ScopeTriggerPulse(curtime,'rf_spectroscopy');
+        
+        mF1=-9/2;   % Lower energy spin state
+        mF2=-7/2;   % Higher energy spin state
+
+        % Get the center frequency
+        Boff = 0.11;
+        B = HF_FeshValue_Initial + Boff + 2.35*zshim; 
+%         
+     
+         rf_shift_list = [-30 -12.5:2.5:12.5 30];
+
+         rf_shift = getScanParameter(rf_shift_list,seqdata.scancycle,...
+                         seqdata.randcyclelist,'rf_freq_HF_shift_XDT','kHz');
+
+        
+        f0 = abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);
+        rf_freq_HF = f0+rf_shift*1e-3;
+        addOutputParam('rf_freq_HF_XDT',rf_freq_HF,'MHz');       
+
+        if (rf_freq_HF < 1)
+             error('Incorrect RF frequency calculation!! MATLAB IS STUPID! >:(')
+        end
+
+        % Define the sweep parameters
+        delta_freq_SRS= 0.005; % in MHz            
+        addOutputParam('rf_delta_freq_HF_SRS',delta_freq_SRS,'MHz');
+
+        % RF Pulse 
+        rf_pulse_length_list = 1; 2; %ms
+        rf_pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'rf_pulse_length');
+        
+        rf_wait_time = 0.00; 
+        extra_wait_time = 0;
+        rf_off_voltage =-10;
+
+
+        disp('HS1 SRS Sweep Pulse');  
+
+        rf_srs_power_list = [12];
+        rf_srs_power = getScanParameter(rf_srs_power_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'rf_srs_power','dBm');
+%                 rf_srs_power = paramGet('rf_srs_power');
+        sweep_time = rf_pulse_length;
+
+        rf_srs_opts = struct;
+        rf_srs_opts.Address = 28;          
+        rf_srs_opts.EnableBNC = 1;                         % Enable SRS output 
+        rf_srs_opts.PowerBNC = rf_srs_power;                           
+        rf_srs_opts.Frequency = rf_freq_HF;
+        % Calculate the beta parameter
+        beta=asech(0.005);   
+        addOutputParam('rf_HS1_beta',beta);
+
+        disp(['     Freq Center  : ' num2str(rf_freq_HF) ' MHz']);
+        disp(['     Freq Delta   : ' num2str(delta_freq_SRS*1E3) ' kHz']);
+        disp(['     Pulse Time   : ' num2str(rf_pulse_length) ' ms']);
+        disp(['     Beta         : ' num2str(beta)]);
+
+        % Enable uwave frequency sweep
+        rf_srs_opts.EnableSweep=1;                    
+        rf_srs_opts.SweepRange=abs(delta_freq_SRS);     
+
+        % Set SRS Source post spec
+        setDigitalChannel(calctime(curtime,-5),'SRS Source post spec',0);
+
+        % Set SRS Source to the new one
+        setDigitalChannel(calctime(curtime,-5),'SRS Source',0);
+
+        % Set SRS Direction to RF
+        setDigitalChannel(calctime(curtime,-5),'K uWave Source',0);
+
+        % Set initial modulation
+        setAnalogChannel(calctime(curtime,-5),'uWave FM/AM',1);
+        
+        rf_rabi_manual = 0;
+
+        if rf_rabi_manual
+            setDigitalChannel(calctime(curtime,...
+                 rf_wait_time + extra_wait_time),'RF Source',1); 
+            setAnalogChannel(calctime(curtime,...
+                 rf_wait_time + extra_wait_time),'RF Gain',rf_off_voltage);
+        else    
+         % Set RF power to low
+        setAnalogChannel(calctime(curtime,-5),'RF Gain',rf_off_voltage);
+
+         % Set RF Source to SRS
+        setDigitalChannel(calctime(curtime,-5),'RF Source',1);
+
+        end
+
+        % Turn on the RF
+        setDigitalChannel(calctime(curtime,...
+            rf_wait_time + extra_wait_time),'RF TTL',1);    
+
+        % Ramp the SRS modulation using a TANH
+        % At +-1V input for +- full deviation
+        % The last argument means which votlage fucntion to use
+        AnalogFunc(calctime(curtime,...
+            rf_wait_time + extra_wait_time),'uWave FM/AM',...
+            @(t,T,beta) -tanh(2*beta*(t-0.5*sweep_time)/sweep_time),...
+            sweep_time,sweep_time,beta,1);
+
+        % Sweep the linear VVA
+        AnalogFunc(calctime(curtime,...
+            rf_wait_time  + extra_wait_time),'RF Gain',...
+            @(t,T,beta) -10 + ...
+            20*sech(2*beta*(t-0.5*sweep_time)/sweep_time),...
+            sweep_time,sweep_time,beta);
+
+        % Wait for Sweep
+                    curtime = calctime(curtime,rf_pulse_length);
+
+        % Turn off VVA
+        setAnalogChannel(calctime(curtime,...
+            rf_wait_time  + extra_wait_time+rf_pulse_length),'RF Gain',rf_off_voltage);
+
+
+        % Program the SRS
+        programSRS_BNC(rf_srs_opts); 
+        params.isProgrammedSRS = 1;
+
+         % Extra Wait Time
+
+        HF_hold_time_list = [35]+rf_pulse_length;
+        HF_hold_time = getScanParameter(HF_hold_time_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'HF_hold_time','ms');
+% %                 
+%                 HF_hold_time =  rf_pulse_length+ paramGet('HF_hold_time');
+
+        curtime=calctime(curtime,HF_hold_time); 
+
+        if HF_hold_time > 1
+        % Turn off the uWave
+        setDigitalChannel(calctime(curtime,...
+            rf_wait_time  + extra_wait_time+rf_pulse_length-HF_hold_time),'RF TTL',0); 
+        end
+  
+    end
+ 
+
+    
   %% PA Pulse
 if doPA_pulse_in_XDT
    curtime = PA_pulse(curtime); 
@@ -471,6 +728,40 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
         
       
    end
+   %% Ramp up the QP gradient for imaging
+   if ramp_QP_gradient_cancel_imaging
+        % QP Value to ramp to
+        HF_QP_List =[0.117];0.115;
+        HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
+        seqdata.randcyclelist,'HF_QPReverse_imaging','V');  
+    
+        % Ramp C16 and C15 to off values
+        pre_ramp_time = 100;
+        AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,-7);    
+        curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0.062,1); 
+              
+        curtime = calctime(curtime,50);
+        % Turn off 15/16 switch
+        setDigitalChannel(curtime,'15/16 Switch',0); 
+        curtime = calctime(curtime,10);
+
+        % Turn on reverse QP switch
+        setDigitalChannel(curtime,'Reverse QP Switch',1);
+        curtime = calctime(curtime,10);
+            
+        % Ramp up transport supply voltage
+        QP_FFValue = 23*(HF_QP/.125/30); % voltage FF on delta supply
+        curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+            100,100,QP_FFValue);
+        curtime = calctime(curtime,50);
+        
+        qp_ramp_time = 200;
+        curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,HF_QP,1); 
+    end
    
  %% Ending operation
 
@@ -480,7 +771,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
  curtime = calctime(curtime,HF5_wait_time);
 
         time_out_HF_imaging = curtime;
-        if (((time_out_HF_imaging - time_in_HF_imaging)*(seqdata.deltat/seqdata.timeunit))>3000)
+        if (((time_out_HF_imaging - time_in_HF_imaging)*(seqdata.deltat/seqdata.timeunit))>10000)
             error('CHECK TIME FESHBACH IS ON! MAY BE TOO LONG')
         end
 end

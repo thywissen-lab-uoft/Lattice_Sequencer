@@ -113,7 +113,7 @@ seqdata.flags.High_Field_Imaging = 0;
 seqdata.flags.In_Trap_imaging = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging
-tof_list = [25]; %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms
+tof_list = [25]; %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
@@ -169,7 +169,7 @@ RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1A_finalfreq','MHz');
 
 % RF1B Final Frequency
-RF_1B_Final_Frequency_list = [.9];1;%0.8,0.4 1
+RF_1B_Final_Frequency_list = [.8];1;%0.8,0.4 1
 RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq','MHz');
  
@@ -184,13 +184,15 @@ seqdata.params.ODT_zeros = [-0.04,-0.04];
 seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
 seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 0; % uWave Frequency sweep Rb 2-->1
 seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
+
+
 seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
-seqdata.flags.mix_at_beginning = 0;             % RF Mixing -9-->-9+-7
+seqdata.flags.mix_at_beginning = 1;             % RF Mixing -9-->-9+-7
     
 seqdata.flags.kill_Rb_before_evap = 0;   % Remove Rb before optical evaporation
 seqdata.flags.kill_K7_before_evap = 0;   % Remove 7/2 K before optical evaporation (untested)
 
-seqdata.flags.kill_Rb_after_evap  = 1;   % Remove Rb after optical evaporation
+seqdata.flags.kill_Rb_after_evap  = 0;   % Remove Rb after optical evaporation
 seqdata.flags.kill_K7_after_evap  = 0;   % Remove 7/2 K after optical evaporation (untested)
 
 % Optical Evaporation
@@ -202,7 +204,7 @@ seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
 seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
 
 % High Field Evaporation (not used yet; for near BEC/BCS)
-seqdata.flags.CDT_evap_2_high_field = 0;    
+% seqdata.flags.CDT_evap_2_high_field = 0;    
 
 % XDT High Field Experiments
 seqdata.flags.dipole_high_field_a = 0;
@@ -993,7 +995,7 @@ dispLineStr('Turning off coils and traps.',curtime);
     end
 
     if ~(seqdata.flags.image_type==1 || seqdata.flags.image_type==4)
-        setDigitalChannel(curtime,'MOT TTL',1);    
+%         setDigitalChannel(curtime,'MOT TTL',1);    
     end
 
 

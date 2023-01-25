@@ -506,7 +506,7 @@ switch flags.image_atomtype
                     end
 
                     % RF Frequency Sweep
-                    rf_tof_delta_freq_list = [35]*1e-3;[20]*1e-3;[12]*1e-3;12; %20kHz for 15ms TOF
+                    rf_tof_delta_freq_list = [40]*1e-3;[35]*1e-3;[20]*1e-3;[12]*1e-3;12; %20kHz for 15ms TOF
                     rf_tof_delta_freq = getScanParameter(rf_tof_delta_freq_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_tof_delta_freq','MHz');
 %                     delta_freq= 0.05; %0.02            
@@ -517,7 +517,7 @@ switch flags.image_atomtype
                     rf_tof_pulse_length = getScanParameter(rf_tof_pulse_length_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_tof_pulse_length','ms');
                     
-                    % RF Gain Amplitude
+                    % RF Gain Amplitude - only used for DDS
                     rf_tof_gain_list = [9.9];[9];
                     rf_tof_gain = getScanParameter(rf_tof_gain_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_tof_gain','arb');
@@ -527,7 +527,7 @@ switch flags.image_atomtype
                     
 %                     sweep_type = 'DDS';
 %                     sweep_type = 'SRS_HS1';
-                     sweep_type = 'SRS_LINEAR';
+                    sweep_type = 'SRS_LINEAR';
 
                     switch sweep_type
                         case 'DDS'   

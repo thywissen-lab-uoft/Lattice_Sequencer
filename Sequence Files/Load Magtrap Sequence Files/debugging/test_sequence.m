@@ -5601,17 +5601,24 @@ end
 %   setAnalogChannel(calctime(curtime,0),'Rb Repump AM',0);
 
 
-setAnalogChannel(calctime(curtime,0),'X MOT Shim',0,1)
-setAnalogChannel(calctime(curtime,0),'Y MOT Shim',0,1)
-setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0,1)
-
-setAnalogChannel(calctime(curtime,0),'X Shim',0,1)
-setAnalogChannel(calctime(curtime,0),'Y Shim',0,1)
-setAnalogChannel(calctime(curtime,0),'Z Shim',0,1)
+% setAnalogChannel(calctime(curtime,0),'X MOT Shim',0,1)
+% setAnalogChannel(calctime(curtime,0),'Y MOT Shim',0,1)
+% setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0,1)
+% 
+% setAnalogChannel(calctime(curtime,0),'X Shim',0,1)
+% setAnalogChannel(calctime(curtime,0),'Y Shim',0,1)
+% setAnalogChannel(calctime(curtime,0),'Z Shim',0,1)
 
 % setAnalogChannel(calctime(curtime,1000),'X Shim',0,1)
 % setAnalogChannel(calctime(curtime,1000),'Y Shim',0,1)
 % setAnalogChannel(calctime(curtime,1000),'Z Shim',0,1)
+
+setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0); %0.12
+setDigitalChannel(calctime(curtime, 0),'K Probe/OP shutter',0);
+
+setDigitalChannel(calctime(curtime,0),'K High Field Probe',1);
+setDigitalChannel(calctime(curtime,0),'High Field Shutter',0);
+
 
 
 timeout = curtime;

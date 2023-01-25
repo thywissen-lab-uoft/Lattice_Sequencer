@@ -91,13 +91,13 @@ function params = Load_Absorption_Image_Parameters()
 
     
     
-    drf_list = 0;
-    d_rf = getScanParameter(drf_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'rf_tof_shiftshift','kHz');
+%     drf_list = [-7.5:5:7.5 -5 5 0];
+%     d_rf = getScanParameter(drf_list,seqdata.scancycle,...
+%         seqdata.randcyclelist,'rf_tof_shiftshift','kHz');
 
     % RF shifts
     params.HF_rf_shift.repulsive_lattice = [57];        % 15 ms tof, 195 G, (zshim=0)
-    params.HF_rf_shift.repulsive_xdt = 0;52.5;[57];       % 15 ms tof, 195 G, (zshim=0)
+    params.HF_rf_shift.repulsive_xdt = 0; 0;52.5;[57];       % 21 ms tof, 195 G, (zshim=0)
     params.HF_rf_shift.attractive_lattice = [62];45;    % 15 ms tof, 207 G, (zshim=0)
     params.HF_rf_shift.attractive_xdt = [140];          % 21 ms tof, 207 G (zshim=0)
 %     params.HF_rf_shift.attractive_xdt = [125];        % 21 ms tof, 207G (zshim=3)

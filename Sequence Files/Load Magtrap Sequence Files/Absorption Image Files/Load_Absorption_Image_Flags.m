@@ -56,7 +56,7 @@ function flags = Load_Absorption_Image_Flags()
     
 %% flags for HF imaging
 % Setting for high field imaging
-flags.High_Field_Imaging = seqdata.flags.High_Field_Imaging || seqdata.flags.CDT_evap_2_high_field;
+flags.High_Field_Imaging = seqdata.flags.High_Field_Imaging %|| seqdata.flags.CDT_evap_2_high_field;
 
 % In high field imaging, we can image either -9,-7, or -9 and -7 together
 % using the double shutter

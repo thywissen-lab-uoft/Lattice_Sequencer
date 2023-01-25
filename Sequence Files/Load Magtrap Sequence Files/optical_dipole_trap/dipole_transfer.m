@@ -20,7 +20,7 @@ ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 dipole_holdtime_before_evap = 0;    % not a flag but a value
 ramp_Feshbach_B_before_CDT_evap = 0;
 
-Evap_End_Power_List = [0.06];[0.06];0.065;[0.08];
+Evap_End_Power_List = [0.06];0.065;[0.08];
 
 % Levitation Field During evaporation TESTING
 do_levitate_evap = 0;
@@ -29,18 +29,13 @@ do_levitate_evap = 0;
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...
     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');    
 
-% Second Stage ending evaporation power
-Evap2_End_Power_List = [0.07];    
-% Ending optical evaporation
-seqdata.params.exp_end_pwr2 = getScanParameter(Evap2_End_Power_List,...
-    seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power2','W');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 ramp_XDT_up = 0;                % Ramp dipole back up after evaporation before any further physics 
 do_dipole_trap_kick = 0;        % Kick the dipole trap, inducing coherent oscillations for temperature measurement
-
+do_wait_at_end = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % Spectroscopy after Evaporation
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -74,7 +69,7 @@ P1 = P12;
 P2 = P12;       
 
 % Sympathetic cooling powers
-Pevap_list = [.8];
+Pevap_list = 0.8;[.8];
 Pevap = getScanParameter(Pevap_list,...
     seqdata.scancycle,seqdata.randcyclelist,'XDT_Pevap','W');
 P1e = Pevap; %0.8
@@ -999,44 +994,37 @@ end
 
 % TESTING HAS NOT WORKIGN YET
 if do_levitate_evap
-    % Value to Ramp Coil 15
-    val = 0.1;  
-    
-    % Ramp Time
-    ramp_time = 100;
-    
-    curtime = calctime(curtime,50);
-    
-    % Make sure Coil 15 and Coil 16 are low
-    setAnalogChannel(calctime(curtime,0),'Coil 15',0,1);
-    setAnalogChannel(calctime(curtime,0),'Coil 16',0);
+    % QP Value to ramp to
+    LF_QP_List =  [0.1:.02:.3];.14;0.115;
+    LF_QP = getScanParameter(LF_QP_List,seqdata.scancycle,...
+    seqdata.randcyclelist,'LF_QPReverse','V');  
 
-    
-    
-    % Disable QP mode of current control
-    setDigitalChannel(curtime,'15/16 Switch',0);
-    
-    % Enable Kitten
-    setDigitalChannel(curtime,'Kitten Relay',1);
-    
-    % Wait for relay to switch
-    curtime = calctime(curtime,50);
-
-    
-    % Turn on Kitten
-    setAnalogChannel(calctime(curtime,0),'Kitten',6.52,1);
-    curtime = calctime(curtime,10);
-        
-    % Ramp on Coil 15
-    AnalogFuncTo(calctime(curtime,0),'Transport FF',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        ramp_time,ramp_time,val,2);  
-    
+    % Ramp C16 and C15 to off values
+    pre_ramp_time = 100;
+    AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,-7);    
     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        ramp_time,ramp_time,val,1);     
-    
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0.062,1); 
 
+    curtime = calctime(curtime,50);
+    % Turn off 15/16 switch
+    setDigitalChannel(curtime,'15/16 Switch',0); 
+    curtime = calctime(curtime,10);
+
+    % Turn on reverse QP switch
+    setDigitalChannel(curtime,'Reverse QP Switch',1);
+    curtime = calctime(curtime,10);
+
+    % Ramp up transport supply voltage
+    QP_FFValue = 23*(LF_QP/.125/30); % voltage FF on delta supply
+    curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        100,100,QP_FFValue);
+    curtime = calctime(curtime,50);
+
+    qp_ramp_time = 200;
+    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,LF_QP,1); 
 end
 
 %% CDT evap
@@ -1155,45 +1143,37 @@ else
 end
 
 %% Unramp Gradient
-
-if do_levitate_evap
-    ramp_time_1 = 100;
-    ramp_time_2 = 10;
-    
-    % Ramp off Coil 15
-    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        ramp_time_1,ramp_time_1,0,1);     
-    
-    % Make sure Coil 16 and kitten are low
-    AnalogFuncTo(calctime(curtime,0),'Coil 16',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        ramp_time_2,ramp_time_2,0);  
-    curtime = AnalogFuncTo(calctime(curtime,0),'Kitten',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        ramp_time_2,ramp_time_2,0,1);   
-    
-    % Enable QP mode of current control
-    setDigitalChannel(curtime,'15/16 Switch',1);
-    
-    % Disable Kitten
-    setDigitalChannel(curtime,'Kitten Relay',0);
-    
-    % Disable Transport FF
-    setAnalogChannel(calctime(curtime,0),'Transport FF',0);
-
-    % Wait for relay to switch
-    curtime = calctime(curtime,50); 
-end
-
-
-%% Two Stage High Field Evaporation
-% This evaporates at high field from the initial evaporation
-
-if (seqdata.flags.CDT_evap_2_high_field==1)
-    dispLineStr('Optical evaporation at high field',curtime);    
-    curtime = dipole_high_field_evap(timein);       
-end
+% 
+% if do_levitate_evap
+%     ramp_time_1 = 100;
+%     ramp_time_2 = 10;
+%     
+%     % Ramp off Coil 15
+%     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+%         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+%         ramp_time_1,ramp_time_1,0,1);     
+%     
+%     % Make sure Coil 16 and kitten are low
+%     AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+%         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+%         ramp_time_2,ramp_time_2,0);  
+%     curtime = AnalogFuncTo(calctime(curtime,0),'Kitten',...
+%         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+%         ramp_time_2,ramp_time_2,0,1);   
+%     
+%     % Enable QP mode of current control
+%     setDigitalChannel(curtime,'15/16 Switch',1);
+%     
+%     % Disable Kitten
+%     setDigitalChannel(curtime,'Kitten Relay',0);
+%     
+%     % Disable Transport FF
+%     setAnalogChannel(calctime(curtime,0),'Transport FF',0);
+% 
+%     % Wait for relay to switch
+%     curtime = calctime(curtime,50); 
+% end
+% 
 
 %% Ramp Dipole Back Up
 
@@ -1283,7 +1263,7 @@ end
 if (ramp_XDT_after_evap && seqdata.flags.CDT_evap == 1)
     dispLineStr('Ramping XDTs back on.',curtime);
 
-    power_list = [.1];
+    power_list = 0.06;[.1];
     power_val = getScanParameter(power_list,seqdata.scancycle,...
         seqdata.randcyclelist,'XDT_rampup_power','W');
 
@@ -1850,6 +1830,25 @@ curtime = calctime(curtime,wait_time);
 
 
 
+end
+
+%%
+% TESTING HAS NOT WORKIGN YET
+if do_levitate_evap 
+    qp_ramp_time = 200;
+    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,0,1); 
+    curtime = calctime(curtime,100);
+end
+
+
+%% Waiting
+
+if do_wait_at_end
+    xdt_wait_time_list = [15000 20000];
+    xdt_wait_time = getScanParameter(xdt_wait_time_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'xdt_wait_time','ms');   
+    curtime = calctime(curtime,xdt_wait_time);
 end
 %% The End!
 

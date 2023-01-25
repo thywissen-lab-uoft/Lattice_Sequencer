@@ -185,9 +185,11 @@ seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
 seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 0; % uWave Frequency sweep Rb 2-->1
 seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
 
+% xdt_d1op_start
+% xdt_opevap
 
-seqdata.flags.do_D1OP_before_evap= 1;           % D1 pump to purify
-seqdata.flags.mix_at_beginning = 1;             % RF Mixing -9-->-9+-7
+seqdata.flags.xdt_d1op_start= 1;           % D1 pump to purify
+seqdata.flags.xdt_rfmix_start = 1;             % RF Mixing -9-->-9+-7
     
 seqdata.flags.kill_Rb_before_evap = 0;   % Remove Rb before optical evaporation
 seqdata.flags.kill_K7_before_evap = 0;   % Remove 7/2 K before optical evaporation (untested)
@@ -200,8 +202,8 @@ seqdata.flags.kill_K7_after_evap  = 0;   % Remove 7/2 K after optical evaporatio
 seqdata.flags.CDT_evap = 1;       
 
 % After optical evaporation
-seqdata.flags.do_D1OP_post_evap = 0;            % D1 pump
-seqdata.flags.mix_at_end = 0;                   % RF Mixing -9-->-9+-7
+seqdata.flags.xdt_d1op_end = 0;            % D1 pump
+seqdata.flags.xdt_rfmix_end = 0;                   % RF Mixing -9-->-9+-7
 
 % High Field Evaporation (not used yet; for near BEC/BCS)
 % seqdata.flags.CDT_evap_2_high_field = 0;    

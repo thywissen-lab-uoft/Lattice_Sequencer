@@ -2,7 +2,7 @@ function [curtime] = lattice_am_spectroscopy(timein)
 curtime = timein;
 global seqdata
 
-if seqdata.flags.mix_at_beginning
+if seqdata.flags.xdt_rfmix_start
         error('DONT DO AM SPEC WITH A SPIN MIXTURE!!')
 end
     

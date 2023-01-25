@@ -790,7 +790,7 @@ end
     
 %% D1 Optical Pumping in ODT before evap!
 
-if (seqdata.flags.do_D1OP_before_evap==1)
+if (seqdata.flags.xdt_d1op_start==1)
     dispLineStr('D1 Optical Pumping pre op evap',curtime);  
 
     op_time_list = [1];
@@ -881,10 +881,10 @@ end
 
 %% Spin mixture after Optical Pumping
 
-if seqdata.flags.mix_at_beginning
+if seqdata.flags.xdt_rfmix_start
     dispLineStr('RF K Sweeps for -7,-9 mixture.',curtime);  
 
-    if ~seqdata.flags.do_D1OP_before_evap
+    if ~seqdata.flags.xdt_d1op_start
         disp(' Ramping the magnetic field');
         % FB coil settings
         ramp=struct;
@@ -1300,7 +1300,7 @@ end
 % After optical evaporation, ensure mF spin polarization via D1 optical
 % pumping.
 
-if (seqdata.flags.do_D1OP_post_evap==1 && seqdata.flags.CDT_evap==1)
+if (seqdata.flags.xdt_d1op_end==1 && seqdata.flags.CDT_evap==1)
     dispLineStr('D1 Optical Pumping post optical evaporation',curtime);  
 
     % optical pumping pulse length
@@ -1337,9 +1337,9 @@ end
     
 %% Remix at end: Ensure a 50/50 mixture after spin-mixture evaporation
 
-if (seqdata.flags.mix_at_end==1 && seqdata.flags.CDT_evap==1)      
+if (seqdata.flags.xdt_rfmix_end==1 && seqdata.flags.CDT_evap==1)      
 
-    if ~seqdata.flags.do_D1OP_post_evap
+    if ~seqdata.flags.xdt_d1op_end
         disp(' Ramping the magnetic field');
         % FB coil settings
         ramp=struct;

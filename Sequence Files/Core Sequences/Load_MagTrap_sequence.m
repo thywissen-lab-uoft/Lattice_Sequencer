@@ -182,10 +182,9 @@ RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
 seqdata.flags.do_dipole_trap = 1; 
 seqdata.params.ODT_zeros = [-0.04,-0.04];
 
-
 % MT to XDT State Transfer
-seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1
-seqdata.flags.do_Rb_uwave_transfer_in_ODT2 = 0; % uWave Frequency sweep Rb 2-->1
+seqdata.flags.xdt_Rb_21uwave_sweep_field = 1;  % Field Sweep Rb 2-->1
+seqdata.flags.xdt_Rb_21uwave_sweep_freq = 0; % uWave Frequency sweep Rb 2-->1
 seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
 
 % State Manipulation Before Optical Evaporation 

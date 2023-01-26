@@ -106,7 +106,7 @@ dCz = getScanParameter(dCz_list,seqdata.scancycle,...
 %% Special Flags
 % CF : I have no idea what this is for
 if seqdata.flags.rb_vert_insitu_image
-    seqdata.flags.do_Rb_uwave_transfer_in_ODT = 0;
+    seqdata.flags.xdt_Rb_21uwave_sweep_field = 0;
     get_rid_of_Rb = 0;
     exp_end_pwr =0.18;
 end
@@ -399,7 +399,7 @@ curtime = calctime(curtime,dipole_holdtime_before_evap);
 %% Rb uWave 1 SWEEP FESHBACH FIELD
 
 %Pre-ramp the field to 20G for transfer
-if ( seqdata.flags.do_Rb_uwave_transfer_in_ODT)      
+if ( seqdata.flags.xdt_Rb_21uwave_sweep_field)      
     dispLineStr('uWave Rb 2-->1',curtime);
     
     init_ramp_fields = 1; % Ramp field to starting value?
@@ -570,7 +570,7 @@ end
 % This section of code transfer the Rb cloud from the |2,2> to the |1,1>
 % state using a uWave frequency sweep.
 
-if ( seqdata.flags.do_Rb_uwave_transfer_in_ODT2)
+if ( seqdata.flags.xdt_Rb_21uwave_sweep_freq)
     % Ramp the field to the desired value
     dispLineStr('Field Ramp for RF/uWave Transfer',curtime);        
 
@@ -710,8 +710,7 @@ if seqdata.flags.init_K_RF_sweep
     
     
     %Ramp FB if not done previously
-%      if ~seqdata.flags.do_Rb_uwave_transfer_in_ODT && ~seqdata.flags.do_Rb_uwave_transfer_in_ODT2
-         
+ 
      if fesh_value~=19.332
         clear('ramp');
         ramp=struct;

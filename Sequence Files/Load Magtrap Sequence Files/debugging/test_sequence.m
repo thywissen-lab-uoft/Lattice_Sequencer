@@ -5003,7 +5003,7 @@ end
 % seqdata.flags.High_Field_Imaging = 0;
 % seqdata.flags.In_Trap_imaging = 0;
 % seqdata.flags.QP_imaging = 1;
-% seqdata.flags.init_K_RF_sweep=0;
+% seqdata.flags.xdt_K_p2n_rf_sweep_freq=0;
 % 
 %         curtime = absorption_image2(calctime(curtime,0.0)); 
 

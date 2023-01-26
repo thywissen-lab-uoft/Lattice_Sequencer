@@ -702,7 +702,7 @@ end
 %% 40K RF Sweep Init
 %Sweep 40K to |9/2,-9/2> before optical evaporation   
 
-if seqdata.flags.init_K_RF_sweep
+if seqdata.flags.xdt_K_p2n_rf_sweep_freq
     dispLineStr('RF K Sweep 9-->-9',curtime);   
     
     % Get the Feshbach value (in G) at this time.

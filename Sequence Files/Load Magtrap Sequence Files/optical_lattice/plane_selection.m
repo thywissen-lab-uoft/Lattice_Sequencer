@@ -395,7 +395,7 @@ curtime = calctime(curtime,75);
 
         %Take frequency range in MHz, convert to shim range in Amps
         %  (-5.714 MHz/A on Jan 29th 2015)
-        if (seqdata.flags. K_RF_sweep==1 || seqdata.flags. init_K_RF_sweep==1)
+        if (seqdata.flags. K_RF_sweep==1 || seqdata.flags. xdt_K_p2n_rf_sweep_freq==1)
             %In -ve mF state, frequency increases with field
             dBz = spect_pars.delta_freq / (5.714);
         else 
@@ -563,7 +563,7 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
 
         final_transfer_range = 2; %MHz
         back_transfer_range = 1;
-        if (seqdata.flags. K_RF_sweep==1 || seqdata.flags. init_K_RF_sweep==1)
+        if (seqdata.flags. K_RF_sweep==1 || seqdata.flags. xdt_K_p2n_rf_sweep_freq==1)
 
             %In -ve mF state, frequency increases with field
             dBz = back_transfer_range*final_transfer_range / (5.714);

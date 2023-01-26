@@ -183,9 +183,11 @@ seqdata.flags.do_dipole_trap = 1;
 seqdata.params.ODT_zeros = [-0.04,-0.04];
 
 % MT to XDT State Transfer
-seqdata.flags.xdt_Rb_21uwave_sweep_field = 1;  % Field Sweep Rb 2-->1
-seqdata.flags.xdt_Rb_21uwave_sweep_freq = 0; % uWave Frequency sweep Rb 2-->1
-seqdata.flags.init_K_RF_sweep = 1;              % RF Freq Sweep K 9-->-9  
+seqdata.flags.xdt_Rb_21uwave_sweep_field = 1;   % Field Sweep Rb 2-->1
+seqdata.flags.xdt_Rb_21uwave_sweep_freq = 0;    % uWave Frequency sweep Rb 2-->1
+seqdata.flags.xdt_K_p2n_rf_sweep_freq = 1;      % RF Freq Sweep K +9-->-9  
+
+% xdt_K_p2n_rf_sweep_freq
 
 % State Manipulation Before Optical Evaporation 
 seqdata.flags.xdt_d1op_start= 1;         % D1 pump to purify

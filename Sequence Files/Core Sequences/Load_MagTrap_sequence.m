@@ -106,14 +106,14 @@ seqdata.flags.do_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of
 seqdata.flags.iXon = 0;             % use iXon camera to take an absorption image (only vertical)
 seqdata.flags.do_F1_pulse = 0;      % repump Rb F=1 before/during imaging
 
-seqdata.flags.High_Field_Imaging = 0;
+seqdata.flags.High_Field_Imaging = 1;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
 
-seqdata.flags.In_Trap_imaging = 0; % Does this flag work for QP/XDT? Or only QP?
+seqdata.flags.In_Trap_imaging =0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging
-tof_list = [25]; %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms
+tof_list = [21]; %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
@@ -181,6 +181,7 @@ RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
 % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
 seqdata.flags.do_dipole_trap = 1; 
 seqdata.params.ODT_zeros = [-0.04,-0.04];
+
 
 % MT to XDT State Transfer
 seqdata.flags.do_Rb_uwave_transfer_in_ODT = 1;  % Field Sweep Rb 2-->1

@@ -73,10 +73,10 @@ curtime = timein;
     time_in_HF_imaging = curtime;
     
     % Optical evaporation at high field
-    CDT_evap_2_high_field   = 1;
+    CDT_evap_2_high_field   = 0;
     
     % Ramp up the QP Coils for gradient cancel
-    ramp_QP_gradient_cancel = 1;
+    ramp_QP_gradient_cancel = 0;
     
     % Initial Ramp to high magnetic field
     ramp_field_1            = 1;       
@@ -735,22 +735,22 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
         HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
         seqdata.randcyclelist,'HF_QPReverse_imaging','V');  
     
-        % Ramp C16 and C15 to off values
-        pre_ramp_time = 100;
-        AnalogFuncTo(calctime(curtime,0),'Coil 16',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,-7);    
-        curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0.062,1); 
-              
-        curtime = calctime(curtime,50);
-        % Turn off 15/16 switch
-        setDigitalChannel(curtime,'15/16 Switch',0); 
-        curtime = calctime(curtime,10);
-
-        % Turn on reverse QP switch
-        setDigitalChannel(curtime,'Reverse QP Switch',1);
-        curtime = calctime(curtime,10);
-            
+%         % Ramp C16 and C15 to off values
+%         pre_ramp_time = 100;
+%         AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+%             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,-7);    
+%         curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+%             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0.062,1); 
+%               
+%         curtime = calctime(curtime,50);
+%         % Turn off 15/16 switch
+%         setDigitalChannel(curtime,'15/16 Switch',0); 
+%         curtime = calctime(curtime,10);
+% 
+%         % Turn on reverse QP switch
+%         setDigitalChannel(curtime,'Reverse QP Switch',1);
+%         curtime = calctime(curtime,10);
+%             
         % Ramp up transport supply voltage
         QP_FFValue = 23*(HF_QP/.125/30); % voltage FF on delta supply
         curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...

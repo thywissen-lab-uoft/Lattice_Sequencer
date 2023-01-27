@@ -33,7 +33,7 @@ exp_end_pwr = getScanParameter(Evap_End_Power_List,...
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdt_ramp_power_end = 1;   % Ramp dipole back up after evaporation before any further physics 
+seqdata.flags.xdt_ramp_power_end = 0;   % Ramp dipole back up after evaporation before any further physics 
 do_dipole_trap_kick = 0;                % Kick the dipole trap, inducing coherent oscillations for temperature measurement
 seqdata.flags.xdt_do_hold_end = 0;
 
@@ -43,7 +43,7 @@ seqdata.flags.xdt_do_hold_end = 0;
 
 ramp_XDT_after_evap = 0;                  
 k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
-ramp_QP_FB_and_back = 1;        % Ramp up and down FB and QP to test field gradients
+ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
 uWave_K_Spectroscopy = 0;
 seqdata.flags.ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
 

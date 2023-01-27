@@ -33,6 +33,18 @@ seqdata.params.plug_shims = [...
     (seqdata.params. shim_zero(2)+0.125), ...
     (seqdata.params. shim_zero(3)+ 0.35)];
 
+z_shim_offset_list = [0];
+z_shim_offset = getScanParameter(z_shim_offset_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'z_shim_offset');
+
+x_shim_offset_list = [0];
+x_shim_offset = getScanParameter(x_shim_offset_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'x_shim_offset');
+
+
+seqdata.params.plug_shims(3)=seqdata.params.plug_shims(3)+z_shim_offset;
+seqdata.params.plug_shims(1)=seqdata.params.plug_shims(1)+x_shim_offset;
+
 % Slope relation between shim and QP currents to keep field center fixed.
 % Important for ramping QP at end of RF1B and during QP ramp down in ODT
 Cx = -0.0507;
@@ -106,14 +118,14 @@ seqdata.flags.do_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of
 seqdata.flags.iXon = 0;             % use iXon camera to take an absorption image (only vertical)
 seqdata.flags.do_F1_pulse = 0;      % repump Rb F=1 before/during imaging
 
-seqdata.flags.High_Field_Imaging = 1;
+seqdata.flags.High_Field_Imaging = 0;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
 
 seqdata.flags.In_Trap_imaging =0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging
-tof_list = [21]; %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms
+tof_list = [5]; %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
@@ -179,25 +191,25 @@ RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
 
 % Dipole trap
 % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
-seqdata.flags.do_dipole_trap = 1; 
+seqdata.flags.do_dipole_trap = 0; 
 seqdata.params.ODT_zeros = [-0.04,-0.04];
 
 % MT to XDT State Transfer
-seqdata.flags.xdt_Rb_21uwave_sweep_field = 1;   % Field Sweep Rb 2-->1
+seqdata.flags.xdt_Rb_21uwave_sweep_field = 0;   % Field Sweep Rb 2-->1
 seqdata.flags.xdt_Rb_21uwave_sweep_freq = 0;    % uWave Frequency sweep Rb 2-->1
-seqdata.flags.xdt_K_p2n_rf_sweep_freq = 1;      % RF Freq Sweep K +9-->-9  
+seqdata.flags.xdt_K_p2n_rf_sweep_freq = 0;      % RF Freq Sweep K +9-->-9  
 
 % xdt_K_p2n_rf_sweep_freq
 
 % State Manipulation Before Optical Evaporation 
-seqdata.flags.xdt_d1op_start= 1;         % D1 pump to purify
-seqdata.flags.xdt_rfmix_start = 1;       % RF Mixing -9-->-9+-7    
+seqdata.flags.xdt_d1op_start= 0;         % D1 pump to purify
+seqdata.flags.xdt_rfmix_start = 0;       % RF Mixing -9-->-9+-7    
 seqdata.flags.kill_Rb_before_evap = 0;   % optically remove Rb
 seqdata.flags.kill_K7_before_evap = 0;   % optical remove 7/2 K after (untested)
 
 % Optical Evaporation
 % 1: exp 2: fast linear 3: piecewise linear
-seqdata.flags.CDT_evap = 1;       
+seqdata.flags.CDT_evap = 0;       
 
 % State Manipulatoin After Optical Evaporation
 seqdata.flags.xdt_d1op_end = 0;          % D1 optical pumping
@@ -455,6 +467,7 @@ setAnalogChannel(calctime(curtime,0),'F Pump',9.99);
 
 %Plug beam
 setDigitalChannel(calctime(curtime,0),'Plug Shutter',0); %1: off, 0: on
+setAnalogChannel(calctime(curtime,0),'Plug',2500); % Current in mA
 
 %High-field imaging
 setDigitalChannel(calctime(curtime,0),'High Field Shutter',0);
@@ -868,6 +881,28 @@ if ( seqdata.flags.RF_evap_stages(3) == 2 )
         curtime = do_uwave_evap_stage(curtime, fake_sweep, freqs_1b*3, sweep_times_1b, 0);
 end
 
+%% Ramp Down Plug Power a little bit
+seqdata.flags.mt_plug_ramp_end = 0;
+if seqdata.flags.mt_plug_ramp_end
+    plug_ramp_time = 200;
+    
+    plug_ramp_power_list = [1500];
+    plug_ramp_power=getScanParameter(plug_ramp_power_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'plug_ramp_power','mA');
+
+    
+    curtime = AnalogFuncTo(calctime(curtime,0),'Plug',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        plug_ramp_time,plug_ramp_time,plug_ramp_power,3); 
+    
+    % Ramp back to full a while later
+    AnalogFuncTo(calctime(curtime,2000),'Plug',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        plug_ramp_time,plug_ramp_time,2500,3); 
+    
+    curtime = calctime(curtime,500);
+end
+
 %% Post QP Evap Tasks
 %RHYS - clean.
 %turn plug off
@@ -886,6 +921,8 @@ if ( seqdata.flags.do_plug == 1)
         ScopeTriggerPulse(calctime(curtime,0),'plug test');
     end        
 end
+
+
 %% Dipole Trap
 
 if ( seqdata.flags.do_dipole_trap == 1 )

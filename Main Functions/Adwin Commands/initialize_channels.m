@@ -802,12 +802,13 @@ end
     seqdata.analogchannels(59).defaultvoltagefunc = 2; 
     seqdata.analogchannels(59).voltagefunc{2} = @(a)(a);
 
-    %channel 60 (Compensation Beam Power Control) %Disconnected
-    seqdata.analogchannels(60).name = 'UV Lamp 2'; % unused
-    seqdata.analogchannels(60).minvoltage = -10;
+    %channel 60 Plug Analog Control
+    seqdata.analogchannels(60).name = 'Plug'; % testing
+    seqdata.analogchannels(60).minvoltage = -.1;
     seqdata.analogchannels(60).maxvoltage = 10;
-    seqdata.analogchannels(60).defaultvoltagefunc = 2; 
+    seqdata.analogchannels(60).defaultvoltagefunc = 3; 
     seqdata.analogchannels(60).voltagefunc{2} = @(a)(a);% 
+    seqdata.analogchannels(60).voltagefunc{3} = @(mA) (mA-3.0889)/(404.1269); % Calbirated 2023/01/26
 
     %channel 61 ((0V noise cancelling channel for ODTs)
     seqdata.analogchannels(61).name = 'ZeroVolts'; %0: MOT; 1: Gray Molasses

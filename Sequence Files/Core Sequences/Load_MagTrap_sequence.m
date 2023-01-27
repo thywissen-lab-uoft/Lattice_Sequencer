@@ -218,7 +218,7 @@ seqdata.flags.kill_Rb_after_evap  = 0;   % optically remove Rb
 seqdata.flags.kill_K7_after_evap  = 0;   % optical remove 7/2 K after (untested)
 
 % XDT High Field Experiments
-seqdata.flags.dipole_high_field_a = 0;
+seqdata.flags.dipole_high_field_a = 1;
 
 % Take a second PA pulse after absorption imaging to calibrate PA power
 seqdata.flags.do_calibrate_PA = 0;

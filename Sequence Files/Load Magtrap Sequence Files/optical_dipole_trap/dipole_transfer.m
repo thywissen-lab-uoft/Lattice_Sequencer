@@ -33,7 +33,7 @@ exp_end_pwr = getScanParameter(Evap_End_Power_List,...
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdt_ramp_power_end = 0;   % Ramp dipole back up after evaporation before any further physics 
+seqdata.flags.xdt_ramp_power_end = 1;   % Ramp dipole back up after evaporation before any further physics 
 do_dipole_trap_kick = 0;                % Kick the dipole trap, inducing coherent oscillations for temperature measurement
 seqdata.flags.xdt_do_hold_end = 0;
 
@@ -41,7 +41,6 @@ seqdata.flags.xdt_do_hold_end = 0;
 % Spectroscopy after Evaporation
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-ramp_XDT_after_evap = 0;                  
 k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
 ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
 uWave_K_Spectroscopy = 0;
@@ -1249,52 +1248,6 @@ end
 
 
 
-
-%% Ramp XDT Up for Lattice Alignment
-%RHYS - This usually gets used. Can clean. Also contains options for
-%assessing XDT trap frequency, which should be separated back out into one
-%of the other two modules that already do this.
-
-%Ramp dipole on before pulsing the lattice beam. This should allow for
-%better alignment of lattice to the potassium cloud, avoiding issue of
-%gravitational sag for Rb. The XDT is then snapped off after the
-%lattice pulse. 
-
-if (ramp_XDT_after_evap && seqdata.flags.CDT_evap == 1)
-    dispLineStr('Ramping XDTs back on.',curtime);
-
-    power_list = 0.06;[.1];
-    power_val = getScanParameter(power_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'XDT_rampup_power','W');
-
-    dip_1 = power_val; %1.5
-    dip_2 = power_val;XDT2_power_func(dip_1);
-       
-    disp(['     XDT 1 (W) ' num2str(dip_1)]);
-    disp(['     XDT 2 (W) ' num2str(dip_2)]);
-    
-    dip_sweep = 0.00;
-    dip_end_ramptime_list =[1500];
-    dip_ramptime = getScanParameter(dip_end_ramptime_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'dip_end_ramptime');
-    dip_rampstart_list = [0];
-    dip_rampstart = getScanParameter(dip_rampstart_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'dip_on_time');
-
-    dip_waittime_list = [0];
-    dip_waittime = getScanParameter(dip_waittime_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'dip_hold_time');
-
-    AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        dip_ramptime,dip_ramptime,dip_1-dip_sweep/2);
-curtime = AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',...
-    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-    dip_ramptime,dip_ramptime,dip_2-dip_sweep/2);
-
-curtime = calctime(curtime,dip_waittime);
-
-end
 
 %% D1 Optical Pumping in ODT
 % After optical evaporation, ensure mF spin polarization via D1 optical

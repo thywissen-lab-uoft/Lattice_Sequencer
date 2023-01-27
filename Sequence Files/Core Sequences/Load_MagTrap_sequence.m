@@ -125,7 +125,7 @@ seqdata.flags.High_Field_Imaging = 0;
 seqdata.flags.In_Trap_imaging =0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging
-tof_list = [5]; %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms
+tof_list = [25]; %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms
 seqdata.params.tof = getScanParameter(tof_list,...
     seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
 
@@ -191,25 +191,25 @@ RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
 
 % Dipole trap
 % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
-seqdata.flags.do_dipole_trap = 0; 
+seqdata.flags.do_dipole_trap = 1; 
 seqdata.params.ODT_zeros = [-0.04,-0.04];
 
 % MT to XDT State Transfer
-seqdata.flags.xdt_Rb_21uwave_sweep_field = 0;   % Field Sweep Rb 2-->1
+seqdata.flags.xdt_Rb_21uwave_sweep_field = 1;   % Field Sweep Rb 2-->1
 seqdata.flags.xdt_Rb_21uwave_sweep_freq = 0;    % uWave Frequency sweep Rb 2-->1
-seqdata.flags.xdt_K_p2n_rf_sweep_freq = 0;      % RF Freq Sweep K +9-->-9  
+seqdata.flags.xdt_K_p2n_rf_sweep_freq = 1;      % RF Freq Sweep K +9-->-9  
 
 % xdt_K_p2n_rf_sweep_freq
 
 % State Manipulation Before Optical Evaporation 
-seqdata.flags.xdt_d1op_start= 0;         % D1 pump to purify
-seqdata.flags.xdt_rfmix_start = 0;       % RF Mixing -9-->-9+-7    
+seqdata.flags.xdt_d1op_start= 1;         % D1 pump to purify
+seqdata.flags.xdt_rfmix_start = 1;       % RF Mixing -9-->-9+-7    
 seqdata.flags.kill_Rb_before_evap = 0;   % optically remove Rb
 seqdata.flags.kill_K7_before_evap = 0;   % optical remove 7/2 K after (untested)
 
 % Optical Evaporation
 % 1: exp 2: fast linear 3: piecewise linear
-seqdata.flags.CDT_evap = 0;       
+seqdata.flags.CDT_evap = 1;       
 
 % State Manipulatoin After Optical Evaporation
 seqdata.flags.xdt_d1op_end = 0;          % D1 optical pumping

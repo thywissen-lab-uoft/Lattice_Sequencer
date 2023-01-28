@@ -4,23 +4,23 @@ curtime = timein;
 global seqdata;
 
 %% Flags
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Dipole Loading Flags
-%--------------------    
-vSet = V_QP;
+%%%%%%%%%%%%%%%%%%%%%%%%%%    
 do_qp_ramp_down1 = 1;
 do_qp_ramp_down2 = 1;
 ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 %ramp_func = @(t,tt,y2,y1)(minimum_jerk(t,tt,y2-y1)+y1); 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Evaporation in the XDT
-%-------------------- 
-ramp_Feshbach_B_before_CDT_evap = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%% 
+ramp_Feshbach_B_before_CDT_evap     = 0; % Ramp up feshbach before evaporation
+do_levitate_evap                    = 0; % Apply levitation gradient
+
 
 Evap_End_Power_List = [0.06];
-
-% Levitation Field During evaporation TESTING
-do_levitate_evap = 0;
-
 % Ending optical evaporation
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...
     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');   
@@ -32,15 +32,14 @@ seqdata.flags.xdt_ramp_power_end = 1;   % Ramp dipole back up after evaporation 
 do_dipole_trap_kick = 0;                % Kick the dipole trap, inducing coherent oscillations for temperature measurement
 seqdata.flags.xdt_do_hold_end = 0;
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % Spectroscopy after Evaporation
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-
 k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
 ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
 uWave_K_Spectroscopy = 0;
 seqdata.flags.ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
-
 
     
 %% XDT Powers
@@ -122,10 +121,8 @@ AnalogFunc(calctime(curtime,dipole_ramp_start_time),...
     
 ScopeTriggerPulse(curtime,'Rampup ODT');
 %% Ramp the QP Down    
-
 % Make sure shims are allowed to be bipolar (not necessary?)
 setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);
-
 
 % QP1 Value
 QP_ramp_end1_list = [0.9];
@@ -149,7 +146,7 @@ mean_fesh_current = 5.25392;%before 2017-1-6   22.6/4;
 fesh_current = mean_fesh_current;
 
 % Transport supply voltage check
-vSet_ramp = 1.07*vSet; %24   
+vSet_ramp = 1.07*V_QP; %24   
 % Check thermal power dissipation
 if vSet_ramp^2/4/(2*0.310) > 700
     error('Too much power dropped across FETS');
@@ -197,7 +194,8 @@ if do_qp_ramp_down1
 
     % Some extra advances in time (WHAT IS THIS FOR?)
     if (dipole_ramp_start_time+dipole_ramp_up_time)>(qp_ramp_down_time1)
-        curtime =   calctime(curtime,(dipole_ramp_start_time+dipole_ramp_up_time)-(qp_ramp_down_time1));
+        curtime =   calctime(curtime,...
+            (dipole_ramp_start_time+dipole_ramp_up_time)-(qp_ramp_down_time1));
     end
 
     I_QP  = QP_ramp_end1; 

@@ -328,8 +328,6 @@ if do_qp_ramp_down2
 
     end
 
-else
-    dipole2_pin_pwr = 4.5;%2.5
 end
 
 V_QP = vSet_ramp;
@@ -354,7 +352,6 @@ setDigitalChannel(calctime(curtime,0),'Coil 16 TTL',1);
 
 %Turn Coil 15 FET off
 setAnalogChannel(calctime(curtime,0),'Coil 15',0,1);
-
 
 %% Rb uWave 1 SWEEP FESHBACH FIELD
 

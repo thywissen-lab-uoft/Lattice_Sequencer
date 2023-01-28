@@ -6,7 +6,6 @@ global seqdata;
 %% Flags
 %Dipole Loading Flags
 %--------------------    
-QP_value = I_QP;
 vSet = V_QP;
 qp_ramp_down_start_time = 0;
 %stages of QP-dipole transfer
@@ -136,8 +135,6 @@ ScopeTriggerPulse(curtime,'Rampup ODT');
 % Make sure shims are allowed to be bipolar (not necessary?)
 setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);
 
-% Current QP value (units??)
-QP_curval = QP_value;
 
 % QP1 Value
 QP_ramp_end1_list = [0.9];
@@ -180,7 +177,7 @@ if do_qp_ramp_down1
     dispLineStr('QP RAMP DOWN 1',curtime);
 
     % Calculate the change in QP current
-    dI_QP=QP_ramp_end1-QP_curval; 
+    dI_QP=QP_ramp_end1-I_QP; 
 
     % Calculate the change in shim currents
     Cx = seqdata.params.plug_shims_slopes(1);
@@ -220,10 +217,7 @@ if do_qp_ramp_down1
         curtime =   calctime(curtime,(dipole_ramp_start_time+dipole_ramp_up_time)-(qp_ramp_down_start_time+qp_ramp_down_time1));
     end
 
-    I_QP  = QP_ramp_end1;        
-
-else
-    I_QP = QP_curval;
+    I_QP  = QP_ramp_end1; 
 end
     
 %% QP Ramp Down 2

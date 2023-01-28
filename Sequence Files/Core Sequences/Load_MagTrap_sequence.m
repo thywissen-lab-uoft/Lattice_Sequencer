@@ -921,7 +921,6 @@ end
 
 
 %% Dipole Trap
-
 if ( seqdata.flags.do_dipole_trap == 1 )
     dispLineStr('Caling dipole_transfer.m',curtime);   
     [curtime, I_QP, V_QP, P_dip, dip_holdtime, I_shim] = ...

@@ -104,6 +104,7 @@ dCz = getScanParameter(dCz_list,seqdata.scancycle,...
 
 
 %% Dipole trap initial ramp on
+dispLineStr('ODT 1 ramp up started at',calctime(curtime,dipole_ramp_start_time));
 
 % XDT Ramp time delay (or pre turn on)
 dipole_ramp_start_time_list =[0]; [-500];
@@ -115,9 +116,8 @@ dipole_ramp_up_time_list = [75];
 dipole_ramp_up_time = getScanParameter(dipole_ramp_up_time_list,...
     seqdata.scancycle,seqdata.randcyclelist,'dipole_ramp_up_time');
 
-% Enable XDT AOMs
+% Turn on XDT AOMs
 setDigitalChannel(calctime(curtime,dipole_ramp_start_time-10),'XDT TTL',0);  
-dispLineStr('ODT 1 ramp up started at',calctime(curtime,dipole_ramp_start_time));
 
 % Ramp dipole 1 trap on
 AnalogFunc(calctime(curtime,dipole_ramp_start_time),...
@@ -129,9 +129,9 @@ AnalogFunc(calctime(curtime,dipole_ramp_start_time),...
 AnalogFunc(calctime(curtime,dipole_ramp_start_time),...
     'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
     dipole_ramp_up_time,dipole_ramp_up_time,...
-    seqdata.params.ODT_zeros(2),DT2_power(1)); %used to be starting from -1  
+    seqdata.params.ODT_zeros(2),DT2_power(1));
     
-    ScopeTriggerPulse(curtime,'Rampup ODT');
+ScopeTriggerPulse(curtime,'Rampup ODT');
     %% Ramp the QP Down    
     % Make sure shims are allowed to be bipolar (not necessary?)
     setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);

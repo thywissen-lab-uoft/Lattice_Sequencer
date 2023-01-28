@@ -114,22 +114,10 @@ dipole_ramp_start_time = getScanParameter(dipole_ramp_start_time_list,...
 dipole_ramp_up_time_list = [75]; 
 dipole_ramp_up_time = getScanParameter(dipole_ramp_up_time_list,...
     seqdata.scancycle,seqdata.randcyclelist,'dipole_ramp_up_time');
-%     dipole_ramp_up_time = 200;      % Duration of initial ramp on
-
-% CF : What are thes for? Can we delete?
-%RHYS - Actually unused. 
-CDT_power = 3.8;%3.5; %4.5   7.0 Jan 22nd
-dipole1_power = CDT_power*1; %1
-dipole2_power = CDT_power*0; %Voltage = 0.328 + 0.2375*dipole_power...about 4.2Watts/V when dipole 1 is off
-
 
 % Enable XDT AOMs
 setDigitalChannel(calctime(curtime,dipole_ramp_start_time-10),'XDT TTL',0);  
 dispLineStr('ODT 1 ramp up started at',calctime(curtime,dipole_ramp_start_time));
-
-% Trigger function generator
-%     DigitalPulse(calctime(curtime,dipole_ramp_start_time),...
-%         'ODT Rigol Trigger',1,1)
 
 % Ramp dipole 1 trap on
 AnalogFunc(calctime(curtime,dipole_ramp_start_time),...
@@ -348,22 +336,7 @@ AnalogFunc(calctime(curtime,dipole_ramp_start_time),...
     plug_turnoff_time = getScanParameter(plug_turnoff_time_list,seqdata.scancycle,seqdata.randcyclelist,'plug_turnoff_time');
     setDigitalChannel(calctime(curtime,plug_turnoff_time),'Plug Shutter',0);%0:OFF; 1:ON; -200
     dispLineStr('Turning off plug ',calctime(curtime,plug_turnoff_time));
- 
-    % Update the dipole trap powers
-    P_dip = dipole1_power;
-    P_dip2 = DT2_power(2);
-    %P_dip2 = dipole2_power; %Dipole 2 Power is definied to be zero, and
-    %dipole 2 is instead ramped up to dipole2_pin_power
-     
-    % CF: Is this useful? Delete?
-    do_dipole_handover = 0;
-    if do_dipole_handover % for alignment checks -- load from DT1 in DT2
-        handover_time = 50;
-        DT2_handover_power = 4.5;
-        %ramp dipole 1 trap down and ramp dipole 2 trap up
-        AnalogFuncTo(calctime(curtime,0),40,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),handover_time,handover_time,0);
-        curtime = AnalogFuncTo(calctime(curtime,0),38,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),handover_time,handover_time,DT2_handover_power);
-    end
+
 
     %% Turn Off Voltage on Transport and Shim Supply 
 

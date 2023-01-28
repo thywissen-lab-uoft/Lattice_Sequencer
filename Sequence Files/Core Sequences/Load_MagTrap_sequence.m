@@ -927,7 +927,7 @@ if ( seqdata.flags.do_dipole_trap == 1 )
     [curtime, I_QP, V_QP, P_dip, dip_holdtime, I_shim] = ...
         dipole_transfer(curtime, I_QP, V_QP, I_shim);
 end
-
+P_dip
 %% Pulse lattice after releasing from dipole trap
 
 if ( seqdata.flags.pulse_lattice_for_alignment ~= 0 )

@@ -104,7 +104,7 @@ dCz = getScanParameter(dCz_list,seqdata.scancycle,...
 
 
 %% Dipole trap initial ramp on
-dispLineStr('ODT 1 ramp up started at',calctime(curtime,dipole_ramp_start_time));
+dispLineStr('ODT 1 ramp up started at',calctime(curtime,0));
 
 % XDT Ramp time delay (or pre turn on)
 dipole_ramp_start_time_list =[0]; [-500];
@@ -132,51 +132,41 @@ AnalogFunc(calctime(curtime,dipole_ramp_start_time),...
     seqdata.params.ODT_zeros(2),DT2_power(1));
     
 ScopeTriggerPulse(curtime,'Rampup ODT');
-    %% Ramp the QP Down    
-    % Make sure shims are allowed to be bipolar (not necessary?)
-    setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);
+%% Ramp the QP Down    
+% Make sure shims are allowed to be bipolar (not necessary?)
+setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);
 
-    QP_curval = QP_value;
-    
-    %value to ramp down to first
-    QP_ramp_end1_list = [0.9];
-    QP_ramp_end1 = getScanParameter(QP_ramp_end1_list*1.78,seqdata.scancycle,seqdata.randcyclelist,'QP_ramp_end1');
-    
-    qp_ramp_down_time1_list = [300];[250];[250];
-    qp_ramp_down_time1 = getScanParameter(qp_ramp_down_time1_list,seqdata.scancycle,seqdata.randcyclelist,'qp_ramp_down_time1');        
-       
-    %value to ramp down to second
-    QP_ramp_end2 = 0*1.78; %0*1.78 // doubled Dec-2013 (tighter hybrid trap)
-    qp_ramp_down_time2_list = [100];100;
-    qp_ramp_down_time2 = getScanParameter(qp_ramp_down_time2_list,seqdata.scancycle,seqdata.randcyclelist,'qp_ramp_down_time2');        
+QP_curval = QP_value;
 
-    %RHYS - I think this is now 0*500 because curtime is updated between
-    %the two ramps. 
-    qp_rampdown_starttime2 = 0; %500
-    %RHYS - This used to be the larger value of 5.25.
-    mean_fesh_current = 5.25392;%before 2017-1-6   22.6/4; %Calculated resonant fesh current. Feb 6th. %Rb: 21, K: 21
-    fesh_current = mean_fesh_current;
-        
-    vSet_ramp = 1.07*vSet; %24   
-    
-    extra_hold_time_list =0;[0,50,100,200,500,750,1000]; %PX added for measuring lifetime hoding in high power XDT
-    extra_hold_time = getScanParameter(extra_hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'extra_hold_time');
-    
-    % Check thermal power dissipation
-    if vSet_ramp^2/4/(2*0.310) > 700
-        error('Too much power dropped across FETS');
-    end
-   
-    %ramp up voltage supply depending on transfer
-    %AnalogFunc(calctime(curtime,20),18,@(t,tt,dt)(minimum_jerk(t,tt,dt)+vSet),dipole_transfer_time,dipole_transfer_time,vSet_ramp-vSet);
-   
-    %try to get servo to integrate down
-    %AnalogFunc(calctime(curtime,-150),1,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),150,150,QP_curval*0.85,QP_curval);
-     
-    %setAnalogChannel(calctime(curtime,-150),1,QP_curval*0.82);
-    %QP_curval = QP_curval*0.82;
-    
-%%%% QP RAMP DOWN PART 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+%value to ramp down to first
+QP_ramp_end1_list = [0.9];
+QP_ramp_end1 = getScanParameter(QP_ramp_end1_list*1.78,seqdata.scancycle,seqdata.randcyclelist,'QP_ramp_end1');
+
+qp_ramp_down_time1_list = [300];[250];[250];
+qp_ramp_down_time1 = getScanParameter(qp_ramp_down_time1_list,seqdata.scancycle,seqdata.randcyclelist,'qp_ramp_down_time1');        
+
+%value to ramp down to second
+QP_ramp_end2 = 0*1.78; %0*1.78 // doubled Dec-2013 (tighter hybrid trap)
+qp_ramp_down_time2_list = [100];100;
+qp_ramp_down_time2 = getScanParameter(qp_ramp_down_time2_list,seqdata.scancycle,seqdata.randcyclelist,'qp_ramp_down_time2');        
+
+%RHYS - I think this is now 0*500 because curtime is updated between
+%the two ramps. 
+qp_rampdown_starttime2 = 0; %500
+mean_fesh_current = 5.25392;%before 2017-1-6   22.6/4; %Calculated resonant fesh current. Feb 6th. %Rb: 21, K: 21
+fesh_current = mean_fesh_current;
+
+vSet_ramp = 1.07*vSet; %24   
+
+extra_hold_time_list =0;[0,50,100,200,500,750,1000]; %PX added for measuring lifetime hoding in high power XDT
+extra_hold_time = getScanParameter(extra_hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'extra_hold_time');
+
+% Check thermal power dissipation
+if vSet_ramp^2/4/(2*0.310) > 700
+    error('Too much power dropped across FETS');
+end
+
+    %% QP Ramp Down 1
     if do_qp_ramp_down1  
         dispLineStr('QP RAMP DOWN 1',curtime);
         
@@ -235,7 +225,7 @@ ScopeTriggerPulse(curtime,'Rampup ODT');
         I_QP = QP_curval;
     end
     
-%%%% QP RAMP DOWN PART 2 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+%% QP Ramp Down 2
    
     if do_qp_ramp_down2
         dispLineStr('QP RAMP DOWN 2',curtime);

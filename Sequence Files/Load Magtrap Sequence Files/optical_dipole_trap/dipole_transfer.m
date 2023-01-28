@@ -240,7 +240,8 @@ if do_qp_ramp_down2
     dispLineStr('QP RAMP DOWN 2',curtime);
 
     XDT_pin_time_list = [0];
-    XDT_pin_time = getScanParameter(XDT_pin_time_list,seqdata.scancycle,seqdata.randcyclelist,'XDT_pin_time');                
+    XDT_pin_time = getScanParameter(XDT_pin_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'XDT_pin_time');                
 
     dipole2_ramp_start_time = 0; 
 
@@ -257,19 +258,26 @@ if do_qp_ramp_down2
 
     % Ramp Feshbach field
     FB_time_list = [0];
-    FB_time = getScanParameter(FB_time_list,seqdata.scancycle,seqdata.randcyclelist,'FB_time');
+    FB_time = getScanParameter(FB_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'FB_time');
     setDigitalChannel(calctime(curtime,-100-FB_time),'fast FB Switch',1); %switch Feshbach field on
     setAnalogChannel(calctime(curtime,-95-FB_time),'FB current',0.0); %switch Feshbach field closer to on
     setDigitalChannel(calctime(curtime,-100-FB_time),'FB Integrator OFF',0); %switch Feshbach integrator on            
     %linear ramp from zero
-    AnalogFunc(calctime(curtime,0-FB_time),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),qp_ramp_down_time2+FB_time,qp_ramp_down_time2+FB_time, fesh_current,0);
+    AnalogFunc(calctime(curtime,0-FB_time),'FB current',...
+        @(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),...
+        qp_ramp_down_time2+FB_time,qp_ramp_down_time2+FB_time, fesh_current,0);
     fesh_current_val = fesh_current;    
 
     % Ramp down Feedforward voltage
-    AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),18,@(t,tt,y2,y1)(ramp_func(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,QP_ramp_end2*23/30);      
+    AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),...
+        18,@(t,tt,y2,y1)(ramp_func(t,tt,y1,y2)),...
+        qp_ramp_down_time2,qp_ramp_down_time2,QP_ramp_end2*23/30);      
 
     % ramp down QP currents
-    AnalogFuncTo(calctime(curtime,0*qp_rampdown_starttime2),1,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,QP_ramp_end2);
+    AnalogFuncTo(calctime(curtime,0*qp_rampdown_starttime2),...
+        1,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        qp_ramp_down_time2,qp_ramp_down_time2,QP_ramp_end2);
 
     % Calculate the change in QP currents
     dI_QP=QP_ramp_end2-QP_ramp_end1; 
@@ -332,7 +340,8 @@ V_QP = vSet_ramp;
 
 % Turn off the plug beam now that the QP coils are off
 plug_turnoff_time_list =[0]; -200;
-plug_turnoff_time = getScanParameter(plug_turnoff_time_list,seqdata.scancycle,seqdata.randcyclelist,'plug_turnoff_time');
+plug_turnoff_time = getScanParameter(plug_turnoff_time_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'plug_turnoff_time');
 setDigitalChannel(calctime(curtime,plug_turnoff_time),'Plug Shutter',0);%0:OFF; 1:ON; -200
 dispLineStr('Turning off plug ',calctime(curtime,plug_turnoff_time));
 

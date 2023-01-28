@@ -25,8 +25,7 @@ do_levitate_evap = 0;
 
 % Ending optical evaporation
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...
-    seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');    
-
+    seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');   
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
@@ -147,7 +146,7 @@ qp_ramp_down_time1 = getScanParameter(qp_ramp_down_time1_list,...
     seqdata.scancycle,seqdata.randcyclelist,'qp_ramp_down_time1','ms');        
 
 % QP2 Value
-QP_ramp_end2 = 0*1.78; %0*1.78 // doubled Dec-2013 (tighter hybrid trap)
+QP_ramp_end2 = 0*1.78; 
 qp_ramp_down_time2_list = [100];100;
 qp_ramp_down_time2 = getScanParameter(qp_ramp_down_time2_list,...
     seqdata.scancycle,seqdata.randcyclelist,'qp_ramp_down_time2','ms');        
@@ -302,18 +301,12 @@ if do_qp_ramp_down2
     I_QP  = QP_ramp_end2;
 
     if QP_ramp_end2 <= 0 % second rampdown segment concludes QP rampdown
-
         setAnalogChannel(calctime(curtime,0),1,0);%1
-        %setAnalogChannel(calctime(curtime,qp_rampdown_starttime2+qp_ramp_down_time2),18,0);
-
-        %make sure all coils are zero!!!
         %set all transport coils to zero (except MOT)
         for i = [7 8 9:17 22:24 20] 
             setAnalogChannel(calctime(curtime,0),i,0,1);
         end
-
     end
-
 end
 
 V_QP = vSet_ramp;

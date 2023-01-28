@@ -355,11 +355,6 @@ setDigitalChannel(calctime(curtime,0),'Coil 16 TTL',1);
 %Turn Coil 15 FET off
 setAnalogChannel(calctime(curtime,0),'Coil 15',0,1);
 
-%Hold for some time (field settling?)
-dipole_holdtime_before_evap = 0;    % not a flag but a value
-
-curtime = calctime(curtime,dipole_holdtime_before_evap);
-
 
 %% Rb uWave 1 SWEEP FESHBACH FIELD
 

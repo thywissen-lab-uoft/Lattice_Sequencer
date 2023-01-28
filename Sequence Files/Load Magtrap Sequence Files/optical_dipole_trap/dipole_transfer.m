@@ -183,10 +183,6 @@ if do_qp_ramp_down1
     dI_QP=QP_ramp_end1-QP_curval; 
 
     % Calculate the change in shim currents
-%         Cx = -0.0499;
-%         Cy = 0.0045;
-%         Cz = 0.0105;
-
     Cx = seqdata.params.plug_shims_slopes(1);
     Cy = seqdata.params.plug_shims_slopes(2);
     Cz = seqdata.params.plug_shims_slopes(3)+dCz;
@@ -279,10 +275,6 @@ if do_qp_ramp_down2
     dI_QP=QP_ramp_end2-QP_ramp_end1; 
 
     % Calculate the change in shim currents
-%         Cx = -0.0499;
-%         Cy = 0.0045;
-%         Cz = 0.0105;
-
     Cx = seqdata.params.plug_shims_slopes(1);
     Cy = seqdata.params.plug_shims_slopes(2);
     Cz = seqdata.params.plug_shims_slopes(3)+dCz;         

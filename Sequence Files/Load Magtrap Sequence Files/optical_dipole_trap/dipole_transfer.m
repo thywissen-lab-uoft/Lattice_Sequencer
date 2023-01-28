@@ -17,7 +17,6 @@ ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 
 %Evaporation in the XDT
 %-------------------- 
-dipole_holdtime_before_evap = 0;    % not a flag but a value
 ramp_Feshbach_B_before_CDT_evap = 0;
 
 Evap_End_Power_List = [0.06];0.065;[0.08];
@@ -160,7 +159,8 @@ qp_ramp_down_time2 = getScanParameter(qp_ramp_down_time2_list,...
 qp_rampdown_starttime2 = 0; %500
 
 % Fesh values
-mean_fesh_current = 5.25392;%before 2017-1-6   22.6/4; %Calculated resonant fesh current. Feb 6th. %Rb: 21, K: 21
+%Calculated resonant fesh current. Feb 6th. %Rb: 21, K: 21
+mean_fesh_current = 5.25392;%before 2017-1-6   22.6/4; 
 fesh_current = mean_fesh_current;
 
 %PX added for measuring lifetime hoding in high power XDT
@@ -334,28 +334,30 @@ end
 
 V_QP = vSet_ramp;
 
+%% Plug Turn off
 % Turn off the plug beam now that the QP coils are off
+
 plug_turnoff_time_list =[0]; -200;
 plug_turnoff_time = getScanParameter(plug_turnoff_time_list,...
     seqdata.scancycle,seqdata.randcyclelist,'plug_turnoff_time');
 setDigitalChannel(calctime(curtime,plug_turnoff_time),'Plug Shutter',0);%0:OFF; 1:ON; -200
+
 dispLineStr('Turning off plug ',calctime(curtime,plug_turnoff_time));
 
 
-    %% Turn Off Voltage on Transport and Shim Supply 
+%% Turn Off Voltage on Transport and Shim Supply 
 
 ScopeTriggerPulse(calctime(curtime,0),'Transport Supply Off');
 
-%Turn off Transport Supply
-% curtime=AnalogFunc(calctime(curtime,-500),18,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),500,500,0,15.8);
-
 %Use QP TTL to shut off coil 16 
-setDigitalChannel(calctime(curtime,0),21,1);
+setDigitalChannel(calctime(curtime,0),'Coil 16 TTL',1);
 
 %Turn Coil 15 FET off
-setAnalogChannel(calctime(curtime,0),21,0,1);
+setAnalogChannel(calctime(curtime,0),'Coil 15',0,1);
 
 %Hold for some time (field settling?)
+dipole_holdtime_before_evap = 0;    % not a flag but a value
+
 curtime = calctime(curtime,dipole_holdtime_before_evap);
 
 

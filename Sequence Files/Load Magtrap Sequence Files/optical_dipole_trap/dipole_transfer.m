@@ -133,34 +133,43 @@ AnalogFunc(calctime(curtime,dipole_ramp_start_time),...
     
 ScopeTriggerPulse(curtime,'Rampup ODT');
 %% Ramp the QP Down    
+
 % Make sure shims are allowed to be bipolar (not necessary?)
 setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);
 
+% Current QP value (units??)
 QP_curval = QP_value;
 
-%value to ramp down to first
+% QP1 Value
 QP_ramp_end1_list = [0.9];
-QP_ramp_end1 = getScanParameter(QP_ramp_end1_list*1.78,seqdata.scancycle,seqdata.randcyclelist,'QP_ramp_end1');
+QP_ramp_end1 = getScanParameter(QP_ramp_end1_list*1.78,seqdata.scancycle,...
+    seqdata.randcyclelist,'QP_ramp_end1');
 
+% QP1 Time
 qp_ramp_down_time1_list = [300];[250];[250];
-qp_ramp_down_time1 = getScanParameter(qp_ramp_down_time1_list,seqdata.scancycle,seqdata.randcyclelist,'qp_ramp_down_time1');        
+qp_ramp_down_time1 = getScanParameter(qp_ramp_down_time1_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'qp_ramp_down_time1','ms');        
 
-%value to ramp down to second
+% QP2 Value
 QP_ramp_end2 = 0*1.78; %0*1.78 // doubled Dec-2013 (tighter hybrid trap)
 qp_ramp_down_time2_list = [100];100;
-qp_ramp_down_time2 = getScanParameter(qp_ramp_down_time2_list,seqdata.scancycle,seqdata.randcyclelist,'qp_ramp_down_time2');        
+qp_ramp_down_time2 = getScanParameter(qp_ramp_down_time2_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'qp_ramp_down_time2','ms');        
 
-%RHYS - I think this is now 0*500 because curtime is updated between
-%the two ramps. 
+% QP 2 start time?
 qp_rampdown_starttime2 = 0; %500
+
+% Fesh values
 mean_fesh_current = 5.25392;%before 2017-1-6   22.6/4; %Calculated resonant fesh current. Feb 6th. %Rb: 21, K: 21
 fesh_current = mean_fesh_current;
 
+%PX added for measuring lifetime hoding in high power XDT
+extra_hold_time_list =0;[0,50,100,200,500,750,1000]; 
+extra_hold_time = getScanParameter(extra_hold_time_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'extra_hold_time','ms');
+
+% Transport supply voltage check
 vSet_ramp = 1.07*vSet; %24   
-
-extra_hold_time_list =0;[0,50,100,200,500,750,1000]; %PX added for measuring lifetime hoding in high power XDT
-extra_hold_time = getScanParameter(extra_hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'extra_hold_time');
-
 % Check thermal power dissipation
 if vSet_ramp^2/4/(2*0.310) > 700
     error('Too much power dropped across FETS');

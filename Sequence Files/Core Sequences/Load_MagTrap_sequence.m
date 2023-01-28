@@ -88,9 +88,6 @@ seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been p
 
 after_sci_cell_load = 0;    % Abs image after loading into science cell
 
-seqdata.flags.rb_vert_insitu_image = 0; 
-%take a vertical in-situ image of BEC in XDT to centre the microscope objective
-
 seqdata.flags.controlled_load = 0; %do a specific load time
 
 seqdata.params.UV_on_time = 10000;

@@ -102,13 +102,7 @@ dCz_list = [-.0025];
 dCz = getScanParameter(dCz_list,seqdata.scancycle,...
     seqdata.randcyclelist,'dCz','arb.');  
 
-%% Special Flags
-% CF : I have no idea what this is for
-if seqdata.flags.rb_vert_insitu_image
-    seqdata.flags.xdt_Rb_21uwave_sweep_field = 0;
-    get_rid_of_Rb = 0;
-    exp_end_pwr =0.18;
-end
+
 
 
 %% Dipole trap initial ramp on
@@ -131,10 +125,6 @@ end
     dipole1_power = CDT_power*1; %1
     dipole2_power = CDT_power*0; %Voltage = 0.328 + 0.2375*dipole_power...about 4.2Watts/V when dipole 1 is off
 
-    % CF : This is no longer used??
-    % Enable ALPs feedback control and turn on XDTs AOMs
-%     setDigitalChannel(calctime(curtime,dipole_ramp_start_time-10),...
-%         'XDT Direct Control',0);
     
     % Enable XDT AOMs
     setDigitalChannel(calctime(curtime,dipole_ramp_start_time-10),'XDT TTL',0);  

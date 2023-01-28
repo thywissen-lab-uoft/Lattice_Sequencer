@@ -175,182 +175,182 @@ if vSet_ramp^2/4/(2*0.310) > 700
     error('Too much power dropped across FETS');
 end
 
-    %% QP Ramp Down 1
-    if do_qp_ramp_down1  
-        dispLineStr('QP RAMP DOWN 1',curtime);
-        
-        % Calculate the change in QP current
-        dI_QP=QP_ramp_end1-QP_curval; 
-                
-        % Calculate the change in shim currents
+%% QP Ramp Down 1
+if do_qp_ramp_down1  
+    dispLineStr('QP RAMP DOWN 1',curtime);
+
+    % Calculate the change in QP current
+    dI_QP=QP_ramp_end1-QP_curval; 
+
+    % Calculate the change in shim currents
 %         Cx = -0.0499;
 %         Cy = 0.0045;
 %         Cz = 0.0105;
-        
-        Cx = seqdata.params.plug_shims_slopes(1);
-        Cy = seqdata.params.plug_shims_slopes(2);
-        Cz = seqdata.params.plug_shims_slopes(3)+dCz;
-        
-        dIx=dI_QP*Cx;
-        dIy=dI_QP*Cy;
-        dIz=dI_QP*Cz;   
-                
-        % Calculate the new shim values
-        I_shim = I_shim + [dIx dIy dIz];        
 
-        % Ramp the XYZ shims to new shim values
-        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'Z Shim',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-            qp_ramp_down_time1,qp_ramp_down_time1,I_shim(3),3); 
-        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'Y Shim',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-            qp_ramp_down_time1,qp_ramp_down_time1,I_shim(2),4); 
-        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'X Shim',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-            qp_ramp_down_time1,qp_ramp_down_time1,I_shim(1),3); 
+    Cx = seqdata.params.plug_shims_slopes(1);
+    Cy = seqdata.params.plug_shims_slopes(2);
+    Cz = seqdata.params.plug_shims_slopes(3)+dCz;
 
-        % Turn off plug
-        %AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),33,...
+    dIx=dI_QP*Cx;
+    dIy=dI_QP*Cy;
+    dIz=dI_QP*Cz;   
+
+    % Calculate the new shim values
+    I_shim = I_shim + [dIx dIy dIz];        
+
+    % Ramp the XYZ shims to new shim values
+    AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'Z Shim',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        qp_ramp_down_time1,qp_ramp_down_time1,I_shim(3),3); 
+    AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'Y Shim',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        qp_ramp_down_time1,qp_ramp_down_time1,I_shim(2),4); 
+    AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'X Shim',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        qp_ramp_down_time1,qp_ramp_down_time1,I_shim(1),3); 
+
+    % Turn off plug
+    %AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),33,...
 %             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time1,qp_ramp_down_time1,0);
 
-        % Ramp down FF.
-        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),...
-            'Transport FF',@(t,tt,y2,y1)(ramp_func(t,tt,y1,y2)),...
-            qp_ramp_down_time1,qp_ramp_down_time1,QP_ramp_end1*23/30);
-        
-        % Ramp down QP and advance time
-        curtime = AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),...
-            'Coil 16',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-            qp_ramp_down_time1,qp_ramp_down_time1,QP_ramp_end1);
+    % Ramp down FF.
+    AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),...
+        'Transport FF',@(t,tt,y2,y1)(ramp_func(t,tt,y1,y2)),...
+        qp_ramp_down_time1,qp_ramp_down_time1,QP_ramp_end1*23/30);
 
-        % Some extra advances in time (WHAT IS THIS FOR?)
-        if (dipole_ramp_start_time+dipole_ramp_up_time)>(qp_ramp_down_start_time+qp_ramp_down_time1)
-            curtime =   calctime(curtime,(dipole_ramp_start_time+dipole_ramp_up_time)-(qp_ramp_down_start_time+qp_ramp_down_time1));
-        end
-        
-        I_QP  = QP_ramp_end1;        
- 
-    else
-        I_QP = QP_curval;
+    % Ramp down QP and advance time
+    curtime = AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),...
+        'Coil 16',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        qp_ramp_down_time1,qp_ramp_down_time1,QP_ramp_end1);
+
+    % Some extra advances in time (WHAT IS THIS FOR?)
+    if (dipole_ramp_start_time+dipole_ramp_up_time)>(qp_ramp_down_start_time+qp_ramp_down_time1)
+        curtime =   calctime(curtime,(dipole_ramp_start_time+dipole_ramp_up_time)-(qp_ramp_down_start_time+qp_ramp_down_time1));
     end
+
+    I_QP  = QP_ramp_end1;        
+
+else
+    I_QP = QP_curval;
+end
     
 %% QP Ramp Down 2
-   
-    if do_qp_ramp_down2
-        dispLineStr('QP RAMP DOWN 2',curtime);
 
-        XDT_pin_time_list = [0];
-        XDT_pin_time = getScanParameter(XDT_pin_time_list,seqdata.scancycle,seqdata.randcyclelist,'XDT_pin_time');                
-        
-        dipole2_ramp_start_time = 0; 
-        
-        % Ramp ODT2
-        AnalogFuncTo(calctime(curtime,dipole2_ramp_start_time),'dipoleTrap2',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-            XDT_pin_time,XDT_pin_time,DT2_power(2));
-        
-        % Ramp ODT1
-        curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-            XDT_pin_time,XDT_pin_time,DT1_power(2));
-  
+if do_qp_ramp_down2
+    dispLineStr('QP RAMP DOWN 2',curtime);
 
-        % Ramp Feshbach field
-        FB_time_list = [0];
-        FB_time = getScanParameter(FB_time_list,seqdata.scancycle,seqdata.randcyclelist,'FB_time');
-        setDigitalChannel(calctime(curtime,-100-FB_time),'fast FB Switch',1); %switch Feshbach field on
-        setAnalogChannel(calctime(curtime,-95-FB_time),'FB current',0.0); %switch Feshbach field closer to on
-        setDigitalChannel(calctime(curtime,-100-FB_time),'FB Integrator OFF',0); %switch Feshbach integrator on            
-        %linear ramp from zero
-        AnalogFunc(calctime(curtime,0-FB_time),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),qp_ramp_down_time2+FB_time,qp_ramp_down_time2+FB_time, fesh_current,0);
-        fesh_current_val = fesh_current;    
+    XDT_pin_time_list = [0];
+    XDT_pin_time = getScanParameter(XDT_pin_time_list,seqdata.scancycle,seqdata.randcyclelist,'XDT_pin_time');                
 
-        % Ramp down Feedforward voltage
-        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),18,@(t,tt,y2,y1)(ramp_func(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,QP_ramp_end2*23/30);      
-        
-        % ramp down QP currents
-        AnalogFuncTo(calctime(curtime,0*qp_rampdown_starttime2),1,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,QP_ramp_end2);
-           
-        % Calculate the change in QP currents
-        dI_QP=QP_ramp_end2-QP_ramp_end1; 
-        
-        % Calculate the change in shim currents
+    dipole2_ramp_start_time = 0; 
+
+    % Ramp ODT2
+    AnalogFuncTo(calctime(curtime,dipole2_ramp_start_time),'dipoleTrap2',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        XDT_pin_time,XDT_pin_time,DT2_power(2));
+
+    % Ramp ODT1
+    curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        XDT_pin_time,XDT_pin_time,DT1_power(2));
+
+
+    % Ramp Feshbach field
+    FB_time_list = [0];
+    FB_time = getScanParameter(FB_time_list,seqdata.scancycle,seqdata.randcyclelist,'FB_time');
+    setDigitalChannel(calctime(curtime,-100-FB_time),'fast FB Switch',1); %switch Feshbach field on
+    setAnalogChannel(calctime(curtime,-95-FB_time),'FB current',0.0); %switch Feshbach field closer to on
+    setDigitalChannel(calctime(curtime,-100-FB_time),'FB Integrator OFF',0); %switch Feshbach integrator on            
+    %linear ramp from zero
+    AnalogFunc(calctime(curtime,0-FB_time),'FB current',@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),qp_ramp_down_time2+FB_time,qp_ramp_down_time2+FB_time, fesh_current,0);
+    fesh_current_val = fesh_current;    
+
+    % Ramp down Feedforward voltage
+    AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),18,@(t,tt,y2,y1)(ramp_func(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,QP_ramp_end2*23/30);      
+
+    % ramp down QP currents
+    AnalogFuncTo(calctime(curtime,0*qp_rampdown_starttime2),1,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time2,qp_ramp_down_time2,QP_ramp_end2);
+
+    % Calculate the change in QP currents
+    dI_QP=QP_ramp_end2-QP_ramp_end1; 
+
+    % Calculate the change in shim currents
 %         Cx = -0.0499;
 %         Cy = 0.0045;
 %         Cz = 0.0105;
-        
-        Cx = seqdata.params.plug_shims_slopes(1);
-        Cy = seqdata.params.plug_shims_slopes(2);
-        Cz = seqdata.params.plug_shims_slopes(3)+dCz;         
-        
-        dIx=dI_QP*Cx;
-        dIy=dI_QP*Cy;
-        dIz=dI_QP*Cz;    
-        
-        % Calculate the new shim values
-        I_shim = I_shim + [dIx dIy dIz];
-        
-        % Ramp shims
-        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'Z shim',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-            qp_ramp_down_time2,qp_ramp_down_time2,I_shim(3),3); 
-        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'Y Shim',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-            qp_ramp_down_time2,qp_ramp_down_time2,I_shim(2),4); 
-        AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'X Shim'....
-            ,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-            qp_ramp_down_time2,qp_ramp_down_time2,I_shim(1),3);
-        
-        % Save the shim values (appears unused?)
-        seqdata.params.yshim_val = I_shim(2);
-        seqdata.params.xshim_val = I_shim(1);
-        seqdata.params.zshim_val = I_shim(3);
 
-        % Advance time (CF: this seems weirdly defined?)
-        curtime = calctime(curtime,qp_rampdown_starttime2+qp_ramp_down_time2+extra_hold_time);   
- 
-        I_QP  = QP_ramp_end2;
-        
-        if QP_ramp_end2 <= 0 % second rampdown segment concludes QP rampdown
-            
-            setAnalogChannel(calctime(curtime,0),1,0);%1
-            %setAnalogChannel(calctime(curtime,qp_rampdown_starttime2+qp_ramp_down_time2),18,0);
-            
-            %make sure all coils are zero!!!
-            %set all transport coils to zero (except MOT)
-            for i = [7 8 9:17 22:24 20] 
-                setAnalogChannel(calctime(curtime,0),i,0,1);
-            end
-            
+    Cx = seqdata.params.plug_shims_slopes(1);
+    Cy = seqdata.params.plug_shims_slopes(2);
+    Cz = seqdata.params.plug_shims_slopes(3)+dCz;         
+
+    dIx=dI_QP*Cx;
+    dIy=dI_QP*Cy;
+    dIz=dI_QP*Cz;    
+
+    % Calculate the new shim values
+    I_shim = I_shim + [dIx dIy dIz];
+
+    % Ramp shims
+    AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'Z shim',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        qp_ramp_down_time2,qp_ramp_down_time2,I_shim(3),3); 
+    AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'Y Shim',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        qp_ramp_down_time2,qp_ramp_down_time2,I_shim(2),4); 
+    AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),'X Shim'....
+        ,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        qp_ramp_down_time2,qp_ramp_down_time2,I_shim(1),3);
+
+    % Save the shim values (appears unused?)
+    seqdata.params.yshim_val = I_shim(2);
+    seqdata.params.xshim_val = I_shim(1);
+    seqdata.params.zshim_val = I_shim(3);
+
+    % Advance time (CF: this seems weirdly defined?)
+    curtime = calctime(curtime,qp_rampdown_starttime2+qp_ramp_down_time2+extra_hold_time);   
+
+    I_QP  = QP_ramp_end2;
+
+    if QP_ramp_end2 <= 0 % second rampdown segment concludes QP rampdown
+
+        setAnalogChannel(calctime(curtime,0),1,0);%1
+        %setAnalogChannel(calctime(curtime,qp_rampdown_starttime2+qp_ramp_down_time2),18,0);
+
+        %make sure all coils are zero!!!
+        %set all transport coils to zero (except MOT)
+        for i = [7 8 9:17 22:24 20] 
+            setAnalogChannel(calctime(curtime,0),i,0,1);
         end
 
-    else
-        dipole2_pin_pwr = 4.5;%2.5
     end
 
-    V_QP = vSet_ramp;
-        
-    % Turn off the plug beam now that the QP coils are off
-    plug_turnoff_time_list =[0]; -200;
-    plug_turnoff_time = getScanParameter(plug_turnoff_time_list,seqdata.scancycle,seqdata.randcyclelist,'plug_turnoff_time');
-    setDigitalChannel(calctime(curtime,plug_turnoff_time),'Plug Shutter',0);%0:OFF; 1:ON; -200
-    dispLineStr('Turning off plug ',calctime(curtime,plug_turnoff_time));
+else
+    dipole2_pin_pwr = 4.5;%2.5
+end
+
+V_QP = vSet_ramp;
+
+% Turn off the plug beam now that the QP coils are off
+plug_turnoff_time_list =[0]; -200;
+plug_turnoff_time = getScanParameter(plug_turnoff_time_list,seqdata.scancycle,seqdata.randcyclelist,'plug_turnoff_time');
+setDigitalChannel(calctime(curtime,plug_turnoff_time),'Plug Shutter',0);%0:OFF; 1:ON; -200
+dispLineStr('Turning off plug ',calctime(curtime,plug_turnoff_time));
 
 
     %% Turn Off Voltage on Transport and Shim Supply 
 
-    ScopeTriggerPulse(calctime(curtime,0),'Transport Supply Off');
+ScopeTriggerPulse(calctime(curtime,0),'Transport Supply Off');
 
-    %Turn off Transport Supply
+%Turn off Transport Supply
 % curtime=AnalogFunc(calctime(curtime,-500),18,@(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),500,500,0,15.8);
 
-    %Use QP TTL to shut off coil 16 
-    setDigitalChannel(calctime(curtime,0),21,1);
+%Use QP TTL to shut off coil 16 
+setDigitalChannel(calctime(curtime,0),21,1);
 
-    %Turn Coil 15 FET off
-    setAnalogChannel(calctime(curtime,0),21,0,1);
+%Turn Coil 15 FET off
+setAnalogChannel(calctime(curtime,0),21,0,1);
 
-    %Hold for some time (field settling?)
+%Hold for some time (field settling?)
 curtime = calctime(curtime,dipole_holdtime_before_evap);
 
 

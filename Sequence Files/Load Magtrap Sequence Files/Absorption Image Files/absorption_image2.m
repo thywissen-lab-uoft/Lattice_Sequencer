@@ -494,8 +494,7 @@ switch flags.image_atomtype
                         end                      
                         
                     end
-                    addOutputParam('rf_tof_shift',rf_tof_shift,'kHz');                   
-                    
+                    addOutputParam('rf_tof_shift',rf_tof_shift,'kHz')                   
                     
                     rf_tof_freq =  rf_tof_shift*1e-3 +... 
                         abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);   
@@ -506,7 +505,7 @@ switch flags.image_atomtype
                     end
 
                     % RF Frequency Sweep
-                    rf_tof_delta_freq_list = [40]*1e-3;[35]*1e-3;[20]*1e-3;[12]*1e-3;12; %20kHz for 15ms TOF
+                    rf_tof_delta_freq_list = 40*1e-3; [40]*1e-3;[35]*1e-3;[20]*1e-3;[12]*1e-3;12; %20kHz for 15ms TOF
                     rf_tof_delta_freq = getScanParameter(rf_tof_delta_freq_list,seqdata.scancycle,...
                         seqdata.randcyclelist,'rf_tof_delta_freq','MHz');
 %                     delta_freq= 0.05; %0.02            

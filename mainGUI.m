@@ -859,7 +859,12 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         % Compile the code
         disp([' Compiling seqdata from  ' fName]);     
         tC1=now;                         % compile start time
-        set(tStatus,'String','Compiling sequence ...');drawnow;
+%         set(tStatus,'String','Compiling sequence ...');drawnow;
+        
+             
+        set(tStatus,'String','compiling sequence ...','fontweight','bold',...
+            'foregroundcolor','r');drawnow;
+        
         try
             fh(0);           
         catch ME     
@@ -888,7 +893,8 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         disp(repmat('-',1,60));
         disp(' Converting seqdata into Adwin and hardware calls ...');      
         disp(repmat('-',1,60));
-        set(tStatus,'String','Generating hardware commands ...');drawnow;
+        set(tStatus,'String','Generating hardware commands ...','fontweight','bold',...
+            'foregroundcolor','r');drawnow;
         if ~doDebug
             try
                 calc_sequence;                  % convert seqdata for AdWin  

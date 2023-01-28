@@ -103,17 +103,14 @@ dCz = getScanParameter(dCz_list,seqdata.scancycle,...
     seqdata.randcyclelist,'dCz','arb.');  
 
 
-
-
 %% Dipole trap initial ramp on
-% Perform the initial ramp on of dipole trap 1
 
+    % XDT Ramp time delay (or pre turn on)
     dipole_ramp_start_time_list =[0]; [-500];
     dipole_ramp_start_time = getScanParameter(dipole_ramp_start_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'dipole_ramp_start_time');
-    
-    %dipole_ramp_start_time = -500; % Offset time to begin ramp on   
-    
+        
+    % XDT Ramp on time length
     dipole_ramp_up_time_list = [75]; 
     dipole_ramp_up_time = getScanParameter(dipole_ramp_up_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'dipole_ramp_up_time');

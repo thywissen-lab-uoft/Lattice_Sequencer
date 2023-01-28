@@ -151,18 +151,13 @@ qp_ramp_down_time2_list = [100];100;
 qp_ramp_down_time2 = getScanParameter(qp_ramp_down_time2_list,...
     seqdata.scancycle,seqdata.randcyclelist,'qp_ramp_down_time2','ms');        
 
-% QP 2 start time?
-qp_rampdown_starttime2 = 0; %500
+
 
 % Fesh values
 %Calculated resonant fesh current. Feb 6th. %Rb: 21, K: 21
 mean_fesh_current = 5.25392;%before 2017-1-6   22.6/4; 
 fesh_current = mean_fesh_current;
 
-%PX added for measuring lifetime hoding in high power XDT
-extra_hold_time_list =0;[0,50,100,200,500,750,1000]; 
-extra_hold_time = getScanParameter(extra_hold_time_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'extra_hold_time','ms');
 
 % Transport supply voltage check
 vSet_ramp = 1.07*vSet; %24   
@@ -222,16 +217,15 @@ end
 %% QP Ramp Down 2
 
 if do_qp_ramp_down2
+
     dispLineStr('QP RAMP DOWN 2',curtime);
 
     XDT_pin_time_list = [0];
     XDT_pin_time = getScanParameter(XDT_pin_time_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'XDT_pin_time');                
-
-    dipole2_ramp_start_time = 0; 
-
+        seqdata.scancycle,seqdata.randcyclelist,'XDT_pin_time'); 
+   
     % Ramp ODT2
-    AnalogFuncTo(calctime(curtime,dipole2_ramp_start_time),'dipoleTrap2',...
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
         XDT_pin_time,XDT_pin_time,DT2_power(2));
 
@@ -248,7 +242,8 @@ if do_qp_ramp_down2
     setDigitalChannel(calctime(curtime,-100-FB_time),'fast FB Switch',1); %switch Feshbach field on
     setAnalogChannel(calctime(curtime,-95-FB_time),'FB current',0.0); %switch Feshbach field closer to on
     setDigitalChannel(calctime(curtime,-100-FB_time),'FB Integrator OFF',0); %switch Feshbach integrator on            
-    %linear ramp from zero
+    
+    % Ram pup FB Current
     AnalogFunc(calctime(curtime,0-FB_time),'FB current',...
         @(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),...
         qp_ramp_down_time2+FB_time,qp_ramp_down_time2+FB_time, fesh_current,0);
@@ -256,12 +251,12 @@ if do_qp_ramp_down2
 
     % Ramp down Feedforward voltage
     AnalogFuncTo(calctime(curtime,qp_ramp_down_start_time),...
-        18,@(t,tt,y2,y1)(ramp_func(t,tt,y1,y2)),...
+        'Transport FF',@(t,tt,y2,y1)(ramp_func(t,tt,y1,y2)),...
         qp_ramp_down_time2,qp_ramp_down_time2,QP_ramp_end2*23/30);      
 
-    % ramp down QP currents
-    AnalogFuncTo(calctime(curtime,0*qp_rampdown_starttime2),...
-        1,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+    % Ramp down QP currents
+    AnalogFuncTo(calctime(curtime,0),...
+        'Coil 16',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
         qp_ramp_down_time2,qp_ramp_down_time2,QP_ramp_end2);
 
     % Calculate the change in QP currents
@@ -296,7 +291,7 @@ if do_qp_ramp_down2
     seqdata.params.zshim_val = I_shim(3);
 
     % Advance time (CF: this seems weirdly defined?)
-    curtime = calctime(curtime,qp_rampdown_starttime2+qp_ramp_down_time2+extra_hold_time);   
+    curtime = calctime(curtime,qp_ramp_down_time2);   
 
     I_QP  = QP_ramp_end2;
 

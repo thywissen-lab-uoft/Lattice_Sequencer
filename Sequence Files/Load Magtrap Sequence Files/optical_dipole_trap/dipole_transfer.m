@@ -133,8 +133,8 @@ end
 
     % CF : This is no longer used??
     % Enable ALPs feedback control and turn on XDTs AOMs
-    setDigitalChannel(calctime(curtime,dipole_ramp_start_time-10),...
-        'XDT Direct Control',0);
+%     setDigitalChannel(calctime(curtime,dipole_ramp_start_time-10),...
+%         'XDT Direct Control',0);
     
     % Enable XDT AOMs
     setDigitalChannel(calctime(curtime,dipole_ramp_start_time-10),'XDT TTL',0);  

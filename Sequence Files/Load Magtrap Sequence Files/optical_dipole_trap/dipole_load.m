@@ -1,12 +1,26 @@
 %------
 %Author: C Fujiwara
-%Created: Feb 2021
-%Summary: Ramp the QP before QP transfer. Outputs are the currents/voltages
+%Created: Jan 2023
+%Summary: Ramp the QP before QP transfer.
+%Outputs are the currents/voltages
 %after the ramp
 %------
-function [timeout,I_QP,I_shim,P1,P2] = dipole_transfer2(timein, I_QP, V_QP,I_shim)
+function [timeout,I_QP,I_shim,P1,P2] = dipole_load(timein, I_QP, V_QP,I_shim)
+
+% This codes ramps the plugged magnetic trap into the crossed optical
+% dipole trap. It also can turn on the dipole beams BACK IN TIME in case
+% you want to try doing a quasi dimple during MT evaporation.
+%
+% Please, for the love off all that is sacred, don't make this code package
+% too large. XDT operations can be done in other pieces of code.  This code
+% is only meant to load the XDT initially.
+%
+% Becuase mode matching from the magnetic trap to the xdt is complicated
+%%
+
 curtime = timein;
 global seqdata;
+
 
 dispLineStr('Dipole Loading',curtime);
 

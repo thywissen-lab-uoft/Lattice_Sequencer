@@ -105,43 +105,43 @@ dCz = getScanParameter(dCz_list,seqdata.scancycle,...
 
 %% Dipole trap initial ramp on
 
-    % XDT Ramp time delay (or pre turn on)
-    dipole_ramp_start_time_list =[0]; [-500];
-    dipole_ramp_start_time = getScanParameter(dipole_ramp_start_time_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'dipole_ramp_start_time');
-        
-    % XDT Ramp on time length
-    dipole_ramp_up_time_list = [75]; 
-    dipole_ramp_up_time = getScanParameter(dipole_ramp_up_time_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'dipole_ramp_up_time');
+% XDT Ramp time delay (or pre turn on)
+dipole_ramp_start_time_list =[0]; [-500];
+dipole_ramp_start_time = getScanParameter(dipole_ramp_start_time_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'dipole_ramp_start_time');
+
+% XDT Ramp on time length
+dipole_ramp_up_time_list = [75]; 
+dipole_ramp_up_time = getScanParameter(dipole_ramp_up_time_list,...
+    seqdata.scancycle,seqdata.randcyclelist,'dipole_ramp_up_time');
 %     dipole_ramp_up_time = 200;      % Duration of initial ramp on
 
-    % CF : What are thes for? Can we delete?
-    %RHYS - Actually unused. 
-    CDT_power = 3.8;%3.5; %4.5   7.0 Jan 22nd
-    dipole1_power = CDT_power*1; %1
-    dipole2_power = CDT_power*0; %Voltage = 0.328 + 0.2375*dipole_power...about 4.2Watts/V when dipole 1 is off
+% CF : What are thes for? Can we delete?
+%RHYS - Actually unused. 
+CDT_power = 3.8;%3.5; %4.5   7.0 Jan 22nd
+dipole1_power = CDT_power*1; %1
+dipole2_power = CDT_power*0; %Voltage = 0.328 + 0.2375*dipole_power...about 4.2Watts/V when dipole 1 is off
 
-    
-    % Enable XDT AOMs
-    setDigitalChannel(calctime(curtime,dipole_ramp_start_time-10),'XDT TTL',0);  
-    dispLineStr('ODT 1 ramp up started at',calctime(curtime,dipole_ramp_start_time));
 
-    % Trigger function generator
+% Enable XDT AOMs
+setDigitalChannel(calctime(curtime,dipole_ramp_start_time-10),'XDT TTL',0);  
+dispLineStr('ODT 1 ramp up started at',calctime(curtime,dipole_ramp_start_time));
+
+% Trigger function generator
 %     DigitalPulse(calctime(curtime,dipole_ramp_start_time),...
 %         'ODT Rigol Trigger',1,1)
-    
-    % Ramp dipole 1 trap on
-    AnalogFunc(calctime(curtime,dipole_ramp_start_time),...
-        'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        dipole_ramp_up_time,dipole_ramp_up_time,...
-        seqdata.params.ODT_zeros(1),DT1_power(1));
-    
-    % Ramp dipole 2 trap on
-    AnalogFunc(calctime(curtime,dipole_ramp_start_time),...
-        'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        dipole_ramp_up_time,dipole_ramp_up_time,...
-        seqdata.params.ODT_zeros(2),DT2_power(1)); %used to be starting from -1  
+
+% Ramp dipole 1 trap on
+AnalogFunc(calctime(curtime,dipole_ramp_start_time),...
+    'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+    dipole_ramp_up_time,dipole_ramp_up_time,...
+    seqdata.params.ODT_zeros(1),DT1_power(1));
+
+% Ramp dipole 2 trap on
+AnalogFunc(calctime(curtime,dipole_ramp_start_time),...
+    'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+    dipole_ramp_up_time,dipole_ramp_up_time,...
+    seqdata.params.ODT_zeros(2),DT2_power(1)); %used to be starting from -1  
     
     ScopeTriggerPulse(curtime,'Rampup ODT');
     %% Ramp the QP Down    

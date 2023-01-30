@@ -20,7 +20,7 @@ ramp_Feshbach_B_before_CDT_evap     = 0; % Ramp up feshbach before evaporation
 do_levitate_evap                    = 0; % Apply levitation gradient
 
 
-Evap_End_Power_List = [0.06];
+Evap_End_Power_List = [.1:.01:.2];
 % Ending optical evaporation
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...
     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');   
@@ -28,7 +28,7 @@ exp_end_pwr = getScanParameter(Evap_End_Power_List,...
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdt_ramp_power_end = 1;   % Ramp dipole back up after evaporation before any further physics 
+seqdata.flags.xdt_ramp_power_end = 0;   % Ramp dipole back up after evaporation before any further physics 
 seqdata.flags.xdt_do_dipole_trap_kick = 0;                % Kick the dipole trap, inducing coherent oscillations for temperature measurement
 seqdata.flags.xdt_do_hold_end = 0;
 
@@ -912,7 +912,7 @@ end
 % TESTING HAS NOT WORKIGN YET
 if do_levitate_evap
     % QP Value to ramp to
-    LF_QP_List =  [0.1:.02:.3];.14;0.115;
+    LF_QP_List =  [0];.14;0.115;
     LF_QP = getScanParameter(LF_QP_List,seqdata.scancycle,...
     seqdata.randcyclelist,'LF_QPReverse','V');  
 

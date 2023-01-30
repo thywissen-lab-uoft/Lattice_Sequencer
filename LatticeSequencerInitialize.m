@@ -14,16 +14,12 @@ addpath(curpath);
 addpath(fullfile(curpath,'Sequence Files'));
 addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files'));
 addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','Absorption Image Files'));
-
 addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','debugging'));
-
 addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','magnetic_trap'));
 addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','magneto_optical_trap'));
 addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','optical_dipole_trap'));
 addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','optical_lattice'));
-
 addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','miscellaneous'));
-
 addpath(fullfile(curpath,'Sequence Files','Core Sequences'));
 addpath(fullfile(curpath,'Sequence Files','Action Files'));
 addpath(fullfile(curpath,'Main Functions'));

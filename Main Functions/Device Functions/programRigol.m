@@ -234,6 +234,7 @@ function obj=visaConnect(DeviceName)
     try
         % Find the VISA object
         obj = instrfind('Type','visa-usb','RsrcName', DeviceName);
+        
         if isempty(obj)
             obj = visa('NI', DeviceName);
         else

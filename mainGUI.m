@@ -150,31 +150,46 @@ tSeq.Position(1:2)=[5 tTit.Position(2)-tSeq.Position(4)];
 % Sequence File edit box
 eSeq=uicontrol(hpMain,'style','edit','string',defaultSequence,...
     'horizontalalignment','left','fontsize',10,'backgroundcolor',cc);
-eSeq.Position(3)=190;
+eSeq.Position(3)=205;
 eSeq.Position(4)=eSeq.Extent(4);
 eSeq.Position(1:2)=[5 tSeq.Position(2)-eSeq.Position(4)];
 
 % Button for file selection of the sequenece file
-cdata=imresize(imread(['GUI Functions' filesep 'browse.jpg']),[20 20]);
+cdata=imresize(imread(['GUI Functions' filesep 'browse.jpg']),[22 22]);
 bBrowse=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
-    'backgroundcolor',cc,'Callback',@browseCB);
-bBrowse.Position(3:4)=size(cdata,[1 2]);
+    'backgroundcolor',cc,'Callback',@browseCB,'tooltip','browse file');
+bBrowse.Position(3:4)=[24 24];
 bBrowse.Position(1:2)=eSeq.Position(1:2)+[eSeq.Position(3)+2 0];
 
 % Button for file selection of the sequenece file
-cdata=imresize(imread(['GUI Functions' filesep 'file.png']),[20 20]);
-bFile=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
-    'backgroundcolor',cc,'Callback',@fileCB);
-bFile.Position(3:4)=size(cdata,[1 2]);
-bFile.Position(1:2)=bBrowse.Position(1:2)+[bBrowse.Position(3)+2 0];
+cdata=imresize(imread(['GUI Functions' filesep 'folder_up.jpg']),[20 20]);
+bDirUp=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
+    'backgroundcolor',cc,'Callback',@(~,~) cd('..'),'tooltip','move up directory level');
+bDirUp.Position(3:4)=[24 24];
+bDirUp.Position(1:2)=bBrowse.Position(1:2)+[bBrowse.Position(3)+2 0];
 
-% Button to plot the sequence
-bPlot=uicontrol(hpMain,'style','pushbutton','String','plot',...
-    'backgroundcolor',cc,'FontSize',10,'units','pixels',...
-    'fontweight','normal','callback',@bPlotCB);
-bPlot.Position(3:4)=[30 20];
-bPlot.Position(1:2)=[bFile.Position(1)+bFile.Position(3)+5 ...
-    bFile.Position(2)];
+% Button for file selection of the sequenece file
+cdata=imresize(imread(['GUI Functions' filesep 'file.png']),[17 17]);
+bFile=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
+    'backgroundcolor',cc,'Callback',@fileCB,'tooltip','open file');
+bFile.Position(3:4)=[24 24];
+bFile.Position(1:2)=bDirUp.Position(1:2)+[bDirUp.Position(3)+2 0];
+% 
+% % Button to plot the sequence
+% bPlot=uicontrol(hpMain,'style','pushbutton','String','plot',...
+%     'backgroundcolor',cc,'FontSize',10,'units','pixels',...
+%     'fontweight','normal','callback',@bPlotCB);
+% bPlot.Position(3:4)=[30 24];
+% bPlot.Position(1:2)=[bFile.Position(1)+bFile.Position(3)+5 ...
+%     bFile.Position(2)];
+
+% Button to recompile seqdata
+cdata=imresize(imread(['GUI Functions' filesep 'plot.jpg']),[24 24]);
+bPlot=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
+    'backgroundcolor',cc,'Callback',@bPlotCB,'tooltip','plot');
+bPlot.Position(3:4)=[25 25];
+bPlot.Position(1:2)=bFile.Position(1:2)+[bFile.Position(3)+2 0];
+
 
     function bPlotCB(~,~)
         fh = str2func(erase(eSeq.String,'@'));        
@@ -183,13 +198,20 @@ bPlot.Position(1:2)=[bFile.Position(1)+bFile.Position(3)+5 ...
     end
 
 % Button to recompile seqdata
-bCompile=uicontrol(hpMain,'style','pushbutton','String','compile',...
-    'backgroundcolor',cc,'FontSize',10,'units','pixels',...
-    'fontweight','normal','enable','on');
-bCompile.Position(3:4)=[60 20];
-bCompile.Position(1:2)=[bPlot.Position(1)+bPlot.Position(3)+5 ...
-    bPlot.Position(2)];
-bCompile.Callback=@bCompileCB;
+cdata=imresize(imread(['GUI Functions' filesep 'compile.jpg']),[20 20]);
+bCompile=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
+    'backgroundcolor',cc,'Callback',@bCompileCB,'tooltip','compile sequence');
+bCompile.Position(3:4)=[25 25];
+bCompile.Position(1:2)=bPlot.Position(1:2)+[bPlot.Position(3)+2 0];
+
+% % Button to recompile seqdata
+% bCompile=uicontrol(hpMain,'style','pushbutton','String','compile',...
+%     'backgroundcolor',cc,'FontSize',10,'units','pixels',...
+%     'fontweight','normal','enable','on');
+% bCompile.Position(3:4)=[60 20];
+% bCompile.Position(1:2)=[bPlot.Position(1)+bPlot.Position(3)+5 ...
+%     bPlot.Position(2)];
+% bCompile.Callback=@bCompileCB;
 
     function bCompileCB(~,~)
         start_new_sequence;             % Initialize sequence

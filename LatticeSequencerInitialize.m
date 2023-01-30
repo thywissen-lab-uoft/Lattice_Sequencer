@@ -20,6 +20,8 @@ addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','magneto
 addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','optical_dipole_trap'));
 addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','optical_lattice'));
 addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','miscellaneous'));
+addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','spectroscopy'));
+
 addpath(fullfile(curpath,'Sequence Files','Core Sequences'));
 addpath(fullfile(curpath,'Sequence Files','Action Files'));
 addpath(fullfile(curpath,'Main Functions'));

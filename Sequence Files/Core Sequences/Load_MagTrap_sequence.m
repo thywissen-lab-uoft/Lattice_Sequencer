@@ -299,35 +299,36 @@ isFreqUpdated = 0;
 
 
 updateTime=0;
-disp(['writing PA freq to file ' num2str(PA_freq,12)]);
-tic;
-while ~isFreqUpdated && updateTime<2    
-    try
-        [fileID,errmsg] = fopen(lockSetFileName,'w');
-        if ~isequal(fileID,-1)
-           fprintf(fileID,'%s',num2str(PA_freq,12)); 
-        end
-        fclose(fileID);
-        
-        text = fileread(lockSetFileName);
-        
-        textNum = str2num(text);
-        
-        disp(textNum);
-        
-        if isequal(textNum,PA_freq)
-            isFreqUpdated = 1;
-            disp('Written frequency is the same as the text file');
-        end
+if exist(lockSetFileName)    
+    disp(['writing PA freq to file ' num2str(PA_freq,12)]);
+    tic;
+    while ~isFreqUpdated && updateTime<2    
+        try
+            [fileID,errmsg] = fopen(lockSetFileName,'w');
+            if ~isequal(fileID,-1)
+               fprintf(fileID,'%s',num2str(PA_freq,12)); 
+            end
+            fclose(fileID);
 
-        updateTime = toc;
+            text = fileread(lockSetFileName);
+
+            textNum = str2num(text);
+
+            disp(textNum);
+
+            if isequal(textNum,PA_freq)
+                isFreqUpdated = 1;
+                disp('Written frequency is the same as the text file');
+            end
+            disp(updateTime)
+            updateTime = toc;
+        end
     end
+    if updateTime>=2
+       warning('may have not updated the frequency'); 
+    end
+    disp('--------------------');
 end
-if updateTime>=2
-   warning('may have not updated the frequency'); 
-end
-disp('--------------------');
-
 %% Set Objective Piezo VoltageS
 % If the cloud moves up, the voltage must increase to refocus
 %  (as the experiment warms up, selected plane tends to move up a bit)

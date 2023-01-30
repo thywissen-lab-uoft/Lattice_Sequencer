@@ -150,7 +150,7 @@ tSeq.Position(1:2)=[5 tTit.Position(2)-tSeq.Position(4)];
 % Sequence File edit box
 eSeq=uicontrol(hpMain,'style','edit','string',defaultSequence,...
     'horizontalalignment','left','fontsize',10,'backgroundcolor',cc);
-eSeq.Position(3)=205;
+eSeq.Position(3)=180;
 eSeq.Position(4)=eSeq.Extent(4);
 eSeq.Position(1:2)=[5 tSeq.Position(2)-eSeq.Position(4)];
 
@@ -204,6 +204,13 @@ bCompile=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
 bCompile.Position(3:4)=[25 25];
 bCompile.Position(1:2)=bPlot.Position(1:2)+[bPlot.Position(3)+2 0];
 
+% Button to recompile seqdata
+cdata=imresize(imread(['GUI Functions' filesep 'command_window.jpg']),[20 20]);
+bCmd=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
+    'backgroundcolor',cc,'Callback',@(~,~) commandwindow,'tooltip','move up directory level','tooltip','command window');
+bCmd.Position(3:4)=[25 25];
+bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
+
 % % Button to recompile seqdata
 % bCompile=uicontrol(hpMain,'style','pushbutton','String','compile',...
 %     'backgroundcolor',cc,'FontSize',10,'units','pixels',...
@@ -213,7 +220,7 @@ bCompile.Position(1:2)=bPlot.Position(1:2)+[bPlot.Position(3)+2 0];
 %     bPlot.Position(2)];
 % bCompile.Callback=@bCompileCB;
 
-    function bCompileCB(~,~)
+    function bCompileCB(~,~)        
         start_new_sequence;             % Initialize sequence
 %         seqdata.scancycle=1;            % 
 %         seqdata.randcyclelist=0;    

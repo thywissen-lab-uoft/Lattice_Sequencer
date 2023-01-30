@@ -215,7 +215,7 @@ seqdata.flags.kill_Rb_after_evap  = 0;   % optically remove Rb
 seqdata.flags.kill_K7_after_evap  = 0;   % optical remove 7/2 K after (untested)
 
 % XDT High Field Experiments
-seqdata.flags.dipole_high_field_a = 0;
+seqdata.flags.dipole_high_field_a = 1;
 
 % Take a second PA pulse after absorption imaging to calibrate PA power
 seqdata.flags.do_calibrate_PA = 0;
@@ -1000,6 +1000,14 @@ dispLineStr('Turning off coils and traps.',curtime);
     
     % XDT TOF
     if seqdata.flags.do_dipole_trap
+        
+        % Read XDT Powers right before tof
+        P1 = getChannelValue(seqdata,'dipoleTrap1',1);
+        P2 = getChannelValue(seqdata,'dipoleTrap2',1);
+
+        addOutputParam('xdt1_final_power',P1,'W');
+        addOutputParam('xdt2_final_power',P2,'W');
+
         % Turn off AOMs 
         setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
 

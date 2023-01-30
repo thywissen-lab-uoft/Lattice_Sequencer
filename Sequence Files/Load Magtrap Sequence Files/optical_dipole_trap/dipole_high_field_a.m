@@ -88,12 +88,16 @@ flip_9_7                = 0;        % spin flip 9 to 7 for rf spec w DDS
 mix_7_9                 = 0;  
 
 % Field Ramp across Resonance with 95 intermediate
-doHybridRamp75Transfer = 1;
+doHybridRamp75TransferUp = 1;
 
 % Spin Manipulations for attractive with initial mixture
-flip_7_5                = 1;        % 7 to 5 to avoid fesbach
+flip_7_5                = 0;        % 7 to 5 to avoid fesbach
 ramp_field_2            = 0;        % Ramp above feshbach (attractive)
 flip_7_5_again          = 0;        % 5 to 7 for science mixture
+
+
+% Ramp Down acrros reosnance
+doHybridRamp75TransferDown = 1;
 
 % Ramp to science magnetic field
 ramp_field_3            = 1;    
@@ -372,7 +376,7 @@ end
 % end of the ramp to transfer -7/2 atoms into the -5/2. The time is
 % minimized as we have found the 95 mixture to be lossy.
 
-if doHybridRamp75Transfer
+if doHybridRamp75TransferUp
     dispLineStr('XDT HF Resonance Transfer',curtime);
     
     %%%%%%%%%%%%%%%%%% INITIAL MAGNETIC FIELD %%%%%%%%%%%%%%%%%%%%%%%
@@ -402,7 +406,12 @@ if doHybridRamp75Transfer
     
     % Shim Ramp Parameters
     ramptime = 50;
-    settlingtime = 50;
+    settlingtime = 50;    
+    
+    % Feshbach Coil Value
+    ramptime_list = [50];
+    ramptime = getScanParameter(ramptime_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'resonance_cross_time','ms');
     
     ramp.shim_ramptime      = ramptime;
     ramp.shim_ramp_delay    = 0;
@@ -447,8 +456,7 @@ if doHybridRamp75Transfer
             
     disp([' B1,B2     (G) : ' num2str(B1) ',' num2str(B2)]);
     disp([' t1,t2    (ms) : ' num2str(t1) ',' num2str(t2)]);
-    disp([' f1,f2   (MHz) : ' num2str(f1) ',' num2str(f2)]);
-
+    disp([' f1,f2   (MHz) : ' num2str(f1) ',' num2str(f2)]);   
 
     % Define each RF pulse    
     pulse1                  = struct;
@@ -461,13 +469,13 @@ if doHybridRamp75Transfer
     pulse2.pulse_length     = 12;
     pulse2.power            = 0;            
     pulse2.freq             = f2;
-    f2_delay = 38;
+    f2_delay = 38;    
 
     % Apply each pulse
     rf_uwave_spectroscopy(calctime(curtime,f1_delay),4,pulse1);
     rf_uwave_spectroscopy(calctime(curtime,f2_delay),4,pulse2);
     
-    curtime = calctime(curtime,ramptime+settlingtime);
+    curtime = calctime(curtime,ramptime+settlingtime);  
 end
  
 
@@ -652,6 +660,110 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
         
      curtime = calctime(curtime,0);        
   end
+  
+  %% Back back acrros resonsnace
+if doHybridRamp75TransferDown
+    dispLineStr('XDT HF Resonance Transfer Down',curtime);
+
+    %%%%%%%%%%%%%%%%%% INITIAL MAGNETIC FIELD %%%%%%%%%%%%%%%%%%%%%%%
+    % Get the Feshbach field
+    Bfesh   = getChannelValue(seqdata,'FB Current',1);   
+    % Get the shim field
+    Bzshim = (getChannelValue(seqdata,'Z Shim',1) - ...
+        seqdata.params.shim_zero(3))*2.35;
+    % Caclulate the total field
+    Bstart = Bfesh + Bzshim + 0.11;    
+
+    %%%%%%%%%%%%%%%%%% FINAL MAGNETIC FIELD %%%%%%%%%%%%%%%%%%%%%%%
+    % Shim Field Value
+    BzShim = 0;
+    addOutputParam('xdt_hf_zshim_2',BzShim,'G')
+
+    % Feshbach Coil Value
+    fesh_list = [195];
+    fesh = getScanParameter(fesh_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'xdt_hf_fesh_2','G');
+
+    % Total Field Value
+    Bend = fesh + 0.11 + BzShim;
+    addOutputParam('xdt_hf_field_2',Bend,'G');      
+    %%%%%%%%%%%%%%%%%% RAMP MAGNETIC FIELD %%%%%%%%%%%%%%%%%%%%%%%
+    ramp=struct;
+
+    % Shim Ramp Parameters
+    ramptime = 50;
+    settlingtime = 50;    
+
+    % Feshbach Coil Value
+    ramptime_list = [50];
+    ramptime = getScanParameter(ramptime_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'resonance_cross_time_down','ms');
+
+    ramp.shim_ramptime      = ramptime;
+    ramp.shim_ramp_delay    = 0;
+    ramp.xshim_final        = seqdata.params.shim_zero(1); 
+    ramp.yshim_final        = seqdata.params.shim_zero(2);
+    ramp.zshim_final        = seqdata.params.shim_zero(3) + BzShim/2.35;
+
+    % FB coil 
+    ramp.fesh_ramptime      = ramptime;
+    ramp.fesh_ramp_delay    = 0;
+    ramp.fesh_final         = fesh; %22.6
+    ramp.settling_time      = settlingtime;    
+
+    % Ramp the bias fields
+    ramp_bias_fields(calctime(curtime,0), ramp);     
+
+    % Display output
+    disp([' Bstart         (G) : ' num2str(Bstart)]);
+    disp([' Bend           (G) : ' num2str(Bend)]);
+    disp([' Ramp Time     (ms) : ' num2str(ramp.fesh_ramptime)]);
+    disp([' Ramp Value     (G) : ' num2str(ramp.fesh_final)]);
+    disp([' Settling Time (ms) : ' num2str(ramp.settling_time)]);
+    disp(' ');
+    %%%%%%%%%%%%%%%%%% RF PULSES %%%%%%%%%%%%%%%%%%%%%%%
+    % Magnetic fields at which to transfer
+    B1 = 209; B2 = 196;    
+    % Approximate times at which the chosen fields will be crossed
+    t1 = (B1-Bstart)/(Bend-Bstart)*ramptime;
+    t2 = (B2-Bstart)/(Bend-Bstart)*ramptime;    
+
+    if B1>Bstart || B2<Bend
+        warning(['You have chosen an B field outside of the ' ...
+            'ramp range. No atoms will be transfered probably']);
+    end
+
+    % Spin States
+    mF1=-7/2;mF2=-5/2;  
+
+    % Get the RF frequencies in MHz
+    f1 = abs((BreitRabiK(B1,9/2,mF2) - BreitRabiK(B1,9/2,mF1))/6.6260755e-34/1E6);       
+    f2 = abs((BreitRabiK(B2,9/2,mF2) - BreitRabiK(B2,9/2,mF1))/6.6260755e-34/1E6);   
+
+    disp([' B1,B2     (G) : ' num2str(B1) ',' num2str(B2)]);
+    disp([' t1,t2    (ms) : ' num2str(t1) ',' num2str(t2)]);
+    disp([' f1,f2   (MHz) : ' num2str(f1) ',' num2str(f2)]);   
+
+    % Define each RF pulse    
+    pulse1                  = struct;
+    pulse1.pulse_length     = 10;
+    pulse1.power            = 0;            
+    pulse1.freq             = f1;
+    f1_delay = 0;
+
+    pulse2                  = struct;
+    pulse2.pulse_length     = 12;
+    pulse2.power            = 0;            
+    pulse2.freq             = f2;
+    f2_delay = 38;    
+
+    % Apply each pulse
+    rf_uwave_spectroscopy(calctime(curtime,f1_delay),4,pulse1);
+    rf_uwave_spectroscopy(calctime(curtime,f2_delay),4,pulse2);
+
+    curtime = calctime(curtime,ramptime+settlingtime);  
+end
+  
 
 %% Ramp Field 3
     if ramp_field_3

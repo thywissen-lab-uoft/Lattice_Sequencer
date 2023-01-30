@@ -29,7 +29,7 @@ exp_end_pwr = getScanParameter(Evap_End_Power_List,...
 %After Evaporation (unless CDT_evap = 0)
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 seqdata.flags.xdt_ramp_power_end = 1;   % Ramp dipole back up after evaporation before any further physics 
-do_dipole_trap_kick = 0;                % Kick the dipole trap, inducing coherent oscillations for temperature measurement
+seqdata.flags.xdt_do_dipole_trap_kick = 0;                % Kick the dipole trap, inducing coherent oscillations for temperature measurement
 seqdata.flags.xdt_do_hold_end = 0;
 
 
@@ -1502,7 +1502,7 @@ end
     %% Kick the dipole trap
     %RHYS - An alterative way to measure trap frequency using a piezo mirror to
     %give the atoms a kick. 
-    if do_dipole_trap_kick
+    if seqdata.flags.xdt_do_dipole_trap_kick
         dispLineStr('Kicking the dipole trap',curtime);
         %How Long to Wait After Kick
         kick_ramp_time = 100;
@@ -1536,7 +1536,7 @@ end
     %holds a bit in general. The one second hold time seems useful for loading
     %the lattice as it gives the rotating waveplate time to turn before the
     %lattice turns on.
-    if do_dipole_trap_kick
+    if seqdata.flags.xdt_do_dipole_trap_kick
         curtime = calctime(curtime,kick_wait_time);
     else
         % Why is this hold time here?
@@ -1582,7 +1582,6 @@ end
 
 if (seqdata.flags.dipole_high_field_a)    
     dispLineStr('Dipole Trap High Field a',curtime);
-
     curtime = dipole_high_field_a(curtime);  
 end
      

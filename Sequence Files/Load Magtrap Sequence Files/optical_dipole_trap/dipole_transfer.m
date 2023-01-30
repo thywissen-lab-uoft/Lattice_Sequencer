@@ -24,6 +24,7 @@ Evap_End_Power_List = [.1:.01:.2];
 % Ending optical evaporation
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...
     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');   
+seqdata.flags.xdt_ramp2sympathetic = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
@@ -943,7 +944,28 @@ if do_levitate_evap
     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,LF_QP,1); 
 end
+%% Preramp
+if seqdata.flags.CDT_evap ==1 && seqdata.flags.xdt_ramp2sympathetic
+    % Pre ramp powers to sympathtetic cooling regime
+    dispLineStr('Ramp to sympathetic regime',curtime);
 
+    % Powers to ramp to 
+    dipole_preramp_time = 500;
+
+    disp(['     Ramp Time (ms) : ' num2str(dipole_preramp_time)]);
+    disp(['     XDT 1 init (W) : ' num2str(DT1_power(2))]);
+    disp(['     XDT 2 init (W) : ' num2str(DT2_power(2))]);            
+    disp(['     XDT 1 (W)      : ' num2str(DT1_power(3))]);
+    disp(['     XDT 2 (W)      : ' num2str(DT2_power(3))]);            
+
+    % Ramp optical power requests to sympathetic regime
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        dipole_preramp_time,dipole_preramp_time,DT1_power(3));
+curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        dipole_preramp_time,dipole_preramp_time,DT2_power(3));
+end
 %% CDT evap
 %RHYS - Imporant code, definitely should be kept and cleaned up.
 if ( seqdata.flags.CDT_evap == 1 )
@@ -952,30 +974,6 @@ if ( seqdata.flags.CDT_evap == 1 )
     % Flag to perform optical exponential optical evaporation
     expevap = 1;
 
-    % Flag to ramp the powers to sympathetic cooling regime
-    do_pre_ramp = 1;
-
-    % Pre ramp powers to sympathtetic cooling regime
-    if do_pre_ramp 
-        disp(' Performing pre ramp to sympathetic power regime');
-
-        % Powers to ramp to 
-        dipole_preramp_time = 500;
-
-        disp(['     Ramp Time (ms) : ' num2str(dipole_preramp_time)]);
-        disp(['     XDT 1 init (W) : ' num2str(DT1_power(2))]);
-        disp(['     XDT 2 init (W) : ' num2str(DT2_power(2))]);            
-        disp(['     XDT 1 (W)      : ' num2str(DT1_power(3))]);
-        disp(['     XDT 2 (W)      : ' num2str(DT2_power(3))]);            
-
-        % Ramp optical power requests to sympathetic regime
-        AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
-                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-                dipole_preramp_time,dipole_preramp_time,DT1_power(3));
-curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
-                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-                dipole_preramp_time,dipole_preramp_time,DT2_power(3));
-    end
 
     if expevap
         disp(' Performing exponential evaporation');

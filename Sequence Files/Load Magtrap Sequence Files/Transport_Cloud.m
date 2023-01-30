@@ -21,7 +21,6 @@
 %requested. 
 function timeout = Transport_Cloud(timein,hor_transport_type,ver_transport_type, image_loc)
 
-
 curtime = timein;
 global seqdata;
 

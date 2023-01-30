@@ -26,7 +26,7 @@ global adwinprocessnum;
 waitDefault=30;
 compath='Y:\_communication';
 
-defaultSequence='@test_sequence';
+defaultSequence='@Load_MagTrap_sequence';
 
 if ~doDebug
     figName='Lattice Sequencer';
@@ -150,7 +150,7 @@ tSeq.Position(1:2)=[5 tTit.Position(2)-tSeq.Position(4)];
 % Sequence File edit box
 eSeq=uicontrol(hpMain,'style','edit','string',defaultSequence,...
     'horizontalalignment','left','fontsize',10,'backgroundcolor',cc);
-eSeq.Position(3)=210;
+eSeq.Position(3)=190;
 eSeq.Position(4)=eSeq.Extent(4);
 eSeq.Position(1:2)=[5 tSeq.Position(2)-eSeq.Position(4)];
 
@@ -161,13 +161,20 @@ bBrowse=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
 bBrowse.Position(3:4)=size(cdata,[1 2]);
 bBrowse.Position(1:2)=eSeq.Position(1:2)+[eSeq.Position(3)+2 0];
 
+% Button for file selection of the sequenece file
+cdata=imresize(imread(['GUI Functions' filesep 'file.png']),[20 20]);
+bFile=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
+    'backgroundcolor',cc,'Callback',@fileCB);
+bFile.Position(3:4)=size(cdata,[1 2]);
+bFile.Position(1:2)=bBrowse.Position(1:2)+[bBrowse.Position(3)+2 0];
+
 % Button to plot the sequence
 bPlot=uicontrol(hpMain,'style','pushbutton','String','plot',...
     'backgroundcolor',cc,'FontSize',10,'units','pixels',...
     'fontweight','normal','callback',@bPlotCB);
 bPlot.Position(3:4)=[30 20];
-bPlot.Position(1:2)=[bBrowse.Position(1)+bBrowse.Position(3)+5 ...
-    bBrowse.Position(2)];
+bPlot.Position(1:2)=[bFile.Position(1)+bFile.Position(3)+5 ...
+    bFile.Position(2)];
 
     function bPlotCB(~,~)
         fh = str2func(erase(eSeq.String,'@'));        
@@ -216,6 +223,17 @@ bCompile.Callback=@bCompileCB;
         funcname=['@' erase(file,'.m')];
         eSeq.String=funcname;
         disp([datestr(now,13) ' New sequence function is ' funcname]);
+    end
+
+    function fileCB(~,~)
+        fname = strrep(eSeq.String,'@','');
+        try
+            disp(['Opening ' fname]);
+            open(fname);
+        catch ME
+            warning('Cant open sequence file for some reason');
+        end
+        
     end
 
 %% Wait Timer Graphical interface

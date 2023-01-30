@@ -13,7 +13,7 @@ curpath = fileparts(mfilename('fullpath'));
 addpath(curpath);
 addpath(fullfile(curpath,'Sequence Files'));
 addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files'));
-addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','Absorption Image Files'));
+addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','absorption_imaging'));
 addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','debugging'));
 addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','magnetic_trap'));
 addpath(fullfile(curpath,'Sequence Files','Load Magtrap Sequence Files','magneto_optical_trap'));

@@ -991,16 +991,6 @@ if ( seqdata.flags.CDT_evap == 1 )
         dipole1_exp_pwr = 1.0;
         dipole2_exp_pwr = 1*1; %2.2 for ODT beam sizes prior to Nov 2013, now beams have same equal area
 
-        %Turn on dimple beam near end of evaporation.
-        Dimple_in_XDT = 0;
-        if(Dimple_in_XDT)
-            Dimple_Ramp_Time = 50;
-            Dimple_Power = 0.5;
-            Dimple_On_Time_Scale = 0.8;
-            setDigitalChannel(calctime(curtime,exp_evap_time*Dimple_On_Time_Scale),'Dimple TTL',0);%0
-            AnalogFuncTo(calctime(curtime,exp_evap_time*Dimple_On_Time_Scale),'Dimple Pwr',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), Dimple_Ramp_Time, Dimple_Ramp_Time, Dimple_Power); 
-        end
-
         % EXPONENTIAL RAMP 
         AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
             @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...

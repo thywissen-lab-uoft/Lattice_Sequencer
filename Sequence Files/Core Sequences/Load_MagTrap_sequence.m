@@ -65,12 +65,6 @@ seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been p
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%It's preferable to add a switch here than comment out code!
-%Special flags
-
-after_sci_cell_load = 0;    % Abs image after loading into science cell
-
 seqdata.flags.controlled_load = 0; %do a specific load time
 
 seqdata.params.UV_on_time = 10000;
@@ -139,7 +133,7 @@ seqdata.flags.ver_transport_type = 3;
 
 % Use stage1  = 2 to evaporate fast for transport benchmarking 
 % Use stage1b = 2 to do microwave evaporation in the plugged QP trap
-seqdata.flags.compress_QP = 1; % compress QP after transport
+seqdata.flags.mt_compress_after_transport = 1; % compress QP after transport
 seqdata.flags.RF_evap_stages = [1, 1, 1]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
 
 % Turn on plug beam during RF1B
@@ -244,7 +238,7 @@ scope_trigger = 'Lattice_Mod';
 
 if seqdata.flags.image_loc == 0 %MOT cell imaging
     seqdata.flags.do_plug = 0;
-    seqdata.flags.compress_QP = 0;
+    seqdata.flags.mt_compress_after_transport = 0;
     seqdata.flags.RF_evap_stages = [0 0 0];
     seqdata.flags.do_dipole_trap = 0;
     seqdata.flags.load_lattice = 0;  
@@ -578,7 +572,7 @@ dispLineStr('Compression stage after transport to science cell.',curtime);
 % Compression stage after the transport to the science cell
 
 [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_trans(curtime, ...
-    seqdata.flags.compress_QP);
+    seqdata.flags.mt_compress_after_transport);
 
 
 %Shim Values to Turn On To: 

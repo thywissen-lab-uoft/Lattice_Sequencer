@@ -447,7 +447,6 @@ ch_off.FREQUENCY = 1;
 
 programRigol(addr_mod_xy,ch_off,ch_off);   % Turn off xy mod
 programRigol(addr_z,[],ch_off);             % Turn off z mod
-
     
 %% Make sure Shim supply relay is on
 
@@ -472,8 +471,6 @@ end
 %% Prepare to Load into the Magnetic Trap
 
 curtime = Prepare_MOT_for_MagTrap(curtime);
-
-%RHYS - Should integrate the following lines into the above function. 
 
 %Open other AOMS to keep them warm. Why ever turn them off for long
 %when we have shutters to do our dirty work?
@@ -518,6 +515,9 @@ if ~(seqdata.flags.image_type==4 )
 curtime = Load_MagTrap_from_MOT(curtime);
 
 end
+
+% CF : This seems bad to me as they will perturb the just loaded MT, I
+% think should this be done adiabatically
 
 %**Should be set to zero volts to fully turn off the shims (use volt func 1)
 %turn off shims
@@ -1034,10 +1034,8 @@ curtime = iXon_FluorescenceImage(curtime,'ExposureOffsetTime',molasses_offset,'E
     setAnalogChannel(calctime(curtime,0),'Z Shim',0,1);
     
 %% Post-sequence: Pulse the PA laser again for labjack power measurement
-    if seqdata.flags.misc_calibrate_PA == 1
-    
-       curtime = PA_pulse(curtime,2); 
-    
+    if seqdata.flags.misc_calibrate_PA == 1    
+       curtime = PA_pulse(curtime,2);     
     end
 
 %% Post-sequence: rotate diople trap waveplate to default value
@@ -1098,18 +1096,15 @@ curtime = DigitalPulse(calctime(curtime,0),'Remote field sensor SR',50,1);
 % Reset analog and digital channels (shouldn't this always happen?)
 curtime = Reset_Channels(calctime(curtime,0));
 
-end
-
-%% Raman Shutter
 %turn on the Raman shutter for frquuency monitoring
-
 setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
 
-%This is turned off in line 435 above
+end
+
+
 
 
 %% Load MOT
-
 % Load the MOT
 dispLineStr('Load the MOT',curtime);
 loadMOTSimple(curtime,0);
@@ -1130,13 +1125,10 @@ SelectScopeTrigger(scope_trigger);
 %% Timeout
 timeout = curtime;
 
+% Check if sequence is on for too long
 if (((timeout - timein)*(seqdata.deltat/seqdata.timeunit))>100000)
     error('Cycle time greater than 100s! Is this correct?')
 end
     
-disp(repmat('-',1,60));
 dispLineStr('Sequence Complete.',curtime);
-disp(repmat('-',1,60));
-disp(repmat('-',1,60));
-
 end

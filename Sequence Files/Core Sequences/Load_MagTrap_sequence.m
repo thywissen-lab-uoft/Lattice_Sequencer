@@ -4,7 +4,6 @@ function timeout = Load_MagTrap_sequence(timein)
 % This is main sequence file of the experiment
 
 curtime = timein;
-
 disp(repmat('-',1,60));
 dispLineStr('New Sequence',curtime);
 
@@ -22,28 +21,22 @@ MHz = 1E6;
 GHz = 1E9;
 
 %% Constants and Parameters
-% These are properties of the machine that are not changed. 
 
-% Ambient field cancelling values (ramp to these at end of XDT loading)
-seqdata.params. shim_zero = [(0.1585-0.0160), (-0.0432-0.022), (-0.0865-0.015)];
+% % Ambient field cancelling values (ramp to these at end of XDT loading)
+% seqdata.params.shim_zero = [(0.1585-0.0160), (-0.0432-0.022), (-0.0865-0.015)];
+% 
+% % Shim values that align the plugged-QP trap to the center of the 
+% seqdata.params.plug_shims = [...
+%     (seqdata.params.shim_zero(1)-1-0.04-0.3),...
+%     (seqdata.params.shim_zero(2)+0.125), ...
+%     (seqdata.params.shim_zero(3)+ 0.35)];
 
-% Shim values that align the plugged-QP trap to the center of the 
-seqdata.params.plug_shims = [...
-    (seqdata.params. shim_zero(1)-1-0.04-0.3),...
-    (seqdata.params. shim_zero(2)+0.125), ...
-    (seqdata.params. shim_zero(3)+ 0.35)];
+% Shim Zero (to eliminate all bkgd fields)
+seqdata.params.shim_zero2 = [0.1425, -0.0652, -0.1015];
 
-z_shim_offset_list = [0];
-z_shim_offset = getScanParameter(z_shim_offset_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'z_shim_offset');
-
-x_shim_offset_list = [0];
-x_shim_offset = getScanParameter(x_shim_offset_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'x_shim_offset');
-
-
-seqdata.params.plug_shims(3)=seqdata.params.plug_shims(3)+z_shim_offset;
-seqdata.params.plug_shims(1)=seqdata.params.plug_shims(1)+x_shim_offset;
+% Plug Zero (to move MT underneath sapphire window)
+seqdata.params.plug_shims2 = seqdata.params.shim_zero + ...
+    [-1.3400 +0.125 +0.35];
 
 % Slope relation between shim and QP currents to keep field center fixed.
 % Important for ramping QP at end of RF1B and during QP ramp down in ODT

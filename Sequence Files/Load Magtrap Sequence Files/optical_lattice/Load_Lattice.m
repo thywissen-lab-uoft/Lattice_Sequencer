@@ -1144,7 +1144,7 @@ end
 % Perform Bandmapping
 
 % Turn off of lattices
- if ( seqdata.flags.load_lattice)
+ if ( seqdata.flags.lattice)
    
     % Ramp XDTs before the lattices
     dispLineStr('Ramping down XDTs',curtime);

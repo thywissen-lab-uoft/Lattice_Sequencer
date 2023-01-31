@@ -249,13 +249,13 @@ else
             'K Trap FM',K_detuning+(seqdata.params.HF_probe_fb-190)*0.675*2+offset);
     
     if (flags.HighField_Attractive)
-        if seqdata.flags.load_lattice
+        if seqdata.flags.lattice
             HF_prob_freq9 = params.detunings.K.X.negative9.HF.attractive_lattice;
         else
             HF_prob_freq9 =  params.detunings.K.X.negative9.HF.attractive_xdt;
         end
     else
-        if seqdata.flags.load_lattice
+        if seqdata.flags.lattice
             HF_prob_freq9 = params.detunings.K.X.negative9.HF.repulsive_lattice;
         else
             HF_prob_freq9 =  params.detunings.K.X.negative9.HF.repulsive_xdt;
@@ -481,13 +481,13 @@ switch flags.image_atomtype
                     
                     
                     if flags.HighField_Attractive
-                        if seqdata.flags.load_lattice
+                        if seqdata.flags.lattice
                             rf_tof_shift = params.HF_rf_shift.attractive_lattice;
                         else
                             rf_tof_shift = params.HF_rf_shift.attractive_xdt;
                         end
                     else
-                        if seqdata.flags.load_lattice
+                        if seqdata.flags.lattice
                             rf_tof_shift = params.HF_rf_shift.repulsive_lattice;
                         else
                             rf_tof_shift = params.HF_rf_shift.repulsive_xdt;

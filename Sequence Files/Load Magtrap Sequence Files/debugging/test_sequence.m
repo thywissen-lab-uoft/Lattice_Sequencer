@@ -18,7 +18,7 @@ acync_test = 0;
 
 %% Test iXon with new function
 
-% seqdata.flags. load_lattice = 1;
+% seqdata.flags. lattice = 1;
 % seqdata.flags. SRS_programmed = [0 0];
 % seqdata.flags. do_stern_gerlach = 0;
 % seqdata.flags. do_imaging_molasses = 1;

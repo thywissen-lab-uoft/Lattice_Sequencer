@@ -212,7 +212,7 @@ seqdata.flags.xdt_high_field_a = 1;
 % Optical lattice
 
 % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
-seqdata.flags.load_lattice = 0; 
+seqdata.flags.lattice = 0; 
 
 % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
 seqdata.flags.lattice_pulse_for_alignment = 0; 
@@ -224,7 +224,7 @@ seqdata.flags.lattice_pulse_z_for_alignment = 0;
 %%% OTHER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if (seqdata.flags.xdt ~= 0 || seqdata.flags.load_lattice ~= 0)
+if (seqdata.flags.xdt ~= 0 || seqdata.flags.lattice ~= 0)
     seqdata.flags.QP_imaging = 0;
 else
     seqdata.flags.QP_imaging = 1;
@@ -251,7 +251,7 @@ if seqdata.flags.image_loc == 0 %MOT cell imaging
     seqdata.flags.mt_compress_after_transport = 0;
     seqdata.flags.RF_evap_stages = [0 0 0];
     seqdata.flags.xdt = 0;
-    seqdata.flags.load_lattice = 0;  
+    seqdata.flags.lattice = 0;  
     seqdata.flags.lattice_pulse_for_alignment = 0;
 end
 
@@ -868,7 +868,7 @@ end
 
 %% Optical Lattice
 
-if ( seqdata.flags.load_lattice ~= 0 )
+if ( seqdata.flags.lattice ~= 0 )
     curtime = Load_Lattice(curtime);
 end
 
@@ -949,7 +949,7 @@ dispLineStr('Turning off coils and traps.',curtime);
         setDigitalChannel(calctime(curtime,-1),'XDT Direct Control',1);
     end          
 
-    if ( seqdata.flags.load_lattice ~= 0 )
+    if ( seqdata.flags.lattice ~= 0 )
         %turn lattice beams off (leave a bit of time for the rotating waveplate to get back to zero)
 
         %Z lattice

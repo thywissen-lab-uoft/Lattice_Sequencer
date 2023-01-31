@@ -5621,8 +5621,10 @@ end
 
  %setAnalogChannel(calctime(curtime,0),'Plug',6.1785,1); %0.12
  
- setDigitalChannel(calctime(curtime,0),'Plug Shutter',1);
+ setDigitalChannel(calctime(curtime,0),'Raman TTL 1',1);
  setAnalogChannel(calctime(curtime,0),'Plug',2500); %0.12
+ 
+ 
 
 timeout = curtime;
 % SelectScopeTrigger('PA_Pulse');

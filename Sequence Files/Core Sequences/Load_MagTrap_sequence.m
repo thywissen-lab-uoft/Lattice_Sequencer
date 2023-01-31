@@ -62,6 +62,10 @@ seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been p
 
 %% Flags
 
+% Take a second PA pulse after absorption imaging to calibrate PA power
+seqdata.flags.misc_calibrate_PA = 0;
+seqdata.flags.misc_program4pass = 0;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -130,15 +134,26 @@ seqdata.flags.ver_transport_type = 3;
 % 20:a3, 21:a17, 22:d22, 23:d28
 % use this order with the boolean enable array!
 
+ % compress QP after transport
+seqdata.flags.mt_compress_after_transport   = 1;
+
 % Use stage1  = 2 to evaporate fast for transport benchmarking 
-seqdata.flags.mt_compress_after_transport = 1; % compress QP after transport
-seqdata.flags.RF_evap_stages = [1, 1, 1]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
+%[stage1, decomp/transport, stage1b] 
+%Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
+seqdata.flags.RF_evap_stages                = [1, 1, 1];
 
 % Turn on plug beam during RF1B
-seqdata.flags.mt_use_plug = 1;
+seqdata.flags.mt_use_plug                   = 1;
 
-% Lower cloud after evaporation before TOF (useful for hot clouds)
-seqdata.flags.lower_atoms_after_evap = 0; 
+% Lower cloud after evaporation before TOF (can be useful for hot clouds)
+seqdata.flags.lower_atoms_after_evap        = 0; 
+
+% Resonantly kill atoms after evaporation
+seqdata.flags.mt_kill_Rb_after_evap         = 0;    
+seqdata.flags.mt_kill_K_after_evap          = 0;     
+
+% Ramp plug power at end of evaporation
+seqdata.flags.mt_plug_ramp_end              = 0;
 
 % RF1A and RF1B timescales
 RF_1B_time_scale_list = [0.8];0.8;
@@ -153,22 +168,18 @@ RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1A_finalfreq','MHz');
 
 % RF1B Final Frequency
-RF_1B_Final_Frequency_list = [.8];1;%0.8,0.4 1
+RF_1B_Final_Frequency_list = [.8];1;
 RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq','MHz');
 
-% Resonantly kill atoms after evaporation
-seqdata.flags.mt_kill_Rb_after_evap = 0;    % Blow away Rb
-seqdata.flags.mt_kill_K_after_evap = 0;     % Blow away K
- 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% DIPOLE TRAP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+seqdata.params.ODT_zeros = [-0.04,-0.04];
 
 % Dipole trap
 % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
 seqdata.flags.xdt = 1; 
-seqdata.params.ODT_zeros = [-0.04,-0.04];
 
 % MT to XDT State Transfer
 seqdata.flags.xdt_Rb_21uwave_sweep_field = 1;   % Field Sweep Rb 2-->1
@@ -194,17 +205,20 @@ seqdata.flags.xdt_kill_K7_after_evap  = 0;   % optical remove 7/2 K after (untes
 % XDT High Field Experiments
 seqdata.flags.xdt_high_field_a = 1;
 
-% Take a second PA pulse after absorption imaging to calibrate PA power
-seqdata.flags.misc_calibrate_PA = 0;
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OPTICAL LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Optical lattice
-seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
-seqdata.flags.lattice_pulse_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
-seqdata.flags.lattice_pulse_z_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
+
+% set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
+seqdata.flags.load_lattice = 0; 
+
+% 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
+seqdata.flags.lattice_pulse_for_alignment = 0; 
+
+% 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
+seqdata.flags.lattice_pulse_z_for_alignment = 0; 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OTHER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -270,7 +284,6 @@ lockSetFileName ='Y:\wavemeter_amar\lock_freq.txt';
 
 isFreqUpdated = 0;
 
-
 updateTime=0;
 if exist(lockSetFileName)    
     disp(['writing PA freq to file ' num2str(PA_freq,12)]);
@@ -317,7 +330,6 @@ seqdata.scancycle, 1:length(obj_piezo_V_List), 'Objective_Piezo_Z','V');%5
 % obj_piezo_V = 6.8;
 setAnalogChannel(calctime(curtime,0),'objective Piezo Z',obj_piezo_V,1);
 addOutputParam('objpzt',obj_piezo_V,'V');
-
     
 %% Four-Pass
 
@@ -327,8 +339,7 @@ df = getScanParameter(detuning_list, seqdata.scancycle, seqdata.randcyclelist, '
 DDSFreq = 324.206*MHz + df*kHz/4;
 addOutputParam('FourPassFrequency',DDSFreq*1e-6,'MHz');
 
-doProgram4Pass = 0;
-if doProgram4Pass
+if seqdata.flags.misc_program4pass
     DDS_sweep(calctime(curtime,0),2,DDSFreq,DDSFreq,calctime(curtime,1));
 end
 
@@ -801,14 +812,12 @@ if seqdata.flags.mt_kill_K_after_evap
 end
 
 %% Ramp Down Plug Power a little bit
-seqdata.flags.mt_plug_ramp_end = 0;
 if seqdata.flags.mt_plug_ramp_end
     plug_ramp_time = 200;
     
     plug_ramp_power_list = [1500];
     plug_ramp_power=getScanParameter(plug_ramp_power_list,...
         seqdata.scancycle,seqdata.randcyclelist,'plug_ramp_power','mA');
-
     
     curtime = AnalogFuncTo(calctime(curtime,0),'Plug',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...

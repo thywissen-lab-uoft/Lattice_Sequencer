@@ -44,7 +44,7 @@ seqdata.flags.xdt_am_modulate           = 0;    % 1: ODT1, 2:ODT2
 seqdata.flags.xdt_k_rf_rabi_oscillation = 0;    % RF rabi oscillations after evap
 seqdata.flags.xdt_ramp_QP_FB_and_back   = 0;    % Ramp up and down FB and QP to test field gradients
 seqdata.flags.xdt_uWave_K_Spectroscopy  = 0;
-seqdata.flags.ramp_up_FB_for_lattice    = 0;    %Ramp FB up at the end of evap  
+seqdata.flags.xdt_ramp_up_FB_for_lattice    = 0;    %Ramp FB up at the end of evap  
 
     
 %% XDT Powers
@@ -1562,7 +1562,7 @@ end
 % magnetic field to establish the interaction (attractive versus repulsive)
 % during the loading. Attractive interactions tend to create a larger
 % number of doubly occupied sites.
-if seqdata.flags.ramp_up_FB_for_lattice     
+if seqdata.flags.xdt_ramp_up_FB_for_lattice     
     seqdata.params.time_in_HF = curtime;
     Lattice_loading_field_list =[207];
     Lattice_loading_field = getScanParameter(Lattice_loading_field_list,...

@@ -453,7 +453,7 @@ end
 
 %% Ramp down HF used for loading lattice (this flag is in dipole transfer)
 
-if seqdata.flags.ramp_up_FB_for_lattice
+if seqdata.flags.xdt_ramp_up_FB_for_lattice
 dispLineStr('Ramping FB field (not sure why?).',curtime);
 
     seqdata.params.time_out_HF = curtime;

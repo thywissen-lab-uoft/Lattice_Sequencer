@@ -33,18 +33,18 @@ seqdata.flags.xdt_evap2stage            = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdt_ramp_power_end        = 1;   % Ramp dipole back up after evaporation before any further physics 
-seqdata.flags.xdt_do_dipole_trap_kick   = 0;                % Kick the dipole trap, inducing coherent oscillations for temperature measurement
+seqdata.flags.xdt_ramp_power_end        = 1;    % Ramp dipole back up after evaporation before any further physics 
+seqdata.flags.xdt_do_dipole_trap_kick   = 0;    % Kick the dipole trap, inducing coherent oscillations for temperature measurement
 seqdata.flags.xdt_do_hold_end           = 0;
-seqdata.flags.xdt_am_modulate           = 0; % 1: ODT1, 2:ODT2
+seqdata.flags.xdt_am_modulate           = 0;    % 1: ODT1, 2:ODT2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % Spectroscopy after Evaporation
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdt_k_rf_rabi_oscillation = 0;        % RF rabi oscillations after evap
-seqdata.flags.xdt_ramp_QP_FB_and_back   = 0;        % Ramp up and down FB and QP to test field gradients
+seqdata.flags.xdt_k_rf_rabi_oscillation = 0;    % RF rabi oscillations after evap
+seqdata.flags.xdt_ramp_QP_FB_and_back   = 0;    % Ramp up and down FB and QP to test field gradients
 seqdata.flags.xdt_uWave_K_Spectroscopy  = 0;
-seqdata.flags.ramp_up_FB_for_lattice    = 0;     %Ramp FB up at the end of evap  
+seqdata.flags.ramp_up_FB_for_lattice    = 0;    %Ramp FB up at the end of evap  
 
     
 %% XDT Powers

@@ -33,10 +33,10 @@ seqdata.flags.xdt_evap2stage = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdt_ramp_power_end = 1;   % Ramp dipole back up after evaporation before any further physics 
-seqdata.flags.xdt_do_dipole_trap_kick = 0;                % Kick the dipole trap, inducing coherent oscillations for temperature measurement
-seqdata.flags.xdt_do_hold_end = 0;
-seqdata.flags.xdt_am_modulate =0;
+seqdata.flags.xdt_ramp_power_end        = 1;   % Ramp dipole back up after evaporation before any further physics 
+seqdata.flags.xdt_do_dipole_trap_kick   = 0;                % Kick the dipole trap, inducing coherent oscillations for temperature measurement
+seqdata.flags.xdt_do_hold_end           = 0;
+seqdata.flags.xdt_am_modulate           =0; % 1: ODT1, 2:ODT2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % Spectroscopy after Evaporation
@@ -633,8 +633,7 @@ if seqdata.flags.xdt_K_p2n_rf_sweep_freq
     fesh_value = getChannelValue(seqdata,'FB current',1,0);
     
     
-    %Ramp FB if not done previously
- 
+    %Ramp FB if not done previously 
      if fesh_value~=19.332
         clear('ramp');
         ramp=struct;
@@ -879,14 +878,14 @@ curtime = calctime(curtime,50);
 end
 
 %% Ramp Magnetic Fields before Optical Evaporation
+% Ramp the FB field. This typically is already done by the spin manulations
+% so it is unclear if this code is necessary
 
 if ramp_Feshbach_B_before_CDT_evap
-
     dispLineStr('Ramping FB field prior to optical evaporation',curtime);
     Evap_FB_field_list = [15];
     Evap_FB_field = getScanParameter(Evap_FB_field_list,seqdata.scancycle,...
                 seqdata.randcyclelist,'Evap_FB_field','G');
-
     clear('ramp');
 
     %  FB coil settings
@@ -915,8 +914,9 @@ end
 % for efficient evaporation at high optical powers, apply a levitation
 % gradient which prevents K from falling out of the trap, while still
 % allowing Rb to fall from gravity.
+%
+% Has not been shown to work
 
-% TESTING HAS NOT WORKIGN YET
 if do_levitate_evap
     % QP Value to ramp to
     LF_QP_List =  [.3];.14;0.115;
@@ -974,7 +974,7 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
 end
 %% CDT evap
 if ( seqdata.flags.CDT_evap == 1 )
-    dispLineStr('Optical evaporation',curtime);
+    dispLineStr('Optical evaporation 1',curtime);
 
     disp(' Performing exponential evaporation');
     disp(['     Evap Time (ms) : ' num2str(evap_time_total)]);
@@ -1005,13 +1005,11 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
 end
 %% CDT evap 2
 if ( seqdata.flags.CDT_evap == 1 && seqdata.flags.xdt_evap2stage)
-    dispLineStr('Optical evaporation',curtime);
+    dispLineStr('Optical evaporation 2',curtime);
 
     pend = 0.06;
-
-    evap_exp_ramp = @(t,tt,tau,y2,y1)(y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));
-    
-
+    evap_exp_ramp = @(t,tt,tau,y2,y1) ...
+        (y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));    
     
     evap_time_2_list =  [10000];
     evap_time_2 = getScanParameter(evap_time_2_list,seqdata.scancycle,...
@@ -1025,10 +1023,15 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
         evap_time_2,evap_time_2,exp_tau,pend);
 end
-%% Oscillatote Dipole Poewrs
-% CF : I dont recall ever using this?
 
-if ( seqdata.flags.xdt_am_modulate)
+%% AM Modulate Dipole Powers
+% AM modulate the dipole trap powers to measure the trap depth. 
+% CF : I dont recall ever using this? Kick measurements are likely easier.
+% Also, it makes more sense to not modulate the requests because that
+% requires the PID to follow. Use the modulation control directly on the
+% regulation boxes
+
+if seqdata.flags.xdt_am_modulate
     dispLineStr('Modulate Dipole trap beam power',curtime);    
 
     % Oscillate with a sinuisoidal function
@@ -1039,7 +1042,8 @@ if ( seqdata.flags.xdt_am_modulate)
     dip_osc_offset = exp_end_pwr;   % CDT_rampup_pwr;
     dip_osc_amp = 0.05;             % Oscillation amplitude
     dip_osc_freq_list = [400:10:500 650];
-    dip_osc_freq = getScanParameter(dip_osc_freq_list,seqdata.scancycle,seqdata.randcyclelist,'dip_osc_freq');
+    dip_osc_freq = getScanParameter(dip_osc_freq_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'dip_osc_freq');
 
     % Modify time slightly to ensure complete cycles
     Ncycle = ceil((dip_osc_time*1E-3)*dip_osc_freq);
@@ -1050,17 +1054,28 @@ if ( seqdata.flags.xdt_am_modulate)
     disp(['     Amplitude  (W) : ' num2str(dip_osc_amp)]);
     disp(['     Time      (ms) : ' num2str(dip_osc_time)]);                
 
-    %oscillate dipole 1 
-    AnalogFunc(calctime(curtime,0),'dipoleTrap1',@(t,freq,y2,y1)(dip_osc(t,freq,y2,y1)),dip_osc_time,dip_osc_freq,dip_osc_amp,dip_osc_offset);
-    %oscillate dipole 2 
-%   curtime = AnalogFunc(calctime(curtime,0),'dipoleTrap2',@(t,freq,y2,y1)(dip_osc(t,freq,y2,y1)),dip_osc_time,dip_osc_freq,dip_osc_amp,dip_osc_offset);    
 
-    % Advance Time
+    switch seqdata.flags.xdt_am_modulate
+        case 1
+            AnalogFunc(calctime(curtime,0),'dipoleTrap1',...
+                    @(t,freq,y2,y1)(dip_osc(t,freq,y2,y1)),...
+                    dip_osc_time,dip_osc_freq,dip_osc_amp,dip_osc_offset);
+        case 2
+            AnalogFunc(calctime(curtime,0),'dipoleTrap2',...
+                  @(t,freq,y2,y1)(dip_osc(t,freq,y2,y1)),...
+                  dip_osc_time,dip_osc_freq,dip_osc_amp,dip_osc_offset);   
+        otherwise
+            error('oh no')
+    end 
+
+    % Wait for modulation Time
     curtime=calctime(curtime,dip_osc_time);
+    
     % Trigger the scope 
     DigitalPulse(curtime,'ScopeTrigger',10,1);
 
-curtime = calctime(curtime,100);    
+    % Wait time
+    curtime = calctime(curtime,100);    
 end
 
 %% Unramp Gradient

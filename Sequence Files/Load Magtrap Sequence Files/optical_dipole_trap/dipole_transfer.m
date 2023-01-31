@@ -1586,7 +1586,7 @@ end
 %% Dipole Trap High Field Operations 1
 % Perform operations in the dipole trap at high magnetic field.
 
-if (seqdata.flags.dipole_high_field_a)    
+if (seqdata.flags.xdt_high_field_a)    
     dispLineStr('Dipole Trap High Field a',curtime);
     curtime = dipole_high_field_a(curtime);  
 end

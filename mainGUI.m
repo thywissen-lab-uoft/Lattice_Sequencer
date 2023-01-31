@@ -35,7 +35,7 @@ compath='Y:\_communication';
 defaultSequence='@Load_MagTrap_sequence';
 
 if ~doDebug
-    figName='Lattice Sequencer';
+    figName='Main GUI';
 else
     figName = 'DEBUG MODE';
 end
@@ -74,7 +74,7 @@ for i = 1:length(figs)
 end
 % Figure color and size settings
 cc='w';
-w=350;h=400;
+w=350;h=340;
 
 % Initialize the figure graphics objects
 hF=figure('toolbar','none','Name',figName,'color',cc,'NumberTitle','off',...
@@ -140,16 +140,16 @@ hpMain.OuterPosition=[0 0 hF.Position(3) hF.Position(4)];
 hpMain.OuterPosition=[0 hF.Position(4)-h w h];
 
 % Title String
-tTit=uicontrol(hpMain,'style','text','string','Lattice Sequencer',...
-    'FontSize',18,'fontweight','bold','units','pixels','backgroundcolor',cc);
+tTit=uicontrol(hpMain,'style','text','string','Main GUI',...
+    'FontSize',10,'fontweight','bold','units','pixels','backgroundcolor',cc);
 tTit.Position(3:4)=tTit.Extent(3:4);
-tTit.Position(1:2)=[5 hpMain.Position(4)-tTit.Position(4)];
+tTit.Position(1:2)=[5 hpMain.Position(4)-tTit.Position(4)-3];
 
 %% Settings Graphical Objects
 
 % Sequence File label
 tSeq=uicontrol(hpMain,'style','text','String','Sequence File:',...
-    'units','pixels','fontsize',10,'backgroundcolor',cc);
+    'units','pixels','fontsize',8,'backgroundcolor',cc);
 tSeq.Position(3:4)=tSeq.Extent(3:4);
 tSeq.Position(1:2)=[5 tTit.Position(2)-tSeq.Position(4)];
 
@@ -278,7 +278,7 @@ bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
 bgWait = uibuttongroup('Parent',hpMain,'units','pixels','Title','wait mode',...
     'backgroundcolor',cc,'UserData',1,'SelectionChangedFcn',@waitCB);
 bgWait.Position(3:4)=[w 90];
-bgWait.Position(1:2)=[1 eSeq.Position(2)-bgWait.Position(4)-5];
+bgWait.Position(1:2)=[1 180];
 
 % Create three radio buttons in the button group. The user data holds the
 % selected mode (0,1,2) --> (no wait, intercyle, target time)
@@ -354,7 +354,7 @@ tWaitTime2.Position=[axWaitBar.Position(3) 24];
 % Run sequence mode
 bgRun = uibuttongroup('Parent',hpMain,'units','pixels','Title','run mode',...
     'backgroundcolor',cc,'UserData',0,'SelectionChangedFcn',@runModeCB);
-bgRun.Position(3:4)=[w bgWait.Position(2)];
+bgRun.Position(3:4)=[w 180];
 bgRun.Position(1:2)=[1 1];
         
     function runModeCB(~,evnt)
@@ -413,7 +413,7 @@ adwinbarcolor=[0.67578 1 0.18359];
 axAdWinBar=axes('parent',bgRun,'units','pixels','XTick',[],...
     'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
 axAdWinBar.Position=[10 10 bgRun.Position(3)-20 20];
-axAdWinBar.Position(2) = rScan.Position(2)-axAdWinBar.Position(4)-30;
+axAdWinBar.Position(2) = rScan.Position(2)-axAdWinBar.Position(4)-15;
 % Plot the patch of color for the bar
 pAdWinBar = patch(axAdWinBar,[0 0 0 0],[0 0 1 1], adwinbarcolor);
 
@@ -538,9 +538,9 @@ bRandSeed.Callback=@bReseedRandom;
 ttStr=['Interrupts AdWIN and sends all digital and analog voltage ' ...
     'outputs to their reset value.  DANGEROUS'];
 bAbort=uicontrol(hpMain,'style','pushbutton','String','abort',...
-    'backgroundcolor','r','FontSize',10,'units','pixels',...
-    'fontweight','bold','Tooltip',ttStr,'Callback',@bAbortCB);
-bAbort.Position(3:4)=[60 25];
+    'backgroundcolor','r','FontSize',8,'units','pixels',...
+    'fontweight','normal','Tooltip',ttStr,'Callback',@bAbortCB);
+bAbort.Position(3:4)=[40 15];
 bAbort.Position(1:2)=[hpMain.Position(3)-bAbort.Position(3)-5 ...
     hpMain.Position(4)-bAbort.Position(4)-5];
 
@@ -552,9 +552,9 @@ set(jbAbort,'ToolTipText',ttStr);
 ttStr=['Reinitialize channels and reset Adwin outputs ' ...
     'to default values.'];
 bReset=uicontrol(hpMain,'style','pushbutton','String','reset',...
-    'backgroundcolor',[255,165,0]/255,'FontSize',10,'units','pixels',...
-    'fontweight','bold','Tooltip',ttStr);
-bReset.Position(3:4)=[60 25];
+    'backgroundcolor',[255,165,0]/255,'FontSize',8,'units','pixels',...
+    'fontweight','normal','Tooltip',ttStr);
+bReset.Position(3:4)=[40 15];
 bReset.Position(1:2)=[bAbort.Position(1)-bReset.Position(3) ...
     bAbort.Position(2)];
 bReset.Callback=@bResetCB;

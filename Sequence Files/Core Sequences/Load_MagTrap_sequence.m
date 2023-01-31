@@ -614,6 +614,10 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Z Shim',...
 
 %% RF1A
 if ( seqdata.flags.RF_evap_stages(1) == 1 )
+    
+    % |2,2>-->|2,1>=h*f ==> E = 2*h*f
+    % 1 MHz == 48 uK
+    
     dispLineStr('RF1A',curtime);
 
     fake_sweep = 0;             % do a fake RF sweep
@@ -622,7 +626,7 @@ if ( seqdata.flags.RF_evap_stages(1) == 1 )
     start_freq = 42;            % Beginning RF1A frequnecy 42 MHz 
 
     % Frequency points
-    freqs_1 = [ start_freq 28 20 RF_1A_Final_Frequency]*MHz;
+    freqs_1 = [start_freq 28 20 RF_1A_Final_Frequency]*MHz;
     
     % Gains during each sweep
     RF_gain_1 = 0.5*[-4.1 -4.1 -4.1 -4.1]; 

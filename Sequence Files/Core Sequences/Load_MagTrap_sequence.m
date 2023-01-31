@@ -798,10 +798,10 @@ end
 
 
 
-if mt_kill_Rb_after_evap || seqdata.flags.mt_kill_K_after_evap
+if seqdata.flags.mt_kill_Rb_after_evap || seqdata.flags.mt_kill_K_after_evap
     dispLineStr('Blow away Rb or K',curtime);
 
-    if mt_kill_Rb_after_evap
+    if seqdata.flags.mt_kill_Rb_after_evap
         
         %blow away any atoms left in F=2
         %open Rb probe shutter

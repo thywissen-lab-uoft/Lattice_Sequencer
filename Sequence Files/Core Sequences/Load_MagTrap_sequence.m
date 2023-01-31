@@ -205,7 +205,7 @@ seqdata.flags.misc_calibrate_PA = 0;
 
 % Optical lattice
 seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
-seqdata.flags.pulse_lattice_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
+seqdata.flags.lattice_pulse_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
 seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -240,7 +240,7 @@ if seqdata.flags.image_loc == 0 %MOT cell imaging
     seqdata.flags.RF_evap_stages = [0 0 0];
     seqdata.flags.xdt = 0;
     seqdata.flags.load_lattice = 0;  
-    seqdata.flags.pulse_lattice_for_alignment = 0;
+    seqdata.flags.lattice_pulse_for_alignment = 0;
 end
 
 %% PA Laser Lock Detuning
@@ -883,11 +883,11 @@ end
 
 %% Pulse lattice after releasing from dipole trap
 
-if ( seqdata.flags.pulse_lattice_for_alignment ~= 0 )
+if ( seqdata.flags.lattice_pulse_for_alignment ~= 0 )
     %RHYS - how should these 'pulse lattice' alignment codes be
     %organized/called?
     curtime = Pulse_Lattice(curtime,...
-        seqdata.flags.pulse_lattice_for_alignment);
+        seqdata.flags.lattice_pulse_for_alignment);
 end
 
 %% Optical Lattice

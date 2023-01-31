@@ -4998,7 +4998,6 @@ end
 % seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
 % seqdata.flags.image_direction = 0; 
 % seqdata.flags.image_stern_gerlach = 0; %1: Do a gradient pulse at the beginning of ToF
-% seqdata.flags.iXon = 0; % use iXon camera to take an absorption image (only vertical)
 % seqdata.flags.do_F1_pulse = 0; % repump Rb F=1 before/during imaging
 % seqdata.flags.High_Field_Imaging = 0;
 % seqdata.flags.image_insitu = 0;

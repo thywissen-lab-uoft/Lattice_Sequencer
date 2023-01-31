@@ -93,8 +93,9 @@ seqdata.flags.image_atomtype = 0;   % 0: Rb; 1:K; 2: K+Rb (double shutter)
 seqdata.flags.image_loc = 1;        % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.image_direction = 0;  % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
 seqdata.flags.image_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of ToF
-seqdata.flags.iXon = 0;             % use iXon camera to take an absorption image (only vertical)
-seqdata.flags.image_F1_pulse = 0;      % repump Rb F=1 before/during imaging (unused?)
+
+seqdata.flags.image_iXon = 0;          % (unused?) use iXon camera to take an absorption image (only vertical)
+seqdata.flags.image_F1_pulse = 0;      % (unused?) repump Rb F=1 before/during imaging (unused?)
 
 seqdata.flags.High_Field_Imaging = 0;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 

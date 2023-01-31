@@ -449,8 +449,6 @@ dos(['CD ' func_dir  ' && hg add && hg commit -m "Automatic Update" -u "LatticeS
 
 %% Done
 
-seqdata.flags = orderfields(seqdata.flags);
-seqdata.params = orderfields(seqdata.params);
 seqdata = orderfields(seqdata);
 
 disp('Sequence calculated.');

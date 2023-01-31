@@ -175,8 +175,6 @@ seqdata.flags.xdt_Rb_21uwave_sweep_field = 1;   % Field Sweep Rb 2-->1
 seqdata.flags.xdt_Rb_21uwave_sweep_freq = 0;    % uWave Frequency sweep Rb 2-->1
 seqdata.flags.xdt_K_p2n_rf_sweep_freq = 1;      % RF Freq Sweep K +9-->-9  
 
-% xdt_K_p2n_rf_sweep_freq
-
 % State Manipulation Before Optical Evaporation 
 seqdata.flags.xdt_d1op_start= 1;            % D1 pump to purify
 seqdata.flags.xdt_rfmix_start = 1;          % RF Mixing -9-->-9+-7    
@@ -1100,9 +1098,6 @@ setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
 
 end
 
-
-
-
 %% Load MOT
 % Load the MOT
 dispLineStr('Load the MOT',curtime);
@@ -1121,6 +1116,7 @@ curtime = setDigitalChannel(calctime(curtime,10),'Transport Relay',0);
 
 SelectScopeTrigger(scope_trigger);
 
+
 %% Timeout
 timeout = curtime;
 
@@ -1128,6 +1124,20 @@ timeout = curtime;
 if (((timeout - timein)*(seqdata.deltat/seqdata.timeunit))>100000)
     error('Cycle time greater than 100s! Is this correct?')
 end
-    
+
+%% Order Flags and Fields
+% For visual purposes.  This sorts the flags by flag_groups while keeping
+% the original ordering as defined in the sequence.
+
+flag_groups = {'misc','image','MOT','mt','xdt','lattice'};
+flag_names = fieldnames(seqdata.flags);
+for kk = 1:length(flag_groups)
+    inds = startsWith(flag_names,flag_groups{kk});
+    [~,inds] = sort(inds,'ascend');
+    flag_names = flag_names(inds);
+end
+seqdata.flags = orderfields(seqdata.flags,flag_names);
+
+
 dispLineStr('Sequence Complete.',curtime);
 end

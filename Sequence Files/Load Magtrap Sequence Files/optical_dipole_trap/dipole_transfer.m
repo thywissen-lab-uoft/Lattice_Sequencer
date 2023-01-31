@@ -7,17 +7,17 @@ global seqdata;
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %Dipole Loading Flags
 %%%%%%%%%%%%%%%%%%%%%%%%%%    
-do_qp_ramp_down1 = 1;
-do_qp_ramp_down2 = 1;
+seqdata.flags.xdt_qp_ramp_down1         = 1;
+seqdata.flags.xdt_qp_ramp_down2         = 1;
 ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 %ramp_func = @(t,tt,y2,y1)(minimum_jerk(t,tt,y2-y1)+y1); 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %Evaporation in the XDT
 %%%%%%%%%%%%%%%%%%%%%%%%%% 
-ramp_Feshbach_B_before_CDT_evap         = 0; % Ramp up feshbach before evaporation
-seqdata.flags.xdt_do_levitate_evap      = 0; % Apply levitation gradient
-seqdata.flags.xdt_do_unlevitate_evap    = 0;
+seqdata.flags.xdt_ramp_FB_before_evap   = 0; % Ramp up feshbach before evaporation
+seqdata.flags.xdt_levitate_evap         = 0; % Apply levitation gradient
+seqdata.flags.xdt_unlevitate_evap       = 0;
 
 % Dipole trap asymmetry (useful for making a symmetric trap for lattice + QGM)
 seqdata.params.xdt_p2p1_ratio           = 1; % ratio of ODT2:ODT1 power
@@ -160,7 +160,7 @@ if vSet_ramp^2/4/(2*0.310) > 700
 end
 
 %% QP Ramp Down 1
-if do_qp_ramp_down1  
+if seqdata.flags.xdt_qp_ramp_down1  
     dispLineStr('QP RAMP DOWN 1',curtime);
 
     % Calculate the change in QP current
@@ -210,7 +210,7 @@ end
     
 %% QP Ramp Down 2
 
-if do_qp_ramp_down2
+if seqdata.flags.xdt_qp_ramp_down2
 
     dispLineStr('QP RAMP DOWN 2',curtime);
 
@@ -881,7 +881,7 @@ end
 % Ramp the FB field. This typically is already done by the spin manulations
 % so it is unclear if this code is necessary
 
-if ramp_Feshbach_B_before_CDT_evap
+if seqdata.flags.xdt_ramp_FB_before_evap
     dispLineStr('Ramping FB field prior to optical evaporation',curtime);
     Evap_FB_field_list = [15];
     Evap_FB_field = getScanParameter(Evap_FB_field_list,seqdata.scancycle,...
@@ -917,7 +917,7 @@ end
 %
 % Has not been shown to work
 
-if seqdata.flags.xdt_do_levitate_evap
+if seqdata.flags.xdt_levitate_evap
     % QP Value to ramp to
     LF_QP_List =  [.3];.14;0.115;
     LF_QP = getScanParameter(LF_QP_List,seqdata.scancycle,...
@@ -1703,7 +1703,7 @@ curtime = calctime(curtime,wait_time);
 end
 
 %% Unlevitate
-if seqdata.flags.xdt_do_unlevitate_evap 
+if seqdata.flags.xdt_unlevitate_evap 
     qp_ramp_time = 200;
     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,0,1); 

@@ -753,81 +753,56 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
 %     setDigitalChannel(calctime(curtime,0),19,0);    % swithing off
 %     setAnalogChannel(calctime(curtime,0), 39,-10,1); % RF gain low
 
-    %Get rid of Rb afterwards (used for loading dilute 40K into lattice)   
-    kill_Rb_after_RFStage1b = 0;
-    if kill_Rb_after_RFStage1b
-        dispLineStr('Kill Rb after RF1B',curtime);        
-        kill_pulse_time = 5; %5
 
-        % Prepare probe beam
-        setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP shutter',1); %0=closed, 1=open
-        setAnalogChannel(calctime(curtime,-10),'Rb Probe/OP AM',0.7); 
-        setAnalogChannel(calctime(curtime,-10),'Rb Beat Note FM',6590-237);
 
-        % Make sure that Rb probe is off
-        setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',1);
-
-        % Pulse the probe TTL
-        curtime = DigitalPulse(calctime(curtime,0),'Rb Probe/OP TTL',...
-            kill_pulse_time,0);
-
-        % Close the probe shutter
-        curtime = setDigitalChannel(calctime(curtime,0),'Rb Probe/OP shutter',0); %0=closed, 1=open
-        curtime=calctime(curtime,5);
-    end    
+ 
 end
 
-%% Blow away Rb or K
-% This code pulses resonant light with either Rb or K to purify the
-% magnetic trap of atomic species
+%% Kill Rb after evap
+if seqdata.flags.mt_kill_Rb_after_evap
+    dispLineStr('Kill Rb after rf evap',curtime);        
+    kill_pulse_time = 5; %5
+
+    % Prepare probe beam
+    setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP shutter',1); %0=closed, 1=open
+    setAnalogChannel(calctime(curtime,-10),'Rb Probe/OP AM',0.7); 
+    setAnalogChannel(calctime(curtime,-10),'Rb Beat Note FM',6590-237);
+
+    % Make sure that Rb probe is off
+    setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',1);
+
+    % Pulse the probe TTL
+    curtime = DigitalPulse(calctime(curtime,0),'Rb Probe/OP TTL',...
+        kill_pulse_time,0);
+
+    % Close the probe shutter
+    curtime = setDigitalChannel(calctime(curtime,0),'Rb Probe/OP shutter',0); %0=closed, 1=open
+    curtime=calctime(curtime,5);
+end   
+
+%% Kill K after evap
 
 
+if seqdata.flags.mt_kill_K_after_evap
+    dispLineStr('Kill K after rf evap',curtime);    
+    K_blow_away_time = -15; %1350    
 
-if seqdata.flags.mt_kill_Rb_after_evap || seqdata.flags.mt_kill_K_after_evap
-    dispLineStr('Blow away Rb or K',curtime);
+    %open K probe shutter
+     %0=closed, 1=open
+    setDigitalChannel(calctime(curtime,K_blow_away_time-10),30,1);
+    %open analog
+    setAnalogChannel(calctime(curtime,K_blow_away_time-10),29,0.7);
+    %set TTL
+    setDigitalChannel(calctime(curtime,K_blow_away_time-10),9,1);
+    %set detuning
+    setAnalogChannel(calctime(curtime,K_blow_away_time-10),5,0);
 
-    if seqdata.flags.mt_kill_Rb_after_evap
-        
-        %blow away any atoms left in F=2
-        %open Rb probe shutter
-        setDigitalChannel(calctime(curtime,-10),25,1); %0=closed, 1=open
-        %open analog
-        setAnalogChannel(calctime(curtime,-10),4,0.7);
-        %set TTL
-        setDigitalChannel(calctime(curtime,-10),24,1);
-        %set detuning
-        setAnalogChannel(calctime(curtime,-10),34,6590-237);
-        
-        %pulse beam with TTL
-        curtime = DigitalPulse(calctime(curtime,0),24,15,0);
-        
-        %close shutter
-        setDigitalChannel(calctime(curtime,0),25,0); %0=closed, 1=open
-    end
-    
-    K_blow_away_time = -15; %1350
-     
-    if seqdata.flags.mt_kill_K_after_evap
-          
-        %open K probe shutter
-         %0=closed, 1=open
-        setDigitalChannel(calctime(curtime,K_blow_away_time-10),30,1);
-        %open analog
-        setAnalogChannel(calctime(curtime,K_blow_away_time-10),29,0.7);
-        %set TTL
-        setDigitalChannel(calctime(curtime,K_blow_away_time-10),9,1);
-        %set detuning
-        setAnalogChannel(calctime(curtime,K_blow_away_time-10),5,0);
-        
-        %pulse beam with TTL
-        DigitalPulse(calctime(curtime,K_blow_away_time),9,15,0);
-        
-        %close K probe shutter
-        setDigitalChannel(calctime(curtime,K_blow_away_time+15),30,0);
-        %%0=closed, 1=open
-    end
-    %hold at end of evap
-    curtime = calctime(curtime,250); %3000       
+    %pulse beam with TTL
+    DigitalPulse(calctime(curtime,K_blow_away_time),9,15,0);
+
+    %close K probe shutter
+    setDigitalChannel(calctime(curtime,K_blow_away_time+15),30,0);
+    %%0=closed, 1=open        
 end
 
 

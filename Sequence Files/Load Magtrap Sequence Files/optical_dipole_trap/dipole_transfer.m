@@ -19,10 +19,11 @@ ramp_Feshbach_B_before_CDT_evap     = 0; % Ramp up feshbach before evaporation
 do_levitate_evap                    = 0; % Apply levitation gradient
 do_unlevitate_evap                  = 0;
 
-% Dipole trap asymmetry (useful for making symmetric trap for QGM)
+% Dipole trap asymmetry (useful for making a symmetric trap for lattice + QGM)
 seqdata.params.xdt_p2p1_ratio = 1; % ratio of ODT2:ODT1 power
 
 Evap_End_Power_List = [.12];
+
 % Ending optical evaporation
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...
     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');   
@@ -32,7 +33,7 @@ seqdata.flags.xdt_evap2stage = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdt_ramp_power_end = 0;   % Ramp dipole back up after evaporation before any further physics 
+seqdata.flags.xdt_ramp_power_end = 1;   % Ramp dipole back up after evaporation before any further physics 
 seqdata.flags.xdt_do_dipole_trap_kick = 0;                % Kick the dipole trap, inducing coherent oscillations for temperature measurement
 seqdata.flags.xdt_do_hold_end = 0;
 seqdata.flags.xdt_am_modulate =0;

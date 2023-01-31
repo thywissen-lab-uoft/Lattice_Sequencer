@@ -408,7 +408,7 @@ if doHybridRamp75TransferUp
     settlingtime = 50;    
     
     % Feshbach Coil Value
-    ramptime_list = [50];
+    ramptime_list = [10 20 30 40 50 100 150 200];
     ramptime = getScanParameter(ramptime_list,...
         seqdata.scancycle,seqdata.randcyclelist,'resonance_cross_time','ms');
     

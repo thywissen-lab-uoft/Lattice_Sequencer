@@ -1,10 +1,9 @@
-function [timeout,I_QP,V_QP,P_dip,dip_holdtime,I_shim] =  dipole_transfer(timein, I_QP, V_QP,I_shim)
+function [timeout,I_QP,V_QP,P_dip,I_shim] =  dipole_transfer(timein, I_QP, V_QP,I_shim)
 
 curtime = timein;
 global seqdata;
 
 %% Flags
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %Dipole Loading Flags
 %%%%%%%%%%%%%%%%%%%%%%%%%%    
@@ -18,13 +17,15 @@ ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 %%%%%%%%%%%%%%%%%%%%%%%%%% 
 ramp_Feshbach_B_before_CDT_evap     = 0; % Ramp up feshbach before evaporation
 do_levitate_evap                    = 0; % Apply levitation gradient
+do_unlevitate_evap                  = 0;
 
 
-Evap_End_Power_List = [.1:.01:.2];
+Evap_End_Power_List = [.12];
 % Ending optical evaporation
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...
     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');   
 seqdata.flags.xdt_ramp2sympathetic = 1;
+seqdata.flags.xdt_evap2stage = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
@@ -32,7 +33,7 @@ seqdata.flags.xdt_ramp2sympathetic = 1;
 seqdata.flags.xdt_ramp_power_end = 0;   % Ramp dipole back up after evaporation before any further physics 
 seqdata.flags.xdt_do_dipole_trap_kick = 0;                % Kick the dipole trap, inducing coherent oscillations for temperature measurement
 seqdata.flags.xdt_do_hold_end = 0;
-
+seqdata.flags.xdt_am_modulate =0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % Spectroscopy after Evaporation
@@ -69,16 +70,18 @@ xdt1_end_power = exp_end_pwr;
 xdt2_end_power = XDT2_power_func(exp_end_pwr);
 
 % Evaporation Time
-Time_List =  [18]*1e3; 18;% [15000] for normal experiment
-Evap_time = getScanParameter(Time_List,seqdata.scancycle,...
+Time_List =  [25]*1e3; 18;% [15000] for normal experiment
+evap_time_total = getScanParameter(Time_List,seqdata.scancycle,...
     seqdata.randcyclelist,'evap_time','ms');   
-exp_evap_time = Evap_time;      
+
+% If you want to do a partial evaporation in time
+doPartialEvap = 0;
 
 % Exponetial time factor
 Tau_List = [3.5];%[5];
 exp_tau_frac = getScanParameter(Tau_List,seqdata.scancycle,...
     seqdata.randcyclelist,'Evap_Tau_frac');
-exp_tau=Evap_time/exp_tau_frac;
+exp_tau=evap_time_total/exp_tau_frac;
 
 % Power vector (load, hold, sympathetic, final)
 DT1_power = 1*[P1 P1 P1e xdt1_end_power];
@@ -913,7 +916,7 @@ end
 % TESTING HAS NOT WORKIGN YET
 if do_levitate_evap
     % QP Value to ramp to
-    LF_QP_List =  [0];.14;0.115;
+    LF_QP_List =  [.3];.14;0.115;
     LF_QP = getScanParameter(LF_QP_List,seqdata.scancycle,...
     seqdata.randcyclelist,'LF_QPReverse','V');  
 
@@ -967,84 +970,97 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         dipole_preramp_time,dipole_preramp_time,DT2_power(3));
 end
 %% CDT evap
-%RHYS - Imporant code, definitely should be kept and cleaned up.
 if ( seqdata.flags.CDT_evap == 1 )
     dispLineStr('Optical evaporation',curtime);
 
-    % Flag to perform optical exponential optical evaporation
-    expevap = 1;
+    disp(' Performing exponential evaporation');
+    disp(['     Evap Time (ms) : ' num2str(evap_time_total)]);
+    disp(['     tau       (ms) : ' num2str(evap_time_total)]);
+    disp(['     XDT1 end   (W) : ' num2str(DT1_power(4))]);
+    disp(['     XDT2 end   (W) : ' num2str(DT2_power(4)*seqdata.params.XDT_area_ratio)]);
 
+    % NOTE: exp_end_pwr moved all the way to top of function!
+    P_dip=exp_end_pwr;
 
-    if expevap
-        disp(' Performing exponential evaporation');
-        disp(['     Evap Time (ms) : ' num2str(exp_evap_time)]);
-        disp(['     tau       (ms) : ' num2str(exp_evap_time)]);
-        disp(['     XDT1 end   (W) : ' num2str(DT1_power(4))]);
-        disp(['     XDT2 end   (W) : ' num2str(DT2_power(4)*seqdata.params.XDT_area_ratio)]);
+    evap_exp_ramp = @(t,tt,tau,y2,y1)(y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));
+    
+    evap_time_evaluate = evap_time_total;
+    
+    if doPartialEvap
+        evap_time_evaluate_list =  [1]*evap_time_total;
+        evap_time_evaluate = getScanParameter(evap_time_evaluate_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'evap_time_evaluate','ms');   
+    end
 
-
-        % NOTE: exp_end_pwr moved all the way to top of function!
-        P_dip=exp_end_pwr;
-
-        evap_exp_ramp = @(t,tt,tau,y2,y1)(y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));
-
-        dipole1_exp_pwr = 1.0;
-        dipole2_exp_pwr = 1*1; %2.2 for ODT beam sizes prior to Nov 2013, now beams have same equal area
-
-        % EXPONENTIAL RAMP 
-        AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
-            @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
-            exp_evap_time,exp_evap_time,exp_tau,DT1_power(4));
+    % Ramp down the optical powers
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+        @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
+        evap_time_evaluate,evap_time_total,exp_tau,DT1_power(4));
 curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
-            @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
-            exp_evap_time,exp_evap_time,exp_tau,seqdata.params.XDT_area_ratio*DT2_power(4));
+        @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
+        evap_time_evaluate,evap_time_total,exp_tau,seqdata.params.XDT_area_ratio*DT2_power(4));
+end
+%% CDT evap 2
+if ( seqdata.flags.CDT_evap == 1 && seqdata.flags.xdt_evap2stage)
+    dispLineStr('Optical evaporation',curtime);
 
+    pend = 0.06;
 
-        dipole_oscillation = 0;
-        % Oscillate trap after evaporation
-        if dipole_oscillation
-            disp(' Oscillating dipole depths.');
+    evap_exp_ramp = @(t,tt,tau,y2,y1)(y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));
+    
 
-            % Oscillate with a sinuisoidal function
-            dip_osc = @(t,freq,y2,y1)(y1 +y2*sin(2*pi*freq*t/1000));
+    
+    evap_time_2_list =  [10000];
+    evap_time_2 = getScanParameter(evap_time_2_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'evap_time_2','ms');   
 
-            dip_osc_time = 500; 1000;       % Duration to modulate             
+    % Ramp down the optical powers
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+        @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
+        evap_time_2,evap_time_2,exp_tau,pend);
+curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+        @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
+        evap_time_2,evap_time_2,exp_tau,pend);
+end
+%% Oscillatote Dipole Poewrs
+% CF : I dont recall ever using this?
 
-            dip_osc_offset = exp_end_pwr;   % CDT_rampup_pwr;
-            dip_osc_amp = 0.05;             % Oscillation amplitude
-            dip_osc_freq_list = [400:10:500 650];
-            dip_osc_freq = getScanParameter(dip_osc_freq_list,seqdata.scancycle,seqdata.randcyclelist,'dip_osc_freq');
+if ( seqdata.flags.xdt_am_modulate)
 
-            % Modify time slightly to ensure complete cycles
-            Ncycle = ceil((dip_osc_time*1E-3)*dip_osc_freq);
-            dip_osc_time = 1E3*(Ncycle/dip_osc_freq);
+    disp(' Oscillating dipole depths.');
 
-            disp(['     Frequency (Hz) : ' num2str(dip_osc_freq)]);
-            disp(['     Offset     (W) : ' num2str(dip_osc_offset)]);
-            disp(['     Amplitude  (W) : ' num2str(dip_osc_amp)]);
-            disp(['     Time      (ms) : ' num2str(dip_osc_time)]);                
+    % Oscillate with a sinuisoidal function
+    dip_osc = @(t,freq,y2,y1)(y1 +y2*sin(2*pi*freq*t/1000));
 
-            %oscillate dipole 1 
-            AnalogFunc(calctime(curtime,0),'dipoleTrap1',@(t,freq,y2,y1)(dip_osc(t,freq,y2,y1)),dip_osc_time,dip_osc_freq,dip_osc_amp,dip_osc_offset);
-            %oscillate dipole 2 
+    dip_osc_time = 500; 1000;       % Duration to modulate             
+
+    dip_osc_offset = exp_end_pwr;   % CDT_rampup_pwr;
+    dip_osc_amp = 0.05;             % Oscillation amplitude
+    dip_osc_freq_list = [400:10:500 650];
+    dip_osc_freq = getScanParameter(dip_osc_freq_list,seqdata.scancycle,seqdata.randcyclelist,'dip_osc_freq');
+
+    % Modify time slightly to ensure complete cycles
+    Ncycle = ceil((dip_osc_time*1E-3)*dip_osc_freq);
+    dip_osc_time = 1E3*(Ncycle/dip_osc_freq);
+
+    disp(['     Frequency (Hz) : ' num2str(dip_osc_freq)]);
+    disp(['     Offset     (W) : ' num2str(dip_osc_offset)]);
+    disp(['     Amplitude  (W) : ' num2str(dip_osc_amp)]);
+    disp(['     Time      (ms) : ' num2str(dip_osc_time)]);                
+
+    %oscillate dipole 1 
+    AnalogFunc(calctime(curtime,0),'dipoleTrap1',@(t,freq,y2,y1)(dip_osc(t,freq,y2,y1)),dip_osc_time,dip_osc_freq,dip_osc_amp,dip_osc_offset);
+    %oscillate dipole 2 
 %                 curtime = AnalogFunc(calctime(curtime,0),'dipoleTrap2',@(t,freq,y2,y1)(dip_osc(t,freq,y2,y1)),dip_osc_time,dip_osc_freq,dip_osc_amp,dip_osc_offset);    
 
-            % Advance Time
-            curtime=calctime(curtime,dip_osc_time);
-            % Trigger the scope 
-            DigitalPulse(curtime,'ScopeTrigger',10,1);
+    % Advance Time
+    curtime=calctime(curtime,dip_osc_time);
+    % Trigger the scope 
+    DigitalPulse(curtime,'ScopeTrigger',10,1);
 
 curtime = calctime(curtime,100);
 
-        end
-
-curtime = calctime(curtime,0); %100      
-        %this time gets passed out of function to keep cycle constant time
-        dip_holdtime=25000-exp_evap_time;
-
-    end
-else
-    dip_holdtime=25000;
+    
 end
 
 %% Unramp Gradient
@@ -1687,7 +1703,7 @@ end
 
 %%
 % TESTING HAS NOT WORKIGN YET
-if do_levitate_evap 
+if do_unlevitate_evap 
     qp_ramp_time = 200;
     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,0,1); 

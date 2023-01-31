@@ -10,6 +10,16 @@ function timeout = AnalogFuncTo(timein,channel,fhandle,tt,varargin)
 %   last set value for the respective channel (makes use of getChannelValue.m
 %   and seqdata.params.analogch)
 %------
+%
+%
+% timein - the time at which to begin the ramp
+% channel - the channel number or string
+% fhandle(t,tt,y0,a,b,c,d...) - the function to be used
+%       it must be of the following form
+%       t - the time variable
+%       tt - the total time to execut eramp
+%       y0 - the initial value
+%       a,b,c,d ... - arbtirary list of variables
 
 global seqdata;
 
@@ -122,6 +132,7 @@ else
 
     funcarray(:,1) = t+timein;
     funcarray(:,2) = ones(1,length(t))*channel;
+    
     % call fhandle(t,tt,y0,various) 
     funcarray(:,3) = fhandle(t*seqdata.deltat/seqdata.timeunit,varargin{1},curvalue,varargin{2:(nfunarg-2)});
 

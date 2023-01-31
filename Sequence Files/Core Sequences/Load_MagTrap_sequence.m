@@ -137,7 +137,7 @@ seqdata.flags.mt_compress_after_transport = 1; % compress QP after transport
 seqdata.flags.RF_evap_stages = [1, 1, 1]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
 
 % Turn on plug beam during RF1B
-seqdata.flags.do_plug = 1;
+seqdata.flags.mt_use_plug = 1;
 
 % Lower cloud after evaporation before TOF (useful for hot clouds)
 seqdata.flags.lower_atoms_after_evap = 0; 
@@ -237,7 +237,7 @@ scope_trigger = 'Lattice_Mod';
 
 
 if seqdata.flags.image_loc == 0 %MOT cell imaging
-    seqdata.flags.do_plug = 0;
+    seqdata.flags.mt_use_plug = 0;
     seqdata.flags.mt_compress_after_transport = 0;
     seqdata.flags.RF_evap_stages = [0 0 0];
     seqdata.flags.do_dipole_trap = 0;
@@ -574,7 +574,6 @@ dispLineStr('Compression stage after transport to science cell.',curtime);
 [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_trans(curtime, ...
     seqdata.flags.mt_compress_after_transport);
 
-
 %Shim Values to Turn On To: 
 % (0 to do plug evaporation, Bzero values for molasses after RF Stage 1)
 x_shim_val = seqdata.params.plug_shims(1); %0*1.6
@@ -679,7 +678,7 @@ end
 %% Turn on Plug Beam
 % Turn on the plug beam.  We currently only have a shutter on the plug beam
 
-if  seqdata.flags.do_plug==1       
+if  seqdata.flags.mt_use_plug==1       
     dispLineStr('Turning on the plug',curtime);
     plug_offset = -500; % -200
     setDigitalChannel(calctime(curtime,plug_offset),'Plug Shutter',1); %0: CLOSED; 1: OPEN
@@ -885,7 +884,7 @@ end
 %% Post QP Evap Tasks
 %RHYS - clean.
 %turn plug off
-if ( seqdata.flags.do_plug == 1)       
+if ( seqdata.flags.mt_use_plug == 1)       
     hold_time_list = [0];
     hold_time = getScanParameter(hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'hold_time_QPcoils');
     curtime = calctime(curtime,hold_time);   

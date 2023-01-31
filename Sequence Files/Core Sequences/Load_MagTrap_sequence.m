@@ -131,7 +131,6 @@ seqdata.flags.ver_transport_type = 3;
 % use this order with the boolean enable array!
 
 % Use stage1  = 2 to evaporate fast for transport benchmarking 
-% Use stage1b = 2 to do microwave evaporation in the plugged QP trap
 seqdata.flags.mt_compress_after_transport = 1; % compress QP after transport
 seqdata.flags.RF_evap_stages = [1, 1, 1]; %[stage1, decomp/transport, stage1b] %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
 
@@ -845,20 +844,6 @@ if seqdata.flags.mt_kill_Rb_after_evap || seqdata.flags.mt_kill_K_after_evap
     curtime = calctime(curtime,250); %3000       
 end
 
-%% RF1B Alternate : uWave Evaporation
-if ( seqdata.flags.RF_evap_stages(3) == 2 )
-        dispLineStr('uWave Evaporation',curtime);
-
-%RHYS - interesting option that I've never tried. Uses Rb microwaves for
-    %evaporation (lower Rabi freq but possibly cleaner?)
-    
-        freqs_1b = [freqs_1(end)/MHz*0.6 4 1.0 ]*MHz; 
-        RF_gain_1b = [-4 -4 -7]; 
-        sweep_times_1b = [4000 3500 ]*6/6;
-    
-        %Do uWave evaporation
-        curtime = do_uwave_evap_stage(curtime, fake_sweep, freqs_1b*3, sweep_times_1b, 0);
-end
 
 %% Ramp Down Plug Power a little bit
 seqdata.flags.mt_plug_ramp_end = 0;

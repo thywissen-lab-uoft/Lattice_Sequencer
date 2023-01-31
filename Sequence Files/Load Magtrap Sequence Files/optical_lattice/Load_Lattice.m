@@ -81,8 +81,7 @@ else
    % Minimum value is stupidly set by the fact that the XDT ramp down go
    % backwards in time.  This should be changed.
    lattice_holdtime = getScanParameter(lattice_holdtime_list,...
-       seqdata.scancycle,seqdata.randcyclelist,'latt_holdtime','ms');%maximum is 4
- 
+       seqdata.scancycle,seqdata.randcyclelist,'latt_holdtime','ms');%maximum is 4 
 end
 
 

@@ -128,9 +128,7 @@ setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.9,2);
 % Turn on UV cataract-inducing light.
 
 disp('Turning on UV light');
-
 setDigitalChannel(curtime,'UV LED',1); %1 = on; 0, off
-% setAnalogChannel(curtime,'UV Lamp 2',5);
 
 %% Wait a HOT Second
 curtime = calctime(curtime,100);
@@ -151,10 +149,10 @@ if dumpMOT
 end
 
 setDigitalChannel(calctime(curtime,0),'Rb Trap Shutter',1);        % Rb MOT trap shutter (1 : ON)
-setDigitalChannel(calctime(curtime,0),'Rb Repump Shutter',1);       % Rb MOT repumper shutter (1 : ON)
+setDigitalChannel(calctime(curtime,0),'Rb Repump Shutter',1);      % Rb MOT repumper shutter (1 : ON)
 
-setDigitalChannel(calctime(curtime,0),'K Trap Shutter',1);        % Rb MOT trap shutter (1 : ON)
-setDigitalChannel(calctime(curtime,0),'K Repump Shutter',1);        % K MOT repump shutter
+setDigitalChannel(calctime(curtime,0),'K Trap Shutter',1);         % Rb MOT trap shutter (1 : ON)
+setDigitalChannel(calctime(curtime,0),'K Repump Shutter',1);       % K MOT repump shutter
 
 
 %% End it

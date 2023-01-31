@@ -782,29 +782,23 @@ end
 
 %% Kill K after evap
 
-
 if seqdata.flags.mt_kill_K_after_evap
     dispLineStr('Kill K after rf evap',curtime);    
     K_blow_away_time = -15; %1350    
 
     %open K probe shutter
-     %0=closed, 1=open
-    setDigitalChannel(calctime(curtime,K_blow_away_time-10),30,1);
-    %open analog
-    setAnalogChannel(calctime(curtime,K_blow_away_time-10),29,0.7);
-    %set TTL
-    setDigitalChannel(calctime(curtime,K_blow_away_time-10),9,1);
-    %set detuning
-    setAnalogChannel(calctime(curtime,K_blow_away_time-10),5,0);
+    setDigitalChannel(calctime(curtime,K_blow_away_time-10),'K Probe/OP shutter',1);
+    setAnalogChannel(calctime(curtime,K_blow_away_time-10),'K Probe/OP AM',0.7);
+    setDigitalChannel(calctime(curtime,K_blow_away_time-10),'K Probe/OP TTL',1);
+    setAnalogChannel(calctime(curtime,K_blow_away_time-10),'K Trap FM',0);
 
     %pulse beam with TTL
-    DigitalPulse(calctime(curtime,K_blow_away_time),9,15,0);
+    DigitalPulse(calctime(curtime,K_blow_away_time),'K Probe/OP TTL',15,0);
 
     %close K probe shutter
-    setDigitalChannel(calctime(curtime,K_blow_away_time+15),30,0);
+    setDigitalChannel(calctime(curtime,K_blow_away_time+15),'K Probe/OP shutter',0);
     %%0=closed, 1=open        
 end
-
 
 %% Ramp Down Plug Power a little bit
 seqdata.flags.mt_plug_ramp_end = 0;

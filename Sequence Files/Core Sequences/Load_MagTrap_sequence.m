@@ -1046,7 +1046,10 @@ curtime = iXon_FluorescenceImage(curtime,'ExposureOffsetTime',molasses_offset,'E
     if (do_wp_default == 1)
         %Rotate waveplate to divert all power to dipole traps.
         P_RotWave = 0;
-        AnalogFunc(calctime(curtime,0),41,@(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),200,200,P_RotWave,0); 
+        AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
+            @(t,tt,Pmin,Pmax) ...
+            (0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),...
+            200,200,P_RotWave,0); 
     end
 
 %% Post-sequence -- e.g. do controlled field ramps, heating pulses, etc.
@@ -1157,6 +1160,5 @@ disp(repmat('-',1,60));
 dispLineStr('Sequence Complete.',curtime);
 disp(repmat('-',1,60));
 disp(repmat('-',1,60));
-
 
 end

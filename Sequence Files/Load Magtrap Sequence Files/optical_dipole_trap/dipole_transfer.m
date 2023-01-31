@@ -41,7 +41,7 @@ seqdata.flags.xdt_am_modulate =0;
 % Spectroscopy after Evaporation
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
-ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
+seqdata.flags.xdt_ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
 uWave_K_Spectroscopy = 0;
 seqdata.flags.ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
 
@@ -1595,7 +1595,7 @@ end
 % To characerize field gradients, it is useful to ramp the FB and QP coils
 % at the end of evaporation. Strong field gradients kick atoms out of the
 % trap. And a "round trip" magnetic field ramp tests this.
-if ramp_QP_FB_and_back
+if seqdata.flags.xdt_ramp_QP_FB_and_back
     dispLineStr('Ramping Fields Up and Down',curtime);
 
     % Feshvalue to ramp to

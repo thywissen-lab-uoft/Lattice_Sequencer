@@ -65,7 +65,7 @@ seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been p
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.controlled_load = 0; %do a specific load time
+seqdata.flags.MOT_load_at_start = 0; %do a specific load time
 
 seqdata.params.UV_on_time = 10000;
 % UV on time + savingtime + wait time = real wait time between cycles%
@@ -466,7 +466,7 @@ setDigitalChannel(calctime(curtime,0),'Shim Relay',1);
 %% Load the MOT
 % Dump out the saved MOT and reload it
 
-if (seqdata.flags.controlled_load == 1)
+if (seqdata.flags.MOT_load_at_start == 1)
     % Load the MOT
     loadMOTSimple(curtime,1);
     
@@ -1158,7 +1158,7 @@ dispLineStr('Load the MOT',curtime);
 loadMOTSimple(curtime,0);
 
 % Wait some additional time
-if ~seqdata.flags.controlled_load
+if ~seqdata.flags.MOT_load_at_start
     curtime = calctime(curtime,seqdata.params.UV_on_time);
 end
 %% Transport Reset

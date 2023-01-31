@@ -36,7 +36,7 @@ initialize_channels();
         
     %Addtl Flags (relics from Load_MagTrap_sequence -- using the same
     %functions for MOT preparation, MagTrap loading, etc here)
-    seqdata.flags. controlled_load = 0; %do a specific load time
+    seqdata.flags.MOT_load_at_start = 0; %do a specific load time
     controlled_load_time = 20000;    
     seqdata.flags.Rb_Probe_Order = 1;
     seqdata.flags.image_type = 0;
@@ -58,7 +58,7 @@ initialize_channels();
 
 %% Prepare to Load into the Magnetic Trap
 
-    if ( seqdata.flags.controlled_load == 1 )
+    if ( seqdata.flags.MOT_load_at_start == 1 )
 
         %turn off trap
         setAnalogChannel(curtime,8,0);

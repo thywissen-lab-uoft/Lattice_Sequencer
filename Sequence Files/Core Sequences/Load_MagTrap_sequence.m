@@ -168,7 +168,7 @@ seqdata.flags.mt_kill_K_after_evap = 0;     % Blow away K
 
 % Dipole trap
 % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
-seqdata.flags.do_dipole_trap = 1; 
+seqdata.flags.xdt = 1; 
 seqdata.params.ODT_zeros = [-0.04,-0.04];
 
 % MT to XDT State Transfer
@@ -213,7 +213,7 @@ seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after rampi
 %%% OTHER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if (seqdata.flags.do_dipole_trap ~= 0 || seqdata.flags.load_lattice ~= 0)
+if (seqdata.flags.xdt ~= 0 || seqdata.flags.load_lattice ~= 0)
     seqdata.flags.QP_imaging = 0;
 else
     seqdata.flags.QP_imaging = 1;
@@ -242,7 +242,7 @@ if seqdata.flags.image_loc == 0 %MOT cell imaging
     seqdata.flags.mt_use_plug = 0;
     seqdata.flags.mt_compress_after_transport = 0;
     seqdata.flags.RF_evap_stages = [0 0 0];
-    seqdata.flags.do_dipole_trap = 0;
+    seqdata.flags.xdt = 0;
     seqdata.flags.load_lattice = 0;  
     seqdata.flags.pulse_lattice_for_alignment = 0;
 end
@@ -825,7 +825,8 @@ if mt_kill_Rb_after_evap || seqdata.flags.mt_kill_K_after_evap
     if seqdata.flags.mt_kill_K_after_evap
           
         %open K probe shutter
-        setDigitalChannel(calctime(curtime,K_blow_away_time-10),30,1); %0=closed, 1=open
+         %0=closed, 1=open
+        setDigitalChannel(calctime(curtime,K_blow_away_time-10),30,1);
         %open analog
         setAnalogChannel(calctime(curtime,K_blow_away_time-10),29,0.7);
         %set TTL
@@ -841,8 +842,7 @@ if mt_kill_Rb_after_evap || seqdata.flags.mt_kill_K_after_evap
         %%0=closed, 1=open
     end
     %hold at end of evap
-    curtime = calctime(curtime,250); %3000   
-    
+    curtime = calctime(curtime,250); %3000       
 end
 
 %% RF1B Alternate : uWave Evaporation
@@ -891,7 +891,7 @@ if ( seqdata.flags.mt_use_plug == 1)
     plug_offset = -2.5;%-2.5 for experiment, -10 to align for in trap image
 
     % Turn off the plug here if you are doing RF1B TOF.
-    if (seqdata.flags.do_dipole_trap ~= 1)
+    if (seqdata.flags.xdt ~= 1)
         % Dipole transfer has its own code for turning off the plug after
         % loading the XDTs
         dispLineStr('Turning off plug at',calctime(curtime,plug_offset));
@@ -902,7 +902,7 @@ end
 
 
 %% Dipole Trap
-if ( seqdata.flags.do_dipole_trap == 1 )
+if ( seqdata.flags.xdt == 1 )
     dispLineStr('Caling dipole_transfer.m',curtime);   
     [curtime, I_QP, V_QP, P_dip, I_shim] = ...
         dipole_transfer(curtime, I_QP, V_QP, I_shim);
@@ -979,7 +979,7 @@ dispLineStr('Turning off coils and traps.',curtime);
     end
     
     % XDT TOF
-    if seqdata.flags.do_dipole_trap
+    if seqdata.flags.xdt
         
         % Read XDT Powers right before tof
         P1 = getChannelValue(seqdata,'dipoleTrap1',1);

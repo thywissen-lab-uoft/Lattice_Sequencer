@@ -10,7 +10,8 @@
 function [timeout] = Load_Lattice(timein)
 global seqdata;
 
-lattice_flags(timein);
+% CF comments this out as this was giving me errors 2023/01/31
+% lattice_flags(timein);
 
 curtime = timein;
 lattices = {'xLattice','yLattice','zLattice'};
@@ -28,8 +29,8 @@ seqdata.flags.lattice_lattice_ramp_1 = 1;            % Load the lattices
 
 seqdata.flags.do_lattice_am_spec = 0;               % Amplitude modulation spectroscopy             
 
-do_rotate_waveplate_2 = 0;        % Second waveplate rotation 95% 
-do_lattice_ramp_2 = 0 ;            % Secondary lattice ramp for fluorescence imaging
+seqdata.flags.lattice_rotate_waveplate_2 = 0;        % Second waveplate rotation 95% 
+seqdata.flags.lattice_lattice_ramp_2 = 0 ;            % Secondary lattice ramp for fluorescence imaging
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -843,7 +844,7 @@ end
 %% Second Waveplate Rotation
 % Rotate waveplate to distribute more power to the lattice
 
-if do_rotate_waveplate_2
+if seqdata.flags.lattice_rotate_waveplate_2
     wp_Trot2 = 150; 
 
     dispLineStr('Rotate waveplate again',curtime)    
@@ -855,7 +856,7 @@ end
 
 %% Ramp lattice after spectroscopy/plane selection
 
-if do_lattice_ramp_2
+if seqdata.flags.lattice_lattice_ramp_2
     dispLineStr('Lattice Ramp 2',curtime)    
     ScopeTriggerPulse(curtime,'lattice_ramp_2');
 

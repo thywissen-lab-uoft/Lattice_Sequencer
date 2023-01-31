@@ -23,8 +23,8 @@ seqdata.params.xdt_p2p1_ratio = 1; %RHYS - Why is this defined here again?
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Lattice Ramps and Waveplates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-do_rotate_waveplate_1 = 1;        % First waveplate rotation for 90%
-do_lattice_ramp_1 = 1;            % Load the lattices
+seqdata.flags.lattice_rotate_waveplate_1 = 1;        % First waveplate rotation for 90%
+seqdata.flags.lattice_lattice_ramp_1 = 1;            % Load the lattices
 
 seqdata.flags.do_lattice_am_spec = 0;               % Amplitude modulation spectroscopy             
 
@@ -95,7 +95,7 @@ lattice_rampdown = getScanParameter(lattice_rampdown_list,...
 %% Rotate waveplate to shift power to lattice beams
 % Rotate the waveplate to shift the optical power to the lattices.
 
-if do_rotate_waveplate_1
+if seqdata.flags.lattice_rotate_waveplate_1
     dispLineStr('Rotating waveplate',curtime);
     %Start with a little power towards lattice beams, and increase power to
     %max only after ramping on the lattice
@@ -118,7 +118,7 @@ end
 %% Lattice Ramp 1
 % Ramp the lattices up to the starting values.  The ramp procedue can
 % either be multi step or single step.
-if do_lattice_ramp_1    
+if seqdata.flags.lattice_lattice_ramp_1    
     dispLineStr('Defining initial lattice and DMD ramps.',curtime);
     ScopeTriggerPulse(curtime,'lattice_ramp_1');
 

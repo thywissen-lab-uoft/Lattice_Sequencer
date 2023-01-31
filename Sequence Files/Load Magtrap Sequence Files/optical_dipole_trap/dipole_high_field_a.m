@@ -408,7 +408,7 @@ if doHybridRamp75TransferUp
     settlingtime = 50;    
     
     % Feshbach Coil Value
-    ramptime_list = [10 20 30 40 50 100 150 200];
+    ramptime_list = [50];
     ramptime = getScanParameter(ramptime_list,...
         seqdata.scancycle,seqdata.randcyclelist,'resonance_cross_time','ms');
     
@@ -459,16 +459,17 @@ if doHybridRamp75TransferUp
 
     % Define each RF pulse    
     pulse1                  = struct;
-    pulse1.pulse_length     = 10;
+    pulse1.pulse_length     = ramptime/4;10;
     pulse1.power            = 0;            
     pulse1.freq             = f1;
-    f1_delay = 0;
+    f1_delay = -1; % delay by -1ms from desired pulse delay bc rf_uwave_spectroscopy is dumb
     
     pulse2                  = struct;
-    pulse2.pulse_length     = 12;
+    pulse2.pulse_length     = ramptime/4;10;
     pulse2.power            = 0;            
     pulse2.freq             = f2;
-    f2_delay = 38;    
+%     f2_delay = 38;
+    f2_delay = ramptime - ramptime/4 -1;     % delay by -1ms from desired pulse delay bc rf_uwave_spectroscopy is dumb
 
     % Apply each pulse
     rf_uwave_spectroscopy(calctime(curtime,f1_delay),4,pulse1);
@@ -1228,26 +1229,27 @@ if doHybridRamp75TransferDown
     disp([' B1,B2     (G) : ' num2str(B1) ',' num2str(B2)]);
     disp([' t1,t2    (ms) : ' num2str(t1) ',' num2str(t2)]);
     disp([' f1,f2   (MHz) : ' num2str(f1) ',' num2str(f2)]);   
-
+ 
+    
     % Define each RF pulse    
     pulse1                  = struct;
-    pulse1.pulse_length     = 10;
+    pulse1.pulse_length     = ramptime/4;10;
     pulse1.power            = 0;            
     pulse1.freq             = f1;
-    f1_delay = 0;
-
+    f1_delay = -1; % delay by -1ms from desired pulse delay bc rf_uwave_spectroscopy is dumb
+    
     pulse2                  = struct;
-    pulse2.pulse_length     = 12;
+    pulse2.pulse_length     = ramptime/4;10;
     pulse2.power            = 0;            
     pulse2.freq             = f2;
-    f2_delay = 38;    
+    f2_delay = ramptime - ramptime/4 -1;     % delay by -1ms from desired pulse delay bc rf_uwave_spectroscopy is dumb
+
 
     % Apply each pulse
     rf_uwave_spectroscopy(calctime(curtime,f1_delay),4,pulse1);
     rf_uwave_spectroscopy(calctime(curtime,f2_delay),4,pulse2);
 
-    curtime = calctime(curtime,ramptime+settlingtime);  
-    
+    curtime = calctime(curtime,ramptime+settlingtime);      
     
     rampToLowField=1;
     if rampToLowField

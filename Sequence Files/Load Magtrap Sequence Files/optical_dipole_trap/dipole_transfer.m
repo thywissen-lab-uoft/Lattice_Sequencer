@@ -16,8 +16,8 @@ ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 %Evaporation in the XDT
 %%%%%%%%%%%%%%%%%%%%%%%%%% 
 ramp_Feshbach_B_before_CDT_evap         = 0; % Ramp up feshbach before evaporation
-do_levitate_evap                        = 0; % Apply levitation gradient
-do_unlevitate_evap                      = 0;
+seqdata.flags.xdt_do_levitate_evap      = 0; % Apply levitation gradient
+seqdata.flags.xdt_do_unlevitate_evap    = 0;
 
 % Dipole trap asymmetry (useful for making a symmetric trap for lattice + QGM)
 seqdata.params.xdt_p2p1_ratio           = 1; % ratio of ODT2:ODT1 power
@@ -55,7 +55,7 @@ seqdata.flags.ramp_up_FB_for_lattice    = 0;     %Ramp FB up at the end of evap
 XDT2_power_func = @(x) x;
 
 % Initial XDT power
-P12_list = [1.5];[1.6];[1.6];1.4;
+P12_list = [1.5];
 P12 = getScanParameter(P12_list,seqdata.scancycle,...
     seqdata.randcyclelist,'XDT_initial_power','W');
 P1 = P12;
@@ -917,7 +917,7 @@ end
 %
 % Has not been shown to work
 
-if do_levitate_evap
+if seqdata.flags.xdt_do_levitate_evap
     % QP Value to ramp to
     LF_QP_List =  [.3];.14;0.115;
     LF_QP = getScanParameter(LF_QP_List,seqdata.scancycle,...
@@ -1420,7 +1420,7 @@ end
 
 %% RF Rabi Oscillation
 
-if (k_rf_rabi_oscillation)      
+if (seqdata.flags.xdt_k_rf_rabi_oscillation)      
     dispLineStr('RF K Rabi Oscillations',curtime);  
 
     do_ramp_field=1;
@@ -1703,7 +1703,7 @@ curtime = calctime(curtime,wait_time);
 end
 
 %% Unlevitate
-if do_unlevitate_evap 
+if seqdata.flags.xdt_do_unlevitate_evap 
     qp_ramp_time = 200;
     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,0,1); 

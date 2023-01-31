@@ -100,7 +100,7 @@ seqdata.flags.High_Field_Imaging = 0;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
 
-seqdata.flags.In_Trap_imaging =0; % Does this flag work for QP/XDT? Or only QP?
+seqdata.flags.image_insitu =0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging
 tof_list = [25]; %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms

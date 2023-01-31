@@ -43,7 +43,7 @@ seqdata.flags.xdt_am_modulate =0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
 seqdata.flags.xdt_ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
-uWave_K_Spectroscopy = 0;
+seqdata.flags.xdt_uWave_K_Spectroscopy = 0;
 seqdata.flags.ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
 
     
@@ -1029,8 +1029,7 @@ end
 % CF : I dont recall ever using this?
 
 if ( seqdata.flags.xdt_am_modulate)
-
-    disp(' Oscillating dipole depths.');
+    dispLineStr('Modulate Dipole trap beam power',curtime);    
 
     % Oscillate with a sinuisoidal function
     dip_osc = @(t,freq,y2,y1)(y1 +y2*sin(2*pi*freq*t/1000));
@@ -1054,16 +1053,14 @@ if ( seqdata.flags.xdt_am_modulate)
     %oscillate dipole 1 
     AnalogFunc(calctime(curtime,0),'dipoleTrap1',@(t,freq,y2,y1)(dip_osc(t,freq,y2,y1)),dip_osc_time,dip_osc_freq,dip_osc_amp,dip_osc_offset);
     %oscillate dipole 2 
-%                 curtime = AnalogFunc(calctime(curtime,0),'dipoleTrap2',@(t,freq,y2,y1)(dip_osc(t,freq,y2,y1)),dip_osc_time,dip_osc_freq,dip_osc_amp,dip_osc_offset);    
+%   curtime = AnalogFunc(calctime(curtime,0),'dipoleTrap2',@(t,freq,y2,y1)(dip_osc(t,freq,y2,y1)),dip_osc_time,dip_osc_freq,dip_osc_amp,dip_osc_offset);    
 
     % Advance Time
     curtime=calctime(curtime,dip_osc_time);
     % Trigger the scope 
     DigitalPulse(curtime,'ScopeTrigger',10,1);
 
-curtime = calctime(curtime,100);
-
-    
+curtime = calctime(curtime,100);    
 end
 
 %% Unramp Gradient
@@ -1101,24 +1098,19 @@ end
 
 %% Ramp Dipole Back Up
 
-
 if seqdata.flags.xdt_ramp_power_end 
     dispLineStr('Ramping XDT Power Back Up',curtime);    
-
     dip_1 = .1; %1.5
     dip_2 = .1; %1.5
     dip_ramptime = 1000; %1000
     dip_rampstart = 0;
     dip_waittime = 500;
-
     AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_1);
     AnalogFuncTo(calctime(curtime,dip_rampstart),...
         'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_2);
 curtime = calctime(curtime,dip_rampstart+dip_ramptime+dip_waittime);
 end
-
-
 
 %% Remove Rb from XDT
 % After optical evaporation, it is useful to only have K in the trap. Do
@@ -1169,10 +1161,6 @@ curtime = setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',0);
 
 curtime=calctime(curtime,100);
 end   
-
-
-
-
 
 %% D1 Optical Pumping in ODT
 % After optical evaporation, ensure mF spin polarization via D1 optical
@@ -1317,7 +1305,7 @@ curtime = calctime(curtime,10);
 end
 
 %% uWave_K_Spectroscopy
-if (uWave_K_Spectroscopy)
+if (seqdata.flags.xdt_uWave_K_Spectroscopy)
     dispLineStr('uWave_K_Spectroscopy',curtime);      
 %     
     % FB coil settings
@@ -1602,13 +1590,9 @@ if seqdata.flags.xdt_ramp_QP_FB_and_back
     % Feshvalue to ramp to
     HF_FeshValue_Initial_List =[195];
     HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'HF_Fesh_RampUpDown','G');
-    
+        seqdata.scancycle,seqdata.randcyclelist,'HF_Fesh_RampUpDown','G');    
 
-    clear('ramp');
-    
-
-    
+    clear('ramp');       
     doRampQPPre=1;
    if doRampQPPre
     % QP Value to ramp to
@@ -1704,8 +1688,7 @@ curtime = calctime(curtime,wait_time);
 
 end
 
-%%
-% TESTING HAS NOT WORKIGN YET
+%% Unlevitate
 if do_unlevitate_evap 
     qp_ramp_time = 200;
     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
@@ -1714,17 +1697,18 @@ if do_unlevitate_evap
 end
 
 
-%% Waiting
+%% XDT Hold
 
 if seqdata.flags.xdt_do_hold_end 
-    xdt_wait_time_list = [15000 ];
+    dispLineStr('Holding XDT at End',curtime);
+    xdt_wait_time_list = [15000];
     xdt_wait_time = getScanParameter(xdt_wait_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'xdt_wait_time','ms');   
     curtime = calctime(curtime,xdt_wait_time);
 end
 %% The End!
 
-    timeout = curtime;
-   dispLineStr('Dipole Transfer complete',curtime);
+timeout = curtime;
+dispLineStr('Dipole Transfer complete',curtime);
 
 end

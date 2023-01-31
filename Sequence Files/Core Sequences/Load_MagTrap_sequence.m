@@ -206,7 +206,7 @@ seqdata.flags.misc_calibrate_PA = 0;
 % Optical lattice
 seqdata.flags.load_lattice = 0; % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
 seqdata.flags.lattice_pulse_for_alignment = 0; % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
-seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
+seqdata.flags.lattice_pulse_z_for_alignment = 0; % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OTHER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -898,7 +898,7 @@ end
 
 %% Pulse Z Lattice after ramping up other lattices to align
 
-if (seqdata.flags. pulse_zlattice_for_alignment == 1 )
+if (seqdata.flags.lattice_pulse_z_for_alignment == 1 )
     %RHYS - another alignment tool. 
     curtime = Pulse_Lattice(curtime,4);
 end
@@ -984,8 +984,7 @@ dispLineStr('Turning off coils and traps.',curtime);
 
         %X lattice
 %         setAnalogChannel(calctime(curtime,0),'xLattice',seqdata.params.lattice_zero(1));%-0.1,1);%0
-        setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);%-0.1,1);%0
-    
+        setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);%-0.1,1);%0    
     end
 
     if ~(seqdata.flags.image_type==1 || seqdata.flags.image_type==4)

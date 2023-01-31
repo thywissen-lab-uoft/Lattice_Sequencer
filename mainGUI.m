@@ -23,6 +23,8 @@ global adwinprocessnum;
 % global adwin_connected;
 % global adwin_process_path;
 
+evalin('base','global seqdata')
+
 waitDefault=30;
 compath='Y:\_communication';
 

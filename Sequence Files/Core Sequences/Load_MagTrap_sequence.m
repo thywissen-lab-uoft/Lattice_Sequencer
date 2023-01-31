@@ -32,10 +32,10 @@ GHz = 1E9;
 %     (seqdata.params.shim_zero(3)+ 0.35)];
 
 % Shim Zero (to eliminate all bkgd fields)
-seqdata.params.shim_zero2 = [0.1425, -0.0652, -0.1015];
+seqdata.params.shim_zero = [0.1425, -0.0652, -0.1015];
 
 % Plug Zero (to move MT underneath sapphire window)
-seqdata.params.plug_shims2 = seqdata.params.shim_zero + ...
+seqdata.params.plug_shims = seqdata.params.shim_zero + ...
     [-1.3400 +0.125 +0.35];
 
 % Slope relation between shim and QP currents to keep field center fixed.
@@ -111,7 +111,6 @@ seqdata.params.tof_krb_diff = getScanParameter(tof_krb_diff_list,...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Mag Trap : TRANSPORT, RF1A, and RF1B %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 % Horizontal Transport Type
 seqdata.flags.hor_transport_type = 1; 
 %0: min jerk curves, 1: slow down in middle section curves, 2: none
@@ -195,7 +194,7 @@ seqdata.flags.xdt_kill_K7_after_evap  = 0;   % optical remove 7/2 K after (untes
 seqdata.flags.xdt_high_field_a = 0;
 
 % Take a second PA pulse after absorption imaging to calibrate PA power
-seqdata.flags.do_calibrate_PA = 0;
+seqdata.flags.misc_calibrate_PA = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OPTICAL LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1059,7 +1058,7 @@ curtime = iXon_FluorescenceImage(curtime,'ExposureOffsetTime',molasses_offset,'E
     setAnalogChannel(calctime(curtime,0),'Z Shim',0,1);
     
 %% Post-sequence: Pulse the PA laser again for labjack power measurement
-    if seqdata.flags.do_calibrate_PA == 1
+    if seqdata.flags.misc_calibrate_PA == 1
     
        curtime = PA_pulse(curtime,2); 
     

@@ -54,12 +54,9 @@ seqdata.params.plug_shims_slopes = [Cx Cy Cz];
 %Current shim values (x,y,z)- reset to zero
 seqdata.params.shim_val = [0 0 0]; 
 
-
-
 % Rb Probe Beam AOM Order
 seqdata.flags.Rb_Probe_Order = 1;   % 1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
                                     % 2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
-seqdata.flags.in_trap_OP = 0; 
 seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been programmed via GPIB
 
 

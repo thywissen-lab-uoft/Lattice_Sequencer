@@ -1110,28 +1110,6 @@ setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
 
 %% Load MOT
 
-%{
-dispLineStr('Loading MOT.',curtime);
-
-rb_mot_det_List= 32;
-rb_MOT_detuning=getScanParameter(rb_mot_det_List,...
-    seqdata.scancycle,seqdata.randcyclelist,'rb_MOT_detuning');
-
-k_MOT_detuning_list = 22;
-k_MOT_detuning = getScanParameter(k_MOT_detuning_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'k_MOT_detuning');        
-
-k_repump_shift = 0;
-addOutputParam('k_repump_shift',k_repump_shift);
-mot_wait_time = 50;
-
-% Load the MOT
-curtime = Load_MOT(calctime(curtime,mot_wait_time),[rb_MOT_detuning k_MOT_detuning]);
-
-% Set the repump detuning
-setAnalogChannel(curtime,'K Repump FM',k_repump_shift,2);
-%}
-
 % Load the MOT
 dispLineStr('Load the MOT',curtime);
 loadMOTSimple(curtime,0);

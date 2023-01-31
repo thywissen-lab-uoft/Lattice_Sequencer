@@ -89,12 +89,12 @@ seqdata.flags.image_type = 0;
 seqdata.flags.MOT_flour_image = 0;
 
 iXon_movie = 0; %Take a multiple frame movie?
-seqdata.flags.image_atomtype = 1;   % 0: Rb; 1:K; 2: K+Rb (double shutter)
+seqdata.flags.image_atomtype = 0;   % 0: Rb; 1:K; 2: K+Rb (double shutter)
 seqdata.flags.image_loc = 1;        % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.image_direction = 0;  % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
 seqdata.flags.image_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of ToF
 seqdata.flags.iXon = 0;             % use iXon camera to take an absorption image (only vertical)
-seqdata.flags.do_F1_pulse = 0;      % repump Rb F=1 before/during imaging
+seqdata.flags.image_F1_pulse = 0;      % repump Rb F=1 before/during imaging (unused?)
 
 seqdata.flags.High_Field_Imaging = 0;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
@@ -146,7 +146,7 @@ seqdata.flags.RF_evap_stages                = [1, 1, 1];
 seqdata.flags.mt_use_plug                   = 1;
 
 % Lower cloud after evaporation before TOF (can be useful for hot clouds)
-seqdata.flags.lower_atoms_after_evap        = 0; 
+seqdata.flags.mt_lower_after_evap        = 0; 
 
 % Resonantly kill atoms after evaporation
 seqdata.flags.mt_kill_Rb_after_evap         = 0;    
@@ -203,7 +203,7 @@ seqdata.flags.xdt_kill_Rb_after_evap  = 0;   % optically remove Rb
 seqdata.flags.xdt_kill_K7_after_evap  = 0;   % optical remove 7/2 K after (untested)
 
 % XDT High Field Experiments
-seqdata.flags.xdt_high_field_a = 1;
+seqdata.flags.xdt_high_field_a = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OPTICAL LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -881,7 +881,7 @@ end
 
 %% lower atoms from window for clean TOF release
 
-if ( seqdata.flags.lower_atoms_after_evap == 1 )
+if ( seqdata.flags.mt_lower_after_evap == 1 )
     dispLineStr('Lowering atoms from window',curtime);
 
     %RHYS - this is probably useful and we should use it more. Gets atoms

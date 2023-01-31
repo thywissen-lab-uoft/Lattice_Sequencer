@@ -343,7 +343,7 @@ if (CDT_evap_2_high_field==1)
         seqdata.scancycle,seqdata.randcyclelist,'Evap2_tau','ms');       
 
     P1_end = seqdata.params.exp_end_pwr2;
-    P2_end = P1_end*seqdata.params.XDT_area_ratio;    
+    P2_end = P1_end*seqdata.params.xdt_p2p1_ratio;    
 
     % Display evaporation parameters
     disp(' Performing exponential evaporation');

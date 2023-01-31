@@ -19,6 +19,8 @@ ramp_Feshbach_B_before_CDT_evap     = 0; % Ramp up feshbach before evaporation
 do_levitate_evap                    = 0; % Apply levitation gradient
 do_unlevitate_evap                  = 0;
 
+% Dipole trap asymmetry (useful for making symmetric trap for QGM)
+seqdata.params.xdt_p2p1_ratio = 1; % ratio of ODT2:ODT1 power
 
 Evap_End_Power_List = [.12];
 % Ending optical evaporation
@@ -977,7 +979,7 @@ if ( seqdata.flags.CDT_evap == 1 )
     disp(['     Evap Time (ms) : ' num2str(evap_time_total)]);
     disp(['     tau       (ms) : ' num2str(evap_time_total)]);
     disp(['     XDT1 end   (W) : ' num2str(DT1_power(4))]);
-    disp(['     XDT2 end   (W) : ' num2str(DT2_power(4)*seqdata.params.XDT_area_ratio)]);
+    disp(['     XDT2 end   (W) : ' num2str(DT2_power(4)*seqdata.params.xdt_p2p1_ratio)]);
 
     % NOTE: exp_end_pwr moved all the way to top of function!
     P_dip=exp_end_pwr;
@@ -998,7 +1000,7 @@ if ( seqdata.flags.CDT_evap == 1 )
         evap_time_evaluate,evap_time_total,exp_tau,DT1_power(4));
 curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
-        evap_time_evaluate,evap_time_total,exp_tau,seqdata.params.XDT_area_ratio*DT2_power(4));
+        evap_time_evaluate,evap_time_total,exp_tau,seqdata.params.xdt_p2p1_ratio*DT2_power(4));
 end
 %% CDT evap 2
 if ( seqdata.flags.CDT_evap == 1 && seqdata.flags.xdt_evap2stage)

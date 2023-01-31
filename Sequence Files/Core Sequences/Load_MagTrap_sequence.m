@@ -54,14 +54,7 @@ seqdata.params.plug_shims_slopes = [Cx Cy Cz];
 %Current shim values (x,y,z)- reset to zero
 seqdata.params.shim_val = [0 0 0]; 
 
-% CF : What is this variable for?
-hold_list = [500];
-seqdata.params. molasses_time = getScanParameter(hold_list,...
-seqdata.scancycle,seqdata.randcyclelist,'hold_list');%192.5;
-addOutputParam('molasses_hold_list',seqdata.params. molasses_time); 
 
-% Dipole trap and lattice beam parameters 
-seqdata.params.XDT_area_ratio = 1; % DT2 with respect to DT1
 
 % Rb Probe Beam AOM Order
 seqdata.flags.Rb_Probe_Order = 1;   % 1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT

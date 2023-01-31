@@ -14,7 +14,7 @@ lattice_flags(timein);
 
 curtime = timein;
 lattices = {'xLattice','yLattice','zLattice'};
-seqdata.params.XDT_area_ratio = 1; %RHYS - Why is this defined here again?
+seqdata.params.xdt_p2p1_ratio = 1; %RHYS - Why is this defined here again?
 
 
 %% Lattice Flags    
@@ -1162,7 +1162,7 @@ end
     AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         dip_ramptime,dip_ramptime,dip2_endpower);
-    seqdata.params.XDT_area_ratio*dip2_endpower;
+    seqdata.params.xdt_p2p1_ratio*dip2_endpower;
     setDigitalChannel(calctime(curtime,dip_rampstart+dip_ramptime),...
         'XDT TTL',1); %cut lattice power for bandmapping?    
     

@@ -24,6 +24,10 @@ global adwinprocessnum;
 % global adwin_process_path;
 
 evalin('base','global seqdata')
+evalin('base','openvar(''seqdata'')')
+evalin('base','openvar(''seqdata.flags'')')
+evalin('base','openvar(''seqdata.params'')')
+
 
 waitDefault=30;
 compath='Y:\_communication';

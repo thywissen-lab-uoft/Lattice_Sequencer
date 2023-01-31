@@ -234,7 +234,6 @@ scope_trigger = 'Lattice_Mod';
 
 %% Set switches for predefined scenarios
 
-
 if seqdata.flags.image_loc == 0 %MOT cell imaging
     seqdata.flags.mt_use_plug = 0;
     seqdata.flags.mt_compress_after_transport = 0;
@@ -321,9 +320,6 @@ seqdata.scancycle, 1:length(obj_piezo_V_List), 'Objective_Piezo_Z','V');%5
 setAnalogChannel(calctime(curtime,0),'objective Piezo Z',obj_piezo_V,1);
 addOutputParam('objpzt',obj_piezo_V,'V');
 
-%VV - I plan to puth the below line of code into a seperate code just
-%for the purpose of initialization of the experiment. I don't think it
-%is a good practice to keep commented code here just like this.
     
 %% Four-Pass
 
@@ -351,8 +347,6 @@ end
 %set at the end of the sequence. So, these should just be incorporated
 %into that function properly instead of defined here. 
 
-% Perhaps to be safe, we just have another call to @Reset_Channels?
-
 %Initialize modulation ramp to off.
 setAnalogChannel(calctime(curtime,0),'Modulation Ramp',0);
 
@@ -375,26 +369,22 @@ setDigitalChannel(calctime(curtime,0),'FB Integrator OFF',0);  %Integrator disab
 setDigitalChannel(calctime(curtime,0),'FB offset select',0);        %No offset voltage
 
 %turn off dipole trap beams
-%     setAnalogChannel(calctime(curtime,0),'dipoleTrap1',-0.5,1);
 setAnalogChannel(calctime(curtime,0),'dipoleTrap1',seqdata.params.ODT_zeros(1));
-%     setAnalogChannel(calctime(curtime,0),'dipoleTrap2',-1,1);
 setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));
 setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
 setDigitalChannel(calctime(curtime,0),'XDT Direct Control',1);
 
 %turn off lattice beams
-%     setAnalogChannel(calctime(curtime,0),'xLattice',seqdata.params.lattice_zero(1));%-0.1,1);
 setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);%-0.1,1);    
-%     setAnalogChannel(calctime(curtime,0),'yLattice',seqdata.params.lattice_zero(2));%-0.1,1);
 setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);%-0.1,1);
-
 setAnalogChannel(calctime(curtime,0),'zLattice',-10,1);%-0.1,1);
 
 setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);
 setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1);% Added 2014-03-06 in order to avoid integrator wind-up
 
 %set rotating waveplate back to full dipole power
-AnalogFuncTo(calctime(curtime,0),'latticeWaveplate',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2500,2500,0,1);
+AnalogFuncTo(calctime(curtime,0),'latticeWaveplate',...
+    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2500,2500,0,1);
 
 %set uWave Generator Selection back to SRS A by default
 setDigitalChannel(curtime,'K uWave Source',0);

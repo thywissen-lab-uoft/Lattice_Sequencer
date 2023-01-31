@@ -15,20 +15,20 @@ ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %Evaporation in the XDT
 %%%%%%%%%%%%%%%%%%%%%%%%%% 
-ramp_Feshbach_B_before_CDT_evap     = 0; % Ramp up feshbach before evaporation
-do_levitate_evap                    = 0; % Apply levitation gradient
-do_unlevitate_evap                  = 0;
+ramp_Feshbach_B_before_CDT_evap         = 0; % Ramp up feshbach before evaporation
+do_levitate_evap                        = 0; % Apply levitation gradient
+do_unlevitate_evap                      = 0;
 
 % Dipole trap asymmetry (useful for making a symmetric trap for lattice + QGM)
-seqdata.params.xdt_p2p1_ratio = 1; % ratio of ODT2:ODT1 power
+seqdata.params.xdt_p2p1_ratio           = 1; % ratio of ODT2:ODT1 power
 
 Evap_End_Power_List = [.12];
 
 % Ending optical evaporation
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...
     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');   
-seqdata.flags.xdt_ramp2sympathetic = 1;
-seqdata.flags.xdt_evap2stage = 1;
+seqdata.flags.xdt_ramp2sympathetic      = 1;
+seqdata.flags.xdt_evap2stage            = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
@@ -36,15 +36,15 @@ seqdata.flags.xdt_evap2stage = 1;
 seqdata.flags.xdt_ramp_power_end        = 1;   % Ramp dipole back up after evaporation before any further physics 
 seqdata.flags.xdt_do_dipole_trap_kick   = 0;                % Kick the dipole trap, inducing coherent oscillations for temperature measurement
 seqdata.flags.xdt_do_hold_end           = 0;
-seqdata.flags.xdt_am_modulate           =0; % 1: ODT1, 2:ODT2
+seqdata.flags.xdt_am_modulate           = 0; % 1: ODT1, 2:ODT2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % Spectroscopy after Evaporation
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-k_rf_rabi_oscillation=0;        % RF rabi oscillations after evap
-seqdata.flags.xdt_ramp_QP_FB_and_back = 0;        % Ramp up and down FB and QP to test field gradients
-seqdata.flags.xdt_uWave_K_Spectroscopy = 0;
-seqdata.flags.ramp_up_FB_for_lattice = 0;     %Ramp FB up at the end of evap  
+seqdata.flags.xdt_k_rf_rabi_oscillation = 0;        % RF rabi oscillations after evap
+seqdata.flags.xdt_ramp_QP_FB_and_back   = 0;        % Ramp up and down FB and QP to test field gradients
+seqdata.flags.xdt_uWave_K_Spectroscopy  = 0;
+seqdata.flags.ramp_up_FB_for_lattice    = 0;     %Ramp FB up at the end of evap  
 
     
 %% XDT Powers
@@ -1440,7 +1440,6 @@ if (k_rf_rabi_oscillation)
         % Ramp the bias fields
         curtime = ramp_bias_fields(calctime(curtime,0), ramp);            
     end
-
 
     % RF Frequency
     rf_k_freqs=[3.0495];%3.048 [1.8353];3.01;

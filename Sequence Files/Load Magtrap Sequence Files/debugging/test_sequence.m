@@ -20,7 +20,7 @@ acync_test = 0;
 
 % seqdata.flags. lattice = 1;
 % seqdata.flags. SRS_programmed = [0 0];
-% seqdata.flags. do_stern_gerlach = 0;
+% seqdata.flags. image_stern_gerlach = 0;
 % seqdata.flags. do_imaging_molasses = 1;
 % 
 % % obj_piezo_V = 5.25;
@@ -4996,8 +4996,8 @@ end
 % seqdata.flags.MOT_flour_image = 0;
 % seqdata.flags.image_atomtype = 2;%  0:Rb; 1:K; 2: K+Rb (double shutter)
 % seqdata.flags.image_loc = 1; %0: `+-+MOT cell, 1: science chamber    
-% seqdata.flags.img_direction = 0; 
-% seqdata.flags.do_stern_gerlach = 0; %1: Do a gradient pulse at the beginning of ToF
+% seqdata.flags.image_direction = 0; 
+% seqdata.flags.image_stern_gerlach = 0; %1: Do a gradient pulse at the beginning of ToF
 % seqdata.flags.iXon = 0; % use iXon camera to take an absorption image (only vertical)
 % seqdata.flags.do_F1_pulse = 0; % repump Rb F=1 before/during imaging
 % seqdata.flags.High_Field_Imaging = 0;

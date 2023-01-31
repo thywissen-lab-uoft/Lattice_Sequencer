@@ -218,8 +218,6 @@ else
     seqdata.flags.QP_imaging = 1;
 end
 
-seqdata.flags.pulse_raman_beams = 0; % pulse on D2 raman beams for testing/alignment
-
 %% Scope Trigger
 % Choose which scope trigger to use.
 

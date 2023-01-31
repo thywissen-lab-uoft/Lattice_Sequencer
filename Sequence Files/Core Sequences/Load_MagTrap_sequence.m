@@ -176,10 +176,10 @@ seqdata.flags.xdt_K_p2n_rf_sweep_freq = 1;      % RF Freq Sweep K +9-->-9
 % xdt_K_p2n_rf_sweep_freq
 
 % State Manipulation Before Optical Evaporation 
-seqdata.flags.xdt_d1op_start= 1;         % D1 pump to purify
-seqdata.flags.xdt_rfmix_start = 1;       % RF Mixing -9-->-9+-7    
-seqdata.flags.kill_Rb_before_evap = 0;   % optically remove Rb
-seqdata.flags.kill_K7_before_evap = 0;   % optical remove 7/2 K after (untested)
+seqdata.flags.xdt_d1op_start= 1;            % D1 pump to purify
+seqdata.flags.xdt_rfmix_start = 1;          % RF Mixing -9-->-9+-7    
+seqdata.flags.xdt_kill_Rb_before_evap = 0;  % optically remove Rb
+seqdata.flags.xdt_kill_K7_before_evap = 0;  % optical remove 7/2 K after (untested)
 
 % Optical Evaporation
 % 1: exp 2: fast linear 3: piecewise linear
@@ -188,8 +188,8 @@ seqdata.flags.CDT_evap = 1;
 % State Manipulatoin After Optical Evaporation
 seqdata.flags.xdt_d1op_end = 0;          % D1 optical pumping
 seqdata.flags.xdt_rfmix_end = 0;         % RF Mixing -9-->-9+-7
-seqdata.flags.kill_Rb_after_evap  = 0;   % optically remove Rb
-seqdata.flags.kill_K7_after_evap  = 0;   % optical remove 7/2 K after (untested)
+seqdata.flags.xdt_kill_Rb_after_evap  = 0;   % optically remove Rb
+seqdata.flags.xdt_kill_K7_after_evap  = 0;   % optical remove 7/2 K after (untested)
 
 % XDT High Field Experiments
 seqdata.flags.dipole_high_field_a = 0;
@@ -209,7 +209,6 @@ seqdata.flags.pulse_zlattice_for_alignment = 0; % 1: pulse z lattice after rampi
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OTHER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 if (seqdata.flags.do_dipole_trap ~= 0 || seqdata.flags.load_lattice ~= 0)
     seqdata.flags.QP_imaging = 0;
@@ -882,8 +881,7 @@ if seqdata.flags.mt_plug_ramp_end
 end
 
 %% Post QP Evap Tasks
-%RHYS - clean.
-%turn plug off
+
 if ( seqdata.flags.mt_use_plug == 1)       
     hold_time_list = [0];
     hold_time = getScanParameter(hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'hold_time_QPcoils');

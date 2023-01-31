@@ -680,7 +680,7 @@ end
 
 %% Kill F=7/2 in ODT before evap
 
-if (seqdata.flags.kill_K7_before_evap)
+if (seqdata.flags.xdt_kill_K7_before_evap)
     
     % optical pumping pulse length
     repump_pulse_time_list = [1];
@@ -1123,7 +1123,7 @@ end
 % After optical evaporation, it is useful to only have K in the trap. Do
 % this by pulsing resonant Rb light
 
-if (seqdata.flags.kill_Rb_after_evap && seqdata.flags. CDT_evap == 1)
+if (seqdata.flags.xdt_kill_Rb_after_evap && seqdata.flags. CDT_evap == 1)
 
     %repump atoms from F=1 to F=2, and blow away these F=2 atoms with
     %the probe
@@ -1383,7 +1383,7 @@ end
 
 %% Get rid of F = 7/2 K using a repump pulse
 
-if (seqdata.flags.kill_K7_after_evap && seqdata.flags.CDT_evap == 1)
+if (seqdata.flags.xdt_kill_K7_after_evap && seqdata.flags.CDT_evap == 1)
     
     % optical pumping pulse length
     repump_pulse_time_list = [10];

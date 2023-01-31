@@ -157,6 +157,10 @@ RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,...
 RF_1B_Final_Frequency_list = [.8];1;%0.8,0.4 1
 RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
     seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq','MHz');
+
+% Resonantly kill atoms after evaporation
+seqdata.flags.mt_kill_Rb_after_evap = 0;    % Blow away Rb
+seqdata.flags.mt_kill_K_after_evap = 0;     % Blow away K
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% DIPOLE TRAP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -792,13 +796,12 @@ end
 % This code pulses resonant light with either Rb or K to purify the
 % magnetic trap of atomic species
 
-do_Rb_blow_away = 0;    % Blow away Rb
-do_K_blow_away = 0;     % Blow away K
 
-if do_Rb_blow_away || do_K_blow_away
+
+if mt_kill_Rb_after_evap || seqdata.flags.mt_kill_K_after_evap
     dispLineStr('Blow away Rb or K',curtime);
 
-    if do_Rb_blow_away
+    if mt_kill_Rb_after_evap
         
         %blow away any atoms left in F=2
         %open Rb probe shutter
@@ -819,7 +822,7 @@ if do_Rb_blow_away || do_K_blow_away
     
     K_blow_away_time = -15; %1350
      
-    if do_K_blow_away
+    if seqdata.flags.mt_kill_K_after_evap
           
         %open K probe shutter
         setDigitalChannel(calctime(curtime,K_blow_away_time-10),30,1); %0=closed, 1=open

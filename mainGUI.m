@@ -32,6 +32,9 @@ evalin('base','openvar(''seqdata.params'')')
 waitDefault=30;
 compath='Y:\_communication';
 
+camera_control_file = 'Y:\_communication\pco_control.mat';
+analysis_summary_file = 'Y:\_communication\pco_analysis_summary.mat';
+
 defaultSequence='@Load_MagTrap_sequence';
 
 if ~doDebug

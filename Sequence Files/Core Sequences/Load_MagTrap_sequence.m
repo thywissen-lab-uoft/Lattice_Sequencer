@@ -89,7 +89,7 @@ seqdata.flags.image_type = 0;
 seqdata.flags.MOT_flour_image = 0;
 
 iXon_movie = 0; %Take a multiple frame movie?
-seqdata.flags.image_atomtype = 0;   % 0: Rb; 1:K; 2: K+Rb (double shutter)
+seqdata.flags.image_atomtype = 1;   % 0: Rb; 1:K; 2: K+Rb (double shutter)
 seqdata.flags.image_loc = 1;        % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.image_direction = 0;  % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
 seqdata.flags.image_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of ToF
@@ -179,41 +179,41 @@ seqdata.params.ODT_zeros = [-0.04,-0.04];
 
 % Dipole trap
 % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
-seqdata.flags.xdt = 1; 
+seqdata.flags.xdt                           = 1; 
 
 % MT to XDT State Transfer
-seqdata.flags.xdt_Rb_21uwave_sweep_field = 1;   % Field Sweep Rb 2-->1
-seqdata.flags.xdt_Rb_21uwave_sweep_freq = 0;    % uWave Frequency sweep Rb 2-->1
-seqdata.flags.xdt_K_p2n_rf_sweep_freq = 1;      % RF Freq Sweep K +9-->-9  
+seqdata.flags.xdt_Rb_21uwave_sweep_field    = 1;    % Field Sweep Rb 2-->1
+seqdata.flags.xdt_Rb_21uwave_sweep_freq     = 0;    % uWave Frequency sweep Rb 2-->1
+seqdata.flags.xdt_K_p2n_rf_sweep_freq       = 1;    % RF Freq Sweep K +9-->-9  
 
 % State Manipulation Before Optical Evaporation 
-seqdata.flags.xdt_d1op_start= 1;            % D1 pump to purify
-seqdata.flags.xdt_rfmix_start = 1;          % RF Mixing -9-->-9+-7    
-seqdata.flags.xdt_kill_Rb_before_evap = 0;  % optically remove Rb
-seqdata.flags.xdt_kill_K7_before_evap = 0;  % optical remove 7/2 K after (untested)
+seqdata.flags.xdt_d1op_start                = 1;    % D1 pump to purify
+seqdata.flags.xdt_rfmix_start               = 1;    % RF Mixing -9-->-9+-7    
+seqdata.flags.xdt_kill_Rb_before_evap       = 0;    % optically remove Rb
+seqdata.flags.xdt_kill_K7_before_evap       = 0;    % optical remove 7/2 K after (untested)
 
 % Optical Evaporation
 % 1: exp 2: fast linear 3: piecewise linear
-seqdata.flags.CDT_evap = 1;       
+seqdata.flags.CDT_evap                      = 1;       
 
 % State Manipulatoin After Optical Evaporation
-seqdata.flags.xdt_d1op_end = 0;          % D1 optical pumping
-seqdata.flags.xdt_rfmix_end = 0;         % RF Mixing -9-->-9+-7
-seqdata.flags.xdt_kill_Rb_after_evap  = 0;   % optically remove Rb
-seqdata.flags.xdt_kill_K7_after_evap  = 0;   % optical remove 7/2 K after (untested)
+seqdata.flags.xdt_d1op_end                  = 0;    % D1 optical pumping
+seqdata.flags.xdt_rfmix_end                 = 0;    % RF Mixing -9-->-9+-7
+seqdata.flags.xdt_kill_Rb_after_evap        = 0;    % optically remove Rb
+seqdata.flags.xdt_kill_K7_after_evap        = 0;    % optical remove 7/2 K after (untested)
 
 % XDT High Field Experiments
-seqdata.flags.xdt_high_field_a = 0;
+seqdata.flags.xdt_high_field_a              = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OPTICAL LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
-seqdata.flags.lattice = 1; 
+seqdata.flags.lattice                       = 0; 
 
 % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
-seqdata.flags.lattice_pulse_for_alignment = 0; 
+seqdata.flags.lattice_pulse_for_alignment   = 0; 
 
 % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 seqdata.flags.lattice_pulse_z_for_alignment = 0; 

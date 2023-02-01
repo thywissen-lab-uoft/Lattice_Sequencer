@@ -50,10 +50,12 @@ seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been p
 
 % Take a second PA pulse after absorption imaging to calibrate PA power
 seqdata.flags.misc_calibrate_PA = 0;
-
 seqdata.flags.misc_lock_PA = 0;
 
 seqdata.flags.misc_program4pass = 0;
+
+
+defVar('PA_detuning',round(-49.539,6),'GHz');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -227,64 +229,8 @@ end
 %% PA Laser Lock Detuning
 if seqdata.flags.misc_lock_PA
     
-    dispLineStr('Updating PA Request',curtime);
-
-    % K D2 line
-    PA_resonance = 391016.821;
-
-    % Define the detuning list
-    % PA_detuning_list= -49.555; -49.578; -49.555;
-
-    PA_detuning_list = -49.539;
-
-     % round to nearest kHz
-    PA_detuning_list=round(PA_detuning_list,6);
-
-    % Scan randomly
-    PA_detuning = getScanParameter(PA_detuning_list, ...
-        seqdata.scancycle, seqdata.randcyclelist, 'PA_detuning','GHz');
-
-    % Convert detuning into laser frequency
-    PA_freq = PA_resonance + PA_detuning;
-    PA_freq = round(PA_freq,6); % round to nearest kHz
-
-    addOutputParam('PA_freq',PA_freq,'GHz');
-
-    lockSetFileName ='Y:\wavemeter_amar\lock_freq.txt';
-
-    isFreqUpdated = 0;
-
-    updateTime=0;
-    if exist(lockSetFileName)    
-        disp(['writing PA freq to file ' num2str(PA_freq,12)]);
-        tic;
-        while ~isFreqUpdated && updateTime<2    
-            try
-                [fileID,errmsg] = fopen(lockSetFileName,'w');
-                if ~isequal(fileID,-1)
-                   fprintf(fileID,'%s',num2str(PA_freq,12)); 
-                end
-                fclose(fileID);
-
-                text = fileread(lockSetFileName);
-
-                textNum = str2num(text);
-
-                disp(textNum);
-
-                if isequal(textNum,PA_freq)
-                    isFreqUpdated = 1;
-                    disp('Written frequency is the same as the text file');
-                end
-                disp(updateTime)
-                updateTime = toc;
-            end
-        end
-        if updateTime>=2
-           warning('may have not updated the frequency'); 
-        end
-        disp('--------------------');
-    end
+    updatePALock(curtime);
+    
 end
 %% Set Objective Piezo VoltageS
 % If the cloud moves up, the voltage must increase to refocus

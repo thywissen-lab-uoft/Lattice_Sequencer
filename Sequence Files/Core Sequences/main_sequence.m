@@ -105,9 +105,11 @@ seqdata.params.tof = getVar('tof');
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[0],'ms');
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Transport %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % For debugging: enable only certain coils during the transport
 % sequence (and only during the transport sequence!)
 % seqdata.coil_enable = ones(1,23); % can comment these lines for normal operation
@@ -117,6 +119,9 @@ defVar('tof_krb_diff',[0],'ms');
 % 11:a16, 12:a17, 13:a9, 14:a22, 15:a23, 16:a24, 17:a20, 18:a21, 19:a6,
 % 20:a3, 21:a17, 22:d22, 23:d28
 % use this order with the boolean enable array!
+
+% Enable magnetic transport
+seqdata.flags.transport                     = 1;
 
 %0: min jerk curves, 1: slow down in middle section curves, 2: none
 seqdata.flags.transport_hor_type            = 1;
@@ -130,6 +135,9 @@ seqdata.flags.transport_ver_type            = 3;
 
  % compress QP after transport
 seqdata.flags.mt_compress_after_transport   = 1;
+
+ % ramp science shims for plugging
+seqdata.flags.mt_ramp_to_plugs_shims        = 1;
 
 % Use stage1  = 2 to evaporate fast for transport benchmarking 
 %[stage1, decomp/transport, stage1b] 
@@ -455,7 +463,7 @@ setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.0,2); %2
 %% Transport 
 % Use the CATS to mangetically transport the atoms from the MOT cell to the
 % science chamber.
-
+if seqdata.flags.transport
     dispLineStr('Magnetic Transport',curtime);
 
     % Open kitten relay
@@ -477,28 +485,31 @@ curtime = Transport_Cloud(curtime, seqdata.flags.transport_hor_type,...
     seqdata.flags.transport_ver_type, seqdata.flags.image_loc);
     t2=toc;
     disp(['Transport cloud calculation took ' num2str(t2) ' seconds']);
+end
 %% Ramp up QP
 dispLineStr('Compression stage after transport to science cell.',curtime);
 
 % Compression stage after the transport to the science cell
-
 [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_trans(curtime, ...
     seqdata.flags.mt_compress_after_transport);
 
-%Shim Values to Turn On To: 
-% (0 to do plug evaporation, Bzero values for molasses after RF Stage 1)
-x_shim_val = seqdata.params.plug_shims(1); %0*1.6
-y_shim_val = seqdata.params.plug_shims(2); %0*0.5
-z_shim_val = seqdata.params.plug_shims(3); %0*0.8
+%% Ramp shims for magnetic trap
 
-% Ramp shims to plug values
-AnalogFuncTo(calctime(curtime,0),'Y Shim',...
-    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,y_shim_val,4); 
-AnalogFuncTo(calctime(curtime,0),'X Shim',...
-    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,x_shim_val,3);
-curtime = AnalogFuncTo(calctime(curtime,0),'Z Shim',...
-    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,z_shim_val,3); 
+if seqdata.flags.mt_ramp_to_plugs_shims
+    %Shim Values to Turn On To: 
+    % (0 to do plug evaporation, Bzero values for molasses after RF Stage 1)
+    x_shim_val = seqdata.params.plug_shims(1); %0*1.6
+    y_shim_val = seqdata.params.plug_shims(2); %0*0.5
+    z_shim_val = seqdata.params.plug_shims(3); %0*0.8
 
+    % Ramp shims to plug values
+    AnalogFuncTo(calctime(curtime,0),'Y Shim',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,y_shim_val,4); 
+    AnalogFuncTo(calctime(curtime,0),'X Shim',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,x_shim_val,3);
+    curtime = AnalogFuncTo(calctime(curtime,0),'Z Shim',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,z_shim_val,3); 
+end
 %% RF1A
 if ( seqdata.flags.RF_evap_stages(1) == 1 )
     
@@ -1011,7 +1022,7 @@ end
 % For visual purposes.  This sorts the flags by flag_groups while keeping
 % the original ordering as defined in the sequence.
 
-flag_groups = {'misc','image','MOT','mt','xdt','lattice'};
+flag_groups = {'misc','image','MOT','transport','mt','xdt','lattice'};
 flag_names = fieldnames(seqdata.flags);
 for kk = 1:length(flag_groups)
     inds = startsWith(flag_names,flag_groups{kk});

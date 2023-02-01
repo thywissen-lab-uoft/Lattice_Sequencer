@@ -1,19 +1,17 @@
 function timeout = main_sequence(timein)
-% main_sequence
-% 
+% main_sequence.m
 % This is main sequence file of the experiment
-
 curtime = timein;
-disp(repmat('-',1,60));
-dispLineStr('New Sequence',curtime);
 
-%% Initialize seqdata
 global seqdata;
 initialize_channels();
 
 % Number of DDS scans is zero
 seqdata.numDDSsweeps = 0;
 seqdata.scanindex = -1;
+
+% CF : Is this really useful? Also we have more than A and B SRS
+seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been programmed via GPIB
 
 % "Useful" constants
 kHz = 1E3;
@@ -37,32 +35,29 @@ Cz = 0.0115;
 
 seqdata.params.plug_shims_slopes = [Cx Cy Cz];
 
+% CF : Is this ever actually used?
 %Current shim values (x,y,z)- reset to zero
 seqdata.params.shim_val = [0 0 0]; 
 
-% Rb Probe Beam AOM Order
-seqdata.flags.Rb_Probe_Order = 1;   % 1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
-                                    % 2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
-seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been programmed via GPIB
-
-
 %% Flags
 
-% Take a second PA pulse after absorption imaging to calibrate PA power
-seqdata.flags.misc_calibrate_PA = 0;
-seqdata.flags.misc_lock_PA = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MISC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-seqdata.flags.misc_program4pass = 0;
-
-
+seqdata.flags.misc_calibrate_PA             = 0; % Pulse for PD measurement
+seqdata.flags.misc_lock_PA                  = 0; % Update wavemeter lock
+seqdata.flags.misc_program4pass             = 0; % Update four-pass frequency
+seqdata.flags.Rb_Probe_Order                = 1;   % 1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
+                                                    % 2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
 defVar('PA_detuning',round(-49.539,6),'GHz');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.MOT_load_at_start = 0; %do a specific load time
+seqdata.flags.MOT_load_at_start             = 0; %do a specific load time
 
-seqdata.params.UV_on_time = 10000;
+seqdata.params.UV_on_time                   = 10000;
 % UV on time + savingtime + wait time = real wait time between cycles%
 % usually 15s for non XDT
 
@@ -75,20 +70,20 @@ seqdata.flags.image_type = 0;
 %3: blue_absorption, 4: MOT fluor, 5: load MOT immediately, 
 %6: MOT fluor with MOT off, 7: fluorescence image after do_imaging_molasses 
 %8: iXon fluorescence + Pixelfly absorption
-seqdata.flags.MOT_flour_image = 0;
+seqdata.flags.MOT_flour_image               = 0;
 
 iXon_movie = 0; %Take a multiple frame movie?
-seqdata.flags.image_atomtype = 1;   % 0: Rb; 1:K; 2: K+Rb (double shutter)
-seqdata.flags.image_loc = 1;        % 0: `+-+MOT cell, 1: science chamber    
-seqdata.flags.image_direction = 0;  % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
-seqdata.flags.image_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of ToF
-seqdata.flags.image_iXon = 0;          % (unused?) use iXon camera to take an absorption image (only vertical)
-seqdata.flags.image_F1_pulse = 0;      % (unused?) repump Rb F=1 before/during imaging (unused?)
+seqdata.flags.image_atomtype                = 1; % 0:Rb,1:K,2:K+Rb (double shutter)
+seqdata.flags.image_loc                     = 1; % 0: `+-+MOT cell, 1: science chamber    
+seqdata.flags.image_direction               = 0; % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
+seqdata.flags.image_stern_gerlach           = 0; % 1: Do a gradient pulse at the beginning of ToF
+seqdata.flags.image_iXon                    = 0; % (unused?) use iXon camera to take an absorption image (only vertical)
+seqdata.flags.image_F1_pulse                = 0; % (unused?) repump Rb F=1 before/during imaging (unused?)
 
-seqdata.flags.High_Field_Imaging = 0;
+seqdata.flags.High_Field_Imaging            = 0; % High field imaging (shouldn't this be automatic?)
+
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
-
 seqdata.flags.image_insitu = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
@@ -102,11 +97,11 @@ defVar('tof_krb_diff',[0],'ms');
 %%% Mag Trap : TRANSPORT, RF1A, and RF1B %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Horizontal Transport Type
-seqdata.flags.hor_transport_type = 1; 
+seqdata.flags.hor_transport_type            = 1; 
 %0: min jerk curves, 1: slow down in middle section curves, 2: none
 
 % Vertical Transport Type
-seqdata.flags.ver_transport_type = 3; 
+seqdata.flags.ver_transport_type            = 3; 
 % 0: min jerk curves, 1: slow down in middle section curves, 
 % 2: none, 3: linear, 4: triple min jerk
 
@@ -141,10 +136,10 @@ seqdata.flags.mt_kill_K_after_evap          = 0;
 % Ramp plug power at end of evaporation
 seqdata.flags.mt_plug_ramp_end              = 0;
 
-defVar('RF1A_time_scale',[0.6],'arb'); % RF1A timescale
-defVar('RF1B_time_scale',[0.8],'arb'); % RF1B timescale
-defVar('RF1A_finalfreq',[16],'MHz'); % RF1A Ending Frequency
-defVar('RF1B_finalfreq',[.8],'MHz'); % RF1B Ending Frequency
+defVar('RF1A_time_scale',[0.6],'arb');      % RF1A timescale
+defVar('RF1B_time_scale',[0.8],'arb');      % RF1B timescale
+defVar('RF1A_finalfreq',[16],'MHz');        % RF1A Ending Frequency
+defVar('RF1B_finalfreq',[.8],'MHz');        % RF1B Ending Frequency
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -231,6 +226,7 @@ end
 if seqdata.flags.misc_lock_PA    
     updatePALock(curtime);    
 end
+
 %% Set Objective Piezo VoltageS
 % If the cloud moves up, the voltage must increase to refocus
 %  (as the experiment warms up, selected plane tends to move up a bit)
@@ -267,11 +263,6 @@ end
 
 %% Initialize Voltage levels
 
-%RHYS - Initialization settings for a lot of channels. But, the 'reset
-%values' should already be set in initialize_channels, and, I think,
-%set at the end of the sequence. So, these should just be incorporated
-%into that function properly instead of defined here. 
-
 %Initialize modulation ramp to off.
 setAnalogChannel(calctime(curtime,0),'Modulation Ramp',0);
 
@@ -285,13 +276,13 @@ setDigitalChannel(calctime(curtime,0),'K uWave TTL',0);
 setAnalogChannel(calctime(curtime,0),'uWave VVA',10);
 
 %Set both transfer switches back to initial positions
-setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',0); %0 = RF
-setDigitalChannel(calctime(curtime,0),'K/Rb uWave Transfer',1); %1 = Rb
-setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',1); %0 = Anritsu, 1 = Sextupler
+setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',0);   % 0: RF
+setDigitalChannel(calctime(curtime,0),'K/Rb uWave Transfer',1); % 1: Rb
+setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',1);  % 0:Anritsu, 1 = Sextupler (unsued?)
 
 %Reset Feschbach coil regulation
-setDigitalChannel(calctime(curtime,0),'FB Integrator OFF',0);  %Integrator disabled
-setDigitalChannel(calctime(curtime,0),'FB offset select',0);        %No offset voltage
+setDigitalChannel(calctime(curtime,0),'FB Integrator OFF',0);   % Integrator disabled
+setDigitalChannel(calctime(curtime,0),'FB offset select',0);    % No offset voltage
 
 %turn off dipole trap beams
 setAnalogChannel(calctime(curtime,0),'dipoleTrap1',seqdata.params.ODT_zeros(1));

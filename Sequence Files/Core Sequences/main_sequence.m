@@ -48,21 +48,22 @@ seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been p
 
 %% Flags
 
-% Take a second PA pulse after absorption imaging to calibrate PA power
-seqdata.flags.misc_calibrate_PA = 0;
-seqdata.flags.misc_lock_PA = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MISC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-seqdata.flags.misc_program4pass = 0;
-
+seqdata.flags.misc_calibrate_PA             = 0; % Pulse for PD measurement
+seqdata.flags.misc_lock_PA                  = 0; % Update wavemeter lock
+seqdata.flags.misc_program4pass             = 0; % Update four-pass frequency
 
 defVar('PA_detuning',round(-49.539,6),'GHz');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.MOT_load_at_start = 0; %do a specific load time
+seqdata.flags.MOT_load_at_start             = 0; %do a specific load time
 
-seqdata.params.UV_on_time = 10000;
+seqdata.params.UV_on_time                   = 10000;
 % UV on time + savingtime + wait time = real wait time between cycles%
 % usually 15s for non XDT
 
@@ -85,10 +86,10 @@ seqdata.flags.image_stern_gerlach           = 0; % 1: Do a gradient pulse at the
 seqdata.flags.image_iXon                    = 0; % (unused?) use iXon camera to take an absorption image (only vertical)
 seqdata.flags.image_F1_pulse                = 0; % (unused?) repump Rb F=1 before/during imaging (unused?)
 
-seqdata.flags.High_Field_Imaging = 0;
+seqdata.flags.High_Field_Imaging            = 0; % High field imaging (shouldn't this be automatic?)
+
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
-
 seqdata.flags.image_insitu = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 

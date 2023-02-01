@@ -33,7 +33,7 @@ seqdata.flags.xdt_evap2stage            = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdt_ramp_power_end        = 1;    % Ramp dipole back up after evaporation before any further physics 
+seqdata.flags.xdt_ramp_power_end        = 0;    % Ramp dipole back up after evaporation before any further physics 
 seqdata.flags.xdt_do_dipole_trap_kick   = 0;    % Kick the dipole trap, inducing coherent oscillations for temperature measurement
 seqdata.flags.xdt_do_hold_end           = 0;
 seqdata.flags.xdt_am_modulate           = 0;    % 1: ODT1, 2:ODT2

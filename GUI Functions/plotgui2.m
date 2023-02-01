@@ -3,7 +3,7 @@ foo=@update;
 global seqdata
 
 % Settings
-funcname='@Load_MagTrap_sequence';       
+funcname='@main_sequence';       
 hText=20;
 Tseq=0;
 

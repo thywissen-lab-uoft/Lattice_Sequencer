@@ -15,46 +15,11 @@ global seqdata;
 
 curtime = timein;
 
-%RHYS - Old code. 
-%% Turn off extra Rb probe beam.
+%% Turn off UV
 
-% setDigitalChannel(calctime(curtime,-500),'Rb Probe/OP TTL',1);
-% 
-% setDigitalChannel(calctime(curtime,-500),'Rb Probe/OP shutter',0);
-
-%% Take Flouresence image of MOT
-%cam trigger
-%DigitalPulse(curtime,1,1,1);
-
-%% MOT Feed Forward 
-%Increase the voltage on the supplies
-%setAnalogChannel(calctime(curtime,10),18,10/6.6); 
-
-%% Bright MOT (Take out dark spot)
-   
-%curtime = DigitalPulse(calctime(curtime,0),15,10,1);
-
-%% Turn off UV light.
-%Turn off UV cataract-inducing light.
 setDigitalChannel(calctime(curtime,-500),'UV LED',0);
-% setAnalogChannel(calctime(curtime,-500),'UV Lamp 2',0);
-
-% setDigitalChannel(calctime(curtime,0),15,1)
-% setDigitalChannel(calctime(curtime,10),15,0)
 
 
-
-%% Turn off the MOT
-
-% if ( seqdata.flags.image_type ~= 4 )
-%     %turn the MOT off
-%     %CATS
-% %     MOT_ramp_down_time = 1;
-% %     AnalogFuncTo(calctime(curtime,MOT_ramp_down_time),'MOT Coil',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),MOT_ramp_down_time,MOT_ramp_down_time,0);
-%     setAnalogChannel(curtime,'MOT Coil',0,1); 
-%     %TTL
-%     setDigitalChannel(curtime,16,0); %1 is fast turn-off, 0 is not
-% end
 %% cMOT
 % This code loads the CMOT from the MOT. This includes ramps of the 
 % detunings, power, shims, and field gradients. In order to function 

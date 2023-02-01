@@ -105,19 +105,9 @@ seqdata.params.tof = getVar('tof');
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[0],'ms');
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Mag Trap : TRANSPORT, RF1A, and RF1B %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Transport %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Horizontal Transport Type
-seqdata.flags.hor_transport_type            = 1; 
-%0: min jerk curves, 1: slow down in middle section curves, 2: none
-
-% Vertical Transport Type
-seqdata.flags.ver_transport_type            = 3; 
-% 0: min jerk curves, 1: slow down in middle section curves, 
-% 2: none, 3: linear, 4: triple min jerk
-
 % For debugging: enable only certain coils during the transport
 % sequence (and only during the transport sequence!)
 % seqdata.coil_enable = ones(1,23); % can comment these lines for normal operation
@@ -127,6 +117,25 @@ seqdata.flags.ver_transport_type            = 3;
 % 11:a16, 12:a17, 13:a9, 14:a22, 15:a23, 16:a24, 17:a20, 18:a21, 19:a6,
 % 20:a3, 21:a17, 22:d22, 23:d28
 % use this order with the boolean enable array!
+
+%0: min jerk curves, 1: slow down in middle section curves, 2: none
+seqdata.flags.transport_hor_type            = 1;
+
+% 0: min jerk, 1: slow in middle 2:none, 3:linear, 4: triple min jerk
+seqdata.flags.transport_ver_type            = 3;
+
+% Horizontal Transport Type
+seqdata.flags.hor_transport_type            = 1; 
+%0: min jerk curves, 1: slow down in middle section curves, 2: none
+
+% Vertical Transport Type
+seqdata.flags.ver_transport_type            = 3; 
+% 0: min jerk curves, 1: slow down in middle section curves, 
+% 2: none, 3: linear, 4: triple min jerk
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Magnetic Trap %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
  % compress QP after transport
 seqdata.flags.mt_compress_after_transport   = 1;
@@ -274,7 +283,6 @@ end
 if seqdata.flags.MOT_programGMDP
     setAnalogChannel(calctime(curtime,0),'D1 FM',getVar('D1_DP_FM'));    
 end
-
 
 %% Initialize Voltage levels
 
@@ -497,7 +505,7 @@ x_shim_val = seqdata.params.plug_shims(1); %0*1.6
 y_shim_val = seqdata.params.plug_shims(2); %0*0.5
 z_shim_val = seqdata.params.plug_shims(3); %0*0.8
 
-%turn on shims
+% Ramp shims to plug values
 AnalogFuncTo(calctime(curtime,0),'Y Shim',...
     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,y_shim_val,4); 
 AnalogFuncTo(calctime(curtime,0),'X Shim',...

@@ -57,19 +57,18 @@ defVar('PA_detuning',round(-49.539,6),'GHz');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOT cell %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% WRNING : 
+% WARNING : Because we typically load the MOT at the end of the sequence to
+% save time, if you change the MOT settings it is generally advised to
+% enable the load at start flag so that the MOT settings are updated at the
+% beginning of the sequence and the MOT is given time to load.
 
 seqdata.flags.MOT_load_at_start             = 0; %do a specific load time
-defVar('MOT_controlled_load_time',30000,'ms');
+defVar('MOT_controlled_load_time',10000,'ms');
 
 seqdata.params.UV_on_time                   = 10000;
-% UV on time + savingtime + wait time = real wait time between cycles%
-% usually 15s for non XDT
-
 
 % Gray Molasses
 seqdata.flags.MOT_programGMDP              = 0; % Update GM DP frequency
-
 defVar('D1_DP_FM',222.5,'MHz');
 
 

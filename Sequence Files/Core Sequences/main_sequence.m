@@ -1,5 +1,5 @@
-function timeout = Load_MagTrap_sequence(timein)
-% Load_MagTrap_sequence
+function timeout = main_sequence(timein)
+% main_sequence
 % 
 % This is main sequence file of the experiment
 

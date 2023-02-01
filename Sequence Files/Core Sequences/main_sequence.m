@@ -15,6 +15,9 @@ initialize_channels();
 seqdata.numDDSsweeps = 0;
 seqdata.scanindex = -1;
 
+% CF : Is this really useful? Also we have more than A and B SRS
+seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been programmed via GPIB
+
 % "Useful" constants
 kHz = 1E3;
 MHz = 1E6;
@@ -40,10 +43,7 @@ seqdata.params.plug_shims_slopes = [Cx Cy Cz];
 %Current shim values (x,y,z)- reset to zero
 seqdata.params.shim_val = [0 0 0]; 
 
-% Rb Probe Beam AOM Order
-seqdata.flags.Rb_Probe_Order = 1;   % 1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
-                                    % 2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
-seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been programmed via GPIB
+
 
 
 %% Flags
@@ -55,7 +55,8 @@ seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been p
 seqdata.flags.misc_calibrate_PA             = 0; % Pulse for PD measurement
 seqdata.flags.misc_lock_PA                  = 0; % Update wavemeter lock
 seqdata.flags.misc_program4pass             = 0; % Update four-pass frequency
-
+seqdata.flags.Rb_Probe_Order                = 1;   % 1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
+                                                    % 2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
 defVar('PA_detuning',round(-49.539,6),'GHz');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

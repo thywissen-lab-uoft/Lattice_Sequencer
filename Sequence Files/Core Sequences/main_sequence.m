@@ -92,7 +92,7 @@ seqdata.flags.High_Field_Imaging = 0;
 seqdata.flags.image_insitu =0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms
+defVar('tof',[5],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms
 seqdata.params.tof = getVar('tof');
 
 % For double shutter imaging, may delay imaging Rb after K
@@ -132,7 +132,7 @@ seqdata.flags.RF_evap_stages                = [1, 1, 1];
 seqdata.flags.mt_use_plug                   = 1;
 
 % Lower cloud after evaporation before TOF (can be useful for hot clouds)
-seqdata.flags.mt_lower_after_evap        = 0; 
+seqdata.flags.mt_lower_after_evap           = 0; 
 
 % Resonantly kill atoms after evaporation
 seqdata.flags.mt_kill_Rb_after_evap         = 0;    
@@ -154,7 +154,9 @@ seqdata.params.ODT_zeros = [-0.04,-0.04];
 
 % Dipole trap
 % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
-seqdata.flags.xdt                           = 1; 
+seqdata.flags.xdt                           = 1;
+
+% Dipole trap flags will be ignored if XDT is off
 
 % MT to XDT State Transfer
 seqdata.flags.xdt_Rb_21uwave_sweep_field    = 1;    % Field Sweep Rb 2-->1
@@ -226,10 +228,8 @@ if seqdata.flags.image_loc == 0 %MOT cell imaging
 end
 
 %% PA Laser Lock Detuning
-if seqdata.flags.misc_lock_PA
-    
-    updatePALock(curtime);
-    
+if seqdata.flags.misc_lock_PA    
+    updatePALock(curtime);    
 end
 %% Set Objective Piezo VoltageS
 % If the cloud moves up, the voltage must increase to refocus
@@ -362,6 +362,9 @@ setAnalogChannel(calctime(curtime,0),'Plug',2500); % Current in mA
 setDigitalChannel(calctime(curtime,0),'High Field Shutter',0);
 setDigitalChannel(calctime(curtime,0),'K High Field Probe',1);
 
+% Turn on MOT Shim Supply Relay
+setDigitalChannel(calctime(curtime,0),'Shim Relay',1);
+
 % Turn off Rigol modulation
 addr_mod_xy = 9; % ch1 x mod, ch2 y mod
 addr_z = 5; %ch1 z lat, ch2 z mod  
@@ -370,21 +373,18 @@ ch_off.STATE = 'OFF';
 ch_off.AMPLITUDE = 0;
 ch_off.FREQUENCY = 1;
 
-programRigol(addr_mod_xy,ch_off,ch_off);   % Turn off xy mod
+programRigol(addr_mod_xy,ch_off,ch_off);    % Turn off xy mod
 programRigol(addr_z,[],ch_off);             % Turn off z mod
     
-%% Make sure Shim supply relay is on
 
-%Turn on MOT Shim Supply Relay
-setDigitalChannel(calctime(curtime,0),'Shim Relay',1);
+
 
 %% Load the MOT
-% Dump out the saved MOT and reload it
 
+% Dump out the saved MOT and reload it
 if (seqdata.flags.MOT_load_at_start == 1)
     % Load the MOT
-    loadMOTSimple(curtime,1);
-    
+    loadMOTSimple(curtime,1);    
     controlled_load_time = 30000;
     
     % Wait for the MOT to load
@@ -610,10 +610,12 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     sweep_time_list = [3000];
     sweep_time = getScanParameter(sweep_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'RF1B_sweep_time');
-    sweep_times_1b = [6000 3000 2]*getVar('RF1B_time_scale'); 2000;
+    sweep_times_1b = [6000 3000 2]*getVar('RF1B_time_scale'); 
+    
     evap_end_gradient_factor_list = [1];.9; %0.75
     evap_end_gradient_factor = getScanParameter(evap_end_gradient_factor_list,...
         seqdata.scancycle,seqdata.randcyclelist,'evap_end_gradient_factor');
+    
     currs_1b = [1 1 evap_end_gradient_factor evap_end_gradient_factor]*I_QP;
     freqs_1b = [freqs_1(end)/MHz*1.1 7  getVar('RF1B_finalfreq') 2]*MHz;
     
@@ -621,7 +623,6 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     rf_1b_gain = getScanParameter(rf_1b_gain_list,...
         seqdata.scancycle,seqdata.randcyclelist,'RF1B_gain','V');
     
-%     rf_1b_gain = -2;    
     gains = ones(1,length(freqs_1b))*rf_1b_gain;
     
     % Create RF1B structure object

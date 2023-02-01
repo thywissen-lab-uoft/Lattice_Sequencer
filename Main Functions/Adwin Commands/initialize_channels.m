@@ -37,19 +37,20 @@ for i = 1:length(seqdata.digchannels)
     
 end
 
+%% Digital Channels
+
 % digital channel names
-seqdata.digchannels(1).name = 'K D1 GM Shutter'; % 1: ON, 0: OFF
-seqdata.digchannels(2).name = 'K Trap Shutter'; % 1: ON, 0: OFF
-seqdata.digchannels(3).name = 'K Repump Shutter';% all repump power shutter, different from 0th order shutter
-seqdata.digchannels(4).name = 'Rb Trap Shutter'; %1: ON, 0: OFF
-seqdata.digchannels(5).name = 'Rb Repump Shutter'; % 1: ON, 0: OFF
-seqdata.digchannels(6).name = 'K Trap TTL'; %AOM is before the TA, so this cannot turn the beam 100% off 0: ON 1:Off
-seqdata.digchannels(7).name = 'K Repump TTL'; %AOM is before the TA
-seqdata.digchannels(8).name = 'Rb Trap TTL'; %AOM is before the TA
-% seqdata.digchannels(3).name = 'xLatticeOFF';
-seqdata.digchannels(9).name = 'K Probe/OP TTL';     % 0: OFF; 1: ON
+seqdata.digchannels(01).name = 'K D1 GM Shutter';   % 1: ON, 0: OFF
+seqdata.digchannels(02).name = 'K Trap Shutter';    % 1: ON, 0: OFF
+seqdata.digchannels(03).name = 'K Repump Shutter';  % all repump power shutter, different from 0th order shutter
+seqdata.digchannels(04).name = 'Rb Trap Shutter';   % 1: ON, 0: OFF
+seqdata.digchannels(05).name = 'Rb Repump Shutter'; % 1: ON, 0: OFF
+seqdata.digchannels(06).name = 'K Trap TTL';        % AOM is before the TA, so this cannot turn the beam 100% off 0: ON 1:Off
+seqdata.digchannels(07).name = 'K Repump TTL';      % AOM is before the TA
+seqdata.digchannels(08).name = 'Rb Trap TTL';       % AOM is before the TA
+seqdata.digchannels(09).name = 'K Probe/OP TTL';    % 0: OFF; 1: ON
 seqdata.digchannels(10).name = 'Plug Shutter';      % 1: ON; 0: OFF
-seqdata.digchannels(11).name = 'UV LED';            % No Longer Used, UV TTL
+seqdata.digchannels(11).name = 'UV LED';            % (CF : obsolete?) No Longer Used, UV TTL
 seqdata.digchannels(12).name = 'ScopeTrigger';
 seqdata.digchannels(14).name = 'Rb uWave TTL';      % 0 is off
 seqdata.digchannels(15).name = 'Dimple Shutter';    % 0 is off
@@ -58,24 +59,24 @@ seqdata.digchannels(17).name = 'RF/uWave Transfer'; % 0 is RF, 1 is uWaves
 seqdata.digchannels(17).resetvalue = 0;
 seqdata.digchannels(18).name = 'DDS ADWIN Trigger';
 seqdata.digchannels(19).name = 'RF TTL';            % 0 is off
-seqdata.digchannels(20).name = 'RaspPi Trig';       % 1 Triggers
+seqdata.digchannels(20).name = 'RaspPi Trig';       % (CF : obsolete?) 1 Triggers
 seqdata.digchannels(21).name = 'Coil 16 TTL';       % (fast switch) 1 is off - on control board, bypasses servo.
 seqdata.digchannels(22).name = '15/16 Switch';      % 15 Switch (A FET - beside coil short detector). Used for sending equal currents into both coils for QP.
-seqdata.digchannels(23).name = 'D1 Shutter';        %D1 shutter before 4-pass AOM
-seqdata.digchannels(24).name = 'Rb Probe/OP TTL';   % 0: laser ON; 1 laser OFF
+seqdata.digchannels(23).name = 'D1 Shutter';        % D1 shutter before 4-pass AOM
+seqdata.digchannels(24).name = 'Rb Probe/OP TTL';   % 0:ON; 1:OFF
 seqdata.digchannels(25).name = 'Rb Probe/OP shutter';
 seqdata.digchannels(26).name = 'PixelFly Trigger';
-seqdata.digchannels(27).name = 'K High Field Probe'; % 0: on, 1 off
+seqdata.digchannels(27).name = 'K High Field Probe';% 0: on, 1 off
 seqdata.digchannels(28).name = 'Transport Relay';   % Relay to use one FET for two coils (3 & 11)
 seqdata.digchannels(29).name = 'Kitten Relay';      % Physical relay to use different currents in coils 15 and 16.
-seqdata.digchannels(30).name = 'K Probe/OP shutter';% 0: OFF , 1: ON ;
+seqdata.digchannels(30).name = 'K Probe/OP shutter';% 0:OFF, 1:ON
 seqdata.digchannels(31).name = 'fast FB Switch';    % 1 = on (make sure channel 37 is set to -0.5 before opening to avoid current spike, after opening set channel 37 to 0 to have a smooth ramp on from zero)
 seqdata.digchannels(32).name = 'iXon Trigger';
 seqdata.digchannels(33).name = 'Shim Relay';        % 1 = on (MOT Shims)
 seqdata.digchannels(34).name = 'yLatticeOFF';       % Controls all 3 lattice beams (i.e. Lattice TTL)
-seqdata.digchannels(35).name = 'D1 TTL';            %TTL for the EIT probe AOMs; 1: ON; 0 : OFF
-seqdata.digchannels(36).name = 'EIT Shutter';       %Shutter for EIT probe beam paths
-seqdata.digchannels(37).name = 'Reverse QP Switch';  %MOSFET to switch direction of QP  
+seqdata.digchannels(35).name = 'D1 TTL';            % TTL for the EIT probe AOMs; 1: ON; 0 : OFF
+seqdata.digchannels(36).name = 'EIT Shutter';       % Shutter for EIT probe beam paths
+seqdata.digchannels(37).name = 'Reverse QP Switch'; % MOSFET to switch direction of QP  
 seqdata.digchannels(37).resetvalue = 0;
 
 seqdata.digchannels(38).name = 'FPump Direct';      % 0 regulate, 1 don't regulate
@@ -83,78 +84,78 @@ seqdata.digchannels(39).name = 'K uWave TTL';       % 0 off, 1 on
 seqdata.digchannels(40).name = 'K/Rb uWave Transfer'; %0 = K, 1 = Rb
 seqdata.digchannels(40).resetvalue = 0;
 seqdata.digchannels(41).name = 'Lattice Direct Control'; 
-seqdata.digchannels(42).name = 'FB Integrator OFF'; %0 = integrator enabled (DO NOT SET TO 1 - March 2014)
-seqdata.digchannels(43).name = 'Bipolar Shim Relay'; %1 = shims on, 0 = shims off | temporary?
-seqdata.digchannels(44).name = 'FB offset select'; % 1 = divide by 10 and add 6.6 V to 'FB current' voltage
-seqdata.digchannels(45).name = 'DMD AOM TTL'; %1 on 0 off
+seqdata.digchannels(42).name = 'FB Integrator OFF'; % 0 = integrator enabled (DO NOT SET TO 1 - March 2014)
+seqdata.digchannels(43).name = 'Bipolar Shim Relay';% 1 = shims on, 0 = shims off | temporary?
+seqdata.digchannels(44).name = 'FB offset select';  % 1 = divide by 10 and add 6.6 V to 'FB current' voltage
+seqdata.digchannels(45).name = 'DMD AOM TTL';       % 1 on 0 off
 seqdata.digchannels(45).resetvalue = 1;
-seqdata.digchannels(46).name = 'Field sensor SR'; % Set/Reset of the field sensor inside thebucket (Minimag)
+seqdata.digchannels(46).name = 'Field sensor SR';   % Set/Reset of the field sensor inside thebucket (Minimag)
 seqdata.digchannels(47).name = 'High Field Shutter';% 0: OFF, 1: ON
-seqdata.digchannels(48).name = 'Rb Sci Repump'; %Rb repump in science chamber
+seqdata.digchannels(48).name = 'Rb Sci Repump';     % Rb repump in science chamber
 seqdata.digchannels(48).resetvalue = 0;
-seqdata.digchannels(49).name = 'Rb Source Transfer'; %Use Anritsu (0) or Sextupler (1) for Rb uWaves
+seqdata.digchannels(49).name = 'Rb Source Transfer';% (CF : obsolete?) Use Anritsu (0) or Sextupler (1) for Rb uWaves
 seqdata.digchannels(49).resetvalue = 0;
-seqdata.digchannels(50).name = 'Gray Molasses switch'; %switch between K D2 gray molasses, 0: MOT; 1: gray molasses
-seqdata.digchannels(51).name = 'Lattice FM'; %Used to gate a frequency source which applies FM to the lattice beams (1 = on, 0 = off)
+seqdata.digchannels(50).name = 'Gray Molasses switch'; % (CF : obsolete?) Switch between K D2 gray molasses, 0: MOT; 1: gray molasses
+seqdata.digchannels(51).name = 'Lattice FM';        % Used to gate a frequency source which applies FM to the lattice beams (1 = on, 0 = off)
 seqdata.digchannels(52).name = 'Remote field sensor SR'; % Set/Reset of the field sensor high above
-seqdata.digchannels(53).name = 'K uWave Source'; % Diverts SRS to uWave or RF (0: SRS to RF, 1: SRS to uWave)
-seqdata.digchannels(54).name = 'F Pump TTL'; %Seperate TTL for Vertical / Long beams 
+seqdata.digchannels(53).name = 'K uWave Source';    % Diverts SRS to uWave or RF (0: SRS to RF, 1: SRS to uWave)
+seqdata.digchannels(54).name = 'F Pump TTL';        % Seperate TTL for Vertical / Long beams 
 seqdata.digchannels(55).name = 'Downwards D2 Shutter'; %Shutter for Rb and K repump in science cell. (0 = close, 1 = Open).
-seqdata.digchannels(56).name = 'ACync Master'; %Master pulse for ACync Board
-seqdata.digchannels(57).name = 'D1 OP TTL'; % AOM control 0: off; 1: on;
-seqdata.digchannels(58).name = 'Raman Shutter'; %0: off, 1: on
-seqdata.digchannels(59).name = 'Kill TTL'; %0:off, 1: on. 
-seqdata.digchannels(60).name = 'Raman TTL 1'; % Raman 1 (V) ZASWA(P2;1=on) + Rigol Trigger (CH1)
-seqdata.digchannels(61).name = 'XDT TTL'; %0: on, 1: off
+seqdata.digchannels(56).name = 'ACync Master';      % Master pulse for ACync Board
+seqdata.digchannels(57).name = 'D1 OP TTL';         % AOM control 0: off; 1: on;
+seqdata.digchannels(58).name = 'Raman Shutter';     % 0: off, 1: on
+seqdata.digchannels(59).name = 'Kill TTL';          % 0:off, 1: on. 
+seqdata.digchannels(60).name = 'Raman TTL 1';       % Raman 1 (V) ZASWA(P2;1=on) + Rigol Trigger (CH1)
+seqdata.digchannels(61).name = 'XDT TTL';           % 0: on, 1: off
 seqdata.digchannels(61).resetvalue = 1;
-seqdata.digchannels(62).name = 'DMD TTL'; %0: on, 1:off
+seqdata.digchannels(62).name = 'DMD TTL';           % 0: on, 1:off
 seqdata.digchannels(62).resetvalue = 1;
-seqdata.digchannels(63).name = 'XDT Direct Control'; %0: off, 1:on
-% seqdata.digchannels(63).name = 'Plug Mode Switch';%'plug mode switch'; %1: manual mode, 0:Auto mode
-seqdata.digchannels(64).name = 'K Sci Repump'; %K repump in science chamber 
+seqdata.digchannels(63).name = 'XDT Direct Control';% (CF : obsolete?) 0: off, 1:on
+seqdata.digchannels(64).name = 'K Sci Repump';      % K repump in science chamber 
 seqdata.digchannels(65).name = 'K D1 GM Shutter 2'; % Second D1 GM shutter
-seqdata.digchannels(66).name = 'PA LabJack Trigger'; %labjack trigger for the PA calibration pulse
-seqdata.digchannels(67).name = 'Raman TTL 3'; % Raman H2 Rigol Trigger (CH2)
-seqdata.digchannels(68).name = 'Raman TTL 2'; % Raman H1 Rigol Trigger (CH2)
-seqdata.digchannels(69).name = 'HF freq source'; % 0: Rigol Ch1, 1: Rigol Ch2
+seqdata.digchannels(66).name = 'PA LabJack Trigger';% labjack trigger for the PA calibration pulse
+seqdata.digchannels(67).name = 'Raman TTL 3';       % Raman H2 Rigol Trigger (CH2)
+seqdata.digchannels(68).name = 'Raman TTL 2';       % Raman H1 Rigol Trigger (CH2)
+seqdata.digchannels(69).name = 'HF freq source';    % (CF : obsolete?) 0: Rigol Ch1, 1: Rigol Ch2
 seqdata.digchannels(69).resetvalue = 1;
-seqdata.digchannels(70).name = 'DMD shutter'; %0 on 1 off
+seqdata.digchannels(70).name = 'DMD shutter';       % 0 on 1 off
 seqdata.digchannels(70).resetvalue = 1;
-seqdata.digchannels(71).name = 'DMD PID holder'; %unused
+seqdata.digchannels(71).name = 'DMD PID holder';    % unused
 seqdata.digchannels(71).resetvalue = 0;
 
-seqdata.digchannels(72).name = 'Raman TTL 3a'; % Raman 3 (H2) ZASWA
-seqdata.digchannels(73).name = 'Raman TTL 2a'; % Raman 2 (H1) ZASWA
+seqdata.digchannels(72).name = 'Raman TTL 3a';      % Raman 3 (H2) ZASWA
+seqdata.digchannels(73).name = 'Raman TTL 2a';      % Raman 2 (H1) ZASWA
 
-seqdata.digchannels(74).name = 'RF Source'; % 0 : DDS, 1 : SRS
+seqdata.digchannels(74).name = 'RF Source';         % 0 : DDS, 1 : SRS
 seqdata.digchannels(74).resetvalue = 0;
 
-seqdata.digchannels(75).name = 'SRS Source'; %0: new SRS, 1: imaging SRS
+seqdata.digchannels(75).name = 'SRS Source';        % 0: new SRS, 1: imaging SRS
 seqdata.digchannels(75).resetvalue = 1;
 
 seqdata.digchannels(76).name = 'SRS Source post spec'; %0:K new SRS 1:Rb SRS
 seqdata.digchannels(76).resetvalue = 0;
 
-seqdata.digchannels(77).name = 'ODT Rigol Trigger'; %unused
+seqdata.digchannels(77).name = 'ODT Rigol Trigger';   % unused
 seqdata.digchannels(78).name = 'DDS Rb Trap Trigger'; % To trigger the DDS that sets the offset lock
-seqdata.digchannels(79).name = 'PA TTL';     % For testing Vortex as PA laser (1: ON)
-seqdata.digchannels(80).name = 'PA Shutter'; % For testing Vortex as PA laser (0: ON)
-seqdata.digchannels(81).name = 'Channel 81'; %unused
-seqdata.digchannels(82).name = 'Channel 82'; %unused
-seqdata.digchannels(83).name = 'Channel 83'; %unused
-seqdata.digchannels(84).name = 'Channel 84'; %unused
-seqdata.digchannels(85).name = 'Channel 85'; %unused
-seqdata.digchannels(86).name = 'Channel 86'; %unused
-seqdata.digchannels(87).name = 'Channel 87'; %unused
-seqdata.digchannels(88).name = 'Channel 88'; %unused
-seqdata.digchannels(89).name = 'Channel 89'; %unused
-seqdata.digchannels(90).name = 'Channel 90'; %unused
-seqdata.digchannels(91).name = 'Channel 91'; %unused
-seqdata.digchannels(92).name = 'Channel 92'; %unused
-seqdata.digchannels(93).name = 'Channel 93'; %unused
-seqdata.digchannels(94).name = 'Channel 94'; %unused
-seqdata.digchannels(95).name = 'Channel 95'; %unused
-seqdata.digchannels(96).name = 'Channel 96'; %unused
+seqdata.digchannels(79).name = 'PA TTL';              % For testing Vortex as PA laser (1: ON)
+seqdata.digchannels(80).name = 'PA Shutter';          % For testing Vortex as PA laser (0: ON)
+seqdata.digchannels(81).name = 'Channel 81';        % unused
+seqdata.digchannels(82).name = 'Channel 82';        % unused
+seqdata.digchannels(83).name = 'Channel 83';        % unused
+seqdata.digchannels(84).name = 'Channel 84';        % unused
+seqdata.digchannels(85).name = 'Channel 85';        % unused
+seqdata.digchannels(86).name = 'Channel 86';        % unused
+seqdata.digchannels(87).name = 'Channel 87';        % unused
+seqdata.digchannels(88).name = 'Channel 88';        % unused
+seqdata.digchannels(89).name = 'Channel 89';        % unused
+seqdata.digchannels(90).name = 'Channel 90';        % unused
+seqdata.digchannels(91).name = 'Channel 91';        % unused
+seqdata.digchannels(92).name = 'Channel 92';        % unused
+seqdata.digchannels(93).name = 'Channel 93';        % unused
+seqdata.digchannels(94).name = 'Channel 94';        % unused
+seqdata.digchannels(95).name = 'Channel 95';        % unused
+seqdata.digchannels(96).name = 'Channel 96';        % unused
+%% Analag Channels
 
 %set the analog channel numbers
 for i = 1:length(seqdata.analogchannels)

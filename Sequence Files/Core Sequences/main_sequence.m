@@ -48,18 +48,27 @@ seqdata.params.shim_val = [0 0 0];
 seqdata.flags.misc_calibrate_PA             = 0; % Pulse for PD measurement
 seqdata.flags.misc_lock_PA                  = 0; % Update wavemeter lock
 seqdata.flags.misc_program4pass             = 0; % Update four-pass frequency
+seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
+
 seqdata.flags.Rb_Probe_Order                = 1;   % 1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
                                                     % 2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
 defVar('PA_detuning',round(-49.539,6),'GHz');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% MOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MOT cell %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 seqdata.flags.MOT_load_at_start             = 0; %do a specific load time
 
 seqdata.params.UV_on_time                   = 10000;
 % UV on time + savingtime + wait time = real wait time between cycles%
 % usually 15s for non XDT
+
+
+% Gray Molasses
+seqdata.flags.MOT_programGMDP              = 0; % Update GM DP frequency
+
+defVar('D1_DP_FM',222.5,'MHz')
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -255,11 +264,13 @@ if seqdata.flags.misc_program4pass
     DDS_sweep(calctime(curtime,0),2,DDSFreq,DDSFreq,calctime(curtime,1));
 end
 
-% %Set the frequency of the first DP AOM 
-%     D1_FM_List = [222.5];
-%     D1_FM = getScanParameter(D1_FM_List, seqdata.scancycle, seqdata.randcyclelist);%5
-%     setAnalogChannel(calctime(curtime,0),'D1 FM',D1_FM);
-%     addOutputParam('D1_DP_FM',D1_FM);
+if seqdata.flags.MOT_programGMDP
+    D1_FM_List = [222.5];
+    D1_FM = getScanParameter(D1_FM_List, seqdata.scancycle, seqdata.randcyclelist);%5
+    setAnalogChannel(calctime(curtime,0),'D1 FM',D1_FM);
+    addOutputParam('D1_DP_FM',D1_FM);
+end
+
 
 %% Initialize Voltage levels
 

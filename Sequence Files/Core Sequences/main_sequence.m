@@ -22,15 +22,6 @@ GHz = 1E9;
 
 %% Constants and Parameters
 
-% % Ambient field cancelling values (ramp to these at end of XDT loading)
-% seqdata.params.shim_zero = [(0.1585-0.0160), (-0.0432-0.022), (-0.0865-0.015)];
-% 
-% % Shim values that align the plugged-QP trap to the center of the 
-% seqdata.params.plug_shims = [...
-%     (seqdata.params.shim_zero(1)-1-0.04-0.3),...
-%     (seqdata.params.shim_zero(2)+0.125), ...
-%     (seqdata.params.shim_zero(3)+ 0.35)];
-
 % Shim Zero (to eliminate all bkgd fields)
 seqdata.params.shim_zero = [0.1425, -0.0652, -0.1015];
 
@@ -43,11 +34,6 @@ seqdata.params.plug_shims = seqdata.params.shim_zero + ...
 Cx = -0.0507;
 Cy = 0.0045;
 Cz = 0.0115;
-
-% Old values
-% Cx = -0.0499;
-% Cy = 0.0045;
-% Cz = 0.0105;
 
 seqdata.params.plug_shims_slopes = [Cx Cy Cz];
 

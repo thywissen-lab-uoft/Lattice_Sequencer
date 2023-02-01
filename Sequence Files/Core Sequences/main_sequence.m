@@ -263,11 +263,6 @@ end
 
 %% Initialize Voltage levels
 
-%RHYS - Initialization settings for a lot of channels. But, the 'reset
-%values' should already be set in initialize_channels, and, I think,
-%set at the end of the sequence. So, these should just be incorporated
-%into that function properly instead of defined here. 
-
 %Initialize modulation ramp to off.
 setAnalogChannel(calctime(curtime,0),'Modulation Ramp',0);
 
@@ -281,13 +276,13 @@ setDigitalChannel(calctime(curtime,0),'K uWave TTL',0);
 setAnalogChannel(calctime(curtime,0),'uWave VVA',10);
 
 %Set both transfer switches back to initial positions
-setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',0); %0 = RF
-setDigitalChannel(calctime(curtime,0),'K/Rb uWave Transfer',1); %1 = Rb
-setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',1); %0 = Anritsu, 1 = Sextupler
+setDigitalChannel(calctime(curtime,0),'RF/uWave Transfer',0);   % 0: RF
+setDigitalChannel(calctime(curtime,0),'K/Rb uWave Transfer',1); % 1: Rb
+setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',1);  % 0:Anritsu, 1 = Sextupler (unsued?)
 
 %Reset Feschbach coil regulation
-setDigitalChannel(calctime(curtime,0),'FB Integrator OFF',0);  %Integrator disabled
-setDigitalChannel(calctime(curtime,0),'FB offset select',0);        %No offset voltage
+setDigitalChannel(calctime(curtime,0),'FB Integrator OFF',0);   % Integrator disabled
+setDigitalChannel(calctime(curtime,0),'FB offset select',0);    % No offset voltage
 
 %turn off dipole trap beams
 setAnalogChannel(calctime(curtime,0),'dipoleTrap1',seqdata.params.ODT_zeros(1));

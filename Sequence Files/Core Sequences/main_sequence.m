@@ -100,15 +100,13 @@ seqdata.flags.High_Field_Imaging = 0;
 
 seqdata.flags.image_insitu =0; % Does this flag work for QP/XDT? Or only QP?
 
-% Choose the time-of-flight time for absorption imaging
-tof_list = [25]; %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms
-seqdata.params.tof = getScanParameter(tof_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'tof','ms');
+% Choose the time-of-flight time for absorption imaging 
+defVar('tof',[5 10 15 20 25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms
+seqdata.params.tof = getVar('tof');
 
 % For double shutter imaging, may delay imaging Rb after K
-tof_krb_diff_list= [0];
-seqdata.params.tof_krb_diff = getScanParameter(tof_krb_diff_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'tof_krb_diff','ms');
+defVar('tof_krb_diff',[0],'ms');
+seqdata.params.tof_krb_diff = getVar('tof_krb_diff');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Mag Trap : TRANSPORT, RF1A, and RF1B %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -153,10 +151,17 @@ seqdata.flags.mt_kill_K_after_evap          = 0;
 % Ramp plug power at end of evaporation
 seqdata.flags.mt_plug_ramp_end              = 0;
 
+
+
+
+
 % RF1A and RF1B timescales
-RF_1B_time_scale_list = [0.8];0.8;
-RF_1B_time_scale = getScanParameter(RF_1B_time_scale_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'RF1B_time_scale');
+% RF_1B_time_scale_list = [0.8];0.8;
+% RF_1B_time_scale = getScanParameter(RF_1B_time_scale_list,...
+%     seqdata.scancycle,seqdata.randcyclelist,'RF1B_time_scale');
+
+defVar('RF1B_time_scale',[0.8],'arb');
+RF_1B_time_scale = getVar('tof_krb_diff');
 
 rf_evap_time_scale = [0.6 RF_1B_time_scale];
 

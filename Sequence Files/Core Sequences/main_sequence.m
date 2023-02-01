@@ -1,13 +1,8 @@
 function timeout = main_sequence(timein)
-% main_sequence
-% 
+% main_sequence.m
 % This is main sequence file of the experiment
-
 curtime = timein;
-disp(repmat('-',1,60));
-dispLineStr('New Sequence',curtime);
 
-%% Initialize seqdata
 global seqdata;
 initialize_channels();
 
@@ -40,11 +35,9 @@ Cz = 0.0115;
 
 seqdata.params.plug_shims_slopes = [Cx Cy Cz];
 
+% CF : Is this ever actually used?
 %Current shim values (x,y,z)- reset to zero
 seqdata.params.shim_val = [0 0 0]; 
-
-
-
 
 %% Flags
 
@@ -233,6 +226,7 @@ end
 if seqdata.flags.misc_lock_PA    
     updatePALock(curtime);    
 end
+
 %% Set Objective Piezo VoltageS
 % If the cloud moves up, the voltage must increase to refocus
 %  (as the experiment warms up, selected plane tends to move up a bit)

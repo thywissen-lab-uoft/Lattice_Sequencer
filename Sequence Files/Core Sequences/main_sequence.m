@@ -97,7 +97,6 @@ seqdata.params.tof = getVar('tof');
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[0],'ms');
-seqdata.params.tof_krb_diff = getVar('tof_krb_diff');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Mag Trap : TRANSPORT, RF1A, and RF1B %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -437,9 +436,7 @@ if ~(seqdata.flags.image_type==4 )
     setAnalogChannel(calctime(curtime,0.01),'Z MOT Shim',zshim2,2); %0.2
 
     %RHYS - the second important function, which loads the MOT into the magtrap. 
-
 curtime = Load_MagTrap_from_MOT(curtime);
-
 end
 
 % CF : This seems bad to me as they will perturb the just loaded MT, I

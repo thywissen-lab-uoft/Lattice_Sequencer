@@ -366,7 +366,7 @@ tD=getScanParameter(tD_list,seqdata.scancycle,...
     seqdata.randcyclelist,'pixel_delay','us');
 
 % Take the first absorption image with atoms
-tof_krb_diff=seqdata.params.tof_krb_diff;
+tof_krb_diff=getVar('tof_krb_diff');
 params.isProgrammedSRS = 0;
 params=do_abs_pulse2(curtime,params,flags,K_power,tof_krb_diff,tD*1e-3);
 

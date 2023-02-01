@@ -693,92 +693,6 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
 
 
 %% AdWin Callbacks
-% This section of the code defines the callbacks for running the sequencer.
-%  It is separated by a different section in order to visually separate
-%  front end GUI stuff from the actual sequence code.
-
-
-
-% This function is called when the sequence has finished running an
-% iteration.  It is called either at the end of an adwin sequence or at the
-% end of the wait timer.  It's purpose is to decide what to do after the
-% iteration of the sequence is complete.
-% Options - Stop running, run on repeat, continue scanning, stop scanning
-% function cycleComplete
-%     
-%     set(tStatus,'String','Sequence Idle.','fontweight','normal',...
-%         'foregroundcolor','k');drawnow;
-%     
-% switch bgRun.SelectedObject.String
-%     
-%     % End condition if the sequener is in single mode
-% case 'single'
-%     if cRpt.Value
-%         disp('Repeating the sequence');
-%         runSequence;
-%     else
-%         bRunIter.Enable='on';
-%         rScan.Enable='on';
-%         rSingle.Enable='on';
-%         
-%         bPlot.Enable='on';
-% %         bOver.Enable='on';
-%         bCompile.Enable='on';
-% 
-%         bBrowse.Enable='on';
-%         eSeq.Enable='on';
-%     end
-% 
-%     % What to do if the sequener is in scan mode.
-% case 'scan'                
-%     if seqdata.doscan
-%         if isequal(cScanFinite.Enable,'on') && tblMaxScan.Data<=seqdata.scancycle ...
-%                 && cScanFinite.Value
-%             % The scan is complete
-%             disp(['Scan complete at ' num2str(seqdata.scancycle) ' cycles']);
-%             bRunIter.Enable='on';
-%             rScan.Enable='on';
-%             rSingle.Enable='on';       
-%             bStop.Enable='off';
-% 
-%             bPlot.Enable='on';
-% %             bOver.Enable='on';
-%             bCompile.Enable='on';
-%             bBrowse.Enable='on';
-%             eSeq.Enable='on';
-%             bContinue.Enable='on';
-%         else
-%             % Increment the scan and run the sequencer again
-%             disp(['Incrementing the scan ' num2str(seqdata.scancycle) ...
-%                 ' --> ' num2str(seqdata.scancycle+1)]);
-%             seqdata.scancycle=seqdata.scancycle+1;   
-%             runSequence;
-%         end                  
-%     else
-%         if cScanFinite.Value
-%             disp(['Scan stopped at ' num2str(seqdata.scancycle) ...
-%                 ' cycles of ' num2str(tblMaxScan.Data)]);
-%         else
-%             disp(['Scan stopped at ' num2str(seqdata.scancycle) ' cycles']);
-%         end
-%         
-%         bRunIter.Enable='on';
-%         rScan.Enable='on';
-%         rSingle.Enable='on';
-%         bStop.Enable='off';
-%         bPlot.Enable='on';
-% %         bOver.Enable='on';
-%         bCompile.Enable='on';
-%         bContinue.Enable='off';
-% 
-%         bBrowse.Enable='on';
-%         eSeq.Enable='on';
-%         
-%     end
-% end  
-% 
-% end
-
     function cycleComplete
         set(tStatus,'String','Cycle completed.','fontweight','normal',...
             'foregroundcolor','k');drawnow;     
@@ -1138,22 +1052,12 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
 
     % This function creates files which indicate the configuration of the
     % most recent cycle run.
-    function makeControlFile
-        % Dispaly output parameters to control prompt        
-%         disp(' ');
-%         disp('--Lattice Sequencer Output Parameters--');        
-%         for n = 1:length(seqdata.outputparams)
-%             %the first element is a string and the second element is a number
-%             fprintf(1,'%s: %g \n',seqdata.outputparams{n}{1},seqdata.outputparams{n}{2});
-%         end        
-%         disp('----------------------------------------');     
-        
+    function makeControlFile        
         tExecute=now;
         seqdata.outputfilepath=compath;
         filenametxt = fullfile(seqdata.outputfilepath, 'control.txt');
         filenamemat=fullfile(seqdata.outputfilepath, 'control.mat');  
-        filenamemat2=fullfile(seqdata.outputfilepath, 'control2.mat');  
-        
+        filenamemat2=fullfile(seqdata.outputfilepath, 'control2.mat');          
 
         disp(['Saving sequence parameters to ' seqdata.outputfilepath filesep 'control']);
         [path,~,~] = fileparts(filenametxt);

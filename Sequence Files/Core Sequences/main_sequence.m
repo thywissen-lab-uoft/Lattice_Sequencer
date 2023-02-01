@@ -75,15 +75,15 @@ seqdata.flags.image_type = 0;
 %3: blue_absorption, 4: MOT fluor, 5: load MOT immediately, 
 %6: MOT fluor with MOT off, 7: fluorescence image after do_imaging_molasses 
 %8: iXon fluorescence + Pixelfly absorption
-seqdata.flags.MOT_flour_image = 0;
+seqdata.flags.MOT_flour_image               = 0;
 
 iXon_movie = 0; %Take a multiple frame movie?
-seqdata.flags.image_atomtype = 1;   % 0: Rb; 1:K; 2: K+Rb (double shutter)
-seqdata.flags.image_loc = 1;        % 0: `+-+MOT cell, 1: science chamber    
-seqdata.flags.image_direction = 0;  % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
-seqdata.flags.image_stern_gerlach = 0; % 1: Do a gradient pulse at the beginning of ToF
-seqdata.flags.image_iXon = 0;          % (unused?) use iXon camera to take an absorption image (only vertical)
-seqdata.flags.image_F1_pulse = 0;      % (unused?) repump Rb F=1 before/during imaging (unused?)
+seqdata.flags.image_atomtype                = 1; % 0:Rb,1:K,2:K+Rb (double shutter)
+seqdata.flags.image_loc                     = 1; % 0: `+-+MOT cell, 1: science chamber    
+seqdata.flags.image_direction               = 0; % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
+seqdata.flags.image_stern_gerlach           = 0; % 1: Do a gradient pulse at the beginning of ToF
+seqdata.flags.image_iXon                    = 0; % (unused?) use iXon camera to take an absorption image (only vertical)
+seqdata.flags.image_F1_pulse                = 0; % (unused?) repump Rb F=1 before/during imaging (unused?)
 
 seqdata.flags.High_Field_Imaging = 0;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
@@ -102,11 +102,11 @@ defVar('tof_krb_diff',[0],'ms');
 %%% Mag Trap : TRANSPORT, RF1A, and RF1B %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Horizontal Transport Type
-seqdata.flags.hor_transport_type = 1; 
+seqdata.flags.hor_transport_type            = 1; 
 %0: min jerk curves, 1: slow down in middle section curves, 2: none
 
 % Vertical Transport Type
-seqdata.flags.ver_transport_type = 3; 
+seqdata.flags.ver_transport_type            = 3; 
 % 0: min jerk curves, 1: slow down in middle section curves, 
 % 2: none, 3: linear, 4: triple min jerk
 
@@ -141,10 +141,10 @@ seqdata.flags.mt_kill_K_after_evap          = 0;
 % Ramp plug power at end of evaporation
 seqdata.flags.mt_plug_ramp_end              = 0;
 
-defVar('RF1A_time_scale',[0.6],'arb'); % RF1A timescale
-defVar('RF1B_time_scale',[0.8],'arb'); % RF1B timescale
-defVar('RF1A_finalfreq',[16],'MHz'); % RF1A Ending Frequency
-defVar('RF1B_finalfreq',[.8],'MHz'); % RF1B Ending Frequency
+defVar('RF1A_time_scale',[0.6],'arb');      % RF1A timescale
+defVar('RF1B_time_scale',[0.8],'arb');      % RF1B timescale
+defVar('RF1A_finalfreq',[16],'MHz');        % RF1A Ending Frequency
+defVar('RF1B_finalfreq',[.8],'MHz');        % RF1B Ending Frequency
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

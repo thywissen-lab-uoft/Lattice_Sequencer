@@ -64,6 +64,9 @@ seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been p
 
 % Take a second PA pulse after absorption imaging to calibrate PA power
 seqdata.flags.misc_calibrate_PA = 0;
+
+seqdata.flags.misc_lock_PA = 0;
+
 seqdata.flags.misc_program4pass = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -101,7 +104,7 @@ seqdata.flags.High_Field_Imaging = 0;
 seqdata.flags.image_insitu =0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[5 10 15 20 25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms
+defVar('tof',[25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms
 seqdata.params.tof = getVar('tof');
 
 % For double shutter imaging, may delay imaging Rb after K
@@ -151,29 +154,11 @@ seqdata.flags.mt_kill_K_after_evap          = 0;
 % Ramp plug power at end of evaporation
 seqdata.flags.mt_plug_ramp_end              = 0;
 
+defVar('RF1A_time_scale',[0.6],'arb'); % RF1A timescale
+defVar('RF1B_time_scale',[0.8],'arb'); % RF1B timescale
+defVar('RF1A_finalfreq',[16],'MHz'); % RF1A Ending Frequency
+defVar('RF1B_finalfreq',[.8],'MHz'); % RF1B Ending Frequency
 
-
-
-
-% RF1A and RF1B timescales
-% RF_1B_time_scale_list = [0.8];0.8;
-% RF_1B_time_scale = getScanParameter(RF_1B_time_scale_list,...
-%     seqdata.scancycle,seqdata.randcyclelist,'RF1B_time_scale');
-
-defVar('RF1B_time_scale',[0.8],'arb');
-RF_1B_time_scale = getVar('tof_krb_diff');
-
-rf_evap_time_scale = [0.6 RF_1B_time_scale];
-
-% RF1A Ending Frequency
-RF_1A_Final_Frequency_list = [16];%16
-RF_1A_Final_Frequency = getScanParameter(RF_1A_Final_Frequency_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'RF1A_finalfreq','MHz');
-
-% RF1B Final Frequency
-RF_1B_Final_Frequency_list = [.8];1;
-RF_1B_Final_Frequency = getScanParameter(RF_1B_Final_Frequency_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'RF1B_finalfreq','MHz');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% DIPOLE TRAP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -234,9 +219,6 @@ end
 %% Scope Trigger
 % Choose which scope trigger to use.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% OPTICAL LATTICE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % scope_trigger = 'rf_spectroscopy';
 scope_trigger = 'Lattice_Mod';
 % scope_trigger = 'FB_ramp';
@@ -257,64 +239,66 @@ if seqdata.flags.image_loc == 0 %MOT cell imaging
 end
 
 %% PA Laser Lock Detuning
+if seqdata.flags.misc_lock_PA
+    
+    dispLineStr('Updating PA Request',curtime);
 
-dispLineStr('Updating PA Request',curtime);
+    % K D2 line
+    PA_resonance = 391016.821;
 
-% K D2 line
-PA_resonance = 391016.821;
+    % Define the detuning list
+    % PA_detuning_list= -49.555; -49.578; -49.555;
 
-% Define the detuning list
-% PA_detuning_list= -49.555; -49.578; -49.555;
+    PA_detuning_list = -49.539;
 
-PA_detuning_list = -49.539;
+     % round to nearest kHz
+    PA_detuning_list=round(PA_detuning_list,6);
 
- % round to nearest kHz
-PA_detuning_list=round(PA_detuning_list,6);
+    % Scan randomly
+    PA_detuning = getScanParameter(PA_detuning_list, ...
+        seqdata.scancycle, seqdata.randcyclelist, 'PA_detuning','GHz');
 
-% Scan randomly
-PA_detuning = getScanParameter(PA_detuning_list, ...
-    seqdata.scancycle, seqdata.randcyclelist, 'PA_detuning','GHz');
+    % Convert detuning into laser frequency
+    PA_freq = PA_resonance + PA_detuning;
+    PA_freq = round(PA_freq,6); % round to nearest kHz
 
-% Convert detuning into laser frequency
-PA_freq = PA_resonance + PA_detuning;
-PA_freq = round(PA_freq,6); % round to nearest kHz
+    addOutputParam('PA_freq',PA_freq,'GHz');
 
-addOutputParam('PA_freq',PA_freq,'GHz');
+    lockSetFileName ='Y:\wavemeter_amar\lock_freq.txt';
 
-lockSetFileName ='Y:\wavemeter_amar\lock_freq.txt';
+    isFreqUpdated = 0;
 
-isFreqUpdated = 0;
+    updateTime=0;
+    if exist(lockSetFileName)    
+        disp(['writing PA freq to file ' num2str(PA_freq,12)]);
+        tic;
+        while ~isFreqUpdated && updateTime<2    
+            try
+                [fileID,errmsg] = fopen(lockSetFileName,'w');
+                if ~isequal(fileID,-1)
+                   fprintf(fileID,'%s',num2str(PA_freq,12)); 
+                end
+                fclose(fileID);
 
-updateTime=0;
-if exist(lockSetFileName)    
-    disp(['writing PA freq to file ' num2str(PA_freq,12)]);
-    tic;
-    while ~isFreqUpdated && updateTime<2    
-        try
-            [fileID,errmsg] = fopen(lockSetFileName,'w');
-            if ~isequal(fileID,-1)
-               fprintf(fileID,'%s',num2str(PA_freq,12)); 
+                text = fileread(lockSetFileName);
+
+                textNum = str2num(text);
+
+                disp(textNum);
+
+                if isequal(textNum,PA_freq)
+                    isFreqUpdated = 1;
+                    disp('Written frequency is the same as the text file');
+                end
+                disp(updateTime)
+                updateTime = toc;
             end
-            fclose(fileID);
-
-            text = fileread(lockSetFileName);
-
-            textNum = str2num(text);
-
-            disp(textNum);
-
-            if isequal(textNum,PA_freq)
-                isFreqUpdated = 1;
-                disp('Written frequency is the same as the text file');
-            end
-            disp(updateTime)
-            updateTime = toc;
         end
+        if updateTime>=2
+           warning('may have not updated the frequency'); 
+        end
+        disp('--------------------');
     end
-    if updateTime>=2
-       warning('may have not updated the frequency'); 
-    end
-    disp('--------------------');
 end
 %% Set Objective Piezo VoltageS
 % If the cloud moves up, the voltage must increase to refocus
@@ -601,13 +585,13 @@ if ( seqdata.flags.RF_evap_stages(1) == 1 )
     start_freq = 42;            % Beginning RF1A frequnecy 42 MHz 
 
     % Frequency points
-    freqs_1 = [start_freq 28 20 RF_1A_Final_Frequency]*MHz;
+    freqs_1 = [start_freq 28 20 getVar('RF1A_finalfreq')]*MHz;
     
     % Gains during each sweep
     RF_gain_1 = 0.5*[-4.1 -4.1 -4.1 -4.1]; 
     
     % Duration of each sweep interval
-    sweep_times_1 =[14000 8000 4000].*rf_evap_time_scale(1);    
+    sweep_times_1 =[14000 8000 4000].*getVar('RF1A_time_scale');    
     
     disp(['     Times        (ms) : ' mat2str(sweep_times_1) ]);
     disp(['     Frequencies (MHz) : ' mat2str(freqs_1*1E-6) ]);
@@ -697,12 +681,12 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     sweep_time_list = [3000];
     sweep_time = getScanParameter(sweep_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'RF1B_sweep_time');
-    sweep_times_1b = [6000 3000 2]*rf_evap_time_scale(2); 2000;
+    sweep_times_1b = [6000 3000 2]*getVar('RF1B_time_scale'); 2000;
     evap_end_gradient_factor_list = [1];.9; %0.75
     evap_end_gradient_factor = getScanParameter(evap_end_gradient_factor_list,...
         seqdata.scancycle,seqdata.randcyclelist,'evap_end_gradient_factor');
     currs_1b = [1 1 evap_end_gradient_factor evap_end_gradient_factor]*I_QP;
-    freqs_1b = [freqs_1(end)/MHz*1.1 7 RF_1B_Final_Frequency 2]*MHz;
+    freqs_1b = [freqs_1(end)/MHz*1.1 7  getVar('RF1B_finalfreq') 2]*MHz;
     
     rf_1b_gain_list = [-2];
     rf_1b_gain = getScanParameter(rf_1b_gain_list,...

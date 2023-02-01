@@ -124,15 +124,6 @@ seqdata.flags.transport_hor_type            = 1;
 % 0: min jerk, 1: slow in middle 2:none, 3:linear, 4: triple min jerk
 seqdata.flags.transport_ver_type            = 3;
 
-% Horizontal Transport Type
-seqdata.flags.hor_transport_type            = 1; 
-%0: min jerk curves, 1: slow down in middle section curves, 2: none
-
-% Vertical Transport Type
-seqdata.flags.ver_transport_type            = 3; 
-% 0: min jerk curves, 1: slow down in middle section curves, 
-% 2: none, 3: linear, 4: triple min jerk
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Magnetic Trap %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -481,16 +472,11 @@ setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.0,2); %2
     % Scope trigger
     ScopeTriggerPulse(calctime(curtime,0),'Start Transport');
     
-    %RHYS - the third imporant function. Transports cloud from MOT to science
-    %chamber. All surrounding relevant code should be integrated into this.
-    %Furthermore, note the significant calculation time due to spline
-    %interpolation - this is likely unneccesary?
-    
-    disp('Start Calculating Transport')
-curtime = Transport_Cloud(curtime, seqdata.flags.hor_transport_type,...
-    seqdata.flags.ver_transport_type, seqdata.flags.image_loc);
-    disp('End Calculating Transport')  
-
+    tic;
+curtime = Transport_Cloud(curtime, seqdata.flags.transport_hor_type,...
+    seqdata.flags.transport_ver_type, seqdata.flags.image_loc);
+    t2=toc;
+    disp(['Transport cloud calculation took ' num2str(t2) ' seconds']);
 %% Ramp up QP
 dispLineStr('Compression stage after transport to science cell.',curtime);
 

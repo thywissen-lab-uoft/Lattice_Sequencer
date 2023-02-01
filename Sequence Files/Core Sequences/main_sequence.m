@@ -57,7 +57,10 @@ defVar('PA_detuning',round(-49.539,6),'GHz');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOT cell %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% WRNING : 
+
 seqdata.flags.MOT_load_at_start             = 0; %do a specific load time
+defVar('MOT_controlled_load_time',30000,'ms');
 
 seqdata.params.UV_on_time                   = 10000;
 % UV on time + savingtime + wait time = real wait time between cycles%
@@ -67,7 +70,7 @@ seqdata.params.UV_on_time                   = 10000;
 % Gray Molasses
 seqdata.flags.MOT_programGMDP              = 0; % Update GM DP frequency
 
-defVar('D1_DP_FM',222.5,'MHz')
+defVar('D1_DP_FM',222.5,'MHz');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -264,11 +267,11 @@ if seqdata.flags.misc_program4pass
     DDS_sweep(calctime(curtime,0),2,DDSFreq,DDSFreq,calctime(curtime,1));
 end
 
+%% Gray Molasses
+% Why should this be here? Put it in the MOT part of the code?
+
 if seqdata.flags.MOT_programGMDP
-    D1_FM_List = [222.5];
-    D1_FM = getScanParameter(D1_FM_List, seqdata.scancycle, seqdata.randcyclelist);%5
-    setAnalogChannel(calctime(curtime,0),'D1 FM',D1_FM);
-    addOutputParam('D1_DP_FM',D1_FM);
+    setAnalogChannel(calctime(curtime,0),'D1 FM',getVar('D1_DP_FM'));    
 end
 
 
@@ -386,11 +389,10 @@ programRigol(addr_z,[],ch_off);             % Turn off z mod
 % Dump out the saved MOT and reload it
 if (seqdata.flags.MOT_load_at_start == 1)
     % Load the MOT
-    loadMOTSimple(curtime,1);    
-    controlled_load_time = 30000;
+    loadMOTSimple(curtime,1);          
     
     % Wait for the MOT to load
-curtime = calctime(curtime,controlled_load_time);
+    curtime = calctime(curtime,getVar('MOT_controlled_load_time'));
 else
     curtime = calctime(curtime,750);
 end   

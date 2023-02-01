@@ -89,10 +89,10 @@ seqdata.flags.High_Field_Imaging = 0;
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
 
-seqdata.flags.image_insitu =0; % Does this flag work for QP/XDT? Or only QP?
+seqdata.flags.image_insitu = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[5],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms
+defVar('tof',[25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms
 seqdata.params.tof = getVar('tof');
 
 % For double shutter imaging, may delay imaging Rb after K
@@ -773,32 +773,22 @@ if ( seqdata.flags.xdt == 1 )
 end
 
 %% Pulse lattice after releasing from dipole trap
-
 if ( seqdata.flags.lattice_pulse_for_alignment ~= 0 )
-    %RHYS - how should these 'pulse lattice' alignment codes be
-    %organized/called?
     curtime = Pulse_Lattice(curtime,...
         seqdata.flags.lattice_pulse_for_alignment);
 end
-
 %% Optical Lattice
-
 if ( seqdata.flags.lattice ~= 0 )
     curtime = Load_Lattice(curtime);
 end
-
 %% Pulse Z Lattice after ramping up other lattices to align
-
 if (seqdata.flags.lattice_pulse_z_for_alignment == 1 )
-    %RHYS - another alignment tool. 
     curtime = Pulse_Lattice(curtime,4);
 end
-
 %% lower atoms from window for clean TOF release
 
 if ( seqdata.flags.mt_lower_after_evap == 1 )
     dispLineStr('Lowering atoms from window',curtime);
-
     %RHYS - this is probably useful and we should use it more. Gets atoms
     %away from the window before dropping after RF1A. 
     %100ms, 15A works well for RF_stage_2
@@ -914,7 +904,7 @@ curtime = iXon_FluorescenceImage(curtime,'ExposureOffsetTime',molasses_offset,'E
 
     %RHYS - the next bits of post-sequence code are useful (well, if the
     %demagnetization stuff actually does anything). Could be wrapped into a
-    %function. 
+    %function.
     
 %% Set the Science Shims to Zero Current (0V adwin signal)   
 

@@ -366,9 +366,6 @@ ch_off.FREQUENCY = 1;
 
 programRigol(addr_mod_xy,ch_off,ch_off);    % Turn off xy mod
 programRigol(addr_z,[],ch_off);             % Turn off z mod
-    
-
-
 
 %% Load the MOT
 

@@ -77,26 +77,42 @@ seqdata.flags.MOT_CMOT_detuning_ramp        = 2; % 0:no change, 1:linear ramp, 2
 seqdata.flags.MOT_CMOT_power_ramp           = 2; % 0:no change, 1:linear ramp, 2:diabatic
 seqdata.flags.MOT_CMOT_grad_ramp            = 0; % 0:no change, 1:linear ramp, 2:diabatic
 
-seqdata.flags.MOT_KGM_RbMol                 = 1; % Do the molasses
+seqdata.flags.MOT_Mol                       = 1; % Do the molasses
+seqdata.flags.MOT_Mol_KGM_power_ramp        = 0; % 0: no ramp, 1:linear ramp
+
+
 seqdata.flags.MOT_optical_pumping           = 1; % optical pumping for MT
 
 % K CMOT parameters
-defVar('cmot_k_trap_detuning',5,'MHz');
-defVar('cmot_k_repump_detuning',0,'MHz');
-defVar('cmot_k_trap_power',0.5,'V')
-defVar('cmot_k_repump_power',0.25,'V');
-defVar('cmot_k_ramp_time',20,'ms');
+defVar('cmot_k_trap_detuning',5,'MHz');5;
+defVar('cmot_k_repump_detuning',0,'MHz');0;
+defVar('cmot_k_trap_power',0.5,'V');0.5;
+defVar('cmot_k_repump_power',0.25,'V');0.25;
+defVar('cmot_k_ramp_time',20,'ms');20;
 
 % Rb CMOT parameters
-defVar('cmot_rb_trap_detuning',-30,'MHz');
-defVar('cmot_rb_trap_power',0.1,'V');
-defVar('cmot_rb_repump_power',0.0275,'V');
-defVar('cmot_rb_ramp_time',20,'ms');
+defVar('cmot_rb_trap_detuning',-30,'MHz');-30;
+defVar('cmot_rb_trap_power',0.1,'V');0.1;
+defVar('cmot_rb_repump_power',0.0275,'V');0.0275;
+defVar('cmot_rb_ramp_time',20,'ms');20;
 
 % CMOT Field
 defVar('cmot_grad',10,'G/cm');
 
-% Gray Molasses
+% Rb Molasses
+defVar('mol_rb_trap_detuning',-81,'MHz');
+defVar('mol_rb_trap_power',0.15,'V');
+defVar('mol_rb_repump_power',0.08,'V');
+defVar('mol_rb_time',8,'ms');
+
+% K D1 Gray Molasses
+defVar('mol_kd1_single_photon_detuning_shift',0,'MHz');
+defVar('mol_kd1_trap_power_start',1.3,'V');
+defVar('mol_kd1_trap_power_end',1.3,'V');
+defVar('mol_kd1_two_photon_detuning',0,'MHz');
+defVar('mol_kd1_sideband_power',4,'dBm');
+defVar('mol_kd1_time',8,'ms');
+
 seqdata.params.Mol_shim = [];
 
 seqdata.flags.MOT_programGMDP              = 0; % Update GM DP frequency

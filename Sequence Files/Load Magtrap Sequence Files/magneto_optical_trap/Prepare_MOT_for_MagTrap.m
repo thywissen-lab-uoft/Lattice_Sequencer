@@ -110,7 +110,7 @@ end
 % This code is for running the D1 Grey Molasses for K and the D2 Optical
 % Molasses for Rb at the same time from the CMOT phase
 
-if seqdata.flags.MOT_KGM_RbMol == 1
+if seqdata.flags.MOT_Mol == 1
     dispLineStr('Molasses',curtime);
 
     %%%%%%%%%%%% Shift the fields %%%%%%%%%%%%
@@ -153,7 +153,6 @@ if seqdata.flags.MOT_KGM_RbMol == 1
     f_osc = calcOffsetLockFreq(MOL_trap_detuning,'MOT');
     DDS_id = 3;    
     DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,.01);    
-
 
     setAnalogChannel(curtime,'Rb Trap AM',rb_mol_trap_power); %0.7
     setAnalogChannel(curtime,'Rb Repump AM',rb_mol_repump_power); %0.14 

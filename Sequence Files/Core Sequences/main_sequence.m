@@ -649,14 +649,7 @@ dispLineStr('Turning off coils and traps.',curtime);
     end
 
 %% Post-sequence -- e.g. do controlled field ramps, heating pulses, etc.
-% CF: This is probably not helpful and should just be removed.
 
-    do_demag_pulses = 0;
-  
-
-    if do_demag_pulses    
-curtime = pulse_Bfield(calctime(curtime,150));
-    end
 
     if seqdata.flags.misc_ramp_fesh_between_cycles
         if seqdata.flags.High_Field_Imaging

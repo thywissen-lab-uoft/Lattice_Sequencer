@@ -77,9 +77,8 @@ seqdata.flags.xdt_hf_ramp_field_1            = 1;   % Ramp to HF
 seqdata.flags.xdt_hf_mix_7_9                 = 0;   % Mix 79 at HF
 seqdata.flags.xdt_hf_79_spec                 = 0;   % 79 Spec
 
-seqdata.flags.xdt_hf_CDT_evap_2_high_field   = 0;   % HF evaporation
-
-seqdata.flags.xdt_hf_crossFBUp               = 1;   % Cross 97 Resonance (w 75 flips)
+seqdata.flags.xdt_hf_CDT_evap_2_high_field  = 0;   % HF evaporation
+seqdata.flags.xdt_hf_crossFBUp              = 1;   % Cross 97 Resonance (w 75 flips)
 
 
 % Spin Manipulations for attractive with initial mixture (unused currently)
@@ -87,14 +86,10 @@ flip_7_5                = 0;        % 7 to 5 to avoid fesbach
 ramp_field_2            = 0;        % Ramp above feshbach (attractive)
 flip_7_5_again          = 0;        % 5 to 7 for science mixture
 
-% Ramp to science magnetic field
-ramp_field_3            = 1;    
 
-% Science spin manipulations
-do_rf_spectroscopy      = 0;        % 97 rf spec with SRS HS1
-
-% Perform a PA pulse in the XDT at high field
-seqdata.flags.xdt_hf_doPA_pulse_in_XDT       = 0;
+seqdata.flags.xdt_hf_ramp_field_3           = 1;    % Ramp field 
+seqdata.flags.xdt_hf_79_spec2               = 0;    % 79 Spec
+seqdata.flags.xdt_hf_PA                     = 0;    % PA pulse
 
 % Ramp field to imaging field
 seqdata.flags.xdt_hf_ramp_field_for_imaging_attractive  = 0;
@@ -624,7 +619,7 @@ end
 
 
 %% Ramp Field 3
-if ramp_field_3
+if seqdata.flags.xdt_hf_ramp_field_3
 
     clear('ramp');
     HF_FeshValue_List = 207;[200]; %+3G from zshim
@@ -691,7 +686,7 @@ end
     
 %% RF Sweep Spectroscopy
     
-if do_rf_spectroscopy
+if seqdata.flags.xdt_hf_79_spec2
     dispLineStr('RF Sweep Spectroscopy',curtime);
     ScopeTriggerPulse(curtime,'rf_spectroscopy');
 
@@ -836,7 +831,7 @@ end
  
     
   %% PA Pulse
-if seqdata.flags.xdt_hf_doPA_pulse_in_XDT
+if seqdata.flags.xdt_hf_PA
    curtime = PA_pulse(curtime); 
 end
 

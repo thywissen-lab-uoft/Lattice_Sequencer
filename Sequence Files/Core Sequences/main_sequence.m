@@ -66,15 +66,39 @@ seqdata.params.UV_on_time                   = 10000;
 seqdata.flags.MOT_load_at_start             = 0; %do a specific load time
 defVar('MOT_controlled_load_time',10000,'ms');
 
+seqdata.params.MOT_shim = [];
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOT to MT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 seqdata.flags.MOT_CMOT                      = 1; % Do the CMOT
-seqdata.flags.MOT_KGM_RbMol                 = 1; % Do the molasses
+seqdata.flags.MOT_CMOT_ramp_grad            = 0; % unused at the moment
 
+seqdata.flags.MOT_KGM_RbMol                 = 1; % Do the molasses
+seqdata.flags.MOT_optical_pumping           = 1;
+
+% unused parameters
+
+% K CMOT parameters
+defVar('cmot_k_trap_detuning',5,'MHz')
+defVar('cmot_k_repump_detuning',0,'MHz');
+defVar('cmot_k_trap_power',0.5,'V')
+defVar('cmot_k_repump_power',0.25,'V');
+defVar('cmot_k_ramp_time',20,'ms');
+
+% Rb CMOT parameters
+defVar('cmot_rb_trap_detuning',42,'MHz');
+defVar('cmot_rb_trap_power',0.1,'V');
+defVar('cmot_rb_repump_power',0.0275,'V');
+defVar('cmot_rb_ramp_time',20,'ms');
+
+% CMOT Field
+defVar('cmot_grad',10,'G/cm');
 
 % Gray Molasses
+seqdata.params.Mol_shim = [];
+
 seqdata.flags.MOT_programGMDP              = 0; % Update GM DP frequency
 defVar('D1_DP_FM',222.5,'MHz');
 

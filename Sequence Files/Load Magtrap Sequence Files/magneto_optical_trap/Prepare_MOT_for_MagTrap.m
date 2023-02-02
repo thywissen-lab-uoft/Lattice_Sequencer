@@ -1,14 +1,3 @@
-%------
-%Author: David + Dylan
-%Created: March 2011
-%Summary: Prepares the cloud for loading into the magnetic trap
-%------
-
-%----Input Vars
-%blue_mot: flag to turn on blue mot
-%----------
-%RHYS - Tons of parameters in these codes. Allow these to be loaded in
-%through a text file, with everything else. 
 function timeout = Prepare_MOT_for_MagTrap(timein)
 
 global seqdata;
@@ -19,16 +8,12 @@ curtime = timein;
 
 setDigitalChannel(calctime(curtime,-500),'UV LED',0);
 
-
 %% cMOT
 % This code loads the CMOT from the MOT. This includes ramps of the 
 % detunings, power, shims, and field gradients. In order to function 
 % properly it needs to havethe correct parameters from the MOT.
 if seqdata.flags.MOT_CMOT==1
-
-    % Time duration
-    rb_cMOT_time = 25;              % Ramp time of Rb CMOT
-    k_cMOT_time = 25;               % Ramp time of K CMOT
+    dispLineStr('CMOT',curtime);
 
     % Rubidum
     rb_cMOT_detuning = 42;          % Rubdium trap CMOT detuning in MHz
@@ -39,7 +24,6 @@ if seqdata.flags.MOT_CMOT==1
 
     % rb_cmot_repump_powers=0:.1:.9;
     % rb_cmot_repump_power= getScanParameter(rb_cmot_repump_powers,seqdata.scancycle,seqdata.randcyclelist,'rb_cmot_repump_am');  %in MHZ
-    %  
 
 
     % Potassium
@@ -48,10 +32,12 @@ if seqdata.flags.MOT_CMOT==1
 
 
     k_cMOT_detunings=[5];
-    k_cMOT_detuning= getScanParameter(k_cMOT_detunings,seqdata.scancycle,seqdata.randcyclelist,'k_cMOT_detuning');  %in MHZ
+    k_cMOT_detuning= getScanParameter(k_cMOT_detunings,...
+        seqdata.scancycle,seqdata.randcyclelist,'k_cMOT_detuning');  %in MHZ
 
     k_cMOT_times=[20];
-    k_cMOT_time= getScanParameter(k_cMOT_times,seqdata.scancycle,seqdata.randcyclelist,'k_cMOT_time');  
+    k_cMOT_time= getScanParameter(k_cMOT_times,...
+        seqdata.scancycle,seqdata.randcyclelist,'k_cMOT_time');  
     rb_cMOT_time=k_cMOT_time;
 
     cMOT_time = max([rb_cMOT_time k_cMOT_time]);
@@ -81,7 +67,7 @@ if seqdata.flags.MOT_CMOT==1
 
     f_osc = calcOffsetLockFreq(Rb_CMOT_Trap_detuning,'MOT');
     DDS_id = 3;    
-    DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,.01)    
+    DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,.01);    
 
 
     % AnalogFuncTo(calctime(curtime,0),'Rb Beat Note FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),rb_cMOT_time,rb_cMOT_time,6590+rb_cMOT_detuning);
@@ -111,6 +97,7 @@ end
 % Molasses for Rb at the same time from the CMOT phase
 
 if seqdata.flags.MOT_KGM_RbMol == 1
+    dispLineStr('Molasses',curtime);
 
     %%%%%%%%%%%% Shift the fields %%%%%%%%%%%%
     % Set field gradient and shim values (ideally) to zero
@@ -137,10 +124,13 @@ if seqdata.flags.MOT_KGM_RbMol == 1
 
     % Rb Mol trap power setting
     rb_mol_trap_power_list = 0.15;
-    rb_mol_trap_power = getScanParameter(rb_mol_trap_power_list,seqdata.scancycle,seqdata.randcyclelist,'rb_mol_trap_power');
+    rb_mol_trap_power = getScanParameter(rb_mol_trap_power_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'rb_mol_trap_power');
+    
     % Rb Mol repump power settings
-    rb_mol_repump_power_list = 0.08;[0.01:0.01:0.15];
-    rb_mol_repump_power = getScanParameter(rb_mol_repump_power_list,seqdata.scancycle,seqdata.randcyclelist,'Rb_mol_repump_power');
+    rb_mol_repump_power_list = 0.08;
+    rb_mol_repump_power = getScanParameter(rb_mol_repump_power_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'Rb_mol_repump_power');
 
     % Set the power and detunings
     setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',6590+rb_molasses_detuning);
@@ -148,7 +138,7 @@ if seqdata.flags.MOT_KGM_RbMol == 1
     MOL_trap_detuning = -81;
     f_osc = calcOffsetLockFreq(MOL_trap_detuning,'MOT');
     DDS_id = 3;    
-    DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,.01)    
+    DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,.01);    
 
 
     setAnalogChannel(curtime,'Rb Trap AM',rb_mol_trap_power); %0.7
@@ -199,10 +189,10 @@ end
 
 
 %% Optical Pumping
-%RHYS - Always used. Already has a separate script that could be called
-%from main.
-do_optical_pumping = 1;
-if do_optical_pumping == 1
+% Perform D2 optical pumping.  Could consider implemementing D1 optical
+% pumping for K which as a true dark state
+
+if seqdata.flags.MOT_optical_pumping == 1
     %digital trigger
     ScopeTriggerPulse(curtime,'Optical pumping');
 
@@ -216,78 +206,85 @@ end
 
 if seqdata.flags.MOT_flour_image
 
-%%%%%%%%%%%% Turn off beams and gradients %%%%%%%%%%%%%%
-    
-% Turn off the field gradient
-setAnalogChannel(calctime(curtime,0),'MOT Coil',0,1);    
+    %%%%%%%%%%%% Turn off beams and gradients %%%%%%%%%%%%%%
 
-% Turn off the D2 beams, if they arent off already
-setDigitalChannel(calctime(curtime,0),'K Trap TTL',1); 
-setDigitalChannel(calctime(curtime,0),'K Repump TTL',1); 
-setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);   
+    % Turn off the field gradient
+    setAnalogChannel(calctime(curtime,0),'MOT Coil',0,1);    
 
-% Turn off the D1 beams. The GM stage automattically does this
+    % Turn off the D2 beams, if they arent off already
+    setDigitalChannel(calctime(curtime,0),'K Trap TTL',1); 
+    setDigitalChannel(calctime(curtime,0),'K Repump TTL',1); 
+    setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);   
 
-%%%%%%%%%%%% Perform the time of flight %%%%%%%%%%%%
+    % Turn off the D1 beams. The GM stage automattically does this
 
-% Set the time of flight
-tof_list =2; [5 10 15 20 25 30 35 40];
-tof =getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof_time'); 
+    %%%%%%%%%%%% Perform the time of flight %%%%%%%%%%%%
 
-% Increment the time (ie. perform the time of flight
-curtime = calctime(curtime,tof);
-    
-%%%%%%%%%%%%%% Perform fluoresence imaging %%%%%%%%%%%%
-%turn back on D2 for imaging (or make it on resonance)  
+    % Set the time of flight
+    tof_list =2; [5 10 15 20 25 30 35 40];
+    tof =getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof_time'); 
 
-% Set potassium detunings to resonances (0.5 ms prior to allow for switching)
-setAnalogChannel(calctime(curtime,0),'K Trap FM',0);
-setAnalogChannel(calctime(curtime,0),'K Repump FM',0,2);
+    % Increment the time (ie. perform the time of flight
+    curtime = calctime(curtime,tof);
 
-% Set potassium power to standard value
-setAnalogChannel(calctime(curtime,-1),'K Repump AM',0.45);          
-setAnalogChannel(calctime(curtime,-1),'K Trap AM',0.8);            
+    %%%%%%%%%%%%%% Perform fluoresence imaging %%%%%%%%%%%%
+    %turn back on D2 for imaging (or make it on resonance)  
 
-% Set Rubidium detunings to resonance (0.5 ms prior to allow for switching)
-setAnalogChannel(calctime(curtime,-1),'Rb Beat Note FM',6590)
+    % Set potassium detunings to resonances (0.5 ms prior to allow for switching)
+    setAnalogChannel(calctime(curtime,0),'K Trap FM',0);
+    setAnalogChannel(calctime(curtime,0),'K Repump FM',0,2);
 
-% Set rubdium power to standard value
-setAnalogChannel(calctime(curtime,-1),'Rb Trap AM', 0.7);            
-setAnalogChannel(calctime(curtime,-1),'Rb Repump AM',0.9);          
+    % Set potassium power to standard value
+    setAnalogChannel(calctime(curtime,-1),'K Repump AM',0.45);          
+    setAnalogChannel(calctime(curtime,-1),'K Trap AM',0.8);            
 
-% Turn the beams on
-if seqdata.flags.image_atomtype == 1
-setDigitalChannel(calctime(curtime,0),'K Trap TTL',0); 
-setDigitalChannel(calctime(curtime,0),'K Repump TTL',0); 
-setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);  
-else
-setDigitalChannel(calctime(curtime,0),'K Trap TTL',1); 
-setDigitalChannel(calctime(curtime,0),'K Repump TTL',1); 
-setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);  
+    % Set Rubidium detunings to resonance (0.5 ms prior to allow for switching)
+    setAnalogChannel(calctime(curtime,-1),'Rb Beat Note FM',6590)
+
+    % Set rubdium power to standard value
+    setAnalogChannel(calctime(curtime,-1),'Rb Trap AM', 0.7);            
+    setAnalogChannel(calctime(curtime,-1),'Rb Repump AM',0.9);          
+
+    % Turn the beams on
+    if seqdata.flags.image_atomtype == 1
+    setDigitalChannel(calctime(curtime,0),'K Trap TTL',0); 
+    setDigitalChannel(calctime(curtime,0),'K Repump TTL',0); 
+    setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);  
+    else
+    setDigitalChannel(calctime(curtime,0),'K Trap TTL',1); 
+    setDigitalChannel(calctime(curtime,0),'K Repump TTL',1); 
+    setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);  
+    end
+
+    % Camera Trigger (1) : Light+Atoms
+    setDigitalChannel(calctime(curtime,0),15,1);
+    setDigitalChannel(calctime(curtime,10),15,0);
+
+    % Wait for second image trigger
+    curtime = calctime(curtime,3000);
+
+    % Camera Trigger (2) : Light only
+    setDigitalChannel(calctime(curtime,0),15,1);
+    setDigitalChannel(calctime(curtime,10),15,0);
+
 end
+%% Reset GM Shutters
+% CF : Should this be done inside the GM code?
 
-% Camera Trigger (1) : Light+Atoms
-setDigitalChannel(calctime(curtime,0),15,1);
-setDigitalChannel(calctime(curtime,10),15,0);
+% switich D1 shutters back to original configuration
+setDigitalChannel(calctime(curtime,0),'K D1 GM Shutter',0);
+setDigitalChannel(calctime(curtime,0),'K D1 GM Shutter 2',1);
 
-% Wait for second image trigger
-curtime = calctime(curtime,3000);
-
-% Camera Trigger (2) : Light only
-setDigitalChannel(calctime(curtime,0),15,1);
-setDigitalChannel(calctime(curtime,10),15,0);
- 
-end
-
-% wtich D1 shutters back to original configuration
-setDigitalChannel(calctime(curtime,0),1,0);
-setDigitalChannel(calctime(curtime,0),65,1);
 %% Turn off the repump
+
+% CF : No idea what this does
 if ( seqdata.flags.image_type ~= 4 )
 %RHYS - These turn on/turn off/turn on-off beam functions are confusing and
 %could be rewritten.
 curtime = turn_off_beam(calctime(curtime,1),2); %a little delayed w.r.t trap
 end
+
+%% The end
 
 timeout = curtime;
 

@@ -49,6 +49,7 @@ seqdata.flags.misc_calibrate_PA             = 0; % Pulse for PD measurement
 seqdata.flags.misc_lock_PA                  = 0; % Update wavemeter lock
 seqdata.flags.misc_program4pass             = 0; % Update four-pass frequency
 seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
+seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
 
 seqdata.flags.Rb_Probe_Order                = 1;   % 1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
                                                     % 2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
@@ -275,13 +276,23 @@ scope_trigger = 'Lattice_Mod';
 
 %% Set switches for predefined scenarios
 
+% Ignore other experimental parts if doing fluoresence imaging. It is
+% possilble to "there and back" imaging with transport, but this is very
+% rare and can be handled manuualy
 if seqdata.flags.image_type == 1
-    seqdata.flags.xdt       = 0;
-    seqdata.flags.transport = 0;
-    seqdata.flags.lattice   = 0;    
+    seqdata.flags.transport                     = 0;
+    seqdata.flags.mt                            = 0;
+    seqdata.flags.xdt                           = 0;
+    seqdata.flags.lattice                       = 0;    
 end
 
-if seqdata.flags.image_loc == 0 %MOT cell imaging
+% Do not run the demag if you don't make a magnetic trap
+if ~seqdata.flags.mt
+   seqdata.flags.misc_ramp_fesh_between_cycles = 0;
+end
+
+% Ignore other experimental parts if doing fluoresence imaging.
+if seqdata.flags.image_loc == 0 
     seqdata.flags.mt_use_plug = 0;
     seqdata.flags.mt_compress_after_transport = 0;
     seqdata.flags.RF_evap_stages = [0 0 0];
@@ -470,25 +481,17 @@ if ~seqdata.flags.MOT_flour_image
     
 %% Load into Magnetic Trap
 if seqdata.flags.MOT_load_to_MT
+    
+    yshim2 = 0.25;
+    xshim2 = 0.25;
+    zshim2 = 0.05;
 
-    if ~(seqdata.flags.image_type==4 )
+    %optimize shims for loading into mag trap
+    setAnalogChannel(calctime(curtime,0.01),'Y MOT Shim',yshim2,3); %1.25
+    setAnalogChannel(calctime(curtime,0.01),'X MOT Shim',xshim2,2); %0.3 
+    setAnalogChannel(calctime(curtime,0.01),'Z MOT Shim',zshim2,2); %0.2
 
-        %same as molasses (assume this zero's external fields)
-        yshim2 = 0.25;%0.25; %0.9
-        xshim2 = 0.25;%0.2; %0.1
-        zshim2 = 0.05;%0.05; %0.3  0.0 Dec 4th 2013
-
-        %RHYS - Again, probably control these things within functions for
-        %code readability. 
-
-        %optimize shims for loading into mag trap
-        setAnalogChannel(calctime(curtime,0.01),'Y MOT Shim',yshim2,3); %1.25
-        setAnalogChannel(calctime(curtime,0.01),'X MOT Shim',xshim2,2); %0.3 
-        setAnalogChannel(calctime(curtime,0.01),'Z MOT Shim',zshim2,2); %0.2
-
-        %RHYS - the second important function, which loads the MOT into the magtrap. 
     curtime = Load_MagTrap_from_MOT(curtime);
-    end
 
     % CF : This seems bad to me as they will perturb the just loaded MT, I
     % think should this be done adiabatically
@@ -649,13 +652,13 @@ dispLineStr('Turning off coils and traps.',curtime);
 % CF: This is probably not helpful and should just be removed.
 
     do_demag_pulses = 0;
-    ramp_fesh_between_cycles = 1;
+  
 
     if do_demag_pulses    
 curtime = pulse_Bfield(calctime(curtime,150));
     end
 
-    if ramp_fesh_between_cycles
+    if seqdata.flags.misc_ramp_fesh_between_cycles
         if seqdata.flags.High_Field_Imaging
         % This is meant to leave material near the atoms with the same
         % magnetization at the beginning of a new cycle, irrespective whether
@@ -710,7 +713,6 @@ end
 % Reset transport relay (Coil 3 vs Coil 11)
 curtime = setDigitalChannel(calctime(curtime,10),'Transport Relay',0);
 
-
 %% Post-sequence: Pulse the PA laser again for labjack power measurement
 if seqdata.flags.misc_calibrate_PA == 1    
    curtime = PA_pulse(curtime,2);     
@@ -718,7 +720,6 @@ end
     
 %% Scope trigger selection
 SelectScopeTrigger(scope_trigger);
-
 
 %% Timeout
 timeout = curtime;

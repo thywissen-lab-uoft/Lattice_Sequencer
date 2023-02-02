@@ -178,6 +178,9 @@ seqdata.flags.transport_ver_type            = 3;
 %%% Magnetic Trap %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Main flag for magnetic trap
+seqdata.flags.mt                            = 1;
+
  % compress QP after transport
 seqdata.flags.mt_compress_after_transport   = 1;
 
@@ -530,7 +533,10 @@ curtime = Transport_Cloud(curtime, seqdata.flags.transport_hor_type,...
     t2=toc;
     disp(['Transport cloud calculation took ' num2str(t2) ' seconds']);
 end
-
+%% Magnetic Trap
+if seqdata.flags.mt
+    
+end
 %% Ramp up QP
 if seqdata.flags.mt_compress_after_transport
     dispLineStr('Compression stage after transport to science cell.',curtime);

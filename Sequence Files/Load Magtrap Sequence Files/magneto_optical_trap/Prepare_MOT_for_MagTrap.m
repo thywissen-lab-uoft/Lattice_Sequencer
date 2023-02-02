@@ -203,70 +203,9 @@ if seqdata.flags.MOT_optical_pumping == 1
     setDigitalChannel(calctime(curtime,-1.8),'K Trap Shutter',0);     
     curtime = optical_pumping(calctime(curtime,0.0));      
 end
-%% Floursence image
-
-if seqdata.flags.MOT_flour_image
-    %%%%%%%%%%%% Turn off beams and gradients %%%%%%%%%%%%%%
-
-    % Turn off the field gradient
-    setAnalogChannel(calctime(curtime,0),'MOT Coil',0,1);    
-
-    % Turn off the D2 beams, if they arent off already
-    setDigitalChannel(calctime(curtime,0),'K Trap TTL',1); 
-    setDigitalChannel(calctime(curtime,0),'K Repump TTL',1); 
-    setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);   
-
-    % Turn off the D1 beams. The GM stage automattically does this
-
-    %%%%%%%%%%%% Perform the time of flight %%%%%%%%%%%%
-
-    % Set the time of flight
-    tof_list =2; [5];
-    tof =getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof_time'); 
-
-    % Increment the time (ie. perform the time of flight
-    curtime = calctime(curtime,tof);
-
-    %%%%%%%%%%%%%% Perform fluoresence imaging %%%%%%%%%%%%
-    %turn back on D2 for imaging (or make it on resonance)  
-
-    % Set potassium detunings to resonances (0.5 ms prior to allow for switching)
-    setAnalogChannel(calctime(curtime,0),'K Trap FM',0);
-    setAnalogChannel(calctime(curtime,0),'K Repump FM',0,2);
-
-    % Set potassium power to standard value
-    setAnalogChannel(calctime(curtime,-1),'K Repump AM',0.45);          
-    setAnalogChannel(calctime(curtime,-1),'K Trap AM',0.8);            
-
-    % Set Rubidium detunings to resonance (0.5 ms prior to allow for switching)
-    setAnalogChannel(calctime(curtime,-1),'Rb Beat Note FM',6590)
-
-    % Set rubdium power to standard value
-    setAnalogChannel(calctime(curtime,-1),'Rb Trap AM', 0.7);            
-    setAnalogChannel(calctime(curtime,-1),'Rb Repump AM',0.9);          
-
-    % Turn the beams on
-    if seqdata.flags.image_atomtype == 1
-        setDigitalChannel(calctime(curtime,0),'K Trap TTL',0); 
-        setDigitalChannel(calctime(curtime,0),'K Repump TTL',0); 
-        setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);  
-    else
-        setDigitalChannel(calctime(curtime,0),'K Trap TTL',1); 
-        setDigitalChannel(calctime(curtime,0),'K Repump TTL',1); 
-        setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);  
-    end
-
-    % Camera Trigger (1) : Light+Atoms
-    setDigitalChannel(calctime(curtime,0),15,1);
-    setDigitalChannel(calctime(curtime,10),15,0);
-
-    % Wait for second image trigger
-    curtime = calctime(curtime,3000);
-
-    % Camera Trigger (2) : Light only
-    setDigitalChannel(calctime(curtime,0),15,1);
-    setDigitalChannel(calctime(curtime,10),15,0);
-
+%% Fluoresnce image
+if seqdata.flags.image_type == 1
+   curtime = MOT_fluorescence_image(curtime);
 end
 %% Reset GM Shutters
 % CF : Should this be done inside the GM code?

@@ -65,11 +65,9 @@ seqdata.params.UV_on_time                   = 10000;
 % beginning of the sequence and the MOT is given time to load.
 
 seqdata.flags.MOT_load_at_start             = 0; %do a specific load time
-defVar('MOT_controlled_load_time',30000,'ms');
+defVar('MOT_controlled_load_time',20000,'ms');
 
 seqdata.params.MOT_shim = [];
-
-seqdata.flags.MOT_flour_image               = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOT to MT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -86,7 +84,7 @@ seqdata.flags.MOT_Mol_KGM_power_ramp        = 0; % 0: no ramp, 1:linear ramp
 
 seqdata.flags.MOT_optical_pumping           = 1; % optical pumping for MT
 
-seqdata.flags.MOT_load_to_MT                = 1;
+seqdata.flags.MOT_load_to_MT                = 0;
 
 % K CMOT parameters
 defVar('cmot_k_trap_detuning',5,'MHz');5;
@@ -349,6 +347,7 @@ if seqdata.flags.MOT_programGMDP
 end
 
 %% Initialize Voltage levels
+% CF: All of these should be put into some separate reset code
 
 %Initialize modulation ramp to off.
 setAnalogChannel(calctime(curtime,0),'Modulation Ramp',0);
@@ -467,26 +466,34 @@ else
 end   
 
 %% Prepare to Load into the Magnetic Trap
+% CF Why are these TTLs switched? Just use the shutter and go back to max
+% MOT power?!?
 
 if seqdata.flags.MOT_prepare_for_MT
     curtime = Prepare_MOT_for_MagTrap(curtime);
 
-    %Open other AOMS to keep them warm. Why ever turn them off for long
-    %when we have shutters to do our dirty work?
-    setDigitalChannel(calctime(curtime,10),'K Trap TTL',0);
-    setAnalogChannel(calctime(curtime,10),'K Trap AM',0.8);
+    if seqdata.flags.image_type == 0
+    
+        %Open other AOMS to keep them warm. Why ever turn them off for long
+        %when we have shutters to do our dirty work?
+        setDigitalChannel(calctime(curtime,10),'K Trap TTL',0);
+        setAnalogChannel(calctime(curtime,10),'K Trap AM',0.8);
 
-    setDigitalChannel(calctime(curtime,10),'Rb Trap TTL',0);    
-    setAnalogChannel(calctime(curtime,10),'Rb Trap AM',0.7);
+        setDigitalChannel(calctime(curtime,10),'Rb Trap TTL',0);    
+        setAnalogChannel(calctime(curtime,10),'Rb Trap AM',0.7);
 
-    setDigitalChannel(calctime(curtime,10),'K Repump TTL',0);
-    setAnalogChannel(calctime(curtime,10),'K Repump AM',0.45);
+        setDigitalChannel(calctime(curtime,10),'K Repump TTL',0);
+        setAnalogChannel(calctime(curtime,10),'K Repump AM',0.45);
 
-    setAnalogChannel(calctime(curtime,10),'Rb Repump AM',0.9);
+        setAnalogChannel(calctime(curtime,10),'Rb Repump AM',0.9);
+    end
 end
 
     
 %% Load into Magnetic Trap
+% CF : The shims probably should be diabatically switch after loading into
+% the magtrap. On the other hand, you don't want to keep atoms in the MOT
+% cell for too long due to high vapor pressure
 
 if seqdata.flags.MOT_load_to_MT
     
@@ -539,6 +546,15 @@ curtime = Transport_Cloud(curtime, seqdata.flags.transport_hor_type,...
     disp(['Transport cloud calculation took ' num2str(t2) ' seconds']);
     
 end
+
+%% Floursence image in MOT Cell
+% Perform fluoresence imaging. Comes after transport in case you want to do
+% a there and back measurement.
+
+% if seqdata.flags.image_type == 1
+%    curtime = MOT_fluorescence_image(curtime);
+% end
+
 %% Magnetic Trap
 
 if seqdata.flags.mt
@@ -572,15 +588,15 @@ if (seqdata.flags.lattice_pulse_z_for_alignment == 1 )
     curtime = Pulse_Lattice(curtime,4);
 end
 
-%% Initiate Time of Flight  
+%% Initiate Time of Flight in absorption image
+
+if seqdata.flags.image_type == 0
     dispLineStr('Turning off coils and traps.',curtime);   
     
-    % Turn off the MOT
-    if ( seqdata.flags.image_type ~= 4 )
-        setAnalogChannel(curtime,'MOT Coil',0,1);
-    end
+    % Turn off the MOT (shouldnt it already be off?)
+    setAnalogChannel(curtime,'MOT Coil',0,1);
     
-    % Turn off all transport Coils
+    % Turn off all transport Coils (shouldnt it already be off?)
     for i = [7 9:17 22:24 20] 
         setAnalogChannel(calctime(curtime,0),i,0,1);
     end   
@@ -605,7 +621,7 @@ end
         setDigitalChannel(calctime(curtime,qp_switch1_delay_time),'15/16 Switch',0);
     end
     
-    % XDT TOF
+    % XDT TOF (CF : What about if the lattice is on?)
     if seqdata.flags.xdt        
         % Read XDT Powers right before tof
         P1 = getChannelValue(seqdata,'dipoleTrap1',1);
@@ -632,23 +648,15 @@ end
         setAnalogChannel(calctime(curtime,0),'zLattice',-10,1); % Z lattice
         setAnalogChannel(calctime(curtime,0),'yLattice',-10,1); % Y lattice
         setAnalogChannel(calctime(curtime,0),'xLattice',-10,1); % X lattice
-    end
-
-%% Imaging
-
-if seqdata.flags.image_type == 0 % Absorption Image
-    dispLineStr('Absorption Imaging.',curtime);
-    curtime = absorption_image2(calctime(curtime,0.0));         
-else
-    error('Undefined imaging type');
+    end    
 end
 
-    
-%% Set the Science Shims to Zero Current (0V adwin signal)   
-% Set the shim values to zero
-setAnalogChannel(calctime(curtime,0),'X Shim',0,1);
-setAnalogChannel(calctime(curtime,0),'Y Shim',0,1);
-setAnalogChannel(calctime(curtime,0),'Z Shim',0,1);   
+%% Absorption Imaging
+
+if seqdata.flags.image_type == 0
+    dispLineStr('Absorption Imaging.',curtime);
+    curtime = absorption_image2(calctime(curtime,0.0));         
+end    
 
 %% Post-sequence: rotate diople trap waveplate to default value
 if (seqdata.flags.lattice_reset_waveplate == 1)
@@ -688,7 +696,7 @@ curtime = setAnalogChannel(calctime(curtime,100),37,0);
     end
 end
     
-%% Reset Stuff
+%% Reset Channels
 % B Field Measurement (set/reset of the field sensor after the cycle)
 curtime = sense_Bfield(curtime);
 
@@ -700,6 +708,11 @@ curtime = Reset_Channels(calctime(curtime,0));
 
 %turn on the Raman shutter for frquuency monitoring
 setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
+
+% Set the shim values to zero
+setAnalogChannel(calctime(curtime,0),'X Shim',0,1);
+setAnalogChannel(calctime(curtime,0),'Y Shim',0,1);
+setAnalogChannel(calctime(curtime,0),'Z Shim',0,1);   
 
 %% Load MOT
 % Load the MOT

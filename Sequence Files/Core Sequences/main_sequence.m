@@ -192,9 +192,6 @@ seqdata.flags.RF_evap_stages                = [1, 1, 1];
 % Turn on plug beam during RF1B
 seqdata.flags.mt_use_plug                   = 1;
 
-% Lower cloud after evaporation before TOF (can be useful for hot clouds)
-seqdata.flags.mt_lower_after_evap           = 0; 
-
 % Resonantly kill atoms after evaporation
 seqdata.flags.mt_kill_Rb_after_evap         = 0;    
 seqdata.flags.mt_kill_K_after_evap          = 0;     
@@ -277,6 +274,12 @@ scope_trigger = 'Lattice_Mod';
 % scope_trigger = 'PA_Pulse';
 
 %% Set switches for predefined scenarios
+
+if seqdata.flags.MOT_flour_image
+    seqdata.flags.xdt       = 0;
+    seqdata.flags.transport = 0;
+    seqdata.flags.lattice   = 0;    
+end
 
 if seqdata.flags.image_loc == 0 %MOT cell imaging
     seqdata.flags.mt_use_plug = 0;
@@ -438,8 +441,7 @@ programRigol(addr_z,[],ch_off);             % Turn off z mod
 % Dump out the saved MOT and reload it
 if (seqdata.flags.MOT_load_at_start == 1)
     % Load the MOT
-    loadMOTSimple(curtime,1);          
-    
+    loadMOTSimple(curtime,1);   
     % Wait for the MOT to load
     curtime = calctime(curtime,getVar('MOT_controlled_load_time'));
 else
@@ -504,6 +506,7 @@ setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.0,2); %2
 %% Transport 
 % Use the CATS to mangetically transport the atoms from the MOT cell to the
 % science chamber.
+
 if seqdata.flags.transport
     dispLineStr('Magnetic Transport',curtime);
 
@@ -527,12 +530,14 @@ curtime = Transport_Cloud(curtime, seqdata.flags.transport_hor_type,...
     t2=toc;
     disp(['Transport cloud calculation took ' num2str(t2) ' seconds']);
 end
-%% Ramp up QP
-dispLineStr('Compression stage after transport to science cell.',curtime);
 
-% Compression stage after the transport to the science cell
-[curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_trans(curtime, ...
-    seqdata.flags.mt_compress_after_transport);
+%% Ramp up QP
+if seqdata.flags.mt_compress_after_transport
+    dispLineStr('Compression stage after transport to science cell.',curtime);
+    % Compression stage after the transport to the science cell
+    [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_trans(curtime, ...
+        seqdata.flags.mt_compress_after_transport);
+end
 
 %% Ramp shims for magnetic trap
 
@@ -551,6 +556,7 @@ if seqdata.flags.mt_ramp_to_plugs_shims
     curtime = AnalogFuncTo(calctime(curtime,0),'Z Shim',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,z_shim_val,3); 
 end
+
 %% RF1A
 if ( seqdata.flags.RF_evap_stages(1) == 1 )
     
@@ -836,17 +842,6 @@ end
 if (seqdata.flags.lattice_pulse_z_for_alignment == 1 )
     curtime = Pulse_Lattice(curtime,4);
 end
-%% lower atoms from window for clean TOF release
-
-if ( seqdata.flags.mt_lower_after_evap == 1 )
-    dispLineStr('Lowering atoms from window',curtime);
-    %RHYS - this is probably useful and we should use it more. Gets atoms
-    %away from the window before dropping after RF1A. 
-    %100ms, 15A works well for RF_stage_2
-    lower_transfer_time = 100;
-    curtime = AnalogFunc(curtime,...
-        1,@(t,tt,dt)(dt*t/tt+I_QP),lower_transfer_time,lower_transfer_time,15-I_QP);
-end
 
 %% Initiate Time of Flight  
 dispLineStr('Turning off coils and traps.',curtime);
@@ -922,8 +917,6 @@ dispLineStr('Turning off coils and traps.',curtime);
     if ~(seqdata.flags.image_type==1 || seqdata.flags.image_type==4)
 %         setDigitalChannel(curtime,'MOT TTL',1);    
     end
-
-
 %% Imaging
 
     %RHYS - Imporant code, but could delete the scenarios that are no longer
@@ -1047,7 +1040,6 @@ end
 curtime = setDigitalChannel(calctime(curtime,10),'Transport Relay',0);
 
 %% Scope trigger selection
-
 SelectScopeTrigger(scope_trigger);
 
 

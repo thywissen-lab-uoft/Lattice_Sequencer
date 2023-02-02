@@ -69,11 +69,11 @@ defVar('MOT_controlled_load_time',30000,'ms');
 seqdata.params.MOT_shim = [];
 
 seqdata.flags.MOT_flour_image               = 0;
-seqdata.flags.MOT_flour_atom                = 0; % 0:Rb, 1:K
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOT to MT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+seqdata.flags.MOT_prepare_for_MT            = 1;
 
 seqdata.flags.MOT_CMOT                      = 1; % Do the CMOT
 seqdata.flags.MOT_CMOT_detuning_ramp        = 2; % 0:no change, 1:linear ramp, 2:diabatic
@@ -84,6 +84,8 @@ seqdata.flags.MOT_Mol                       = 1; % Do the molasses
 seqdata.flags.MOT_Mol_KGM_power_ramp        = 0; % 0: no ramp, 1:linear ramp
 
 seqdata.flags.MOT_optical_pumping           = 1; % optical pumping for MT
+
+seqdata.flags.MOT_load_to_MT                = 1;
 
 % K CMOT parameters
 defVar('cmot_k_trap_detuning',5,'MHz');5;
@@ -124,14 +126,9 @@ defVar('D1_DP_FM',222.5,'MHz');
 %%% IMAGING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-seqdata.flags.image_type = 0; 
-%0: absorption image, 1: recapture, 2:fluor, 
-%3: blue_absorption, 4: MOT fluor, 5: load MOT immediately, 
-%6: MOT fluor with MOT off, 7: fluorescence image after do_imaging_molasses 
-%8: iXon fluorescence + Pixelfly absorption
+seqdata.flags.image_type                    = 0; % 0: absorption, 1 : MOT fluor  
+seqdata.flags.image_atomtype                = 1; % 0:Rb,1:K,2:K+Rb (double shutter), applies to fluor and absorption
 
-iXon_movie = 0; %Take a multiple frame movie?
-seqdata.flags.image_atomtype                = 1; % 0:Rb,1:K,2:K+Rb (double shutter)
 seqdata.flags.image_loc                     = 1; % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.image_direction               = 0; % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
 seqdata.flags.image_stern_gerlach           = 0; % 1: Do a gradient pulse at the beginning of ToF
@@ -278,7 +275,7 @@ scope_trigger = 'Lattice_Mod';
 
 %% Set switches for predefined scenarios
 
-if seqdata.flags.MOT_flour_image
+if seqdata.flags.image_type == 1
     seqdata.flags.xdt       = 0;
     seqdata.flags.transport = 0;
     seqdata.flags.lattice   = 0;    
@@ -452,60 +449,56 @@ else
 end   
 
 %% Prepare to Load into the Magnetic Trap
+if seqdata.flags.MOT_prepare_for_MT
+    curtime = Prepare_MOT_for_MagTrap(curtime);
 
-curtime = Prepare_MOT_for_MagTrap(curtime);
+    %Open other AOMS to keep them warm. Why ever turn them off for long
+    %when we have shutters to do our dirty work?
+    setDigitalChannel(calctime(curtime,10),'K Trap TTL',0);
+    setAnalogChannel(calctime(curtime,10),'K Trap AM',0.8);
 
-%Open other AOMS to keep them warm. Why ever turn them off for long
-%when we have shutters to do our dirty work?
-setDigitalChannel(calctime(curtime,10),'K Trap TTL',0);
-setAnalogChannel(calctime(curtime,10),'K Trap AM',0.8);
+    setDigitalChannel(calctime(curtime,10),'Rb Trap TTL',0);    
+    setAnalogChannel(calctime(curtime,10),'Rb Trap AM',0.7);
 
-setDigitalChannel(calctime(curtime,10),'Rb Trap TTL',0);    
-setAnalogChannel(calctime(curtime,10),'Rb Trap AM',0.7);
+    setDigitalChannel(calctime(curtime,10),'K Repump TTL',0);
+    setAnalogChannel(calctime(curtime,10),'K Repump AM',0.45);
 
-setDigitalChannel(calctime(curtime,10),'K Repump TTL',0);
-setAnalogChannel(calctime(curtime,10),'K Repump AM',0.45);
-
-setAnalogChannel(calctime(curtime,10),'Rb Repump AM',0.9);
+    setAnalogChannel(calctime(curtime,10),'Rb Repump AM',0.9);
+end
 
 if ~seqdata.flags.MOT_flour_image
     
 %% Load into Magnetic Trap
+if seqdata.flags.MOT_load_to_MT
 
-%RHYS - One of the first examples of doing something based on a
-%confusing series of if statements and conditions. Works, but is highly
-%error prone and has become very convoluted over time as options have
-%been added and removed. 
+    if ~(seqdata.flags.image_type==4 )
 
-if ~(seqdata.flags.image_type==4 )
+        %same as molasses (assume this zero's external fields)
+        yshim2 = 0.25;%0.25; %0.9
+        xshim2 = 0.25;%0.2; %0.1
+        zshim2 = 0.05;%0.05; %0.3  0.0 Dec 4th 2013
 
-    %same as molasses (assume this zero's external fields)
+        %RHYS - Again, probably control these things within functions for
+        %code readability. 
 
-    yshim2 = 0.25;%0.25; %0.9
-    xshim2 = 0.25;%0.2; %0.1
-    zshim2 = 0.05;%0.05; %0.3  0.0 Dec 4th 2013
+        %optimize shims for loading into mag trap
+        setAnalogChannel(calctime(curtime,0.01),'Y MOT Shim',yshim2,3); %1.25
+        setAnalogChannel(calctime(curtime,0.01),'X MOT Shim',xshim2,2); %0.3 
+        setAnalogChannel(calctime(curtime,0.01),'Z MOT Shim',zshim2,2); %0.2
 
-    %RHYS - Again, probably control these things within functions for
-    %code readability. 
+        %RHYS - the second important function, which loads the MOT into the magtrap. 
+    curtime = Load_MagTrap_from_MOT(curtime);
+    end
 
-    %optimize shims for loading into mag trap
-    setAnalogChannel(calctime(curtime,0.01),'Y MOT Shim',yshim2,3); %1.25
-    setAnalogChannel(calctime(curtime,0.01),'X MOT Shim',xshim2,2); %0.3 
-    setAnalogChannel(calctime(curtime,0.01),'Z MOT Shim',zshim2,2); %0.2
+    % CF : This seems bad to me as they will perturb the just loaded MT, I
+    % think should this be done adiabatically
 
-    %RHYS - the second important function, which loads the MOT into the magtrap. 
-curtime = Load_MagTrap_from_MOT(curtime);
+    %**Should be set to zero volts to fully turn off the shims (use volt func 1)
+    %turn off shims
+    setAnalogChannel(calctime(curtime,0),'Y MOT Shim',0.0,3); %3
+    setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.0,2); %2
+    setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.0,2); %2
 end
-
-% CF : This seems bad to me as they will perturb the just loaded MT, I
-% think should this be done adiabatically
-
-%**Should be set to zero volts to fully turn off the shims (use volt func 1)
-%turn off shims
-setAnalogChannel(calctime(curtime,0),'Y MOT Shim',0.0,3); %3
-setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.0,2); %2
-setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.0,2); %2
-
 %% Transport 
 % Use the CATS to mangetically transport the atoms from the MOT cell to the
 % science chamber.
@@ -529,9 +522,10 @@ if seqdata.flags.transport
     
     tic;
 curtime = Transport_Cloud(curtime, seqdata.flags.transport_hor_type,...
-    seqdata.flags.transport_ver_type, seqdata.flags.image_loc);
+        seqdata.flags.transport_ver_type, seqdata.flags.image_loc);
     t2=toc;
     disp(['Transport cloud calculation took ' num2str(t2) ' seconds']);
+    
 end
 %% Magnetic Trap
 
@@ -561,8 +555,7 @@ if (seqdata.flags.lattice_pulse_z_for_alignment == 1 )
 end
 
 %% Initiate Time of Flight  
-dispLineStr('Turning off coils and traps.',curtime);
-    
+dispLineStr('Turning off coils and traps.',curtime);    
     % Turn off the MOT
     if ( seqdata.flags.image_type ~= 4 )
         setAnalogChannel(curtime,'MOT Coil',0,1);
@@ -623,30 +616,9 @@ dispLineStr('Turning off coils and traps.',curtime);
     end
 
 %% Imaging
-
-    %RHYS - Imporant code, but could delete the scenarios that are no longer
-    %used. Also, the iXon movie option under 8 could use some cleaning. 
     if seqdata.flags.image_type == 0 % Absorption Image
         dispLineStr('Absorption Imaging.',curtime);
-
-         curtime = absorption_image2(calctime(curtime,0.0)); 
-
-    elseif seqdata.flags.image_type == 8 %Try to use the iXon and a Pixelfly camera simultaneously for absorption and fluorescence imaging.
-    
-        absorption_image(calctime(curtime,0.0));
-    
-        if (iXon_movie)
-            FrameTime = 2500;   
-            ExposureTime = 2100;
-            addOutputParam('FrameTime',FrameTime);
-            addOutputParam('ExposureTime',ExposureTime);
-
-curtime = iXon_FluorescenceImage(curtime,'ExposureOffsetTime',molasses_offset,'ExposureDelay',0, ...
-            'NumFrames',2,'FrameTime',FrameTime,'ExposureTime',ExposureTime,'DoPostFlush',1); % taking a "movie"
-        else
-curtime = iXon_FluorescenceImage(curtime,'ExposureOffsetTime',molasses_offset,'ExposureDelay',1,'ExposureTime',5000);
-        end
-        
+        curtime = absorption_image2(calctime(curtime,0.0));         
     else
         error('Undefined imaging type');
     end

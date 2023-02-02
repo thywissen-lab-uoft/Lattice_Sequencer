@@ -246,7 +246,7 @@ if seqdata.flags.MOT_flour_image
     setAnalogChannel(calctime(curtime,-1),'Rb Repump AM',0.9);          
 
     % Turn the beams on
-    if seqdata.flags.MOT_flour_atom == 1
+    if seqdata.flags.image_atomtype == 1
         setDigitalChannel(calctime(curtime,0),'K Trap TTL',0); 
         setDigitalChannel(calctime(curtime,0),'K Repump TTL',0); 
         setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);  

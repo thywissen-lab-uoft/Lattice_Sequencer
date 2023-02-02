@@ -1,4 +1,4 @@
-function mainGUI
+function hF=mainGUI
 % This is the primary GUI for running the lattice experiment. You should
 % be able to run the entirety of the experiment from the graphics interface
 % here.  However, edits to the actual sequence need to be done in the code.
@@ -37,6 +37,7 @@ if ~doDebug
 else
     figName = 'DEBUG MODE';
 end
+
 
 disp('Opening Lattice Sequencer...');
 
@@ -77,6 +78,8 @@ hF=figure('toolbar','none','Name',figName,'color',cc,'NumberTitle','off',...
 clf
 hF.Position(3:4)=[w h];
 set(hF,'WindowStyle','docked');
+
+data = struct;
 
 % Callback for a close request function. The close request function handles
 % whether the adwin is running or other potential timer issues.
@@ -152,6 +155,7 @@ eSeq=uicontrol(hpMain,'style','edit','string',defaultSequence,...
 eSeq.Position(3)=180;
 eSeq.Position(4)=eSeq.Extent(4);
 eSeq.Position(1:2)=[5 tSeq.Position(2)-eSeq.Position(4)];
+data.SequenceText = eSeq;
 
 % Button for file selection of the sequenece file
 cdata=imresize(imread(['GUI/images' filesep 'browse.jpg']),[22 22]);
@@ -200,16 +204,13 @@ bCmd=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
 bCmd.Position(3:4)=[25 25];
 bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
 
-    function bCompileCB(~,~)        
-        start_new_sequence;             % Initialize sequence
-        seqdata.doscan=0; 
-        initialize_channels;            % Initialize channels
-
+    function bCompileCB(~,~)    
         fName=eSeq.String;
         fh = str2func(erase(fName,'@'));     
-        fh(0);                          % Run the sequence / update seqdata  
-        calc_sequence;                  % convert seqdata for AdWin  
-        updateScanVarText;
+        fcns={fh};
+
+        compile(fcns)        
+        updateScanVarText;    
     end
 
 
@@ -473,6 +474,8 @@ tStatus.Position(3:4)=[axAdWinBar.Position(3) 15];
 tStatus.Position(1:2)=[bStop.Position(1)+bStop.Position(3) 1];
 tStatus.Position(1) = axAdWinBar.Position(1);
 tStatus.Position(2) = axAdWinBar.Position(2) - 15;
+data.Status = tStatus;
+
 
 tScanVar=uicontrol(bgRun,'style','text','string','No detected variable scanning with ParamDef/Get.',...
     'backgroundcolor','w','fontsize',8,'units','pixels',...
@@ -480,6 +483,7 @@ tScanVar=uicontrol(bgRun,'style','text','string','No detected variable scanning 
 tScanVar.Position(3:4)=[axAdWinBar.Position(3) 15];
 tScanVar.Position(1) = axAdWinBar.Position(1);
 tScanVar.Position(2) = tStatus.Position(2) - 15;
+data.StatusSub = tScanVar;
 
     function updateScanVarText
         if isfield(seqdata,'ScanVar') && ~isempty(seqdata.ScanVar)
@@ -1074,6 +1078,8 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         save(filenamemat2,'vals','units','flags');        
         end
     end
+
+guidata(hF,data);
 
 end
 

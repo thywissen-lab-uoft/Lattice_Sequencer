@@ -253,6 +253,8 @@ seqdata.flags.lattice_pulse_for_alignment   = 0;
 % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 seqdata.flags.lattice_pulse_z_for_alignment = 0; 
 
+seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OTHER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -289,6 +291,11 @@ end
 % Do not run the demag if you don't make a magnetic trap
 if ~seqdata.flags.mt
    seqdata.flags.misc_ramp_fesh_between_cycles = 0;
+end
+
+% Do not reset the lattice waveplate if you didn't use it
+if ~seqdata.flags.lattice
+   seqdata.flags.lattice_reset_waveplate     = 0;
 end
 
 % Ignore other experimental parts if doing fluoresence imaging.
@@ -460,6 +467,7 @@ else
 end   
 
 %% Prepare to Load into the Magnetic Trap
+
 if seqdata.flags.MOT_prepare_for_MT
     curtime = Prepare_MOT_for_MagTrap(curtime);
 
@@ -477,9 +485,9 @@ if seqdata.flags.MOT_prepare_for_MT
     setAnalogChannel(calctime(curtime,10),'Rb Repump AM',0.9);
 end
 
-if ~seqdata.flags.MOT_flour_image
     
 %% Load into Magnetic Trap
+
 if seqdata.flags.MOT_load_to_MT
     
     yshim2 = 0.25;
@@ -502,6 +510,7 @@ if seqdata.flags.MOT_load_to_MT
     setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.0,2); %2
     setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.0,2); %2
 end
+
 %% Transport 
 % Use the CATS to mangetically transport the atoms from the MOT cell to the
 % science chamber.
@@ -537,6 +546,7 @@ if seqdata.flags.mt
 end
 
 %% Dipole Trap
+
 if ( seqdata.flags.xdt == 1 )
     dispLineStr('Caling dipole_transfer.m',curtime);   
     [curtime, I_QP, V_QP, P_dip, I_shim] = ...
@@ -544,21 +554,27 @@ if ( seqdata.flags.xdt == 1 )
 end
 
 %% Pulse lattice after releasing from trap
+
 if ( seqdata.flags.lattice_pulse_for_alignment ~= 0 )
     curtime = Pulse_Lattice(curtime,...
         seqdata.flags.lattice_pulse_for_alignment);
 end
+
 %% Optical Lattice
+
 if ( seqdata.flags.lattice ~= 0 )
     curtime = Load_Lattice(curtime);
 end
+
 %% Pulse Z Lattice after ramping up other lattices to align
+
 if (seqdata.flags.lattice_pulse_z_for_alignment == 1 )
     curtime = Pulse_Lattice(curtime,4);
 end
 
 %% Initiate Time of Flight  
-dispLineStr('Turning off coils and traps.',curtime);    
+    dispLineStr('Turning off coils and traps.',curtime);   
+    
     % Turn off the MOT
     if ( seqdata.flags.image_type ~= 4 )
         setAnalogChannel(curtime,'MOT Coil',0,1);
@@ -619,45 +635,39 @@ dispLineStr('Turning off coils and traps.',curtime);
     end
 
 %% Imaging
-    if seqdata.flags.image_type == 0 % Absorption Image
-        dispLineStr('Absorption Imaging.',curtime);
-        curtime = absorption_image2(calctime(curtime,0.0));         
-    else
-        error('Undefined imaging type');
-    end
+
+if seqdata.flags.image_type == 0 % Absorption Image
+    dispLineStr('Absorption Imaging.',curtime);
+    curtime = absorption_image2(calctime(curtime,0.0));         
+else
+    error('Undefined imaging type');
+end
 
     
 %% Set the Science Shims to Zero Current (0V adwin signal)   
-
-    % Set the shim values to zero
-    setAnalogChannel(calctime(curtime,0),'X Shim',0,1);
-    setAnalogChannel(calctime(curtime,0),'Y Shim',0,1);
-    setAnalogChannel(calctime(curtime,0),'Z Shim',0,1);
-    
-
+% Set the shim values to zero
+setAnalogChannel(calctime(curtime,0),'X Shim',0,1);
+setAnalogChannel(calctime(curtime,0),'Y Shim',0,1);
+setAnalogChannel(calctime(curtime,0),'Z Shim',0,1);   
 
 %% Post-sequence: rotate diople trap waveplate to default value
+if (seqdata.flags.lattice_reset_waveplate == 1)
+    %Rotate waveplate to divert all power to dipole traps.
+    P_RotWave = 0;
+    AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
+        @(t,tt,Pmin,Pmax) ...
+        (0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),...
+        200,200,P_RotWave,0); 
+end
 
-    do_wp_default = 1;
-    if (do_wp_default == 1)
-        %Rotate waveplate to divert all power to dipole traps.
-        P_RotWave = 0;
-        AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
-            @(t,tt,Pmin,Pmax) ...
-            (0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),...
-            200,200,P_RotWave,0); 
-    end
-
-%% Post-sequence -- e.g. do controlled field ramps, heating pulses, etc.
-
-
-    if seqdata.flags.misc_ramp_fesh_between_cycles
-        if seqdata.flags.High_Field_Imaging
-        % This is meant to leave material near the atoms with the same
-        % magnetization at the beginning of a new cycle, irrespective whether
-        % some strong field was pulsed/snapped off or not during the cycle that
-        % just ends. We do not have any positive observation that this helps,
-        % but we leave it in just in case (total 1.3s extra).
+%% Demag pulse
+if seqdata.flags.misc_ramp_fesh_between_cycles
+    if seqdata.flags.High_Field_Imaging
+    % This is meant to leave material near the atoms with the same
+    % magnetization at the beginning of a new cycle, irrespective whether
+    % some strong field was pulsed/snapped off or not during the cycle that
+    % just ends. We do not have any positive observation that this helps,
+    % but we leave it in just in case (total 1.3s extra).
         fesh_ramptime = 100;
         fesh_final = 20;
         fesh_ontime = 1000;
@@ -666,7 +676,7 @@ curtime = AnalogFunc(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2
 curtime = calctime(curtime,fesh_ontime);
 curtime = AnalogFuncTo(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),fesh_ramptime,fesh_ramptime,0);
 curtime = setAnalogChannel(calctime(curtime,100),37,0);
-        else 
+    else 
         fesh_ramptime = 100;
         fesh_final = 20;
         fesh_ontime = 1000;
@@ -675,9 +685,10 @@ curtime = AnalogFunc(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2
 curtime = calctime(curtime,fesh_ontime);
 curtime = AnalogFuncTo(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),fesh_ramptime,fesh_ramptime,0);
 curtime = setAnalogChannel(calctime(curtime,100),37,0);
-        end
     end
-
+end
+    
+%% Reset Stuff
 % B Field Measurement (set/reset of the field sensor after the cycle)
 curtime = sense_Bfield(curtime);
 
@@ -690,8 +701,6 @@ curtime = Reset_Channels(calctime(curtime,0));
 %turn on the Raman shutter for frquuency monitoring
 setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
 
-end
-
 %% Load MOT
 % Load the MOT
 dispLineStr('Load the MOT',curtime);
@@ -701,6 +710,7 @@ loadMOTSimple(curtime,0);
 if ~seqdata.flags.MOT_load_at_start
     curtime = calctime(curtime,seqdata.params.UV_on_time);
 end
+
 %% Transport Reset
 
 % Reset transport relay (Coil 3 vs Coil 11)

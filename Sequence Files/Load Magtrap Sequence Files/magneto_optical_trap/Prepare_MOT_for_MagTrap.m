@@ -131,52 +131,39 @@ if seqdata.flags.MOT_Mol == 1
 
     %%%%%%%%%%%% Rb D2 Molasses Settings %%%%%%%%%%%%
 
-    % Rb Mol detuning setting
-    rb_molasses_detuning_list = [90];90;
-    rb_molasses_detuning = getScanParameter(rb_molasses_detuning_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'Rb_molasses_det','MHz');  
-
-    % Rb Mol trap power setting
-    rb_mol_trap_power_list = 0.15;
-    rb_mol_trap_power = getScanParameter(rb_mol_trap_power_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'rb_mol_trap_power');
-    
-    % Rb Mol repump power settings
-    rb_mol_repump_power_list = 0.08;
-    rb_mol_repump_power = getScanParameter(rb_mol_repump_power_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'Rb_mol_repump_power');
-
-    % Set the power and detunings
-    setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',6590+rb_molasses_detuning);
-
-    MOL_trap_detuning = -81;
-    f_osc = calcOffsetLockFreq(MOL_trap_detuning,'MOT');
+    f_osc = calcOffsetLockFreq(getVar('mol_rb_trap_detuning'),'MOT');
     DDS_id = 3;    
-    DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,.01);    
+    DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,.01);      
 
-    setAnalogChannel(curtime,'Rb Trap AM',rb_mol_trap_power); %0.7
-    setAnalogChannel(curtime,'Rb Repump AM',rb_mol_repump_power); %0.14 
+    setAnalogChannel(curtime,'Rb Trap AM',getVar('mol_rb_trap_power')); %0.7
+    setAnalogChannel(curtime,'Rb Repump AM',getVar('mol_rb_repump_power')); %0.14 
 
     %%%%%%%%%%%% K D1 GM Settings %%%%%%%%%%%%
     % K D1 GM two photon detuning
     SRS_det_list = [0];%0
-    SRS_det = getScanParameter(SRS_det_list,seqdata.scancycle,seqdata.randcyclelist,'GM_SRS_det');
+    SRS_det = getScanParameter(SRS_det_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'GM_SRS_det');
 
     % K D1 GM two photon sideband power
     SRSpower_list = [4];   %%8
-    SRSpower = getScanParameter(SRSpower_list,seqdata.scancycle,seqdata.randcyclelist,'SRSpower');
+    SRSpower = getScanParameter(SRSpower_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'SRSpower');
 
     % Set the two-photon detuning (SRS)
     SRSAddress = 27; rf_on = 1; SRSfreq = 1285.8+SRS_det;%1285.8
-    addGPIBCommand(SRSAddress,sprintf('FREQ %fMHz; AMPR %gdBm; MODL 0; DISP 2; ENBR %g; FREQ?',SRSfreq,SRSpower,rf_on));
+    addGPIBCommand(SRSAddress,...
+        sprintf('FREQ %fMHz; AMPR %gdBm; MODL 0; DISP 2; ENBR %g; FREQ?',...
+        SRSfreq,SRSpower,rf_on));
 
     % K D1 GM double pass (single photon detuning) - shift from 70 MHz
     D1_freq_list = [0];
-    D1_freq = getScanParameter(D1_freq_list,seqdata.scancycle,seqdata.randcyclelist,'D1_freq');
+    D1_freq = getScanParameter(D1_freq_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'D1_freq');
 
     % K D1 GM Double pass - modulation depth
     mod_amp_list = [1.3];
-    mod_amp = getScanParameter(mod_amp_list,seqdata.scancycle,seqdata.randcyclelist,'GM_power');
+    mod_amp = getScanParameter(mod_amp_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'GM_power');
 
     % Set the single photon detuning (Rigol)
     mod_freq = (70+D1_freq)*1E6;
@@ -190,7 +177,8 @@ if seqdata.flags.MOT_Mol == 1
     %%%%%%%%%%%% Total Molasses Time %%%%%%%%%%%%
     % Total Molasses Time
     molasses_time_list = [8];
-    molasses_time =getScanParameter(molasses_time_list,seqdata.scancycle,seqdata.randcyclelist,'molasses_time'); 
+    molasses_time =getScanParameter(molasses_time_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'molasses_time'); 
 
     %%%%%%%%%%%% advance time during molasses  %%%%%%%%%%%%
     curtime = calctime(curtime,molasses_time);
@@ -218,7 +206,6 @@ end
 %% Floursence image
 
 if seqdata.flags.MOT_flour_image
-
     %%%%%%%%%%%% Turn off beams and gradients %%%%%%%%%%%%%%
 
     % Turn off the field gradient
@@ -260,13 +247,13 @@ if seqdata.flags.MOT_flour_image
 
     % Turn the beams on
     if seqdata.flags.image_atomtype == 1
-    setDigitalChannel(calctime(curtime,0),'K Trap TTL',0); 
-    setDigitalChannel(calctime(curtime,0),'K Repump TTL',0); 
-    setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);  
+        setDigitalChannel(calctime(curtime,0),'K Trap TTL',0); 
+        setDigitalChannel(calctime(curtime,0),'K Repump TTL',0); 
+        setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);  
     else
-    setDigitalChannel(calctime(curtime,0),'K Trap TTL',1); 
-    setDigitalChannel(calctime(curtime,0),'K Repump TTL',1); 
-    setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);  
+        setDigitalChannel(calctime(curtime,0),'K Trap TTL',1); 
+        setDigitalChannel(calctime(curtime,0),'K Repump TTL',1); 
+        setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);  
     end
 
     % Camera Trigger (1) : Light+Atoms

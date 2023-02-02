@@ -80,7 +80,6 @@ seqdata.flags.MOT_CMOT_grad_ramp            = 0; % 0:no change, 1:linear ramp, 2
 seqdata.flags.MOT_Mol                       = 1; % Do the molasses
 seqdata.flags.MOT_Mol_KGM_power_ramp        = 0; % 0: no ramp, 1:linear ramp
 
-
 seqdata.flags.MOT_optical_pumping           = 1; % optical pumping for MT
 
 % K CMOT parameters

@@ -437,7 +437,7 @@ curtime  =  AnalogFuncTo(calctime(curtime,0),'FB current',...
         probe32_trap_detuning = 0;
         f_osc = calcOffsetLockFreq(probe32_trap_detuning,'Probe32');
         DDS_id = 3;    
-        DDS_sweep(calctime(curtime,-15),DDS_id,f_osc*1e6,f_osc*1e6,1)    
+        DDS_sweep(calctime(curtime,-15),DDS_id,f_osc*1e6,f_osc*1e6,1);    
         
         
         
@@ -845,18 +845,21 @@ if seqdata.flags.xdt_rfmix_start
     sweep_pars.pulse_length = getScanParameter(pulse_length_list,...
         seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_time_post_evap');
 
+    n_sweeps_mix_list=[11];
+    n_sweeps_mix = getScanParameter(n_sweeps_mix_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'n_sweeps_mix');  % also is sweep length  0.5               
+
+    
     disp(['     Center Freq      (MHz) : ' num2str(sweep_pars.freq)]);
     disp(['     Delta Freq       (MHz) : ' num2str(sweep_pars.delta_freq)]);
     disp(['     Power              (V) : ' num2str(sweep_pars.power)]);
     disp(['     Sweep time        (ms) : ' num2str(sweep_pars.pulse_length)]);  
+    disp(['     Num Sweeps             : ' num2str(n_sweeps_mix)]);  
 
 
     f1=sweep_pars.freq-sweep_pars.delta_freq/2;
     f2=sweep_pars.freq+sweep_pars.delta_freq/2;
 
-    n_sweeps_mix_list=[11];
-    n_sweeps_mix = getScanParameter(n_sweeps_mix_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'n_sweeps_mix');  % also is sweep length  0.5               
 
     T60=16.666; % 60 Hz period
 
@@ -869,7 +872,7 @@ if seqdata.flags.xdt_rfmix_start
     end
     % Perform any additional sweeps
     for kk=1:n_sweeps_mix
-        disp([' Sweep Number ' num2str(kk) ]);
+%         disp([' Sweep Number ' num2str(kk) ]);
         rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
         curtime = calctime(curtime,T60);
     end     

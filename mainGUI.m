@@ -687,56 +687,32 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
             case 0 
                 seqdata.doscan = 0;
                 if isequal(bgRun.SelectedObject.String,'single')
-                    cycleTbl.Data = 1;
-                    rScan.Enable='off';
+                    cycleTbl.Data   =  1;
+                    rScan.Enable    = 'off';
                 else
-                    bStop.Enable='off';
-                    rSingle.Enable='off';
+                    bStop.Enable    = 'off';
+                    rSingle.Enable  = 'off';
                 end      
             case 1
             % Start the scan
-                seqdata.doscan = 1;
-                cycleTbl.Data = 1;
-%                 seqdata.randcyclelist = makeRandList;
-                bStop.Enable='on';
-                rSingle.Enable='off';
+                seqdata.doscan      = 1;
+                cycleTbl.Data       = 1;
+                bStop.Enable        = 'on';
+                rSingle.Enable      = 'off';
             case 2
             % Continue the scan
-                seqdata.doscan = 1;
-                bStop.Enable='on';
-%                 if ~isfield(seqdata,'randcyclelist') || isempty(seqdata.randcyclelist)
-%                     seqdata.randcyclelist = makeRandList;
-%                 end
-                bStop.Enable='on';
-                rSingle.Enable='off';
-        end
-        
-
-%         % Check the run mode
-%         switch bgRun.SelectedObject.String
-%             case 'single'
-%                 seqdata.randcyclelist=0;    
-%                 seqdata.doscan=0;    
-%                 rScan.Enable='off';                
-%             case 'scan'                
-%                 seqdata.randcyclelist=uint16(randperm(1000));    
-%                 seqdata.doscan=1; 
-%                 bStop.Enable='on';
-%                 rSingle.Enable='off';
-%         end  
-
-        bBrowse.Enable='off';
-        eSeq.Enable='off';
-        
-        bRunIter.Enable='off';
-        bContinue.Enable='off';
-        bStartScan.Enable='off';
-
+                seqdata.doscan      = 1;
+                bStop.Enable        = 'on';
+                bStop.Enable        = 'on';
+                rSingle.Enable      = 'off';
+        end  
+        bBrowse.Enable              = 'off';
+        eSeq.Enable                 = 'off';        
+        bRunIter.Enable             = 'off';
+        bContinue.Enable            = 'off';
+        bStartScan.Enable           = 'off';
         runSequence;        
     end
-
-
-
 
     function bStopCB(~,~)
         switch bgRun.SelectedObject.String

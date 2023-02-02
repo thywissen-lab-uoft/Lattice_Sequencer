@@ -40,6 +40,11 @@ data.SequenceText.String=mystr;
 %% Run Each portion
 isGood = 1;
 
+disp(repmat('-',1,60));
+disp('Compiling');
+disp(repmat('-',1,60));
+
+
 for kk = 1:length(fncs)
     data.Status.String = ['running @' func2str(fncs{kk})];
     data.Status.ForegroundColor = [220,88,42]/255;

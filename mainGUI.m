@@ -5,7 +5,7 @@ function mainGUI
 % Please refer to the relevant sequence files to edit those.
 %
 % Author      : CJ Fujiwara
-% Last Edited : 2020/08
+% Last Edited : 2023/02
 %
 % In order to make this code work with the existing code in the lab
 % designed by D. McKay (an early graduate student), many aspects of this
@@ -17,17 +17,12 @@ doDebug = 0;
 %%%%%%%%%%%%%%% Initialize Sequence Data %%%%%%%%%%%%%%%%%
 LatticeSequencerInitialize();
 global seqdata;
-% global adwin_booted;
 global adwinprocessnum;
-% global adwin_processor_speed;
-% global adwin_connected;
-% global adwin_process_path;
 
 evalin('base','global seqdata')
 evalin('base','openvar(''seqdata'')')
 evalin('base','openvar(''seqdata.flags'')')
 evalin('base','openvar(''seqdata.params'')')
-
 
 waitDefault=30;
 compath='Y:\_communication';
@@ -46,8 +41,6 @@ end
 disp('Opening Lattice Sequencer...');
 
 seqdata.randcyclelist = makeRandList;
-
-
 %% Delete old timer objects
 % The progress of the sequence is tracked using some MATLAB timers. Delete
 % these timers so that MATLAB doesn't get confused and make a whole bunch
@@ -66,7 +59,6 @@ delete(timerfind('Name',adwinTimeName));
 delete(timerfind('Name',waitTimeName));
 %% Initialize Primary Figure graphics
 
-
 % Close any figure with the same name. Only one instance of mainGUI may be
 % open at a time
 figs = get(groot,'Children');
@@ -75,9 +67,9 @@ for i = 1:length(figs)
        close(figName); 
     end
 end
+
 % Figure color and size settings
-cc='w';
-w=350;h=340;
+cc='w';w=350;h=340;
 
 % Initialize the figure graphics objects
 hF=figure('toolbar','none','Name',figName,'color',cc,'NumberTitle','off',...
@@ -122,7 +114,6 @@ set(hF,'WindowStyle','docked');
                 warning('Something went wrong stopping and deleting timers');
             end
             delete(fig);
-%             delete(hFGUI);
        end
        
         function doClose(~,~)
@@ -132,7 +123,6 @@ set(hF,'WindowStyle','docked');
             stop(timeWait);
             pause(0.5);
             delete(fig);
-%             delete(hFGUI);
         end       
     end
 
@@ -164,75 +154,54 @@ eSeq.Position(4)=eSeq.Extent(4);
 eSeq.Position(1:2)=[5 tSeq.Position(2)-eSeq.Position(4)];
 
 % Button for file selection of the sequenece file
-cdata=imresize(imread(['GUI Functions' filesep 'browse.jpg']),[22 22]);
+cdata=imresize(imread(['GUI/images' filesep 'browse.jpg']),[22 22]);
 bBrowse=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@browseCB,'tooltip','browse file');
 bBrowse.Position(3:4)=[24 24];
 bBrowse.Position(1:2)=eSeq.Position(1:2)+[eSeq.Position(3)+2 0];
 
 % Button for file selection of the sequenece file
-cdata=imresize(imread(['GUI Functions' filesep 'folder_up.jpg']),[20 20]);
+cdata=imresize(imread(['GUI/images' filesep 'folder_up.jpg']),[20 20]);
 bDirUp=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@(~,~) cd('..'),'tooltip','move up directory level');
 bDirUp.Position(3:4)=[24 24];
 bDirUp.Position(1:2)=bBrowse.Position(1:2)+[bBrowse.Position(3)+2 0];
 
 % Button for file selection of the sequenece file
-cdata=imresize(imread(['GUI Functions' filesep 'file.png']),[17 17]);
+cdata=imresize(imread(['GUI/images' filesep 'file.png']),[17 17]);
 bFile=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@fileCB,'tooltip','open file');
 bFile.Position(3:4)=[24 24];
 bFile.Position(1:2)=bDirUp.Position(1:2)+[bDirUp.Position(3)+2 0];
-% 
-% % Button to plot the sequence
-% bPlot=uicontrol(hpMain,'style','pushbutton','String','plot',...
-%     'backgroundcolor',cc,'FontSize',10,'units','pixels',...
-%     'fontweight','normal','callback',@bPlotCB);
-% bPlot.Position(3:4)=[30 24];
-% bPlot.Position(1:2)=[bFile.Position(1)+bFile.Position(3)+5 ...
-%     bFile.Position(2)];
 
 % Button to recompile seqdata
-cdata=imresize(imread(['GUI Functions' filesep 'plot.jpg']),[24 24]);
+cdata=imresize(imread(['GUI/images' filesep 'plot.jpg']),[24 24]);
 bPlot=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@bPlotCB,'tooltip','plot');
 bPlot.Position(3:4)=[25 25];
 bPlot.Position(1:2)=bFile.Position(1:2)+[bFile.Position(3)+2 0];
 
-
     function bPlotCB(~,~)
         fh = str2func(erase(eSeq.String,'@'));        
-%         plotgui(fh);
         plotgui2;
     end
 
 % Button to recompile seqdata
-cdata=imresize(imread(['GUI Functions' filesep 'compile.jpg']),[20 20]);
+cdata=imresize(imread(['GUI/images' filesep 'compile.jpg']),[20 20]);
 bCompile=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@bCompileCB,'tooltip','compile sequence');
 bCompile.Position(3:4)=[25 25];
 bCompile.Position(1:2)=bPlot.Position(1:2)+[bPlot.Position(3)+2 0];
 
 % Button to recompile seqdata
-cdata=imresize(imread(['GUI Functions' filesep 'command_window.jpg']),[20 20]);
+cdata=imresize(imread(['GUI/images' filesep 'command_window.jpg']),[20 20]);
 bCmd=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@(~,~) commandwindow,'tooltip','move up directory level','tooltip','command window');
 bCmd.Position(3:4)=[25 25];
 bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
 
-% % Button to recompile seqdata
-% bCompile=uicontrol(hpMain,'style','pushbutton','String','compile',...
-%     'backgroundcolor',cc,'FontSize',10,'units','pixels',...
-%     'fontweight','normal','enable','on');
-% bCompile.Position(3:4)=[60 20];
-% bCompile.Position(1:2)=[bPlot.Position(1)+bPlot.Position(3)+5 ...
-%     bPlot.Position(2)];
-% bCompile.Callback=@bCompileCB;
-
     function bCompileCB(~,~)        
         start_new_sequence;             % Initialize sequence
-%         seqdata.scancycle=1;            % 
-%         seqdata.randcyclelist=0;    
         seqdata.doscan=0; 
         initialize_channels;            % Initialize channels
 
@@ -285,13 +254,14 @@ bgWait.Position(1:2)=[1 180];
 
 % Create three radio buttons in the button group. The user data holds the
 % selected mode (0,1,2) --> (no wait, intercyle, target time)
-uicontrol(bgWait,'Style','radiobutton', 'String','no wait',...
+uicontrol(bgWait,'Style','radiobutton', 'String','none',...
     'Position',[5 50 100 20],'Backgroundcolor',cc,'UserData',0,'value',0);  
-uicontrol(bgWait,'Style','radiobutton','String','intercycle wait',...
-    'Position',[75 50 100 20],'Backgroundcolor',cc,'UserData',1,'value',1);
-uicontrol(bgWait,'Style','radiobutton','String','target time',...
-    'Position',[175 50 100 20],'Backgroundcolor',cc,'UserData',2,'value',0);              
-
+uicontrol(bgWait,'Style','radiobutton','String','intercycle',...
+    'Position',[50 50 100 20],'Backgroundcolor',cc,'UserData',1,'value',1);
+uicontrol(bgWait,'Style','radiobutton','String','total',...
+    'Position',[120 50 100 20],'Backgroundcolor',cc,'UserData',2,'value',0);              
+uicontrol(bgWait,'Style','radiobutton','String','auto',...
+    'Position',[165 50 100 20],'Backgroundcolor',cc,'UserData',3,'value',0);   
 
 % Table for storing value of wait time
 tblWait=uitable(bgWait,'RowName','','ColumnName','','Data',waitDefault,...
@@ -708,10 +678,8 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
             else
                 bRunIter.Enable     = 'on';
                 bStartScan.Enable   = 'on';
-                bContinue.Enable    = 'on';
-                
+                bContinue.Enable    = 'on';                
                 bStop.Enable        = 'off';
-
                 rScan.Enable        = 'on';
                 rSingle.Enable      = 'on';
                 bBrowse.Enable      = 'on';
@@ -727,8 +695,7 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         % Should this just happen every single time?
         if isempty(seqdata)
             LatticeSequencerInitialize();
-        end
-        
+        end        
                 
         % Am I allowed to run the sequene?
         if ~safeToRun
@@ -828,9 +795,7 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         
         % Compile the code
         disp([' Compiling seqdata from  ' fName]);     
-        tC1=now;                         % compile start time
-%         set(tStatus,'String','Compiling sequence ...');drawnow;
-        
+        tC1=now;                         % compile start time        
              
         set(tStatus,'String','compiling sequence ...','fontweight','bold',...
             'foregroundcolor','r');drawnow;
@@ -851,10 +816,7 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
 
         set(tStatus,'String','Sequence compiled.');drawnow;
         
-        updateScanVarText;
-        
-
-
+        updateScanVarText;      
         tC2=now;
         compileTime=(tC2-tC1)*24*60*60;
 %         disp([' Compiling sequence took ' num2str(round(compileTime,2)) ' s.']);
@@ -954,9 +916,7 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         set(tStatus,'String','adwin is running ...','fontweight','bold',...
             'foregroundcolor','r');drawnow;
         % Update progress bars
-        start(timeAdwin);
-               
-
+        start(timeAdwin);   
     end
 
     function resetAfterError

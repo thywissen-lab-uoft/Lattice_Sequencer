@@ -15,23 +15,16 @@ setDigitalChannel(calctime(curtime,-500),'UV LED',0);
 if seqdata.flags.MOT_CMOT==1
     dispLineStr('CMOT',curtime);
 
-    % Potassium
-    k_cMOT_repump_detuning = 0;     % K CMOT repump detuning in MHz
 
-    k_cMOT_detunings=[5];
-    k_cMOT_detuning= getScanParameter(k_cMOT_detunings,...
-        seqdata.scancycle,seqdata.randcyclelist,'k_cMOT_detuning');  %in MHZ
 
     k_cMOT_times=[20];
     k_cMOT_time= getScanParameter(k_cMOT_times,...
         seqdata.scancycle,seqdata.randcyclelist,'k_cMOT_time');  
     rb_cMOT_time=k_cMOT_time;
 
+    
     cMOT_time = max([rb_cMOT_time k_cMOT_time]);
 
-    % Append output parameters if desired   
-    addOutputParam('k_cMOT_detuning',k_cMOT_detuning);
-    addOutputParam('k_cMOT_repump_detuning',k_cMOT_repump_detuning); 
 
     yshim_comp = 0.84;
     xshim_comp = 0.25;
@@ -57,10 +50,12 @@ if seqdata.flags.MOT_CMOT==1
     setAnalogChannel(calctime(curtime,0),'Rb Trap AM',getVar('cmot_rb_trap_power'));
 
     %%%%%%%%%%%%%%%% Set CMOT K Beams %%%%%%%%%%%%%%%%
-    setAnalogChannel(calctime(curtime,0),'K Trap FM',k_cMOT_detuning); %765
     % AnalogFuncTo(calctime(curtime,0),'K Trap FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),k_cMOT_time,k_cMOT_time,k_cMOT_detuning);
-    setAnalogChannel(calctime(curtime,0),'K Repump FM',k_cMOT_repump_detuning,2); %765
-    % AnalogFuncTo(calctime(curtime,0),'K Repump FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),k_cMOT_time,k_cMOT_time,k_cMOT_repump_detuning,2);
+       % AnalogFuncTo(calctime(curtime,0),'K Repump FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),k_cMOT_time,k_cMOT_time,k_cMOT_repump_detuning,2);
+
+
+    setAnalogChannel(calctime(curtime,0),'K Trap FM',getVar('cmot_k_trap_detuning')); 
+    setAnalogChannel(calctime(curtime,0),'K Repump FM',getVar('cmot_k_repump_detuning'),2); 
 
     K_trap_am_list = [0.5];0.7;
     k_cMOT_trap_am = getScanParameter(K_trap_am_list,seqdata.scancycle,seqdata.randcyclelist,'k_cMOT_trap_am');  %in MHZ

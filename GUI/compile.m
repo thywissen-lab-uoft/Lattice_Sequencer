@@ -17,10 +17,12 @@ end
 
 data=guidata(fig);
 
+%%
+data.StatusSub.String = '';
+
 %% Initialize Sequence    
 data.Status.String = 'initializing sequence ...';
 data.Status.ForegroundColor = 'k';
-
 
 start_new_sequence;
 initialize_channels;
@@ -41,8 +43,7 @@ isGood = 1;
 for kk = 1:length(fncs)
     data.Status.String = ['running @' func2str(fncs{kk})];
     data.Status.ForegroundColor = [220,88,42]/255;
-
-    pause(.1)
+    pause(.2)
     try
         fncs{kk}(curtime);    
     catch ME
@@ -55,7 +56,6 @@ end
 if ~isGood
     data.Status.String = ['sequence error'];
     data.Status.ForegroundColor = 'r';
-
     return
 end
 

@@ -9,40 +9,23 @@ curtime = timein;
 setDigitalChannel(calctime(curtime,-500),'UV LED',0);
 
 %% cMOT
-% This code loads the CMOT from the MOT. This includes ramps of the 
-% detunings, power, shims, and field gradients. In order to function 
-% properly it needs to havethe correct parameters from the MOT.
+
 if seqdata.flags.MOT_CMOT==1
     dispLineStr('CMOT',curtime);
+ 
+    cMOT_time = max([getVar('cmot_rb_ramp_time') getVar('cmot_k_ramp_time')]);
 
-
-
-    k_cMOT_times=[20];
-    k_cMOT_time= getScanParameter(k_cMOT_times,...
-        seqdata.scancycle,seqdata.randcyclelist,'k_cMOT_time');  
-    rb_cMOT_time=k_cMOT_time;
-
-    
-    cMOT_time = max([rb_cMOT_time k_cMOT_time]);
-
-
-    yshim_comp = 0.84;
-    xshim_comp = 0.25;
-    zshim_comp = 0.00;
-
-    %%%%%%%%%%%%%%%% Set CMOT Shims %%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%% Set CMOT Shims %%%%%%%%%%%%%%%%    
+%     yshim_comp = 0.84;
+%     xshim_comp = 0.25;
+%     zshim_comp = 0.00;
     % setAnalogChannel(calctime(curtime,-2),'Y MOT Shim',0.84,2); 
     % setAnalogChannel(calctime(curtime,-2),'X MOT Shim',0.25,2); 
     % setAnalogChannel(calctime(curtime,-2),'Z MOT Shim',0.00,2);
 
     %%%%%%%%%%%%%%%% Set CMOT Rb Beams %%%%%%%%%%%%%%%%
 
-    % New way to set the detuning
-    Rb_CMOT_Trap_detuning_list = -30;-36.5;
-    Rb_CMOT_Trap_detuning = getScanParameter(Rb_CMOT_Trap_detuning_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'Rb_CMOT_Trap_detuning','MHz');  %in MHZ
-
-    f_osc = calcOffsetLockFreq(Rb_CMOT_Trap_detuning,'MOT');
+    f_osc = calcOffsetLockFreq(getVar('cmot_rb_trap_detuning'),'MOT');
     DDS_id = 3;    
     DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,.01);    
 
@@ -51,21 +34,27 @@ if seqdata.flags.MOT_CMOT==1
 
     %%%%%%%%%%%%%%%% Set CMOT K Beams %%%%%%%%%%%%%%%%
     % AnalogFuncTo(calctime(curtime,0),'K Trap FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),k_cMOT_time,k_cMOT_time,k_cMOT_detuning);
-       % AnalogFuncTo(calctime(curtime,0),'K Repump FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),k_cMOT_time,k_cMOT_time,k_cMOT_repump_detuning,2);
-
+    % AnalogFuncTo(calctime(curtime,0),'K Repump FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),k_cMOT_time,k_cMOT_time,k_cMOT_repump_detuning,2);
 
     setAnalogChannel(calctime(curtime,0),'K Trap FM',getVar('cmot_k_trap_detuning')); 
     setAnalogChannel(calctime(curtime,0),'K Repump FM',getVar('cmot_k_repump_detuning'),2); 
-
-    K_trap_am_list = [0.5];0.7;
-    k_cMOT_trap_am = getScanParameter(K_trap_am_list,seqdata.scancycle,seqdata.randcyclelist,'k_cMOT_trap_am');  %in MHZ
-    setAnalogChannel(calctime(curtime,0),'K Repump AM',0.25); %0.25
-    setAnalogChannel(calctime(curtime,0),'K Trap AM',k_cMOT_trap_am); %0.7 %0.3 Oct 30, 2015 
+    setAnalogChannel(calctime(curtime,0),'K Repump AM',getVar('cmot_k_repump_power')); 
+    setAnalogChannel(calctime(curtime,0),'K Trap AM',getVar('cmot_k_trap_power')); 
 
     %%%%%%%%%%%%%% Set CMOT Field Gradient %%%%%%%%%%%%%%%%
-    % CMOTBGrad=10;
-    % setAnalogChannel(calctime(curtime,0),'MOT Coil',CMOTBGrad);
-
+    switch seqdata.flags.MOT_CMOT_grad_ramp        
+        case 1
+            disp('ramping gradient');
+            AnalogFuncTo(calctime(curtime,0),'MOT Coil',...
+                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+                cMOT_time,cMOT_time,getVar('cmot_grad'));
+        case 2
+            disp('switching gradient');
+            setAnalogChannel(calctime(curtime,0),'MOT Coil',getVar('cmot_grad'));
+        otherwise
+            disp('not ramping gradient');
+    end          
+    
     %%%%%%%%%%%%%% Advance time %%%%%%%%%%%%%%%%
     curtime=calctime(curtime,cMOT_time);   
 end

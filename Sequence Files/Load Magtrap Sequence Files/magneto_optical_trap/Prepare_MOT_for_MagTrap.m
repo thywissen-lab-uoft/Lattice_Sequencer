@@ -217,7 +217,7 @@ setDigitalChannel(calctime(curtime,0),'K D1 GM Shutter 2',1);
 %% Turn off the repump
 
 % CF : No idea what this does
-if ( seqdata.flags.image_type ~= 4 )
+if ( seqdata.flags.image_type ~= 1 )
 %RHYS - These turn on/turn off/turn on-off beam functions are confusing and
 %could be rewritten.
 curtime = turn_off_beam(calctime(curtime,1),2); %a little delayed w.r.t trap

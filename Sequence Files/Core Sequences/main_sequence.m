@@ -472,8 +472,7 @@ end
 if seqdata.flags.MOT_prepare_for_MT
     curtime = Prepare_MOT_for_MagTrap(curtime);
 
-    if seqdata.flags.image_type == 0
-    
+    if seqdata.flags.image_type == 0    
         %Open other AOMS to keep them warm. Why ever turn them off for long
         %when we have shutters to do our dirty work?
         setDigitalChannel(calctime(curtime,10),'K Trap TTL',0);

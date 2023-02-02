@@ -17,9 +17,9 @@ global seqdata;
     
     % going through analog channles and reset to resetvalue if one is
     % specified
-    for j = 1:length(seqdata.analogchannels);
-        if isfield(seqdata.analogchannels(j),'resetvalue');
-            if seqdata.analogchannels(j).resetvalue(1) ~= 1i; % using complex i to indicate no change
+    for j = 1:length(seqdata.analogchannels)
+        if isfield(seqdata.analogchannels(j),'resetvalue')
+            if seqdata.analogchannels(j).resetvalue(1) ~= 1i % using complex i to indicate no change
 %                 disp(sprintf('Resetting a%g',j))
                 if length(seqdata.analogchannels(j).resetvalue) == 1
                     % default: use default voltage function
@@ -35,9 +35,9 @@ global seqdata;
     
     % going through digital channels and reset to resetvalue if one is
     % specified
-    for j = 1:length(seqdata.digchannels);
-        if isfield(seqdata.digchannels(j),'resetvalue');
-            if (seqdata.digchannels(j).resetvalue ~= 1i); % using complex i to indicate no change
+    for j = 1:length(seqdata.digchannels)
+        if isfield(seqdata.digchannels(j),'resetvalue')
+            if (seqdata.digchannels(j).resetvalue ~= 1i) % using complex i to indicate no change
 %                 disp(sprintf('Resetting d%g',j))
                 setDigitalChannel(curtime,j,seqdata.digchannels(j).resetvalue(1));
             end

@@ -38,10 +38,10 @@ curtime = timein;
     % Alternative Raman preparation (??)
     raman_short_sweep                 = 0;
     
-    spin_flip_7_5                     = 0;       % 75 spectroscpoy/flip
+    spin_flip_7_5                     = 1;       % 75 spectroscpoy/flip
     
     % Field and Lattice Ramp
-    field_ramp_2                      = 0;       % ramp field after raman before rf spectroscopy   
+    field_ramp_2                      = 1;       % ramp field after raman before rf spectroscopy   
     lattice_ramp_3                    = 0;       % between raman and rf spectroscopy
     
     % More RF Stuff (?)
@@ -101,7 +101,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
 
         
         % Feshbach Field ramp
-        HF_FeshValue_Initial_List = [204]; [197];
+        HF_FeshValue_Initial_List = [207]; [197];
         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_Lattice','G');
 %         
@@ -641,14 +641,14 @@ curtime = calctime(curtime, Raman_on_time);
         B = HF_FeshValue_Initial+ Boff+ 2.35*zshim;
 
         % Get the center frequency
-        rf_list =  [0] +...
+        rf_list =  [2]/1000 +...
             abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
         sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,...
             seqdata.randcyclelist,'rf_freq_HF','MHz');
         disp(sweep_pars.freq)
 
         sweep_pars.power =  [-7.5];
-        delta_freq = 0.10; 0.025;0.1;
+        delta_freq = 0.015; 0.025;0.1;
         sweep_pars.delta_freq = delta_freq;
         rf_pulse_length_list = 5;5;20;
         sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5               
@@ -659,12 +659,12 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
 %         seqdata.scancycle,seqdata.randcyclelist,'HF_wait_time_5','ms');
 
 %Double pulse sequence
-    HF5_wait_time = paramGet('HF_wait_time_5');
-    curtime = calctime(curtime,HF5_wait_time);
-         
+%     HF5_wait_time = paramGet('HF_wait_time_5');
+%     curtime = calctime(curtime,HF5_wait_time);
+%          
      
-     sweep_pars.delta_freq  = -delta_freq; 0.025;0.1;
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
+%      sweep_pars.delta_freq  = -delta_freq; 0.025;0.1;
+% curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
 
 
     do_ACync_rf = 0;
@@ -675,7 +675,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
             setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
         end
         
-curtime = calctime(curtime,50);
+% curtime = calctime(curtime,800);
 
     end
     
@@ -683,7 +683,7 @@ curtime = calctime(curtime,50);
     
     if field_ramp_2
         clear('ramp');
-        HF_FeshValue_Spectroscopy_List =[200.1];
+        HF_FeshValue_Spectroscopy_List =[204];
         HF_FeshValue_Spectroscopy = getScanParameter(HF_FeshValue_Spectroscopy_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Spectroscopy','G');           
 %         
@@ -873,7 +873,7 @@ end
         B = HF_FeshValue_Initial + Boff + 2.35*zshim; 
 %         
      
-         rf_shift_list = [-16:4:0 30:4:50];
+         rf_shift_list = [-10:4:10];
 %          rf_shift_list= 10;
          rf_shift = getScanParameter(rf_shift_list,seqdata.scancycle,...
                          seqdata.randcyclelist,'rf_freq_HF_shift','kHz');
@@ -1534,58 +1534,25 @@ if ramp_field_for_imaging_attractive
     HF_FeshValue_Final = getScanParameter(HF_FeshValue_Final_List,...
     seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Final_Lattice','G');
 
+    defVar('image_ramp_time',[20],'ms');100;
+    defVar('image_settling_time',[10],'ms');50;
+
     % Define the ramp structure
     ramp=struct;
-    ramp.shim_ramptime = 100;
+    ramp.shim_ramptime = getVar('image_ramp_time');
     ramp.shim_ramp_delay = 0; % ramp earlier than FB field if needed
     ramp.xshim_final = seqdata.params.shim_zero(1); 
     ramp.yshim_final = seqdata.params.shim_zero(2);
     ramp.zshim_final = seqdata.params.shim_zero(3);
     % FB coil 
-    ramp.fesh_ramptime = 100;
+    ramp.fesh_ramptime = getVar('image_ramp_time');
     ramp.fesh_ramp_delay = 0;
     ramp.fesh_final = HF_FeshValue_Final;
-    ramp.settling_time = 50;    
+    ramp.settling_time = getVar('image_settling_time');    
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
 
-    seqdata.params.HF_probe_fb = HF_FeshValue_Final;
-    
-     rampGradient  = 0;
-     if rampGradient
-        % Current / Field gradient to ramp to (unsure of units)
-        QP_Coil_15 = 1;
-
-        % Make sure QP coils are off
-        setAnalogChannel(curtime,'Coil 15',0);
-        setAnalogChannel(curtime,'Coil 16',0);
-        setDigitalChannel(curtime, 'Coil 16 TTL', 1);
-
-        curtime = calctime(curtime,10);
-        
-        % Set switches to enable current through coil 15
-        setDigitalChannel(curtime,'Kitten Relay',1);
-        setDigitalChannel(curtime,'15/16 Switch',0);
-        curtime = calctime(curtime,10);
-
-        % Allow current to pass through the kitten
-        setAnalogChannel(curtime,'kitten',6.52,1);
-        
-        % voltage FF on delta supply    
-        QP_FF = 23*(QP_Coil_15/30); 
-            
-        % Ramp up transport supply voltage
-        ramp_time = 50;
-        AnalogFuncTo(curtime,'Transport FF',@(t,tt,y1,y2) ...
-            (ramp_linear(t,tt,y1,y2)),QP_FF,ramp_time,QP_FF);       
-        
-        AnalogFuncTo(curtime,'Coil 15',@(t,tt,y1,y2) ...
-            (ramp_linear(t,tt,y1,y2)),QP_Coil_15,ramp_time,QP_Coil_15);
-        
-        curtime = calctime(curtime,50);
-
-         
-     end
+    seqdata.params.HF_probe_fb = HF_FeshValue_Final;    
     
 end
 %% High Field Imaging Field Ramp (repulsive side of resonance)

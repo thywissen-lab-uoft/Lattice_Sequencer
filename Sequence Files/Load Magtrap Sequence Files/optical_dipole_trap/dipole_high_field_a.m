@@ -66,7 +66,6 @@ curtime = timein;
 %   to the desired value where the PA pulse will occur (ramp_field_1)
 %   (2) Perform the PA pulse (doPA_pulse)
 %   (3)Ramp the field to 195 G for imaging (ramp_field_for_imaging)
-% 
 
 
 %% Flags          
@@ -80,12 +79,9 @@ seqdata.flags.xdt_hf_79_spec                 = 0;   % 79 Spec
 seqdata.flags.xdt_hf_CDT_evap_2_high_field  = 0;   % HF evaporation
 seqdata.flags.xdt_hf_crossFBUp              = 1;   % Cross 97 Resonance (w 75 flips)
 
-
-% Spin Manipulations for attractive with initial mixture (unused currently)
-flip_7_5                = 0;        % 7 to 5 to avoid fesbach
-ramp_field_2            = 0;        % Ramp above feshbach (attractive)
-flip_7_5_again          = 0;        % 5 to 7 for science mixture
-
+flip_7_5                                    = 0;   % 7 to 5 to avoid fesbach
+ramp_field_2                                = 0;   % Ramp above feshbach (attractive)
+flip_7_5_again                              = 0;   % 5 to 7 for science mixture
 
 seqdata.flags.xdt_hf_ramp_field_3           = 1;    % Ramp field 
 seqdata.flags.xdt_hf_79_spec2               = 0;    % 79 Spec
@@ -183,7 +179,6 @@ if seqdata.flags.xdt_hf_ramp_field_1
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain 
 
     ScopeTriggerPulse(curtime,'FB_ramp');
-
     seqdata.params.HF_fb = fesh;  
 end  
 

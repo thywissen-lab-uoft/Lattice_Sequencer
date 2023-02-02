@@ -1209,9 +1209,7 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice',...
     
     %TTLs
     setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);  %0: ON / 1: OFF,yLatticeOFF
-    setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1); % Added 2014-03-06 in order to avoid integrator wind-up
-    
-
+    setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1); % Added 2014-03-06 in order to avoid integrator wind-up 
     
 end
 

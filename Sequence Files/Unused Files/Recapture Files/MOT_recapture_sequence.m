@@ -104,7 +104,7 @@ curtime = Prepare_MOT_for_MagTrap(curtime);
 curtime = Load_MagTrap_from_MOT(curtime);
 
 
-        if transfer_recap_curve && (seqdata.flags.hor_transport_type == 2)
+        if transfer_recap_curve && (seqdata.flags.transport_hor_type == 2)
 curtime     = calctime(curtime,1000);
         end
 

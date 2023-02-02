@@ -14,12 +14,10 @@ curtime = timein;
 
 %% Magnetic Trapping
 % updated @ 2018-03-22
-
    
     ramp_time1 = 1;
     hold_time1 = 10;
-%     gradient_value1 = 0.5*(1.22 + 89.6*1);
-    
+%     gradient_value1 = 0.5*(1.22 + 89.6*1);  
 
     gradient_value1_list=[0.75];
     gradient_value1= getScanParameter(gradient_value1_list,seqdata.scancycle,seqdata.randcyclelist,'gradient_value1');  %in MHZ

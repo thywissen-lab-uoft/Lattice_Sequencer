@@ -469,7 +469,7 @@ cRpt.Tooltip='Enable or disable automatic repitition of the sequence.';
 
 tStatus=uicontrol(bgRun,'style','text','string','Sequencer is idle.',...
     'backgroundcolor','w','fontsize',8,'units','pixels',...
-    'fontweight','normal','visible','on','horizontalalignment','center');
+    'fontweight','bold','visible','on','horizontalalignment','center');
 tStatus.Position(3:4)=[axAdWinBar.Position(3) 15];
 tStatus.Position(1:2)=[bStop.Position(1)+bStop.Position(3) 1];
 tStatus.Position(1) = axAdWinBar.Position(1);
@@ -549,7 +549,7 @@ set(jbReset,'ToolTipText',ttStr);
 timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
     'TimerFcn',@updateAdwinBar,'StartFcn',@startAdwinTimer,'Period',.05,...
     'StopFcn',@stopAdwinTimer);
-
+data.adwinTimer = timeAdwin;
 % Function to run when the adwin starts the sequence.
     function startAdwinTimer(~,~)
         
@@ -573,7 +573,7 @@ timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
         set(jbAbort,'Enabled',false);
         set(jbReset,'Enabled',true);
         
-        set(tStatus,'String','Cycle complete.','fontweight','normal',...
+        set(tStatus,'String','Cycle complete.','fontweight','bold',...
             'foregroundcolor','k');drawnow;
         if bgWait.UserData
            start(timeWait);              % Start wait timer if needed
@@ -615,7 +615,7 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
 
 % Function to run when the wait timer begins
     function startWait(~,~)
-        set(tStatus,'String','waiting ...','fontweight','normal',...
+        set(tStatus,'String','waiting ...','fontweight','bold',...
             'foregroundcolor','k');drawnow;
         
         % Notify the user
@@ -637,7 +637,7 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
 
 % Function to run when the wait timer is complete.
     function stopWait(~,~)
-        set(tStatus,'String','Inter cycle wait complete.','fontweight','normal',...
+        set(tStatus,'String','Inter cycle wait complete.','fontweight','bold',...
             'foregroundcolor','k');drawnow;
         
         disp('Inter cycle wait complete.'); % Notify the user
@@ -668,7 +668,7 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
 
 %% AdWin Callbacks
     function cycleComplete
-        set(tStatus,'String','Cycle completed.','fontweight','normal',...
+        set(tStatus,'String','Cycle completed.','fontweight','bold',...
             'foregroundcolor','k');drawnow;     
         if cRpt.Value
             disp('Repeating the sequence');
@@ -822,7 +822,7 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         
         updateScanVarText;      
         tC2=now;
-        compileTime=(tC2-tC1)*24*60*60;
+%         compileTime=(tC2-tC1)*24*60*60;
 %         disp([' Compiling sequence took ' num2str(round(compileTime,2)) ' s.']);
         
         % Generate hardware commands

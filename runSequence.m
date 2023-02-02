@@ -18,8 +18,7 @@ end
 data=guidata(fig);
 
 %% Compile Code
-compile(fncs)
-
+compile(fncs);
 
 if ~seqdata.seqcalculated
    warning('Cannot run because compliation failed');
@@ -30,9 +29,11 @@ end
 isGood = 1;
 doDebug = 1;
 
+% Update GUI
 data.Status.String = ['loading adwin'];
 data.Status.ForegroundColor = [220,88,42]/255;
     
+% Try Loading
 try
     load_sequence;
 catch ME
@@ -40,27 +41,31 @@ catch ME
     isGood = 0;
 end
 
+% Quit if bad
 if ~doDebug && ~isGood
     return;
 end
 
+
+% Update GUI
 data.Status.String = ['adwin loaded'];
 data.Status.ForegroundColor = [17,59,8]/255;
 
+% Make control file
 if ~doDebug
     makeControlFile;
 end
 
+% Run Adwin
 data.Status.String = ['starting adwin'];
 data.Status.ForegroundColor = [17,59,8]/255;
-
 try
     Start_Process(adwinprocessnum);
 end
 
+% Start Timer
 data.Status.String = ['adwin is running'];
 data.Status.ForegroundColor = 'r';
-
 start(data.timeAdwin);   
 
 

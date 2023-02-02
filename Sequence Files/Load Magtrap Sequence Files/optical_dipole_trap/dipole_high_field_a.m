@@ -98,9 +98,6 @@ flip_7_5_again          = 0;        % 5 to 7 for science mixture
 % Ramp to science magnetic field
 ramp_field_3            = 1;    
 
-%Do a round trip measurement (ramping back to LF for imaging)
-do_round_trip = 0;
-
 % Science spin manipulations
 do_rf_spectroscopy      = 0;        % 97 rf spec with SRS HS1
 
@@ -725,126 +722,8 @@ curtime = calctime(curtime,HF_wait_time);
   
     end
     
-%% Bring atoms back down to low field after some wait time at high field
 
-    if do_round_trip
-        
-        round_trip_wait_time_list = [100];
-        round_trip_wait_time = getScanParameter(round_trip_wait_time_list,...
-            seqdata.scancycle,seqdata.randcyclelist,'round_trip_wait_time','ms');
-        
-        %Hold atoms for some wait time before bringing back to LF
-curtime = calctime(curtime,round_trip_wait_time);
-        
-        %***********************Field ramp to 207 G*********************
-        %Ramp the field back to 207 G for spin flipping 7 back to 5
-        dispLineStr('First Field Ramp for Round Trip',curtime);
-        % Fesahbach Field ramp
-        HF_FeshValue_Final_List = [207];% 206 207 208 209 210 211
-        HF_FeshValue_Final = getScanParameter(HF_FeshValue_Final_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_RT1','G');
-
-        % Define the ramp structure
-        ramp=struct;
-        ramp.FeshRampTime = 100;10;100;
-        ramp.FeshRampDelay = -0;
-        ramp.FeshValue = HF_FeshValue_Final;
-        ramp.SettlingTime = 50; 50;    
-
-
-        disp([' Ramp Time     (ms) : ' num2str(ramp.FeshRampTime)]);
-        disp([' Ramp Value     (G) : ' num2str(ramp.FeshValue)]);
-        disp([' Settling Time (ms) : ' num2str(ramp.SettlingTime)]);
-
-    % Ramp the magnetic Fields
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
-    
-        seqdata.params.HF_probe_fb = HF_FeshValue_Final;
-        HF_FeshValue_Initial = HF_FeshValue_Final;
-        
-        %**********************************************
-        %***********97 to 95 Spin Flip*****************
-        
-        dispLineStr('RF transfer -7/2 to -5/2',curtime);
-
-      
-        clear('sweep');
-        mF1=-7/2;   % Lower energy spin state
-        mF2=-5/2;   % Higher energy spin state
-
-        zshim = [0]/2.35; %1.28V = 3G
-        
-        % Get the center frequency
-        B = HF_FeshValue_Initial +0.11 +2.35*zshim; 
-        rf_list =  [0] +...
-            abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
-        sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,...
-            seqdata.randcyclelist,'rf_freq_HF','MHz');
-
-        sweep_pars.power =  [0];
-        delta_freq = 0.5; 0.025;0.1;
-        sweep_pars.delta_freq = delta_freq;
-        rf_pulse_length_list = 50;5;20;
-        sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5               
-
-        disp([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
-        disp([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
-        disp([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
-        disp([' RF Power        (V) : ' num2str(sweep_pars.power)]);
-
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-
-%double pulse sequence
-% curtime = calctime(curtime,35);
-% curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-curtime = calctime(curtime,50);
-
-        do_ACync_rf = 0;
-            if do_ACync_rf
-                ACync_start_time = calctime(curtime,-80);
-                ACync_end_time = calctime(curtime,2*sweep_pars.pulse_length+50);
-                setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
-                setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
-            end
-        %**********************************************************
-        %******************Field Ramp back to 20 G*****************
-        
-        %Ramp the field back to 20 G for LF imaging
-        dispLineStr('Final Field Ramp for Round Trip',curtime);
-        % Fesahbach Field ramp
-        HF_FeshValue_Final_List = [20];% 206 207 208 209 210 211
-        HF_FeshValue_Final = getScanParameter(HF_FeshValue_Final_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_RT2','G');
-
-        % Define the ramp structure
-        ramp=struct;
-        ramp.FeshRampTime = 100;10;100;
-        ramp.FeshRampDelay = -0;
-        ramp.FeshValue = HF_FeshValue_Final;
-        ramp.SettlingTime = 50; 50;    
-
-
-        disp([' Ramp Time     (ms) : ' num2str(ramp.FeshRampTime)]);
-        disp([' Ramp Value     (G) : ' num2str(ramp.FeshValue)]);
-        disp([' Settling Time (ms) : ' num2str(ramp.SettlingTime)]);
-
-    % Ramp the magnetic Fields
-curtime = rampMagneticFields(calctime(curtime,0), ramp);
-    
-        seqdata.params.HF_probe_fb = HF_FeshValue_Final;
-        HF_FeshValue_Initial = HF_FeshValue_Final;
-        
-        %Ramp the QP gradient back down if it was ramped up before
-        if ramp_QP_gradient_cancel
-            curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,0,1); 
-
-            curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
-                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-                5,5,0); 
-        end
-     
-    end
+  
 
 %%  RF transfer from -9/2 to -7/2
 %         

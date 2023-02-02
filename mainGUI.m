@@ -13,11 +13,11 @@ function hF=mainGUI
 % this code be optimized and simplified.
 
 doDebug = 0;
-
 %%%%%%%%%%%%%%% Initialize Sequence Data %%%%%%%%%%%%%%%%%
 LatticeSequencerInitialize();
 global seqdata;
 global adwinprocessnum;
+seqdata.randcyclelist = makeRandList;
 
 evalin('base','global seqdata')
 evalin('base','openvar(''seqdata'')')
@@ -38,10 +38,7 @@ else
     figName = 'DEBUG MODE';
 end
 
-
 disp('Opening Lattice Sequencer...');
-
-seqdata.randcyclelist = makeRandList;
 %% Delete old timer objects
 % The progress of the sequence is tracked using some MATLAB timers. Delete
 % these timers so that MATLAB doesn't get confused and make a whole bunch
@@ -78,9 +75,9 @@ hF=figure('toolbar','none','Name',figName,'color',cc,'NumberTitle','off',...
 clf
 hF.Position(3:4)=[w h];
 set(hF,'WindowStyle','docked');
-
 data = struct;
 
+%% Figure
 % Callback for a close request function. The close request function handles
 % whether the adwin is running or other potential timer issues.
     function closeFig(fig,~)
@@ -240,8 +237,7 @@ bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
             open(fname);
         catch ME
             warning('Cant open sequence file for some reason');
-        end
-        
+        end        
     end
 
 %% Wait Timer Graphical interface
@@ -283,25 +279,25 @@ tWait.Position(2)=tblWait.Position(2);
         switch rbutton.NewValue.UserData            
             case 0 % no wait
                 disp('Disabling intercyle wait.');
-                bgWait.UserData=0;               
-                tblWait.Enable='off';
-                tWaitTime1.String='n/a';
-                tWaitTime2.String='n/a';
+                bgWait.UserData     = 0;               
+                tblWait.Enable      = 'off';
+                tWaitTime1.String   = 'n/a';
+                tWaitTime2.String   = 'n/a';
                 stop(timeWait);
             case 1
                 disp(['Wait timer engaged. Inter-cycle wait time mode. ' ...
                     ' This will be updated at end of next cycle.']);
-                bgWait.UserData=1;
-                tblWait.Enable='on';           
-                tWaitTime1.String='~ s';
-                tWaitTime2.String='~ s';
+                bgWait.UserData     = 1;
+                tblWait.Enable      = 'on';           
+                tWaitTime1.String   = '~ s';
+                tWaitTime2.String   = '~ s';
             case 2
                 disp(['Wait timer engaged. Total sequence wait time mode. ' ...
                     ' This will be updated at end of next cycle.']);
-                bgWait.UserData=2;
-                tblWait.Enable='on';
-                tWaitTime1.String='~ s';
-                tWaitTime2.String='~ s';
+                bgWait.UserData     = 2;
+                tblWait.Enable      = 'on';
+                tWaitTime1.String   = '~ s';
+                tWaitTime2.String   = '~ s';
         end        
     end
 
@@ -312,6 +308,7 @@ axWaitBar=axes('parent',bgWait,'units','pixels','XTick',[],...
 axWaitBar.Position(1:2)=[10 5];
 axWaitBar.Position(3:4)=[bgWait.Position(3)-20 tblWait.Position(4)];
 title('Wait Timer');
+
 % Plot the wait bar
 pWaitBar = patch(axWaitBar,[0 0 0 0],[0 0 1 1],waitbarcolor);
 
@@ -328,41 +325,31 @@ tWaitTime2.Position=[axWaitBar.Position(3) 24];
 % Run sequence mode
 bgRun = uibuttongroup('Parent',hpMain,'units','pixels','Title','run mode',...
     'backgroundcolor',cc,'UserData',0,'SelectionChangedFcn',@runModeCB);
-bgRun.Position(3:4)=[w 180];
-bgRun.Position(1:2)=[1 1];
+bgRun.Position(3:4)=[w 180];bgRun.Position(1:2)=[1 1];
         
     function runModeCB(~,evnt)
         switch evnt.NewValue.String
             case 'single'
                 disp('Changing run mode to single iteration');
-
-                bRunIter.String = 'Run Cycle #1';
-         
-                bRunIter.Enable = 'on';
-                bRunIter.Visible = 'on';
-                
-                bStartScan.Visible='off';
-                bStartScan.Enable='off';    
-                
-                bContinue.Visible='off';
-                bContinue.Enable='off';
-                
-                bStop.Visible='off';
+                bRunIter.String     = 'Run Cycle #1';         
+                bRunIter.Enable     = 'on';
+                bRunIter.Visible    = 'on';                
+                bStartScan.Visible  = 'off';
+                bStartScan.Enable   = 'off';                    
+                bContinue.Visible   = 'off';
+                bContinue.Enable    = 'off';                
+                bStop.Visible       = 'off';
                 cycleTbl.ColumnEditable = false;
             case 'scan'
                 disp('Changing run mode to scan mode.');
-                bRunIter.String = 'Run Cycle';
-                
-                bRunIter.Enable = 'on';
-                bRunIter.Visible='on';
-                
-                bStartScan.Visible='on';
-                bStartScan.Enable='on';   
-                
-                bContinue.Visible='on';
-                bContinue.Enable='on';
-                
-                bStop.Visible='on';
+                bRunIter.String     = 'Run Cycle';                
+                bRunIter.Enable     = 'on';
+                bRunIter.Visible    = 'on';                
+                bStartScan.Visible  = 'on';
+                bStartScan.Enable   = 'on';                   
+                bContinue.Visible   = 'on';
+                bContinue.Enable    = 'on';                
+                bStop.Visible       = 'on';
                 cycleTbl.ColumnEditable = true;
         end        
     end
@@ -400,18 +387,16 @@ tAdWinTime2 = text(0,0,'30.00 s','parent',axAdWinBar,'fontsize',10,...
 tAdWinTime2.Position=[axAdWinBar.Position(3) 21];
 
 % Add an overall label
-tAdWinLabel=text(.5,1.05,'adwin progress','fontsize',10,...
-    'horizontalalignment','center','verticalalignment','bottom','fontweight','bold');
+text(.5,1.05,'adwin progress','fontsize',10,'horizontalalignment','center', ...
+    'verticalalignment','bottom','fontweight','bold');
 
 %% Run Controls
 
 % Button to run the cycle
 bRunIter=uicontrol(bgRun,'style','pushbutton','String','Run Cycle #1',...
     'backgroundcolor',[152 251 152]/255,'FontSize',10,'units','pixels',...
-    'fontweight','bold');
-bRunIter.Position(3:4)=[100 30];
-bRunIter.Position(1:2)=[5 40];
-bRunIter.Callback={@bRunCB 0};
+    'fontweight','bold','Callback',{@bRunCB 0});
+bRunIter.Position(3:4)=[100 30];bRunIter.Position(1:2)=[5 40];
 bRunIter.Tooltip='Run the current sequence.';
 
 % Button to run the cycle
@@ -450,23 +435,12 @@ cycleTbl.Position(1:2)=[110 bRunIter.Position(2)+2];
 
 % Checkbox for repeat cycle
 cRpt=uicontrol(bgRun,'style','checkbox','string','repeat cycle?','fontsize',8,...
-    'backgroundcolor',cc,'units','pixels','Callback',@cRptCB);
+    'backgroundcolor',cc,'units','pixels');
 cRpt.Position(3:4)=[100 cRpt.Extent(4)];
 cRpt.Position(1:2)=[cycleTbl.Position(1)+cycleTbl.Position(3)+5 cycleTbl.Position(2)];
 cRpt.Tooltip='Enable or disable automatic repitition of the sequence.';
 
-% Callback for changing the repeat. This simply displays and update
-    function cRptCB(src,~)
-        if src.Value
-            disp(['Enabling sequence repeat. Reminder : The sequence ' ...
-                'recompiles every iteration.']);
-        else
-            disp('Disabling sequence repeat.');
-        end        
-    end
-
-
-
+% Status String
 tStatus=uicontrol(bgRun,'style','text','string','Sequencer is idle.',...
     'backgroundcolor','w','fontsize',8,'units','pixels',...
     'fontweight','bold','visible','on','horizontalalignment','center');
@@ -476,7 +450,7 @@ tStatus.Position(1) = axAdWinBar.Position(1);
 tStatus.Position(2) = axAdWinBar.Position(2) - 15;
 data.Status = tStatus;
 
-
+% Scan Var
 tScanVar=uicontrol(bgRun,'style','text','string','No detected variable scanning with ParamDef/Get.',...
     'backgroundcolor','w','fontsize',8,'units','pixels',...
     'fontweight','normal','visible','on','horizontalalignment','center');

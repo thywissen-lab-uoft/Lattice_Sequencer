@@ -76,9 +76,8 @@ seqdata.flags.MOT_CMOT                      = 1; % Do the CMOT
 seqdata.flags.MOT_CMOT_ramp_grad            = 0; % unused at the moment
 
 seqdata.flags.MOT_KGM_RbMol                 = 1; % Do the molasses
-seqdata.flags.MOT_optical_pumping           = 1;
+seqdata.flags.MOT_optical_pumping           = 1; % optical pumping for MT
 
-% unused parameters
 
 % K CMOT parameters
 defVar('cmot_k_trap_detuning',5,'MHz')
@@ -189,7 +188,6 @@ defVar('RF1A_time_scale',[0.6],'arb');      % RF1A timescale
 defVar('RF1B_time_scale',[0.8],'arb');      % RF1B timescale
 defVar('RF1A_finalfreq',[16],'MHz');        % RF1A Ending Frequency
 defVar('RF1B_finalfreq',[.8],'MHz');        % RF1B Ending Frequency
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% DIPOLE TRAP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -415,10 +413,7 @@ ch_off.AMPLITUDE = 0;
 ch_off.FREQUENCY = 1;
 
 programRigol(addr_mod_xy,ch_off,ch_off);    % Turn off xy mod
-programRigol(addr_z,[],ch_off);             % Turn off z mod
-    
-
-
+programRigol(addr_z,[],ch_off);             % Turn off z mod   
 
 %% Load the MOT
 

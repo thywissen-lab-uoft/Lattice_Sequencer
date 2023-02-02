@@ -19,17 +19,8 @@ if seqdata.flags.MOT_CMOT==1
     rb_cMOT_detuning = 42;          % Rubdium trap CMOT detuning in MHz
     rb_cmot_repump_power = 0.0275;  % Rubidum CMOT repump power in V
 
-    % rb_cMOT_detunings=0:5:50;
-    % rb_cMOT_detuning=getScanParameter(rb_cMOT_detunings,seqdata.scancycle,seqdata.randcyclelist,'rb_cmot_detuning');
-
-    % rb_cmot_repump_powers=0:.1:.9;
-    % rb_cmot_repump_power= getScanParameter(rb_cmot_repump_powers,seqdata.scancycle,seqdata.randcyclelist,'rb_cmot_repump_am');  %in MHZ
-
-
     % Potassium
-    k_cMOT_detuning = 5; 5;         % K CMOT trap detuning in MHz
     k_cMOT_repump_detuning = 0;     % K CMOT repump detuning in MHz
-
 
     k_cMOT_detunings=[5];
     k_cMOT_detuning= getScanParameter(k_cMOT_detunings,...

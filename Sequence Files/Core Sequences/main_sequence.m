@@ -534,6 +534,7 @@ curtime = Transport_Cloud(curtime, seqdata.flags.transport_hor_type,...
     disp(['Transport cloud calculation took ' num2str(t2) ' seconds']);
 end
 %% Magnetic Trap
+
 if seqdata.flags.mt
     [curtime, I_QP, I_kitt, V_QP, I_fesh, I_shim] = magnetic_trap(curtime);
 end
@@ -580,7 +581,6 @@ dispLineStr('Turning off coils and traps.',curtime);
 
         % MOT/QCoil TTL (separate switch for coil 15 (TTL) and 16 (analog))
         qp_switch1_delay_time = 0;
-
         if I_kitt == 0
             %use fast switch
             setDigitalChannel(curtime,'Coil 16 TTL',1); % Turn off Coil 16
@@ -589,14 +589,12 @@ dispLineStr('Turning off coils and traps.',curtime);
             %Cannot use Coil 16 fast switch if atoms have not be transferred to
             %imaging direction!
         end
-
         % Turn off 15/16 switch (10 ms later)
         setDigitalChannel(calctime(curtime,qp_switch1_delay_time),'15/16 Switch',0);
     end
     
     % XDT TOF
-    if seqdata.flags.xdt
-        
+    if seqdata.flags.xdt        
         % Read XDT Powers right before tof
         P1 = getChannelValue(seqdata,'dipoleTrap1',1);
         P2 = getChannelValue(seqdata,'dipoleTrap2',1);
@@ -617,22 +615,13 @@ dispLineStr('Turning off coils and traps.',curtime);
     end          
 
     if ( seqdata.flags.lattice ~= 0 )
-        %turn lattice beams off (leave a bit of time for the rotating waveplate to get back to zero)
-
-        %Z lattice
-        setAnalogChannel(calctime(curtime,0),'zLattice',-10,1);%-0.1,1);%0
-        %Y lattice
-%         setAnalogChannel(calctime(curtime,0),'yLattice',seqdata.params.lattice_zero(2));%-0.1,1);%0
-        setAnalogChannel(calctime(curtime,0),'yLattice',-10,1);%-0.1,1);%0
-
-        %X lattice
-%         setAnalogChannel(calctime(curtime,0),'xLattice',seqdata.params.lattice_zero(1));%-0.1,1);%0
-        setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);%-0.1,1);%0    
+        % Make sure lattices are off (whhat about the TTL?)
+        % Load lattice handles band mapping
+        setAnalogChannel(calctime(curtime,0),'zLattice',-10,1); % Z lattice
+        setAnalogChannel(calctime(curtime,0),'yLattice',-10,1); % Y lattice
+        setAnalogChannel(calctime(curtime,0),'xLattice',-10,1); % X lattice
     end
 
-    if ~(seqdata.flags.image_type==1 || seqdata.flags.image_type==4)
-%         setDigitalChannel(curtime,'MOT TTL',1);    
-    end
 %% Imaging
 
     %RHYS - Imporant code, but could delete the scenarios that are no longer
@@ -644,7 +633,7 @@ dispLineStr('Turning off coils and traps.',curtime);
 
     elseif seqdata.flags.image_type == 8 %Try to use the iXon and a Pixelfly camera simultaneously for absorption and fluorescence imaging.
     
-absorption_image(calctime(curtime,0.0));
+        absorption_image(calctime(curtime,0.0));
     
         if (iXon_movie)
             FrameTime = 2500;   
@@ -662,9 +651,6 @@ curtime = iXon_FluorescenceImage(curtime,'ExposureOffsetTime',molasses_offset,'E
         error('Undefined imaging type');
     end
 
-    %RHYS - the next bits of post-sequence code are useful (well, if the
-    %demagnetization stuff actually does anything). Could be wrapped into a
-    %function.
     
 %% Set the Science Shims to Zero Current (0V adwin signal)   
 
@@ -673,10 +659,7 @@ curtime = iXon_FluorescenceImage(curtime,'ExposureOffsetTime',molasses_offset,'E
     setAnalogChannel(calctime(curtime,0),'Y Shim',0,1);
     setAnalogChannel(calctime(curtime,0),'Z Shim',0,1);
     
-%% Post-sequence: Pulse the PA laser again for labjack power measurement
-    if seqdata.flags.misc_calibrate_PA == 1    
-       curtime = PA_pulse(curtime,2);     
-    end
+
 
 %% Post-sequence: rotate diople trap waveplate to default value
 
@@ -755,6 +738,12 @@ end
 % Reset transport relay (Coil 3 vs Coil 11)
 curtime = setDigitalChannel(calctime(curtime,10),'Transport Relay',0);
 
+
+%% Post-sequence: Pulse the PA laser again for labjack power measurement
+if seqdata.flags.misc_calibrate_PA == 1    
+   curtime = PA_pulse(curtime,2);     
+end
+    
 %% Scope trigger selection
 SelectScopeTrigger(scope_trigger);
 

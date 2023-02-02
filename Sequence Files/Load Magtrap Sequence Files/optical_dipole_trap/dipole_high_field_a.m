@@ -96,7 +96,7 @@ ramp_field_2            = 0;        % Ramp above feshbach (attractive)
 flip_7_5_again          = 0;        % 5 to 7 for science mixture
 
 % Ramp to science magnetic field
-ramp_field_3            = 0;    
+ramp_field_3            = 1;    
 
 %Do a round trip measurement (ramping back to LF for imaging)
 do_round_trip = 0;
@@ -113,7 +113,7 @@ ramp_field_for_imaging_repulsive  = 0;
 ramp_QP_gradient_cancel_imaging = 0;
 
 % Ramp Down across reosnance (and also to 20G)
-doHybridRamp75TransferDown = 1;
+doHybridRamp75TransferDown = 0;
 
 %% QP Coil Gradient Cancel
 % Ramp the QP gradient up to levitate
@@ -666,7 +666,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
     if ramp_field_3
 
         clear('ramp');
-        HF_FeshValue_List = 20;[200]; %+3G from zshim
+        HF_FeshValue_List = 207;[200]; %+3G from zshim
         HF_FeshValue = getScanParameter(HF_FeshValue_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_ODT_3','G');           
         
@@ -704,7 +704,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     
 curtime = calctime(curtime,HF_wait_time);
 
-        xdt_ramp_down = 1;
+        xdt_ramp_down = 0;
         if xdt_ramp_down 
             dispLineStr('Ramping XDT Power Back Down',curtime);    
 

@@ -24,7 +24,7 @@ curtime = timein;
 
     % Initialization of Field And Lattice
     lattice_ramp_1                    = 0;       % Initial lattice ramp    
-    field_ramp_init                   = 1;       % Ramp field away from initial  
+    field_ramp_init                   = 0;       % Ramp field away from initial  
     
     % Initial Spectroscopy 
     do_raman_phantom                  = 0;       % Apply a phatom Raman pulse to kill atoms
@@ -46,7 +46,7 @@ curtime = timein;
     
     % More RF Stuff (?)
     rf_rabi_manual                    = 0;
-    doPA_pulse                        = 1;
+    doPA_pulse                        = 0;
     do_rf_spectroscopy                = 0; 
     do_rf_post_spectroscopy           = 0; 
         
@@ -101,12 +101,12 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
 
         
         % Feshbach Field ramp
-%         HF_FeshValue_Initial_List = [207]; [197];
-%         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
-%             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_Lattice','G');
+        HF_FeshValue_Initial_List = [204]; [197];
+        HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
+            seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_Lattice','G');
 %         
         
-        HF_FeshValue_Initial = paramGet('HF_FeshValue_Initial_Lattice');
+%         HF_FeshValue_Initial = paramGet('HF_FeshValue_Initial_Lattice');
 %         addOutp
         
         zshim_list = [0];
@@ -873,7 +873,7 @@ end
         B = HF_FeshValue_Initial + Boff + 2.35*zshim; 
 %         
      
-         rf_shift_list = [62];
+         rf_shift_list = [-26 -22 -14 -18];
 %          rf_shift_list= 10;
          rf_shift = getScanParameter(rf_shift_list,seqdata.scancycle,...
                          seqdata.randcyclelist,'rf_freq_HF_shift','kHz');
@@ -893,7 +893,7 @@ end
         end
 
         % Define the sweep parameters
-        delta_freq_SRS= 0.0025; 0.0025; %0.00125; %.0025;  in MHz            
+        delta_freq_SRS= 0.005; 0.0025; %0.00125; %.0025;  in MHz            
         addOutputParam('rf_delta_freq_HF_SRS',delta_freq_SRS,'MHz');
         
         delta_freq_DDS = 0.01;
@@ -904,8 +904,8 @@ end
         rf_pulse_length = getScanParameter(rf_pulse_length_list,seqdata.scancycle,...
             seqdata.randcyclelist,'rf_pulse_length');
         
-        sweep_type = 'DDS';
-%         sweep_type = 'SRS_HS1';
+%         sweep_type = 'DDS';
+        sweep_type = 'SRS_HS1';
         
         switch sweep_type
             case 'DDS'
@@ -991,7 +991,7 @@ end
 
                 disp('HS1 SRS Sweep Pulse');  
 
-                rf_srs_power_list = [5];
+                rf_srs_power_list = [12];
                 rf_srs_power = getScanParameter(rf_srs_power_list,seqdata.scancycle,...
                     seqdata.randcyclelist,'rf_srs_power','dBm');
 %                 rf_srs_power = paramGet('rf_srs_power');

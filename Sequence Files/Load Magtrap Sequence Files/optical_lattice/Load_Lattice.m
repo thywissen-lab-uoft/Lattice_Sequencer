@@ -152,7 +152,7 @@ if seqdata.flags.lattice_lattice_ramp_1
                 'initial_latt_depth','Er');
             
             % Final lattice depth to ramp to
-            U = 200;
+            U = 100;
 
             %%% Lattice %%%
             % Ramp the optical powers of the lattice

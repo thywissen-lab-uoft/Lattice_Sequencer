@@ -70,6 +70,10 @@ defVar('MOT_controlled_load_time',10000,'ms');
 %%% MOT to MT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+seqdata.flags.MOT_CMOT                      = 1; % Do the CMOT
+seqdata.flags.MOT_KGM_RbMol                 = 1; % Do the molasses
+
+
 % Gray Molasses
 seqdata.flags.MOT_programGMDP              = 0; % Update GM DP frequency
 defVar('D1_DP_FM',222.5,'MHz');

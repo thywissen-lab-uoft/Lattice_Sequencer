@@ -24,8 +24,7 @@ setDigitalChannel(calctime(curtime,-500),'UV LED',0);
 % This code loads the CMOT from the MOT. This includes ramps of the 
 % detunings, power, shims, and field gradients. In order to function 
 % properly it needs to havethe correct parameters from the MOT.
-doCMOTv3 =1;        
-if doCMOTv3
+if seqdata.flags.MOT_CMOT==1
 
     % Time duration
     rb_cMOT_time = 25;              % Ramp time of Rb CMOT
@@ -55,7 +54,7 @@ if doCMOTv3
     k_cMOT_time= getScanParameter(k_cMOT_times,seqdata.scancycle,seqdata.randcyclelist,'k_cMOT_time');  
     rb_cMOT_time=k_cMOT_time;
 
-    cMOT_time = max([rb_cMOT_time k_cMOT_time]); [50];% Total CMOT time
+    cMOT_time = max([rb_cMOT_time k_cMOT_time]);
 
     % Append output parameters if desired   
     addOutputParam('k_cMOT_detuning',k_cMOT_detuning);
@@ -110,8 +109,8 @@ end
 %% Combined Molasses - K D1 GM and Rb D2 Mol
 % This code is for running the D1 Grey Molasses for K and the D2 Optical
 % Molasses for Rb at the same time from the CMOT phase
-doMol = 1;
-if doMol
+
+if seqdata.flags.MOT_KGM_RbMol == 1
 
     %%%%%%%%%%%% Shift the fields %%%%%%%%%%%%
     % Set field gradient and shim values (ideally) to zero

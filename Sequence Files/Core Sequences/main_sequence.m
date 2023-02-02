@@ -64,9 +64,12 @@ seqdata.params.UV_on_time                   = 10000;
 % beginning of the sequence and the MOT is given time to load.
 
 seqdata.flags.MOT_load_at_start             = 0; %do a specific load time
-defVar('MOT_controlled_load_time',10000,'ms');
+defVar('MOT_controlled_load_time',30000,'ms');
 
 seqdata.params.MOT_shim = [];
+
+seqdata.flags.MOT_flour_image               = 0;
+seqdata.flags.MOT_flour_atom                = 0; % 0:Rb, 1:K
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOT to MT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -90,7 +93,7 @@ defVar('cmot_k_repump_power',0.25,'V');0.25;
 defVar('cmot_k_ramp_time',20,'ms');20;
 
 % Rb CMOT parameters
-defVar('cmot_rb_trap_detuning',-30,'MHz');-30;
+defVar('cmot_rb_trap_detuning',[-24],'MHz');-30;
 defVar('cmot_rb_trap_power',0.1,'V');0.1;
 defVar('cmot_rb_repump_power',0.0275,'V');0.0275;
 defVar('cmot_rb_ramp_time',20,'ms');20;
@@ -126,7 +129,6 @@ seqdata.flags.image_type = 0;
 %3: blue_absorption, 4: MOT fluor, 5: load MOT immediately, 
 %6: MOT fluor with MOT off, 7: fluorescence image after do_imaging_molasses 
 %8: iXon fluorescence + Pixelfly absorption
-seqdata.flags.MOT_flour_image               = 0;
 
 iXon_movie = 0; %Take a multiple frame movie?
 seqdata.flags.image_atomtype                = 1; % 0:Rb,1:K,2:K+Rb (double shutter)

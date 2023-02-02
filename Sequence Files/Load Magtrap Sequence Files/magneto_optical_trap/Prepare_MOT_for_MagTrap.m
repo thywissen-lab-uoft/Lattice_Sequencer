@@ -221,7 +221,7 @@ if seqdata.flags.MOT_flour_image
     %%%%%%%%%%%% Perform the time of flight %%%%%%%%%%%%
 
     % Set the time of flight
-    tof_list =2; [5 10 15 20 25 30 35 40];
+    tof_list =2; [5];
     tof =getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof_time'); 
 
     % Increment the time (ie. perform the time of flight
@@ -246,7 +246,7 @@ if seqdata.flags.MOT_flour_image
     setAnalogChannel(calctime(curtime,-1),'Rb Repump AM',0.9);          
 
     % Turn the beams on
-    if seqdata.flags.image_atomtype == 1
+    if seqdata.flags.MOT_flour_atom == 1
         setDigitalChannel(calctime(curtime,0),'K Trap TTL',0); 
         setDigitalChannel(calctime(curtime,0),'K Repump TTL',0); 
         setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);  

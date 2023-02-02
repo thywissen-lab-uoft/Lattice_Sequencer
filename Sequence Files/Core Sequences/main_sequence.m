@@ -535,7 +535,7 @@ curtime = Transport_Cloud(curtime, seqdata.flags.transport_hor_type,...
 end
 %% Magnetic Trap
 if seqdata.flags.mt
-    
+    [curtime, I_QP, I_kitt, V_QP, I_fesh] = magnetic_trap(curtime);
 end
 %% Ramp up QP
 if seqdata.flags.mt_compress_after_transport

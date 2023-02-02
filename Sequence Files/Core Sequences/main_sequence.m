@@ -73,8 +73,8 @@ seqdata.params.MOT_shim = [];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 seqdata.flags.MOT_CMOT                      = 1; % Do the CMOT
-seqdata.flags.MOT_CMOT_detuning_ramp        = 0; % 0:no change, 1:linear ramp, 2:diabatic
-seqdata.flags.MOT_CMOT_power_ramp           = 0; % 0:no change, 1:linear ramp, 2:diabatic
+seqdata.flags.MOT_CMOT_detuning_ramp        = 2; % 0:no change, 1:linear ramp, 2:diabatic
+seqdata.flags.MOT_CMOT_power_ramp           = 2; % 0:no change, 1:linear ramp, 2:diabatic
 seqdata.flags.MOT_CMOT_grad_ramp            = 0; % 0:no change, 1:linear ramp, 2:diabatic
 
 seqdata.flags.MOT_KGM_RbMol                 = 1; % Do the molasses

@@ -24,7 +24,7 @@ curtime = timein;
 
     % Initialization of Field And Lattice
     lattice_ramp_1                    = 0;       % Initial lattice ramp    
-    field_ramp_init                   = 0;       % Ramp field away from initial  
+    field_ramp_init                   = 1;       % Ramp field away from initial  
     
     % Initial Spectroscopy 
     do_raman_phantom                  = 0;       % Apply a phatom Raman pulse to kill atoms
@@ -47,7 +47,7 @@ curtime = timein;
     % More RF Stuff (?)
     rf_rabi_manual                    = 0;
     doPA_pulse                        = 0;
-    do_rf_spectroscopy                = 0; 
+    do_rf_spectroscopy                = 1; 
     do_rf_post_spectroscopy           = 0; 
         
     do_raman_spectroscopy_post_rf     = 0;        % Raman Spectroscopy
@@ -873,7 +873,7 @@ end
         B = HF_FeshValue_Initial + Boff + 2.35*zshim; 
 %         
      
-         rf_shift_list = [-26 -22 -14 -18];
+         rf_shift_list = [-16:4:0 30:4:50];
 %          rf_shift_list= 10;
          rf_shift = getScanParameter(rf_shift_list,seqdata.scancycle,...
                          seqdata.randcyclelist,'rf_freq_HF_shift','kHz');

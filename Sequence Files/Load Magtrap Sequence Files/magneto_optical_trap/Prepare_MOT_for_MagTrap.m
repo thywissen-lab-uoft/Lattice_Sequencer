@@ -15,10 +15,6 @@ setDigitalChannel(calctime(curtime,-500),'UV LED',0);
 if seqdata.flags.MOT_CMOT==1
     dispLineStr('CMOT',curtime);
 
-    % Rubidum
-    rb_cMOT_detuning = 42;          % Rubdium trap CMOT detuning in MHz
-    rb_cmot_repump_power = 0.0275;  % Rubidum CMOT repump power in V
-
     % Potassium
     k_cMOT_repump_detuning = 0;     % K CMOT repump detuning in MHz
 
@@ -36,8 +32,6 @@ if seqdata.flags.MOT_CMOT==1
     % Append output parameters if desired   
     addOutputParam('k_cMOT_detuning',k_cMOT_detuning);
     addOutputParam('k_cMOT_repump_detuning',k_cMOT_repump_detuning); 
-    addOutputParam('rb_cMOT_detuning',rb_cMOT_detuning);
-    addOutputParam('rb_cmot_repump_power',rb_cmot_repump_power); 
 
     yshim_comp = 0.84;
     xshim_comp = 0.25;
@@ -49,7 +43,6 @@ if seqdata.flags.MOT_CMOT==1
     % setAnalogChannel(calctime(curtime,-2),'Z MOT Shim',0.00,2);
 
     %%%%%%%%%%%%%%%% Set CMOT Rb Beams %%%%%%%%%%%%%%%%
-    setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',6590+rb_cMOT_detuning); 
 
     % New way to set the detuning
     Rb_CMOT_Trap_detuning_list = -30;-36.5;
@@ -60,10 +53,8 @@ if seqdata.flags.MOT_CMOT==1
     DDS_id = 3;    
     DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,.01);    
 
-
-    % AnalogFuncTo(calctime(curtime,0),'Rb Beat Note FM',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),rb_cMOT_time,rb_cMOT_time,6590+rb_cMOT_detuning);
-    setAnalogChannel(calctime(curtime,0),'Rb Repump AM',rb_cmot_repump_power);
-    setAnalogChannel(calctime(curtime,0),'Rb Trap AM',0.1);
+    setAnalogChannel(calctime(curtime,0),'Rb Repump AM',getVar('cmot_rb_repump_power'));  
+    setAnalogChannel(calctime(curtime,0),'Rb Trap AM',getVar('cmot_rb_trap_power'));
 
     %%%%%%%%%%%%%%%% Set CMOT K Beams %%%%%%%%%%%%%%%%
     setAnalogChannel(calctime(curtime,0),'K Trap FM',k_cMOT_detuning); %765

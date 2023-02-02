@@ -245,13 +245,20 @@ seqdata.flags.xdt_high_field_a              = 0;
 % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
 seqdata.flags.lattice                       = 0; 
 
+
+seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% LATTICE COURES ALIGNMENT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% If you have completely lost lattice alignment, use these flags to pulse
+% the lattices.  Good luck.
+
 % 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
 seqdata.flags.lattice_pulse_for_alignment   = 0; 
 
 % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 seqdata.flags.lattice_pulse_z_for_alignment = 0; 
-
-seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OTHER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -263,16 +270,6 @@ else
     seqdata.flags.QP_imaging = 1;
 end
 
-%% Scope Trigger
-% Choose which scope trigger to use.
-
-% scope_trigger = 'rf_spectroscopy';
-scope_trigger = 'Lattice_Mod';
-% scope_trigger = 'FB_ramp';
-% scope_trigger = 'lattice_ramp_1';
-% scope_trigger = 'lattice_off';
-% scope_trigger = 'Raman Beams On';
-% scope_trigger = 'PA_Pulse';
 
 %% Set switches for predefined scenarios
 
@@ -306,7 +303,20 @@ if seqdata.flags.image_loc == 0
     seqdata.flags.lattice_pulse_for_alignment = 0;
 end
 
+%% Scope Trigger
+% Choose which scope trigger to use.
+
+% scope_trigger = 'rf_spectroscopy';
+scope_trigger = 'Lattice_Mod';
+% scope_trigger = 'FB_ramp';
+% scope_trigger = 'lattice_ramp_1';
+% scope_trigger = 'lattice_off';
+% scope_trigger = 'Raman Beams On';
+% scope_trigger = 'PA_Pulse';
+
+
 %% PA Laser Lock Detuning
+
 if seqdata.flags.misc_lock_PA    
     updatePALock(curtime);    
 end
@@ -570,7 +580,7 @@ end
 
 %% Pulse lattice after releasing from trap
 
-if ( seqdata.flags.lattice_pulse_for_alignment ~= 0 )
+if (seqdata.flags.lattice_pulse_for_alignment ~= 0)
     curtime = Pulse_Lattice(curtime,...
         seqdata.flags.lattice_pulse_for_alignment);
 end

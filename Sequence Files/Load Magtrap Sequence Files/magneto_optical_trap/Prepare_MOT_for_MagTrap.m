@@ -203,6 +203,7 @@ if seqdata.flags.MOT_optical_pumping == 1
     setDigitalChannel(calctime(curtime,-1.8),'K Trap Shutter',0);     
     curtime = optical_pumping(calctime(curtime,0.0));      
 end
+
 %% Fluoresnce image
 if seqdata.flags.image_type == 1
    curtime = MOT_fluorescence_image(curtime);

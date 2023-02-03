@@ -44,6 +44,7 @@ disp(repmat('-',1,60));
 disp('Compiling');
 disp(repmat('-',1,60));
 
+initialize_channels();
 
 for kk = 1:length(fncs)
     data.Status.String = ['running @' func2str(fncs{kk})];

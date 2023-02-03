@@ -64,7 +64,7 @@ for i = 1:length(figs)
 end
 
 % Figure color and size settings
-cc='w';w=350;h=340;
+cc='w';w=350;h=320;
 
 % Initialize the figure graphics objects
 hF=figure('toolbar','none','Name',figName,'color',cc,'NumberTitle','off',...
@@ -243,19 +243,19 @@ bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
 % button
 bgWait = uibuttongroup('Parent',hpMain,'units','pixels','Title','wait mode',...
     'backgroundcolor',cc,'UserData',1,'SelectionChangedFcn',@waitCB);
-bgWait.Position(3:4)=[w 90];
+bgWait.Position(3:4)=[w 70];
 bgWait.Position(1:2)=[1 180];
 
 % Create three radio buttons in the button group. The user data holds the
 % selected mode (0,1,2) --> (no wait, intercyle, target time)
 uicontrol(bgWait,'Style','radiobutton', 'String','none',...
-    'Position',[5 50 100 20],'Backgroundcolor',cc,'UserData',0,'value',0);  
+    'Position',[5 30 100 20],'Backgroundcolor',cc,'UserData',0,'value',0);  
 uicontrol(bgWait,'Style','radiobutton','String','intercycle',...
-    'Position',[50 50 100 20],'Backgroundcolor',cc,'UserData',1,'value',1);
+    'Position',[50 30 100 20],'Backgroundcolor',cc,'UserData',1,'value',1);
 uicontrol(bgWait,'Style','radiobutton','String','total',...
-    'Position',[120 50 100 20],'Backgroundcolor',cc,'UserData',2,'value',0);              
+    'Position',[120 30 100 20],'Backgroundcolor',cc,'UserData',2,'value',0);              
 uicontrol(bgWait,'Style','radiobutton','String','auto',...
-    'Position',[165 50 100 20],'Backgroundcolor',cc,'UserData',3,'value',0);   
+    'Position',[165 30 100 20],'Backgroundcolor',cc,'UserData',3,'value',0);   
 
 % Table for storing value of wait time
 tblWait=uitable(bgWait,'RowName','','ColumnName','','Data',waitDefault,...
@@ -263,7 +263,7 @@ tblWait=uitable(bgWait,'RowName','','ColumnName','','Data',waitDefault,...
     'fontsize',8,'Enable','on');
 tblWait.Position(3:4)=tblWait.Extent(3:4);
 tblWait.Position(4)=tblWait.Position(4);
-tblWait.Position(1:2)=[260 50];
+tblWait.Position(1:2)=[260 30];
 
 % Seconds label for the wait time.
 tWait=uicontrol(bgWait,'style','text','string','seconds',...
@@ -303,7 +303,7 @@ waitbarcolor=[106, 163, 241 ]/255;
 axWaitBar=axes('parent',bgWait,'units','pixels','XTick',[],...
     'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
 axWaitBar.Position(1:2)=[10 5];
-axWaitBar.Position(3:4)=[bgWait.Position(3)-20 tblWait.Position(4)];
+axWaitBar.Position(3:4)=[bgWait.Position(3)-20 10];
 title('Wait Timer');
 
 % Plot the wait bar
@@ -312,10 +312,10 @@ pWaitBar = patch(axWaitBar,[0 0 0 0],[0 0 1 1],waitbarcolor);
 % String labels for time end points
 tWaitTime1 = text(0,0,'0.00 s','parent',axWaitBar,'fontsize',10,...
     'horizontalalignment','left','units','pixels','verticalalignment','bottom');
-tWaitTime1.Position=[5 24];
+tWaitTime1.Position=[5 10];
 tWaitTime2 = text(0,0,'10.00 s','parent',axWaitBar,'fontsize',10,...
     'horizontalalignment','right','units','pixels','verticalalignment','bottom');
-tWaitTime2.Position=[axWaitBar.Position(3) 24];
+tWaitTime2.Position=[axWaitBar.Position(3) 10];
 
 %% Run mode graphics and callbacks
 
@@ -370,7 +370,7 @@ rScan.Position(2) = rSingle.Position(2);
 adwinbarcolor=[0.67578 1 0.18359];
 axAdWinBar=axes('parent',bgRun,'units','pixels','XTick',[],...
     'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
-axAdWinBar.Position=[10 10 bgRun.Position(3)-20 20];
+axAdWinBar.Position=[10 10 bgRun.Position(3)-20 10];
 axAdWinBar.Position(2) = rScan.Position(2)-axAdWinBar.Position(4)-15;
 % Plot the patch of color for the bar
 pAdWinBar = patch(axAdWinBar,[0 0 0 0],[0 0 1 1], adwinbarcolor);
@@ -378,10 +378,10 @@ pAdWinBar = patch(axAdWinBar,[0 0 0 0],[0 0 1 1], adwinbarcolor);
 % Add some text labels for the current and end time
 tAdWinTime1 = text(0,0,'0.00 s','parent',axAdWinBar,'fontsize',10,...
     'horizontalalignment','left','units','pixels','verticalalignment','bottom');
-tAdWinTime1.Position=[5 21];
+tAdWinTime1.Position=[5 10];
 tAdWinTime2 = text(0,0,'30.00 s','parent',axAdWinBar,'fontsize',10,...
     'horizontalalignment','right','units','pixels','verticalalignment','bottom');
-tAdWinTime2.Position=[axAdWinBar.Position(3) 21];
+tAdWinTime2.Position=[axAdWinBar.Position(3) 10];
 
 % Add an overall label
 text(.5,1.05,'adwin progress','fontsize',10,'horizontalalignment','center', ...
@@ -429,6 +429,7 @@ cycleTbl=uitable(bgRun,'RowName','Cycle #','ColumnName',{},...
     'ColumnWidth',{50},'FontSize',12);
 cycleTbl.Position(3:4)=cycleTbl.Extent(3:4);
 cycleTbl.Position(1:2)=[110 bRunIter.Position(2)+2];
+data.cycleTbl = cycleTbl;
 
 % Checkbox for repeat cycle
 cRpt=uicontrol(bgRun,'style','checkbox','string','repeat cycle?','fontsize',8,...
@@ -521,9 +522,9 @@ timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
     'TimerFcn',@updateAdwinBar,'StartFcn',@startAdwinTimer,'Period',.05,...
     'StopFcn',@stopAdwinTimer);
 data.adwinTimer = timeAdwin;
+
 % Function to run when the adwin starts the sequence.
-    function startAdwinTimer(~,~)
-        
+    function startAdwinTimer(~,~)        
         % Notify the user
         disp(['Sequence timer started. ' num2str(seqdata.sequencetime,'%.2f') ...
             ' seconds.']);
@@ -534,7 +535,6 @@ data.adwinTimer = timeAdwin;
 
         % Give the progress timer a new start time as userdata
         timeAdwin.UserData=now;        
-        % Note that the function now is days since date (January 0, 0000)        
     end
 
     function stopAdwinTimer(~,~)
@@ -542,8 +542,7 @@ data.adwinTimer = timeAdwin;
         pAdWinBar.XData = [0 1 1 0];     % Fill out the bar
         drawnow;                         % Update graphics
         set(jbAbort,'Enabled',false);
-        set(jbReset,'Enabled',true);
-        
+        set(jbReset,'Enabled',true);        
         set(tStatus,'String','Cycle complete.','fontweight','bold',...
             'foregroundcolor','k');drawnow;
         if bgWait.UserData

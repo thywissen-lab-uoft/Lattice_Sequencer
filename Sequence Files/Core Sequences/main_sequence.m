@@ -2,9 +2,7 @@ function timeout = main_sequence(timein)
 % main_sequence.m
 % This is main sequence file of the experiment
 curtime = timein;
-
 global seqdata;
-initialize_channels();
 
 % Number of DDS scans is zero
 seqdata.numDDSsweeps = 0;
@@ -13,10 +11,7 @@ seqdata.scanindex = -1;
 % CF : Is this really useful? Also we have more than A and B SRS
 seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been programmed via GPIB
 
-% "Useful" constants
-kHz = 1E3;
-MHz = 1E6;
-GHz = 1E9;
+
 
 %% Constants and Parameters
 
@@ -342,7 +337,7 @@ addOutputParam('objpzt',obj_piezo_V,'V');
 % Set 4-Pass Frequency
 detuning_list = [5];
 df = getScanParameter(detuning_list, seqdata.scancycle, seqdata.randcyclelist, 'detuning');
-DDSFreq = 324.206*MHz + df*kHz/4;
+DDSFreq = 324.206*1e6 + df*1e3/4;
 addOutputParam('FourPassFrequency',DDSFreq*1e-6,'MHz');
 
 if seqdata.flags.misc_program4pass

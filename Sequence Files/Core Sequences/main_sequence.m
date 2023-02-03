@@ -49,7 +49,7 @@ seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
 seqdata.flags.Rb_Probe_Order                = 1;   % 1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
                                                     % 2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
 defVar('PA_detuning',round(-49.539,6),'GHz');
-seqdata.params.UV_on_time                   = 10000;
+defVar('UV_on_time',10000,'ms');                    % Can be just added onto the adwin wait timer
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOT  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -459,15 +459,12 @@ programRigol(addr_mod_xy,ch_off,ch_off);    % Turn off xy mod
 programRigol(addr_z,[],ch_off);             % Turn off z mod
 
 %% Load the MOT
+curtime = calctime(curtime,500);
 
-% Dump out the saved MOT and reload it
+% Rerun load MOT if necessary for controller load
 if (seqdata.flags.MOT_load_at_start == 1)
-    % Load the MOT
     loadMOTSimple(curtime,1);   
-    % Wait for the MOT to load
     curtime = calctime(curtime,getVar('MOT_controlled_load_time'));
-else
-    curtime = calctime(curtime,750);
 end   
 
 %% Prepare to Load into the Magnetic Trap
@@ -727,7 +724,7 @@ loadMOTSimple(curtime,0);
 
 % Wait some additional time
 if ~seqdata.flags.MOT_load_at_start
-    curtime = calctime(curtime,seqdata.params.UV_on_time);
+    curtime = calctime(curtime,getVar('UV_on_time'));
 end
 
 %% Transport Reset
@@ -763,7 +760,6 @@ for kk = 1:length(flag_groups)
     flag_names = flag_names(inds);
 end
 seqdata.flags = orderfields(seqdata.flags,flag_names);
-
 
 dispLineStr('Sequence Complete.',curtime);
 end

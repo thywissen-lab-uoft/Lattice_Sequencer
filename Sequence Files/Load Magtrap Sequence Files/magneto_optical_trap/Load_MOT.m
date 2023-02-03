@@ -193,9 +193,9 @@ end
 %Turn on UV cataract-inducing light.
 
 disp('Turning on UV light');
-UV_On_Time = seqdata.params.UV_on_time;
-setDigitalChannel(calctime(curtime,UV_On_Time),'UV LED',1); %1 = on; 0, off
-curtime = setAnalogChannel(calctime(curtime,UV_On_Time),'UV Lamp 2',5);
+% UV_On_Time = seqdata.params.UV_on_time;
+setDigitalChannel(calctime(curtime,10000),'UV LED',1); %1 = on; 0, off
+curtime = setAnalogChannel(calctime(curtime,10000),'UV Lamp 2',5);
 
 
 %% End it

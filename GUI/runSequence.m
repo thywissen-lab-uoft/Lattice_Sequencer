@@ -28,6 +28,10 @@ if isequal(data.waitTimer.Running, 'on')
    return; 
 end
 
+%%
+
+data.cycleTbl.Data=seqdata.scancycle;
+
 %% Compile Code
 compile(fncs);
 

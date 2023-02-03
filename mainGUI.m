@@ -354,7 +354,7 @@ bgRun.Position(3:4)=[w 180];bgRun.Position(1:2)=[1 1];
 % Radio button for single mode
 rSingle=uicontrol(bgRun,'Style','radiobutton', 'String','single',...
     'Position',[5 85 65 30],'Backgroundcolor',cc,'UserData',0,...
-    'fontsize',12);  
+    'fontsize',12,'Value',1);  
 rSingle.Position(2) = bgRun.Position(4)-rSingle.Position(4)-15;
 
 
@@ -672,9 +672,17 @@ data.waitTimer = timeWait;
             LatticeSequencerInitialize();
         end        
                 
-        % Am I allowed to run the sequene?
-        if ~safeToRun
-           return 
+        
+        % Is the sequence already running?        
+        if isequal(timeAdwin.Running ,'on')
+           warning('The sequence is already running you dummy!');
+           return;
+        end        
+        % Is the intercycle wait timer running?
+        if isequal(timeWait.Running,'on')
+           warning(['You cannot run another sequence while the wait ' ...
+               'timer is engaged. Disable to wait timer to proceed.']);
+           return;
         end    
                 
         switch run_mode
@@ -727,61 +735,7 @@ data.waitTimer = timeWait;
         fcns = {fh};        
         runSequence(fcns);             
     end
-
-    function resetAfterError
-        warning(['Resetting the GUI after an error on sequence ' ...
-            'run call. Unknown if the Adwin is in a stable state']);
-
-        switch bgRun.SelectedObject.String
-            % Renable buttons on single
-            case 'single'
-                bRunIter.Enable         = 'on';
-                rScan.Enable            = 'on';
-                rSingle.Enable          = 'on';
-                bPlot.Enable            = 'on';
-                bCompile.Enable         = 'on';
-                bBrowse.Enable          = 'on';
-                eSeq.Enable             = 'on';       
-
-            % Renable buttons on single
-            case 'scan'                
-                bRunIter.Enable         = 'on';
-                rScan.Enable            = 'on';
-                rSingle.Enable          = 'on';
-                bContinue.Enable        = 'on';
-                bStop.Enable            = 'off';
-                bPlot.Enable            = 'on';
-                bCompile.Enable         = 'on';
-                bBrowse.Enable          = 'on';
-                eSeq.Enable             = 'on';
-        end          
-    end
     
-    function out=safeToRun
-        out=0;        
-        % Check if the function provided is valid.
-        fh = str2func(erase(eSeq.String,'@'));           
-        nfo = functions(fh);       
-        if isempty(nfo.file)
-           warning(['Could not locate the sequence function. ' ...
-                ' Your input is either misformatted or the ' ...
-                'sequence function does not exist in the MATLAB ' ...
-                'path. ' newline ' Proper formatting : @YOURFUNCTION']);
-            return;
-        end  
-        % Is the sequence already running?        
-        if isequal(timeAdwin.Running ,'on')
-           warning('The sequence is already running you dummy!');
-           return;
-        end        
-        % Is the intercycle wait timer running?
-        if isequal(timeWait.Running,'on')
-           warning(['You cannot run another sequence while the wait ' ...
-               'timer is engaged. Disable to wait timer to proceed.']);
-           return;
-        end        
-        out=1;
-    end
 
 % Reset Button callback
     function bResetCB(~,~)        

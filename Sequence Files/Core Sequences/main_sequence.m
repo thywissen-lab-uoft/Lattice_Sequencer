@@ -461,7 +461,7 @@ ch_off.AMPLITUDE = 0;
 ch_off.FREQUENCY = 1;
 
 programRigol(addr_mod_xy,ch_off,ch_off);    % Turn off xy mod
-programRigol(addr_z,[],ch_off);             % Turn off z mod   
+programRigol(addr_z,[],ch_off);             % Turn off z mod
 
 %% Load the MOT
 
@@ -480,6 +480,8 @@ end
 % MOT power?!?
 
 if seqdata.flags.MOT_prepare_for_MT
+    dispLineStr('Preparing MOT for MT',curtime);   
+
     curtime = Prepare_MOT_for_MagTrap(curtime);
 
     if seqdata.flags.image_type == 0    

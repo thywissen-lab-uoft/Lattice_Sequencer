@@ -137,7 +137,7 @@ if (seqdata.atomtype == 3 || seqdata.atomtype == 4)
     op_trap_detuning = 50;
     f_osc = calcOffsetLockFreq(op_trap_detuning,'Probe22');
     DDS_id = 3;    
-    DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,.01)  
+    DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,.01);  
     
 %     setDigitalChannel(calctime(curtime,0.5),50,0);
 %     setAnalogChannel(calctime(curtime,5),'Rb Beat Note FF',0,1);

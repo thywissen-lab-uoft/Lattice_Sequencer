@@ -228,7 +228,7 @@ if(~flags.High_Field_Imaging)
   % Set Rb Probe Detuning
     f_osc = calcOffsetLockFreq(Rb_detuning,'Probe32');
     DDS_id = 3;    
-    DDS_sweep(curtime,DDS_id,f_osc*1e6,f_osc*1e6,1)    
+    DDS_sweep(curtime,DDS_id,f_osc*1e6,f_osc*1e6,1);    
 
   % Set K probe/OP power 
   setAnalogChannel(calctime(curtime,-1+params.timings.tof),...

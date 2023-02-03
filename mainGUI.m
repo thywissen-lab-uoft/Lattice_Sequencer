@@ -25,10 +25,7 @@ evalin('base','openvar(''seqdata.flags'')')
 evalin('base','openvar(''seqdata.params'')')
 
 waitDefault=30;
-compath='Y:\_communication';
 
-camera_control_file = 'Y:\_communication\pco_control.mat';
-analysis_summary_file = 'Y:\_communication\pco_analysis_summary.mat';
 
 defaultSequence='@main_sequence';
 
@@ -646,13 +643,13 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
             'foregroundcolor','k');drawnow;     
         if cRpt.Value
             disp('Repeating the sequence');
-            runSequence;
+            runSequenceCB;
         else
             if seqdata.doscan
                 % Increment the scan and run the sequencer again
                 cycleTbl.Data = cycleTbl.Data+1;
                 disp('Incrementing the cycle number.');
-                runSequence;
+                runSequenceCB;
             else
                 bRunIter.Enable     = 'on';
                 bStartScan.Enable   = 'on';
@@ -679,9 +676,7 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         if ~safeToRun
            return 
         end    
-        
-        start_new_sequence;   
-        
+                
         switch run_mode
             % Run a single iteration
             case 0 
@@ -711,7 +706,7 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         bRunIter.Enable             = 'off';
         bContinue.Enable            = 'off';
         bStartScan.Enable           = 'off';
-        runSequence;        
+        runSequenceCB;        
     end
 
     function bStopCB(~,~)
@@ -724,8 +719,16 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         end  
     end
 
-    function runSequence        
+    function runSequenceCB    
+        seqdata.scancycle = cycleTbl.Data;
+        seqdata.ScanVar = [];
+        fName=eSeq.String;
+        fh = str2func(erase(fName,'@'));  
+        fcns = {fh};        
+        runSequence(fcns);
         
+        
+        %{
         % Reinitialize the sequence
         set(tStatus,'String','Initializing new sequence ...');drawnow;
         start_new_sequence;
@@ -868,7 +871,8 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
         set(tStatus,'String','adwin is running ...','fontweight','bold',...
             'foregroundcolor','r');drawnow;
         % Update progress bars
-        start(timeAdwin);   
+        start(timeAdwin); 
+        %}
     end
 
     function resetAfterError
@@ -876,36 +880,28 @@ timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
             'run call. Unknown if the Adwin is in a stable state']);
 
         switch bgRun.SelectedObject.String
-
             % Renable buttons on single
             case 'single'
-                bRunIter.Enable='on';
-                rScan.Enable='on';
-                rSingle.Enable='on';
-
-                bPlot.Enable='on';
-%                 bOver.Enable='on';
-                            bCompile.Enable='on';
-
-                bBrowse.Enable='on';
-                eSeq.Enable='on';        
+                bRunIter.Enable         = 'on';
+                rScan.Enable            = 'on';
+                rSingle.Enable          = 'on';
+                bPlot.Enable            = 'on';
+                bCompile.Enable         = 'on';
+                bBrowse.Enable          = 'on';
+                eSeq.Enable             = 'on';       
 
             % Renable buttons on single
             case 'scan'                
-                bRunIter.Enable='on';
-                rScan.Enable='on';
-                rSingle.Enable='on';
-                bContinue.Enable='on';
-
-                bStop.Enable='off';
-                bPlot.Enable='on';
-%                 bOver.Enable='on';
-                            bCompile.Enable='on';
-
-                bBrowse.Enable='on';
-                eSeq.Enable='on';
-        end  
-        
+                bRunIter.Enable         = 'on';
+                rScan.Enable            = 'on';
+                rSingle.Enable          = 'on';
+                bContinue.Enable        = 'on';
+                bStop.Enable            = 'off';
+                bPlot.Enable            = 'on';
+                bCompile.Enable         = 'on';
+                bBrowse.Enable          = 'on';
+                eSeq.Enable             = 'on';
+        end          
     end
     
     function out=safeToRun

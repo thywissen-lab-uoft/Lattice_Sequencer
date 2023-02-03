@@ -21,6 +21,9 @@ seqdata.params.analogch = [];
 seqdata.params.digitalch = [];
 seqdata.ramptimes = [];
 seqdata.compath='Y:\_communication';
+seqdata.camera_control_file = 'Y:\_communication\pco_control.mat';
+seqdata.analysis_summary_file = 'Y:\_communication\pco_analysis_summary.mat';
+
 
 % seqdata.multiscannum = [];%Feb-2017
 if isfield(seqdata,'times'); seqdata = rmfield(seqdata,'times'); end

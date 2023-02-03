@@ -1,5 +1,6 @@
 function runSequence(fncs)
 global seqdata
+global adwinprocessnum
 %% Find the GUI
 figName = 'Main GUI';
 
@@ -27,7 +28,7 @@ end
 
 %% Load the adwin
 isGood = 1;
-doDebug = 1;
+doDebug = 0;
 
 % Update GUI
 data.Status.String = ['loading adwin'];
@@ -46,7 +47,7 @@ if ~doDebug && ~isGood
     return;
 end
 
-
+%% Make Control File
 % Update GUI
 data.Status.String = ['adwin loaded'];
 data.Status.ForegroundColor = [17,59,8]/255;
@@ -56,17 +57,27 @@ if ~doDebug
     makeControlFile;
 end
 
+%% Start the Adwin
+
 % Run Adwin
 data.Status.String = ['starting adwin'];
 data.Status.ForegroundColor = [17,59,8]/255;
 try
     Start_Process(adwinprocessnum);
+catch ME
+    warning(getReport(ME,'extended','hyperlinks','on'))
+    data.Status.String = ['ADWIN RUN ERROR'];
+    data.Status.ForegroundColor = 'r';
+    return
 end
+
+
+%% Start adwim timer
 
 % Start Timer
 data.Status.String = ['adwin is running'];
 data.Status.ForegroundColor = 'r';
-start(data.timeAdwin);   
+start(data.adwinTimer);   
 
 
 end

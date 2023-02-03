@@ -18,6 +18,16 @@ end
 
 data=guidata(fig);
 
+if isequal(data.adwinTimer.Running, 'on')
+    warning('Cannot run sequence while existing sequence is running');
+   return; 
+end
+
+if isequal(data.waitTimer.Running, 'on')
+    warning('Cannot run sequence while waiting');
+   return; 
+end
+
 %% Compile Code
 compile(fncs);
 

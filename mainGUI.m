@@ -583,6 +583,7 @@ data.adwinTimer = timeAdwin;
 timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
     'TimerFcn',@updateWaitBar,'startdelay',0,'period',.05,...
     'StartFcn',@startWait,'StopFcn',@stopWait);
+data.waitTimer = timeWait;
 
 % Function to run when the wait timer begins
     function startWait(~,~)

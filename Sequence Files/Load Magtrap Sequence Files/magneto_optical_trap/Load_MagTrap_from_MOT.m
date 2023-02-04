@@ -4,7 +4,9 @@ global seqdata;
 
 curtime = timein;
 
-
+% CF : From a physics perspective, I don't think there is any reason to
+% ramp on the MT. Most groups simply diabatically turn on the MT coils.
+% There is an optimum gradient to do this in order to minimize hating.
 
 ramp_time1 = 1;
 hold_time1 = 10;

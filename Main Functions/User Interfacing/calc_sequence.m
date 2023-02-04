@@ -14,7 +14,7 @@ disp('Calculating Sequence');
 %0: disable writing to the Rabbit for testing
 dodds = 1;
 
-%% Process DDS Sweeps to the Rabbits
+%% Process DDS Sweeps
 if dodds
 disp(repmat('-',1,60));
 disp('Sending DDS commands...');
@@ -34,7 +34,6 @@ disp('Sending DDS commands...');
             try                
                 fopen(t(i)) ;   
             catch ME
-                keyboard
                warning(['unable to connect to DDS ' num2str(i)]); 
             end                
         end        
@@ -268,8 +267,6 @@ seqdata.numupdatelist = [adwinlist(deltat_list~=0,1)*seqdata.deltat/seqdata.time
     seqdata.numupdatelist(deltat_list~=0)];
 % disp(sprintf('Maximal number of updates in one cylce: %g',max(unique(seqdata.numupdatelist(:,2)))));
 
-
-
 %make expanded array for the update list
 deltat_list2 = ones(length(deltat_list)*3,1);
 deltat_list2(1:3:(length(deltat_list2)-1)) = (deltat_list-1);
@@ -437,17 +434,7 @@ seqdata.numDDSsweeps = 0;
 seqdata.seqcalculated = 1;
 
 %% Run the mercurial backup
-% Commenting out because we don't use this server anymore
-%{
-seq_dir = fullfile(fileparts(fileparts(mfilename('fullpath'))),'Sequence Files');
-func_dir = fullfile(fileparts(fileparts(mfilename('fullpath'))),'Main Functions');
-%winopen(fullfile(fileparts(fileparts(mfilename)),'run_backup.bat'));
-dos(['CD ' seq_dir  ' && hg add && hg commit -m "Automatic Update" -u "LatticeSequencer"']);
-dos(['CD ' func_dir  ' && hg add && hg commit -m "Automatic Update" -u "LatticeSequencer"']);
-%}
 
-
-%% Done
 
 seqdata = orderfields(seqdata);
 

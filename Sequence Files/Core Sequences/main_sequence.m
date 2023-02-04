@@ -6,13 +6,13 @@ global seqdata;
 
 % Number of DDS scans is zero
 seqdata.numDDSsweeps = 0;
+
+% What does scanindex even do?
 seqdata.scanindex = -1;
 
 % CF : Is this really useful? Also we have more than A and B SRS
 seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been programmed via GPIB
-
-
-
+% This can be removed since we don't really do good checkcs.
 %% Constants and Parameters
 
 % Shim Zero (to eliminate all bkgd fields)

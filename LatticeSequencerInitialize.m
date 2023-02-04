@@ -60,13 +60,13 @@ global seqdata;
 seqdata = struct('analogadwinlist',[],... %adwin list is [time channel value];
     'digadwinlist',[],... %list is [time channel value boardchannel bytevalue]
     'deltat',1*5E-6,... %time step between ADWIN events (must be an integer number of ADWIN clock cycles)
-    'cycle',1,... %for cycling runs. This can be used as an array identifier
-    'cyclecounter',1,... %this is the number of cycles run
+    'cycle',1,... %for cycling runs. This can be used as an array identifier (CF: unused?)
+    'cyclecounter',1,... %this is the number of cycles run; (CF : unused?)
     'randcyclelist',[],... %this is a list of all the cycle numbers randomized
     'analogchannels',struct([]),... %analog channels information
     'timeunit',1E-3,... %how we refer to times (ie. this sets to 1ms)
     'digchannels',struct([]),... %digital channel info
-    'digoffset',80,... %offset to add to dig channels to differentiate from analog
+    'digoffset',80,... %offset to add to dig channels to differentiate from analog (CF : what?)
     'digcardchannels',[101,102,103],... %101 corresponds to Module 2 on ADwin, 102 corresponds to Module 1, 103 corresponds to Module 3
     'diglastvalue',[0 0 0],... %last value of the digital card sent to the sequencer
     'digcardnum',3,...%number of dig cards
@@ -77,11 +77,11 @@ seqdata = struct('analogadwinlist',[],... %adwin list is [time channel value];
     'seqloaded',-1,... %has the sequence been loaded to the ADWIN?
     'sequencetime',0,... %time for the sequence to run
     'outputfilepath','Z:\Experiments\Lattice\_communication\',... %path to output sequence parameters to
-    'outputparams',[],...%parameters to output
+    'outputparams',[],...% parameters to output
     'createoutfile',1,... 
     'numDDSsweeps',0,... %Add these two lines! 
     'DDSsweeps',[],...
-    'atomtype',4,...  %1 - K-40, 2 - K-41, 3 - Rb-87 , 4 - Rb+K
+    'atomtype',4,...  %1 - K-40, 2 - K-41, 3 - Rb-87 , 4 - Rb+K % seems bad to me
     'params', [],...%various parameters, recently defined here by FC 07/23/2020
     'flags',[]); 
 

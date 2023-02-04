@@ -49,7 +49,7 @@ for kk = 1:length(fncs)
     data.Status.ForegroundColor = [220,88,42]/255;
     pause(.2)
     try
-        fncs{kk}(curtime);    
+        curtime = fncs{kk}(curtime); 
     catch ME
         warning( getReport( ME, 'extended', 'hyperlinks', 'on' ) )
         data.Status.String = ['sequence error'];

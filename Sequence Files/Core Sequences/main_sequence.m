@@ -761,5 +761,4 @@ for kk = 1:length(flag_groups)
 end
 seqdata.flags = orderfields(seqdata.flags,flag_names);
 
-dispLineStr('Sequence Complete.',curtime);
 end

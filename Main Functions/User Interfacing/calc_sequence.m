@@ -18,7 +18,6 @@ dodds = 1;
 if dodds
 disp(repmat('-',1,60));
 disp('Sending DDS commands...');
-%     disp(seqdata.numDDSsweeps);
     
     if seqdata.numDDSsweeps ~= 0
     

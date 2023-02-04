@@ -535,6 +535,8 @@ if seqdata.flags.transport
     setDigitalChannel(calctime(curtime,800),'Bipolar Shim Relay',1);
     
     %Turn Shims to Science cell zero values
+    % These can always be set to plug shims because we have separate
+    % control of MOT and science chamber shims.
     setAnalogChannel(calctime(curtime,1000),'X Shim',0,3); %3
     setAnalogChannel(calctime(curtime,1000),'Z Shim',0,3); %3
     setAnalogChannel(calctime(curtime,1000),'Y Shim',0,4); %4

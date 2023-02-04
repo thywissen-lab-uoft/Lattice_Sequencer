@@ -1,7 +1,10 @@
 function timeout = main_sequence(timein)
 % main_sequence.m
-% This is main sequence file of the experiment
-curtime = timein;
+
+if nargin == 0 
+    curtime = timein;
+end
+
 global seqdata;
 
 % Number of DDS scans is zero

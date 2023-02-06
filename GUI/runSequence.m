@@ -42,22 +42,23 @@ end
 
 %% Load the adwin
 isGood = 1;
-doDebug = 0;
 
 % Update GUI
 data.Status.String = ['loading adwin'];
 data.Status.ForegroundColor = [220,88,42]/255;
     
-% Try Loading
-try
-    load_sequence;
-catch ME
-    warning(getReport(ME,'extended','hyperlinks','on'))
-    isGood = 0;
+if ~seqdata.debugMode
+    % Try Loading
+    try
+        load_sequence;
+    catch ME
+        warning(getReport(ME,'extended','hyperlinks','on'))
+        isGood = 0;
+    end
 end
 
 % Quit if bad
-if ~doDebug && ~isGood
+if ~isGood
     return;
 end
 
@@ -67,7 +68,7 @@ data.Status.String = ['adwin loaded'];
 data.Status.ForegroundColor = [17,59,8]/255;
 
 % Make control file
-if ~doDebug
+if ~seqdata.debugMode    
     makeControlFile;
 end
 
@@ -76,15 +77,17 @@ end
 % Run Adwin
 data.Status.String = ['starting adwin'];
 data.Status.ForegroundColor = [17,59,8]/255;
-try
-    Start_Process(adwinprocessnum);
-catch ME
-    warning(getReport(ME,'extended','hyperlinks','on'))
-    data.Status.String = ['ADWIN RUN ERROR'];
-    data.Status.ForegroundColor = 'r';
-    return
-end
 
+if ~seqdata.debugMode
+    try
+        Start_Process(adwinprocessnum);
+    catch ME
+        warning(getReport(ME,'extended','hyperlinks','on'))
+        data.Status.String = ['ADWIN RUN ERROR'];
+        data.Status.ForegroundColor = 'r';
+        return
+    end
+end
 
 %% Start adwim timer
 

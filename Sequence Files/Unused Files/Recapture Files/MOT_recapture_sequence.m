@@ -13,7 +13,6 @@ curtime = timein;
 global seqdata;
 
 seqdata.numDDSsweeps = 0;
-seqdata.scanindex = -1;
 
 %%
 

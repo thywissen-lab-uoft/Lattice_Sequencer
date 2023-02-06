@@ -44,7 +44,6 @@ K_Repump_MOT_detuning = getScanParameter(K_Repump_MOT_detuning_list,...
 setDigitalChannel(curtime,'Bipolar Shim Relay',1);
 
 %% Set Detunings of all beams
-disp(' Setting MOT Detunings ...');
       
 % K Trap Detuning
 setAnalogChannel(curtime,'K Trap FM',K_Trap_MOT_detuning);    
@@ -94,7 +93,6 @@ setAnalogChannel(curtime,'Rb Repump AM',0.9);           % Rb MOT repump power (v
 
 
 %% Turn on MOT Coil
-disp(' Setting MOT Coil Gradients');
 
 % Feed Forward
 setAnalogChannel(calctime(curtime,0),'Transport FF',10); 
@@ -109,7 +107,6 @@ curtime = setDigitalChannel(calctime(curtime,0),'MOT TTL',0); %MOT TTL
 setDigitalChannel(curtime,21,0);
 
 %% Turn on Shims
-disp(' Setting MOT Shim values');
 
 %Turn on Shim Supply Relay
 setDigitalChannel(calctime(curtime,0),'Shim Relay',1);
@@ -127,7 +124,6 @@ setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.9,2);
 %% UV ON : LIAD
 % Turn on UV cataract-inducing light.
 
-disp('Turning on UV light');
 setDigitalChannel(curtime,'UV LED',1); %1 = on; 0, off
 
 %% Wait a HOT Second

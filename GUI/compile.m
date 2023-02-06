@@ -16,8 +16,6 @@ if isempty(fig)
 end
 
 data=guidata(fig);
-
-%%
 data.StatusSub.String = '';
 
 %% Initialize Sequence    
@@ -27,6 +25,7 @@ data.Status.ForegroundColor = 'k';
 start_new_sequence;
 initialize_channels;
 curtime = 0;
+
 %% Update GUI Text
 mystr =[];
 
@@ -38,11 +37,10 @@ mystr(end)=[];
 data.SequenceText.String=mystr;
 
 %% Run Each portion
-isGood = 1;
 
-disp(repmat('-',1,60));
-disp('Compiling');
-disp(repmat('-',1,60));
+%disp(repmat('-',1,60));
+%disp('Compiling');
+%disp(repmat('-',1,60));
 
 initialize_channels();
 
@@ -51,19 +49,15 @@ for kk = 1:length(fncs)
     data.Status.ForegroundColor = [220,88,42]/255;
     pause(.2)
     try
-        fncs{kk}(curtime);    
+        curtime = fncs{kk}(curtime); 
     catch ME
         warning( getReport( ME, 'extended', 'hyperlinks', 'on' ) )
-        isGood = 0;
-        break
+        data.Status.String = ['sequence error'];
+        data.Status.ForegroundColor = 'r';
+        return
     end
 end
 
-if ~isGood
-    data.Status.String = ['sequence error'];
-    data.Status.ForegroundColor = 'r';
-    return
-end
 
 data.Status.String = ['sequence evaluated'];
 data.Status.ForegroundColor = [17,59,8]/255;

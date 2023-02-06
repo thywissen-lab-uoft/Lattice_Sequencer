@@ -9,16 +9,15 @@ function calc_sequence()
 global seqdata;
 global adwin_processor_speed;
 
-disp('Calculating Sequence');
+fprintf('Calculating sequence...');
 
 %0: disable writing to the Rabbit for testing
 dodds = 1;
 
-%% Process DDS Sweeps to the Rabbits
+%% Process DDS Sweeps
 if dodds
-disp(repmat('-',1,60));
-disp('Sending DDS commands...');
-%     disp(seqdata.numDDSsweeps);
+% disp(repmat('-',1,60));
+disp('DDS...');
     
     if seqdata.numDDSsweeps ~= 0
     
@@ -34,7 +33,6 @@ disp('Sending DDS commands...');
             try                
                 fopen(t(i)) ;   
             catch ME
-                keyboard
                warning(['unable to connect to DDS ' num2str(i)]); 
             end                
         end        
@@ -114,6 +112,7 @@ end
 
 if isfield(seqdata,'gpib')
     try    
+        fprintf('gpib...');
         % send commands; (..,1) to display query results in command window
         SendGPIBCommands(seqdata.gpib,1);
     catch ME
@@ -126,6 +125,7 @@ end
 
 if isfield(seqdata,'visa')
     try
+        fprintf('visa...');
         % send commands; (..,1) to display query results in command window
         SendVISACommands(seqdata.visa,1);
     catch ME
@@ -135,8 +135,10 @@ if isfield(seqdata,'visa')
 end
 
 %% Convert Analog values into 16 bit
-disp(repmat('-',1,60));
-disp('Converting analog voltages to b16 ...');
+%disp(repmat('-',1,60));
+%disp('Converting analog voltages to b16 ...');
+
+fprintf('analog...');
 
 %Used to be in the ADWIN, but moved here so that we can use a long for the
 %ADWIN data array
@@ -158,7 +160,10 @@ analogAdwin(:,3) = (seqdata.analogadwinlist(:,3)+10)/20*2^(16);
 %Change the digital update array into an array of update words
 
 if (~isempty(seqdata.digadwinlist))
-disp('Processing digital calls ...');
+% disp('Processing digital calls ...');
+% 
+
+fprintf('digital...');
 
     %pre-allocate, can be no bigger than the current update list
     new_digarray = zeros(length(seqdata.digadwinlist(:,1)),3);
@@ -215,6 +220,7 @@ end
 
 
 %% Process Main Array
+fprintf('timings...');
 
 %sort the adwin list by times
 [templist, sortindices] = sort(adwinlist,1);
@@ -267,8 +273,6 @@ seqdata.numupdatelist = [zero_list(2:end);0] + 1;
 seqdata.numupdatelist = [adwinlist(deltat_list~=0,1)*seqdata.deltat/seqdata.timeunit ...
     seqdata.numupdatelist(deltat_list~=0)];
 % disp(sprintf('Maximal number of updates in one cylce: %g',max(unique(seqdata.numupdatelist(:,2)))));
-
-
 
 %make expanded array for the update list
 deltat_list2 = ones(length(deltat_list)*3,1);
@@ -437,19 +441,9 @@ seqdata.numDDSsweeps = 0;
 seqdata.seqcalculated = 1;
 
 %% Run the mercurial backup
-% Commenting out because we don't use this server anymore
-%{
-seq_dir = fullfile(fileparts(fileparts(mfilename('fullpath'))),'Sequence Files');
-func_dir = fullfile(fileparts(fileparts(mfilename('fullpath'))),'Main Functions');
-%winopen(fullfile(fileparts(fileparts(mfilename)),'run_backup.bat'));
-dos(['CD ' seq_dir  ' && hg add && hg commit -m "Automatic Update" -u "LatticeSequencer"']);
-dos(['CD ' func_dir  ' && hg add && hg commit -m "Automatic Update" -u "LatticeSequencer"']);
-%}
 
-
-%% Done
 
 seqdata = orderfields(seqdata);
 
-disp('Sequence calculated.');
+disp('done.');
 end

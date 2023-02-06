@@ -5,8 +5,8 @@ function out = SendGPIBCommands(cmds, talk)
 %Summary: Sends GPIB commands to devices.
 %-----
 
-disp(repmat('-',1,60));
-disp(['Sending GPIB commands (' num2str(length(cmds)) ')']);
+% disp(repmat('-',1,60));
+% disp(['Sending GPIB commands (' num2str(length(cmds)) ')']);
 
 brd = 0; % Board index (can use NI VISA to check -- should see GPIB$::INTFC for brd = $)
 

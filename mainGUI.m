@@ -137,7 +137,7 @@ hpMain.OuterPosition=[0 hF.Position(4)-h w h];
 
 hpSeq = uipanel('parent',hpMain,'units','pixels','backgroundcolor',cc,...
     'bordertype','etchedin','title','sequence');
-hpSeq.Position(3:4)=[347 80];
+hpSeq.Position(3:4)=[347 90];
 hpSeq.Position(1:2)=[1 71];
 
 % Sequence File edit box
@@ -163,26 +163,50 @@ bBrowse=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
 bBrowse.Position(3:4)=[24 24];
 bBrowse.Position(1:2)=[5 4];
 
+bDefault=uicontrol(hpSeq,'style','pushbutton','String','default seq.',...
+    'backgroundcolor',cc,'FontSize',8,'units','pixels',...
+    'Callback',@defaultCB);
+bDefault.Position(3:4)=[60 24];
+bDefault.Position(1:2)=bBrowse.Position(1:2) + [bBrowse.Position(3)+2 0];
+
+    function defaultCB(~,~)
+       eSeq.String = defaultSequence; 
+    end
+
 % Button for file selection of the sequenece file
 cdata=imresize(imread(['GUI/images' filesep 'folder_up.jpg']),[20 20]);
 bDirUp=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@(~,~) cd('..'),'tooltip','move up directory level');
 bDirUp.Position(3:4)=[24 24];
-bDirUp.Position(1:2)=bBrowse.Position(1:2)+[bBrowse.Position(3)+2 0];
+bDirUp.Position(1:2)=bDefault.Position(1:2)+[bDefault.Position(3)+2 0];
 
 % Button for file selection of the sequenece file
-cdata=imresize(imread(['GUI/images' filesep 'file.png']),[17 17]);
-bFile=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
-    'backgroundcolor',cc,'Callback',@fileCB,'tooltip','open file');
-bFile.Position(3:4)=[24 24];
-bFile.Position(1:2)=bDirUp.Position(1:2)+[bDirUp.Position(3)+2 0];
+cdata=imresize(imread(['GUI/images' filesep 'file1.png']),[17 17]);
+bFile1=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
+    'backgroundcolor',cc,'Callback',{@fileCB 1},'tooltip','open first file');
+bFile1.Position(3:4)=[24 24];
+bFile1.Position(1:2)=bDirUp.Position(1:2)+[bDirUp.Position(3)+2 0];
+
+% Button for file selection of the sequenece file
+cdata=imresize(imread(['GUI/images' filesep 'file2.png']),[17 17]);
+bFile2=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
+    'backgroundcolor',cc,'Callback',{@fileCB 2},'tooltip','open second file');
+bFile2.Position(3:4)=[24 24];
+bFile2.Position(1:2)=bFile1.Position(1:2)+[bFile1.Position(3)+2 0];
+
+% Button for file selection of the sequenece file
+cdata=imresize(imread(['GUI/images' filesep 'file3.png']),[17 17]);
+bFile3=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
+    'backgroundcolor',cc,'Callback',{@fileCB 3},'tooltip','open third file');
+bFile3.Position(3:4)=[24 24];
+bFile3.Position(1:2)=bFile2.Position(1:2)+[bFile2.Position(3)+2 0];
 
 % Button to recompile seqdata
 cdata=imresize(imread(['GUI/images' filesep 'plot.jpg']),[24 24]);
 bPlot=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@bPlotCB,'tooltip','plot');
 bPlot.Position(3:4)=[25 25];
-bPlot.Position(1:2)=bFile.Position(1:2)+[bFile.Position(3)+2 0];
+bPlot.Position(1:2)=bFile3.Position(1:2)+[bFile3.Position(3)+2 0];
 
     function bPlotCB(~,~)
         fh = str2func(erase(eSeq.String,'@'));        
@@ -234,11 +258,19 @@ bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
         disp([datestr(now,13) ' New sequence function is ' funcname]);
     end
 
-    function fileCB(~,~)
+    function fileCB(~,~,n)
         fname = strrep(eSeq.String,'@','');
         try
-            disp(['Opening ' fname]);
-            open(fname);
+            
+            fName=eSeq.String;        
+            strs=strsplit(fName,',');
+            names={};
+            for kk=1:length(strs)
+                names{kk} =  erase(strs{kk},'@'); 
+            end
+            
+            disp(['Opening ' names{n}]);
+            open(names{n});
         catch ME
             warning('Cant open sequence file for some reason');
         end        
@@ -469,8 +501,8 @@ ttStr=['Reseed random list of scan indeces.'];
 bRandSeed=uicontrol(bgRun,'style','pushbutton','String','reseed random',...
     'backgroundcolor',[255,165,0]/255,'FontSize',8,'units','pixels',...
     'fontweight','normal','Tooltip',ttStr);
-bRandSeed.Position(3:4)=[80 20];
-bRandSeed.Position(1:2)=[bgRun.Position(3)-bRandSeed.Position(3)-5  bgRun.Position(4)-bRandSeed.Position(4)-12];
+bRandSeed.Position(3:4)=[80 16];
+bRandSeed.Position(1:2)=[100 bgRun.Position(4)-bRandSeed.Position(4)-14];
 bRandSeed.Callback=@bReseedRandom;
 
     function bReseedRandom(~,~)
@@ -478,35 +510,35 @@ bRandSeed.Callback=@bReseedRandom;
     end
 
 %% Interrupt buttons
-% 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ABORT  %%%%%%%%%%%%%%%%%%%%%%
-% ttStr=['Interrupts AdWIN and sends all digital and analog voltage ' ...
-%     'outputs to their reset value.  DANGEROUS'];
-% bAbort=uicontrol(hpMain,'style','pushbutton','String','abort',...
-%     'backgroundcolor','r','FontSize',8,'units','pixels',...
-%     'fontweight','normal','Tooltip',ttStr,'Callback',@bAbortCB);
-% bAbort.Position(3:4)=[40 15];
-% bAbort.Position(1:2)=[hpMain.Position(3)-bAbort.Position(3)-5 ...
-%     hpMain.Position(4)-bAbort.Position(4)-5];
-% 
-% jbAbort= findjobj(bAbort);
-% set(jbAbort,'Enabled',false);
-% set(jbAbort,'ToolTipText',ttStr);
-% 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RESET  %%%%%%%%%%%%%%%%%%%%%%
-% ttStr=['Reinitialize channels and reset Adwin outputs ' ...
-%     'to default values.'];
-% bReset=uicontrol(hpMain,'style','pushbutton','String','reset',...
-%     'backgroundcolor',[255,165,0]/255,'FontSize',8,'units','pixels',...
-%     'fontweight','normal','Tooltip',ttStr);
-% bReset.Position(3:4)=[40 15];
-% bReset.Position(1:2)=[bAbort.Position(1)-bReset.Position(3) ...
-%     bAbort.Position(2)];
-% bReset.Callback=@bResetCB;
-% 
-% jbReset= findjobj(bReset);
-% set(jbReset,'Enabled',true);
-% set(jbReset,'ToolTipText',ttStr);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ABORT  %%%%%%%%%%%%%%%%%%%%%%
+ttStr=['Interrupts AdWIN and sends all digital and analog voltage ' ...
+    'outputs to their reset value.  DANGEROUS'];
+bAbort=uicontrol(bgRun,'style','pushbutton','String','abort',...
+    'backgroundcolor','r','FontSize',8,'units','pixels',...
+    'fontweight','normal','Tooltip',ttStr,'Callback',@bAbortCB);
+bAbort.Position(3:4)=[40 15];
+bAbort.Position(1:2)=[bgRun.Position(3)-bAbort.Position(3)-5 ...
+    bgRun.Position(4)-bAbort.Position(4)-12];
+
+jbAbort= findjobj(bAbort);
+set(jbAbort,'Enabled',false);
+set(jbAbort,'ToolTipText',ttStr);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RESET  %%%%%%%%%%%%%%%%%%%%%%
+ttStr=['Reinitialize channels and reset Adwin outputs ' ...
+    'to default values.'];
+bReset=uicontrol(bgRun,'style','pushbutton','String','reset',...
+    'backgroundcolor',[255,165,0]/255,'FontSize',8,'units','pixels',...
+    'fontweight','normal','Tooltip',ttStr);
+bReset.Position(3:4)=[40 15];
+bReset.Position(1:2)=[bAbort.Position(1)-bReset.Position(3) ...
+    bAbort.Position(2)];
+bReset.Callback=@bResetCB;
+
+jbReset= findjobj(bReset);
+set(jbReset,'Enabled',true);
+set(jbReset,'ToolTipText',ttStr);
 %% TIMERS
 %%%%% Adwin progress timer %%%
 % After the sequence is run, this timer keeps tracks of the Adwin's
@@ -723,12 +755,13 @@ data.waitTimer = timeWait;
     end
 
     function runSequenceCB    
-        seqdata.scancycle = cycleTbl.Data;
-        seqdata.ScanVar = [];
-        fName=eSeq.String;
-        fh = str2func(erase(fName,'@'));  
-        fcns = {fh};        
-        runSequence(fcns);             
+        fName=eSeq.String;        
+        strs=strsplit(fName,',');
+        funcs={};
+        for kk=1:length(strs)
+           funcs{kk} =  str2func(erase(strs{kk},'@')); 
+        end              
+        runSequence(funcs);             
     end
     
 

@@ -1,7 +1,20 @@
-function main_settings(timein)
+function timeout = main_settings(timein)
+% main_settings.m
 
-global seqdata
+if nargin == 0 
+    curtime = 0;
+else
+    curtime = timein;
+end
 
+global seqdata;
+
+% Number of DDS scans is zero
+seqdata.numDDSsweeps = 0;
+
+% CF : Is this really useful? Also we have more than A and B SRS
+seqdata.flags.SRS_programmed = [0 0]; %Flags for whether SRS A and B have been programmed via GPIB
+% This can be removed since we don't really do good checkcs.
 %% Constants and Parameters
 
 % Shim Zero (to eliminate all bkgd fields)
@@ -34,11 +47,14 @@ seqdata.flags.misc_lock_PA                  = 0; % Update wavemeter lock
 seqdata.flags.misc_program4pass             = 0; % Update four-pass frequency
 seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
 seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
+seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
+defVar('objective_piezo',[3],'V');
+% 0.1V = 700 nm, larger means further away from chamber
 
 seqdata.flags.Rb_Probe_Order                = 1;   % 1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
                                                     % 2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
 defVar('PA_detuning',round(-49.539,6),'GHz');
-seqdata.params.UV_on_time                   = 10000;
+defVar('UV_on_time',10000,'ms');                    % Can be just added onto the adwin wait timer
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOT  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -290,12 +306,17 @@ end
 %% Scope Trigger
 % Choose which scope trigger to use.
 
-% scope_trigger = 'rf_spectroscopy';
-scope_trigger = 'Lattice_Mod';
-% scope_trigger = 'FB_ramp';
-% scope_trigger = 'lattice_ramp_1';
-% scope_trigger = 'lattice_off';
-% scope_trigger = 'Raman Beams On';
-% scope_trigger = 'PA_Pulse';
+% seqdata.scope_trigger = 'rf_spectroscopy';
+seqdata.scope_trigger = 'Lattice_Mod';
+% seqdata.scope_trigger = 'FB_ramp';
+% seqdata.scope_trigger = 'lattice_ramp_1';
+% seqdata.scope_trigger = 'lattice_off';
+% seqdata.scope_trigger = 'Raman Beams On';
+% seqdata.scope_trigger = 'PA_Pulse';
+
+%% end time
+
+timeout = curtime;
+
 end
 

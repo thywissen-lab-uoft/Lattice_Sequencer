@@ -74,7 +74,6 @@ seqdata = struct('analogadwinlist',[],... %adwin list is [time channel value];
     'seqcalculated',-1,... %has the sequence been calculated?
     'seqloaded',-1,... %has the sequence been loaded to the ADWIN?
     'sequencetime',0,... %time for the sequence to run
-    'outputfilepath','Z:\Experiments\Lattice\_communication\',... %path to output sequence parameters to
     'outputparams',[],...% parameters to output
     'numDDSsweeps',0,... %Add these two lines! 
     'DDSsweeps',[],...

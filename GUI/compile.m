@@ -1,12 +1,11 @@
 function compile(fncs)
 
 %% Find the GUI
-figName = 'Main GUI';
 
 figs = get(groot,'Children');
 fig = [];
 for i = 1:length(figs)
-    if isequal(figs(i).Name,figName)        
+    if isequal(figs(i).UserData,'sequencer_gui')        
         fig = figs(i);
     end
 end
@@ -72,6 +71,9 @@ calc_sequence;
 pause(.1)
 data.Status.String = ['sequence calulated'];
 data.Status.ForegroundColor = [17,59,8]/255;
+
+%% Update scan var
+updateScanVarText;
 
 end
 

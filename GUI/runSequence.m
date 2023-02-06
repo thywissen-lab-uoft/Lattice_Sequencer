@@ -2,12 +2,10 @@ function runSequence(fncs)
 global seqdata
 global adwinprocessnum
 %% Find the GUI
-figName = 'Main GUI';
-
 figs = get(groot,'Children');
 fig = [];
 for i = 1:length(figs)
-    if isequal(figs(i).Name,figName)        
+    if isequal(figs(i).UserData,'sequencer_gui')        
         fig = figs(i);
     end
 end

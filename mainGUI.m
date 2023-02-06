@@ -12,6 +12,17 @@ function hF=mainGUI
 % CF has attempted to improve the code architecture.
 
 
+% Close any figure with the same name. Only one instance of mainGUI may be
+% open at a time
+figs = get(groot,'Children');
+for i = 1:length(figs)
+    if isequal(figs(i).UserData,'sequencer_gui')       
+       warning('Sequencer GUI already open. Please close it if you want a new instace');
+       figure(figs(i));
+       return;
+    end
+end
+
 %%%%%%%%%%%%%%% Initialize Sequence Data %%%%%%%%%%%%%%%%%
 LatticeSequencerInitialize();
 global seqdata;
@@ -25,7 +36,7 @@ evalin('base','openvar(''seqdata.params'')')
 
 waitDefault=30;
 
-defaultSequence='@main_sequence';
+defaultSequence='@main_settings,@main_sequence';
 figName='Main GUI';
 
 if seqdata.debugMode
@@ -53,27 +64,17 @@ delete(timerfind('Name',adwinTimeName));
 delete(timerfind('Name',waitTimeName));
 %% Initialize Primary Figure graphics
 
-% Close any figure with the same name. Only one instance of mainGUI may be
-% open at a time
-figs = get(groot,'Children');
-for i = 1:length(figs)
-    if isequal(figs(i).Name,figName)        
-       close(figName); 
-    end
-end
-
 % Figure color and size settings
-cc='w';w=350;h=320;
+cc='w';w=700;h=170;
 
 % Initialize the figure graphics objects
 hF=figure('toolbar','none','Name',figName,'color',cc,'NumberTitle','off',...
-    'MenuBar','figure','resize','off','CloseRequestFcn',@closeFig);
+    'MenuBar','figure','resize','off','CloseRequestFcn',@closeFig,...
+    'UserData','sequencer_gui');
 clf
 hF.Position(3:4)=[w h];
 set(hF,'WindowStyle','docked');
 data = struct;
-
-
 
 %% Figure
 % Callback for a close request function. The close request function handles
@@ -132,57 +133,53 @@ hpMain=uipanel('parent',hF,'units','pixels','backgroundcolor',cc,...
 hpMain.OuterPosition=[0 0 hF.Position(3) hF.Position(4)];
 hpMain.OuterPosition=[0 hF.Position(4)-h w h];
 
-% Title String
-tTit=uicontrol(hpMain,'style','text','string',figName,...
-    'FontSize',10,'fontweight','bold','units','pixels','backgroundcolor',cc);
-tTit.Position(3:4)=tTit.Extent(3:4);
-tTit.Position(1:2)=[5 hpMain.Position(4)-tTit.Position(4)-3];
-
-if seqdata.debugMode
-    tTit.ForegroundColor = 'r';
-    tTit.FontWeight = 'bold';
-end
-
 %% Settings Graphical Objects
 
-% Sequence File label
-tSeq=uicontrol(hpMain,'style','text','String','Sequence File:',...
-    'units','pixels','fontsize',8,'backgroundcolor',cc);
-tSeq.Position(3:4)=tSeq.Extent(3:4);
-tSeq.Position(1:2)=[5 tTit.Position(2)-tSeq.Position(4)];
+hpSeq = uipanel('parent',hpMain,'units','pixels','backgroundcolor',cc,...
+    'bordertype','etchedin','title','sequence');
+hpSeq.Position(3:4)=[347 80];
+hpSeq.Position(1:2)=[1 71];
 
 % Sequence File edit box
-eSeq=uicontrol(hpMain,'style','edit','string',defaultSequence,...
-    'horizontalalignment','left','fontsize',10,'backgroundcolor',cc);
-eSeq.Position(3)=180;
+mystr='comma separated sequnce functions (@func1,@func2,@func3,...)';
+tSeq=uicontrol(hpSeq,'style','text','string',mystr,...
+    'horizontalalignment','left','fontsize',7,'backgroundcolor',cc);
+tSeq.Position(3)=335;
+tSeq.Position(4)=tSeq.Extent(4);
+tSeq.Position(1:2)=[5 46];
+
+% Sequence File edit box
+eSeq=uicontrol(hpSeq,'style','edit','string',defaultSequence,...
+    'horizontalalignment','left','fontsize',8,'backgroundcolor',cc);
+eSeq.Position(3)=335;
 eSeq.Position(4)=eSeq.Extent(4);
-eSeq.Position(1:2)=[5 tSeq.Position(2)-eSeq.Position(4)];
+eSeq.Position(1:2)=[5 32];
 data.SequenceText = eSeq;
 
 % Button for file selection of the sequenece file
 cdata=imresize(imread(['GUI/images' filesep 'browse.jpg']),[22 22]);
-bBrowse=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
+bBrowse=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@browseCB,'tooltip','browse file');
 bBrowse.Position(3:4)=[24 24];
-bBrowse.Position(1:2)=eSeq.Position(1:2)+[eSeq.Position(3)+2 0];
+bBrowse.Position(1:2)=[5 4];
 
 % Button for file selection of the sequenece file
 cdata=imresize(imread(['GUI/images' filesep 'folder_up.jpg']),[20 20]);
-bDirUp=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
+bDirUp=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@(~,~) cd('..'),'tooltip','move up directory level');
 bDirUp.Position(3:4)=[24 24];
 bDirUp.Position(1:2)=bBrowse.Position(1:2)+[bBrowse.Position(3)+2 0];
 
 % Button for file selection of the sequenece file
 cdata=imresize(imread(['GUI/images' filesep 'file.png']),[17 17]);
-bFile=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
+bFile=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@fileCB,'tooltip','open file');
 bFile.Position(3:4)=[24 24];
 bFile.Position(1:2)=bDirUp.Position(1:2)+[bDirUp.Position(3)+2 0];
 
 % Button to recompile seqdata
 cdata=imresize(imread(['GUI/images' filesep 'plot.jpg']),[24 24]);
-bPlot=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
+bPlot=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@bPlotCB,'tooltip','plot');
 bPlot.Position(3:4)=[25 25];
 bPlot.Position(1:2)=bFile.Position(1:2)+[bFile.Position(3)+2 0];
@@ -194,24 +191,26 @@ bPlot.Position(1:2)=bFile.Position(1:2)+[bFile.Position(3)+2 0];
 
 % Button to recompile seqdata
 cdata=imresize(imread(['GUI/images' filesep 'compile.jpg']),[20 20]);
-bCompile=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
+bCompile=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@bCompileCB,'tooltip','compile sequence');
 bCompile.Position(3:4)=[25 25];
 bCompile.Position(1:2)=bPlot.Position(1:2)+[bPlot.Position(3)+2 0];
 
 % Button to recompile seqdata
 cdata=imresize(imread(['GUI/images' filesep 'command_window.jpg']),[20 20]);
-bCmd=uicontrol(hpMain,'style','pushbutton','CData',cdata,...
+bCmd=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@(~,~) commandwindow,'tooltip','move up directory level','tooltip','command window');
 bCmd.Position(3:4)=[25 25];
 bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
 
     function bCompileCB(~,~)    
-        fName=eSeq.String;
-        fh = str2func(erase(fName,'@'));     
-        fcns={fh};
-
-        compile(fcns)        
+        fName=eSeq.String;        
+        strs=strsplit(fName,',');
+        funcs={};
+        for kk=1:length(strs)
+           funcs{kk} =  str2func(erase(strs{kk},'@')); 
+        end
+        compile(funcs)        
         updateScanVarText;    
     end
 
@@ -251,8 +250,8 @@ bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
 % button
 bgWait = uibuttongroup('Parent',hpMain,'units','pixels','Title','wait mode',...
     'backgroundcolor',cc,'UserData',1,'SelectionChangedFcn',@waitCB);
-bgWait.Position(3:4)=[w 70];
-bgWait.Position(1:2)=[1 180];
+bgWait.Position(3:4)=[347 70];
+bgWait.Position(1:2)=[1 1];
 
 % Create three radio buttons in the button group. The user data holds the
 % selected mode (0,1,2) --> (no wait, intercyle, target time)
@@ -330,7 +329,7 @@ tWaitTime2.Position=[axWaitBar.Position(3) 10];
 % Run sequence mode
 bgRun = uibuttongroup('Parent',hpMain,'units','pixels','Title','run mode',...
     'backgroundcolor',cc,'UserData',0,'SelectionChangedFcn',@runModeCB);
-bgRun.Position(3:4)=[w 180];bgRun.Position(1:2)=[1 1];
+bgRun.Position(3:4)=[347 160];bgRun.Position(1:2)=[350 1];
         
     function runModeCB(~,evnt)
         switch evnt.NewValue.String
@@ -361,15 +360,15 @@ bgRun.Position(3:4)=[w 180];bgRun.Position(1:2)=[1 1];
 
 % Radio button for single mode
 rSingle=uicontrol(bgRun,'Style','radiobutton', 'String','single',...
-    'Position',[5 85 65 30],'Backgroundcolor',cc,'UserData',0,...
-    'fontsize',12,'Value',1);  
-rSingle.Position(2) = bgRun.Position(4)-rSingle.Position(4)-15;
+    'Position',[5 90 65 30],'Backgroundcolor',cc,'UserData',0,...
+    'fontsize',8,'Value',1);  
+rSingle.Position(2) = bgRun.Position(4)-rSingle.Position(4)-7;
 
 
 % Radio button for scan mode
 rScan=uicontrol(bgRun,'Style','radiobutton','String','scan',...
-    'Position',[75 85 100 30],'Backgroundcolor',cc,'UserData',1,...
-    'FontSize',12);
+    'Position',[55 85 100 30],'Backgroundcolor',cc,'UserData',1,...
+    'FontSize',8);
 rScan.Position(2) = rSingle.Position(2);
 
 %%%%%%%%%%%%%%%%%%%%% ADWIN PROGRESS BAR  %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -399,34 +398,34 @@ text(.5,1.05,'adwin progress','fontsize',10,'horizontalalignment','center', ...
 
 % Button to run the cycle
 bRunIter=uicontrol(bgRun,'style','pushbutton','String','Run Cycle #1',...
-    'backgroundcolor',[152 251 152]/255,'FontSize',10,'units','pixels',...
+    'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','Callback',{@bRunCB 0});
-bRunIter.Position(3:4)=[100 30];bRunIter.Position(1:2)=[5 40];
+bRunIter.Position(3:4)=[100 20];bRunIter.Position(1:2)=[5 30];
 bRunIter.Tooltip='Run the current sequence.';
 
 % Button to run the cycle
 bStartScan=uicontrol(bgRun,'style','pushbutton','String','Start Scan',...
-    'backgroundcolor',[152 251 152]/255,'FontSize',10,'units','pixels',...
+    'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','Visible','off','enable','off');
-bStartScan.Position(3:4)=[100 30];
+bStartScan.Position(3:4)=[100 20];
 bStartScan.Position(1:2)=[5 5];
 bStartScan.Callback={@bRunCB 1};
 bStartScan.Tooltip='Start the scan.';
 
 % Button to run the cycle
 bContinue=uicontrol(bgRun,'style','pushbutton','String','Continue Scan',...
-    'backgroundcolor',[173 216 230]/255,'FontSize',10,'units','pixels',...
+    'backgroundcolor',[173 216 230]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','Visible','off','enable','off');
-bContinue.Position(3:4)=[110 30];
+bContinue.Position(3:4)=[110 20];
 bContinue.Position(1:2)=[110 5];
 bContinue.Callback={@bRunCB 2};
 bContinue.Tooltip='Continue the scan from current iteration.';
 
 % Button to stop
 bStop=uicontrol(bgRun,'style','pushbutton','String','Stop Scan',...
-    'backgroundcolor',[255	218	107]/255,'FontSize',10,'units','pixels',...
+    'backgroundcolor',[255	218	107]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','enable','off','visible','off');
-bStop.Position(3:4)=[100 30];
+bStop.Position(3:4)=[100 20];
 bStop.Position(1:2)=[225 5];
 bStop.Callback=@bStopCB;
 bStop.Tooltip='Compile and run the currently selected sequence.';
@@ -463,18 +462,7 @@ tScanVar=uicontrol(bgRun,'style','text','string','No detected variable scanning 
 tScanVar.Position(3:4)=[axAdWinBar.Position(3) 15];
 tScanVar.Position(1) = axAdWinBar.Position(1);
 tScanVar.Position(2) = tStatus.Position(2) - 15;
-data.StatusSub = tScanVar;
-
-    function updateScanVarText
-        if isfield(seqdata,'ScanVar') && ~isempty(seqdata.ScanVar)
-            str = '';
-            scan_var_names = fieldnames(seqdata.ScanVar);
-            for jj=1:length(scan_var_names)
-                str = [str scan_var_names{jj} ' : ' num2str(seqdata.ScanVar.(scan_var_names{jj})) '; '];
-            end
-            tScanVar.String = str;
-        end        
-    end
+data.VarText = tScanVar;
 
 % Button to reseed random list
 ttStr=['Reseed random list of scan indeces.'];
@@ -490,35 +478,35 @@ bRandSeed.Callback=@bReseedRandom;
     end
 
 %% Interrupt buttons
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ABORT  %%%%%%%%%%%%%%%%%%%%%%
-ttStr=['Interrupts AdWIN and sends all digital and analog voltage ' ...
-    'outputs to their reset value.  DANGEROUS'];
-bAbort=uicontrol(hpMain,'style','pushbutton','String','abort',...
-    'backgroundcolor','r','FontSize',8,'units','pixels',...
-    'fontweight','normal','Tooltip',ttStr,'Callback',@bAbortCB);
-bAbort.Position(3:4)=[40 15];
-bAbort.Position(1:2)=[hpMain.Position(3)-bAbort.Position(3)-5 ...
-    hpMain.Position(4)-bAbort.Position(4)-5];
-
-jbAbort= findjobj(bAbort);
-set(jbAbort,'Enabled',false);
-set(jbAbort,'ToolTipText',ttStr);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RESET  %%%%%%%%%%%%%%%%%%%%%%
-ttStr=['Reinitialize channels and reset Adwin outputs ' ...
-    'to default values.'];
-bReset=uicontrol(hpMain,'style','pushbutton','String','reset',...
-    'backgroundcolor',[255,165,0]/255,'FontSize',8,'units','pixels',...
-    'fontweight','normal','Tooltip',ttStr);
-bReset.Position(3:4)=[40 15];
-bReset.Position(1:2)=[bAbort.Position(1)-bReset.Position(3) ...
-    bAbort.Position(2)];
-bReset.Callback=@bResetCB;
-
-jbReset= findjobj(bReset);
-set(jbReset,'Enabled',true);
-set(jbReset,'ToolTipText',ttStr);
+% 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ABORT  %%%%%%%%%%%%%%%%%%%%%%
+% ttStr=['Interrupts AdWIN and sends all digital and analog voltage ' ...
+%     'outputs to their reset value.  DANGEROUS'];
+% bAbort=uicontrol(hpMain,'style','pushbutton','String','abort',...
+%     'backgroundcolor','r','FontSize',8,'units','pixels',...
+%     'fontweight','normal','Tooltip',ttStr,'Callback',@bAbortCB);
+% bAbort.Position(3:4)=[40 15];
+% bAbort.Position(1:2)=[hpMain.Position(3)-bAbort.Position(3)-5 ...
+%     hpMain.Position(4)-bAbort.Position(4)-5];
+% 
+% jbAbort= findjobj(bAbort);
+% set(jbAbort,'Enabled',false);
+% set(jbAbort,'ToolTipText',ttStr);
+% 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RESET  %%%%%%%%%%%%%%%%%%%%%%
+% ttStr=['Reinitialize channels and reset Adwin outputs ' ...
+%     'to default values.'];
+% bReset=uicontrol(hpMain,'style','pushbutton','String','reset',...
+%     'backgroundcolor',[255,165,0]/255,'FontSize',8,'units','pixels',...
+%     'fontweight','normal','Tooltip',ttStr);
+% bReset.Position(3:4)=[40 15];
+% bReset.Position(1:2)=[bAbort.Position(1)-bReset.Position(3) ...
+%     bAbort.Position(2)];
+% bReset.Callback=@bResetCB;
+% 
+% jbReset= findjobj(bReset);
+% set(jbReset,'Enabled',true);
+% set(jbReset,'ToolTipText',ttStr);
 %% TIMERS
 %%%%% Adwin progress timer %%%
 % After the sequence is run, this timer keeps tracks of the Adwin's

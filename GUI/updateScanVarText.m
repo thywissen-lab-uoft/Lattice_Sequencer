@@ -28,14 +28,27 @@ data=guidata(fig);
              inds(end+1) = kk; 
           end
        end
-
-       if isempty(inds)
+       
+       % Only detect variables that are actually used in the sequence
+       vars = vars(inds);      
+       notUsed=[];
+       for kk=1:length(vars)
+          if ~isfield(seqdata.output_vars_vals,vars{kk}) 
+             notUsed(end+1) = kk; 
+          end
+       end
+       vars(notUsed)=[];
+       
+        if isempty(vars)
            str = 'no scan variable detected';
-       else
-           % Make string descriptor based on variables scan
-           str = '';
-           for kk=1:length(inds)
-              str=[str vars{kk} '(' ...
+        else
+            % Make string descriptor based on variables scan
+            str = '';
+            for kk=1:length(vars)
+                val = seqdata.output_vars_vals.(vars{kk});
+                ind = find(val==[seqdata.variables.(vars{kk})]);
+               
+              str=[str vars{kk} '(' num2str(ind) '/' ...
                   num2str(length(seqdata.variables.(vars{kk})))...
                   ')'];
            end

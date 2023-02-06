@@ -1,4 +1,4 @@
-function val = getVar(name)
+function [val,ind] = getVar(name)
     global seqdata
     val = seqdata.variables.(name);
     unit = seqdata.variables_units.(name);
@@ -8,14 +8,15 @@ function val = getVar(name)
             error('empty variable');
         case 1
             val = val;
+            ind = 1;
         otherwise
             value_list = val;                           % The variable list
             L = length(value_list);                     % variable list length
             random_list = seqdata.randcyclelist;        % Full random list
             random_list = random_list(random_list<=L);  % Partial random list          
             cycle_number = seqdata.scancycle;           % Cycle Number        
-            val = value_list(...                        % Get the value
-                random_list(1+mod(cycle_number-1,L)));   
+            ind = random_list(1+mod(cycle_number-1,L));
+            val = value_list(ind);               
     end
     
     % Write to output parameters

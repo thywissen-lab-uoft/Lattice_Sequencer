@@ -303,13 +303,13 @@ end
 %% Scope Trigger
 % Choose which scope trigger to use.
 
-% scope_trigger = 'rf_spectroscopy';
-scope_trigger = 'Lattice_Mod';
-% scope_trigger = 'FB_ramp';
-% scope_trigger = 'lattice_ramp_1';
-% scope_trigger = 'lattice_off';
-% scope_trigger = 'Raman Beams On';
-% scope_trigger = 'PA_Pulse';
+% seqdata.scope_trigger = 'rf_spectroscopy';
+seqdata.scope_trigger = 'Lattice_Mod';
+% seqdata.scope_trigger = 'FB_ramp';
+% seqdata.scope_trigger = 'lattice_ramp_1';
+% seqdata.scope_trigger = 'lattice_off';
+% seqdata.scope_trigger = 'Raman Beams On';
+% seqdata.scope_trigger = 'PA_Pulse';
 
 
 %% PA Laser Lock Detuning
@@ -742,7 +742,7 @@ if seqdata.flags.misc_calibrate_PA == 1
 end
     
 %% Scope trigger selection
-SelectScopeTrigger(scope_trigger);
+SelectScopeTrigger(seqdata.scope_trigger);
 
 %% Timeout
 timeout = curtime;

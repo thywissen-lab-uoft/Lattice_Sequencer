@@ -367,7 +367,6 @@ bgRun.Position(3:4)=[347 160];bgRun.Position(1:2)=[350 1];
         switch evnt.NewValue.String
             case 'single'
                 disp('Changing run mode to single iteration');
-                bRunIter.String     = 'Run Cycle #1';         
                 bRunIter.Enable     = 'on';
                 bRunIter.Visible    = 'on';                
                 bStartScan.Visible  = 'off';
@@ -375,10 +374,9 @@ bgRun.Position(3:4)=[347 160];bgRun.Position(1:2)=[350 1];
                 bContinue.Visible   = 'off';
                 bContinue.Enable    = 'off';                
                 bStop.Visible       = 'off';
-                cycleTbl.ColumnEditable = false;
+%                 cycleTbl.ColumnEditable = false;
             case 'scan'
                 disp('Changing run mode to scan mode.');
-                bRunIter.String     = 'Run Cycle';                
                 bRunIter.Enable     = 'on';
                 bRunIter.Visible    = 'on';                
                 bStartScan.Visible  = 'on';
@@ -386,7 +384,7 @@ bgRun.Position(3:4)=[347 160];bgRun.Position(1:2)=[350 1];
                 bContinue.Visible   = 'on';
                 bContinue.Enable    = 'on';                
                 bStop.Visible       = 'on';
-                cycleTbl.ColumnEditable = true;
+%                 cycleTbl.ColumnEditable = true;
         end        
     end
 
@@ -429,7 +427,7 @@ text(.5,1.05,'adwin progress','fontsize',10,'horizontalalignment','center', ...
 %% Run Controls
 
 % Button to run the cycle
-bRunIter=uicontrol(bgRun,'style','pushbutton','String','Run Cycle #1',...
+bRunIter=uicontrol(bgRun,'style','pushbutton','String','Run Cycle',...
     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','Callback',{@bRunCB 0});
 bRunIter.Position(3:4)=[100 20];bRunIter.Position(1:2)=[5 30];
@@ -456,7 +454,7 @@ bContinue.Tooltip='Continue the scan from current iteration.';
 % Button to stop
 bStop=uicontrol(bgRun,'style','pushbutton','String','Stop Scan',...
     'backgroundcolor',[255	218	107]/255,'FontSize',8,'units','pixels',...
-    'fontweight','bold','enable','off','visible','off');
+    'fontweight','bold','enable','on','visible','off');
 bStop.Position(3:4)=[100 20];
 bStop.Position(1:2)=[225 5];
 bStop.Callback=@bStopCB;
@@ -464,11 +462,20 @@ bStop.Tooltip='Compile and run the currently selected sequence.';
 
 
 cycleTbl=uitable(bgRun,'RowName','Cycle #','ColumnName',{},...
-    'ColumnEditable',[false],'Data',[1],'units','pixels',...
-    'ColumnWidth',{50},'FontSize',12);
+    'ColumnEditable',[true],'Data',[1],'units','pixels',...
+    'ColumnWidth',{50},'FontSize',12,'CellEditCallback',@tblCB);
 cycleTbl.Position(3:4)=cycleTbl.Extent(3:4);
 cycleTbl.Position(1:2)=[110 bRunIter.Position(2)+2];
 data.cycleTbl = cycleTbl;
+
+    function tblCB(src,evt)
+        n = evt.NewData;
+        if ~isnan(n) && isnumeric(n) && floor(n)==n && ~isinf(n) && n>0
+            seqdata.scancycle = evt.NewData;
+        else
+            src.Data = evt.PreviousData;
+        end
+    end
 
 % Checkbox for repeat cycle
 cRpt=uicontrol(bgRun,'style','checkbox','string','repeat cycle?','fontsize',8,...
@@ -670,18 +677,8 @@ data.waitTimer = timeWait;
         else
             if seqdata.doscan
                 % Increment the scan and run the sequencer again
-                cycleTbl.Data = cycleTbl.Data+1;
-                disp('Incrementing the cycle number.');
+                seqdata.scancycle = seqdata.scancycle+1;
                 runSequenceCB;
-            else
-%                 bRunIter.Enable     = 'on';
-%                 bStartScan.Enable   = 'on';
-%                 bContinue.Enable    = 'on';                
-%                 bStop.Enable        = 'off';
-%                 rScan.Enable        = 'on';
-%                 rSingle.Enable      = 'on';
-%                 bBrowse.Enable      = 'on';
-%                 eSeq.Enable         = 'on';
             end
         end   
     end    
@@ -742,8 +739,7 @@ data.waitTimer = timeWait;
            funcs{kk} =  str2func(erase(strs{kk},'@')); 
         end              
         runSequence(funcs);             
-    end
-    
+    end    
 
 % Reset Button callback
     function bResetCB(~,~)        

@@ -521,9 +521,9 @@ bAbort.Position(3:4)=[40 15];
 bAbort.Position(1:2)=[bgRun.Position(3)-bAbort.Position(3)-5 ...
     bgRun.Position(4)-bAbort.Position(4)-12];
 
-jbAbort= findjobj(bAbort);
-set(jbAbort,'Enabled',false);
-set(jbAbort,'ToolTipText',ttStr);
+% jbAbort= findjobj(bAbort);
+% set(jbAbort,'Enabled',false);
+% set(jbAbort,'ToolTipText',ttStr);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RESET  %%%%%%%%%%%%%%%%%%%%%%
 ttStr=['Reinitialize channels and reset Adwin outputs ' ...
@@ -536,9 +536,9 @@ bReset.Position(1:2)=[bAbort.Position(1)-bReset.Position(3) ...
     bAbort.Position(2)];
 bReset.Callback=@bResetCB;
 
-jbReset= findjobj(bReset);
-set(jbReset,'Enabled',true);
-set(jbReset,'ToolTipText',ttStr);
+% jbReset= findjobj(bReset);
+% set(jbReset,'Enabled',true);
+% set(jbReset,'ToolTipText',ttStr);
 %% TIMERS
 %%%%% Adwin progress timer %%%
 % After the sequence is run, this timer keeps tracks of the Adwin's
@@ -557,9 +557,6 @@ data.adwinTimer = timeAdwin;
         disp(['Sequence timer started. ' num2str(seqdata.sequencetime,'%.2f') ...
             ' seconds.']);
         
-        % Disable reset and enable abort
-        set(jbAbort,'Enabled',true);
-        set(jbReset,'Enabled',false);
 
         % Give the progress timer a new start time as userdata
         timeAdwin.UserData=now;        
@@ -568,9 +565,7 @@ data.adwinTimer = timeAdwin;
     function stopAdwinTimer(~,~)
         disp('Sequence timer ended.');      % Message the user
         pAdWinBar.XData = [0 1 1 0];     % Fill out the bar
-        drawnow;                         % Update graphics
-        set(jbAbort,'Enabled',false);
-        set(jbReset,'Enabled',true);        
+        drawnow;                         % Update graphics 
         set(tStatus,'String','Cycle complete.','fontweight','bold',...
             'foregroundcolor','k');drawnow;
         if bgWait.UserData
@@ -679,14 +674,14 @@ data.waitTimer = timeWait;
                 disp('Incrementing the cycle number.');
                 runSequenceCB;
             else
-                bRunIter.Enable     = 'on';
-                bStartScan.Enable   = 'on';
-                bContinue.Enable    = 'on';                
-                bStop.Enable        = 'off';
-                rScan.Enable        = 'on';
-                rSingle.Enable      = 'on';
-                bBrowse.Enable      = 'on';
-                eSeq.Enable         = 'on';
+%                 bRunIter.Enable     = 'on';
+%                 bStartScan.Enable   = 'on';
+%                 bContinue.Enable    = 'on';                
+%                 bStop.Enable        = 'off';
+%                 rScan.Enable        = 'on';
+%                 rSingle.Enable      = 'on';
+%                 bBrowse.Enable      = 'on';
+%                 eSeq.Enable         = 'on';
             end
         end   
     end    
@@ -712,35 +707,20 @@ data.waitTimer = timeWait;
            return;
         end    
                 
-        switch run_mode
-            % Run a single iteration
-            case 0 
+        switch run_mode            
+            case 0 % Run a single iteration
                 seqdata.doscan = 0;
                 if isequal(bgRun.SelectedObject.String,'single')
-                    cycleTbl.Data   =  1;
-                    rScan.Enable    = 'off';
+                    seqdata.scancycle = 1;
                 else
-                    bStop.Enable    = 'off';
-                    rSingle.Enable  = 'off';
+                    seqdata.scancycle = cycleTbl.Data;
                 end      
-            case 1
-            % Start the scan
+            case 1 % 1 : start a scan
                 seqdata.doscan      = 1;
-                cycleTbl.Data       = 1;
-                bStop.Enable        = 'on';
-                rSingle.Enable      = 'off';
-            case 2
-            % Continue the scan
+                seqdata.scancycle = 1;
+            case 2 % Continue the scan
                 seqdata.doscan      = 1;
-                bStop.Enable        = 'on';
-                bStop.Enable        = 'on';
-                rSingle.Enable      = 'off';
         end  
-        bBrowse.Enable              = 'off';
-        eSeq.Enable                 = 'off';        
-        bRunIter.Enable             = 'off';
-        bContinue.Enable            = 'off';
-        bStartScan.Enable           = 'off';
         runSequenceCB;        
     end
 

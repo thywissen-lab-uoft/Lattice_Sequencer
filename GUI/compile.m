@@ -38,9 +38,9 @@ data.SequenceText.String=mystr;
 
 %% Run Each portion
 
-disp(repmat('-',1,60));
-disp('Compiling');
-disp(repmat('-',1,60));
+%disp(repmat('-',1,60));
+%disp('Compiling');
+%disp(repmat('-',1,60));
 
 initialize_channels();
 

@@ -9,15 +9,15 @@ function calc_sequence()
 global seqdata;
 global adwin_processor_speed;
 
-disp('Calculating Sequence');
+fprintf('Calculating sequence...');
 
 %0: disable writing to the Rabbit for testing
 dodds = 1;
 
 %% Process DDS Sweeps
 if dodds
-disp(repmat('-',1,60));
-disp('Sending DDS commands...');
+% disp(repmat('-',1,60));
+disp('DDS...');
     
     if seqdata.numDDSsweeps ~= 0
     
@@ -112,6 +112,7 @@ end
 
 if isfield(seqdata,'gpib')
     try    
+        fprintf('gpib...');
         % send commands; (..,1) to display query results in command window
         SendGPIBCommands(seqdata.gpib,1);
     catch ME
@@ -124,6 +125,7 @@ end
 
 if isfield(seqdata,'visa')
     try
+        fprintf('visa...');
         % send commands; (..,1) to display query results in command window
         SendVISACommands(seqdata.visa,1);
     catch ME
@@ -133,8 +135,10 @@ if isfield(seqdata,'visa')
 end
 
 %% Convert Analog values into 16 bit
-disp(repmat('-',1,60));
-disp('Converting analog voltages to b16 ...');
+%disp(repmat('-',1,60));
+%disp('Converting analog voltages to b16 ...');
+
+fprintf('analog...');
 
 %Used to be in the ADWIN, but moved here so that we can use a long for the
 %ADWIN data array
@@ -156,7 +160,10 @@ analogAdwin(:,3) = (seqdata.analogadwinlist(:,3)+10)/20*2^(16);
 %Change the digital update array into an array of update words
 
 if (~isempty(seqdata.digadwinlist))
-disp('Processing digital calls ...');
+% disp('Processing digital calls ...');
+% 
+
+fprintf('digital...');
 
     %pre-allocate, can be no bigger than the current update list
     new_digarray = zeros(length(seqdata.digadwinlist(:,1)),3);
@@ -213,6 +220,7 @@ end
 
 
 %% Process Main Array
+fprintf('timings...');
 
 %sort the adwin list by times
 [templist, sortindices] = sort(adwinlist,1);
@@ -437,5 +445,5 @@ seqdata.seqcalculated = 1;
 
 seqdata = orderfields(seqdata);
 
-disp('Sequence calculated.');
+disp('done.');
 end

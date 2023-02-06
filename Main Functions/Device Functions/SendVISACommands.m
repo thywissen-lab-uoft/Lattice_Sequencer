@@ -5,8 +5,8 @@ function out = SendVISACommands(cmds, talk)
 %Summary: Sends commands to VISA devices.
 %-----
 
-disp(repmat('-',1,60));
-disp(['Sending VISA commands (' num2str(length(cmds)) ')']);
+%disp(repmat('-',1,60));
+%disp(['Sending VISA commands (' num2str(length(cmds)) ')']);
 
 if ischar(cmds) % convert a single string to a cell array
     cmds = {cmds};
@@ -40,6 +40,7 @@ for j=1:length(cmds)
         fopen(obj);
         success = 1;
     catch ERR
+        disp(' ');
         disp(['visa::error could not connect to device ' addr '! Moving on.'])
         success = 0;
     end

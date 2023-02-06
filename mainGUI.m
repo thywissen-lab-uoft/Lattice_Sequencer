@@ -11,7 +11,7 @@ function hF=mainGUI
 %
 % CF has attempted to improve the code architecture.
 
-doDebug = 0;
+
 %%%%%%%%%%%%%%% Initialize Sequence Data %%%%%%%%%%%%%%%%%
 LatticeSequencerInitialize();
 global seqdata;
@@ -26,12 +26,13 @@ evalin('base','openvar(''seqdata.params'')')
 waitDefault=30;
 
 defaultSequence='@main_sequence';
+figName='Main GUI';
 
-if ~doDebug
-    figName='Main GUI';
-else
-    figName = 'DEBUG MODE';
+if seqdata.debugMode
+    figName=[figName ' DEBUG MODE'];
 end
+
+
 
 disp('Opening Lattice Sequencer...');
 %% Delete old timer objects
@@ -71,6 +72,8 @@ clf
 hF.Position(3:4)=[w h];
 set(hF,'WindowStyle','docked');
 data = struct;
+
+
 
 %% Figure
 % Callback for a close request function. The close request function handles
@@ -130,10 +133,15 @@ hpMain.OuterPosition=[0 0 hF.Position(3) hF.Position(4)];
 hpMain.OuterPosition=[0 hF.Position(4)-h w h];
 
 % Title String
-tTit=uicontrol(hpMain,'style','text','string','Main GUI',...
+tTit=uicontrol(hpMain,'style','text','string',figName,...
     'FontSize',10,'fontweight','bold','units','pixels','backgroundcolor',cc);
 tTit.Position(3:4)=tTit.Extent(3:4);
 tTit.Position(1:2)=[5 hpMain.Position(4)-tTit.Position(4)-3];
+
+if seqdata.debugMode
+    tTit.ForegroundColor = 'r';
+    tTit.FontWeight = 'bold';
+end
 
 %% Settings Graphical Objects
 
@@ -670,8 +678,7 @@ data.waitTimer = timeWait;
         % Should this just happen every single time?
         if isempty(seqdata)
             LatticeSequencerInitialize();
-        end        
-                
+        end                        
         
         % Is the sequence already running?        
         if isequal(timeAdwin.Running ,'on')

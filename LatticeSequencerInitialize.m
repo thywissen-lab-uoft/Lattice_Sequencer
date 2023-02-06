@@ -91,6 +91,17 @@ if isempty(adwin_booted)
     adwin_booted = 0;
 end
 
+% Check the computer hostname for debug mode
+[~, name] = system('hostname');
+name = strrep(name,newline,'');     % remove new line character
+name = strrep(name,char(13),'');    % remove carriage return
+if isequal(name,'kitty')
+    seqdata.debugMode = 1;
+else
+    seqdata.debugMode = 0;
+end
+
+
 %run initializers
 initialize_channels();
 

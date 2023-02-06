@@ -24,7 +24,6 @@ seqdata.compath='Y:\_communication';
 seqdata.camera_control_file = 'Y:\_communication\camera_control.mat';
 seqdata.analysis_summary_file = 'Y:\_communication\pco_analysis_summary.mat';
 
-
 % seqdata.multiscannum = [];%Feb-2017
 if isfield(seqdata,'times'); seqdata = rmfield(seqdata,'times'); end
 if isfield(seqdata,'flags'); seqdata = rmfield(seqdata,'flags'); end
@@ -33,9 +32,5 @@ if isfield(seqdata,'gpib'); seqdata = rmfield(seqdata,'gpib'); end
 if isfield(seqdata,'visa'); seqdata = rmfield(seqdata,'visa'); end
 if isfield(seqdata,'sortedgpibvisadata');seqdata = rmfield(seqdata,'sortedgpibvisadata');end%Feb-2017
 if isfield(seqdata,'coil_enable'); seqdata = rmfield(seqdata,'coil_enable'); end
-
-
-% if ~isfield(seqdata,'doscan'); seqdata.doscan = 0; end
-% if ~seqdata.doscan; seqdata.scancycle = 1; end
 
 end

@@ -60,8 +60,8 @@ else
     end
     
     if tt < 100
-        buildWarning('ramp_DDS_freq',sprintf('Fast sweep: df = %g, dt = %g, df/dt/slope = %g.',...
-            delta_f,delta_t,delta_f/delta_t/freq_slope),0);
+        %buildWarning('ramp_DDS_freq',sprintf('Fast sweep: df = %g, dt = %g, df/dt/slope = %g.',...
+        %    delta_f,delta_t,delta_f/delta_t/freq_slope),0);
     end
     
     %general purpose

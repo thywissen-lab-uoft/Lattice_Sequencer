@@ -47,7 +47,7 @@ seqdata.flags.misc_lock_PA                  = 0; % Update wavemeter lock
 seqdata.flags.misc_program4pass             = 0; % Update four-pass frequency
 seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
 seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
-seqdata.flags.misc_moveObjective            = 1;
+seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
 defVar('objective_piezo',3,'V');
 % 0.1V = 700 nm, larger means further away from chamber
 
@@ -322,20 +322,7 @@ if seqdata.flags.misc_lock_PA
 end
 
 %% Set Objective Piezo Voltages
-% If the cloud moves up, the voltage must increase to refocus
-%  (as the experiment warms up, selected plane tends to move up a bit)
-
-% obj_piezo_V_List = [3];[5];[4.6];
-% 0.1V = 700 nm, must be larger than  larger value means farther away from the window.
-%     obj_piezo_V = getScanParameter(obj_piezo_V_List, ...
-%     seqdata.scancycle, 1, 'Objective_Piezo_Z','V');%5
-
-% obj_piezo_V = getScanParameter(obj_piezo_V_List, ...
-% seqdata.scancycle, 1:length(obj_piezo_V_List), 'Objective_Piezo_Z','V');%5
-
-% obj_piezo_V = 6.8;
-% setAnalogChannel(calctime(curtime,0),'objective Piezo Z',obj_piezo_V,1);
-% addOutputParam('objpzt',obj_piezo_V,'V');
+% Update the objective piezo height
 
 if seqdata.flags.misc_moveObjective
     setAnalogChannel(calctime(curtime,0),'objective Piezo Z',...

@@ -2,6 +2,8 @@ function timeout = main_sequence(timein)
 % main_sequence.m
 
 if nargin == 0 
+    curtime = 0;
+else
     curtime = timein;
 end
 

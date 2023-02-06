@@ -46,11 +46,6 @@ seqdata.flags.misc_program4pass             = 0; % Update four-pass frequency
 seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
 seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
 
-seqdata.flags.misc_move_Objective           = 1; % Update objective pizeo
-defVar('objective_piezo',3,'V');
-% 0.1V = 700 nm, larger value means farther away from the window.
-% This variable is moved in order to avoid hysterisis
-
 seqdata.flags.Rb_Probe_Order                = 1;   % 1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
                                                     % 2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
 defVar('PA_detuning',round(-49.539,6),'GHz');
@@ -325,14 +320,18 @@ end
 % If the cloud moves up, the voltage must increase to refocus
 %  (as the experiment warms up, selected plane tends to move up a bit)
 
-if seqdata.flags.misc_move_Objective
-    % 0.1V = 700 nm, larger value means farther away from the window. 
-    %setAnalogChannel(calctime(curtime,0),'objective Piezo
-    %Z',obj_piezo_V,1);[3 V]    
-    setAnalogChannel(calctime(curtime,0),'objective Piezo Z',...
-        getVarOrdered('objective_piezo'),1);
-end
+obj_piezo_V_List = [3];[5];[4.6];
+% 0.1V = 700 nm, must be larger than  larger value means farther away from the window.
+%     obj_piezo_V = getScanParameter(obj_piezo_V_List, ...
+%     seqdata.scancycle, 1, 'Objective_Piezo_Z','V');%5
 
+obj_piezo_V = getScanParameter(obj_piezo_V_List, ...
+seqdata.scancycle, 1:length(obj_piezo_V_List), 'Objective_Piezo_Z','V');%5
+
+% obj_piezo_V = 6.8;
+setAnalogChannel(calctime(curtime,0),'objective Piezo Z',obj_piezo_V,1);
+addOutputParam('objpzt',obj_piezo_V,'V');
+    
 %% Four-Pass
 
 % Set 4-Pass Frequency

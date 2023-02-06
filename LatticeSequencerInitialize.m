@@ -57,34 +57,34 @@ clear global seqdata;
 global seqdata;
 
 %main sequence data
-seqdata = struct('analogadwinlist',[],... %adwin list is [time channel value];
-    'digadwinlist',[],... %list is [time channel value boardchannel bytevalue]
-    'deltat',1*5E-6,... %time step between ADWIN events (must be an integer number of ADWIN clock cycles)
-    'cycle',1,... %for cycling runs. This can be used as an array identifier (CF: unused?)
-    'randcyclelist',[],... %this is a list of all the cycle numbers randomized
-    'analogchannels',struct([]),... %analog channels information
-    'timeunit',1E-3,... %how we refer to times (ie. this sets to 1ms)
-    'digchannels',struct([]),... %digital channel info
-    'digcardchannels',[101,102,103],... %101 corresponds to Module 2 on ADwin, 102 corresponds to Module 1, 103 corresponds to Module 3
-    'diglastvalue',[0 0 0],... %last value of the digital card sent to the sequencer
-    'digcardnum',3,...%number of dig cards
-    'updatelist',[],...%update list to send to ADWIN
-    'chnum',[],... %channel list to send to ADWIN
-    'chval',[],... %channel value list to send to ADWIN
-    'seqcalculated',-1,... %has the sequence been calculated?
-    'seqloaded',-1,... %has the sequence been loaded to the ADWIN?
-    'sequencetime',0,... %time for the sequence to run
-    'outputparams',[],...% parameters to output
-    'numDDSsweeps',0,... %Add these two lines! 
+seqdata = struct('analogadwinlist',[],...   % adwin list is [time channel value];
+    'digadwinlist',[],...                   % list is [time channel value boardchannel bytevalue]
+    'deltat',1*5E-6,...                     % time step between ADWIN events (must be an integer number of ADWIN clock cycles)
+    'cycle',1,...                           % for cycling runs. This can be used as an array identifier (CF: unused?)
+    'randcyclelist',[],...                  % this is a list of all the cycle numbers randomized
+    'analogchannels',struct([]),...         % analog channels information
+    'timeunit',1E-3,...                     % how we refer to times (ie. this sets to 1ms)
+    'digchannels',struct([]),...            % digital channel info
+    'digcardchannels',[101,102,103],...     % 101 corresponds to Module 2 on ADwin, 102 corresponds to Module 1, 103 corresponds to Module 3
+    'diglastvalue',[0 0 0],...              % last value of the digital card sent to the sequencer
+    'digcardnum',3,...                      % number of dig cards
+    'updatelist',[],...                     % update list to send to ADWIN
+    'chnum',[],...                          % channel list to send to ADWIN
+    'chval',[],...                          % channel value list to send to ADWIN
+    'seqcalculated',-1,...                  % has the sequence been calculated?
+    'seqloaded',-1,...                      % has the sequence been loaded to the ADWIN?
+    'sequencetime',0,...                    % time for the sequence to run
+    'outputparams',[],...                   % parameters to output
+    'numDDSsweeps',0,...                    % Add these two lines! 
     'DDSsweeps',[],...
-    'atomtype',4,...  %1 - K-40, 2 - K-41, 3 - Rb-87 , 4 - Rb+K % seems bad to me
-    'params', [],...%various parameters, recently defined here by FC 07/23/2020
+    'atomtype',4,...                        % 1 - K-40, 2 - K-41, 3 - Rb-87 , 4 - Rb+K % seems bad to me
+    'params', [],...                        % various parameters, recently defined here by FC 07/23/2020
     'flags',[]); 
 
 seqdata.scancycle=1;
 seqdata.randcyclelist=makeRandList;
 
-%ADWIN processor speed
+%ADWIN processor speed (300 MHz)
 adwin_processor_speed = 300E6;
 
 if isempty(adwin_booted)

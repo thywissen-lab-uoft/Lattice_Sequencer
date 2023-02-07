@@ -276,7 +276,7 @@ bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
 % Button group for selecting wait mode. The user data holds the selected
 % button
 bgWait = uibuttongroup('Parent',hpMain,'units','pixels','Title','wait mode',...
-    'backgroundcolor',cc,'UserData',1,'SelectionChangedFcn',@waitCB);
+    'backgroundcolor',cc);
 bgWait.Position(3:4)=[347 70];
 bgWait.Position(1:2)=[1 1];
 
@@ -288,8 +288,6 @@ uicontrol(bgWait,'Style','radiobutton','String','intercycle',...
     'Position',[50 30 100 20],'Backgroundcolor',cc,'UserData',1,'value',1);
 uicontrol(bgWait,'Style','radiobutton','String','total',...
     'Position',[120 30 100 20],'Backgroundcolor',cc,'UserData',2,'value',0);              
-uicontrol(bgWait,'Style','radiobutton','String','auto',...
-    'Position',[165 30 100 20],'Backgroundcolor',cc,'UserData',3,'value',0);   
 
 % Table for storing value of wait time
 tblWait=uitable(bgWait,'RowName','','ColumnName','','Data',waitDefault,...
@@ -305,32 +303,6 @@ tWait=uicontrol(bgWait,'style','text','string','seconds',...
 tWait.Position(3:4)=tWait.Extent(3:4);
 tWait.Position(1)=tblWait.Position(1)+tblWait.Position(3)+2;
 tWait.Position(2)=tblWait.Position(2);
-
-    function waitCB(~,rbutton)        
-        switch rbutton.NewValue.UserData            
-            case 0 % no wait
-                disp('Disabling intercyle wait.');
-                bgWait.UserData     = 0;               
-                tblWait.Enable      = 'off';
-                tWaitTime1.String   = 'n/a';
-                tWaitTime2.String   = 'n/a';
-                stop(timeWait);
-            case 1
-                disp(['Wait timer engaged. Inter-cycle wait time mode. ' ...
-                    ' This will be updated at end of next cycle.']);
-                bgWait.UserData     = 1;
-                tblWait.Enable      = 'on';           
-                tWaitTime1.String   = '~ s';
-                tWaitTime2.String   = '~ s';
-            case 2
-                disp(['Wait timer engaged. Total sequence wait time mode. ' ...
-                    ' This will be updated at end of next cycle.']);
-                bgWait.UserData     = 2;
-                tblWait.Enable      = 'on';
-                tWaitTime1.String   = '~ s';
-                tWaitTime2.String   = '~ s';
-        end        
-    end
 
 % Axis object for plotting the wait bar
 waitbarcolor=[106, 163, 241 ]/255;
@@ -532,7 +504,8 @@ bReset.Position(1:2)=[bAbort.Position(1)-bReset.Position(3) ...
 bReset.Callback=@bResetCB;
 
 %% Sequence Watcher
-
+timer_handles.WaitButtons = bgWait;
+timer_handles.WaitTable = tblWait;
 timer_handles.WaitBar = pWaitBar;
 timer_handles.WaitStr1 = tWaitTime1;
 timer_handles.WaitStr2 = tWaitTime2;
@@ -607,7 +580,7 @@ timer_handles.StatusStr = tStatus;
            funcs{kk} =  str2func(erase(strs{kk},'@')); 
         end        
         d=guidata(hF);
-        d.SequencerWatcher.RequestWaitTime = tblWait.Data;
+        d.SequencerWatcher.RequestWaitTime = d.SequencerWatcher.WaitTable.Data;
 
         runSequence(funcs);    
         d.SequencerListener.Enabled=1;

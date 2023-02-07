@@ -12,8 +12,11 @@ classdef sequencer_watcher < handle
         AdwinStr2   
         AdwinBar
         WaitBar  
+        WaitTable
+        WaitButtons
         StatusStr
         isRunning
+        WaitMode
     end
     
     events
@@ -36,12 +39,30 @@ classdef sequencer_watcher < handle
             this.WaitBar = handles.WaitBar;
 
             
+            this.WaitTable=handles.WaitTable;
+            this.WaitButtons=handles.WaitButtons;
+
+        
+            
             this.AdwinTimer.TimerFcn = @this.updateAdwin;
             this.WaitTimer.TimerFcn = @this.updateWait;     
             
+            this.WaitButtons.SelectionChangedFcn = @(src,evt) this.chWaitMode(evt.NewValue.UserData);
+            this.WaitMode = this.WaitButtons.SelectedObject.UserData;
             this.StatusStr = handles.StatusStr;
         end
         
+        function chWaitMode(this,waitMode)     
+            this.WaitMode = waitMode;            
+            if waitMode == 0
+               this.WaitTable.Enable = 'off';
+               this.RequestWaitTime = 0;
+            else
+               this.WaitTable.Enable = 'on';
+               this.RequestWaitTime = this.WaitTable.Data;
+            end
+        end
+    
         function cycleComplete(this)
             disp('cycle complete');
             this.isRunning=0;
@@ -77,8 +98,19 @@ classdef sequencer_watcher < handle
         end
         
         function updateWait(this,src,evt)
-            dT = (now - this.WaitStartTime)*24*60*60;
             dT0 = this.RequestWaitTime;
+
+            switch this.WaitMode
+                case 0
+                    dT = 0;
+                    dT0=0;
+                case 1
+                    dT = (now - this.WaitStartTime)*24*60*60;
+                case 2
+                    dT = (now - this.AdwinStartTime)*24*60*60;
+
+            end
+            
             
             if dT>=dT0
                 stop(src);       

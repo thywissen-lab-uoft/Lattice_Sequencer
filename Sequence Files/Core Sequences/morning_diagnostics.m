@@ -1,49 +1,41 @@
 function morning_diagnostics
 global seqdata
-%% Find the GUI
-figs = get(groot,'Children');
-fig = [];
-for i = 1:length(figs)
-    if isequal(figs(i).UserData,'sequencer_gui')        
-        fig = figs(i);
-    end
-end
 
-if isempty(fig)
-    warning('open the GUI first');
-    return
-end
+initSequenceQueue;
 
-data=guidata(fig);
-
-%% NEED TO FIGURE OUT HOW EVENT QUEIING WORKS
 %% RF1B K 
+% Camera and analysis options
+opts = struct;
+opts.saveDirName = 'K RF1B stats';
 
-camOpts = struct;
-camOpts.saveDirName = 'K RF1B stats';
+N = 20;                         % number of iterations to run
+scaninds = ones(N,1);           % scancycle indeces to use
 
+% sequence functions to run
 funcs = {@main_settings,@modseq_RF1BK,@main_sequence};
 
-for kk=1:20
-    seqdata.scancycle = 1;
-    runSequence(funcs);   
-    disp(camOpts.saveDirName);
-   % run cam with camOpts
-end
+% add it to the queue
+addToSequenceQueue(funcs,opts,scaninds;
 
 %% XDT DFG
 
-camOpts = struct;
-camOpts.saveDirName = 'dfg stats';
+opts = struct;
+opts.saveDirName = 'dfg stats';
 
 funcs = {@main_settings,@modseq_dfg_mix,@main_sequence};
+addToSequenceQueue(funcs,opts,ones(N,1));
 
-for kk=1:20
-    seqdata.scancycle = 1;
-    runSequence(funcs);   
-    disp(camOpts.saveDirName);
-  % run cam with camOpts
-end
+%% XDT DFG TOF
+
+opts = struct;
+opts.saveDirName = 'dfg stats';
+
+funcs = {@main_settings,@modseq_dfg_mix_tof,@main_sequence};
+addToSequenceQueue(funcs,opts,1:30);
+
+%% Go Run
+
+% start everything
 
 end
 

@@ -332,54 +332,17 @@ tWaitTime2.Position=[axWaitBar.Position(3) 10];
 
 %% Run mode graphics and callbacks
 
-% Run sequence mode
-bgRun = uibuttongroup('Parent',hpMain,'units','pixels','Title','run mode',...
-    'backgroundcolor',cc,'UserData',0,'SelectionChangedFcn',@runModeCB);
-bgRun.Position(3:4)=[347 160];bgRun.Position(1:2)=[350 1];
-        
-    function runModeCB(~,evnt)
-        switch evnt.NewValue.String
-            case 'single'
-                disp('Changing run mode to single iteration');
-                bRunIter.Enable     = 'on';
-                bRunIter.Visible    = 'on';                
-                bStartScan.Visible  = 'off';
-                bStartScan.Enable   = 'off';                    
-                bContinue.Visible   = 'off';
-                bContinue.Enable    = 'off';                
-                bStop.Visible       = 'off';
-            case 'scan'
-                disp('Changing run mode to scan mode.');
-                bRunIter.Enable     = 'on';
-                bRunIter.Visible    = 'on';                
-                bStartScan.Visible  = 'on';
-                bStartScan.Enable   = 'on';                   
-                bContinue.Visible   = 'on';
-                bContinue.Enable    = 'on';                
-                bStop.Visible       = 'on';
-        end        
-    end
-
-% Radio button for single mode
-rSingle=uicontrol(bgRun,'Style','radiobutton', 'String','single',...
-    'Position',[5 90 65 30],'Backgroundcolor',cc,'UserData',0,...
-    'fontsize',8,'Value',1);  
-rSingle.Position(2) = bgRun.Position(4)-rSingle.Position(4)-7;
-
-% Radio button for scan mode
-rScan=uicontrol(bgRun,'Style','radiobutton','String','scan',...
-    'Position',[55 85 100 30],'Backgroundcolor',cc,'UserData',1,...
-    'FontSize',8);
-rScan.Position(2) = rSingle.Position(2);
+hpRun = uipanel('Parent',hpMain,'units','pixels','Title','run mode',...
+    'backgroundcolor',cc);
+hpRun.Position(3:4)=[347 160];hpRun.Position(1:2)=[350 1];
 
 %%%%%%%%%%%%%%%%%%%%% ADWIN PROGRESS BAR  %%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 % Create axis object for the bar
 adwinbarcolor=[0.67578 1 0.18359];
-axAdWinBar=axes('parent',bgRun,'units','pixels','XTick',[],...
+axAdWinBar=axes('parent',hpRun,'units','pixels','XTick',[],...
     'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
-axAdWinBar.Position=[10 10 bgRun.Position(3)-20 10];
-axAdWinBar.Position(2) = rScan.Position(2)-axAdWinBar.Position(4)-15;
+axAdWinBar.Position=[10 10 hpRun.Position(3)-20 10];
+axAdWinBar.Position(2) = 100;
 % Plot the patch of color for the bar
 pAdWinBar = patch(axAdWinBar,[0 0 0 0],[0 0 1 1], adwinbarcolor);
 
@@ -398,45 +361,62 @@ text(.5,1.05,'adwin progress','fontsize',10,'horizontalalignment','center', ...
 %% Run Controls
 
 % Button to run the cycle
-bRunIter=uicontrol(bgRun,'style','pushbutton','String','Run Cycle',...
+bRunIter=uicontrol(hpRun,'style','pushbutton','String','Run Cycle',...
     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','Callback',{@bRunCB 0});
-bRunIter.Position(3:4)=[100 20];bRunIter.Position(1:2)=[5 30];
+bRunIter.Position(3:4)=[85 20];bRunIter.Position(1:2)=[5 30];
 bRunIter.Tooltip='Run the current sequence.';
 
 % Button to run the cycle
-bStartScan=uicontrol(bgRun,'style','pushbutton','String','Start Scan',...
+bStartScan=uicontrol(hpRun,'style','pushbutton','String','Start Scan',...
     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
-    'fontweight','bold','Visible','off','enable','off');
-bStartScan.Position(3:4)=[100 20];
+    'fontweight','bold');
+bStartScan.Position(3:4)=[85 20];
 bStartScan.Position(1:2)=[5 5];
 bStartScan.Callback={@bRunCB 1};
 bStartScan.Tooltip='Start the scan.';
 
 % Button to run the cycle
-bContinue=uicontrol(bgRun,'style','pushbutton','String','Continue Scan',...
+bContinue=uicontrol(hpRun,'style','pushbutton','String','Resume Scan',...
     'backgroundcolor',[173 216 230]/255,'FontSize',8,'units','pixels',...
-    'fontweight','bold','Visible','off','enable','off');
-bContinue.Position(3:4)=[110 20];
-bContinue.Position(1:2)=[110 5];
+    'fontweight','bold');
+bContinue.Position(3:4)=[85 20];
+bContinue.Position(1:2)=[95 5];
 bContinue.Callback={@bRunCB 2};
-bContinue.Tooltip='Continue the scan from current iteration.';
+bContinue.Tooltip='resume the scan from current iteration.';
 
 % Button to stop
-bStop=uicontrol(bgRun,'style','pushbutton','String','Stop Scan',...
+bStop=uicontrol(hpRun,'style','pushbutton','String','Stop Scan',...
     'backgroundcolor',[255	218	107]/255,'FontSize',8,'units','pixels',...
-    'fontweight','bold','enable','on','visible','off');
-bStop.Position(3:4)=[100 20];
-bStop.Position(1:2)=[225 5];
+    'fontweight','bold');
+bStop.Position(3:4)=[85 20];
+bStop.Position(1:2)=[185 5];
 bStop.Callback=@bStopCB;
-bStop.Tooltip='Compile and run the currently selected sequence.';
+bStop.Tooltip='Stop the scan.';
+
+% Button to reset cycle #
+bResetCycleNum=uicontrol(hpRun,'style','pushbutton','String','reset cycle#',...
+    'backgroundcolor',[238,232,170]/255,'FontSize',8,'units','pixels',...
+    'fontweight','bold');
+bResetCycleNum.Position(3:4)=[85 20];
+bResetCycleNum.Position(1:2)=[95 30];
+bResetCycleNum.Callback=@bResetCycleNumCB;
+bResetCycleNum.Tooltip='Reset cycle number';
 
 
-cycleTbl=uitable(bgRun,'RowName','Cycle #','ColumnName',{},...
+% Status String
+ttt=uicontrol(hpRun,'style','text','string','cycle #',...
+    'backgroundcolor','w','fontsize',8,'units','pixels');
+ttt.Position(3:4)=ttt.Extent(3:4);
+ttt.Position(1:2)=[290 38];
+
+
+cycleTbl=uitable(hpRun,'RowName',{},'ColumnName',{},...
     'ColumnEditable',[true],'Data',[1],'units','pixels',...
-    'ColumnWidth',{50},'FontSize',12,'CellEditCallback',@tblCB);
+    'ColumnWidth',{50},'FontSize',10,'CellEditCallback',@tblCB);
 cycleTbl.Position(3:4)=cycleTbl.Extent(3:4);
-cycleTbl.Position(1:2)=[110 bRunIter.Position(2)+2];
+cycleTbl.Position(1:2)=[285 20];
+
 
     function tblCB(src,evt)
         n = evt.NewData;
@@ -448,14 +428,14 @@ cycleTbl.Position(1:2)=[110 bRunIter.Position(2)+2];
     end
 
 % Checkbox for repeat cycle
-cRpt=uicontrol(bgRun,'style','checkbox','string','repeat cycle?','fontsize',8,...
+cRpt=uicontrol(hpRun,'style','checkbox','string','repeat cycle?','fontsize',8,...
     'backgroundcolor',cc,'units','pixels');
 cRpt.Position(3:4)=[100 cRpt.Extent(4)];
-cRpt.Position(1:2)=[cycleTbl.Position(1)+cycleTbl.Position(3)+5 cycleTbl.Position(2)];
+cRpt.Position(1:2)=[185 33];
 cRpt.Tooltip='Enable or disable automatic repitition of the sequence.';
 
 % Status String
-tStatus=uicontrol(bgRun,'style','text','string','idle',...
+tStatus=uicontrol(hpRun,'style','text','string','idle',...
     'backgroundcolor','w','fontsize',8,'units','pixels',...
     'fontweight','bold','visible','on','horizontalalignment','center');
 tStatus.Position(3:4)=[axAdWinBar.Position(3) 15];
@@ -465,7 +445,7 @@ tStatus.Position(2) = axAdWinBar.Position(2) - 15;
 tStatus.ForegroundColor=[0 128 0]/255;
 
 % Scan Var
-tScanVar=uicontrol(bgRun,'style','text','string','No detected variable scanning with ParamDef/Get.',...
+tScanVar=uicontrol(hpRun,'style','text','string','No detected variable scanning with ParamDef/Get.',...
     'backgroundcolor','w','fontsize',8,'units','pixels',...
     'fontweight','normal','visible','on','horizontalalignment','center');
 tScanVar.Position(3:4)=[axAdWinBar.Position(3) 15];
@@ -474,11 +454,11 @@ tScanVar.Position(2) = tStatus.Position(2) - 15;
 
 % Button to reseed random list
 ttStr=['Reseed random list of scan indeces.'];
-bRandSeed=uicontrol(bgRun,'style','pushbutton','String','reseed random',...
+bRandSeed=uicontrol(hpRun,'style','pushbutton','String','reseed random',...
     'backgroundcolor',[255,165,0]/255,'FontSize',8,'units','pixels',...
     'fontweight','normal','Tooltip',ttStr);
 bRandSeed.Position(3:4)=[80 16];
-bRandSeed.Position(1:2)=[100 bgRun.Position(4)-bRandSeed.Position(4)-14];
+bRandSeed.Position(1:2)=[1 hpRun.Position(4)-bRandSeed.Position(4)-14];
 bRandSeed.Callback=@bReseedRandom;
 
     function bReseedRandom(~,~)
@@ -490,17 +470,17 @@ bRandSeed.Callback=@bReseedRandom;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ABORT  %%%%%%%%%%%%%%%%%%%%%%
 ttStr=['Interrupts AdWIN and sends all digital and analog voltage ' ...
     'outputs to their reset value.  DANGEROUS'];
-bAbort=uicontrol(bgRun,'style','pushbutton','String','abort',...
+bAbort=uicontrol(hpRun,'style','pushbutton','String','abort',...
     'backgroundcolor','r','FontSize',8,'units','pixels',...
     'fontweight','normal','Tooltip',ttStr,'Callback',@bAbortCB);
 bAbort.Position(3:4)=[40 15];
-bAbort.Position(1:2)=[bgRun.Position(3)-bAbort.Position(3)-5 ...
-    bgRun.Position(4)-bAbort.Position(4)-12];
+bAbort.Position(1:2)=[hpRun.Position(3)-bAbort.Position(3)-5 ...
+    hpRun.Position(4)-bAbort.Position(4)-12];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RESET  %%%%%%%%%%%%%%%%%%%%%%
 ttStr=['Reinitialize channels and reset Adwin outputs ' ...
     'to default values.'];
-bReset=uicontrol(bgRun,'style','pushbutton','String','reset',...
+bReset=uicontrol(hpRun,'style','pushbutton','String','reset',...
     'backgroundcolor',[255,165,0]/255,'FontSize',8,'units','pixels',...
     'fontweight','normal','Tooltip',ttStr);
 bReset.Position(3:4)=[40 15];
@@ -526,11 +506,13 @@ timer_handles.StatusStr = tStatus;
         d.SequencerListener.Enabled = 0;
         if cRpt.Value
             disp('Repeating the sequence');
+            cycleTbl.Data       = seqdata.scancycle;
             runSequenceCB;
         else
             if seqdata.doscan
                 % Increment the scan and run the sequencer again
                 seqdata.scancycle = seqdata.scancycle+1;
+                cycleTbl.Data       = seqdata.scancycle;
                 runSequenceCB;
             end
         end   
@@ -552,29 +534,27 @@ timer_handles.StatusStr = tStatus;
         end        
                 
         switch run_mode            
-            case 0 % Run a single iteration
-                if isequal(bgRun.SelectedObject.String,'single')
-                    seqdata.scancycle = 1;
-                else
-                    seqdata.scancycle = cycleTbl.Data;
-                end      
+            case 0 % Run a single iteration               
+                seqdata.scancycle   = cycleTbl.Data;
             case 1 % 1 : start a scan
                 seqdata.doscan      = 1;
-                seqdata.scancycle = 1;
+                seqdata.scancycle   = 1;
+                cycleTbl.Data       = 1;
             case 2 % Continue the scan
                 seqdata.doscan      = 1;
+                seqdata.scancycle   = seqdata.scancycle + 1;
+                cycleTbl.Data       = seqdata.scancycle;
         end  
         runSequenceCB;        
     end
 
-    function bStopCB(~,~)
-        switch bgRun.SelectedObject.String
-            case 'single'
-                warning('HOW DID YOU GET HERE BAD');                
-            case 'scan'
-                disp('Stopping the scan. Wait until next iteration is complete.');
-                seqdata.doscan=0; 
-        end  
+    function bStopCB(~,~)       
+        seqdata.doscan=0;           
+    end
+
+    function bResetCycleNumCB(~,~)
+        cycleTbl.Data = 1;
+        seqdata.scancycle = 1;
     end
 
     function runSequenceCB    

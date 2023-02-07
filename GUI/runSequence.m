@@ -26,7 +26,7 @@ end
 
 %%
 
-data.cycleTbl.Data=seqdata.scancycle;
+data.cycleTbl.Data = seqdata.scancycle;
 
 %% Compile Code
 compile(funcs);

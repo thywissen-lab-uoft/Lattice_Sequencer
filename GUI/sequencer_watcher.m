@@ -42,6 +42,19 @@ classdef sequencer_watcher < handle
             this.WaitButtons.SelectionChangedFcn = @(src,evt) this.chWaitMode(evt.NewValue.UserData);
             this.WaitMode = this.WaitButtons.SelectedObject.UserData;
             this.StatusStr = handles.StatusStr;           
+            this.WaitTable.CellEditCallback = @(src,evt) this.chWaitTime(src,evt);
+        end
+        
+        function chWaitTime(this,src,evt)
+             x = evt.NewData;
+            
+            if isnumeric(x) && x>=0 && ~isinf(x) && ~isnan(x)
+                src.Data = x;
+                this.RequestWaitTime = x;
+                this.WaitStr2.String=[num2str(x,'%.2f') ' s'];  
+            else 
+                src.Data = evt.PreviousData;
+            end
             
         end
         

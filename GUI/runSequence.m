@@ -1,13 +1,14 @@
-function runSequence(fncs)
+function tExecute=runSequence(funcs,opts)
 global seqdata
 global adwinprocessnum
-%% Find the GUI
-figName = 'Main GUI';
 
+tExecute = now;
+
+%% Find the GUI
 figs = get(groot,'Children');
 fig = [];
 for i = 1:length(figs)
-    if isequal(figs(i).Name,figName)        
+    if isequal(figs(i).UserData,'sequencer_gui')        
         fig = figs(i);
     end
 end
@@ -33,7 +34,7 @@ end
 data.cycleTbl.Data=seqdata.scancycle;
 
 %% Compile Code
-compile(fncs);
+compile(funcs);
 
 if ~seqdata.seqcalculated
    warning('Cannot run because compliation failed');
@@ -69,7 +70,9 @@ data.Status.ForegroundColor = [17,59,8]/255;
 
 % Make control file
 if ~seqdata.debugMode    
-    makeControlFile;
+    tExecute = makeControlFile;
+else 
+    tExecute = now;
 end
 
 %% Start the Adwin
@@ -80,7 +83,7 @@ data.Status.ForegroundColor = [17,59,8]/255;
 
 if ~seqdata.debugMode
     try
-        Start_Process(adwinprocessnum);
+        Start_Process(adwinprocessnum);        
     catch ME
         warning(getReport(ME,'extended','hyperlinks','on'))
         data.Status.String = ['ADWIN RUN ERROR'];
@@ -95,7 +98,6 @@ end
 data.Status.String = ['adwin is running'];
 data.Status.ForegroundColor = 'r';
 start(data.adwinTimer);   
-
 
 end
 

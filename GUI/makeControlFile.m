@@ -1,4 +1,4 @@
-function makeControlFile        
+function tExecute=makeControlFile        
     global seqdata
 
 %% Make directory of communication if it doesn't eixt

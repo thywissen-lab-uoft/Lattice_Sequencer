@@ -1,4 +1,4 @@
-function compile(fncs)
+function compile(funcs)
 
 %% Find the GUI
 
@@ -28,8 +28,8 @@ curtime = 0;
 %% Update GUI Text
 mystr =[];
 
-for kk = 1:length(fncs)
-    mystr = [mystr '@' func2str(fncs{kk}) ','];
+for kk = 1:length(funcs)
+    mystr = [mystr '@' func2str(funcs{kk}) ','];
 end
 
 mystr(end)=[];
@@ -43,12 +43,12 @@ data.SequenceText.String=mystr;
 
 initialize_channels();
 
-for kk = 1:length(fncs)
-    data.Status.String = ['running @' func2str(fncs{kk})];
+for kk = 1:length(funcs)
+    data.Status.String = ['running @' func2str(funcs{kk})];
     data.Status.ForegroundColor = [220,88,42]/255;
     pause(.2)
     try
-        curtime = fncs{kk}(curtime); 
+        curtime = funcs{kk}(curtime); 
     catch ME
         warning( getReport( ME, 'extended', 'hyperlinks', 'on' ) )
         data.Status.String = ['sequence error'];

@@ -12,6 +12,7 @@ classdef sequencer_watcher < handle
         AdwinStr2   
         AdwinBar
         WaitBar        
+        isRunning
     end
     
     events
@@ -23,7 +24,7 @@ classdef sequencer_watcher < handle
                 'Period',0.05,'name','AdwinTimer');
             this.WaitTimer = timer('ExecutionMode','FixedSpacing', ...
                 'Period',0.05,'name','WaitTimer');
-            
+            this.isRunning = 0;
             this.WaitStr1 = handles.WaitStr1;
             this.WaitStr2 = handles.WaitStr2;
             
@@ -40,15 +41,15 @@ classdef sequencer_watcher < handle
         
         function cycleComplete(this)
             disp('cycle complete');
-            this.notify('CycleComplete') 
+            this.isRunning=0;
             this.AdwinStartTime=[];
             this.WaitStartTime=[];
+            this.notify('CycleComplete') 
         end
         
         function updateAdwin(this,src,evt)
             dT = (now - this.AdwinStartTime)*24*60*60;
             dT0 = this.RequestAdwinTime;
-            
             if dT>=dT0
                 stop(src);  
                 this.AdwinBar.XData = [0 1 1 0];             
@@ -85,6 +86,7 @@ classdef sequencer_watcher < handle
         end
         
         function start(this)
+            this.isRunning=1;
            this.AdwinStartTime = now;
            start(this.AdwinTimer); 
         end

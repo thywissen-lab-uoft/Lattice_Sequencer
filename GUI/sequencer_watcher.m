@@ -11,7 +11,8 @@ classdef sequencer_watcher < handle
         AdwinStr1
         AdwinStr2   
         AdwinBar
-        WaitBar        
+        WaitBar  
+        StatusStr
         isRunning
     end
     
@@ -36,7 +37,9 @@ classdef sequencer_watcher < handle
 
             
             this.AdwinTimer.TimerFcn = @this.updateAdwin;
-            this.WaitTimer.TimerFcn = @this.updateWait;            
+            this.WaitTimer.TimerFcn = @this.updateWait;     
+            
+            this.StatusStr = handles.StatusStr;
         end
         
         function cycleComplete(this)
@@ -44,6 +47,8 @@ classdef sequencer_watcher < handle
             this.isRunning=0;
             this.AdwinStartTime=[];
             this.WaitStartTime=[];
+            this.StatusStr.String = 'idle';
+            this.StatusStr.ForegroundColor = [0 128 0]/255;
             this.notify('CycleComplete') 
         end
         
@@ -57,7 +62,10 @@ classdef sequencer_watcher < handle
                 this.AdwinStr2.String=[num2str(dT0,'%.2f') ' s']; 
                 if this.RequestWaitTime>0
                     this.WaitStartTime = now;                
+                    this.StatusStr.String = 'waiting ...';
+                    this.StatusStr.ForegroundColor = 'k';
                     start(this.WaitTimer);
+
                 else
                     this.cycleComplete;
                 end
@@ -87,8 +95,16 @@ classdef sequencer_watcher < handle
         
         function start(this)
             this.isRunning=1;
-           this.AdwinStartTime = now;
-           start(this.AdwinTimer); 
+            this.AdwinStartTime = now;            
+            this.WaitBar.XData = [0 0 0 0];         
+            this.AdwinBar.XData = [0 0 0 0];         
+            this.WaitStr1.String=[num2str(0,'%.2f') ' s'];
+            this.WaitStr2.String=[num2str(this.RequestWaitTime,'%.2f') ' s'];
+            this.AdwinStr1.String=[num2str(0,'%.2f') ' s'];
+            this.AdwinStr2.String=[num2str(this.RequestAdwinTime,'%.2f') ' s'];   
+            this.StatusStr.String = 'adwin is running';
+            this.StatusStr.ForegroundColor = 'r';
+            start(this.AdwinTimer); 
         end
         
         function delete(this)

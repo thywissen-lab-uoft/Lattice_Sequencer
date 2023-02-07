@@ -27,6 +27,7 @@ end
 LatticeSequencerInitialize();
 global seqdata;
 global adwinprocessnum;
+
 seqdata.doscan = 0;
 seqdata.randcyclelist = makeRandList;
 
@@ -76,16 +77,14 @@ hF.Position(3:4)=[w h];
 set(hF,'WindowStyle','docked');
 data = struct;
 
-% t = main_gui_timer(hF);
-% data.sequencer_timer = t;
-%% Figure
-% Callback for a close request function. The close request function handles
-% whether the adwin is running or other potential timer issues.
-    function closeFig(fig,~)
-       disp('Requesting to close the sequencer GUI.');        
-       if (~isempty(timerfind('Name',adwinTimeName)) && ...
-               isequal(timeAdwin.Running,'on')) || ...
-               (cRpt.Value && isequal(timeWait.Running,'on'))
+timer_handles = struct;
+
+%% Close Figure Callback
+ function closeFig(src,~)
+       disp('Requesting to close the sequencer GUI.');     
+       t=guidata(src);
+       
+       if t.SequencerWatcher.isRunning       
            tt=['The sequence is still running or repitions are engaged '...
                'with the wait timer running. Are you sure you want to ' ...
                'close the GUI? If the sequence data has already been ' ...
@@ -94,7 +93,7 @@ data = struct;
            f2=figure('Name',tit,'color','w','NumberTitle','off',...
                'windowstyle','modal','units','pixels','resize','off');
            f2.Position(3:4)=[400 200];
-           f2.Position(1:2)=fig.Position(1:2)+[-50 100];           
+           f2.Position(1:2)=src.Position(1:2)+[-50 100];           
            uicontrol('style','text','String',tt,'parent',f2,...
                'fontsize',10,'units','normalized','horizontalalignment',...
                'center','backgroundcolor','w','Position',[.05 .5 .9 .35]);           
@@ -107,27 +106,21 @@ data = struct;
        else
             disp('Closing the sequencer GUI. Goodybe. I love you'); 
             try
-                stop(timeAdwin);
-                stop(timeWait);
-                delete(timeAdwin);
-                delete(timeWait); 
+                delete(t.SequencerWatcher);
             catch exception
                 warning('Something went wrong stopping and deleting timers');
             end
-            delete(fig);
+            delete(src);
        end
        
         function doClose(~,~)
             close(f2);
             disp('Closing the sequencer GUI. Goodybe. I love you');
-            stop(timeAdwin);
-            stop(timeWait);
-            pause(0.5);
-            delete(timeAdwin);
-            delete(timeWait);
-            delete(fig);
+            t=guidata(src);
+            delete(src);
         end       
-    end
+ end
+%% Main Panel
 
 % Main uipanel
 hpMain=uipanel('parent',hF,'units','pixels','backgroundcolor',cc,...
@@ -357,9 +350,8 @@ tWaitTime1.Position=[5 10];
 tWaitTime2 = text(0,0,'10.00 s','parent',axWaitBar,'fontsize',10,...
     'horizontalalignment','right','units','pixels','verticalalignment','bottom');
 tWaitTime2.Position=[axWaitBar.Position(3) 10];
-data.pWaitBar = pWaitBar;
-data.tWaitTime1 = tWaitTime1;
-data.tWaitTime2 = tWaitTime2;
+
+
 
 %% Run mode graphics and callbacks
 
@@ -379,7 +371,6 @@ bgRun.Position(3:4)=[347 160];bgRun.Position(1:2)=[350 1];
                 bContinue.Visible   = 'off';
                 bContinue.Enable    = 'off';                
                 bStop.Visible       = 'off';
-%                 cycleTbl.ColumnEditable = false;
             case 'scan'
                 disp('Changing run mode to scan mode.');
                 bRunIter.Enable     = 'on';
@@ -389,7 +380,6 @@ bgRun.Position(3:4)=[347 160];bgRun.Position(1:2)=[350 1];
                 bContinue.Visible   = 'on';
                 bContinue.Enable    = 'on';                
                 bStop.Visible       = 'on';
-%                 cycleTbl.ColumnEditable = true;
         end        
     end
 
@@ -398,7 +388,6 @@ rSingle=uicontrol(bgRun,'Style','radiobutton', 'String','single',...
     'Position',[5 90 65 30],'Backgroundcolor',cc,'UserData',0,...
     'fontsize',8,'Value',1);  
 rSingle.Position(2) = bgRun.Position(4)-rSingle.Position(4)-7;
-
 
 % Radio button for scan mode
 rScan=uicontrol(bgRun,'Style','radiobutton','String','scan',...
@@ -424,10 +413,6 @@ tAdWinTime1.Position=[5 10];
 tAdWinTime2 = text(0,0,'30.00 s','parent',axAdWinBar,'fontsize',10,...
     'horizontalalignment','right','units','pixels','verticalalignment','bottom');
 tAdWinTime2.Position=[axAdWinBar.Position(3) 10];
-
-data.pAdWinBar = pAdWinBar;
-data.tAdWinTime1 = tAdWinTime1;
-data.tAdWinTime2 = tAdWinTime2;
 
 % Add an overall label
 text(.5,1.05,'adwin progress','fontsize',10,'horizontalalignment','center', ...
@@ -475,7 +460,6 @@ cycleTbl=uitable(bgRun,'RowName','Cycle #','ColumnName',{},...
     'ColumnWidth',{50},'FontSize',12,'CellEditCallback',@tblCB);
 cycleTbl.Position(3:4)=cycleTbl.Extent(3:4);
 cycleTbl.Position(1:2)=[110 bRunIter.Position(2)+2];
-data.cycleTbl = cycleTbl;
 
     function tblCB(src,evt)
         n = evt.NewData;
@@ -494,14 +478,14 @@ cRpt.Position(1:2)=[cycleTbl.Position(1)+cycleTbl.Position(3)+5 cycleTbl.Positio
 cRpt.Tooltip='Enable or disable automatic repitition of the sequence.';
 
 % Status String
-tStatus=uicontrol(bgRun,'style','text','string','Sequencer is idle.',...
+tStatus=uicontrol(bgRun,'style','text','string','idle',...
     'backgroundcolor','w','fontsize',8,'units','pixels',...
     'fontweight','bold','visible','on','horizontalalignment','center');
 tStatus.Position(3:4)=[axAdWinBar.Position(3) 15];
 tStatus.Position(1:2)=[bStop.Position(1)+bStop.Position(3) 1];
 tStatus.Position(1) = axAdWinBar.Position(1);
 tStatus.Position(2) = axAdWinBar.Position(2) - 15;
-data.Status = tStatus;
+tStatus.ForegroundColor=[0 128 0]/255;
 
 % Scan Var
 tScanVar=uicontrol(bgRun,'style','text','string','No detected variable scanning with ParamDef/Get.',...
@@ -510,7 +494,6 @@ tScanVar=uicontrol(bgRun,'style','text','string','No detected variable scanning 
 tScanVar.Position(3:4)=[axAdWinBar.Position(3) 15];
 tScanVar.Position(1) = axAdWinBar.Position(1);
 tScanVar.Position(2) = tStatus.Position(2) - 15;
-data.VarText = tScanVar;
 
 % Button to reseed random list
 ttStr=['Reseed random list of scan indeces.'];
@@ -537,10 +520,6 @@ bAbort.Position(3:4)=[40 15];
 bAbort.Position(1:2)=[bgRun.Position(3)-bAbort.Position(3)-5 ...
     bgRun.Position(4)-bAbort.Position(4)-12];
 
-% jbAbort= findjobj(bAbort);
-% set(jbAbort,'Enabled',false);
-% set(jbAbort,'ToolTipText',ttStr);
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RESET  %%%%%%%%%%%%%%%%%%%%%%
 ttStr=['Reinitialize channels and reset Adwin outputs ' ...
     'to default values.'];
@@ -552,132 +531,21 @@ bReset.Position(1:2)=[bAbort.Position(1)-bReset.Position(3) ...
     bAbort.Position(2)];
 bReset.Callback=@bResetCB;
 
-% jbReset= findjobj(bReset);
-% set(jbReset,'Enabled',true);
-% set(jbReset,'ToolTipText',ttStr);
-%% TIMERS
-%%%%% Adwin progress timer %%%
-% After the sequence is run, this timer keeps tracks of the Adwin's
-% progress. It doesn't have direct access to the Adwin so it assumes the
-% timing based on the results of the sequence compliation.
+%% Sequence Watcher
 
-% The adwin progress timer object
-timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
-    'TimerFcn',@updateAdwinBar,'StartFcn',@startAdwinTimer,'Period',.05,...
-    'StopFcn',@stopAdwinTimer);
-data.adwinTimer = timeAdwin;
+timer_handles.WaitBar = pWaitBar;
+timer_handles.WaitStr1 = tWaitTime1;
+timer_handles.WaitStr2 = tWaitTime2;
+timer_handles.AdwinBar = pAdWinBar;
+timer_handles.AdwinStr1 = tAdWinTime1;
+timer_handles.AdwinStr2 = tAdWinTime2;
+timer_handles.StatusStr = tStatus;
 
-% Function to run when the adwin starts the sequence.
-    function startAdwinTimer(~,~)        
-        % Notify the user
-        disp(['Sequence timer started. ' num2str(seqdata.sequencetime,'%.2f') ...
-            ' seconds.']);      
-        % Give the progress timer a new start time as userdata
-        timeAdwin.UserData=now;        
-    end
+%% Button Callbacks
 
-    function stopAdwinTimer(~,~)
-        disp('Sequence timer ended.');      % Message the user
-        pAdWinBar.XData = [0 1 1 0];     % Fill out the bar
-        drawnow;                         % Update graphics 
-        set(tStatus,'String','Cycle complete.','fontweight','bold',...
-            'foregroundcolor','k');drawnow;
-        if bgWait.UserData
-           start(timeWait);              % Start wait timer if needed
-        else
-            cycleComplete;
-        end
-    end
-
-% Timer callback functions updates the graphics
-    function updateAdwinBar(~,~)
-        % Calculate the time transpired so far
-        tstart=timeAdwin.UserData;  % Sequence start time
-        dT0=seqdata.sequencetime;   % Duration of sequence       
-        dT=(now-tstart)*24*60*60;   % Current duration in sec.
-
-        % Update graphical progress bar for wait time      
-        pAdWinBar.XData = [0 dT/dT0 dT/dT0 0];    
-        tAdWinTime1.String=[num2str(dT,'%.2f') ' s'];
-        tAdWinTime2.String=[num2str(dT0,'%.2f') ' s'];
-        drawnow;
-        
-        % Stop the timer if enough time has elapsed
-        if dT>dT0
-            tAdWinTime1.String=[num2str(dT0,'%.2f') ' s'];
-            stop(timeAdwin);                 % Stop the adwin timer            
-        end
-    end
-
-%%%%% Intecycle wait timer %%%
-% After a seqeunce runs, we typically insert a mandatory wait time before
-% the sequence may run again.  This is because certain parts of the machine
-% (CATs) will get hot. This time allows the water cooling to cool down the
-% system to sufficiently safe levels.
-
-% The wait timer object
-timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
-    'TimerFcn',@updateWaitBar,'startdelay',0,'period',.05,...
-    'StartFcn',@startWait,'StopFcn',@stopWait);
-data.waitTimer = timeWait;
-
-% Function to run when the wait timer begins
-    function startWait(~,~)
-        set(tStatus,'String','waiting ...','fontweight','bold',...
-            'foregroundcolor','k');drawnow;
-        
-        % Notify the user
-        disp(['Starting the wait timer. ' ...
-            num2str(tblWait.Data,'%.2f') ' seconds wait time.']);     
-        
-        % Calculate the time to wait.
-        switch bgWait.UserData
-            case 1   
-                dT0=tblWait.Data;                    
-            case 2
-                dT0=tblWait.Data-seqdata.sequencetime;
-        end
-        
-        % Give the wait timer a new start as userdata
-        timeWait.UserData=[now dT0];         
-        % Note that the function now is days since date (January 0, 0000)
-    end
-
-% Function to run when the wait timer is complete.
-    function stopWait(~,~)
-        set(tStatus,'String','Inter cycle wait complete.','fontweight','bold',...
-            'foregroundcolor','k');drawnow;
-        
-        disp('Inter cycle wait complete.'); % Notify the user
-        pWaitBar.XData = [0 1 1 0];         % Fill out the bar
-        drawnow;                            % Update graphics        
-        cycleComplete;
-    end
-
-% Timer callback fucntion updates the wait bar graphics
-    function updateWaitBar(~,~)
-        tstart=timeWait.UserData(1);    % When the wait started
-        dT0=timeWait.UserData(2);             % Time to wait        
-        dT=(now-tstart)*24*60*60;       % Current wait duration
-        
-        % Update graphical progress bar for wait time
-        pWaitBar.XData = [0 dT/dT0 dT/dT0 0];    
-        tWaitTime1.String=[num2str(dT,'%.2f') ' s'];
-        tWaitTime2.String=[num2str(dT0,'%.2f') ' s'];
-        drawnow;
-        
-        % Stop the timer.
-        if dT>dT0
-            tWaitTime1.String=tWaitTime2.String;
-            stop(timeWait);  
-        end
-    end
-
-
-%% AdWin Callbacks
-    function cycleComplete
-        set(tStatus,'String','Cycle completed.','fontweight','bold',...
-            'foregroundcolor','k');drawnow;     
+    function CycleComplete(src,evt)        
+        d=guidata(hF);
+        d.SequencerListener.Enabled = 0;
         if cRpt.Value
             disp('Repeating the sequence');
             runSequenceCB;
@@ -690,26 +558,20 @@ data.waitTimer = timeWait;
         end   
     end    
 
-
 % Run button callback.
     function bRunCB(~,~,run_mode)    
         % Initialize the sequence if seqdata is not defined
         % Should this just happen every single time?
         if isempty(seqdata)
             LatticeSequencerInitialize();
-        end                        
+        end
+        d=guidata(hF);       
         
         % Is the sequence already running?        
-        if isequal(timeAdwin.Running ,'on')
-           warning('The sequence is already running you dummy!');
+        if (d.SequencerWatcher.isRunning)
+           warning('The sequencer running you dummy!');
            return;
         end        
-        % Is the intercycle wait timer running?
-        if isequal(timeWait.Running,'on')
-           warning(['You cannot run another sequence while the wait ' ...
-               'timer is engaged. Disable to wait timer to proceed.']);
-           return;
-        end    
                 
         switch run_mode            
             case 0 % Run a single iteration
@@ -743,8 +605,12 @@ data.waitTimer = timeWait;
         funcs={};
         for kk=1:length(strs)
            funcs{kk} =  str2func(erase(strs{kk},'@')); 
-        end              
-        runSequence(funcs);             
+        end        
+        d=guidata(hF);
+        d.SequencerWatcher.RequestWaitTime = tblWait.Data;
+
+        runSequence(funcs);    
+        d.SequencerListener.Enabled=1;
     end    
 
 % Reset Button callback
@@ -771,7 +637,21 @@ data.waitTimer = timeWait;
             warning(exception.message)            
         end
     end
-    
+%% guidata output
+
+data.pWaitBar = pWaitBar;
+data.tWaitTime1 = tWaitTime1;
+data.tWaitTime2 = tWaitTime2;
+data.pAdWinBar = pAdWinBar;
+data.tAdWinTime1 = tAdWinTime1;
+data.tAdWinTime2 = tAdWinTime2;
+data.cycleTbl = cycleTbl;
+data.Status = tStatus;
+data.VarText = tScanVar;
+data.SequencerWatcher = sequencer_watcher(timer_handles);
+data.SequencerListener = listener(data.SequencerWatcher,'CycleComplete',@CycleComplete);
+data.SequencerListener.Enabled = 0;
+
 guidata(hF,data);
 
 end

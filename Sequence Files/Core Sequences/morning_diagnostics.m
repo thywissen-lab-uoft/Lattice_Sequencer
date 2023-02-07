@@ -1,4 +1,14 @@
 function morning_diagnostics
+% morning_diagnostics.m
+%
+% Author : C Fujiwara
+% 
+% PLEASE READ ME.
+%
+% This code uses the batch running of the machine to do a few machine
+% diagnostics.
+
+%% Initialize
 global sequence_queue_checker
 global seqdata
 evalin('base','openvar(''sequence_queue'')')
@@ -12,7 +22,7 @@ opts = struct;
 opts.saveDirName = 'K RF1B stats';
 
 N = 5;                         % number of iterations to run
-scaninds = ones(N,1);           % scancycle indeces to use
+scaninds = ones(N,1);          % scancycle indeces to use
 
 % sequence functions to run
 funcs = {@main_settings,@modseq_RF1BK,@main_sequence};
@@ -42,7 +52,6 @@ seqdata.doscan = 0;
 seqdata.scancycle = 1;
 
 start(sequence_queue_checker);
-
 
 end
 

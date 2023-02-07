@@ -17,8 +17,11 @@ if isempty(fig)
     fig=mainGUI;
 end
 
-
 %%
+
+% el = addlistener(hSource,EventName,callback)
+% Should probably just make a listener objecet that waits for cycle to
+% finish
 
 sequence_queue = struct(...
     'SequenceFunctions',{},...

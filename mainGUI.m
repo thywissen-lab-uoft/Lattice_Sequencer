@@ -31,7 +31,6 @@ seqdata.doscan = 0;
 seqdata.randcyclelist = makeRandList;
 
 evalin('base','global seqdata')
-evalin('base','global sequence_queue')
 evalin('base','openvar(''seqdata'')')
 evalin('base','openvar(''seqdata.flags'')')
 evalin('base','openvar(''seqdata.params'')')
@@ -44,8 +43,6 @@ figName='Main GUI';
 if seqdata.debugMode
     figName=[figName ' DEBUG MODE'];
 end
-
-
 
 disp('Opening Lattice Sequencer...');
 %% Delete old timer objects
@@ -715,7 +712,6 @@ data.waitTimer = timeWait;
                 
         switch run_mode            
             case 0 % Run a single iteration
-                open
                 if isequal(bgRun.SelectedObject.String,'single')
                     seqdata.scancycle = 1;
                 else

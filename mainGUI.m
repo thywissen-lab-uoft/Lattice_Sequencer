@@ -34,6 +34,7 @@ evalin('base','global seqdata')
 evalin('base','openvar(''seqdata'')')
 evalin('base','openvar(''seqdata.flags'')')
 evalin('base','openvar(''seqdata.params'')')
+evalin('base','openvar(''seqdata.variables'')')
 
 waitDefault=30;
 

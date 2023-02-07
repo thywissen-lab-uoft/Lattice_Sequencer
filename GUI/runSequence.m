@@ -1,6 +1,9 @@
-function runSequence(funcs,opts)
+function tExecute=runSequence(funcs,opts)
 global seqdata
 global adwinprocessnum
+
+tExecute = now;
+
 %% Find the GUI
 figs = get(groot,'Children');
 fig = [];
@@ -67,7 +70,9 @@ data.Status.ForegroundColor = [17,59,8]/255;
 
 % Make control file
 if ~seqdata.debugMode    
-    makeControlFile;
+    tExecute = makeControlFile;
+else 
+    tExecute = now;
 end
 
 %% Start the Adwin

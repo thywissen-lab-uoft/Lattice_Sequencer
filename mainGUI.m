@@ -27,13 +27,11 @@ end
 LatticeSequencerInitialize();
 global seqdata;
 global adwinprocessnum;
-global sequence_queue
-
+seqdata.doscan = 0;
 seqdata.randcyclelist = makeRandList;
 
 evalin('base','global seqdata')
-evalin('base','global sequence_queue');
-evalin('base','openvar(''sequence_queue'')');
+evalin('base','global sequence_queue')
 evalin('base','openvar(''seqdata'')')
 evalin('base','openvar(''seqdata.flags'')')
 evalin('base','openvar(''seqdata.params'')')
@@ -575,9 +573,7 @@ data.adwinTimer = timeAdwin;
     function startAdwinTimer(~,~)        
         % Notify the user
         disp(['Sequence timer started. ' num2str(seqdata.sequencetime,'%.2f') ...
-            ' seconds.']);
-        
-
+            ' seconds.']);      
         % Give the progress timer a new start time as userdata
         timeAdwin.UserData=now;        
     end
@@ -719,7 +715,7 @@ data.waitTimer = timeWait;
                 
         switch run_mode            
             case 0 % Run a single iteration
-                seqdata.doscan = 0;
+                open
                 if isequal(bgRun.SelectedObject.String,'single')
                     seqdata.scancycle = 1;
                 else

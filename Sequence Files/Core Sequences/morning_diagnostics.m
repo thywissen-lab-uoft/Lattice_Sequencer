@@ -1,5 +1,5 @@
 function morning_diagnostics
-global seqdata
+global sequence_queue
 
 initSequenceQueue;
 
@@ -15,7 +15,7 @@ scaninds = ones(N,1);           % scancycle indeces to use
 funcs = {@main_settings,@modseq_RF1BK,@main_sequence};
 
 % add it to the queue
-addToSequenceQueue(funcs,opts,scaninds;
+addToSequenceQueue(funcs,scaninds,opts);
 
 %% XDT DFG
 
@@ -23,7 +23,7 @@ opts = struct;
 opts.saveDirName = 'dfg stats';
 
 funcs = {@main_settings,@modseq_dfg_mix,@main_sequence};
-addToSequenceQueue(funcs,opts,ones(N,1));
+addToSequenceQueue(funcs,ones(N,1),opts);
 
 %% XDT DFG TOF
 
@@ -31,7 +31,7 @@ opts = struct;
 opts.saveDirName = 'dfg stats';
 
 funcs = {@main_settings,@modseq_dfg_mix_tof,@main_sequence};
-addToSequenceQueue(funcs,opts,1:30);
+addToSequenceQueue(funcs,1:30,opts);
 
 %% Go Run
 

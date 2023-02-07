@@ -27,9 +27,13 @@ end
 LatticeSequencerInitialize();
 global seqdata;
 global adwinprocessnum;
+global sequence_queue
+
 seqdata.randcyclelist = makeRandList;
 
 evalin('base','global seqdata')
+evalin('base','global sequence_queue');
+evalin('base','openvar(''sequence_queue'')');
 evalin('base','openvar(''seqdata'')')
 evalin('base','openvar(''seqdata.flags'')')
 evalin('base','openvar(''seqdata.params'')')

@@ -76,6 +76,8 @@ hF.Position(3:4)=[w h];
 set(hF,'WindowStyle','docked');
 data = struct;
 
+% t = main_gui_timer(hF);
+% data.sequencer_timer = t;
 %% Figure
 % Callback for a close request function. The close request function handles
 % whether the adwin is running or other potential timer issues.
@@ -355,6 +357,9 @@ tWaitTime1.Position=[5 10];
 tWaitTime2 = text(0,0,'10.00 s','parent',axWaitBar,'fontsize',10,...
     'horizontalalignment','right','units','pixels','verticalalignment','bottom');
 tWaitTime2.Position=[axWaitBar.Position(3) 10];
+data.pWaitBar = pWaitBar;
+data.tWaitTime1 = tWaitTime1;
+data.tWaitTime2 = tWaitTime2;
 
 %% Run mode graphics and callbacks
 
@@ -419,6 +424,10 @@ tAdWinTime1.Position=[5 10];
 tAdWinTime2 = text(0,0,'30.00 s','parent',axAdWinBar,'fontsize',10,...
     'horizontalalignment','right','units','pixels','verticalalignment','bottom');
 tAdWinTime2.Position=[axAdWinBar.Position(3) 10];
+
+data.pAdWinBar = pAdWinBar;
+data.tAdWinTime1 = tAdWinTime1;
+data.tAdWinTime2 = tAdWinTime2;
 
 % Add an overall label
 text(.5,1.05,'adwin progress','fontsize',10,'horizontalalignment','center', ...

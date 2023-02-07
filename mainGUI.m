@@ -273,24 +273,29 @@ bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
 
 %% Wait Timer Graphical interface
 
+hpWait = uipanel('Parent',hpMain,'units','pixels','Title','wait mode',...
+    'backgroundcolor',cc);
+hpWait.Position(3:4)=[347 70];
+hpWait.Position(1:2)=[1 1];
+
 % Button group for selecting wait mode. The user data holds the selected
 % button
-bgWait = uibuttongroup('Parent',hpMain,'units','pixels','Title','wait mode',...
-    'backgroundcolor',cc);
-bgWait.Position(3:4)=[347 70];
-bgWait.Position(1:2)=[1 1];
+bgWait = uibuttongroup('Parent',hpWait,'units','pixels','backgroundcolor',cc,...
+    'BorderType','none');
+bgWait.Position(3:4)=[347 20];
+bgWait.Position(1:2)=[1 30];
 
 % Create three radio buttons in the button group. The user data holds the
 % selected mode (0,1,2) --> (no wait, intercyle, target time)
 uicontrol(bgWait,'Style','radiobutton', 'String','none',...
-    'Position',[5 30 100 20],'Backgroundcolor',cc,'UserData',0,'value',0);  
+    'Position',[5 1 100 20],'Backgroundcolor',cc,'UserData',0,'value',0);  
 uicontrol(bgWait,'Style','radiobutton','String','intercycle',...
-    'Position',[50 30 100 20],'Backgroundcolor',cc,'UserData',1,'value',1);
+    'Position',[50 1 100 20],'Backgroundcolor',cc,'UserData',1,'value',1);
 uicontrol(bgWait,'Style','radiobutton','String','total',...
-    'Position',[120 30 100 20],'Backgroundcolor',cc,'UserData',2,'value',0);              
+    'Position',[120 1 100 20],'Backgroundcolor',cc,'UserData',2,'value',0);              
 
 % Table for storing value of wait time
-tblWait=uitable(bgWait,'RowName','','ColumnName','','Data',waitDefault,...
+tblWait=uitable(hpWait,'RowName','','ColumnName','','Data',waitDefault,...
     'ColumnWidth',{30},'ColumnEditable',true,'ColumnFormat',{'numeric'},...
     'fontsize',8,'Enable','on');
 tblWait.Position(3:4)=tblWait.Extent(3:4);
@@ -298,7 +303,7 @@ tblWait.Position(4)=tblWait.Position(4);
 tblWait.Position(1:2)=[260 30];
 
 % Seconds label for the wait time.
-tWait=uicontrol(bgWait,'style','text','string','seconds',...
+tWait=uicontrol(hpWait,'style','text','string','seconds',...
     'fontsize',8,'units','pixels','backgroundcolor',cc);
 tWait.Position(3:4)=tWait.Extent(3:4);
 tWait.Position(1)=tblWait.Position(1)+tblWait.Position(3)+2;
@@ -306,7 +311,7 @@ tWait.Position(2)=tblWait.Position(2);
 
 % Axis object for plotting the wait bar
 waitbarcolor=[106, 163, 241 ]/255;
-axWaitBar=axes('parent',bgWait,'units','pixels','XTick',[],...
+axWaitBar=axes('parent',hpWait,'units','pixels','XTick',[],...
     'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
 axWaitBar.Position(1:2)=[10 5];
 axWaitBar.Position(3:4)=[bgWait.Position(3)-20 10];

@@ -30,29 +30,33 @@ classdef sequencer_watcher < handle
                 'Period',0.05,'name','WaitTimer');
             this.isRunning = 0;
             this.WaitStr1 = handles.WaitStr1;
-            this.WaitStr2 = handles.WaitStr2;
-            
+            this.WaitStr2 = handles.WaitStr2;            
             this.AdwinStr1 = handles.AdwinStr1;
-            this.AdwinStr2 = handles.AdwinStr2;
-            
+            this.AdwinStr2 = handles.AdwinStr2;            
             this.AdwinBar = handles.AdwinBar;
-            this.WaitBar = handles.WaitBar;
-
-            
+            this.WaitBar = handles.WaitBar;            
             this.WaitTable=handles.WaitTable;
-            this.WaitButtons=handles.WaitButtons;
-
-        
-            
+            this.WaitButtons=handles.WaitButtons;       
             this.AdwinTimer.TimerFcn = @this.updateAdwin;
-            this.WaitTimer.TimerFcn = @this.updateWait;     
-            
+            this.WaitTimer.TimerFcn = @this.updateWait;   
             this.WaitButtons.SelectionChangedFcn = @(src,evt) this.chWaitMode(evt.NewValue.UserData);
             this.WaitMode = this.WaitButtons.SelectedObject.UserData;
-            this.StatusStr = handles.StatusStr;
+            this.StatusStr = handles.StatusStr;           
+            
         end
         
         function chWaitMode(this,waitMode)     
+            
+            ch=this.WaitButtons.Children;
+            
+            for kk=1:length(ch)
+               if ch(kk).UserData == waitMode
+                   ch(kk).Value = 1;
+               else
+                   ch(kk).Value = 0;
+               end
+            end
+            
             this.WaitMode = waitMode;            
             if waitMode == 0
                this.WaitTable.Enable = 'off';
@@ -86,7 +90,6 @@ classdef sequencer_watcher < handle
                     this.StatusStr.String = 'waiting ...';
                     this.StatusStr.ForegroundColor = 'k';
                     start(this.WaitTimer);
-
                 else
                     this.cycleComplete;
                 end
@@ -108,9 +111,7 @@ classdef sequencer_watcher < handle
                     dT = (now - this.WaitStartTime)*24*60*60;
                 case 2
                     dT = (now - this.AdwinStartTime)*24*60*60;
-
-            end
-            
+            end            
             
             if dT>=dT0
                 stop(src);       

@@ -7,12 +7,11 @@ initSequenceQueue;
 
 %% RF1B K 
 
-
 % Camera and analysis options
 opts = struct;
 opts.saveDirName = 'K RF1B stats';
 
-N = 2;                         % number of iterations to run
+N = 5;                         % number of iterations to run
 scaninds = ones(N,1);           % scancycle indeces to use
 
 % sequence functions to run
@@ -29,7 +28,6 @@ funcs = {@main_settings,@modseq_dfg_mix_tof,@main_sequence};
 addToSequenceQueue(funcs,1:9,opts);
 
 %% XDT DFG stats
-
 opts = struct;
 opts.saveDirName = 'dfg stats';
 
@@ -38,8 +36,6 @@ scaninds = ones(N,1);
 
 funcs = {@main_settings,@modseq_dfg_mix,@main_sequence};
 addToSequenceQueue(funcs,scaninds,opts);
-
-
 
 %% Batch Process
 seqdata.doscan = 0;

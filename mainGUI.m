@@ -512,7 +512,8 @@ bReset.Callback=@bResetCB;
         runSequenceCB;        
     end
 
-    function bStopCB(~,~)       
+    function bStopCB(~,~)    
+        disp('stopping scan');
         seqdata.doscan=0;           
     end
 

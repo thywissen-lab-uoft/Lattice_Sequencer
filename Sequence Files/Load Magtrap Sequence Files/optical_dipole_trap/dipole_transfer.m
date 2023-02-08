@@ -29,6 +29,7 @@ exp_end_pwr = getScanParameter(Evap_End_Power_List,...
     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');   
 seqdata.flags.xdt_ramp2sympathetic      = 1;
 seqdata.flags.xdt_evap2stage            = 1;
+seqdata.flags.xdt_evap2_HF              = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
@@ -1009,7 +1010,92 @@ end
 %% CDT evap 2
 if ( seqdata.flags.CDT_evap == 1 && seqdata.flags.xdt_evap2stage)
     dispLineStr('Optical evaporation 2',curtime);
+    
+    if seqdata.flags.xdt_evap2_HF % ramp fields up
+        
+        %%%%%%%% Set parameters for QP+FB field ramps %%%%%%
+        
+        % QP parameters
+        qp_ramp_time = 150;
+        HF_QP_List =  [0.15];0.117;.14;0.115;
+        HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
+        seqdata.randcyclelist,'HF_QPReverse','V');  
+    
+        % Feshbach ramp parameters
+        BzShim = 0;
 
+        % Feshbach Coil Value
+        fesh_list = 195;
+        fesh = getScanParameter(fesh_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'xdt_hf_fesh_1','G');
+
+        % Total Field Value
+        Btot = fesh + 0.11 +BzShim; 
+        addOutputParam('xdt_hf_field_1',Btot,'G');    
+
+        % Define the ramp structure
+        ramp=struct;
+
+        % Shim Ramp Parameters
+        ramptime = 150;
+
+        ramp.shim_ramptime      = ramptime;
+        ramp.shim_ramp_delay    = 0;
+        ramp.xshim_final        = seqdata.params.shim_zero(1); 
+        ramp.yshim_final        = seqdata.params.shim_zero(2);
+        ramp.zshim_final        = seqdata.params.shim_zero(3) + BzShim/2.35;
+
+        % FB coil 
+        ramp.fesh_ramptime      = ramptime;
+        ramp.fesh_ramp_delay    = 0;
+        ramp.fesh_final         = fesh; %22.6
+        ramp.settling_time      = 100; 
+
+        %%%%%%%% Set switches for reverse QP coils %%%%%%%%%
+    
+        % Ramp C16 and C15 to off values
+        pre_ramp_time = 100;
+        AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,-7);    
+curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0.062,1); 
+
+        %Wait a bit
+        curtime = calctime(curtime,50);
+    
+        % Turn off 15/16 switch
+        setDigitalChannel(curtime,'15/16 Switch',0); 
+        curtime = calctime(curtime,10);
+
+        % Turn on reverse QP switch
+        setDigitalChannel(curtime,'Reverse QP Switch',1);
+        curtime = calctime(curtime,10);
+
+        % Ramp up transport supply voltage
+        QP_FFValue = 23*(HF_QP/.125/30); % voltage FF on delta supply
+curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+            100,100,QP_FFValue);
+        curtime = calctime(curtime,50);
+
+        %%%%%%%% Ramp QP + FB at the same time %%%%%%%
+        disp([' Ramp Time     (ms) : ' num2str(ramp.fesh_ramptime)]);
+        disp([' FB Ramp Value  (G) : ' num2str(ramp.fesh_final)]);
+        disp([' Settling Time (ms) : ' num2str(ramp.settling_time)]);
+        disp([' QP Ramp Value  (V) :  ' num2str(HF_QP)]);
+        
+        % Ramp Coil 15, but don't update curtime
+        AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,HF_QP,1); 
+       
+        % Ramp FB with QP
+curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain 
+
+    
+
+    end
+
+    %do the second evap stage
     pend = 0.06;
     evap_exp_ramp = @(t,tt,tau,y2,y1) ...
         (y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));    
@@ -1025,6 +1111,39 @@ if ( seqdata.flags.CDT_evap == 1 && seqdata.flags.xdt_evap2stage)
 curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
         evap_time_2,evap_time_2,exp_tau,pend);
+    
+    if seqdata.flags.xdt_evap2_HF % ramp fields back down to 15G
+        
+        qp_ramp_down_time = 150;
+        
+        % Define the ramp structure
+        ramp=struct;
+
+        % Shim Ramp Parameters
+        ramptime = 150;
+
+        ramp.shim_ramptime      = ramptime;
+        ramp.shim_ramp_delay    = 0;
+        ramp.xshim_final        = seqdata.params.shim_zero(1); 
+        ramp.yshim_final        = seqdata.params.shim_zero(2);
+        ramp.zshim_final        = seqdata.params.shim_zero(3);
+
+        % FB coil 
+        ramp.fesh_ramptime      = ramptime;
+        ramp.fesh_ramp_delay    = 0;
+        ramp.fesh_final         = 15;
+        ramp.settling_time      = 100; 
+
+        
+        AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time,qp_ramp_down_time,0,1);  
+             
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain 
+
+curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+                 5,5,0);        
+    end
 end
 
 %% AM Modulate Dipole Powers

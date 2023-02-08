@@ -38,10 +38,10 @@ curtime = timein;
     % Alternative Raman preparation (??)
     raman_short_sweep                 = 0;
     
-    spin_flip_7_5                     = 1;       % 75 spectroscpoy/flip
+    spin_flip_7_5                     = 0;       % 75 spectroscpoy/flip
     
     % Field and Lattice Ramp
-    field_ramp_2                      = 1;       % ramp field after raman before rf spectroscopy   
+    field_ramp_2                      = 0;       % ramp field after raman before rf spectroscopy   
     lattice_ramp_3                    = 0;       % between raman and rf spectroscopy
     
     % More RF Stuff (?)
@@ -53,8 +53,8 @@ curtime = timein;
     do_raman_spectroscopy_post_rf     = 0;        % Raman Spectroscopy
     
     % Feshbach field ramps
-    ramp_field_for_imaging_attractive = 1;       % Ramp field for imaging on attractive side
-    ramp_field_for_imaging_repulsive  = 0;       % Ramp field for imaging on repulsive side
+    ramp_field_for_imaging_attractive = 0;       % Ramp field for imaging on attractive side
+    ramp_field_for_imaging_repulsive  = 1;       % Ramp field for imaging on repulsive side
     
     % Other RF Manipulations
     shift_reg_at_HF                   = 0;
@@ -101,7 +101,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
 
         
         % Feshbach Field ramp
-        HF_FeshValue_Initial_List = [207]; [197];
+        HF_FeshValue_Initial_List = [200]; [197];
         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_Lattice','G');
 %         
@@ -873,7 +873,7 @@ end
         B = HF_FeshValue_Initial + Boff + 2.35*zshim; 
 %         
      
-         rf_shift_list = [-10:4:10];
+         rf_shift_list = [-50 -22 -26];
 %          rf_shift_list= 10;
          rf_shift = getScanParameter(rf_shift_list,seqdata.scancycle,...
                          seqdata.randcyclelist,'rf_freq_HF_shift','kHz');

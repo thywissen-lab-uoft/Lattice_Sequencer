@@ -5,12 +5,6 @@ function hF=mainGUI
 %
 % Author      : CJ Fujiwara
 % Last Edited : 2023/02
-%
-% Much of this code has been slowly morphed over the years from previous
-% graduate students.
-%
-% CF has attempted to improve the code architecture.
-
 
 %% Find previous instance of gui
 figs = get(groot,'Children');
@@ -28,7 +22,6 @@ global seqdata;
 global adwinprocessnum;
 
 seqdata.doscan = 0;
-seqdata.randcyclelist = makeRandList;
 
 evalin('base','global seqdata')
 evalin('base','openvar(''seqdata'')')
@@ -44,7 +37,6 @@ figName='Main GUI';
 if seqdata.debugMode
     figName=[figName ' DEBUG MODE'];
 end
-
 
 %% Initialize Primary Figure graphics
 
@@ -218,7 +210,6 @@ bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
         updateScanVarText;    
     end
 
-
     function browseCB(~,~)
         disp([datestr(now,13) ' Changing the sequence file.']);        
         % Directory where the sequence files lives
@@ -240,8 +231,7 @@ bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
 
     function fileCB(~,~,n)
         fname = strrep(eSeq.String,'@','');
-        try
-            
+        try            
             fName=eSeq.String;        
             strs=strsplit(fName,',');
             names={};
@@ -252,7 +242,7 @@ bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
             disp(['Opening ' names{n}]);
             open(names{n});
         catch ME
-            warning('Cant open sequence file for some reason');
+            warning(ME.message);
         end        
     end
 

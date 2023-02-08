@@ -463,8 +463,6 @@ bReset.Position(1:2)=[bAbort.Position(1)-bReset.Position(3) ...
     bAbort.Position(2)];
 bReset.Callback=@bResetCB;
 
-
-
 %% Button Callbacks
 
     function CycleComplete(src,evt)        

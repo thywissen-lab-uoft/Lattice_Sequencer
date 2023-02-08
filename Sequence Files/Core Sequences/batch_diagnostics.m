@@ -6,6 +6,19 @@ sequence_queue = struct(...
     'ScanCycle',{},...
     'Options',{});
 
+name = 'batch.mat';
+batchfile = fullfile(fileparts(mfilename('fullpath')),name);
+
+if exist(batchfile,'file')
+   delete(batchfile); 
+end
+
+
+% ids = batchAddToQueue
+% batchFindOptimum(ids,batchfile)
+% save(batchfile,variables,'-append');
+% newblah = load(batchfile,'varname')
+
 %% RF1B K 
 
 % Camera and analysis options
@@ -26,6 +39,7 @@ funcs = {@main_settings,@seq_mod_1,@main_sequence};
 
 % add it to the queue
 addToSequenceQueue(funcs,scaninds,opts);
+
 
 %% XDT DFG TOF
 opts = struct;
@@ -54,7 +68,6 @@ addToSequenceQueue(funcs,scaninds,opts);
 %% Batch Process
 
 batchBegin;
-
 
 end
 

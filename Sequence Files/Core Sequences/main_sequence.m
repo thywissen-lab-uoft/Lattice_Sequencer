@@ -8,6 +8,45 @@ else
 end
 
 global seqdata
+
+%% Flag Checks
+
+if (seqdata.flags.xdt ~= 0 || seqdata.flags.lattice ~= 0)
+    seqdata.flags.QP_imaging = 0;
+else
+    seqdata.flags.QP_imaging = 1;
+end
+
+% Ignore other experimental parts if doing fluoresence imaging. It is
+% possilble to "there and back" imaging with transport, but this is very
+% rare and can be handled manuualy
+if seqdata.flags.image_type == 1
+    seqdata.flags.transport                     = 0;
+    seqdata.flags.mt                            = 0;
+    seqdata.flags.xdt                           = 0;
+    seqdata.flags.lattice                       = 0;    
+end
+
+% Do not run the demag if you don't make a magnetic trap
+if ~seqdata.flags.mt
+   seqdata.flags.misc_ramp_fesh_between_cycles = 0;
+end
+
+% Do not reset the lattice waveplate if you didn't use it
+if ~seqdata.flags.lattice
+   seqdata.flags.lattice_reset_waveplate     = 0;
+end
+
+% Ignore other experimental parts if doing fluoresence imaging.
+if seqdata.flags.image_loc == 0 
+    seqdata.flags.mt_use_plug = 0;
+    seqdata.flags.mt_compress_after_transport = 0;
+    seqdata.flags.RF_evap_stages = [0 0 0];
+    seqdata.flags.xdt = 0;
+    seqdata.flags.lattice = 0;  
+    seqdata.flags.lattice_pulse_for_alignment = 0;
+end
+
 %% TOF
 
 seqdata.params.tof = getVar('tof');

@@ -1,8 +1,6 @@
 function initSequenceQueue
 
 global sequence_queue;
-global sequence_queue_checker;
-global seqdata
 
 %% Find the GUI
 figs = get(groot,'Children');
@@ -14,8 +12,13 @@ for i = 1:length(figs)
 end
 
 if isempty(fig)
-    fig=mainGUI;
+    warning('cannot run this without the GUI open');
+    return;
 end
+
+d=guidata(fig);
+
+seqWatcher = d.SequenceWatcher;
 
 %%
 

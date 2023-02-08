@@ -8,6 +8,9 @@ else
 end
 
 global seqdata
+%% TOF
+
+seqdata.params.tof = getVar('tof');
 
 %% PA Laser Lock Detuning
 

@@ -17,7 +17,6 @@ if isempty(fig)
 end
 
 data=guidata(fig);
-
     if isfield(seqdata,'variables') && ~isempty(seqdata.variables)
        vars = fieldnames(seqdata.variables);
        inds=[];
@@ -38,7 +37,6 @@ data=guidata(fig);
           end
        end
        vars(notUsed)=[];
-       
         if isempty(vars)
            str = 'no scan variable detected';
         else
@@ -52,8 +50,8 @@ data=guidata(fig);
                   num2str(length(seqdata.variables.(vars{kk})))...
                   ')'];
            end
-       end
-
+        end
        data.VarText.String = str;
-    end           
+    end      
+    
 end

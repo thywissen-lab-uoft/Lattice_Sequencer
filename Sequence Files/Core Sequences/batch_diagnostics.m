@@ -30,7 +30,7 @@ scaninds = ones(N,1);          % scancycle indeces to use
 funcs = {@main_settings,@seq_mod_1,@main_sequence};
 
 % add it to the queue
-% addToSequenceQueue(funcs,scaninds,opts);
+addToSequenceQueue(funcs,scaninds,opts);
 
 %% XDT DFG TOF
 opts = struct;
@@ -54,7 +54,7 @@ N = 2;
 scaninds = ones(N,1);
 
 funcs = {@main_settings,@modseq_dfg_mix,@main_sequence};
-% addToSequenceQueue(funcs,scaninds,opts);
+addToSequenceQueue(funcs,scaninds,opts);
 
 %% Batch Process
 

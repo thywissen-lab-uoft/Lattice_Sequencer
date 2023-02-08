@@ -69,7 +69,7 @@ flags.HighFieldType=0; % Not implemented yet
 % Set up for 15ms TOF
 % 0 = image at 195G
 % 1 = image at 207G
-flags.HighField_Attractive = 1;
+flags.HighField_Attractive = 0;
 
 flags.Two_Imaging_Pulses = 1;
 flags.Image_Negative9 = 0;

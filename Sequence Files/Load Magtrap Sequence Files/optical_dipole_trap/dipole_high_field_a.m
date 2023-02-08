@@ -71,7 +71,7 @@ curtime = timein;
 %% Flags          
 time_in_HF_imaging = curtime;
 
-seqdata.flags.xdt_hf_ramp_QP_gradient_cancel = 0;   % Ramp QP coils for levitation  
+seqdata.flags.xdt_hf_ramp_QP_gradient_cancel = 1;   % Ramp QP coils for levitation  
 seqdata.flags.xdt_hf_ramp_field_1            = 1;   % Ramp to HF
 seqdata.flags.xdt_hf_mix_7_9                 = 0;   % Mix 79 at HF
 seqdata.flags.xdt_hf_79_spec                 = 0;   % 79 Spec

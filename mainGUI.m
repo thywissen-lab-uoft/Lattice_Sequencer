@@ -607,7 +607,8 @@ data.cycleTbl = cycleTbl;
 data.Status = tStatus;
 data.VarText = tScanVar;
 data.SequencerWatcher = sequencer_watcher(timer_handles);
-data.SequencerListener = listener(data.SequencerWatcher,'CycleComplete',@CycleComplete);
+data.SequencerListener = listener(data.SequencerWatcher,...
+    'CycleComplete',@CycleComplete);
 data.SequencerListener.Enabled = 0;
 
 guidata(hF,data);

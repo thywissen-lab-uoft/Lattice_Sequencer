@@ -1,11 +1,13 @@
-function batchBegin
+function batchBegin(sequence_queue_index)
 global sequence_queue;
 global sequence_queue_index;
 global seqdata
 global sw
 global batch_listener
 
-sequence_queue_index = 1;
+if nargin == 0
+    sequence_queue_index = 1;   
+end
 %% Find the GUI
 figs = get(groot,'Children');
 fig = [];

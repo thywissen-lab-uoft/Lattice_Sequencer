@@ -116,7 +116,6 @@ if isfield(seqdata,'gpib')
         % send commands; (..,1) to display query results in command window
         SendGPIBCommands(seqdata.gpib,1);
     catch ME
-       warning('Unable to send GPIB commands');
        warning(ME.message);
     end
 end
@@ -129,7 +128,6 @@ if isfield(seqdata,'visa')
         % send commands; (..,1) to display query results in command window
         SendVISACommands(seqdata.visa,1);
     catch ME
-       warning('Unable to send VISA commands');
        warning(ME.message);
     end
 end

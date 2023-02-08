@@ -15,34 +15,22 @@ if isempty(fig)
 end
 
 data=guidata(fig);
-data.StatusSub.String = '';
+data.VarText.String = '...';
 
-%% Initialize Sequence    
+%% update sequence function text
+mystr =[];
+for kk = 1:length(funcs)
+    mystr = [mystr '@' func2str(funcs{kk}) ','];
+end
+mystr(end)=[];
+data.SequenceText.String=mystr;
+%% Run Sequence Functions
 data.Status.String = 'initializing sequence ...';
 data.Status.ForegroundColor = 'k';
 
 start_new_sequence;
 initialize_channels;
 curtime = 0;
-
-%% Update GUI Text
-mystr =[];
-
-for kk = 1:length(funcs)
-    mystr = [mystr '@' func2str(funcs{kk}) ','];
-end
-
-mystr(end)=[];
-data.SequenceText.String=mystr;
-
-%% Run Each portion
-
-%disp(repmat('-',1,60));
-%disp('Compiling');
-%disp(repmat('-',1,60));
-
-initialize_channels();
-
 for kk = 1:length(funcs)
     data.Status.String = ['running @' func2str(funcs{kk})];
     data.Status.ForegroundColor = [220,88,42]/255;
@@ -57,12 +45,7 @@ for kk = 1:length(funcs)
     end
 end
 
-
-data.Status.String = ['sequence evaluated'];
-data.Status.ForegroundColor = [17,59,8]/255;
-pause(.1)
-
-%% Calc sequence
+%% Calculate sequence
 data.Status.String = ['converting sequence into hardware commands'];
 data.Status.ForegroundColor = [220,88,42]/255;
 
@@ -74,6 +57,5 @@ data.Status.ForegroundColor = [17,59,8]/255;
 
 %% Update scan var
 updateScanVarText;
-
 end
 

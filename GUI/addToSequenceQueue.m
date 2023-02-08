@@ -1,5 +1,6 @@
 function ids = addToSequenceQueue(seq_funcs,scan_inds,opts)
 global sequence_queue;
+
 ids=[];
 for kk=1:length(scan_inds)
    cmd = struct;

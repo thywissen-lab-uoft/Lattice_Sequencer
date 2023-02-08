@@ -2,7 +2,7 @@ function tExecute=runSequence(funcs,opts)
 global seqdata
 global adwinprocessnum
 
-tExecute = now;
+tExecute = [];
 
 %% Find the GUI
 figs = get(groot,'Children');
@@ -19,19 +19,14 @@ end
 
 data=guidata(fig);
 
-if isequal(data.adwinTimer.Running, 'on')
-    warning('Cannot run sequence while existing sequence is running');
-   return; 
-end
-
-if isequal(data.waitTimer.Running, 'on')
-    warning('Cannot run sequence while waiting');
-   return; 
+if (data.SequencerWatcher.isRunning)
+    warning('sequencer is already running.');
+    return;
 end
 
 %%
 
-data.cycleTbl.Data=seqdata.scancycle;
+data.cycleTbl.Data = seqdata.scancycle;
 
 %% Compile Code
 compile(funcs);
@@ -97,7 +92,7 @@ end
 % Start Timer
 data.Status.String = ['adwin is running'];
 data.Status.ForegroundColor = 'r';
-start(data.adwinTimer);   
-
+data.SequencerWatcher.RequestAdwinTime = seqdata.sequencetime;
+start(data.SequencerWatcher);
 end
 

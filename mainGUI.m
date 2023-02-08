@@ -5,15 +5,8 @@ function hF=mainGUI
 %
 % Author      : CJ Fujiwara
 % Last Edited : 2023/02
-%
-% Much of this code has been slowly morphed over the years from previous
-% graduate students.
-%
-% CF has attempted to improve the code architecture.
 
-
-% Close any figure with the same name. Only one instance of mainGUI may be
-% open at a time
+%% Find previous instance of gui
 figs = get(groot,'Children');
 for i = 1:length(figs)
     if isequal(figs(i).UserData,'sequencer_gui')       
@@ -23,12 +16,12 @@ for i = 1:length(figs)
     end
 end
 
-%%%%%%%%%%%%%%% Initialize Sequence Data %%%%%%%%%%%%%%%%%
+%% Initialize Things
 LatticeSequencerInitialize();
 global seqdata;
 global adwinprocessnum;
+
 seqdata.doscan = 0;
-seqdata.randcyclelist = makeRandList;
 
 evalin('base','global seqdata')
 evalin('base','openvar(''seqdata'')')
@@ -45,24 +38,9 @@ if seqdata.debugMode
     figName=[figName ' DEBUG MODE'];
 end
 
-disp('Opening Lattice Sequencer...');
-%% Delete old timer objects
-% The progress of the sequence is tracked using some MATLAB timers. Delete
-% these timers so that MATLAB doesn't get confused and make a whole bunch
-% of timer instances.  CF's understanding of how timers are saved in 
-% different MATLAB workspaces may be a little dated.  
-%
-% You may check existing timer instances with timerfindall. 
-
-% Names of timers, defined here so that the constructor uses the same name
-% to make the timers later
-adwinTimeName='AdwinProgressTimer';
-waitTimeName='InterCycleWaitTimer';
-
-% Delete any existing timers
-delete(timerfind('Name',adwinTimeName));
-delete(timerfind('Name',waitTimeName));
 %% Initialize Primary Figure graphics
+
+disp('Opening Lattice Sequencer...');
 
 % Figure color and size settings
 cc='w';w=700;h=170;
@@ -76,16 +54,14 @@ hF.Position(3:4)=[w h];
 set(hF,'WindowStyle','docked');
 data = struct;
 
-% t = main_gui_timer(hF);
-% data.sequencer_timer = t;
-%% Figure
-% Callback for a close request function. The close request function handles
-% whether the adwin is running or other potential timer issues.
-    function closeFig(fig,~)
-       disp('Requesting to close the sequencer GUI.');        
-       if (~isempty(timerfind('Name',adwinTimeName)) && ...
-               isequal(timeAdwin.Running,'on')) || ...
-               (cRpt.Value && isequal(timeWait.Running,'on'))
+handles = struct;
+
+%% Close Figure Callback
+ function closeFig(src,~)
+       disp('Requesting to close the sequencer GUI.');     
+       t=guidata(src);
+       
+       if t.SequencerWatcher.isRunning       
            tt=['The sequence is still running or repitions are engaged '...
                'with the wait timer running. Are you sure you want to ' ...
                'close the GUI? If the sequence data has already been ' ...
@@ -94,7 +70,7 @@ data = struct;
            f2=figure('Name',tit,'color','w','NumberTitle','off',...
                'windowstyle','modal','units','pixels','resize','off');
            f2.Position(3:4)=[400 200];
-           f2.Position(1:2)=fig.Position(1:2)+[-50 100];           
+           f2.Position(1:2)=src.Position(1:2)+[-50 100];           
            uicontrol('style','text','String',tt,'parent',f2,...
                'fontsize',10,'units','normalized','horizontalalignment',...
                'center','backgroundcolor','w','Position',[.05 .5 .9 .35]);           
@@ -107,27 +83,21 @@ data = struct;
        else
             disp('Closing the sequencer GUI. Goodybe. I love you'); 
             try
-                stop(timeAdwin);
-                stop(timeWait);
-                delete(timeAdwin);
-                delete(timeWait); 
+                delete(t.SequencerWatcher);
             catch exception
                 warning('Something went wrong stopping and deleting timers');
             end
-            delete(fig);
+            delete(src);
        end
        
         function doClose(~,~)
             close(f2);
             disp('Closing the sequencer GUI. Goodybe. I love you');
-            stop(timeAdwin);
-            stop(timeWait);
-            pause(0.5);
-            delete(timeAdwin);
-            delete(timeWait);
-            delete(fig);
+            t=guidata(src);
+            delete(src);
         end       
-    end
+ end
+%% Main Panel
 
 % Main uipanel
 hpMain=uipanel('parent',hF,'units','pixels','backgroundcolor',cc,...
@@ -240,7 +210,6 @@ bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
         updateScanVarText;    
     end
 
-
     function browseCB(~,~)
         disp([datestr(now,13) ' Changing the sequence file.']);        
         % Directory where the sequence files lives
@@ -262,8 +231,7 @@ bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
 
     function fileCB(~,~,n)
         fname = strrep(eSeq.String,'@','');
-        try
-            
+        try            
             fName=eSeq.String;        
             strs=strsplit(fName,',');
             names={};
@@ -274,32 +242,35 @@ bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
             disp(['Opening ' names{n}]);
             open(names{n});
         catch ME
-            warning('Cant open sequence file for some reason');
+            warning(ME.message);
         end        
     end
 
 %% Wait Timer Graphical interface
 
+hpWait = uipanel('Parent',hpMain,'units','pixels','Title','wait mode',...
+    'backgroundcolor',cc);
+hpWait.Position(3:4)=[347 70];
+hpWait.Position(1:2)=[1 1];
+
 % Button group for selecting wait mode. The user data holds the selected
 % button
-bgWait = uibuttongroup('Parent',hpMain,'units','pixels','Title','wait mode',...
-    'backgroundcolor',cc,'UserData',1,'SelectionChangedFcn',@waitCB);
-bgWait.Position(3:4)=[347 70];
-bgWait.Position(1:2)=[1 1];
+bgWait = uibuttongroup('Parent',hpWait,'units','pixels','backgroundcolor',cc,...
+    'BorderType','none');
+bgWait.Position(3:4)=[347 20];
+bgWait.Position(1:2)=[1 30];
 
 % Create three radio buttons in the button group. The user data holds the
 % selected mode (0,1,2) --> (no wait, intercyle, target time)
 uicontrol(bgWait,'Style','radiobutton', 'String','none',...
-    'Position',[5 30 100 20],'Backgroundcolor',cc,'UserData',0,'value',0);  
+    'Position',[5 1 100 20],'Backgroundcolor',cc,'UserData',0,'value',0);  
 uicontrol(bgWait,'Style','radiobutton','String','intercycle',...
-    'Position',[50 30 100 20],'Backgroundcolor',cc,'UserData',1,'value',1);
+    'Position',[50 1 100 20],'Backgroundcolor',cc,'UserData',1,'value',1);
 uicontrol(bgWait,'Style','radiobutton','String','total',...
-    'Position',[120 30 100 20],'Backgroundcolor',cc,'UserData',2,'value',0);              
-uicontrol(bgWait,'Style','radiobutton','String','auto',...
-    'Position',[165 30 100 20],'Backgroundcolor',cc,'UserData',3,'value',0);   
+    'Position',[120 1 100 20],'Backgroundcolor',cc,'UserData',2,'value',0);              
 
 % Table for storing value of wait time
-tblWait=uitable(bgWait,'RowName','','ColumnName','','Data',waitDefault,...
+tblWait=uitable(hpWait,'RowName','','ColumnName','','Data',waitDefault,...
     'ColumnWidth',{30},'ColumnEditable',true,'ColumnFormat',{'numeric'},...
     'fontsize',8,'Enable','on');
 tblWait.Position(3:4)=tblWait.Extent(3:4);
@@ -307,41 +278,15 @@ tblWait.Position(4)=tblWait.Position(4);
 tblWait.Position(1:2)=[260 30];
 
 % Seconds label for the wait time.
-tWait=uicontrol(bgWait,'style','text','string','seconds',...
+tWait=uicontrol(hpWait,'style','text','string','seconds',...
     'fontsize',8,'units','pixels','backgroundcolor',cc);
 tWait.Position(3:4)=tWait.Extent(3:4);
 tWait.Position(1)=tblWait.Position(1)+tblWait.Position(3)+2;
 tWait.Position(2)=tblWait.Position(2);
 
-    function waitCB(~,rbutton)        
-        switch rbutton.NewValue.UserData            
-            case 0 % no wait
-                disp('Disabling intercyle wait.');
-                bgWait.UserData     = 0;               
-                tblWait.Enable      = 'off';
-                tWaitTime1.String   = 'n/a';
-                tWaitTime2.String   = 'n/a';
-                stop(timeWait);
-            case 1
-                disp(['Wait timer engaged. Inter-cycle wait time mode. ' ...
-                    ' This will be updated at end of next cycle.']);
-                bgWait.UserData     = 1;
-                tblWait.Enable      = 'on';           
-                tWaitTime1.String   = '~ s';
-                tWaitTime2.String   = '~ s';
-            case 2
-                disp(['Wait timer engaged. Total sequence wait time mode. ' ...
-                    ' This will be updated at end of next cycle.']);
-                bgWait.UserData     = 2;
-                tblWait.Enable      = 'on';
-                tWaitTime1.String   = '~ s';
-                tWaitTime2.String   = '~ s';
-        end        
-    end
-
 % Axis object for plotting the wait bar
 waitbarcolor=[106, 163, 241 ]/255;
-axWaitBar=axes('parent',bgWait,'units','pixels','XTick',[],...
+axWaitBar=axes('parent',hpWait,'units','pixels','XTick',[],...
     'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
 axWaitBar.Position(1:2)=[10 5];
 axWaitBar.Position(3:4)=[bgWait.Position(3)-20 10];
@@ -357,63 +302,22 @@ tWaitTime1.Position=[5 10];
 tWaitTime2 = text(0,0,'10.00 s','parent',axWaitBar,'fontsize',10,...
     'horizontalalignment','right','units','pixels','verticalalignment','bottom');
 tWaitTime2.Position=[axWaitBar.Position(3) 10];
-data.pWaitBar = pWaitBar;
-data.tWaitTime1 = tWaitTime1;
-data.tWaitTime2 = tWaitTime2;
+
+
 
 %% Run mode graphics and callbacks
 
-% Run sequence mode
-bgRun = uibuttongroup('Parent',hpMain,'units','pixels','Title','run mode',...
-    'backgroundcolor',cc,'UserData',0,'SelectionChangedFcn',@runModeCB);
-bgRun.Position(3:4)=[347 160];bgRun.Position(1:2)=[350 1];
-        
-    function runModeCB(~,evnt)
-        switch evnt.NewValue.String
-            case 'single'
-                disp('Changing run mode to single iteration');
-                bRunIter.Enable     = 'on';
-                bRunIter.Visible    = 'on';                
-                bStartScan.Visible  = 'off';
-                bStartScan.Enable   = 'off';                    
-                bContinue.Visible   = 'off';
-                bContinue.Enable    = 'off';                
-                bStop.Visible       = 'off';
-%                 cycleTbl.ColumnEditable = false;
-            case 'scan'
-                disp('Changing run mode to scan mode.');
-                bRunIter.Enable     = 'on';
-                bRunIter.Visible    = 'on';                
-                bStartScan.Visible  = 'on';
-                bStartScan.Enable   = 'on';                   
-                bContinue.Visible   = 'on';
-                bContinue.Enable    = 'on';                
-                bStop.Visible       = 'on';
-%                 cycleTbl.ColumnEditable = true;
-        end        
-    end
-
-% Radio button for single mode
-rSingle=uicontrol(bgRun,'Style','radiobutton', 'String','single',...
-    'Position',[5 90 65 30],'Backgroundcolor',cc,'UserData',0,...
-    'fontsize',8,'Value',1);  
-rSingle.Position(2) = bgRun.Position(4)-rSingle.Position(4)-7;
-
-
-% Radio button for scan mode
-rScan=uicontrol(bgRun,'Style','radiobutton','String','scan',...
-    'Position',[55 85 100 30],'Backgroundcolor',cc,'UserData',1,...
-    'FontSize',8);
-rScan.Position(2) = rSingle.Position(2);
+hpRun = uipanel('Parent',hpMain,'units','pixels','Title','run mode',...
+    'backgroundcolor',cc);
+hpRun.Position(3:4)=[347 160];hpRun.Position(1:2)=[350 1];
 
 %%%%%%%%%%%%%%%%%%%%% ADWIN PROGRESS BAR  %%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 % Create axis object for the bar
 adwinbarcolor=[0.67578 1 0.18359];
-axAdWinBar=axes('parent',bgRun,'units','pixels','XTick',[],...
+axAdWinBar=axes('parent',hpRun,'units','pixels','XTick',[],...
     'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
-axAdWinBar.Position=[10 10 bgRun.Position(3)-20 10];
-axAdWinBar.Position(2) = rScan.Position(2)-axAdWinBar.Position(4)-15;
+axAdWinBar.Position=[10 10 hpRun.Position(3)-20 10];
+axAdWinBar.Position(2) = 100;
 % Plot the patch of color for the bar
 pAdWinBar = patch(axAdWinBar,[0 0 0 0],[0 0 1 1], adwinbarcolor);
 
@@ -425,10 +329,6 @@ tAdWinTime2 = text(0,0,'30.00 s','parent',axAdWinBar,'fontsize',10,...
     'horizontalalignment','right','units','pixels','verticalalignment','bottom');
 tAdWinTime2.Position=[axAdWinBar.Position(3) 10];
 
-data.pAdWinBar = pAdWinBar;
-data.tAdWinTime1 = tAdWinTime1;
-data.tAdWinTime2 = tAdWinTime2;
-
 % Add an overall label
 text(.5,1.05,'adwin progress','fontsize',10,'horizontalalignment','center', ...
     'verticalalignment','bottom','fontweight','bold');
@@ -436,46 +336,62 @@ text(.5,1.05,'adwin progress','fontsize',10,'horizontalalignment','center', ...
 %% Run Controls
 
 % Button to run the cycle
-bRunIter=uicontrol(bgRun,'style','pushbutton','String','Run Cycle',...
+bRunIter=uicontrol(hpRun,'style','pushbutton','String','Run Cycle',...
     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','Callback',{@bRunCB 0});
-bRunIter.Position(3:4)=[100 20];bRunIter.Position(1:2)=[5 30];
+bRunIter.Position(3:4)=[85 20];bRunIter.Position(1:2)=[5 30];
 bRunIter.Tooltip='Run the current sequence.';
 
 % Button to run the cycle
-bStartScan=uicontrol(bgRun,'style','pushbutton','String','Start Scan',...
+bStartScan=uicontrol(hpRun,'style','pushbutton','String','Start Scan',...
     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
-    'fontweight','bold','Visible','off','enable','off');
-bStartScan.Position(3:4)=[100 20];
+    'fontweight','bold');
+bStartScan.Position(3:4)=[85 20];
 bStartScan.Position(1:2)=[5 5];
 bStartScan.Callback={@bRunCB 1};
 bStartScan.Tooltip='Start the scan.';
 
 % Button to run the cycle
-bContinue=uicontrol(bgRun,'style','pushbutton','String','Continue Scan',...
+bContinue=uicontrol(hpRun,'style','pushbutton','String','Resume Scan',...
     'backgroundcolor',[173 216 230]/255,'FontSize',8,'units','pixels',...
-    'fontweight','bold','Visible','off','enable','off');
-bContinue.Position(3:4)=[110 20];
-bContinue.Position(1:2)=[110 5];
+    'fontweight','bold');
+bContinue.Position(3:4)=[85 20];
+bContinue.Position(1:2)=[95 5];
 bContinue.Callback={@bRunCB 2};
-bContinue.Tooltip='Continue the scan from current iteration.';
+bContinue.Tooltip='resume the scan from current iteration.';
 
 % Button to stop
-bStop=uicontrol(bgRun,'style','pushbutton','String','Stop Scan',...
+bStop=uicontrol(hpRun,'style','pushbutton','String','Stop Scan',...
     'backgroundcolor',[255	218	107]/255,'FontSize',8,'units','pixels',...
-    'fontweight','bold','enable','on','visible','off');
-bStop.Position(3:4)=[100 20];
-bStop.Position(1:2)=[225 5];
+    'fontweight','bold');
+bStop.Position(3:4)=[85 20];
+bStop.Position(1:2)=[185 5];
 bStop.Callback=@bStopCB;
-bStop.Tooltip='Compile and run the currently selected sequence.';
+bStop.Tooltip='Stop the scan.';
+
+% Button to reset cycle #
+bResetCycleNum=uicontrol(hpRun,'style','pushbutton','String','reset cycle#',...
+    'backgroundcolor',[238,232,170]/255,'FontSize',8,'units','pixels',...
+    'fontweight','bold');
+bResetCycleNum.Position(3:4)=[85 20];
+bResetCycleNum.Position(1:2)=[95 30];
+bResetCycleNum.Callback=@bResetCycleNumCB;
+bResetCycleNum.Tooltip='Reset cycle number';
 
 
-cycleTbl=uitable(bgRun,'RowName','Cycle #','ColumnName',{},...
+% Status String
+ttt=uicontrol(hpRun,'style','text','string','cycle #',...
+    'backgroundcolor','w','fontsize',8,'units','pixels');
+ttt.Position(3:4)=ttt.Extent(3:4);
+ttt.Position(1:2)=[290 38];
+
+
+cycleTbl=uitable(hpRun,'RowName',{},'ColumnName',{},...
     'ColumnEditable',[true],'Data',[1],'units','pixels',...
-    'ColumnWidth',{50},'FontSize',12,'CellEditCallback',@tblCB);
+    'ColumnWidth',{50},'FontSize',10,'CellEditCallback',@tblCB);
 cycleTbl.Position(3:4)=cycleTbl.Extent(3:4);
-cycleTbl.Position(1:2)=[110 bRunIter.Position(2)+2];
-data.cycleTbl = cycleTbl;
+cycleTbl.Position(1:2)=[285 20];
+
 
     function tblCB(src,evt)
         n = evt.NewData;
@@ -487,38 +403,37 @@ data.cycleTbl = cycleTbl;
     end
 
 % Checkbox for repeat cycle
-cRpt=uicontrol(bgRun,'style','checkbox','string','repeat cycle?','fontsize',8,...
+cRpt=uicontrol(hpRun,'style','checkbox','string','repeat cycle?','fontsize',8,...
     'backgroundcolor',cc,'units','pixels');
 cRpt.Position(3:4)=[100 cRpt.Extent(4)];
-cRpt.Position(1:2)=[cycleTbl.Position(1)+cycleTbl.Position(3)+5 cycleTbl.Position(2)];
+cRpt.Position(1:2)=[185 33];
 cRpt.Tooltip='Enable or disable automatic repitition of the sequence.';
 
 % Status String
-tStatus=uicontrol(bgRun,'style','text','string','Sequencer is idle.',...
+tStatus=uicontrol(hpRun,'style','text','string','idle',...
     'backgroundcolor','w','fontsize',8,'units','pixels',...
     'fontweight','bold','visible','on','horizontalalignment','center');
 tStatus.Position(3:4)=[axAdWinBar.Position(3) 15];
 tStatus.Position(1:2)=[bStop.Position(1)+bStop.Position(3) 1];
 tStatus.Position(1) = axAdWinBar.Position(1);
 tStatus.Position(2) = axAdWinBar.Position(2) - 15;
-data.Status = tStatus;
+tStatus.ForegroundColor=[0 128 0]/255;
 
 % Scan Var
-tScanVar=uicontrol(bgRun,'style','text','string','No detected variable scanning with ParamDef/Get.',...
+tScanVar=uicontrol(hpRun,'style','text','string','No detected variable scanning with ParamDef/Get.',...
     'backgroundcolor','w','fontsize',8,'units','pixels',...
     'fontweight','normal','visible','on','horizontalalignment','center');
 tScanVar.Position(3:4)=[axAdWinBar.Position(3) 15];
 tScanVar.Position(1) = axAdWinBar.Position(1);
 tScanVar.Position(2) = tStatus.Position(2) - 15;
-data.VarText = tScanVar;
 
 % Button to reseed random list
 ttStr=['Reseed random list of scan indeces.'];
-bRandSeed=uicontrol(bgRun,'style','pushbutton','String','reseed random',...
+bRandSeed=uicontrol(hpRun,'style','pushbutton','String','reseed random',...
     'backgroundcolor',[255,165,0]/255,'FontSize',8,'units','pixels',...
     'fontweight','normal','Tooltip',ttStr);
 bRandSeed.Position(3:4)=[80 16];
-bRandSeed.Position(1:2)=[100 bgRun.Position(4)-bRandSeed.Position(4)-14];
+bRandSeed.Position(1:2)=[1 hpRun.Position(4)-bRandSeed.Position(4)-14];
 bRandSeed.Callback=@bReseedRandom;
 
     function bReseedRandom(~,~)
@@ -530,21 +445,17 @@ bRandSeed.Callback=@bReseedRandom;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ABORT  %%%%%%%%%%%%%%%%%%%%%%
 ttStr=['Interrupts AdWIN and sends all digital and analog voltage ' ...
     'outputs to their reset value.  DANGEROUS'];
-bAbort=uicontrol(bgRun,'style','pushbutton','String','abort',...
+bAbort=uicontrol(hpRun,'style','pushbutton','String','abort',...
     'backgroundcolor','r','FontSize',8,'units','pixels',...
     'fontweight','normal','Tooltip',ttStr,'Callback',@bAbortCB);
 bAbort.Position(3:4)=[40 15];
-bAbort.Position(1:2)=[bgRun.Position(3)-bAbort.Position(3)-5 ...
-    bgRun.Position(4)-bAbort.Position(4)-12];
-
-% jbAbort= findjobj(bAbort);
-% set(jbAbort,'Enabled',false);
-% set(jbAbort,'ToolTipText',ttStr);
+bAbort.Position(1:2)=[hpRun.Position(3)-bAbort.Position(3)-5 ...
+    hpRun.Position(4)-bAbort.Position(4)-12];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RESET  %%%%%%%%%%%%%%%%%%%%%%
 ttStr=['Reinitialize channels and reset Adwin outputs ' ...
     'to default values.'];
-bReset=uicontrol(bgRun,'style','pushbutton','String','reset',...
+bReset=uicontrol(hpRun,'style','pushbutton','String','reset',...
     'backgroundcolor',[255,165,0]/255,'FontSize',8,'units','pixels',...
     'fontweight','normal','Tooltip',ttStr);
 bReset.Position(3:4)=[40 15];
@@ -552,144 +463,24 @@ bReset.Position(1:2)=[bAbort.Position(1)-bReset.Position(3) ...
     bAbort.Position(2)];
 bReset.Callback=@bResetCB;
 
-% jbReset= findjobj(bReset);
-% set(jbReset,'Enabled',true);
-% set(jbReset,'ToolTipText',ttStr);
-%% TIMERS
-%%%%% Adwin progress timer %%%
-% After the sequence is run, this timer keeps tracks of the Adwin's
-% progress. It doesn't have direct access to the Adwin so it assumes the
-% timing based on the results of the sequence compliation.
+%% Button Callbacks
 
-% The adwin progress timer object
-timeAdwin=timer('Name',adwinTimeName,'ExecutionMode','FixedSpacing',...
-    'TimerFcn',@updateAdwinBar,'StartFcn',@startAdwinTimer,'Period',.05,...
-    'StopFcn',@stopAdwinTimer);
-data.adwinTimer = timeAdwin;
-
-% Function to run when the adwin starts the sequence.
-    function startAdwinTimer(~,~)        
-        % Notify the user
-        disp(['Sequence timer started. ' num2str(seqdata.sequencetime,'%.2f') ...
-            ' seconds.']);      
-        % Give the progress timer a new start time as userdata
-        timeAdwin.UserData=now;        
-    end
-
-    function stopAdwinTimer(~,~)
-        disp('Sequence timer ended.');      % Message the user
-        pAdWinBar.XData = [0 1 1 0];     % Fill out the bar
-        drawnow;                         % Update graphics 
-        set(tStatus,'String','Cycle complete.','fontweight','bold',...
-            'foregroundcolor','k');drawnow;
-        if bgWait.UserData
-           start(timeWait);              % Start wait timer if needed
-        else
-            cycleComplete;
-        end
-    end
-
-% Timer callback functions updates the graphics
-    function updateAdwinBar(~,~)
-        % Calculate the time transpired so far
-        tstart=timeAdwin.UserData;  % Sequence start time
-        dT0=seqdata.sequencetime;   % Duration of sequence       
-        dT=(now-tstart)*24*60*60;   % Current duration in sec.
-
-        % Update graphical progress bar for wait time      
-        pAdWinBar.XData = [0 dT/dT0 dT/dT0 0];    
-        tAdWinTime1.String=[num2str(dT,'%.2f') ' s'];
-        tAdWinTime2.String=[num2str(dT0,'%.2f') ' s'];
-        drawnow;
-        
-        % Stop the timer if enough time has elapsed
-        if dT>dT0
-            tAdWinTime1.String=[num2str(dT0,'%.2f') ' s'];
-            stop(timeAdwin);                 % Stop the adwin timer            
-        end
-    end
-
-%%%%% Intecycle wait timer %%%
-% After a seqeunce runs, we typically insert a mandatory wait time before
-% the sequence may run again.  This is because certain parts of the machine
-% (CATs) will get hot. This time allows the water cooling to cool down the
-% system to sufficiently safe levels.
-
-% The wait timer object
-timeWait=timer('Name',waitTimeName,'ExecutionMode','FixedSpacing',...
-    'TimerFcn',@updateWaitBar,'startdelay',0,'period',.05,...
-    'StartFcn',@startWait,'StopFcn',@stopWait);
-data.waitTimer = timeWait;
-
-% Function to run when the wait timer begins
-    function startWait(~,~)
-        set(tStatus,'String','waiting ...','fontweight','bold',...
-            'foregroundcolor','k');drawnow;
-        
-        % Notify the user
-        disp(['Starting the wait timer. ' ...
-            num2str(tblWait.Data,'%.2f') ' seconds wait time.']);     
-        
-        % Calculate the time to wait.
-        switch bgWait.UserData
-            case 1   
-                dT0=tblWait.Data;                    
-            case 2
-                dT0=tblWait.Data-seqdata.sequencetime;
-        end
-        
-        % Give the wait timer a new start as userdata
-        timeWait.UserData=[now dT0];         
-        % Note that the function now is days since date (January 0, 0000)
-    end
-
-% Function to run when the wait timer is complete.
-    function stopWait(~,~)
-        set(tStatus,'String','Inter cycle wait complete.','fontweight','bold',...
-            'foregroundcolor','k');drawnow;
-        
-        disp('Inter cycle wait complete.'); % Notify the user
-        pWaitBar.XData = [0 1 1 0];         % Fill out the bar
-        drawnow;                            % Update graphics        
-        cycleComplete;
-    end
-
-% Timer callback fucntion updates the wait bar graphics
-    function updateWaitBar(~,~)
-        tstart=timeWait.UserData(1);    % When the wait started
-        dT0=timeWait.UserData(2);             % Time to wait        
-        dT=(now-tstart)*24*60*60;       % Current wait duration
-        
-        % Update graphical progress bar for wait time
-        pWaitBar.XData = [0 dT/dT0 dT/dT0 0];    
-        tWaitTime1.String=[num2str(dT,'%.2f') ' s'];
-        tWaitTime2.String=[num2str(dT0,'%.2f') ' s'];
-        drawnow;
-        
-        % Stop the timer.
-        if dT>dT0
-            tWaitTime1.String=tWaitTime2.String;
-            stop(timeWait);  
-        end
-    end
-
-
-%% AdWin Callbacks
-    function cycleComplete
-        set(tStatus,'String','Cycle completed.','fontweight','bold',...
-            'foregroundcolor','k');drawnow;     
+    function CycleComplete(src,evt)        
+        d=guidata(hF);
+        d.SequencerListener.Enabled = 0;
         if cRpt.Value
             disp('Repeating the sequence');
+            cycleTbl.Data       = seqdata.scancycle;
             runSequenceCB;
         else
             if seqdata.doscan
                 % Increment the scan and run the sequencer again
                 seqdata.scancycle = seqdata.scancycle+1;
+                cycleTbl.Data       = seqdata.scancycle;
                 runSequenceCB;
             end
         end   
     end    
-
 
 % Run button callback.
     function bRunCB(~,~,run_mode)    
@@ -697,44 +488,38 @@ data.waitTimer = timeWait;
         % Should this just happen every single time?
         if isempty(seqdata)
             LatticeSequencerInitialize();
-        end                        
+        end
+        d=guidata(hF);       
         
         % Is the sequence already running?        
-        if isequal(timeAdwin.Running ,'on')
-           warning('The sequence is already running you dummy!');
+        if (d.SequencerWatcher.isRunning)
+           warning('The sequencer running you dummy!');
            return;
         end        
-        % Is the intercycle wait timer running?
-        if isequal(timeWait.Running,'on')
-           warning(['You cannot run another sequence while the wait ' ...
-               'timer is engaged. Disable to wait timer to proceed.']);
-           return;
-        end    
                 
         switch run_mode            
-            case 0 % Run a single iteration
-                if isequal(bgRun.SelectedObject.String,'single')
-                    seqdata.scancycle = 1;
-                else
-                    seqdata.scancycle = cycleTbl.Data;
-                end      
+            case 0 % Run a single iteration               
+                seqdata.scancycle   = cycleTbl.Data;
             case 1 % 1 : start a scan
                 seqdata.doscan      = 1;
-                seqdata.scancycle = 1;
+                seqdata.scancycle   = 1;
+                cycleTbl.Data       = 1;
             case 2 % Continue the scan
                 seqdata.doscan      = 1;
+                seqdata.scancycle   = seqdata.scancycle + 1;
+                cycleTbl.Data       = seqdata.scancycle;
         end  
         runSequenceCB;        
     end
 
-    function bStopCB(~,~)
-        switch bgRun.SelectedObject.String
-            case 'single'
-                warning('HOW DID YOU GET HERE BAD');                
-            case 'scan'
-                disp('Stopping the scan. Wait until next iteration is complete.');
-                seqdata.doscan=0; 
-        end  
+    function bStopCB(~,~)    
+        disp('stopping scan');
+        seqdata.doscan=0;           
+    end
+
+    function bResetCycleNumCB(~,~)
+        cycleTbl.Data = 1;
+        seqdata.scancycle = 1;
     end
 
     function runSequenceCB    
@@ -743,8 +528,12 @@ data.waitTimer = timeWait;
         funcs={};
         for kk=1:length(strs)
            funcs{kk} =  str2func(erase(strs{kk},'@')); 
-        end              
-        runSequence(funcs);             
+        end        
+        d=guidata(hF);
+        d.SequencerWatcher.RequestWaitTime = d.SequencerWatcher.WaitTable.Data;
+
+        runSequence(funcs);    
+        d.SequencerListener.Enabled=1;
     end    
 
 % Reset Button callback
@@ -771,7 +560,26 @@ data.waitTimer = timeWait;
             warning(exception.message)            
         end
     end
-    
+%% guidata output
+
+handles.WaitButtons = bgWait;
+handles.WaitTable = tblWait;
+handles.WaitBar = pWaitBar;
+handles.WaitStr1 = tWaitTime1;
+handles.WaitStr2 = tWaitTime2;
+handles.AdwinBar = pAdWinBar;
+handles.AdwinStr1 = tAdWinTime1;
+handles.AdwinStr2 = tAdWinTime2;
+handles.StatusStr = tStatus;
+
+data.cycleTbl = cycleTbl;
+data.Status = tStatus;
+data.VarText = tScanVar;
+data.SequencerWatcher = sequencer_watcher(handles);
+data.SequencerListener = listener(data.SequencerWatcher,...
+    'CycleComplete',@CycleComplete);
+data.SequencerListener.Enabled = 0;
+
 guidata(hF,data);
 
 end

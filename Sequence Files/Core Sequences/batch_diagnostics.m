@@ -1,9 +1,4 @@
 function batch_diagnostics
-% morning_diagnostics.m
-%
-% Author : C Fujiwara
-% 
-
 global sequence_queue;
 
 sequence_queue = struct(...

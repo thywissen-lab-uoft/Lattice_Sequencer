@@ -12,8 +12,7 @@ function hF=mainGUI
 % CF has attempted to improve the code architecture.
 
 
-% Close any figure with the same name. Only one instance of mainGUI may be
-% open at a time
+%% Find previous instance of gui
 figs = get(groot,'Children');
 for i = 1:length(figs)
     if isequal(figs(i).UserData,'sequencer_gui')       
@@ -23,7 +22,7 @@ for i = 1:length(figs)
     end
 end
 
-%%%%%%%%%%%%%%% Initialize Sequence Data %%%%%%%%%%%%%%%%%
+%% Initialize Things
 LatticeSequencerInitialize();
 global seqdata;
 global adwinprocessnum;
@@ -46,24 +45,10 @@ if seqdata.debugMode
     figName=[figName ' DEBUG MODE'];
 end
 
-disp('Opening Lattice Sequencer...');
-%% Delete old timer objects
-% The progress of the sequence is tracked using some MATLAB timers. Delete
-% these timers so that MATLAB doesn't get confused and make a whole bunch
-% of timer instances.  CF's understanding of how timers are saved in 
-% different MATLAB workspaces may be a little dated.  
-%
-% You may check existing timer instances with timerfindall. 
 
-% Names of timers, defined here so that the constructor uses the same name
-% to make the timers later
-adwinTimeName='AdwinProgressTimer';
-waitTimeName='InterCycleWaitTimer';
-
-% Delete any existing timers
-delete(timerfind('Name',adwinTimeName));
-delete(timerfind('Name',waitTimeName));
 %% Initialize Primary Figure graphics
+
+disp('Opening Lattice Sequencer...');
 
 % Figure color and size settings
 cc='w';w=700;h=170;
@@ -77,7 +62,7 @@ hF.Position(3:4)=[w h];
 set(hF,'WindowStyle','docked');
 data = struct;
 
-timer_handles = struct;
+handles = struct;
 
 %% Close Figure Callback
  function closeFig(src,~)
@@ -488,16 +473,7 @@ bReset.Position(1:2)=[bAbort.Position(1)-bReset.Position(3) ...
     bAbort.Position(2)];
 bReset.Callback=@bResetCB;
 
-%% Sequence Watcher
-timer_handles.WaitButtons = bgWait;
-timer_handles.WaitTable = tblWait;
-timer_handles.WaitBar = pWaitBar;
-timer_handles.WaitStr1 = tWaitTime1;
-timer_handles.WaitStr2 = tWaitTime2;
-timer_handles.AdwinBar = pAdWinBar;
-timer_handles.AdwinStr1 = tAdWinTime1;
-timer_handles.AdwinStr2 = tAdWinTime2;
-timer_handles.StatusStr = tStatus;
+
 
 %% Button Callbacks
 
@@ -597,16 +573,20 @@ timer_handles.StatusStr = tStatus;
     end
 %% guidata output
 
-data.pWaitBar = pWaitBar;
-data.tWaitTime1 = tWaitTime1;
-data.tWaitTime2 = tWaitTime2;
-data.pAdWinBar = pAdWinBar;
-data.tAdWinTime1 = tAdWinTime1;
-data.tAdWinTime2 = tAdWinTime2;
+handles.WaitButtons = bgWait;
+handles.WaitTable = tblWait;
+handles.WaitBar = pWaitBar;
+handles.WaitStr1 = tWaitTime1;
+handles.WaitStr2 = tWaitTime2;
+handles.AdwinBar = pAdWinBar;
+handles.AdwinStr1 = tAdWinTime1;
+handles.AdwinStr2 = tAdWinTime2;
+handles.StatusStr = tStatus;
+
 data.cycleTbl = cycleTbl;
 data.Status = tStatus;
 data.VarText = tScanVar;
-data.SequencerWatcher = sequencer_watcher(timer_handles);
+data.SequencerWatcher = sequencer_watcher(handles);
 data.SequencerListener = listener(data.SequencerWatcher,...
     'CycleComplete',@CycleComplete);
 data.SequencerListener.Enabled = 0;

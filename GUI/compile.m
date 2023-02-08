@@ -15,7 +15,7 @@ if isempty(fig)
 end
 
 data=guidata(fig);
-data.StatusSub.String = '';
+data.VarText.String = '...';
 
 %% Initialize Sequence    
 data.Status.String = 'initializing sequence ...';

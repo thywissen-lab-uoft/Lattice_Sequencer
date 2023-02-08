@@ -43,6 +43,7 @@ classdef sequencer_watcher < handle
             this.WaitMode = this.WaitButtons.SelectedObject.UserData;
             this.StatusStr = handles.StatusStr;           
             this.WaitTable.CellEditCallback = @(src,evt) this.chWaitTime(src,evt);
+            this.RequestWaitTime=30;
         end
         
         function chWaitTime(this,src,evt)

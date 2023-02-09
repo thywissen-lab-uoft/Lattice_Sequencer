@@ -101,27 +101,30 @@ seqdata.flags.xdt_hf_crossFBDown               = 1;
 if seqdata.flags.xdt_hf_ramp_QP_gradient_cancel
     dispLineStr('XDT HF QP Gradient cancel',curtime);
 
-    HF_QP_List =  [0.12];.14;0.115;
+    HF_QP_List =  [0.08 0.09 0.1:0.025:0.2];.14;0.115;
     HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
     seqdata.randcyclelist,'HF_QPReverse','V');  
 
-    % Ramp C16 and C15 to off values
-    pre_ramp_time = 100;
-    AnalogFuncTo(calctime(curtime,0),'Coil 16',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,-7);    
-curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0.062,1); 
-    
-    %Wait a bit
-    curtime = calctime(curtime,50);
-    
-    % Turn off 15/16 switch
-    setDigitalChannel(curtime,'15/16 Switch',0); 
-    curtime = calctime(curtime,10);
+    if seqdata.flags.xdt_evap2_HF==0 % if we aren't already running the QP in reverse direction
+         
+        % Ramp C16 and C15 to off values
+        pre_ramp_time = 100;
+        AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,-7);    
+    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0.062,1); 
 
-    % Turn on reverse QP switch
-    setDigitalChannel(curtime,'Reverse QP Switch',1);
-    curtime = calctime(curtime,10);
+        %Wait a bit
+        curtime = calctime(curtime,50);
+
+        % Turn off 15/16 switch
+        setDigitalChannel(curtime,'15/16 Switch',0); 
+        curtime = calctime(curtime,10);
+
+        % Turn on reverse QP switch
+        setDigitalChannel(curtime,'Reverse QP Switch',1);
+        curtime = calctime(curtime,10);
+    end
 
     % Ramp up transport supply voltage
     QP_FFValue = 23*(HF_QP/.125/30); % voltage FF on delta supply
@@ -455,6 +458,8 @@ if seqdata.flags.xdt_hf_crossFBUp
     rf_uwave_spectroscopy(calctime(curtime,f2_delay),4,pulse2);
     
     curtime = calctime(curtime,ramptime+settlingtime);  
+
+    curtime = calctime(curtime,200);
 end
  
 
@@ -1040,19 +1045,39 @@ if seqdata.flags.xdt_hf_crossFBDown
         zshim = getScanParameter(zshim_list,...
             seqdata.scancycle,seqdata.randcyclelist,'zshim_low','V');
         
+        ramp_time_all = 100;
+        
         % Define the ramp structure
         ramp=struct;
-        ramp.shim_ramptime = 50;
+        ramp.shim_ramptime = ramp_time_all;50;
         ramp.shim_ramp_delay = 0; % ramp earlier than FB field if needed
         ramp.xshim_final = seqdata.params.shim_zero(1); 
         ramp.yshim_final = seqdata.params.shim_zero(2);
         ramp.zshim_final = seqdata.params.shim_zero(3)+zshim;
         % FB coil 
-        ramp.fesh_ramptime = 50;
+        ramp.fesh_ramptime = ramp_time_all;50;
         ramp.fesh_ramp_delay = 0;
         ramp.fesh_final = fesh;
-        ramp.settling_time = 50;            
-curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+        ramp.settling_time = 50; 
+             
+        %Ramp QP down
+        qp_ramp_down_time = ramp_time_all;50;
+        AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time,qp_ramp_down_time,0,1); 
+        %Ramp FB down 
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain 
+
+curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+                 5,5,0); 
+        % Go back to "normal" configuration
+        curtime = calctime(curtime,10);
+        % Turn off reverse QP switch
+        setDigitalChannel(curtime,'Reverse QP Switch',0);
+        curtime = calctime(curtime,10);
+
+        % Turn on 15/16 switch
+        setDigitalChannel(curtime,'15/16 Switch',1);
 
     end
 

@@ -81,6 +81,46 @@ if strcmp(flags.condition, 'SG')
     do_stern_gerlach(seqdata,flags,params.SG)
 end
 
+%% Levitation gradient
+
+if seq
+    
+    if seqdata.flags.image_levitate
+        
+    % QP Value to ramp to
+    TOF_QP_List =  [.3];.14;0.115;
+    TOF_QP = getScanParameter(LF_QP_List,seqdata.scancycle,...
+    seqdata.randcyclelist,'TOF_QPReverse','V');  
+
+    % Ramp C16 and C15 to off values
+    pre_ramp_time = 100;
+    AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,-7);    
+    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0.062,1); 
+
+    curtime = calctime(curtime,50);
+    % Turn off 15/16 switch
+    setDigitalChannel(curtime,'15/16 Switch',0); 
+    curtime = calctime(curtime,10);
+
+    % Turn on reverse QP switch
+    setDigitalChannel(curtime,'Reverse QP Switch',1);
+    curtime = calctime(curtime,10);
+
+    % Ramp up transport supply voltage
+    QP_FFValue = 23*(TOF_QP/.125/30); % voltage FF on delta supply
+    curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        100,100,QP_FFValue);
+    curtime = calctime(curtime,50);
+
+    qp_ramp_time = 5;
+    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,TOF_QP,1); 
+    
+end
+
 %% Turn on quantizing field for imaging 
 % Set the quantization axis for imaging.
 % For low field imaging, the quantization axis is co-axial with the X or Y

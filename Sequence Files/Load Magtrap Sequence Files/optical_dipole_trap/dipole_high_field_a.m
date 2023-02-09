@@ -72,7 +72,8 @@ curtime = timein;
 time_in_HF_imaging = curtime;
 
 seqdata.flags.xdt_hf_ramp_QP_gradient_cancel = 1;   % Ramp QP coils for levitation  
-seqdata.flags.xdt_hf_ramp_field_1            = 1;   % Ramp to HF
+seqdata.flags.xdt_hf_ramp_field_1            = 0;   % Ramp to HF
+
 seqdata.flags.xdt_hf_mix_7_9                 = 0;   % Mix 79 at HF
 seqdata.flags.xdt_hf_79_spec                 = 0;   % 79 Spec
 
@@ -83,7 +84,7 @@ flip_7_5                                    = 0;   % 7 to 5 to avoid fesbach
 ramp_field_2                                = 0;   % Ramp above feshbach (attractive)
 flip_7_5_again                              = 0;   % 5 to 7 for science mixture
 
-seqdata.flags.xdt_hf_ramp_field_3           = 1;    % Ramp field 
+seqdata.flags.xdt_hf_ramp_field_3           = 0;    % Ramp field 
 seqdata.flags.xdt_hf_79_spec2               = 0;    % 79 Spec
 seqdata.flags.xdt_hf_PA                     = 0;    % PA pulse
 
@@ -93,14 +94,14 @@ seqdata.flags.xdt_hf_ramp_field_for_imaging_repulsive  = 0;
 seqdata.flags.xdt_hf_ramp_QP_gradient_cancel_imaging = 0;
 
 % Ramp Down across reosnance (and also to 20G)
-seqdata.flags.xdt_hf_crossFBDown               = 0; 
+seqdata.flags.xdt_hf_crossFBDown               = 1; 
 %% QP Coil Gradient Cancel
 % Ramp the QP gradient up to levitate
 
 if seqdata.flags.xdt_hf_ramp_QP_gradient_cancel
     dispLineStr('XDT HF QP Gradient cancel',curtime);
 
-    HF_QP_List =  [0.117];.14;0.115;
+    HF_QP_List =  [0.12];.14;0.115;
     HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
     seqdata.randcyclelist,'HF_QPReverse','V');  
 

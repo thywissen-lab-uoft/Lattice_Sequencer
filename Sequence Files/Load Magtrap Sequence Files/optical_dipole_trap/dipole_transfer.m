@@ -29,7 +29,7 @@ exp_end_pwr = getScanParameter(Evap_End_Power_List,...
     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');   
 seqdata.flags.xdt_ramp2sympathetic      = 1;
 seqdata.flags.xdt_evap2stage            = 1;
-seqdata.flags.xdt_evap2_HF              = 0;
+seqdata.flags.xdt_evap2_HF              = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
@@ -1014,10 +1014,12 @@ if ( seqdata.flags.CDT_evap == 1 && seqdata.flags.xdt_evap2stage)
     if seqdata.flags.xdt_evap2_HF % ramp fields up
         
         %%%%%%%% Set parameters for QP+FB field ramps %%%%%%
-        
+        ramp_time_all_list = [100];
+        ramp_time_all = getScanParameter(ramp_time_all_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'HF_evap_ramptime','ms');
         % QP parameters
-        qp_ramp_time = 150;
-        HF_QP_List =  [0.15];0.117;.14;0.115;
+        qp_ramp_time = ramp_time_all;150;
+        HF_QP_List = [0.09];0.15;0.117;.14;0.115;
         HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
         seqdata.randcyclelist,'HF_QPReverse','V');  
     
@@ -1037,7 +1039,7 @@ if ( seqdata.flags.CDT_evap == 1 && seqdata.flags.xdt_evap2stage)
         ramp=struct;
 
         % Shim Ramp Parameters
-        ramptime = 150;
+        ramptime = ramp_time_all;150;
 
         ramp.shim_ramptime      = ramptime;
         ramp.shim_ramp_delay    = 0;
@@ -1056,7 +1058,7 @@ if ( seqdata.flags.CDT_evap == 1 && seqdata.flags.xdt_evap2stage)
         % Ramp C16 and C15 to off values
         pre_ramp_time = 100;
         AnalogFuncTo(calctime(curtime,0),'Coil 16',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,-7);    
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0);    
 curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0.062,1); 
 
@@ -1096,13 +1098,20 @@ curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields t
     end
 
     %do the second evap stage
-    pend = 0.06;
+    pend = 0.06;0.06;
     evap_exp_ramp = @(t,tt,tau,y2,y1) ...
         (y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));    
     
-    evap_time_2_list =  [10000];
-    evap_time_2 = getScanParameter(evap_time_2_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'evap_time_2','ms');   
+    if seqdata.flags.xdt_evap2_HF %different evap times for high field or low field
+        evap_time_2_list =  [6000];
+        evap_time_2 = getScanParameter(evap_time_2_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'evap_time_2','ms');
+    else
+        evap_time_2_list =  [10000];
+        evap_time_2 = getScanParameter(evap_time_2_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'evap_time_2','ms');
+    end
+    
 
     % Ramp down the optical powers
     AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
@@ -1112,15 +1121,15 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
         evap_time_2,evap_time_2,exp_tau,pend);
     
-    if seqdata.flags.xdt_evap2_HF % ramp fields back down to 15G
+    if (seqdata.flags.xdt_evap2_HF==1 && seqdata.flags.xdt_high_field_a == 0) % ramp fields back down to 15G
         
-        qp_ramp_down_time = 150;
+        qp_ramp_down_time = ramp_time_all;150;
         
         % Define the ramp structure
         ramp=struct;
 
         % Shim Ramp Parameters
-        ramptime = 150;
+        ramptime = ramp_time_all;150;
 
         ramp.shim_ramptime      = ramptime;
         ramp.shim_ramp_delay    = 0;
@@ -1143,6 +1152,18 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
              @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
                  5,5,0);        
+             
+        % Go back to "normal" configuration
+        curtime = calctime(curtime,10);
+        % Turn off reverse QP switch
+        setDigitalChannel(curtime,'Reverse QP Switch',0);
+        curtime = calctime(curtime,10);
+
+        % Turn on 15/16 switch
+        setDigitalChannel(curtime,'15/16 Switch',1);
+        curtime = calctime(curtime,200);
+        
+        
     end
 end
 

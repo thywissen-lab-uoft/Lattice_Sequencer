@@ -327,66 +327,6 @@ seqdata.updatelist = temp_update_list;
 %Add 5 cycle waits at the end
 seqdata.updatelist(end+1) = -5;
 
-
-%------------------------
-%Old updatelist creation code...keep for checking against
-%Removed July 2010 (DCM)
-
-%preallocate the update size array (this makes a big difference!)
-% ind = find(deltat_list==1);
-% updatelistsize = length(ind);
-% 
-% ind = find(deltat_list>1);
-% updatelistsize = updatelistsize + sum(ceil((deltat_list(ind)-1)/maxwaittime)+1);
-% 
-% seqdata.updatelist = zeros(1,updatelistsize);
-% 
-% %start the update at the second element of the array
-% updatelistcount = 1;
-
-% for i = 1:length(deltat_list)
-%     
-%     if deltat_list(i)==0 %update at the same time as the previous entry
-%         seqdata.updatelist(updatelistcount) = seqdata.updatelist(updatelistcount)+1;
-%     else
-%         
-%         %actual waittime is 1 less (because there is a wait period
-%         %implicitly built in)
-%         adwin_waittime = deltat_list(i)-1;
-% 
-%         %we have to put in a wait period into the update array
-%         %the wait time is split into two elements...-(waitime-1) and a 0
-%         %element
-%         if adwin_waittime>0
-%         
-%             adwin_waittime = adwin_waittime-1;
-%             
-%             %can only enter into the update list a maximum wait of
-%             %'maxwaittime' cycles
-%             while adwin_waittime>maxwaittime
-%                 updatelistcount = updatelistcount+1;
-%                 seqdata.updatelist(updatelistcount) = -maxwaittime;
-%                 adwin_waittime = adwin_waittime - maxwaittime;
-%             end
-% 
-%             if (adwin_waittime~=0)
-%                 updatelistcount = updatelistcount+1;
-%                 seqdata.updatelist(updatelistcount) = -(adwin_waittime);
-%             end
-%             
-%             %have to make a dummy "zero" entry
-%             updatelistcount = updatelistcount+1;
-%             seqdata.updatelist(updatelistcount) = 0;
-%             
-%         end
-%         
-%         %now create an entry for the newest update
-%         updatelistcount = updatelistcount+1;
-%         seqdata.updatelist(updatelistcount) = 1;
-%     end
-% end  
-%------------------------
-
 %calculate the sequence time
 seqdata.sequencetime = 0;
 

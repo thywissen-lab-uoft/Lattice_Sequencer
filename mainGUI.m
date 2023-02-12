@@ -66,44 +66,44 @@ handles = struct;
 
 %% Close Figure Callback
  function closeFig(src,~)
-       disp('Requesting to close the sequencer GUI.');     
-       t=guidata(src);
-       
-       if t.SequencerWatcher.isRunning       
-           tt=['The sequence is still running or repitions are engaged '...
-               'with the wait timer running. Are you sure you want to ' ...
-               'close the GUI? If the sequence data has already been ' ...
-               'sent to the Adwin, the experiment will still be running.'];
-           tit='Sequence is still running!';           
-           f2=figure('Name',tit,'color','w','NumberTitle','off',...
-               'windowstyle','modal','units','pixels','resize','off');
-           f2.Position(3:4)=[400 200];
-           f2.Position(1:2)=src.Position(1:2)+[-50 100];           
-           uicontrol('style','text','String',tt,'parent',f2,...
-               'fontsize',10,'units','normalized','horizontalalignment',...
-               'center','backgroundcolor','w','Position',[.05 .5 .9 .35]);           
-           uicontrol('style','pushbutton','string','yes','parent',f2,...
-               'fontsize',10','units','normalized','backgroundcolor',...
-               [253 106 2]/255,'Position',[.25 .15 .2 .2],'Callback',@doClose);  
-           uicontrol('style','pushbutton','string','cancel','parent',f2,...
-               'fontsize',10','units','normalized','backgroundcolor','w',...
-               'position',[.55 .15 .2 .2],'Callback',@(~,~) close(f2));  
-       else
-            disp('Closing the sequencer GUI. Goodybe. I love you'); 
-            try
-                delete(t.SequencerWatcher);
-            catch exception
-                warning('Something went wrong stopping and deleting timers');
-            end
-            delete(src);
-       end
-       
-        function doClose(~,~)
-            close(f2);
-            disp('Closing the sequencer GUI. Goodybe. I love you');
-            t=guidata(src);
-            delete(src);
-        end       
+   disp('Requesting to close the sequencer GUI.');     
+   t=guidata(src);
+
+   if t.SequencerWatcher.isRunning       
+       tt=['The sequence is still running or repitions are engaged '...
+           'with the wait timer running. Are you sure you want to ' ...
+           'close the GUI? If the sequence data has already been ' ...
+           'sent to the Adwin, the experiment will still be running.'];
+       tit='Sequence is still running!';           
+       f2=figure('Name',tit,'color','w','NumberTitle','off',...
+           'windowstyle','modal','units','pixels','resize','off');
+       f2.Position(3:4)=[400 200];
+       f2.Position(1:2)=src.Position(1:2)+[-50 100];           
+       uicontrol('style','text','String',tt,'parent',f2,...
+           'fontsize',10,'units','normalized','horizontalalignment',...
+           'center','backgroundcolor','w','Position',[.05 .5 .9 .35]);           
+       uicontrol('style','pushbutton','string','yes','parent',f2,...
+           'fontsize',10','units','normalized','backgroundcolor',...
+           [253 106 2]/255,'Position',[.25 .15 .2 .2],'Callback',@doClose);  
+       uicontrol('style','pushbutton','string','cancel','parent',f2,...
+           'fontsize',10','units','normalized','backgroundcolor','w',...
+           'position',[.55 .15 .2 .2],'Callback',@(~,~) close(f2));  
+   else
+        disp('Closing the sequencer GUI. Goodybe. I love you'); 
+        try
+            delete(t.SequencerWatcher);
+        catch exception
+            warning('Something went wrong stopping and deleting timers');
+        end
+        delete(src);
+   end
+
+    function doClose(~,~)
+        close(f2);
+        disp('Closing the sequencer GUI. Goodybe. I love you');
+        t=guidata(src);
+        delete(src);
+    end       
  end
 %% Main Panel
 

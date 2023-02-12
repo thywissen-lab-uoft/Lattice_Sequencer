@@ -15,7 +15,7 @@ fprintf('Calculating sequence...');
 dodds = 1;
 
 %% Process DDS Sweeps
-if dodds
+if dodds && ~seqdata.debugMode
 disp('DDS...');    
     if seqdata.numDDSsweeps ~= 0    
         % Create TCP/IP object 't'. Specify server machine and port number. 
@@ -82,10 +82,12 @@ disp('DDS...');
         delete(t); 
         clear t      
     end    
+else 
+    disp('skipping dds...');
 end
 %% Program GPIB devices
 
-if isfield(seqdata,'gpib')
+if isfield(seqdata,'gpib') && ~seqdata.debugMode
     try    
         fprintf('gpib...');
         % send commands; (..,1) to display query results in command window
@@ -93,17 +95,21 @@ if isfield(seqdata,'gpib')
     catch ME
        warning(ME.message);
     end
+else
+    fprintf('skipping gpib...');
 end
 
 %% Program VISA devices
 
-if isfield(seqdata,'visa')
+if isfield(seqdata,'visa') && ~seqdata.debugMode
     try
         fprintf('visa...');
         SendVISACommands(seqdata.visa,1);
     catch ME
        warning(ME.message);
     end
+else
+    fprintf('skipping visa ...');
 end
 
 %% Convert Analog values into 16 bit
@@ -327,6 +333,9 @@ seqdata.updatelist = temp_update_list;
 %Add 5 cycle waits at the end
 seqdata.updatelist(end+1) = -5;
 
+%% Finishing
+
+
 %calculate the sequence time
 seqdata.sequencetime = 0;
 
@@ -348,8 +357,6 @@ seqdata.numDDSsweeps = 0;
 
 %the sequence has been calculated
 seqdata.seqcalculated = 1;
-
-%% Run the mercurial backup
 
 
 seqdata = orderfields(seqdata);

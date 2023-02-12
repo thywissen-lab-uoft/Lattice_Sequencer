@@ -32,6 +32,10 @@ evalin('base','openvar(''seqdata.flags'')')
 evalin('base','openvar(''seqdata.params'')')
 evalin('base','openvar(''seqdata.variables'')')
 
+
+
+
+
 waitDefault=30;
 
 defaultSequence='@main_settings,@main_sequence';
@@ -47,7 +51,7 @@ end
 disp('Opening Lattice Sequencer...');
 
 % Figure color and size settings
-cc='w';w=700;h=170;
+cc='w';w=700;h=350;
 
 % Initialize the figure graphics objects
 hF=figure('toolbar','none','Name',figName,'color',cc,'NumberTitle','off',...
@@ -58,6 +62,7 @@ hF.Position(3:4)=[w h];
 set(hF,'WindowStyle','docked');
 
 handles = struct;
+
 
 %% Close Figure Callback
  function closeFig(src,~)
@@ -107,6 +112,21 @@ hpMain=uipanel('parent',hF,'units','pixels','backgroundcolor',cc,...
     'bordertype','etchedin');
 hpMain.OuterPosition=[0 0 hF.Position(3) hF.Position(4)];
 hpMain.OuterPosition=[0 hF.Position(4)-h w h];
+
+%% Jobs Panel
+
+hpJobs = uipanel('parent',hF,'units','pixels','backgroundcolor','w',...
+    'title','jobs','bordertype','etchedin');
+hpJobs.Position = [1 180 hF.Position(3) hF.Position(4)-180];
+
+tJobs = uitable('parent',hpJobs,'fontsize',8);
+tJobs.ColumnName = {'id','status','n','name','sequence'};
+
+tJobs.ColumnWidth={30 60 40 150 380};
+tJobs.ColumnEditable=[false false false false false];
+hme = 20;
+tJobs.Position = [1 hme hpJobs.Position(3) hpJobs.Position(4)-(hme+15)];
+
 
 %% Settings Graphical Objects
 
@@ -582,8 +602,15 @@ data.SequencerWatcher = sequencer_watcher(handles);
 data.SequencerListener = listener(data.SequencerWatcher,...
     'CycleComplete',@CycleComplete);
 data.SequencerListener.Enabled = 0;
+data.JobTable = tJobs;
+
+
+assignin('base','gui_main',hF);
 
 guidata(hF,data);
+
+jh =  job_handler(hF);
+assignin('base','jh',jh);
 
 end
 

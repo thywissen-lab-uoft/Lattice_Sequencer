@@ -17,6 +17,7 @@ classdef sequencer_job < handle
         isComplete
         lh
         ExecutionDates
+        Status
     end    
     events
         CycleComplete
@@ -33,10 +34,12 @@ classdef sequencer_job < handle
             obj.ScanCycle = [];
             obj.isComplete = false;
             obj.ExecutionDates = [];
+            obj.Status = 'pending';
         end    
         
         function JobCompleteFcn(obj)        
             obj.isComplete = true;
+            obj.Status = 'complete';
             obj.notify('JobComplete');
             for kk=1:length(obj.ExecutionDates)
                disp(datestr(obj.ExecutionDates(kk)) )
@@ -57,7 +60,7 @@ classdef sequencer_job < handle
                     obj.start;
                 end
             else
-                disp('job has stopped');
+                obj.Status = 'stopped';
             end
         end
                 
@@ -79,6 +82,9 @@ classdef sequencer_job < handle
         end
         
         function start(obj)
+            obj.Status = 'running';
+
+            
             obj.continueRunning = 1;
             cycles_left = setdiff(obj.ScanCyclesRequested,...
                 obj.ScanCyclesCompleted);

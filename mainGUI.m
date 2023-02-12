@@ -21,6 +21,9 @@ LatticeSequencerInitialize();
 global seqdata;
 global adwinprocessnum;
 
+data = struct;
+
+
 seqdata.doscan = 0;
 
 evalin('base','global seqdata')
@@ -35,6 +38,7 @@ defaultSequence='@main_settings,@main_sequence';
 figName='Main GUI';
 
 if seqdata.debugMode
+    
     figName=[figName ' DEBUG MODE'];
 end
 
@@ -52,7 +56,6 @@ hF=figure('toolbar','none','Name',figName,'color',cc,'NumberTitle','off',...
 clf
 hF.Position(3:4)=[w h];
 set(hF,'WindowStyle','docked');
-data = struct;
 
 handles = struct;
 

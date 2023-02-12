@@ -1,4 +1,8 @@
 classdef sequencer_watcher < handle
+% Author : CJ Fujiwara
+% 
+% This class hanldes the mainGUI handles such as the status of the adiwin,
+% the wait time, any sequences being run, and any events.
     properties
         AdwinStartTime
         WaitStartTime    

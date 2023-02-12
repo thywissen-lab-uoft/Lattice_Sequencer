@@ -16,11 +16,8 @@ dodds = 1;
 
 %% Process DDS Sweeps
 if dodds
-% disp(repmat('-',1,60));
-disp('DDS...');
-    
-    if seqdata.numDDSsweeps ~= 0
-    
+disp('DDS...');    
+    if seqdata.numDDSsweeps ~= 0    
         % Create TCP/IP object 't'. Specify server machine and port number. 
         t(1) = udp('192.168.1.155', 37829, 'LocalPort', 4629); % RF 
         t(2) = udp('192.168.1.156', 37829, 'LocalPort', 4630); % 4 Pass         
@@ -37,33 +34,26 @@ disp('DDS...');
             end                
         end        
         
-        %DDS commands
+        %DDS commands (See Alan Stummer's website for details)
         add_cmd = char(hex2dec('C1'));
         exc_cmd = char(hex2dec('C4'));
         clr_cmd = char(hex2dec('C0'));
         adwin_trig_cmd = char(hex2dec('A4'));
-        hrt_beat_cmd = char(hex2dec('7F'));
-        
+        hrt_beat_cmd = char(hex2dec('7F'));        
         cmd_string = {};
         
-        %string to send to DDS
+        % Resync DDS multiple times to reset (is this needed?)
         for i = 1:3
-            %sending redundant clear commands to (maybe?) help this issue of the DDS
-            %turning off
             for j = 1:20 %10
                 fwrite(t(i),clr_cmd,'sync');
             end
-            %cmd_string{i} = [clr_cmd];
         end
-        %cmd_string = [];
 
         %Go through each DDS Sweep
         for i = 1:seqdata.numDDSsweeps
             %DDS id
             if ~(seqdata.DDSsweeps(i,1) == 1 || seqdata.DDSsweeps(i,2)) %assume DDS_ID==1 is the evaporation DDS
-
-                warning('Specified DDS does not exist')
-                
+                warning('Specified DDS does not exist')                
             else
                 
                 DDS_id = seqdata.DDSsweeps(i,1);
@@ -74,15 +64,11 @@ disp('DDS...');
                 sweep_time = seqdata.DDSsweeps(i,4);
                
                 fwrite(t(DDS_id),[add_cmd adwin_trig_cmd],'sync')
-                %cmd_string{DDS_id} = [cmd_string{DDS_id} add_cmd adwin_trig_cmd];
-                
-                %cmd_string = [cmd_string add_cmd adwin_trig_cmd ramp_DDS_freq(sweep_time,freq1,freq2,DDS_id)];
-                
+
                 cmd_string = ramp_DDS_freq(sweep_time,freq1,freq2,DDS_id);
                 for j = 1:length(cmd_string)
                     fwrite(t(DDS_id),cmd_string{j},'sync');
                 end
-                %cmd_string{DDS_id} = [cmd_string{DDS_id} ramp_DDS_freq(sweep_time,freq1,freq2,DDS_id)];
             
             end   
 

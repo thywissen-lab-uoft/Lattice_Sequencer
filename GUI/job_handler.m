@@ -1,6 +1,8 @@
 classdef job_handler < handle
-    %SEQUENCER_JOB Summary of this class goes here
-    %   Detailed explanation goes here
+    % Author : CJ Fujiwara
+    %
+    % This can organizers and tracks all jobs which are run on the
+    % sequencer.
     
     properties        
         CurrentJob

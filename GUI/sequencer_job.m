@@ -1,6 +1,8 @@
 classdef sequencer_job < handle
-    %SEQUENCER_JOB Summary of this class goes here
-    %   Detailed explanation goes here
+    % Author : CJ Fujiwara
+    %
+    % This class contains jobs to run on the adwin.  A single job can have
+    % multiple scandincides, but only refers to a single set of sequence file.
     
     properties        
         SequenceFunctions  

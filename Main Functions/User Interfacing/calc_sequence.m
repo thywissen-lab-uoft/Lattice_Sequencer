@@ -19,7 +19,7 @@ if dodds
 disp('DDS...');    
     if seqdata.numDDSsweeps ~= 0    
         % Create TCP/IP object 't'. Specify server machine and port number. 
-        t(1) = udp('192.168.1.155', 37829, 'LocalPort', 4629); % RF 
+        t(1) = udp('192.168.1.155', 37829, 'LocalPort', 4629); % RF
         t(2) = udp('192.168.1.156', 37829, 'LocalPort', 4630); % 4 Pass         
         t(3) = udp('192.168.1.157', 37829, 'LocalPort', 4631); % Rb Trap Offset Lock
         
@@ -54,47 +54,36 @@ disp('DDS...');
             %DDS id
             if ~(seqdata.DDSsweeps(i,1) == 1 || seqdata.DDSsweeps(i,2)) %assume DDS_ID==1 is the evaporation DDS
                 warning('Specified DDS does not exist')                
-            else
+            else                
+                DDS_id = seqdata.DDSsweeps(i,1);            % DDS id     
+                freq1 = seqdata.DDSsweeps(i,2);             % f1
+                freq2 = seqdata.DDSsweeps(i,3);             % f2
+                sweep_time = seqdata.DDSsweeps(i,4);        % sweep time    
                 
-                DDS_id = seqdata.DDSsweeps(i,1);
-                
-                %define the start frequency, end frequency, and sweep time
-                freq1 = seqdata.DDSsweeps(i,2);
-                freq2 = seqdata.DDSsweeps(i,3);
-                sweep_time = seqdata.DDSsweeps(i,4);
-               
-                fwrite(t(DDS_id),[add_cmd adwin_trig_cmd],'sync')
-
+                % Sync trigger (?)
+                fwrite(t(DDS_id),...
+                    [add_cmd adwin_trig_cmd],'sync');
+                % Get the sweep command
                 cmd_string = ramp_DDS_freq(sweep_time,freq1,freq2,DDS_id);
+                % Write the command
                 for j = 1:length(cmd_string)
                     fwrite(t(DDS_id),cmd_string{j},'sync');
-                end
-            
+                end            
             end   
-
         end    
 
-        %write to DDS
+        % Write to DDS an ending command (?)
         for i = 1:3
-            fwrite(t(i),[exc_cmd char(hex2dec('00'))],'sync')
-            %cmd_string{i} = [cmd_string{i} exc_cmd char(hex2dec('00'))];
-            %disp(t(i).ValuesSent)
-            
-            %fwrite(t(i),cmd_string{i},'sync')
-            
-             % Disconnect and clean up the server connection. 
-            fclose(t(i));             
+            fwrite(t(i),[exc_cmd char(hex2dec('00'))],'sync'); % write
+            fclose(t(i)); % disconnect
         end
+        
+        % Remove TCP/IP handle
         delete(t); 
         clear t      
     end    
 end
 %% Program GPIB devices
-
-% Note: ideally would like to check whether this update differs from
-% the last one and only send commands if necessary (they take a long time).
-% This, however, will only work well if device settings are never set via
-% the front panel.
 
 if isfield(seqdata,'gpib')
     try    
@@ -111,7 +100,6 @@ end
 if isfield(seqdata,'visa')
     try
         fprintf('visa...');
-        % send commands; (..,1) to display query results in command window
         SendVISACommands(seqdata.visa,1);
     catch ME
        warning(ME.message);
@@ -144,9 +132,6 @@ analogAdwin(:,3) = (seqdata.analogadwinlist(:,3)+10)/20*2^(16);
 %Change the digital update array into an array of update words
 
 if (~isempty(seqdata.digadwinlist))
-% disp('Processing digital calls ...');
-% 
-
 fprintf('digital...');
 
     %pre-allocate, can be no bigger than the current update list

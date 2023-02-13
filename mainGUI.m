@@ -93,8 +93,14 @@ handles = struct;
         disp('Closing the sequencer GUI. Goodybe. I love you'); 
         try
             delete(t.SequencerWatcher);
-        catch exception
-            warning('Something went wrong stopping and deleting timers');
+        catch ME
+            warning(ME.message);
+        end
+        
+        try 
+            delete(t.JobHandler)
+        catch ME
+           warning(ME.message); 
         end
         delete(src);
    end
@@ -198,17 +204,7 @@ eSeq.Position(3)=335;
 eSeq.Position(4)=eSeq.Extent(4);
 eSeq.Position(1:2)=[5 32];
 
-    function updateSequenceStr
-        s =[];
-        for r = 1:length(seqdata.sequence_functions)
-            s = [s '@' func2str(seqdata.sequence_functions{r}) ','];
-        end
-        s(end)=[];
-        eSeq.String=s;
-    end
 
-updateSequenceStr;
-data.SequenceText = eSeq;
 
 % Button for file selection of the sequenece file
 cdata=imresize(imread(['GUI/images' filesep 'browse.jpg']),[22 22]);
@@ -289,7 +285,7 @@ bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
     end
 
 % callback to change sequence file
-    function browseCB(~,~)
+    function browseCB(src,evt)    
         disp([datestr(now,13) ' Changing the sequence file.']);        
         % Directory where the sequence files lives
         dirName=['Sequence Files' filesep 'Core Sequences'];
@@ -303,9 +299,10 @@ bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
             disp([datestr(now,13) ' Cancelling'])
             return;
         end        
-        funcname=['@' erase(file,'.m')];
-        eSeq.String=funcname;
-        disp([datestr(now,13) ' New sequence function is ' funcname]);
+        file = erase(file,'.m');        
+        seqdata.sequence_functions = {str2func(file)};        
+        d=guidata(hF);
+        d.SequencerWatcher.updateSequenceFileText(seqdata.sequence_functions);               
     end
 
     function fileCB(~,~,n)
@@ -624,6 +621,8 @@ handles.AdwinBar = pAdWinBar;
 handles.AdwinStr1 = tAdWinTime1;
 handles.AdwinStr2 = tAdWinTime2;
 handles.StatusStr = tStatus;
+handles.SequenceText = eSeq;
+
 
 data.cycleTbl = cycleTbl;
 data.Status = tStatus;
@@ -633,6 +632,7 @@ data.SequencerListener = listener(data.SequencerWatcher,...
     'CycleComplete',@CycleComplete);
 data.SequencerListener.Enabled = 0;
 data.JobTable = tJobs;
+data.SequenceText = eSeq;
 
 
 
@@ -640,6 +640,9 @@ guidata(hF,data);
 
 data.JobHandler = job_handler(hF);
 guidata(hF,data);
+
+%% Update Things
+data.SequencerWatcher.updateSequenceFileText(seqdata.sequence_functions);
 
 
 %% Assign Handles

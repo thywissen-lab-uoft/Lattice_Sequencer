@@ -21,6 +21,7 @@ properties
     StatusStr
     isRunning
     WaitMode
+    SequenceText
 end
 
 events
@@ -51,6 +52,17 @@ function this = sequencer_watcher(handles)
     this.StatusStr = handles.StatusStr;           
     this.WaitTable.CellEditCallback = @(src,evt) this.chWaitTime(src,evt);
     this.RequestWaitTime=30;
+    this.SequenceText = handles.SequenceText;
+end
+
+% function that updates the sequence file text
+function updateSequenceFileText(obj,SequenceFunctions)
+    mystr =[];
+    for kk = 1:length(SequenceFunctions)
+        mystr = [mystr '@' func2str(SequenceFunctions{kk}) ','];
+    end
+    mystr(end)=[];
+    obj.SequenceText.String=mystr;
 end
 
 % callback for wait time table edit

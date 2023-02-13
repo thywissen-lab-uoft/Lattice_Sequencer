@@ -1,4 +1,5 @@
 function compile(funcs)
+global seqdata
 
 %% Find the GUI
 
@@ -17,13 +18,11 @@ end
 data=guidata(fig);
 data.VarText.String = '...';
 
-%% update sequence function text
-mystr =[];
-for kk = 1:length(funcs)
-    mystr = [mystr '@' func2str(funcs{kk}) ','];
-end
-mystr(end)=[];
-data.SequenceText.String=mystr;
+
+% update sequencer file text
+data.SequencerWatcher.updateSequenceFileText(seqdata.sequence_functions);
+
+
 %% Run Sequence Functions
 data.Status.String = 'initializing sequence ...';
 data.Status.ForegroundColor = 'k';

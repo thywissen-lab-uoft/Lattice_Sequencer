@@ -4,18 +4,19 @@
 %Summary: This function calculates the current sequence (creates the array
 %to send to the ADWIN)
 %------
-function calc_sequence()
+function calc_sequence(doProgramDevices)
 
 global seqdata;
 global adwin_processor_speed;
 
 fprintf('Calculating sequence...');
 
-%0: disable writing to the Rabbit for testing
-dodds = 1;
+if nargin == 0
+    doProgramDevices = 1;
+end
 
 %% Process DDS Sweeps
-if dodds && ~seqdata.debugMode
+if doProgramDevices && ~seqdata.debugMode
 disp('DDS...');    
     if seqdata.numDDSsweeps ~= 0    
         % Create TCP/IP object 't'. Specify server machine and port number. 
@@ -87,7 +88,7 @@ else
 end
 %% Program GPIB devices
 
-if isfield(seqdata,'gpib') && ~seqdata.debugMode
+if doProgramDevices && isfield(seqdata,'gpib') && ~seqdata.debugMode
     try    
         fprintf('gpib...');
         % send commands; (..,1) to display query results in command window
@@ -101,7 +102,7 @@ end
 
 %% Program VISA devices
 
-if isfield(seqdata,'visa') && ~seqdata.debugMode
+if doProgramDevices && isfield(seqdata,'visa') && ~seqdata.debugMode
     try
         fprintf('visa...');
         SendVISACommands(seqdata.visa,1);

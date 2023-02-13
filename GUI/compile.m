@@ -1,5 +1,9 @@
-function compile(funcs)
+function compile(funcs,doProgramDevices)
 global seqdata
+
+if nargin == 1
+    doProgramDevices = 1;
+end
 
 %% Find the GUI
 
@@ -49,7 +53,7 @@ data.Status.String = ['converting sequence into hardware commands'];
 data.Status.ForegroundColor = [220,88,42]/255;
 
 pause(.1)
-calc_sequence;    
+calc_sequence(doProgramDevices);    
 pause(.1)
 data.Status.String = ['sequence calulated'];
 data.Status.ForegroundColor = [17,59,8]/255;

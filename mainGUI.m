@@ -269,10 +269,19 @@ bPlot.Position(1:2)=bFile3.Position(1:2)+[bFile3.Position(3)+2 0];
 
 % Button to recompile seqdata
 cdata=imresize(imread(['GUI/images' filesep 'compile.jpg']),[20 20]);
-bCompile=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
-    'backgroundcolor',cc,'Callback',@bCompileCB,'tooltip','compile sequence');
-bCompile.Position(3:4)=[25 25];
-bCompile.Position(1:2)=bPlot.Position(1:2)+[bPlot.Position(3)+2 0];
+bCompilePartial=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
+    'backgroundcolor',cc,'Callback',{@bCompileCB 0},'tooltip',...
+    'compile sequence but don''t program devices');
+bCompilePartial.Position(3:4)=[25 25];
+bCompilePartial.Position(1:2)=bPlot.Position(1:2)+[bPlot.Position(3)+2 0];
+
+% Button to recompile seqdata
+cdata=imresize(imread(['GUI/images' filesep 'compile_yellow.jpg']),[20 20]);
+bCompileFull=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
+    'backgroundcolor',cc,'Callback',{@bCompileCB 1},'tooltip',...
+    'compile sequence and program devices');
+bCompileFull.Position(3:4)=[25 25];
+bCompileFull.Position(1:2)=bCompilePartial.Position(1:2)+[bCompilePartial.Position(3)+2 0];
 
 % Button to recompile seqdata
 cdata=imresize(imread(['GUI/images' filesep 'command_window.jpg']),[20 20]);
@@ -280,10 +289,10 @@ bCmd=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@(~,~) commandwindow,'tooltip',...
     'move up directory level','tooltip','command window');
 bCmd.Position(3:4)=[25 25];
-bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
+bCmd.Position(1:2)=bCompileFull.Position(1:2)+[bCompileFull.Position(3)+2 0];
 
-    function bCompileCB(~,~)    
-        compile(seqdata.sequence_functions)        
+    function bCompileCB(~,~,doProgramDevices)    
+        compile(seqdata.sequence_functions,doProgramDevices)        
         updateScanVarText;    
     end
 

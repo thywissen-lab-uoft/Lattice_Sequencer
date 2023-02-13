@@ -27,7 +27,7 @@ end
 
 methods
    
-
+% contructor
 function obj = sequencer_job(SequenceFunctions,JobName,...
         ScanCyclesRequested)    
     if nargin == 2
@@ -46,6 +46,7 @@ function obj = sequencer_job(SequenceFunctions,JobName,...
     obj.UserJobCompleteFcn   = @(x) disp('hi2');
 end    
 
+% function that evaluates upon job completion
 function JobCompleteFcn(obj)        
     obj.Status              = 'complete';
     obj.notify('JobComplete');
@@ -57,8 +58,7 @@ function JobCompleteFcn(obj)
     obj.UserJobCompleteFcn(obj);
 end
 
-
-
+% function that evaluates upon cycle completion
 function CycleCompleteFcn(obj)        
     delete(obj.lh);         
     % Increment cycles completed
@@ -83,6 +83,7 @@ function CycleCompleteFcn(obj)
 
 end
 
+% function that finds the sequencer watcher object (weird)
 function SequencerWatcher=findSequencerWatcher(obj)
     figs = get(groot,'Children');
     fig = [];
@@ -95,13 +96,14 @@ function SequencerWatcher=findSequencerWatcher(obj)
     SequencerWatcher = d.SequencerWatcher;
 end
 
+% stop the current job from running
 function stop(obj)
    obj.continueRunning = 0;
    obj.Status = 'stopping';
    disp('stopping job');
 end
 
-% Start this sequence
+% Start the next job/continue the current job
 function start(obj)
     
     if obj.SequencerWatcher.isRunning

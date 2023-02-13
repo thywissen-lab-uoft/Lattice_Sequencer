@@ -17,6 +17,7 @@ end
 
 methods
     
+% constructor
 function obj = job_handler(gui_handle)           
     obj.SequencerJobs={};            
     d=guidata(gui_handle);          
@@ -24,6 +25,7 @@ function obj = job_handler(gui_handle)
     obj.updateJobText;
 end   
 
+% function that updates the job table
 function updateJobText(obj)
     if isempty(obj.SequencerJobs)
        obj.TextBox.Data={};
@@ -61,7 +63,7 @@ function clearJobs(obj)
     obj.updateJobText;
 end
 
-
+% chekcs to see if the jobs are idle
 function val = isIdle(obj)
     val = 1;
     for kk=1:length(obj.SequencerJobs)
@@ -128,6 +130,7 @@ function stop(obj)
     obj.updateJobText;
 end                
 
+% delete me
 function delete(obj)
     % delete any listeners
     obj.clearJobs;

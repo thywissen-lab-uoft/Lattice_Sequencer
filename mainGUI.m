@@ -125,6 +125,10 @@ hpJobs = uipanel('parent',hF,'units','pixels','backgroundcolor','w',...
     'title','job handler','bordertype','etchedin');
 hpJobs.Position = [1 160 w hF.Position(4)-160];
 
+if ~seqdata.debugMode
+   hpJobs.Enable = 'off'; 
+end
+
 % sequence uipanel
 hpSeq = uipanel('parent',hpMain,'units','pixels','backgroundcolor',cc,...
     'bordertype','etchedin','title','sequence');

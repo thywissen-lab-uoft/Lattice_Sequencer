@@ -114,8 +114,6 @@ hpMain=uipanel('parent',hF,'units','pixels','backgroundcolor',cc,...
 hpMain.OuterPosition=[0 0 hF.Position(3) hF.Position(4)];
 hpMain.OuterPosition=[0 hF.Position(4)-h w h];
 
-
-
  % Jobs uipanel
 hpJobs = uipanel('parent',hF,'units','pixels','backgroundcolor','w',...
     'title','job handler','bordertype','etchedin');
@@ -138,7 +136,6 @@ hpRun = uipanel('Parent',hpMain,'units','pixels','Title','run mode',...
     'backgroundcolor',cc);
 hpRun.Position(3:4)=[347 160];
 hpRun.Position(1:2)=[350 1];
-
 
 %% Jobs Panel Graphical Objects
 
@@ -220,6 +217,7 @@ bBrowse=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
 bBrowse.Position(3:4)=[24 24];
 bBrowse.Position(1:2)=[5 4];
 
+% button to change to default sequence
 bDefault=uicontrol(hpSeq,'style','pushbutton','String','default seq.',...
     'backgroundcolor',cc,'FontSize',8,'units','pixels',...
     'Callback',@defaultCB);
@@ -290,6 +288,7 @@ bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
         updateScanVarText;    
     end
 
+% callback to change sequence file
     function browseCB(~,~)
         disp([datestr(now,13) ' Changing the sequence file.']);        
         % Directory where the sequence files lives
@@ -378,10 +377,7 @@ tWaitTime2 = text(0,0,'10.00 s','parent',axWaitBar,'fontsize',10,...
     'horizontalalignment','right','units','pixels','verticalalignment','bottom');
 tWaitTime2.Position=[axWaitBar.Position(3) 10];
 
-
-
 %% Run mode graphics and callbacks
-
 
 % Adwin Progress bar
 adwinbarcolor=[0.67578 1 0.18359];
@@ -585,7 +581,6 @@ bReset.Callback=@bResetCB;
     end
 
     function runSequenceCB    
-  
         d=guidata(hF);
         d.SequencerWatcher.RequestWaitTime = d.SequencerWatcher.WaitTable.Data;
 
@@ -593,7 +588,7 @@ bReset.Callback=@bResetCB;
         d.SequencerListener.Enabled=1;
     end    
 
-% Reset Button callback
+% Reset Button callback (not tested well)
     function bResetCB(~,~)        
         disp('Reseting the adwin outputs to their default values');
         LatticeSequencerInitialize();
@@ -607,6 +602,7 @@ bReset.Callback=@bResetCB;
         end
     end
 
+% Abort Button callback (not tested well)
     function bAbortCB(~,~)       
         disp('Aborting adwin and then resetting!!! Good luck');
         try
@@ -639,16 +635,20 @@ data.SequencerListener.Enabled = 0;
 data.JobTable = tJobs;
 
 
+
+guidata(hF,data);
+
+data.JobHandler = job_handler(hF);
+guidata(hF,data);
+
+
+%% Assign Handles
+% Add gui figure, sequecner watcher, and job handler to base workspace so
+% that they may be accessed from the command line
+
+assignin('base','jh',data.JobHandler);
 assignin('base','gui_main',hF);
-
-guidata(hF,data);
-
-jh =  job_handler(hF);
-assignin('base','jh',jh);
-
-data.JobHandler = jh;
-guidata(hF,data);
-
+assignin('base','sw',data.SequencerWatcher);
 end
 
 

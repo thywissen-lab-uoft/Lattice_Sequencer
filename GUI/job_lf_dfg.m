@@ -1,6 +1,7 @@
 function j=job_lf_dfg
 
-    function curtime = seq_lf_dfg(curtime)
+% Sequence File
+    function curtime = seq_mod(curtime)
         global seqdata;
         seqdata.flags.lattice   = 1;
         
@@ -15,6 +16,7 @@ function j=job_lf_dfg
         defVar('p3',p3);        
     end
 
+% This function evaluates at the end of each cycle
     function cycleComplete(job)
         val = job.GetData;
         
@@ -27,15 +29,22 @@ function j=job_lf_dfg
         % how to loop with m_loop?
     end
 
+% This function evaluates at the end of the job
     function jobComplete(job)
        % Other stuff
     end
 
-% sequence functions to run
-seqs = {@main_settings,@seq_mod_1,@main_sequence};
+% Sequence functions to run
+seqs = {@main_settings,@seq_mod,@main_sequence};
+
+% Job Name
+name = 'DFG Optimize';
+
+% number of cycles in the job ([] and 0 are infinity)
+N = [];
 
 % add it to the queue
-j = sequencer_job(seqs,'DFG Optimize',[],@cycleComplete);
+j = sequencer_job(seqs,name,N,@cycleComplete);
     
 end
 

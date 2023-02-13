@@ -81,6 +81,7 @@ seqdata = struct('analogadwinlist',[],...   % adwin list is [time channel value]
     'params', [],...                        % various parameters, recently defined here by FC 07/23/2020
     'flags',[]); 
 
+seqdata.sequence_functions = {};
 seqdata.scancycle=1;
 seqdata.randcyclelist=makeRandList;
 

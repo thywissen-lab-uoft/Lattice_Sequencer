@@ -50,10 +50,10 @@ m3=uimenu('text','Analog');     % Analog Channel menu
 m4=uimenu('text','Pre-sets');   % Shortcuts to saved traces
 
 % Setting sub menu
-mRun=uimenu(m1,'text',['Compile ' funcname ' and update'],...
-    'callback',@recompile);
+% mRun=uimenu(m1,'text',['Compile ' funcname ' and update'],...
+%     'callback',@recompile);
 mUpdate=uimenu(m1,'text','Update Plots','callback',@update);
-uimenu(m1,'text','Change Sequence File','callback',@chfile);
+% uimenu(m1,'text','Change Sequence File','callback',@chfile);
 drawnow;
 
     function tend=getSequenceDuration
@@ -63,55 +63,54 @@ drawnow;
     end
 
 % Recompile sequence and update plots
-    function recompile(~,~)
-        try        
-            start_new_sequence;             % Initialize sequence
-            seqdata.scancycle=1;            % 
-%             seqdata.randcyclelist=0;    
-            seqdata.doscan=0;    
-            initialize_channels;            % Initialize channels
-            fh = str2func(erase(funcname,'@'));       % Grab the sequence func
-            fh(0);                          % Run the sequence / update seqdata  
-            Tseq=getSequenceDuration;
-            
-            calc_sequence;                  % convert seqdata for AdWin  
-
-            
-            refreshPlotData;                % Update plots and graphics 
-
-        catch ME
-            warning('Error on sequence compilation');
-            warning(ME.message);
-            disp(' ');
-            for kk=length(ME.stack):-1:1
-               disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
-            end
-            disp(' ');  
-        end
-
-    end
+%     function recompile(~,~)
+%         try        
+%             start_new_sequence;             % Initialize sequence
+%             seqdata.scancycle=1;            % 
+% %             seqdata.randcyclelist=0;    
+%             seqdata.doscan=0;    
+%             initialize_channels;            % Initialize channels
+%             fh = str2func(erase(funcname,'@'));       % Grab the sequence func
+%             fh(0);                          % Run the sequence / update seqdata  
+%             Tseq=getSequenceDuration;
+%             
+%             calc_sequence;                  % convert seqdata for AdWin  
+% 
+%             
+%             refreshPlotData;                % Update plots and graphics 
+% 
+%         catch ME
+%             warning('Error on sequence compilation');
+%             warning(ME.message);
+%             disp(' ');
+%             for kk=length(ME.stack):-1:1
+%                disp(['  ' ME.stack(kk).name ' (' num2str(ME.stack(kk).line) ')']);
+%             end
+%             disp(' ');  
+%         end
+% 
+%     end
 
     function update(~,~)
-        Tseq=getSequenceDuration;
-        
-       refreshPlotData; 
+        Tseq=getSequenceDuration;        
+        refreshPlotData; 
     end
 
-% Call to change the sequence file
-    function chfile(~,~)       
-        dirName=['Sequence Files' filesep 'Core Sequences'];
-        % The directory of the root
-        path = fileparts(fileparts(mfilename('fullpath')));
-        defname=[path filesep dirName];
-        fstr='Select a sequence file to use...';
-        [file,~] = uigetfile('*.m',fstr,defname);          
-        if ~file
-            disp([datestr(now,13) ' Cancelling']);
-            return;
-        end        
-        funcname=['@' erase(file,'.m')];        
-        mRun.Text=['Update traces with ' funcname];
-    end
+% % Call to change the sequence file
+%     function chfile(~,~)       
+%         dirName=['Sequence Files' filesep 'Core Sequences'];
+%         % The directory of the root
+%         path = fileparts(fileparts(mfilename('fullpath')));
+%         defname=[path filesep dirName];
+%         fstr='Select a sequence file to use...';
+%         [file,~] = uigetfile('*.m',fstr,defname);          
+%         if ~file
+%             disp([datestr(now,13) ' Cancelling']);
+%             return;
+%         end        
+%         funcname=['@' erase(file,'.m')];        
+%         mRun.Text=['Update traces with ' funcname];
+%     end
 
 % Get java menu
 jFrame = get(handle(hF),'JavaFrame');

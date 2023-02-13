@@ -4,25 +4,23 @@
 %Summary: This function calculates the current sequence (creates the array
 %to send to the ADWIN)
 %------
-function calc_sequence()
+function calc_sequence(doProgramDevices)
 
 global seqdata;
 global adwin_processor_speed;
 
 fprintf('Calculating sequence...');
 
-%0: disable writing to the Rabbit for testing
-dodds = 1;
+if nargin == 0
+    doProgramDevices = 1;
+end
 
 %% Process DDS Sweeps
-if dodds
-% disp(repmat('-',1,60));
-disp('DDS...');
-    
-    if seqdata.numDDSsweeps ~= 0
-    
+if doProgramDevices && ~seqdata.debugMode
+disp('DDS...');    
+    if seqdata.numDDSsweeps ~= 0    
         % Create TCP/IP object 't'. Specify server machine and port number. 
-        t(1) = udp('192.168.1.155', 37829, 'LocalPort', 4629); % RF 
+        t(1) = udp('192.168.1.155', 37829, 'LocalPort', 4629); % RF
         t(2) = udp('192.168.1.156', 37829, 'LocalPort', 4630); % 4 Pass         
         t(3) = udp('192.168.1.157', 37829, 'LocalPort', 4631); % Rb Trap Offset Lock
         
@@ -37,80 +35,60 @@ disp('DDS...');
             end                
         end        
         
-        %DDS commands
+        %DDS commands (See Alan Stummer's website for details)
         add_cmd = char(hex2dec('C1'));
         exc_cmd = char(hex2dec('C4'));
         clr_cmd = char(hex2dec('C0'));
         adwin_trig_cmd = char(hex2dec('A4'));
-        hrt_beat_cmd = char(hex2dec('7F'));
-        
+        hrt_beat_cmd = char(hex2dec('7F'));        
         cmd_string = {};
         
-        %string to send to DDS
+        % Resync DDS multiple times to reset (is this needed?)
         for i = 1:3
-            %sending redundant clear commands to (maybe?) help this issue of the DDS
-            %turning off
             for j = 1:20 %10
                 fwrite(t(i),clr_cmd,'sync');
             end
-            %cmd_string{i} = [clr_cmd];
         end
-        %cmd_string = [];
 
         %Go through each DDS Sweep
         for i = 1:seqdata.numDDSsweeps
             %DDS id
             if ~(seqdata.DDSsweeps(i,1) == 1 || seqdata.DDSsweeps(i,2)) %assume DDS_ID==1 is the evaporation DDS
-
-                warning('Specified DDS does not exist')
+                warning('Specified DDS does not exist')                
+            else                
+                DDS_id = seqdata.DDSsweeps(i,1);            % DDS id     
+                freq1 = seqdata.DDSsweeps(i,2);             % f1
+                freq2 = seqdata.DDSsweeps(i,3);             % f2
+                sweep_time = seqdata.DDSsweeps(i,4);        % sweep time    
                 
-            else
-                
-                DDS_id = seqdata.DDSsweeps(i,1);
-                
-                %define the start frequency, end frequency, and sweep time
-                freq1 = seqdata.DDSsweeps(i,2);
-                freq2 = seqdata.DDSsweeps(i,3);
-                sweep_time = seqdata.DDSsweeps(i,4);
-               
-                fwrite(t(DDS_id),[add_cmd adwin_trig_cmd],'sync')
-                %cmd_string{DDS_id} = [cmd_string{DDS_id} add_cmd adwin_trig_cmd];
-                
-                %cmd_string = [cmd_string add_cmd adwin_trig_cmd ramp_DDS_freq(sweep_time,freq1,freq2,DDS_id)];
-                
+                % Sync trigger (?)
+                fwrite(t(DDS_id),...
+                    [add_cmd adwin_trig_cmd],'sync');
+                % Get the sweep command
                 cmd_string = ramp_DDS_freq(sweep_time,freq1,freq2,DDS_id);
+                % Write the command
                 for j = 1:length(cmd_string)
                     fwrite(t(DDS_id),cmd_string{j},'sync');
-                end
-                %cmd_string{DDS_id} = [cmd_string{DDS_id} ramp_DDS_freq(sweep_time,freq1,freq2,DDS_id)];
-            
+                end            
             end   
-
         end    
 
-        %write to DDS
+        % Write to DDS an ending command (?)
         for i = 1:3
-            fwrite(t(i),[exc_cmd char(hex2dec('00'))],'sync')
-            %cmd_string{i} = [cmd_string{i} exc_cmd char(hex2dec('00'))];
-            %disp(t(i).ValuesSent)
-            
-            %fwrite(t(i),cmd_string{i},'sync')
-            
-             % Disconnect and clean up the server connection. 
-            fclose(t(i));             
+            fwrite(t(i),[exc_cmd char(hex2dec('00'))],'sync'); % write
+            fclose(t(i)); % disconnect
         end
+        
+        % Remove TCP/IP handle
         delete(t); 
         clear t      
     end    
+else 
+    disp('skipping dds...');
 end
 %% Program GPIB devices
 
-% Note: ideally would like to check whether this update differs from
-% the last one and only send commands if necessary (they take a long time).
-% This, however, will only work well if device settings are never set via
-% the front panel.
-
-if isfield(seqdata,'gpib')
+if doProgramDevices && isfield(seqdata,'gpib') && ~seqdata.debugMode
     try    
         fprintf('gpib...');
         % send commands; (..,1) to display query results in command window
@@ -118,18 +96,21 @@ if isfield(seqdata,'gpib')
     catch ME
        warning(ME.message);
     end
+else
+    fprintf('skipping gpib...');
 end
 
 %% Program VISA devices
 
-if isfield(seqdata,'visa')
+if doProgramDevices && isfield(seqdata,'visa') && ~seqdata.debugMode
     try
         fprintf('visa...');
-        % send commands; (..,1) to display query results in command window
         SendVISACommands(seqdata.visa,1);
     catch ME
        warning(ME.message);
     end
+else
+    fprintf('skipping visa ...');
 end
 
 %% Convert Analog values into 16 bit
@@ -158,9 +139,6 @@ analogAdwin(:,3) = (seqdata.analogadwinlist(:,3)+10)/20*2^(16);
 %Change the digital update array into an array of update words
 
 if (~isempty(seqdata.digadwinlist))
-% disp('Processing digital calls ...');
-% 
-
 fprintf('digital...');
 
     %pre-allocate, can be no bigger than the current update list
@@ -356,65 +334,8 @@ seqdata.updatelist = temp_update_list;
 %Add 5 cycle waits at the end
 seqdata.updatelist(end+1) = -5;
 
+%% Finishing
 
-%------------------------
-%Old updatelist creation code...keep for checking against
-%Removed July 2010 (DCM)
-
-%preallocate the update size array (this makes a big difference!)
-% ind = find(deltat_list==1);
-% updatelistsize = length(ind);
-% 
-% ind = find(deltat_list>1);
-% updatelistsize = updatelistsize + sum(ceil((deltat_list(ind)-1)/maxwaittime)+1);
-% 
-% seqdata.updatelist = zeros(1,updatelistsize);
-% 
-% %start the update at the second element of the array
-% updatelistcount = 1;
-
-% for i = 1:length(deltat_list)
-%     
-%     if deltat_list(i)==0 %update at the same time as the previous entry
-%         seqdata.updatelist(updatelistcount) = seqdata.updatelist(updatelistcount)+1;
-%     else
-%         
-%         %actual waittime is 1 less (because there is a wait period
-%         %implicitly built in)
-%         adwin_waittime = deltat_list(i)-1;
-% 
-%         %we have to put in a wait period into the update array
-%         %the wait time is split into two elements...-(waitime-1) and a 0
-%         %element
-%         if adwin_waittime>0
-%         
-%             adwin_waittime = adwin_waittime-1;
-%             
-%             %can only enter into the update list a maximum wait of
-%             %'maxwaittime' cycles
-%             while adwin_waittime>maxwaittime
-%                 updatelistcount = updatelistcount+1;
-%                 seqdata.updatelist(updatelistcount) = -maxwaittime;
-%                 adwin_waittime = adwin_waittime - maxwaittime;
-%             end
-% 
-%             if (adwin_waittime~=0)
-%                 updatelistcount = updatelistcount+1;
-%                 seqdata.updatelist(updatelistcount) = -(adwin_waittime);
-%             end
-%             
-%             %have to make a dummy "zero" entry
-%             updatelistcount = updatelistcount+1;
-%             seqdata.updatelist(updatelistcount) = 0;
-%             
-%         end
-%         
-%         %now create an entry for the newest update
-%         updatelistcount = updatelistcount+1;
-%         seqdata.updatelist(updatelistcount) = 1;
-%     end
-% end  
-%------------------------
 
 %calculate the sequence time
 seqdata.sequencetime = 0;
@@ -437,8 +358,6 @@ seqdata.numDDSsweeps = 0;
 
 %the sequence has been calculated
 seqdata.seqcalculated = 1;
-
-%% Run the mercurial backup
 
 
 seqdata = orderfields(seqdata);

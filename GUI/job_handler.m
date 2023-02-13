@@ -63,6 +63,8 @@ end
 
 % Start or continue job
 function start(obj)      
+    % Check if any jobs are running or if sequencer is currently running
+    
     % Find the first non complete job
    for kk=1:length(obj.SequencerJobs)
        if isequal(obj.SequencerJobs{kk}.Status,'pending')

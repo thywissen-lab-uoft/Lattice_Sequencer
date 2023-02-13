@@ -125,6 +125,7 @@ function start(obj)
 
     global seqdata
     seqdata.scancycle = obj.ScanCycle;
+    seqdata.sequence_functions = obj.SequenceFunctions;
 
     t=runSequence(obj.SequenceFunctions,opts);              
     obj.ExecutionDates(end+1) = t;

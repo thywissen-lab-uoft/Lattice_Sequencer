@@ -199,12 +199,10 @@ tSeq.Position(1:2)=[5 46];
 
 % Sequence File edit box
 eSeq=uicontrol(hpSeq,'style','edit','string','A',...
-    'horizontalalignment','left','fontsize',8,'backgroundcolor',cc);
+    'horizontalalignment','left','fontsize',8,'backgroundcolor',cc,'enable','off');
 eSeq.Position(3)=335;
 eSeq.Position(4)=eSeq.Extent(4);
 eSeq.Position(1:2)=[5 32];
-
-
 
 % Button for file selection of the sequenece file
 cdata=imresize(imread(['GUI/images' filesep 'browse.jpg']),[22 22]);
@@ -222,7 +220,8 @@ bDefault.Position(1:2)=bBrowse.Position(1:2) + [bBrowse.Position(3)+2 0];
 
     function defaultCB(~,~)
         seqdata.sequence_functions = defaultSequence;
-        updateSequenceStr;
+        d=guidata(hF);
+        d.SequencerWatcher.updateSequenceFileText;
     end
 
 % Button for file selection of the sequenece file
@@ -306,17 +305,18 @@ bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
     end
 
     function fileCB(~,~,n)
-        fname = strrep(eSeq.String,'@','');
+        d=guidata(hF);
+        str = d.SequencerWatcher.SequenceText.String;
+        
         try            
-            fName=eSeq.String;        
-            strs=strsplit(fName,',');
+            strs=strsplit(strrep(str,'@',''),',');
             names={};
             for kk=1:length(strs)
                 names{kk} =  erase(strs{kk},'@'); 
-            end
-            
-            disp(['Opening ' names{n}]);
-            open(names{n});
+            end            
+            name = strsplit(names{n},'/');
+            name = name{1};
+            open(name);
         catch ME
             warning(ME.message);
         end        

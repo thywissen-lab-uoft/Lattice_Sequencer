@@ -33,7 +33,13 @@ evalin('base','openvar(''seqdata.variables'')')
 
 waitDefault=30;
 
-defaultSequence='@main_settings,@main_sequence';
+
+
+% defaultSequence='@main_settings,@main_sequence';
+
+defaultSequence={@main_settings,@main_sequence};
+seqdata.sequence_functions = defaultSequence;
+
 figName='Main GUI';
 
 if seqdata.debugMode
@@ -189,11 +195,22 @@ tSeq.Position(4)=tSeq.Extent(4);
 tSeq.Position(1:2)=[5 46];
 
 % Sequence File edit box
-eSeq=uicontrol(hpSeq,'style','edit','string',defaultSequence,...
+eSeq=uicontrol(hpSeq,'style','edit','string','A',...
     'horizontalalignment','left','fontsize',8,'backgroundcolor',cc);
 eSeq.Position(3)=335;
 eSeq.Position(4)=eSeq.Extent(4);
 eSeq.Position(1:2)=[5 32];
+
+    function updateSequenceStr
+        s =[];
+        for r = 1:length(seqdata.sequence_functions)
+            s = [s '@' func2str(seqdata.sequence_functions{r}) ','];
+        end
+        s(end)=[];
+        eSeq.String=s;
+    end
+
+updateSequenceStr;
 data.SequenceText = eSeq;
 
 % Button for file selection of the sequenece file
@@ -210,7 +227,8 @@ bDefault.Position(3:4)=[60 24];
 bDefault.Position(1:2)=bBrowse.Position(1:2) + [bBrowse.Position(3)+2 0];
 
     function defaultCB(~,~)
-       eSeq.String = defaultSequence; 
+        seqdata.sequence_functions = defaultSequence;
+        updateSequenceStr;
     end
 
 % Button for file selection of the sequenece file
@@ -249,7 +267,6 @@ bPlot.Position(3:4)=[25 25];
 bPlot.Position(1:2)=bFile3.Position(1:2)+[bFile3.Position(3)+2 0];
 
     function bPlotCB(~,~)
-        fh = str2func(erase(eSeq.String,'@'));        
         plotgui2;
     end
 
@@ -269,13 +286,7 @@ bCmd.Position(3:4)=[25 25];
 bCmd.Position(1:2)=bCompile.Position(1:2)+[bCompile.Position(3)+2 0];
 
     function bCompileCB(~,~)    
-        fName=eSeq.String;        
-        strs=strsplit(fName,',');
-        funcs={};
-        for kk=1:length(strs)
-           funcs{kk} =  str2func(erase(strs{kk},'@')); 
-        end
-        compile(funcs)        
+        compile(seqdata.sequence_functions)        
         updateScanVarText;    
     end
 
@@ -574,16 +585,11 @@ bReset.Callback=@bResetCB;
     end
 
     function runSequenceCB    
-        fName=eSeq.String;        
-        strs=strsplit(fName,',');
-        funcs={};
-        for kk=1:length(strs)
-           funcs{kk} =  str2func(erase(strs{kk},'@')); 
-        end        
+  
         d=guidata(hF);
         d.SequencerWatcher.RequestWaitTime = d.SequencerWatcher.WaitTable.Data;
 
-        runSequence(funcs);    
+        runSequence(seqdata.sequence_functions);    
         d.SequencerListener.Enabled=1;
     end    
 

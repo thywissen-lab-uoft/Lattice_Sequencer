@@ -112,7 +112,7 @@ hpMain.OuterPosition=[0 hF.Position(4)-h w h];
 
  % Jobs uipanel
 hpJobs = uipanel('parent',hF,'units','pixels','backgroundcolor','w',...
-    'title','jobs','bordertype','etchedin');
+    'title','job handler','bordertype','etchedin');
 hpJobs.Position = [1 160 w hF.Position(4)-160];
 
 % sequence uipanel
@@ -170,10 +170,14 @@ bClearJob.Tooltip='Clear jobs';
 
 % Checkbox for repeat cycle
 cJob=uicontrol(hpJobs,'style','checkbox','string','enable jobs','fontsize',8,...
-    'backgroundcolor',cc,'units','pixels');
+    'backgroundcolor',cc,'units','pixels','callback',@cbdisablejobs);
 cJob.Position(3:4)=[100 cJob.Extent(4)];
 cJob.Position(1:2)=[275 5];
 cJob.Tooltip='enable/disable batch jobs';
+
+    function cbdisablejobs(src,evt)
+        
+    end
 
 %% Sequence
 % Sequence File edit box

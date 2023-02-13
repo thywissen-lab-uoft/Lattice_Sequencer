@@ -1257,7 +1257,7 @@ curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields t
         
             % QP parameters
             qp_ramp_time = ramp_time_all;
-            HF_QP_List = [0.09];
+            HF_QP_List = [0.15];[0.09];
             HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
             seqdata.randcyclelist,'HF_QPReverse_a','V'); 
         
@@ -1409,7 +1409,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
         
             % QP parameters
             qp_ramp_time = ramp_time_all;
-            HF_QP_List = [0.10];
+            HF_QP_List = [0.15];
             HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
             seqdata.randcyclelist,'HF_QPReverse2_a','V'); 
         
@@ -1442,6 +1442,13 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
             ramp.fesh_ramp_delay    = 0;
             ramp.fesh_final         = fesh; %22.6
             ramp.settling_time      = 100; 
+            
+            % Ramp up transport supply voltage
+            QP_FFValue = 23*(HF_QP/.125/30); % voltage FF on delta supply
+    curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+                100,100,QP_FFValue);
+            curtime = calctime(curtime,50);
 
 % Ramp Coil 15, but don't update curtime
             AnalogFuncTo(calctime(curtime,0),'Coil 15',...

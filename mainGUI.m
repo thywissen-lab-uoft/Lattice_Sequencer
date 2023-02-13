@@ -137,7 +137,7 @@ hpRun.Position(1:2)=[350 1];
 % Job Table
 tJobs = uitable('parent',hpJobs,'fontsize',8,'rowname',{});
 tJobs.ColumnName = {'id','status','n','name','sequence'};
-tJobs.ColumnWidth={60 60 40 170 350};
+tJobs.ColumnWidth={60 60 40 170 345};
 tJobs.ColumnEditable=[false false false false false];
 hme = 20;
 tJobs.Position = [1 hme hpMain.Position(3) hpJobs.Position(4)-(hme+15)];

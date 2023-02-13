@@ -267,7 +267,7 @@ bPlot.Position(1:2)=bFile3.Position(1:2)+[bFile3.Position(3)+2 0];
         plotgui2;
     end
 
-% Button to recompile seqdata
+% Button to recompile seqdata but not program devices
 cdata=imresize(imread(['GUI/images' filesep 'compile.jpg']),[20 20]);
 bCompilePartial=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',{@bCompileCB 0},'tooltip',...

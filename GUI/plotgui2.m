@@ -92,9 +92,8 @@ drawnow;
 %     end
 
     function update(~,~)
-        Tseq=getSequenceDuration;
-        
-       refreshPlotData; 
+        Tseq=getSequenceDuration;        
+        refreshPlotData; 
     end
 
 % % Call to change the sequence file

@@ -80,7 +80,6 @@ function CycleCompleteFcn(obj)
             obj.start;
         end
     end
-
 end
 
 % function that finds the sequencer watcher object (weird)

@@ -326,6 +326,57 @@ if (seqdata.flags.lattice_pulse_z_for_alignment == 1 )
     curtime = Pulse_Lattice(curtime,4);
 end
 
+%% Levitation gradient
+if seqdata.flags.image_levitate
+
+% QP Value to ramp to
+TOF_QP_List =  [0.2];.14;0.115; %set to levitate 
+TOF_QP = getScanParameter(TOF_QP_List,seqdata.scancycle,...
+seqdata.randcyclelist,'TOF_QPReverse','V');  
+
+
+% Turn off 15/16 switch
+setDigitalChannel(curtime,'15/16 Switch',0); 
+curtime = calctime(curtime,10);
+
+% Turn on reverse QP switch
+setDigitalChannel(curtime,'Reverse QP Switch',1);
+curtime = calctime(curtime,10);
+
+% Ramp up transport supply voltage
+QP_FFValue = 23*(TOF_QP/.125/30); % voltage FF on delta supply
+curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+    5,5,QP_FFValue);
+curtime = calctime(curtime,50);
+
+qp_ramp_time = 5;
+curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,TOF_QP,1);
+
+curtime = calctime(curtime,50);
+
+%Ramp back down after image
+AnalogFuncTo(calctime(curtime,getVar('tof')+5),'Coil 15',...
+         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,0,1);  
+
+AnalogFuncTo(calctime(curtime,getVar('tof')+5),'Transport FF',...
+     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+         5,5,0);        
+             
+% Go back to "normal" configuration
+%curtime = calctime(curtime,10);
+% Turn off reverse QP switch
+setDigitalChannel(calctime(curtime,getVar('tof')+15),'Reverse QP Switch',0);
+%curtime = calctime(curtime,10);
+
+% Turn on 15/16 switch
+setDigitalChannel(calctime(curtime,getVar('tof')+25),'15/16 Switch',1);
+
+
+end
+   
+
 %% Initiate Time of Flight in absorption image
 
 if seqdata.flags.image_type == 0
@@ -339,11 +390,14 @@ if seqdata.flags.image_type == 0
         setAnalogChannel(calctime(curtime,0),i,0,1);
     end   
     
-    if ~seqdata.flags.High_Field_Imaging    
-        % Turn off QP Coils (analog control)    
-        setAnalogChannel(calctime(curtime,0),'Coil 15',0,1);            % C15
-        curtime = setAnalogChannel(calctime(curtime,0),'Coil 16',0,1);  % C16
-        curtime = setAnalogChannel(curtime,'kitten',0,1);               % Kitten    
+    if ~seqdata.flags.High_Field_Imaging 
+        
+        if ~seqdata.flags.image_levitate
+            % Turn off QP Coils (analog control)    
+            setAnalogChannel(calctime(curtime,0),'Coil 15',0,1);            % C15
+            curtime = setAnalogChannel(calctime(curtime,0),'Coil 16',0,1);  % C16
+            curtime = setAnalogChannel(curtime,'kitten',0,1);               % Kitten    
+        end
 
         % MOT/QCoil TTL (separate switch for coil 15 (TTL) and 16 (analog))
         qp_switch1_delay_time = 0;

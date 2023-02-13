@@ -17,6 +17,8 @@ properties
     lh
     ExecutionDates
     Status
+    UserCycleCompleteFcn;
+    UserJobCompleteFcn;
 end    
 events
     CycleComplete
@@ -24,45 +26,61 @@ events
 end
 
 methods
+   
+
 function obj = sequencer_job(SequenceFunctions,JobName,...
         ScanCyclesRequested)    
     if nargin == 2
         ScanCyclesRequested = [];
     end
-    obj.SequencerWatcher = obj.findSequencerWatcher;
-    obj.JobName = JobName;            
-    obj.SequenceFunctions = SequenceFunctions;
+    obj.SequencerWatcher    = obj.findSequencerWatcher;
+    obj.JobName             = JobName;            
+    obj.SequenceFunctions   = SequenceFunctions;
     obj.ScanCyclesRequested = ScanCyclesRequested;
     obj.ScanCyclesCompleted = [];    
-    obj.ScanCycle = [];
-    obj.ExecutionDates = [];
-    obj.Status = 'pending';
+    obj.ScanCycle           = [];
+    obj.ExecutionDates      = [];
+    obj.Status              = 'pending';
+    
+    obj.UserCycleCompleteFcn = @(x) disp('hi1');
+    obj.UserJobCompleteFcn   = @(x) disp('hi2');
 end    
 
 function JobCompleteFcn(obj)        
-    obj.Status = 'complete';
+    obj.Status              = 'complete';
     obj.notify('JobComplete');
     for kk=1:length(obj.ExecutionDates)
        disp(datestr(obj.ExecutionDates(kk)) )
     end
+    
+    % Execute User function here
+    obj.UserJobCompleteFcn(obj);
 end
 
-function CycleCompleteFcn(obj)               
+
+
+function CycleCompleteFcn(obj)        
+    delete(obj.lh);         
+    % Increment cycles completed
     obj.ScanCyclesCompleted(end+1) = obj.ScanCycle;           
     cycles_left = setdiff(obj.ScanCyclesRequested,...
-        obj.ScanCyclesCompleted);        
+        obj.ScanCyclesCompleted);            
+    if ~obj.continueRunning
+        obj.Status = 'pending';        
+    end    
+    
+    % Execute User function here
+    obj.UserCycleCompleteFcn(obj);
+    
     obj.notify('CycleComplete');
-
-    delete(obj.lh);     
     if obj.continueRunning            
         if isempty(cycles_left) 
             obj.JobCompleteFcn;
         else
             obj.start;
         end
-    else
-        obj.Status = 'stopped';
     end
+
 end
 
 function SequencerWatcher=findSequencerWatcher(obj)
@@ -83,7 +101,14 @@ function stop(obj)
    disp('stopping job');
 end
 
+% Start this sequence
 function start(obj)
+    
+    if obj.SequencerWatcher.isRunning
+       warning('sequencer already running');              
+       return;
+    end
+    
     obj.Status = 'running';            
     obj.continueRunning = 1;
     cycles_left = setdiff(obj.ScanCyclesRequested,...
@@ -92,8 +117,9 @@ function start(obj)
     if isempty(cycles_left)
         error('no more runs to do');
     end                   
+    
     opts=struct;
-    opts.ScanCycle = cycles_left(1);          
+    opts.ScanCycle = cycles_left(1);         
 
     obj.ScanCycle = opts.ScanCycle;
 

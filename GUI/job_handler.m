@@ -61,9 +61,36 @@ function clearJobs(obj)
     obj.updateJobText;
 end
 
+
+function val = isIdle(obj)
+    val = 1;
+    for kk=1:length(obj.SequencerJobs)
+        status = obj.SequencerJobs{kk}.Status;        
+        switch status
+            case 'complete'
+            case 'pending'
+            case 'running'
+                val = 0;
+                str = ['Job ' num2str(kk) ' is currently running.'];
+                warning(str);
+                return;
+            case 'stopping'
+                val = 0;
+                str = ['Job ' num2str(kk) ' is currently stopping.'];
+                warning(str);
+                return;
+            otherwise
+                error('unknown status');
+        end  
+    end   
+end
+
 % Start or continue job
 function start(obj)      
     % Check if any jobs are running or if sequencer is currently running
+    if ~obj.isIdle
+       return; 
+    end    
     
     % Find the first non complete job
    for kk=1:length(obj.SequencerJobs)
@@ -82,9 +109,10 @@ function start(obj)
 end
 
 function CycleComplete(obj)
-   obj.updateJobText;
+    obj.updateJobText;
 end
 
+% Execute at end of current job
 function CurrentJobComplete(obj)
     delete(obj.ListenerJob);   
     delete(obj.ListenerCycle);   
@@ -92,6 +120,7 @@ function CurrentJobComplete(obj)
     obj.start;
 end
 
+% Stop request
 function stop(obj)
     if ~isempty(obj.CurrentJob)
        obj.CurrentJob.stop 
@@ -99,11 +128,12 @@ function stop(obj)
     obj.updateJobText;
 end                
 
-    function delete(obj)
-        % delete any listeners
-        obj.clearJobs;
-        obj.updateJobText;
-    end
+function delete(obj)
+    % delete any listeners
+    obj.clearJobs;
+    obj.updateJobText;
+end
+
 end
 
 end

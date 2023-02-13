@@ -108,10 +108,12 @@ hpMain=uipanel('parent',hF,'units','pixels','backgroundcolor',cc,...
 hpMain.OuterPosition=[0 0 hF.Position(3) hF.Position(4)];
 hpMain.OuterPosition=[0 hF.Position(4)-h w h];
 
+
+
  % Jobs uipanel
 hpJobs = uipanel('parent',hF,'units','pixels','backgroundcolor','w',...
     'title','jobs','bordertype','etchedin');
-hpJobs.Position = [1 180 w hF.Position(4)-180];
+hpJobs.Position = [1 160 w hF.Position(4)-160];
 
 % sequence uipanel
 hpSeq = uipanel('parent',hpMain,'units','pixels','backgroundcolor',cc,...
@@ -139,8 +141,39 @@ tJobs = uitable('parent',hpJobs,'fontsize',8,'rowname',{});
 tJobs.ColumnName = {'id','status','n','name','sequence'};
 tJobs.ColumnWidth={60 60 40 170 345};
 tJobs.ColumnEditable=[false false false false false];
-hme = 20;
+hme = 30;
 tJobs.Position = [1 hme hpMain.Position(3) hpJobs.Position(4)-(hme+15)];
+
+% Button to run the cycle
+bRunJob=uicontrol(hpJobs,'style','pushbutton','String','Start Jobs',...
+    'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
+    'fontweight','bold');
+bRunJob.Position(3:4)=[85 20];
+bRunJob.Position(1:2)=[5 5];
+bRunJob.Tooltip='Run the jobs';
+
+% Button to run the cycle
+bStopJob=uicontrol(hpJobs,'style','pushbutton','String','Stop Jobs',...
+    'backgroundcolor',[255	218	107]/255,'FontSize',8,'units','pixels',...
+    'fontweight','bold');
+bStopJob.Position(3:4)=[85 20];
+bStopJob.Position(1:2)=[95 5];
+bStopJob.Tooltip='Stop jobs';
+
+% Button to run the cycle
+bClearJob=uicontrol(hpJobs,'style','pushbutton','String','Clear Jobs',...
+    'backgroundcolor',[173 216 230]/255,'FontSize',8,'units','pixels',...
+    'fontweight','bold');
+bClearJob.Position(3:4)=[85 20];
+bClearJob.Position(1:2)=[185 5];
+bClearJob.Tooltip='Clear jobs';
+
+% Checkbox for repeat cycle
+cJob=uicontrol(hpJobs,'style','checkbox','string','enable jobs','fontsize',8,...
+    'backgroundcolor',cc,'units','pixels');
+cJob.Position(3:4)=[100 cJob.Extent(4)];
+cJob.Position(1:2)=[275 5];
+cJob.Tooltip='enable/disable batch jobs';
 
 %% Sequence
 % Sequence File edit box
@@ -602,6 +635,9 @@ guidata(hF,data);
 
 jh =  job_handler(hF);
 assignin('base','jh',jh);
+
+data.JobHandler = jh;
+guidata(hF,data);
 
 end
 

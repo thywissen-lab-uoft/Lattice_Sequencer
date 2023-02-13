@@ -29,6 +29,7 @@ end
 
 methods
 
+% Class constructor
 function this = sequencer_watcher(handles)
     this.AdwinTimer = timer('ExecutionMode','FixedSpacing', ...
         'Period',0.05,'name','AdwinTimer');
@@ -52,9 +53,9 @@ function this = sequencer_watcher(handles)
     this.RequestWaitTime=30;
 end
 
+% callback for wait time table edit
 function chWaitTime(this,src,evt)
-     x = evt.NewData;
-
+    x = evt.NewData;
     if isnumeric(x) && x>=0 && ~isinf(x) && ~isnan(x)
         src.Data = x;
         this.RequestWaitTime = x;
@@ -62,13 +63,11 @@ function chWaitTime(this,src,evt)
     else 
         src.Data = evt.PreviousData;
     end
-
 end
 
+% callback for wait mode change
 function chWaitMode(this,waitMode)     
-
     ch=this.WaitButtons.Children;
-
     for kk=1:length(ch)
        if ch(kk).UserData == waitMode
            ch(kk).Value = 1;
@@ -76,7 +75,6 @@ function chWaitMode(this,waitMode)
            ch(kk).Value = 0;
        end
     end
-
     this.WaitMode = waitMode;            
     if waitMode == 0
        this.WaitTable.Enable = 'off';
@@ -87,8 +85,8 @@ function chWaitMode(this,waitMode)
     end
 end
 
+% function upon cyclecomplete, mainly graphical, notifies the event
 function cycleComplete(this)
-    disp('cycle complete');
     this.isRunning=0;
     this.AdwinStartTime=[];
     this.WaitStartTime=[];
@@ -97,6 +95,7 @@ function cycleComplete(this)
     this.notify('CycleComplete') 
 end
 
+% callback for adwin timer; updates graphics and starts wait timer
 function updateAdwin(this,src,evt)
     dT = (now - this.AdwinStartTime)*24*60*60;
     dT0 = this.RequestAdwinTime;
@@ -120,9 +119,9 @@ function updateAdwin(this,src,evt)
     end    
 end
 
+% callback for wait timer; updates graphics
 function updateWait(this,src,evt)
     dT0 = this.RequestWaitTime;
-
     switch this.WaitMode
         case 0
             dT = 0;
@@ -132,7 +131,6 @@ function updateWait(this,src,evt)
         case 2
             dT = (now - this.AdwinStartTime)*24*60*60;
     end            
-
     if dT>=dT0
         stop(src);       
         this.WaitBar.XData = [0 1 1 0];         
@@ -146,6 +144,7 @@ function updateWait(this,src,evt)
     end              
 end
 
+% start timers
 function start(this)
     this.isRunning=1;
     this.AdwinStartTime = now;            
@@ -160,6 +159,7 @@ function start(this)
     start(this.AdwinTimer); 
 end
 
+% delete funcion
 function delete(this)
     stop(this.AdwinTimer);
     stop(this.WaitTimer);

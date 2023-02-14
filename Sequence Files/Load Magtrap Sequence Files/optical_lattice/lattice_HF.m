@@ -873,7 +873,7 @@ end
         B = HF_FeshValue_Initial + Boff + 2.35*zshim; 
 %         
      
-         rf_shift_list = [-50 -22 -26];
+         rf_shift_list = [12.5 15];
 %          rf_shift_list= 10;
          rf_shift = getScanParameter(rf_shift_list,seqdata.scancycle,...
                          seqdata.randcyclelist,'rf_freq_HF_shift','kHz');
@@ -1548,9 +1548,28 @@ if ramp_field_for_imaging_attractive
     ramp.fesh_ramptime = getVar('image_ramp_time');
     ramp.fesh_ramp_delay = 0;
     ramp.fesh_final = HF_FeshValue_Final;
-    ramp.settling_time = getVar('image_settling_time');    
+    ramp.settling_time = getVar('image_settling_time');   
+    
+    qp_ramp_down_time = ramp.fesh_ramptime;
+    
+    AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time,qp_ramp_down_time,0,1);
+
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+
+curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+                 5,5,0); 
+             
+        % Go back to "normal" configuration
+        curtime = calctime(curtime,10);
+        % Turn off reverse QP switch
+        setDigitalChannel(curtime,'Reverse QP Switch',0);
+        curtime = calctime(curtime,10);
+
+        % Turn on 15/16 switch
+        setDigitalChannel(curtime,'15/16 Switch',1);
 
     seqdata.params.HF_probe_fb = HF_FeshValue_Final;    
     
@@ -1576,9 +1595,27 @@ if ramp_field_for_imaging_repulsive
     ramp.fesh_ramptime = 100;
     ramp.fesh_ramp_delay = 0;
     ramp.fesh_final = HF_FeshValue_Final;
-    ramp.settling_time = 50;    
+    ramp.settling_time = 50;  
+    
+    qp_ramp_down_time = ramp.fesh_ramptime;
+    
+    AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time,qp_ramp_down_time,0,1);
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+
+curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+                 5,5,0);  
+             
+           % Go back to "normal" configuration
+        curtime = calctime(curtime,10);
+        % Turn off reverse QP switch
+        setDigitalChannel(curtime,'Reverse QP Switch',0);
+        curtime = calctime(curtime,10);
+
+        % Turn on 15/16 switch
+        setDigitalChannel(curtime,'15/16 Switch',1);
 
     seqdata.params.HF_probe_fb = HF_FeshValue_Final;
     

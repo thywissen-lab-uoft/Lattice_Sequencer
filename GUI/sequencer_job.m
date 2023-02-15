@@ -17,31 +17,19 @@ properties
     CycleStartFcn
     CycleCompleteFcn
     JobCompleteFcn
+    CameraFile
 end    
 events
 
 end
 
 methods
-   
-% contructor
-% function obj = sequencer_job(SequenceFunctions,JobName,...
-%         ScanCyclesRequested)    
-%     if nargin == 2
-%         ScanCyclesRequested = [];
-%     end
-%     obj.JobName             = JobName;            
-%     obj.SequenceFunctions   = SequenceFunctions;
-%     obj.ScanCyclesRequested = ScanCyclesRequested;
-%     obj.ScanCyclesCompleted = [];    
-%     obj.ScanCycle           = [];
-%     obj.ExecutionDates      = [];
-%     obj.SaveDirName         = [];
-%     obj.Status              = 'pending';
-% end    
+      
 
 function obj = sequencer_job(npt)    
-  
+ 
+    obj.CameraFile = 'Y:\_communication\camera_control.mat';
+
     obj.JobName             = npt.JobName;            
     obj.SequenceFunctions   = npt.SequenceFunctions;
     obj.ScanCyclesRequested = npt.ScanCyclesRequested;
@@ -99,6 +87,13 @@ function CycleStartFcnWrapper(obj)
     pause(.1);
     if ~isempty(obj.CycleStartFcn)
         obj.CycleStartFcn(); 
+    end
+    
+    if ~isempty(obj.SaveDirName)
+        SaveDir = obj.SaveDirName;
+        try
+            save(obj.CameraFile,'SaveDir');
+        end
     end
 end
 

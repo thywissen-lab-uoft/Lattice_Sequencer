@@ -7,12 +7,13 @@ classdef job_handler < handle
 properties        
     CurrentJob
     SequencerJobs
-    ListenerJob
     ListenerCycle
     TextBox
+    SequencerWatcher
+    doIterate
 end    
 events
-   BatchComplete
+   
 end
 
 methods
@@ -23,9 +24,141 @@ function obj = job_handler(gui_handle)
     d=guidata(gui_handle);          
     obj.TextBox = d.JobTable;
     obj.updateJobText;
+    obj.SequencerWatcher = d.SequencerWatcher;
 end   
 
-% function that updates the job table
+% Run a sequencer_job
+function start(obj,job)    
+    if ~obj.isIdle
+       return; 
+    end        
+    
+    % Find first pending job if none specified
+    if nargin == 1
+       job = obj.findNextJob;
+    end
+    
+    % Check to see if job is object or number
+    if ~isequal(class(job),'sequencer_job') && isnumeric(job)
+        job = obj.SequencerJobs{job};
+    end
+    
+    % Check if sequencer is alrady running
+    if obj.SequencerWatcher.isRunning
+       warning('sequencer already running');              
+       return;
+    end
+    
+    % Update current job
+    obj.CurrentJob = job;
+    
+    % Cycle remaining in this job
+    cycles_left = setdiff(job.ScanCyclesRequested,job.ScanCyclesCompleted);
+    
+    % No more cycles, run the job complete fcn
+    if isempty(cycles_left)
+        obj.JobCompleteFcn;
+        return;
+    end
+    
+    % Update the job
+    job.Status = 'running';
+    obj.updateJobText;
+
+    job.ScanCycle = cycles_left(1);
+    global seqdata
+    seqdata.scancycle = job.ScanCycle;
+    seqdata.sequence_functions = job.SequenceFunctions;
+    t=runSequence(job.SequenceFunctions);              
+    job.ExecutionDates(end+1) = t;
+    
+    % Get ready to wait for job to finish
+    obj.ListenerCycle=listener(obj.SequencerWatcher,'CycleComplete',...
+        @(src, evt) obj.CycleCompleteFcn);
+    obj.doIterate   = true;
+end
+
+% To evalulate upon a job complete
+function JobCompleteFcn(obj)
+    obj.CurrentJob.Status = 'job end';
+    obj.updateJobText;
+    
+    % Run User job funcion
+    obj.CurrentJob.JobCompleteFcn;
+    
+    % Ending Stuff
+    obj.CurrentJob.Status = 'complete';
+    obj.CurrentJob = [];
+    
+    % Insert check on buttons
+    if obj.doIterate
+        obj.start;
+    end        
+end
+
+% function that evaluates upon cycle completion
+function CycleCompleteFcn(obj)        
+    delete(obj.ListenerCycle);      % delete listerner   
+    job = obj.CurrentJob;           % get the current job
+
+    % Increment cycles completed
+    job.ScanCyclesCompleted(end+1) = job.ScanCycle;           
+        
+    % Execute User function here        
+    obj.CurrentJob.Status = 'cycle end';
+    obj.updateJobText;
+    job.CycleCompleteFcn;       
+
+    % Insert check on buttons
+    if ~obj.doIterate
+        job.Status='pending';
+        obj.CurrentJob = [];
+        obj.updateJobText;
+        return;
+    end        
+
+    % Check if any more runs to do
+    cycles_left = setdiff(job.ScanCyclesRequested,...
+        job.ScanCyclesCompleted);  
+    if isempty(cycles_left) 
+        obj.JobCompleteFcn;     % Finish job
+    else
+        obj.start(job);        % Continue job
+    end
+end
+
+% Add job to list
+function add(obj,job)
+    obj.SequencerJobs{end+1} = job;
+    obj.updateJobText;
+end
+
+% Stop Current Job
+function stop(obj)
+    obj.doIterate   = false;
+    if ~isempty(obj.CurrentJob)
+       obj.CurrentJob.Status = 'stopping';
+    end
+    obj.updateJobText;
+end   
+
+% Clear all jobs
+function clear(obj)
+    if ~isIdle(obj)
+       warning('Cannot clear jobs until idle. Stopping jobs instead.');
+       obj.stop;
+       return;
+    end
+    
+    for kk=1:length(obj.SequencerJobs)
+       delete(obj.SequencerJobs{kk}); 
+    end
+    obj.SequencerJobs={};
+    obj.CurrentJob = [];
+    obj.updateJobText;
+end
+
+% Function that updates the job table
 function updateJobText(obj)
     if isempty(obj.SequencerJobs)
        obj.TextBox.Data={};
@@ -48,26 +181,12 @@ function updateJobText(obj)
     end
 end
 
-% Add job to list
-function addJob(obj,job)
-    obj.SequencerJobs{end+1} = job;
-    obj.updateJobText;
-end
-
-% Clear all jobs
-function clearJobs(obj)
-    for kk=1:length(obj.SequencerJobs)
-       delete(obj.SequencerJobs{kk}); 
-    end
-    obj.SequencerJobs={};
-    obj.updateJobText;
-end
-
-% chekcs to see if the jobs are idle
+% Check if job handler is idle
 function val = isIdle(obj)
     val = 1;
     for kk=1:length(obj.SequencerJobs)
-        status = obj.SequencerJobs{kk}.Status;        
+        status = obj.SequencerJobs{kk}.Status;     
+        
         switch status
             case 'complete'
             case 'pending'
@@ -81,59 +200,31 @@ function val = isIdle(obj)
                 str = ['Job ' num2str(kk) ' is currently stopping.'];
                 warning(str);
                 return;
+            case 'cycle end'
+                
+            case 'job end'
+                
             otherwise
                 error('unknown status');
         end  
     end   
 end
 
-% Start or continue job
-function start(obj)      
-    % Check if any jobs are running or if sequencer is currently running
-    if ~obj.isIdle
-       return; 
-    end    
-    
-    % Find the first non complete job
+% Find next job that is pending
+function job = findNextJob(obj)
    for kk=1:length(obj.SequencerJobs)
        if isequal(obj.SequencerJobs{kk}.Status,'pending')
-         obj.CurrentJob = obj.SequencerJobs{kk};
-         obj.CurrentJob.start;
-          obj.ListenerJob=listener(obj.CurrentJob,...
-            'JobComplete',@(src, evt) obj.CurrentJobComplete);
-          obj.ListenerCycle=listener(obj.CurrentJob,...
-              'CycleComplete',@(src, evt) obj.CycleComplete);
-          obj.updateJobText;
-          return
+            job = obj.SequencerJobs{kk};
+            return
        end
    end
-   warning('no more uncompleted jobs to run');
 end
 
-function CycleComplete(obj)
-    obj.updateJobText;
-end
-
-% Execute at end of current job
-function CurrentJobComplete(obj)
-    delete(obj.ListenerJob);   
-    delete(obj.ListenerCycle);   
-    obj.CurrentJob = [];
-    obj.start;
-end
-
-% Stop request
-function stop(obj)
-    if ~isempty(obj.CurrentJob)
-       obj.CurrentJob.stop 
-    end
-    obj.updateJobText;
-end                
 
 % delete me
 function delete(obj)
     % delete any listeners
-    obj.clearJobs;
+    obj.clear;
     obj.updateJobText;
 end
 

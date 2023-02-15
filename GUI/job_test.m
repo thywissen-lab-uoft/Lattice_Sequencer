@@ -15,7 +15,7 @@ end
 funcs = {@main_settings,@seq_mod_1,@main_sequence};
 
 % add it to the queue
-j1 = sequencer_job(funcs,'K RF1B stats',1:20);
+j1 = sequencer_job(funcs,'K RF1B stats',1:2);
 
 %% XDT DFG TOF
 tofVec = [21 23 25];
@@ -27,7 +27,7 @@ tofVec = [21 23 25];
 
 funcs = {@main_settings,@seq_mod_2,@main_sequence};
 
-j2 = sequencer_job(funcs,'DFG TOF',1:12);
+j2 = sequencer_job(funcs,'DFG TOF',1:3);
 
 %% XDT DFG stats
 
@@ -41,8 +41,8 @@ funcs = {@main_settings,@seq_mod_dfg,@main_sequence};
 
 %% add jobs
 
-jh.addJob(j1);
-jh.addJob(j2);
+jh.add(j1);
+jh.add(j2);
 % jh.addJob(j3);
 
 end

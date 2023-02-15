@@ -172,10 +172,14 @@ bStopJob.Tooltip='Stop jobs';
 % Button to run the cycle
 bClearJob=uicontrol(hpJobs,'style','pushbutton','String','Clear Jobs',...
     'backgroundcolor',[173 216 230]/255,'FontSize',8,'units','pixels',...
-    'fontweight','bold');
+    'fontweight','bold','callback',@clearJobCB);
 bClearJob.Position(3:4)=[85 20];
 bClearJob.Position(1:2)=[185 5];
 bClearJob.Tooltip='Clear jobs';
+
+    function clearJobsCB(~,~)
+        
+    end
 
 % Checkbox for repeat cycle
 cJob=uicontrol(hpJobs,'style','checkbox','string','enable jobs','fontsize',8,...

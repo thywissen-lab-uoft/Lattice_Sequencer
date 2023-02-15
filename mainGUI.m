@@ -153,12 +153,24 @@ tJobs.ColumnEditable=[false false false false false];
 hme = 30;
 tJobs.Position = [1 hme hpMain.Position(3) hpJobs.Position(4)-(hme+15)];
 
+% Button for file selection of the sequenece file
+cdata=imresize(imread(['GUI/images' filesep 'help.jpg']),[16 16]);
+bHelp=uicontrol(hpJobs,'style','pushbutton','CData',cdata,...
+    'backgroundcolor',cc,'Callback',@helpCB,'tooltip','help');
+bHelp.Position(3:4)=[20 20];
+bHelp.Position(1:2)=[5 5];
+
+    function helpCB(~,~)
+       doc job_handler
+       doc sequencer_job
+    end
+
 % Button to run the cycle
 bRunJob=uicontrol(hpJobs,'style','pushbutton','String','Start',...
     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','callback',@startJobsCB);
 bRunJob.Position(3:4)=[40 20];
-bRunJob.Position(1:2)=[5 5];
+bRunJob.Position(1:2)=[35 5];
 bRunJob.Tooltip='Run the jobs';
 
     function startJobsCB(~,~)
@@ -171,7 +183,7 @@ bStopJob=uicontrol(hpJobs,'style','pushbutton','String','Stop',...
     'backgroundcolor',[255	218	107]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','callback',@stopJobsCB);
 bStopJob.Position(3:4)=[40 20];
-bStopJob.Position(1:2)=[50 5];
+bStopJob.Position(1:2)=[80 5];
 bStopJob.Tooltip='Stop jobs';
 
 
@@ -185,7 +197,7 @@ bClearJob=uicontrol(hpJobs,'style','pushbutton','String','Clear',...
     'backgroundcolor',[173 216 230]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','callback',@clearJobsCB);
 bClearJob.Position(3:4)=[40 20];
-bClearJob.Position(1:2)=[95 5];
+bClearJob.Position(1:2)=[125 5];
 bClearJob.Tooltip='Clear jobs';
 
     function clearJobsCB(~,~)
@@ -198,7 +210,7 @@ bAddJob=uicontrol(hpJobs,'style','pushbutton','String','Add',...
     'backgroundcolor',[205,133,63]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','callback',@addJobsCB);
 bAddJob.Position(3:4)=[40 20];
-bAddJob.Position(1:2)=[140 5];
+bAddJob.Position(1:2)=[170 5];
 bAddJob.Tooltip='Add jobs';
 
     function addJobsCB(~,~)        
@@ -254,8 +266,8 @@ bDefault.Position(1:2)=bBrowse.Position(1:2) + [bBrowse.Position(3)+2 0];
 
     function defaultCB(~,~)
         seqdata.sequence_functions = defaultSequence;
-        d=guidata(hF);
-        d.SequencerWatcher.updateSequenceFileText;
+        d=guidata(hF);        
+        d.SequencerWatcher.updateSequenceFileText(defaultSequence);
     end
 
 % Button for file selection of the sequenece file

@@ -1,16 +1,27 @@
 classdef job_handler < handle
+% JOB_HANDLER Creates handler which manages multiple jobs of the adwin
+% sequencer. This includes different seqeunce files, flags, variables, and
+% special functions.  This is useful when trying to do batch runs of the
+% experimental cycle or when attempting to closed feedback of the
+% experiment for automated machine optimization.
+%
 % Author : CJ Fujiwara
 %
-% This can organizers and tracks all jobs which are run on the
-% sequencer.
-
+% Only one of these objects should be active at a given time.  This object
+% should automatically be created when the mainGUI is called. An instance
+% should be added to the main MATLAB workspace as jh.
+%
+% You can run this code from the GUI or from the command line with
+% functions such as jh.start, jh.add(job), jh.clear(job), jh.stop.
+%
+%   See also START, ADD, CLEAR, STOP
 properties        
-    CurrentJob
-    SequencerJobs
-    ListenerCycle
-    TextBox
-    SequencerWatcher
-    doIterate
+    CurrentJob          % current active sequencer job
+    SequencerJobs       % array of sequencer jobs to run
+    ListenerCycle       % listener object for adwin cycle complete
+    TextBox             % text table to update job progress
+    SequencerWatcher    % sequencer_watcher which watches the adwin
+    doIterate           % boolean to continue running jobs
 end    
 events
    
@@ -18,8 +29,8 @@ end
 
 methods
     
+function obj = job_handler(gui_handle)          
 % constructor
-function obj = job_handler(gui_handle)           
     obj.SequencerJobs={};            
     d=guidata(gui_handle);          
     obj.TextBox = d.JobTable;
@@ -27,8 +38,10 @@ function obj = job_handler(gui_handle)
     obj.SequencerWatcher = d.SequencerWatcher;
 end   
 
-% Run a sequencer_job
-function start(obj,job)        
+function start(obj,job)      
+% START hello
+% 
+% This function
     if ~obj.isIdle
        return; 
     end

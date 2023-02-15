@@ -1,4 +1,4 @@
-function j=job_lf_dfg
+function j=job_optimize_DFG
 
 % Sequence Modifier File
     function curtime = seq_mod(curtime)

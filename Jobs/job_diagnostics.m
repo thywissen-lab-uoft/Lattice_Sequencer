@@ -1,8 +1,5 @@
-function jh=job_test(jh)
+function J=job_diagnostics
 
-if nargin == 0
-    jh = job_handler;
-end
 
 %% RF1B K 
 
@@ -53,6 +50,5 @@ npt.SaveDirName         = 'LF DFG stats';
 j3 = sequencer_job(npt);
 %% Add jobs to handler
 J = [j1 j2 j3];
-jh.add(J);
 end
 

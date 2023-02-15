@@ -71,8 +71,9 @@ curtime = timein;
 %% Flags          
 time_in_HF_imaging = curtime;
 
-seqdata.flags.xdt_hf_ramp_QP_gradient_cancel = 1;   % Ramp QP coils for levitation  
+seqdata.flags.xdt_hf_ramp_QP_gradient_cancel = 0;   % Ramp QP coils for levitation  
 seqdata.flags.xdt_hf_ramp_field_1            = 0;   % Ramp to HF
+seqdata.flags.xdt_hf_ramp_QP_and_FB          = 1;   % Ramp FB and QP coils together
 
 seqdata.flags.xdt_hf_mix_7_9                 = 0;   % Mix 79 at HF
 seqdata.flags.xdt_hf_79_spec                 = 0;   % 79 Spec
@@ -101,7 +102,7 @@ seqdata.flags.xdt_hf_crossFBDown               = 1;
 if seqdata.flags.xdt_hf_ramp_QP_gradient_cancel
     dispLineStr('XDT HF QP Gradient cancel',curtime);
 
-    HF_QP_List =  [0.08 0.09 0.1:0.025:0.2];.14;0.115;
+    HF_QP_List =  [0.09];.14;0.115;
     HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
     seqdata.randcyclelist,'HF_QPReverse','V');  
 
@@ -187,6 +188,92 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 end  
 
 
+%% Ramp QP and FB together
+
+if seqdata.flags.xdt_hf_ramp_QP_and_FB
+    
+        %%%%%%%% Set parameters for QP+FB field ramps %%%%%%
+    ramp_time_all_list = [100];
+    ramp_time_all = getScanParameter(ramp_time_all_list,seqdata.scancycle,...
+    seqdata.randcyclelist,'HF_evap_ramptime','ms');
+    % QP parameters
+    qp_ramp_time = ramp_time_all;150;
+    HF_QP_List = [0.09];0.15;0.117;.14;0.115;
+    HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
+    seqdata.randcyclelist,'HF_QPReverse','V');  
+
+    % Feshbach ramp parameters
+    BzShim = 0;
+
+    % Feshbach Coil Value
+    fesh_list = 195;
+    fesh = getScanParameter(fesh_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'xdt_hf_fesh_1','G');
+
+    % Total Field Value
+    Btot = fesh + 0.11 +BzShim; 
+    addOutputParam('xdt_hf_field_1',Btot,'G');    
+
+    % Define the ramp structure
+    ramp=struct;
+
+    % Shim Ramp Parameters
+    ramptime = ramp_time_all;150;
+
+    ramp.shim_ramptime      = ramptime;
+    ramp.shim_ramp_delay    = 0;
+    ramp.xshim_final        = seqdata.params.shim_zero(1); 
+    ramp.yshim_final        = seqdata.params.shim_zero(2);
+    ramp.zshim_final        = seqdata.params.shim_zero(3) + BzShim/2.35;
+
+    % FB coil 
+    ramp.fesh_ramptime      = ramptime;
+    ramp.fesh_ramp_delay    = 0;
+    ramp.fesh_final         = fesh; %22.6
+    ramp.settling_time      = 100; 
+
+    %%%%%%%% Set switches for reverse QP coils %%%%%%%%%
+
+    % Ramp C16 and C15 to off values
+    pre_ramp_time = 100;
+    AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0);    
+curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0.062,1); 
+
+    %Wait a bit
+    curtime = calctime(curtime,50);
+
+    % Turn off 15/16 switch
+    setDigitalChannel(curtime,'15/16 Switch',0); 
+    curtime = calctime(curtime,10);
+
+    % Turn on reverse QP switch
+    setDigitalChannel(curtime,'Reverse QP Switch',1);
+    curtime = calctime(curtime,10);
+
+    % Ramp up transport supply voltage
+    QP_FFValue = 23*(HF_QP/.125/30); % voltage FF on delta supply
+curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        100,100,QP_FFValue);
+    curtime = calctime(curtime,50);
+
+    %%%%%%%% RAMP QP+FB TO HF CONFIGURATION %%%%%%%
+    
+    disp([' Ramp Time     (ms) : ' num2str(ramp.fesh_ramptime)]);
+    disp([' FB Ramp Value  (G) : ' num2str(ramp.fesh_final)]);
+    disp([' Settling Time (ms) : ' num2str(ramp.settling_time)]);
+    disp([' QP Ramp Value  (V) :  ' num2str(HF_QP)]);
+
+    % Ramp Coil 15, but don't update curtime
+    AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,HF_QP,1); 
+
+    % Ramp FB with QP
+curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain 
+
+end
 %% Create -9/2, -7/2 Spin Mixture at High Field
 
 if seqdata.flags.xdt_hf_mix_7_9
@@ -1081,7 +1168,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
 
     end
 
-    xdt_ramp_down = 1;
+    xdt_ramp_down = 0;
     if xdt_ramp_down 
         dispLineStr('Ramping XDT Power Back Down',curtime);    
 

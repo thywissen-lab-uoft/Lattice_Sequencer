@@ -23,8 +23,7 @@ events
 
 end
 
-methods
-      
+methods      
 
 function obj = sequencer_job(npt)    
  

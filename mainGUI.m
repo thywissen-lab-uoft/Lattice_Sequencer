@@ -193,6 +193,37 @@ bClearJob.Tooltip='Clear jobs';
         d.JobHandler.clear;
     end
 
+% Button to add a job
+bAddJob=uicontrol(hpJobs,'style','pushbutton','String','Add',...
+    'backgroundcolor',[205,133,63]/255,'FontSize',8,'units','pixels',...
+    'fontweight','bold','callback',@addJobsCB);
+bAddJob.Position(3:4)=[40 20];
+bAddJob.Position(1:2)=[140 5];
+bAddJob.Tooltip='Add jobs';
+
+    function addJobsCB(~,~)
+
+        
+        dirName=['Jobs'];
+        curpath = fileparts(mfilename('fullpath'));
+        defname = fullfile(curpath,dirName);        
+        fstr='Add job files';
+        [file,~] = uigetfile('*.m',fstr,defname);          
+        if ~file
+            return;
+        end        
+        
+        try            
+            func=str2func(strrep(file,'.m',''));
+            J = func();            
+            d=guidata(hF);
+            d.JobHandler.add(J);
+        catch ME
+            warning(ME.message);
+        end
+
+    end
+
 % % Checkbox for repeat cycle
 % cJob=uicontrol(hpJobs,'style','checkbox','string','enable jobs','fontsize',8,...
 %     'backgroundcolor',cc,'units','pixels','callback',@cbdisablejobs);

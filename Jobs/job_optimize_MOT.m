@@ -8,9 +8,7 @@ function j=job_optimize_MOT
 
 % This function evaluates at the end of each cycle
     function cycleComplete
-        disp('hi');
-          
-        
+        disp('hi');       
         % how to loop with m_loop?
     end
 

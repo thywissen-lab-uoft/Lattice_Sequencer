@@ -1,23 +1,27 @@
 classdef sequencer_job < handle
-% Author : CJ Fujiwara
-%
-% This class contains jobs to run on the adwin.  A single job can have
+% sequencer_job This class contains jobs to run on the adwin.  A single job can have
 % multiple scandincides, but only refers to a single set of sequence file.
 % This is essentially a glorified struct
-
+%
+% Author : CJ Fujiwara
+%
+% Most properties are self explainatory with the exception of the custom
+% user functions. CycleStartFcn, CycleCompleteFcn, JobCompleteFcn.  These
+% functions are particularly useful if you want to do feedback on the
+% machine after each run or set of runs.
 properties        
-    SequenceFunctions  
-    ScanCyclesRequested  
-    ScanCyclesCompleted
-    ScanCycle
-    JobName
-    SaveDirName
-    ExecutionDates
-    Status
-    CycleStartFcn
-    CycleCompleteFcn
-    JobCompleteFcn
-    CameraFile
+    SequenceFunctions       % cell arary of sequence functions to evaluate
+    ScanCyclesRequested     % array of scan cycle indices to run
+    ScanCyclesCompleted     % array of scan cycle indices which have been complete so far
+    ScanCycle               % which scan cycle will be run
+    JobName                 % the name of the job
+    SaveDirName             % the name of the directory to save images
+    ExecutionDates          % the dates at which each sequence in the job is run
+    Status                  % the current status of the job
+    CycleStartFcn           % user custom function to evalulate before sequence runs
+    CycleCompleteFcn        % user custom function to evaluate after the cycle
+    JobCompleteFcn          % user custom function to evaluate when job is complete
+    CameraFile              % camera control output file
 end    
 events
 

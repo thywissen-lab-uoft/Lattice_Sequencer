@@ -69,7 +69,7 @@ function start(obj,job)
     global seqdata
     seqdata.scancycle = job.ScanCycle;
     seqdata.sequence_functions = job.SequenceFunctions;
-    t=runSequence(job.SequenceFunctions,@job.CycleStartFcn);              
+    t=runSequence(job.SequenceFunctions,@job.CycleStartFcnWrapper);              
     job.ExecutionDates(end+1) = t;
     
     % Get ready to wait for job to finish
@@ -86,7 +86,7 @@ function JobCompleteFcn(obj)
     % Run User job funcion
     obj.SequencerWatcher.StatusStr.String = 'evaluating job end function';
     obj.SequencerWatcher.StatusStr.ForegroundColor = [220,88,42]/255;
-    obj.CurrentJob.JobCompleteFcn;
+    obj.CurrentJob.JobCompleteFcnWrapper;
     obj.SequencerWatcher.StatusStr.String = 'idle';
     obj.SequencerWatcher.StatusStr.ForegroundColor = [0 128 0]/255;
     
@@ -114,7 +114,7 @@ function CycleCompleteFcn(obj)
     obj.SequencerWatcher.StatusStr.ForegroundColor = [220,88,42]/255;
     obj.CurrentJob.Status = 'cycle end';
     obj.updateJobText;
-    obj.CurrentJob.CycleCompleteFcn;       
+    obj.CurrentJob.CycleCompleteFcnWrapper;       
     obj.CurrentJob.Status = 'pending';
     obj.updateJobText;
     obj.SequencerWatcher.StatusStr.String = 'idle';

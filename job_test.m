@@ -3,6 +3,7 @@ function jh=job_test(jh)
 if nargin == 0
     jh = job_handler;
 end
+
 %% RF1B K 
 
     function curtime = seq_mod_1(curtime)
@@ -26,11 +27,9 @@ tofVec = [21 23 25];
     end
 
 funcs = {@main_settings,@seq_mod_2,@main_sequence};
-
 j2 = sequencer_job(funcs,'DFG TOF',1:3);
 
-
-%% add jobs
+%% Add jobs
 
 jh.add(j1);
 jh.add(j2);

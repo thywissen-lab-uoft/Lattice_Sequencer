@@ -154,7 +154,7 @@ hme = 30;
 tJobs.Position = [1 hme hpMain.Position(3) hpJobs.Position(4)-(hme+15)];
 
 % Button to run the cycle
-bRunJob=uicontrol(hpJobs,'style','pushbutton','String','Start Jobs',...
+bRunJob=uicontrol(hpJobs,'style','pushbutton','String','Start',...
     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','callback',@startJobsCB);
 bRunJob.Position(3:4)=[85 20];
@@ -167,7 +167,7 @@ bRunJob.Tooltip='Run the jobs';
     end
 
 % Button to run the cycle
-bStopJob=uicontrol(hpJobs,'style','pushbutton','String','Stop Jobs',...
+bStopJob=uicontrol(hpJobs,'style','pushbutton','String','Stop',...
     'backgroundcolor',[255	218	107]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','callback',@stopJobsCB);
 bStopJob.Position(3:4)=[85 20];
@@ -181,7 +181,7 @@ bStopJob.Tooltip='Stop jobs';
     end
 
 % Button to run the cycle
-bClearJob=uicontrol(hpJobs,'style','pushbutton','String','Clear Jobs',...
+bClearJob=uicontrol(hpJobs,'style','pushbutton','String','Clear',...
     'backgroundcolor',[173 216 230]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','callback',@clearJobsCB);
 bClearJob.Position(3:4)=[85 20];
@@ -193,16 +193,16 @@ bClearJob.Tooltip='Clear jobs';
         d.JobHandler.clear;
     end
 
-% Checkbox for repeat cycle
-cJob=uicontrol(hpJobs,'style','checkbox','string','enable jobs','fontsize',8,...
-    'backgroundcolor',cc,'units','pixels','callback',@cbdisablejobs);
-cJob.Position(3:4)=[100 cJob.Extent(4)];
-cJob.Position(1:2)=[275 5];
-cJob.Tooltip='enable/disable batch jobs';
-
-    function cbdisablejobs(src,evt)
-        
-    end
+% % Checkbox for repeat cycle
+% cJob=uicontrol(hpJobs,'style','checkbox','string','enable jobs','fontsize',8,...
+%     'backgroundcolor',cc,'units','pixels','callback',@cbdisablejobs);
+% cJob.Position(3:4)=[100 cJob.Extent(4)];
+% cJob.Position(1:2)=[275 5];
+% cJob.Tooltip='enable/disable batch jobs';
+% 
+%     function cbdisablejobs(src,evt)
+%         
+%     end
 
 %% Sequence
 % Sequence File edit box

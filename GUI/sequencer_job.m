@@ -39,21 +39,21 @@ function obj = sequencer_job(SequenceFunctions,JobName,...
 end    
 
 % function that evaluates upon job completion
-function JobCompleteFcn(obj)  
-    disp('job done');
+function JobCompleteFcnWrapper(obj)  
+    disp('Executing job complete function');
     pause(.5);
 end
 
 % function that evaluates upon cycle completion
-function CycleCompleteFcn(obj)        
-    disp('cycle done');
-    pause(.5);
+function CycleCompleteFcnWrapper(obj)        
+    disp('Executing cycle complete function.');
+    pause(.1);
 end
 
 % function that evaluates upon after compitation but before run
-function CycleStartFcn(obj)        
-    disp('Oh wow I am about to run!!');
-    pause(.5);
+function CycleStartFcnWrapper(obj)        
+    disp('Executing cycle start function.');
+    pause(.1);
 end
 
 end

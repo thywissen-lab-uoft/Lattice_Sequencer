@@ -1,141 +1,110 @@
 classdef sequencer_job < handle
+% sequencer_job This class contains jobs to run on the adwin.  A single job can have
+% multiple scandincides, but only refers to a single set of sequence file.
+% This is essentially a glorified struct
+%
 % Author : CJ Fujiwara
 %
-% This class contains jobs to run on the adwin.  A single job can have
-% multiple scandincides, but only refers to a single set of sequence file.
-
+% Most properties are self explainatory with the exception of the custom
+% user functions. CycleStartFcn, CycleCompleteFcn, JobCompleteFcn.  These
+% functions are particularly useful if you want to do feedback on the
+% machine after each run or set of runs.
+%
+% Because only one sequence may be run at a time, sequencer_jobs may only
+% be excuted from an instance of the job_handler class.
+%
+% See also JOB_HANDLER, MAINGUI
 properties        
-    SequenceFunctions  
-    ScanCyclesRequested  
-    ScanCyclesCompleted
-    ScanCycle
-    Options   
-    JobName
-    ImageSaveDirectory
-    SequencerWatcher  
-    continueRunning        
-    lh
-    ExecutionDates
-    Status
-    UserCycleCompleteFcn;
-    UserJobCompleteFcn;
+    SequenceFunctions       % cell arary of sequence functions to evaluate
+    ScanCyclesRequested     % array of scan cycle indices to run
+    ScanCyclesCompleted     % array of scan cycle indices which have been complete so far
+    ScanCycle               % which scan cycle will be run
+    JobName                 % the name of the job
+    SaveDirName             % the name of the directory to save images
+    ExecutionDates          % the dates at which each sequence in the job is run
+    Status                  % the current status of the job
+    CycleStartFcn           % user custom function to evalulate before sequence runs
+    CycleCompleteFcn        % user custom function to evaluate after the cycle
+    JobCompleteFcn          % user custom function to evaluate when job is complete
+    CameraFile              % camera control output file
 end    
 events
-    CycleComplete
-    JobComplete
+
 end
 
-methods
-   
-% contructor
-function obj = sequencer_job(SequenceFunctions,JobName,...
-        ScanCyclesRequested)    
-    if nargin == 2
-        ScanCyclesRequested = [];
-    end
-    obj.SequencerWatcher    = obj.findSequencerWatcher;
-    obj.JobName             = JobName;            
-    obj.SequenceFunctions   = SequenceFunctions;
-    obj.ScanCyclesRequested = ScanCyclesRequested;
+methods      
+
+function obj = sequencer_job(npt)    
+ 
+    obj.CameraFile = 'Y:\_communication\camera_control.mat';
+
+    obj.JobName             = npt.JobName;            
+    obj.SequenceFunctions   = npt.SequenceFunctions;
+    obj.ScanCyclesRequested = npt.ScanCyclesRequested;
+    obj.Status              = 'pending';
+
     obj.ScanCyclesCompleted = [];    
     obj.ScanCycle           = [];
     obj.ExecutionDates      = [];
-    obj.Status              = 'pending';
+    obj.SaveDirName         = [];
+    obj.CycleStartFcn       = [];
+    obj.CycleCompleteFcn    = [];
+    obj.JobCompleteFcn      = [];
+
     
-    obj.UserCycleCompleteFcn = @(x) disp('hi1');
-    obj.UserJobCompleteFcn   = @(x) disp('hi2');
+    if isfield(npt,'CycleStartFcn')
+        obj.CycleStartFcn = @npt.CycleStartFcn; 
+    end
+    
+    if isfield(npt,'JobCompleteFcn')
+        obj.JobCompleteFcn = @npt.JobCompleteFcn; 
+    end
+    
+    if isfield(npt,'CycleCompleteFcn')
+        obj.CycleCompleteFcn = @npt.CycleCompleteFcn; 
+    end
+    
+    if isfield(npt,'SaveDirName')
+       obj.SaveDirName = npt.SaveDirName; 
+    end    
+
 end    
 
 % function that evaluates upon job completion
-function JobCompleteFcn(obj)        
-    obj.Status              = 'complete';
-    obj.notify('JobComplete');
-    for kk=1:length(obj.ExecutionDates)
-       disp(datestr(obj.ExecutionDates(kk)) )
-    end
+function JobCompleteFcnWrapper(obj)  
+    disp('Executing job complete function');
+    pause(.1);
     
-    % Execute User function here
-    obj.UserJobCompleteFcn(obj);
+    if ~isempty(obj.JobCompleteFcn)
+       obj.JobCompleteFcn(); 
+    end
 end
 
 % function that evaluates upon cycle completion
-function CycleCompleteFcn(obj)        
-    delete(obj.lh);         
-    % Increment cycles completed
-    obj.ScanCyclesCompleted(end+1) = obj.ScanCycle;           
-    cycles_left = setdiff(obj.ScanCyclesRequested,...
-        obj.ScanCyclesCompleted);            
-    if ~obj.continueRunning
-        obj.Status = 'pending';        
-    end    
+function CycleCompleteFcnWrapper(obj)        
+    disp('Executing cycle complete function.');
+    pause(.1);
+    if ~isempty(obj.CycleCompleteFcn)
+        obj.CycleCompleteFcn(); 
+    end
+end
+
+% function that evaluates upon after compitation but before run
+function CycleStartFcnWrapper(obj)        
+    disp('Executing cycle start function.');
+    pause(.1);
+    if ~isempty(obj.CycleStartFcn)
+        obj.CycleStartFcn(); 
+    end
     
-    % Execute User function here
-    obj.UserCycleCompleteFcn(obj);
-    
-    obj.notify('CycleComplete');
-    if obj.continueRunning            
-        if isempty(cycles_left) 
-            obj.JobCompleteFcn;
-        else
-            obj.start;
+    if ~isempty(obj.SaveDirName)
+        SaveDir = obj.SaveDirName;
+        try
+            save(obj.CameraFile,'SaveDir');
         end
     end
 end
 
-% function that finds the sequencer watcher object (weird)
-function SequencerWatcher=findSequencerWatcher(obj)
-    figs = get(groot,'Children');
-    fig = [];
-    for i = 1:length(figs)
-        if isequal(figs(i).UserData,'sequencer_gui')        
-            fig = figs(i);
-        end
-    end             
-    d=guidata(fig);            
-    SequencerWatcher = d.SequencerWatcher;
-end
-
-% stop the current job from running
-function stop(obj)
-   obj.continueRunning = 0;
-   obj.Status = 'stopping';
-   disp('stopping job');
-end
-
-% Start the next job/continue the current job
-function start(obj)
-    
-    if obj.SequencerWatcher.isRunning
-       warning('sequencer already running');              
-       return;
-    end
-    
-    obj.Status = 'running';            
-    obj.continueRunning = 1;
-    cycles_left = setdiff(obj.ScanCyclesRequested,...
-        obj.ScanCyclesCompleted);
-
-    if isempty(cycles_left)
-        error('no more runs to do');
-    end                   
-    
-    opts=struct;
-    opts.ScanCycle = cycles_left(1);         
-
-    obj.ScanCycle = opts.ScanCycle;
-
-    global seqdata
-    seqdata.scancycle = obj.ScanCycle;
-    seqdata.sequence_functions = obj.SequenceFunctions;
-
-    t=runSequence(obj.SequenceFunctions,opts);              
-    obj.ExecutionDates(end+1) = t;
-    obj.lh=listener(obj.SequencerWatcher,'CycleComplete',@(src, evt) obj.CycleCompleteFcn);
-end
-
-function delete(this)
-    % delete any listeners
-end
 end
 end
 

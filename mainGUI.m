@@ -153,40 +153,86 @@ tJobs.ColumnEditable=[false false false false false];
 hme = 30;
 tJobs.Position = [1 hme hpMain.Position(3) hpJobs.Position(4)-(hme+15)];
 
+% Button for file selection of the sequenece file
+cdata=imresize(imread(['GUI/images' filesep 'help.jpg']),[16 16]);
+bHelp=uicontrol(hpJobs,'style','pushbutton','CData',cdata,...
+    'backgroundcolor',cc,'Callback',@helpCB,'tooltip','help');
+bHelp.Position(3:4)=[20 20];
+bHelp.Position(1:2)=[5 5];
+
+    function helpCB(~,~)
+       doc job_handler
+       doc sequencer_job
+    end
+
 % Button to run the cycle
-bRunJob=uicontrol(hpJobs,'style','pushbutton','String','Start Jobs',...
+bRunJob=uicontrol(hpJobs,'style','pushbutton','String','Start',...
     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
-    'fontweight','bold');
-bRunJob.Position(3:4)=[85 20];
-bRunJob.Position(1:2)=[5 5];
+    'fontweight','bold','callback',@startJobsCB);
+bRunJob.Position(3:4)=[40 20];
+bRunJob.Position(1:2)=[35 5];
 bRunJob.Tooltip='Run the jobs';
 
+    function startJobsCB(~,~)
+        d=guidata(hF);
+        d.JobHandler.start;
+    end
+
 % Button to run the cycle
-bStopJob=uicontrol(hpJobs,'style','pushbutton','String','Stop Jobs',...
+bStopJob=uicontrol(hpJobs,'style','pushbutton','String','Stop',...
     'backgroundcolor',[255	218	107]/255,'FontSize',8,'units','pixels',...
-    'fontweight','bold');
-bStopJob.Position(3:4)=[85 20];
-bStopJob.Position(1:2)=[95 5];
+    'fontweight','bold','callback',@stopJobsCB);
+bStopJob.Position(3:4)=[40 20];
+bStopJob.Position(1:2)=[80 5];
 bStopJob.Tooltip='Stop jobs';
 
+
+    function stopJobsCB(~,~)
+        d=guidata(hF);
+        d.JobHandler.stop;
+    end
+
 % Button to run the cycle
-bClearJob=uicontrol(hpJobs,'style','pushbutton','String','Clear Jobs',...
+bClearJob=uicontrol(hpJobs,'style','pushbutton','String','Clear',...
     'backgroundcolor',[173 216 230]/255,'FontSize',8,'units','pixels',...
-    'fontweight','bold');
-bClearJob.Position(3:4)=[85 20];
-bClearJob.Position(1:2)=[185 5];
+    'fontweight','bold','callback',@clearJobsCB);
+bClearJob.Position(3:4)=[40 20];
+bClearJob.Position(1:2)=[125 5];
 bClearJob.Tooltip='Clear jobs';
 
-% Checkbox for repeat cycle
-cJob=uicontrol(hpJobs,'style','checkbox','string','enable jobs','fontsize',8,...
-    'backgroundcolor',cc,'units','pixels','callback',@cbdisablejobs);
-cJob.Position(3:4)=[100 cJob.Extent(4)];
-cJob.Position(1:2)=[275 5];
-cJob.Tooltip='enable/disable batch jobs';
-
-    function cbdisablejobs(src,evt)
-        
+    function clearJobsCB(~,~)
+        d=guidata(hF);
+        d.JobHandler.clear;
     end
+
+% Button to add a job
+bAddJob=uicontrol(hpJobs,'style','pushbutton','String','Add',...
+    'backgroundcolor',[205,133,63]/255,'FontSize',8,'units','pixels',...
+    'fontweight','bold','callback',@addJobsCB);
+bAddJob.Position(3:4)=[40 20];
+bAddJob.Position(1:2)=[170 5];
+bAddJob.Tooltip='Add jobs';
+
+    function addJobsCB(~,~)        
+        dirName=['Jobs'];
+        curpath = fileparts(mfilename('fullpath'));
+        defname = fullfile(curpath,dirName);        
+        fstr='Add job files';
+        [file,~] = uigetfile('*.m',fstr,defname);          
+        if ~file
+            return;
+        end        
+        
+        try            
+            func=str2func(strrep(file,'.m',''));
+            J = func();            
+            d=guidata(hF);
+            d.JobHandler.add(J);
+        catch ME
+            warning(ME.message);
+        end
+    end
+
 
 %% Sequence
 % Sequence File edit box
@@ -220,8 +266,8 @@ bDefault.Position(1:2)=bBrowse.Position(1:2) + [bBrowse.Position(3)+2 0];
 
     function defaultCB(~,~)
         seqdata.sequence_functions = defaultSequence;
-        d=guidata(hF);
-        d.SequencerWatcher.updateSequenceFileText;
+        d=guidata(hF);        
+        d.SequencerWatcher.updateSequenceFileText(defaultSequence);
     end
 
 % Button for file selection of the sequenece file

@@ -1,31 +1,194 @@
 classdef job_handler < handle
+% JOB_HANDLER Creates handler which manages multiple jobs of the adwin
+% sequencer. This includes different seqeunce files, flags, variables, and
+% special functions.  This is useful when trying to do batch runs of the
+% experimental cycle or when attempting to closed feedback of the
+% experiment for automated machine optimization.
+%
 % Author : CJ Fujiwara
 %
-% This can organizers and tracks all jobs which are run on the
-% sequencer.
-
+% Only one of these objects should be active at a given time.  This object
+% should automatically be created when the mainGUI is called. An instance
+% should be added to the main MATLAB workspace as jh.
+%
+% You can run this code from the GUI or from the command line with
+% functions such as jh.start, jh.add(job), jh.clear(job), jh.stop.
+%
+%   See also START, ADD, CLEAR, STOP, MAINGUI, SEQUENCER_JOB
 properties        
-    CurrentJob
-    SequencerJobs
-    ListenerJob
-    ListenerCycle
-    TextBox
+    CurrentJob          % current active sequencer job
+    SequencerJobs       % array of sequencer jobs to run
+    ListenerCycle       % listener object for adwin cycle complete
+    TextBox             % text table to update job progress
+    SequencerWatcher    % sequencer_watcher which watches the adwin
+    doIterate           % boolean to continue running jobs
 end    
 events
-   BatchComplete
+   
 end
 
 methods
     
+function obj = job_handler(gui_handle)          
 % constructor
-function obj = job_handler(gui_handle)           
     obj.SequencerJobs={};            
     d=guidata(gui_handle);          
     obj.TextBox = d.JobTable;
     obj.updateJobText;
+    obj.SequencerWatcher = d.SequencerWatcher;
 end   
 
-% function that updates the job table
+function start(obj,job)      
+% START hello
+% 
+% This function
+    if ~obj.isIdle
+       return; 
+    end
+        
+    % Find first pending job if none specified
+    if nargin == 1
+       job = obj.findNextJob;
+    end
+    
+    % Check to see if job is object or number
+    if ~isequal(class(job),'sequencer_job') && isnumeric(job)
+        job = obj.SequencerJobs{job};
+    end
+    
+    % Check if sequencer is alrady running
+    if obj.SequencerWatcher.isRunning
+       warning('sequencer already running');              
+       return;
+    end
+    
+    % Update current job
+    obj.CurrentJob = job;
+    
+    % Cycle remaining in this job
+    cycles_left = setdiff(job.ScanCyclesRequested,job.ScanCyclesCompleted);
+    
+    % No more cycles, run the job complete fcn
+    if isempty(cycles_left)
+        obj.JobCompleteFcn;
+        return;
+    end
+    
+    % Update the job
+    job.Status = 'running';
+    obj.updateJobText;
+
+    job.ScanCycle = cycles_left(1);
+    global seqdata
+    seqdata.scancycle = job.ScanCycle;
+    seqdata.sequence_functions = job.SequenceFunctions;
+    t=runSequence(job.SequenceFunctions,@job.CycleStartFcnWrapper);              
+    job.ExecutionDates(end+1) = t;
+    
+    % Get ready to wait for job to finish
+    obj.ListenerCycle=listener(obj.SequencerWatcher,'CycleComplete',...
+        @(src, evt) obj.CycleCompleteFcn);
+    obj.doIterate   = true;
+end
+
+function JobCompleteFcn(obj)
+% Evaluates at the end of the job. This handles graphical calls and also
+% excutes any user defind functions in the sequencer_job
+
+    obj.CurrentJob.Status = 'job end';
+    obj.updateJobText;
+    
+    % Run User job funcion
+    obj.SequencerWatcher.StatusStr.String = 'evaluating job end function';
+    obj.SequencerWatcher.StatusStr.ForegroundColor = [220,88,42]/255;
+    obj.CurrentJob.JobCompleteFcnWrapper;
+    obj.SequencerWatcher.StatusStr.String = 'idle';
+    obj.SequencerWatcher.StatusStr.ForegroundColor = [0 128 0]/255;
+    
+    % Ending Stuff
+    obj.CurrentJob.Status = 'complete';
+    obj.CurrentJob = [];
+    obj.updateJobText;
+     
+    % Insert check on buttons
+    if obj.doIterate && ~isempty(obj.findNextJob)
+        obj.start;
+    end        
+end
+
+function CycleCompleteFcn(obj)    
+% Evaluates at the end of the cycle. This handles graphical calls and also
+% excutes any user defind functions in the sequencer_job
+
+    delete(obj.ListenerCycle);      % delete listerner   
+    job = obj.CurrentJob;           % get the current job
+
+    % Increment cycles completed
+    job.ScanCyclesCompleted(end+1) = job.ScanCycle;           
+        
+    % Execute User function here        
+    obj.SequencerWatcher.StatusStr.String = 'evaluating job end function';
+    obj.SequencerWatcher.StatusStr.ForegroundColor = [220,88,42]/255;
+    obj.CurrentJob.Status = 'cycle end';
+    obj.updateJobText;
+    obj.CurrentJob.CycleCompleteFcnWrapper;       
+    obj.CurrentJob.Status = 'pending';
+    obj.updateJobText;
+    obj.SequencerWatcher.StatusStr.String = 'idle';
+    obj.SequencerWatcher.StatusStr.ForegroundColor = [0 128 0]/255;
+    
+    % Insert check on buttons
+    if ~obj.doIterate
+        obj.CurrentJob.Status='pending';
+        obj.CurrentJob = [];
+        obj.updateJobText;
+        return;
+    end        
+    
+    % Check if any more runs to do
+    cycles_left = setdiff(job.ScanCyclesRequested,...
+        job.ScanCyclesCompleted);  
+    if isempty(cycles_left) 
+        obj.JobCompleteFcn;     % Finish job
+    else
+        obj.start(job);        % Continue job        
+    end
+end
+
+% Add job to list
+function add(obj,job)
+    for kk=1:length(job)
+        obj.SequencerJobs{end+1} = job(kk);
+        obj.updateJobText;
+    end
+end
+
+% Stop Current Job
+function stop(obj)
+    obj.doIterate   = false;
+    if ~isempty(obj.CurrentJob)
+       obj.CurrentJob.Status = 'stopping';
+    end
+    obj.updateJobText;
+end   
+
+% Clear all jobs
+function clear(obj)
+    if ~isIdle(obj)
+       warning('Cannot clear jobs until idle. Stopping jobs instead.');
+       obj.stop;
+       return;
+    end
+    
+    for kk=1:length(obj.SequencerJobs)
+       delete(obj.SequencerJobs{kk}); 
+    end
+    obj.SequencerJobs={};
+    obj.CurrentJob = [];
+    obj.updateJobText;
+end
+
+% Function that updates the job table
 function updateJobText(obj)
     if isempty(obj.SequencerJobs)
        obj.TextBox.Data={};
@@ -48,26 +211,12 @@ function updateJobText(obj)
     end
 end
 
-% Add job to list
-function addJob(obj,job)
-    obj.SequencerJobs{end+1} = job;
-    obj.updateJobText;
-end
-
-% Clear all jobs
-function clearJobs(obj)
-    for kk=1:length(obj.SequencerJobs)
-       delete(obj.SequencerJobs{kk}); 
-    end
-    obj.SequencerJobs={};
-    obj.updateJobText;
-end
-
-% chekcs to see if the jobs are idle
+% Check if job handler is idle
 function val = isIdle(obj)
     val = 1;
     for kk=1:length(obj.SequencerJobs)
-        status = obj.SequencerJobs{kk}.Status;        
+        status = obj.SequencerJobs{kk}.Status;     
+        
         switch status
             case 'complete'
             case 'pending'
@@ -81,59 +230,38 @@ function val = isIdle(obj)
                 str = ['Job ' num2str(kk) ' is currently stopping.'];
                 warning(str);
                 return;
+            case 'cycle end'
+                val = 0;
+                str = ['Job ' num2str(kk) ' is cycle end function'];
+                warning(str);
+                return;
+            case 'job end'
+                val = 0;
+                str = ['Job ' num2str(kk) ' is job end function'];
+                warning(str);
+                return;
             otherwise
                 error('unknown status');
         end  
     end   
 end
 
-% Start or continue job
-function start(obj)      
-    % Check if any jobs are running or if sequencer is currently running
-    if ~obj.isIdle
-       return; 
-    end    
-    
-    % Find the first non complete job
+% Find next job that is pending
+function job = findNextJob(obj)
+    job = [];
    for kk=1:length(obj.SequencerJobs)
        if isequal(obj.SequencerJobs{kk}.Status,'pending')
-         obj.CurrentJob = obj.SequencerJobs{kk};
-         obj.CurrentJob.start;
-          obj.ListenerJob=listener(obj.CurrentJob,...
-            'JobComplete',@(src, evt) obj.CurrentJobComplete);
-          obj.ListenerCycle=listener(obj.CurrentJob,...
-              'CycleComplete',@(src, evt) obj.CycleComplete);
-          obj.updateJobText;
-          return
+            job = obj.SequencerJobs{kk};
+            return
        end
    end
-   warning('no more uncompleted jobs to run');
 end
 
-function CycleComplete(obj)
-    obj.updateJobText;
-end
-
-% Execute at end of current job
-function CurrentJobComplete(obj)
-    delete(obj.ListenerJob);   
-    delete(obj.ListenerCycle);   
-    obj.CurrentJob = [];
-    obj.start;
-end
-
-% Stop request
-function stop(obj)
-    if ~isempty(obj.CurrentJob)
-       obj.CurrentJob.stop 
-    end
-    obj.updateJobText;
-end                
 
 % delete me
 function delete(obj)
     % delete any listeners
-    obj.clearJobs;
+    obj.clear;
     obj.updateJobText;
 end
 

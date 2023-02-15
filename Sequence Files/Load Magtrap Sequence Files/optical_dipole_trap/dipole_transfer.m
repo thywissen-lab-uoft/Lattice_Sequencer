@@ -970,12 +970,17 @@ if seqdata.flags.xdt_tilt_evap
     LF_QP_initial = getScanParameter(LF_QP_List,seqdata.scancycle,...
     seqdata.randcyclelist,'LF_QP_initial','V');  
 
+    % Enable Coil 16
+    setDigitalChannel(calctime(curtime,0),'Coil 16 TTL',0);
+
     % Ramp up transport supply voltage
     QP_FFValue = 23*(LF_QP_initial/.125/30); % voltage FF on delta supply
     curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
         100,100,QP_FFValue);
     curtime = calctime(curtime,50);
+    
+    
 
     qp_ramp_time = 200;
     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 16',...

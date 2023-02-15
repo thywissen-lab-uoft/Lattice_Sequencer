@@ -201,9 +201,7 @@ bAddJob.Position(3:4)=[40 20];
 bAddJob.Position(1:2)=[140 5];
 bAddJob.Tooltip='Add jobs';
 
-    function addJobsCB(~,~)
-
-        
+    function addJobsCB(~,~)        
         dirName=['Jobs'];
         curpath = fileparts(mfilename('fullpath'));
         defname = fullfile(curpath,dirName);        
@@ -221,19 +219,8 @@ bAddJob.Tooltip='Add jobs';
         catch ME
             warning(ME.message);
         end
-
     end
 
-% % Checkbox for repeat cycle
-% cJob=uicontrol(hpJobs,'style','checkbox','string','enable jobs','fontsize',8,...
-%     'backgroundcolor',cc,'units','pixels','callback',@cbdisablejobs);
-% cJob.Position(3:4)=[100 cJob.Extent(4)];
-% cJob.Position(1:2)=[275 5];
-% cJob.Tooltip='enable/disable batch jobs';
-% 
-%     function cbdisablejobs(src,evt)
-%         
-%     end
 
 %% Sequence
 % Sequence File edit box

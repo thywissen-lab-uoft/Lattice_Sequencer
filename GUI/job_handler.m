@@ -140,8 +140,10 @@ end
 
 % Add job to list
 function add(obj,job)
-    obj.SequencerJobs{end+1} = job;
-    obj.updateJobText;
+    for kk=1:length(job)
+        obj.SequencerJobs{end+1} = job(kk);
+        obj.updateJobText;
+    end
 end
 
 % Stop Current Job

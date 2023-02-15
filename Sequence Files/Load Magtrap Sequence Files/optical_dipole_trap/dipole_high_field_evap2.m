@@ -5,8 +5,8 @@ curtime = timein;
 
 %% Flags    
 
-seqdata.flags.xdt_evap2_HF_repulsive    = 1;
-seqdata.flags.xdt_evap2_HF_attractive   = 0;
+seqdata.flags.xdt_evap2_HF_repulsive    = 0;
+seqdata.flags.xdt_evap2_HF_attractive   = 1;
 seqdata.flags.ramp_back_LF              = 1;
 
 % rampfieldreulsive = 0;
@@ -185,11 +185,18 @@ end
 
 if (seqdata.flags.xdt_evap2_HF_attractive == 1 && seqdata.flags.xdt_evap2_HF_repulsive == 0)
 
-    %%%%%%%%%%%%%% RAMP FB TO INITIAL 195G%%%%%%%%%%%%%%%%%
-   %%%%%%%% Set parameters for FB field ramps %%%%%%
-        ramp_time_FB_list = [100];
-        ramp_time_FB = getScanParameter(ramp_time_FB_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'HF_evap_a_ramptime','ms');
+        %%%%%%%%%%%%%% RAMP FB+QP TO INITIAL 195G%%%%%%%%%%%%%%%%%
+       %%%%%%%% Set parameters for FB field ramps %%%%%%
+
+        %%%%%%%% Set parameters for QP+FB field ramps %%%%%%
+        ramp_time_all_list = [100];
+        ramp_time_all = getScanParameter(ramp_time_all_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'HF_evap_ramptime','ms');
+        % QP parameters
+        qp_ramp_time = ramp_time_all;150;
+        HF_QP_List = [0.09];0.15;0.117;.14;0.115;
+        HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
+        seqdata.randcyclelist,'HF_QPReverse','V');  
 
         % Feshbach ramp parameters
         BzShim = 0;
@@ -197,17 +204,17 @@ if (seqdata.flags.xdt_evap2_HF_attractive == 1 && seqdata.flags.xdt_evap2_HF_rep
         % Feshbach Coil Value
         fesh_list = 195;
         fesh = getScanParameter(fesh_list,...
-            seqdata.scancycle,seqdata.randcyclelist,'xdt_hf_a_fesh_1','G');
+            seqdata.scancycle,seqdata.randcyclelist,'xdt_hf_fesh_1','G');
 
         % Total Field Value
         Btot = fesh + 0.11 +BzShim; 
-        addOutputParam('xdt_hf_a_field_1',Btot,'G');    
+        addOutputParam('xdt_hf_field_1',Btot,'G');    
 
         % Define the ramp structure
         ramp=struct;
 
         % Shim Ramp Parameters
-        ramptime = ramp_time_FB;
+        ramptime = ramp_time_all;150;
 
         ramp.shim_ramptime      = ramptime;
         ramp.shim_ramp_delay    = 0;
@@ -221,19 +228,48 @@ if (seqdata.flags.xdt_evap2_HF_attractive == 1 && seqdata.flags.xdt_evap2_HF_rep
         ramp.fesh_final         = fesh; %22.6
         ramp.settling_time      = 100; 
 
+        %%%%%%%% Set switches for reverse QP coils %%%%%%%%%
 
-        %%%%%%%% Ramp FB %%%%%%%
+        % Ramp C16 and C15 to off values
+        pre_ramp_time = 100;
+        AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0);    
+curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0.062,1); 
+
+        %Wait a bit
+        curtime = calctime(curtime,50);
+
+        % Turn off 15/16 switch
+        setDigitalChannel(curtime,'15/16 Switch',0); 
+        curtime = calctime(curtime,10);
+
+        % Turn on reverse QP switch
+        setDigitalChannel(curtime,'Reverse QP Switch',1);
+        curtime = calctime(curtime,10);
+
+        % Ramp up transport supply voltage
+        QP_FFValue = 23*(HF_QP/.125/30); % voltage FF on delta supply
+curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+            100,100,QP_FFValue);
+        curtime = calctime(curtime,50);
+
+        %%%%%%%% RAMP QP+FB TO HF CONFIGURATION %%%%%%%
+
         disp([' Ramp Time     (ms) : ' num2str(ramp.fesh_ramptime)]);
         disp([' FB Ramp Value  (G) : ' num2str(ramp.fesh_final)]);
         disp([' Settling Time (ms) : ' num2str(ramp.settling_time)]);
+        disp([' QP Ramp Value  (V) :  ' num2str(HF_QP)]);
 
-        %Ramp coil 16 to its off value
-        pre_ramp_time = 100;
-    AnalogFuncTo(calctime(curtime,0),'Coil 16',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0); 
+        % Ramp Coil 15, but don't update curtime
+        AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,HF_QP,1); 
 
-        % Ramp FB
+        % Ramp FB with QP
 curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain 
+
+    
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
         %%%%%%%%%%%%%%%%%%%%%%%%%% CROSS THE RESONANCE%%%%%%%%%%%%%%%%%
@@ -337,17 +373,7 @@ curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields t
         curtime = calctime(curtime,ramptime+settlingtime); 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-        %%%%%%%%%%%%%%%%%%%% RAMP FB+QP TO EVAP VALUES%%%%%%%%%%%%
-
-        ramp_time_all_list = [100];
-        ramp_time_all = getScanParameter(ramp_time_all_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'HF_evap_a_ramptime','ms');
-
-        % QP parameters
-        qp_ramp_time = ramp_time_all;
-        HF_QP_List = [0.15];[0.09];
-        HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
-        seqdata.randcyclelist,'HF_QPReverse_a','V'); 
+        %%%%%%%%%%%%%%%%%%%% RAMP FB TO EVAP VALUES%%%%%%%%%%%%
 
         % Feshbach ramp parameters
         BzShim = 0;
@@ -378,50 +404,25 @@ curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields t
         ramp.fesh_ramp_delay    = 0;
         ramp.fesh_final         = fesh; %22.6
         ramp.settling_time      = 100; 
-
-        % Ramp C16 and C15 to off values
-        pre_ramp_time = 100;
-        AnalogFuncTo(calctime(curtime,0),'Coil 16',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0);    
-curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0.062,1); 
-
-        %Wait a bit
-        curtime = calctime(curtime,50);
-
-        % Turn off 15/16 switch
-        setDigitalChannel(curtime,'15/16 Switch',0); 
-        curtime = calctime(curtime,10);
-
-        % Turn on reverse QP switch
-        setDigitalChannel(curtime,'Reverse QP Switch',1);
-        curtime = calctime(curtime,10);
-
-        % Ramp up transport supply voltage
-        QP_FFValue = 23*(HF_QP/.125/30); % voltage FF on delta supply
-curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-            100,100,QP_FFValue);
-        curtime = calctime(curtime,50);
-
-        %%%%%%%% Ramp QP + FB at the same time %%%%%%%
+        
+        
         disp([' Ramp Time     (ms) : ' num2str(ramp.fesh_ramptime)]);
         disp([' FB Ramp Value  (G) : ' num2str(ramp.fesh_final)]);
         disp([' Settling Time (ms) : ' num2str(ramp.settling_time)]);
-        disp([' QP Ramp Value  (V) :  ' num2str(HF_QP)]);
 
-% Ramp Coil 15, but don't update curtime
-        AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,HF_QP,1); 
 
 curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain 
 
         %%%%%%%%%%%%%%%% DO THE SECOND EVAP STAGE %%%%%%%%%%%%%%%%%%%%%
-        pend = 0.06;0.06;
+%         pend = 0.06;0.06;
+        
+        defVar('XDT_HF_evap2_end_pwr',[0.06],'W');
+        pend = getVar('XDT_HF_evap2_end_pwr');
+        
         evap_exp_ramp = @(t,tt,tau,y2,y1) ...
             (y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));    
 
-        evap_time_2_list =  [6000];
+        evap_time_2_list =  [1000:1000:9000];
         evap_time_2 = getScanParameter(evap_time_2_list,seqdata.scancycle,...
             seqdata.randcyclelist,'evap_time_2','ms');
 
@@ -429,8 +430,13 @@ curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields t
         Tau_List = [3.5];%[5];
         exp_tau_frac = getScanParameter(Tau_List,seqdata.scancycle,...
             seqdata.randcyclelist,'Evap_Tau_frac2');
-        evap_time_total = 25*1e3; %this should be changed
-        exp_tau=evap_time_total/exp_tau_frac;
+        
+%         defVar('Vary_HF_Tau_dummy',[20 35 40]*1e3,'ms')
+%         evap_time_total = getVar('Vary_HF_Tau_dummy');
+% %         evap_time_total = 25*1e3; %this should be changed
+%         
+        
+        exp_tau=6*evap_time_2/exp_tau_frac;
 
         % Ramp down the optical powers
         AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
@@ -444,14 +450,14 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
 
         if seqdata.flags.ramp_back_LF
 
-               %%%%%%%%%%%%%ramp FB back to 210G and QP up to higher values%%%%%%%
+               %%%%%%%%%%%%%ramp FB+QP back to 210G%%%%%%%
             ramp_time_all_list = [100];
             ramp_time_all = getScanParameter(ramp_time_all_list,seqdata.scancycle,...
             seqdata.randcyclelist,'HF_evap_a_ramptime','ms');
 
             % QP parameters
             qp_ramp_time = ramp_time_all;
-            HF_QP_List = [0.15];
+            HF_QP_List = [0.1];
             HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
             seqdata.randcyclelist,'HF_QPReverse2_a','V'); 
 

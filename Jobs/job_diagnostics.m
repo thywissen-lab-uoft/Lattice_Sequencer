@@ -29,7 +29,7 @@ tofVec = [17 19 21 23 25];
 npt=struct;
 npt.SequenceFunctions   = {@main_settings,@seq_mod_2,@main_sequence};
 npt.JobName             = 'DFG TOF';
-npt.ScanCyclesRequested = [1 2 3 4 5];
+npt.ScanCyclesRequested = [1:5];
 npt.SaveDirName         = 'DFG TOF';
 
 j2 = sequencer_job(npt);

@@ -24,6 +24,7 @@ function J=job_optimize_DFG_end_power_endtime
 % This function evaluates at the end of the job
     function jobComplete
         % Get the data and then write it           
+        % save to blah.mat
     end
 
 npt = struct;
@@ -49,6 +50,15 @@ j1 = sequencer_job(npt);
         
         b=load('blah.mat');
         defVar('end_power',b.EndPower);
+        
+        defVar('end_power',b.EndPower);
+
+        defVar('end_power',b.tau);
+
+        defVar('end_power',b.totaltime);
+
+        defVar('end_power',b.EndPower);
+
         defVar('evap_time',[5000:2000:20000]);
     end
 

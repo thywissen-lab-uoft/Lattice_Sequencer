@@ -5,8 +5,8 @@ curtime = timein;
 
 %% Flags    
 
-seqdata.flags.xdt_evap2_HF_repulsive    = 0;
-seqdata.flags.xdt_evap2_HF_attractive   = 1;
+seqdata.flags.xdt_evap2_HF_repulsive    = 1;
+seqdata.flags.xdt_evap2_HF_attractive   = 0;
 seqdata.flags.ramp_back_LF              = 1;
 
 % rampfieldreulsive = 0;

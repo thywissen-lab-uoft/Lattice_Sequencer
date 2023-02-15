@@ -31,8 +31,8 @@ exp_end_pwr = getScanParameter(Evap_End_Power_List,...
 seqdata.flags.xdt_ramp2sympathetic      = 1;  
 
 
-seqdata.flags.xdt_evap2stage            = 0; %Perform K evap at low field
-seqdata.flags.xdt_evap2_HF              = 1; %Perform K evap at high field (set rep. or attr. in file)
+seqdata.flags.xdt_evap2stage            = 1; %Perform K evap at low field
+seqdata.flags.xdt_evap2_HF              = 0; %Perform K evap at high field (set rep. or attr. in file)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
@@ -1010,6 +1010,10 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
         evap_time_evaluate,evap_time_total,exp_tau,seqdata.params.xdt_p2p1_ratio*DT2_power(4));
 end
+
+%% CDT evap tilt
+
+
 %% CDT evap 2
 if ( seqdata.flags.CDT_evap == 1 && seqdata.flags.xdt_evap2stage)
     dispLineStr('Optical evaporation 2',curtime);
@@ -1034,6 +1038,13 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
     
 end
 
+%% CDT evap 2 high field
+
+if (seqdata.flags.xdt_evap2_HF && seqdata.flags.xdt_evap2stage == 0)
+    curtime = dipole_high_field_evap2(curtime);
+end
+
+
 %% Ramp Dipole Back Up
 
 if seqdata.flags.xdt_ramp_power_end 
@@ -1050,11 +1061,6 @@ if seqdata.flags.xdt_ramp_power_end
 curtime = calctime(curtime,dip_rampstart+dip_ramptime+dip_waittime);
 end
 
-%% Stage 2 high field evap
-
-if (seqdata.flags.xdt_evap2_HF && seqdata.flags.xdt_evap2stage == 0)
-    curtime = dipole_high_field_evap2(curtime);
-end
 
 %% AM Modulate Dipole Powers
 % AM modulate the dipole trap powers to measure the trap depth. 

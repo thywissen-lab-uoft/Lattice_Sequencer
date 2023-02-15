@@ -29,21 +29,11 @@ funcs = {@main_settings,@seq_mod_2,@main_sequence};
 
 j2 = sequencer_job(funcs,'DFG TOF',1:3);
 
-%% XDT DFG stats
-
-    function curtime = seq_mod_dfg(curtime)
-        global seqdata;
-    end
-
-funcs = {@main_settings,@seq_mod_dfg,@main_sequence};
-
-% j3 = sequencer_job(funcs,'DFG TOF');
 
 %% add jobs
 
 jh.add(j1);
 jh.add(j2);
-% jh.addJob(j3);
 
 end
 

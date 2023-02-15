@@ -156,29 +156,41 @@ tJobs.Position = [1 hme hpMain.Position(3) hpJobs.Position(4)-(hme+15)];
 % Button to run the cycle
 bRunJob=uicontrol(hpJobs,'style','pushbutton','String','Start Jobs',...
     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
-    'fontweight','bold');
+    'fontweight','bold','callback',@startJobsCB);
 bRunJob.Position(3:4)=[85 20];
 bRunJob.Position(1:2)=[5 5];
 bRunJob.Tooltip='Run the jobs';
 
+    function startJobsCB(~,~)
+        d=guidata(hF);
+        d.JobHandler.start;
+    end
+
 % Button to run the cycle
 bStopJob=uicontrol(hpJobs,'style','pushbutton','String','Stop Jobs',...
     'backgroundcolor',[255	218	107]/255,'FontSize',8,'units','pixels',...
-    'fontweight','bold');
+    'fontweight','bold','callback',@stopJobsCB);
 bStopJob.Position(3:4)=[85 20];
 bStopJob.Position(1:2)=[95 5];
 bStopJob.Tooltip='Stop jobs';
 
+
+    function stopJobsCB(~,~)
+        d=guidata(hF);
+        d.JobHandler.stop;
+    end
+
 % Button to run the cycle
 bClearJob=uicontrol(hpJobs,'style','pushbutton','String','Clear Jobs',...
     'backgroundcolor',[173 216 230]/255,'FontSize',8,'units','pixels',...
-    'fontweight','bold','callback',@clearJobCB);
+    'fontweight','bold','callback',@clearJobsCB);
 bClearJob.Position(3:4)=[85 20];
 bClearJob.Position(1:2)=[185 5];
 bClearJob.Tooltip='Clear jobs';
 
     function clearJobsCB(~,~)
-        
+        d=guidata(hF);
+        d.JobHandler.clear;
     end
 
 % Checkbox for repeat cycle

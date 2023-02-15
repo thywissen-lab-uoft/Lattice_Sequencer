@@ -3,17 +3,18 @@ classdef sequencer_job < handle
 %
 % This class contains jobs to run on the adwin.  A single job can have
 % multiple scandincides, but only refers to a single set of sequence file.
+% This is essentially a glorified struct
 
 properties        
     SequenceFunctions  
     ScanCyclesRequested  
     ScanCyclesCompleted
     ScanCycle
-    Options   
     JobName
-    ImageSaveDirectory
+    SaveDirName
     ExecutionDates
     Status
+    Analysis
 end    
 events
 
@@ -33,17 +34,26 @@ function obj = sequencer_job(SequenceFunctions,JobName,...
     obj.ScanCyclesCompleted = [];    
     obj.ScanCycle           = [];
     obj.ExecutionDates      = [];
+    obj.SaveDirName         = [];
     obj.Status              = 'pending';
 end    
 
 % function that evaluates upon job completion
-function JobCompleteFcn(obj)        
+function JobCompleteFcn(obj)  
     disp('job done');
+    pause(.5);
 end
 
 % function that evaluates upon cycle completion
 function CycleCompleteFcn(obj)        
     disp('cycle done');
+    pause(.5);
+end
+
+% function that evaluates upon after compitation but before run
+function CycleStartFcn(obj)        
+    disp('Oh wow I am about to run!!');
+    pause(.5);
 end
 
 end

@@ -28,11 +28,11 @@ function obj = job_handler(gui_handle)
 end   
 
 % Run a sequencer_job
-function start(obj,job)    
+function start(obj,job)        
     if ~obj.isIdle
        return; 
-    end        
-    
+    end
+        
     % Find first pending job if none specified
     if nargin == 1
        job = obj.findNextJob;
@@ -69,7 +69,7 @@ function start(obj,job)
     global seqdata
     seqdata.scancycle = job.ScanCycle;
     seqdata.sequence_functions = job.SequenceFunctions;
-    t=runSequence(job.SequenceFunctions);              
+    t=runSequence(job.SequenceFunctions,@job.CycleStartFcn);              
     job.ExecutionDates(end+1) = t;
     
     % Get ready to wait for job to finish
@@ -84,14 +84,19 @@ function JobCompleteFcn(obj)
     obj.updateJobText;
     
     % Run User job funcion
+    obj.SequencerWatcher.StatusStr.String = 'evaluating job end function';
+    obj.SequencerWatcher.StatusStr.ForegroundColor = [220,88,42]/255;
     obj.CurrentJob.JobCompleteFcn;
+    obj.SequencerWatcher.StatusStr.String = 'idle';
+    obj.SequencerWatcher.StatusStr.ForegroundColor = [0 128 0]/255;
     
     % Ending Stuff
     obj.CurrentJob.Status = 'complete';
     obj.CurrentJob = [];
-    
+    obj.updateJobText;
+     
     % Insert check on buttons
-    if obj.doIterate
+    if obj.doIterate && ~isempty(obj.findNextJob)
         obj.start;
     end        
 end
@@ -105,25 +110,31 @@ function CycleCompleteFcn(obj)
     job.ScanCyclesCompleted(end+1) = job.ScanCycle;           
         
     % Execute User function here        
+    obj.SequencerWatcher.StatusStr.String = 'evaluating job end function';
+    obj.SequencerWatcher.StatusStr.ForegroundColor = [220,88,42]/255;
     obj.CurrentJob.Status = 'cycle end';
     obj.updateJobText;
-    job.CycleCompleteFcn;       
-
+    obj.CurrentJob.CycleCompleteFcn;       
+    obj.CurrentJob.Status = 'pending';
+    obj.updateJobText;
+    obj.SequencerWatcher.StatusStr.String = 'idle';
+    obj.SequencerWatcher.StatusStr.ForegroundColor = [0 128 0]/255;
+    
     % Insert check on buttons
     if ~obj.doIterate
-        job.Status='pending';
+        obj.CurrentJob.Status='pending';
         obj.CurrentJob = [];
         obj.updateJobText;
         return;
     end        
-
+    
     % Check if any more runs to do
     cycles_left = setdiff(job.ScanCyclesRequested,...
         job.ScanCyclesCompleted);  
     if isempty(cycles_left) 
         obj.JobCompleteFcn;     % Finish job
     else
-        obj.start(job);        % Continue job
+        obj.start(job);        % Continue job        
     end
 end
 
@@ -201,9 +212,15 @@ function val = isIdle(obj)
                 warning(str);
                 return;
             case 'cycle end'
-                
+                val = 0;
+                str = ['Job ' num2str(kk) ' is cycle end function'];
+                warning(str);
+                return;
             case 'job end'
-                
+                val = 0;
+                str = ['Job ' num2str(kk) ' is job end function'];
+                warning(str);
+                return;
             otherwise
                 error('unknown status');
         end  
@@ -212,6 +229,7 @@ end
 
 % Find next job that is pending
 function job = findNextJob(obj)
+    job = [];
    for kk=1:length(obj.SequencerJobs)
        if isequal(obj.SequencerJobs{kk}.Status,'pending')
             job = obj.SequencerJobs{kk};

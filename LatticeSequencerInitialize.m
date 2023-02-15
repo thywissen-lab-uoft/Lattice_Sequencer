@@ -32,6 +32,9 @@ addpath(fullfile(curpath,'Main Functions','AMO Functions'));
 addpath(fullfile(curpath,'Main Functions','User Interfacing'));
 addpath(fullfile(curpath,'Main Functions','Calibrations'));
 
+
+addpath(fullfile(curpath,'Jobs'));
+
 addpath(fullfile(curpath,'GUI'));
 addpath(fullfile(curpath,'GUI','images'));
 

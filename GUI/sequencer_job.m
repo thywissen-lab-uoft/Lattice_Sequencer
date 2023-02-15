@@ -9,6 +9,11 @@ classdef sequencer_job < handle
 % user functions. CycleStartFcn, CycleCompleteFcn, JobCompleteFcn.  These
 % functions are particularly useful if you want to do feedback on the
 % machine after each run or set of runs.
+%
+% Because only one sequence may be run at a time, sequencer_jobs may only
+% be excuted from an instance of the job_handler class.
+%
+% See also JOB_HANDLER, MAINGUI
 properties        
     SequenceFunctions       % cell arary of sequence functions to evaluate
     ScanCyclesRequested     % array of scan cycle indices to run

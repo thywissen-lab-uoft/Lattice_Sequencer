@@ -14,7 +14,7 @@ classdef job_handler < handle
 % You can run this code from the GUI or from the command line with
 % functions such as jh.start, jh.add(job), jh.clear(job), jh.stop.
 %
-%   See also START, ADD, CLEAR, STOP
+%   See also START, ADD, CLEAR, STOP, MAINGUI, SEQUENCER_JOB
 properties        
     CurrentJob          % current active sequencer job
     SequencerJobs       % array of sequencer jobs to run
@@ -91,8 +91,10 @@ function start(obj,job)
     obj.doIterate   = true;
 end
 
-% To evalulate upon a job complete
 function JobCompleteFcn(obj)
+% Evaluates at the end of the job. This handles graphical calls and also
+% excutes any user defind functions in the sequencer_job
+
     obj.CurrentJob.Status = 'job end';
     obj.updateJobText;
     
@@ -114,8 +116,10 @@ function JobCompleteFcn(obj)
     end        
 end
 
-% function that evaluates upon cycle completion
-function CycleCompleteFcn(obj)        
+function CycleCompleteFcn(obj)    
+% Evaluates at the end of the cycle. This handles graphical calls and also
+% excutes any user defind functions in the sequencer_job
+
     delete(obj.ListenerCycle);      % delete listerner   
     job = obj.CurrentJob;           % get the current job
 

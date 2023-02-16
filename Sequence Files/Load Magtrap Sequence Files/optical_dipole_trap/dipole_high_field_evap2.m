@@ -8,6 +8,7 @@ curtime = timein;
 seqdata.flags.xdt_evap2_HF_repulsive    = 1;
 seqdata.flags.xdt_evap2_HF_attractive   = 0;
 seqdata.flags.ramp_back_LF              = 1;
+do_75_transfer                          = 0;
 
 % rampfieldreulsive = 0;
 % rampfiledattractive = 1;
@@ -120,7 +121,11 @@ curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields t
     Tau_List = [3.5];%[5];
     exp_tau_frac = getScanParameter(Tau_List,seqdata.scancycle,...
         seqdata.randcyclelist,'Evap_Tau_frac2');
-    evap_time_total = 25*1e3; %this should be changed
+    
+    defVar('Vary_HF_Tau_dummy',[25]*1e3,'ms');
+    evap_time_total = getVar('Vary_HF_Tau_dummy');
+%     evap_time_total = 25*1e3; %this should be changed
+    
     exp_tau=evap_time_total/exp_tau_frac;
 
 %     % Ramp down the optical powers
@@ -130,9 +135,52 @@ curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields t
 curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
         evap_time_2,evap_time_2,exp_tau,pend);
+    
+   
+    %% RF transfer 7 to 5 at high field
+    
+    if do_75_transfer
         
+        % Get the Feshbach field
+        Bfesh  = getChannelValue(seqdata,'FB Current',1);   
+        % Get the shim field
+        Bzshim = (getChannelValue(seqdata,'Z Shim',1) - ...
+            seqdata.params.shim_zero(3))*2.35;
         
-        
+        % Caclulate the total field
+        B = Bfesh + Bzshim + 0.11;
+
+        % Calculate RF Frequency for desired transitions
+        mF1=-7/2;mF2=-5/2;   
+        rf_list =  [0] +...
+            abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
+        sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'rf_freq_HF_evap','MHz');
+
+        % Define the RF sweep parameters
+        sweep_pars.power =  [0];
+        delta_freq = 0.5; 0.025;0.1;
+        sweep_pars.delta_freq = delta_freq;
+        rf_pulse_length_list = [5];50;5;20;
+        sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length_HFevap','ms');  % also is sweep length  0.5               
+
+        disp([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
+        disp([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
+        disp([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
+        disp([' RF Power        (V) : ' num2str(sweep_pars.power)]);
+
+    % Do the RF Sweep
+curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
+         
+    end
+    %% Wait time
+    %Hold at high field for some additional time after evap and spin flips
+    defVar('HF_evap_wait',[0],'ms');
+    HF_evap_wait = getVar('HF_evap_wait');
+    curtime = calctime(curtime,HF_evap_wait);
+    
+   %% Ramp back down to low field     
     if seqdata.flags.ramp_back_LF
         
         %%%%%%%%%% RAMP FIELDS TO LOW FIELD CONFIGURATION %%%%%%%%%%%

@@ -31,8 +31,8 @@ exp_end_pwr = getScanParameter(Evap_End_Power_List,...
 seqdata.flags.xdt_ramp2sympathetic      = 1;  
 
 
-seqdata.flags.xdt_evap2stage            = 1; %Perform K evap at low field
-seqdata.flags.xdt_evap2_HF              = 0; %Perform K evap at high field (set rep. or attr. in file)
+seqdata.flags.xdt_evap2stage            = 0; %Perform K evap at low field
+seqdata.flags.xdt_evap2_HF              = 1; %Perform K evap at high field (set rep. or attr. in file)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
@@ -1049,8 +1049,8 @@ end
 
 if seqdata.flags.xdt_ramp_power_end 
     dispLineStr('Ramping XDT Power Back Up',curtime);    
-    dip_1 = .15; %1.5
-    dip_2 = .15; %1.5
+    dip_1 = .1; %1.5
+    dip_2 = .1; %1.5
     dip_ramptime = 1000; %1000
     dip_rampstart = 0;
     dip_waittime = 500;

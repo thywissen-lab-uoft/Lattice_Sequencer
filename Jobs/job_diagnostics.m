@@ -13,7 +13,7 @@ function J=job_diagnostics
 npt=struct;
 npt.SequenceFunctions   = {@main_settings,@seq_mod_1,@main_sequence};
 npt.JobName             = 'K RF1B stats';
-npt.ScanCyclesRequested = [1:10];
+npt.ScanCyclesRequested = [1:2];
 npt.SaveDirName         = 'K RF1B stats';
 
 j1 = sequencer_job(npt);
@@ -44,7 +44,7 @@ j2 = sequencer_job(npt);
 npt=struct;
 npt.SequenceFunctions   = {@main_settings,@seq_mod_3,@main_sequence};
 npt.JobName             = 'LF DFG stats';
-npt.ScanCyclesRequested = [1:20];
+npt.ScanCyclesRequested = [1:10];
 npt.SaveDirName         = 'LF DFG stats';
 
 j3 = sequencer_job(npt);

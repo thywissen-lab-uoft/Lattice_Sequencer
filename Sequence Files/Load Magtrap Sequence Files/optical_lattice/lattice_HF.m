@@ -24,7 +24,7 @@ curtime = timein;
 
     % Initialization of Field And Lattice
     lattice_ramp_1                    = 0;       % Initial lattice ramp    
-    field_ramp_init                   = 1;       % Ramp field away from initial  
+    field_ramp_init                   = 0;       % Ramp field away from initial  
     
     % Initial Spectroscopy 
     do_raman_phantom                  = 0;       % Apply a phatom Raman pulse to kill atoms
@@ -39,15 +39,16 @@ curtime = timein;
     raman_short_sweep                 = 0;
     
     spin_flip_7_5                     = 0;       % 75 spectroscpoy/flip
+    spin_flip_7_5_wide                = 0;
     
     % Field and Lattice Ramp
-    field_ramp_2                      = 0;       % ramp field after raman before rf spectroscopy   
+    field_ramp_2                      = 1;       % ramp field after raman before rf spectroscopy   
     lattice_ramp_3                    = 0;       % between raman and rf spectroscopy
     
     % More RF Stuff (?)
     rf_rabi_manual                    = 0;
     doPA_pulse                        = 0;
-    do_rf_spectroscopy                = 1; 
+    do_rf_spectroscopy                = 0; 
     do_rf_post_spectroscopy           = 0; 
         
     do_raman_spectroscopy_post_rf     = 0;        % Raman Spectroscopy
@@ -101,7 +102,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
 
         
         % Feshbach Field ramp
-        HF_FeshValue_Initial_List = [200]; [197];
+        HF_FeshValue_Initial_List = [197]; [197];
         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_Lattice','G');
 %         
@@ -679,11 +680,47 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4:
 
     end
     
+    %% Wide 75 spin transfer
+    if spin_flip_7_5_wide
+        
+        % Get the Feshbach field
+        Bfesh   = getChannelValue(seqdata,'FB Current',1);   
+        % Get the shim field
+        Bzshim = (getChannelValue(seqdata,'Z Shim',1) - ...
+            seqdata.params.shim_zero(3))*2.35;
+        % Caclulate the total field
+        B = Bfesh + Bzshim + 0.11;
+
+        % Calculate RF Frequency for desired transitions
+        mF1=-7/2;mF2=-5/2;   
+        rf_list =  [0] +...
+            abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
+        sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'rf_freq_HF','MHz');
+
+        % Define the RF sweep parameters
+        sweep_pars.power =  [0];
+        delta_freq = 0.5; 0.025;0.1;
+        sweep_pars.delta_freq = delta_freq;
+        rf_pulse_length_list = [5];50;5;20;
+        sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length','ms');  % also is sweep length  0.5               
+
+        disp([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
+        disp([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
+        disp([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
+        disp([' RF Power        (V) : ' num2str(sweep_pars.power)]);
+
+        % Do the RF Sweep
+curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
+
+    end
+    
 %% Feshbach field ramp Another     
     
     if field_ramp_2
         clear('ramp');
-        HF_FeshValue_Spectroscopy_List =[204];
+        HF_FeshValue_Spectroscopy_List =195;[195:1:209];
         HF_FeshValue_Spectroscopy = getScanParameter(HF_FeshValue_Spectroscopy_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Spectroscopy','G');           
 %         

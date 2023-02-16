@@ -49,11 +49,24 @@ curtime = calctime(curtime,20);
     % Switch uWave source to the K sources (0: K, 1: Rb);
     setDigitalChannel(calctime(curtime,-19),'K/Rb uWave Transfer',0);
 
-    % RF Switch for K SRS depreciated?
+    % Switch to send SRS to uWave
     setDigitalChannel(calctime(curtime,-19),'K uWave Source',1);      
     
-    % Set the SRS source (SRS B);
-    setDigitalChannel(calctime(curtime,-19),'SRS Source',1);  
+    % Select SRS To use
+    % GPIB 30, GPIB 29, GPIB 28
+    switch settings.GPIB
+        case 30
+            setDigitalChannel(calctime(curtime,-19),'SRS Source',1);  
+        case 29
+            setDigitalChannel(calctime(curtime,-19),'SRS Source',0);  
+            setDigitalChannel(calctime(curtime,-19),'SRS Source post spec',1);  
+        case 28
+            setDigitalChannel(calctime(curtime,-19),'SRS Source',0);  
+            setDigitalChannel(calctime(curtime,-19),'SRS Source post spec',0);          
+        otherwise
+            error('Dont know how to configure GPIB swtiches');
+    end
+    
     
     % Set initial modulation (in case of frequency sweep)
     setAnalogChannel(calctime(curtime,-20),'uWave FM/AM',-1);    

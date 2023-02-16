@@ -73,17 +73,20 @@ time_in_HF_imaging = curtime;
 
 seqdata.flags.xdt_hf_ramp_QP_gradient_cancel = 0;   % Ramp QP coils for levitation  
 seqdata.flags.xdt_hf_ramp_field_1            = 0;   % Ramp to HF
-seqdata.flags.xdt_hf_ramp_QP_and_FB          = 1;   % Ramp FB and QP coils together
+seqdata.flags.xdt_hf_ramp_QP_and_FB          = 0;   % Ramp FB and QP coils together
 
 seqdata.flags.xdt_hf_mix_7_9                 = 0;   % Mix 79 at HF
 seqdata.flags.xdt_hf_79_spec                 = 0;   % 79 Spec
 
+seqdata.flags.xdt_hf_uwave_spec              = 0;
+
 seqdata.flags.xdt_hf_CDT_evap_2_high_field  = 0;   % HF evaporation
-seqdata.flags.xdt_hf_crossFBUp              = 1;   % Cross 97 Resonance (w 75 flips)
+seqdata.flags.xdt_hf_crossFBUp              = 0;   % Cross 97 Resonance (w 75 flips)
 
 flip_7_5                                    = 0;   % 7 to 5 to avoid fesbach
 ramp_field_2                                = 0;   % Ramp above feshbach (attractive)
 flip_7_5_again                              = 0;   % 5 to 7 for science mixture
+rampToLowField2                             = 0;
 
 seqdata.flags.xdt_hf_ramp_field_3           = 0;    % Ramp field 
 seqdata.flags.xdt_hf_79_spec2               = 0;    % 79 Spec
@@ -91,11 +94,11 @@ seqdata.flags.xdt_hf_PA                     = 0;    % PA pulse
 
 % Ramp field to imaging field
 seqdata.flags.xdt_hf_ramp_field_for_imaging_attractive  = 0;
-seqdata.flags.xdt_hf_ramp_field_for_imaging_repulsive  = 0;
-seqdata.flags.xdt_hf_ramp_QP_gradient_cancel_imaging = 0;
+seqdata.flags.xdt_hf_ramp_field_for_imaging_repulsive  = 1;
+seqdata.flags.xdt_hf_ramp_QP_gradient_cancel_imaging = 1;
 
 % Ramp Down across reosnance (and also to 20G)
-seqdata.flags.xdt_hf_crossFBDown               = 1; 
+seqdata.flags.xdt_hf_crossFBDown               = 0; 
 %% QP Coil Gradient Cancel
 % Ramp the QP gradient up to levitate
 
@@ -388,7 +391,61 @@ do_ACync_rf = 0;
         setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
     end
 end
+%%
+if seqdata.flags.xdt_hf_uwave_spec    
+    dispLineStr('uWave_K_Spectroscopy',curtime);
+    
+    % Get the Feshbach field
+    Bfesh   = getChannelValue(seqdata,'FB Current',1);   
+    % Get the shim field
+    Bzshim = (getChannelValue(seqdata,'Z Shim',1) - ...
+        seqdata.params.shim_zero(3))*2.35;
+    % Caclulate the total field
+    B = Bfesh + Bzshim + 0.11;
+    
+    % Which |F,mF> states you wish to manipulate
+    F1 = 9/2;mF1=-7/2;
+    F2 = 7/2;mF2=-7/2;
+    
+    % Center Frequency
+    f0 = abs((BreitRabiK(B,F1,mF1) - BreitRabiK(B,F2,mF2))/6.6260755e-34/1E6);       
 
+    % Frequency Shift
+    defVar('xdt_hf_uwave_shift',0,'kHz');
+    
+    % Total frquency
+    defVar('xdt_hf_uwave_freq',f0+1e-3*getVar('xdt_hf_uwave_shift'),'MHz');
+
+    % Frequency sweep size
+    defVar('xdt_hf_uwave_delta_freq',50,'kHz');
+        
+    % Pulse Time
+    defVar('xdt_hf_uwave_pulse_time',5,'ms');
+    
+    % Power
+    defVar('xdt_hf_uwave_power',15,'dBm');
+
+    % Spetroscopy parameters
+    spec_pars = struct;
+    spec_pars.Mode='sweep_frequency_chirp';
+    spec_pars.use_ACSync = 0;
+    spec_pars.PulseTime = getVar('xdt_hf_uwave_pulse_time');
+    
+    spec_pars.FREQ = getVar('xdt_hf_uwave_freq');               % Center in MHz
+    spec_pars.FDEV = getVar('xdt_hf_uwave_delta_freq')/2/1000;  % Amplitude in MHz
+    spec_pars.AMPR = getVar('xdt_hf_uwave_power');              % Power in dBm
+    spec_pars.ENBR = 1;                                         % Enable N Type
+    spec_pars.GPIB = 29;                                        % SRS GPIB Address    
+    
+    % Do you sweep back after a variable hold time?
+    spec_pars.doSweepBack = 1;
+    uwave_hold_time_list = [1];
+    uwave_hold_time  = getScanParameter(uwave_hold_time_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'hold_time','ms');     
+    spec_pars.HoldTime = uwave_hold_time;
+        
+    curtime = K_uWave_Spectroscopy(curtime,spec_pars);    
+end
 %% Two Stage High Field Evaporation
 
 % This evaporates at high field from the initial evaporation
@@ -611,7 +668,7 @@ if ramp_field_2
     addOutputParam('xdt_hf_zshim_2',BzShim,'G')
 
     % Feshbach Coil Value
-    fesh_list = [209];
+    fesh_list = [195];
     fesh = getScanParameter(fesh_list,...
         seqdata.scancycle,seqdata.randcyclelist,'xdt_hf_fesh_2','G');
         
@@ -687,7 +744,8 @@ if flip_7_5_again
 
 
     curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
-    doItAgain = 1;
+    
+    doItAgain = 0;
     if doItAgain
         curtime = calctime(curtime,10);
         curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
@@ -710,7 +768,7 @@ end
 if seqdata.flags.xdt_hf_ramp_field_3
 
     clear('ramp');
-    HF_FeshValue_List = 207;[200]; %+3G from zshim
+    HF_FeshValue_List = 210;[200]; %+3G from zshim
     HF_FeshValue = getScanParameter(HF_FeshValue_List,...
         seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_ODT_3','G');           
 
@@ -984,7 +1042,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
    %% Ramp up the QP gradient for imaging
    if seqdata.flags.xdt_hf_ramp_QP_gradient_cancel_imaging
         % QP Value to ramp to
-        HF_QP_List =[0.117];0.115;
+        HF_QP_List =0;[0.117];0.115;
         HF_QP = getScanParameter(HF_QP_List,seqdata.scancycle,...
         seqdata.randcyclelist,'HF_QPReverse_imaging','V');  
     
@@ -1186,7 +1244,60 @@ curtime = calctime(curtime,dip_rampstart+dip_ramptime+dip_waittime);
     end
 end
   
-   
+    %% Wait time
+    %Hold at high field for some additional time after evap and spin flips
+    defVar('HF_evap_wait2',[0],'ms');
+    HF_evap_wait = getVar('HF_evap_wait2');
+    curtime = calctime(curtime,HF_evap_wait);
+    
+   %% Ramp back to low field
+
+    if rampToLowField2
+        fesh_list = 20;
+        fesh = getScanParameter(fesh_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'fesh_low','G');           
+
+        zshim_list = [0]/2.35;
+        zshim = getScanParameter(zshim_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'zshim_low','V');
+        
+        ramp_time_all = 100;
+        
+        % Define the ramp structure
+        ramp=struct;
+        ramp.shim_ramptime = ramp_time_all;50;
+        ramp.shim_ramp_delay = 0; % ramp earlier than FB field if needed
+        ramp.xshim_final = seqdata.params.shim_zero(1); 
+        ramp.yshim_final = seqdata.params.shim_zero(2);
+        ramp.zshim_final = seqdata.params.shim_zero(3)+zshim;
+        % FB coil 
+        ramp.fesh_ramptime = ramp_time_all;50;
+        ramp.fesh_ramp_delay = 0;
+        ramp.fesh_final = fesh;
+        ramp.settling_time = 50; 
+             
+        %Ramp QP down
+        qp_ramp_down_time = ramp_time_all;50;
+        AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_down_time,qp_ramp_down_time,0,1); 
+        %Ramp FB down 
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain 
+
+curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+                 5,5,0); 
+        % Go back to "normal" configuration
+        curtime = calctime(curtime,10);
+        % Turn off reverse QP switch
+        setDigitalChannel(curtime,'Reverse QP Switch',0);
+        curtime = calctime(curtime,10);
+
+        % Turn on 15/16 switch
+        setDigitalChannel(curtime,'15/16 Switch',1);
+
+    end
+    
+
  %% Ending operation
 
  HF5_wait_time_list = [35];

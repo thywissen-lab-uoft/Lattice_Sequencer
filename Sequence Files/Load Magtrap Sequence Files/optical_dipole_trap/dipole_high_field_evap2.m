@@ -22,7 +22,8 @@ do_75_transfer                          = 0;
 
 %% HF evap on repulsive side
 
-if (seqdata.flags.xdt_evap2_HF_repulsive == 1 && seqdata.flags.xdt_evap2_HF_attractive == 0)% ramp fields up
+if (seqdata.flags.xdt_evap2_HF_repulsive == 1 && ...
+        seqdata.flags.xdt_evap2_HF_attractive == 0)% ramp fields up
 
     %%%%%%%% Set parameters for QP+FB field ramps %%%%%%
     ramp_time_all_list = [100];
@@ -701,4 +702,4 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
 
 end
 
-
+end

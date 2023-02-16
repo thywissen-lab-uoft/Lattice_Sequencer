@@ -1053,8 +1053,8 @@ end
 
 if seqdata.flags.xdt_ramp_power_end 
     dispLineStr('Ramping XDT Power Back Up',curtime);    
-    dip_1 = .1; %1.5
-    dip_2 = .1; %1.5
+    dip_1 = .15; %1.5
+    dip_2 = .15; %1.5
     dip_ramptime = 1000; %1000
     dip_rampstart = 0;
     dip_waittime = 500;

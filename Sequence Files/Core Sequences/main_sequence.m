@@ -206,6 +206,12 @@ end
 
 if seqdata.flags.MOT_prepare_for_MT
     dispLineStr('Preparing MOT for MT',curtime);   
+    
+    % If not a fluoresence image take a picture of the MOT here
+    if seqdata.flags.image_type ~= 1    
+        DigitalPulse(calctime(curtime,-10),'Mot Camera Trigger',1,1);
+    end
+
 
     curtime = Prepare_MOT_for_MagTrap(curtime);
 

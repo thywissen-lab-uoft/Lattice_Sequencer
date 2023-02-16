@@ -31,9 +31,6 @@ exp_end_pwr = getScanParameter(Evap_End_Power_List,...
 seqdata.flags.xdt_ramp2sympathetic      = 1;  
 
 
-seqdata.flags.xdt_evap2stage            = 0; %Perform K evap at low field
-seqdata.flags.xdt_evap2_HF              = 1; %Perform K evap at high field (set rep. or attr. in file)
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -958,6 +955,8 @@ if seqdata.flags.xdt_levitate_evap
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,LF_QP,1); 
 end
 %% Preramp
+% Ramp the optical powers to their sympathetic values
+
 if seqdata.flags.CDT_evap ==1 && seqdata.flags.xdt_ramp2sympathetic
     % Pre ramp powers to sympathtetic cooling regime
     dispLineStr('Ramp to sympathetic regime',curtime);
@@ -980,6 +979,8 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         dipole_preramp_time,dipole_preramp_time,DT2_power(3));
 end
 %% CDT evap
+% Perform the first stage of optical evaporation
+
 if ( seqdata.flags.CDT_evap == 1 )
     dispLineStr('Optical evaporation 1',curtime);
 
@@ -1011,10 +1012,12 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         evap_time_evaluate,evap_time_total,exp_tau,seqdata.params.xdt_p2p1_ratio*DT2_power(4));
 end
 
-%% CDT evap tilt
-
+%% Ramp Dipole Back Up
+% Compress XDT after Stage 1 Optical Evaporation
 
 %% CDT evap 2
+% Stage 2 (K only) optical evaporation at low field
+
 if ( seqdata.flags.CDT_evap == 1 && seqdata.flags.xdt_evap2stage)
     dispLineStr('Optical evaporation 2',curtime);
     
@@ -1039,13 +1042,14 @@ curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
 end
 
 %% CDT evap 2 high field
+% Stage 2 (K only) optical evaporation at low field
 
 if (seqdata.flags.xdt_evap2_HF && seqdata.flags.xdt_evap2stage == 0)
     curtime = dipole_high_field_evap2(curtime);
 end
 
-
 %% Ramp Dipole Back Up
+% Compress XDT after Stage 2 optical evaporation
 
 if seqdata.flags.xdt_ramp_power_end 
     dispLineStr('Ramping XDT Power Back Up',curtime);    

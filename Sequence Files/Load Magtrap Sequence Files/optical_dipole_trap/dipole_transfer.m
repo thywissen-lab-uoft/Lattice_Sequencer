@@ -17,13 +17,13 @@ ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 %%%%%%%%%%%%%%%%%%%%%%%%%% 
 seqdata.flags.xdt_ramp_FB_before_evap   = 0; % Ramp up feshbach before evaporation
 seqdata.flags.xdt_levitate_evap         = 0; % Apply levitation gradient
-seqdata.flags.xdt_tilt_evap             = 1; % Apply tilt gradient
+seqdata.flags.xdt_tilt_evap             = 0; % Apply tilt gradient
 seqdata.flags.xdt_unlevitate_evap       = 0; % Unclear what this is for
 
 % Dipole trap asymmetry (useful for making a symmetric trap for lattice + QGM)
 seqdata.params.xdt_p2p1_ratio           = 1; % ratio of ODT2:ODT1 power
 
-Evap_End_Power_List = [.12];
+Evap_End_Power_List = [0.12];[.12];
 
 % Ending optical evaporation
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...
@@ -924,7 +924,7 @@ end
 
 if seqdata.flags.xdt_levitate_evap
     % QP Value to ramp to
-    LF_QP_List =  [.3];.14;0.115;
+    LF_QP_List =  [0];.14;0.115;
     LF_QP = getScanParameter(LF_QP_List,seqdata.scancycle,...
     seqdata.randcyclelist,'LF_QPReverse','V');  
 
@@ -962,6 +962,7 @@ end
 % Has not been shown to work
 
 if seqdata.flags.xdt_tilt_evap
+    
     % QP Value to ramp to
     LF_QP_List =  [0];.14;0.115;
     LF_QP_initial = getScanParameter(LF_QP_List,seqdata.scancycle,...
@@ -976,10 +977,8 @@ if seqdata.flags.xdt_tilt_evap
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
         100,100,QP_FFValue);
     curtime = calctime(curtime,50);
-    
-    
 
-    qp_ramp_time = 200;
+    qp_ramp_time = 100;
     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 16',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,LF_QP_initial,1); 
 end
@@ -1033,10 +1032,10 @@ if ( seqdata.flags.CDT_evap == 1 )
     end
 
     if seqdata.flags.xdt_tilt_evap 
-        defVar('qp_ramp_time_KRb',evap_time_total,'ms');
+        defVar('qp_ramp_time_KRb',evap_time_evaluate,'ms');
         QP_ramp_time = getVar('qp_ramp_time_KRb');
 
-        defVar('LF_QP_final',[0.25],'V');
+        defVar('LF_QP_final',[0.2],'V');
         QP_end = getVar('LF_QP_final');
 
         % Ramp transport supply voltage
@@ -1112,9 +1111,6 @@ if seqdata.flags.xdt_tilt_evap
     curtime = calctime(curtime,50); 
 end
 
-
-
-=======
 %% Ramp Dipole Back Up
 % Compress XDT after Stage 1 Optical Evaporation
 

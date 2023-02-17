@@ -236,8 +236,8 @@ seqdata.flags.xdt_kill_Rb_after_evap        = 0;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_after_evap        = 0;    % optical remove 7/2 K after (untested)
 
 % XDT High Field Experiments
-seqdata.flags.xdt_evap2stage                = 0; %Perform K evap at low field
-seqdata.flags.xdt_evap2_HF                  = 1; %Perform K evap at high field (set rep. or attr. in file)
+seqdata.flags.xdt_evap2stage                = 1; %Perform K evap at low field
+seqdata.flags.xdt_evap2_HF                  = 0; %Perform K evap at high field (set rep. or attr. in file)
 seqdata.flags.xdt_high_field_a              = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

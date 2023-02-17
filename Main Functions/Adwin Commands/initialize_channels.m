@@ -187,12 +187,11 @@ end
     seqdata.analogchannels(1).minvoltage = -1;
     seqdata.analogchannels(1).maxvoltage = 10;
     seqdata.analogchannels(1).defaultvoltagefunc = 2;
-%     seqdata.analogchannels(1).resetvalue = [0,1];
-    %seqdata.analogchannels(1).voltagefunc{2} = @(a)(a*0.10455+0.08714);
-    %seqdata.analogchannels(1).voltagefunc{2} = @(a)(a*0.1+0.1); %old sensor
+
     seqdata.analogchannels(1).voltagefunc{2} = @(a)(a*0.125+0.1125); %with FW Bell sensor %0.1125 instead of 0.1 July 06, 2018
-     %seqdata.analogchannels(1).voltagefunc{2} = @(a)(-a*0.0095+0);
-     %seqdata.analogchannels(1).voltagefunc{2} = @(a)(a*0.101+0.0926);
+    seqdata.analogchannels(1).voltagefunc{3} = @(A) (A/7.892)+0.09533; % current (in A) to voltage 2013/02/16; multimeter
+    seqdata.analogchannels(1).voltagefunc{4} = @(G) seqdata.analogchannels(1).voltagefunc{3}(G/51.2); % gradient (in G/cm) to V
+
           
     %channel 2 Rb repump
     seqdata.analogchannels(2).name = 'Rb Repump AM';
@@ -400,14 +399,11 @@ end
     seqdata.analogchannels(21).minvoltage = -10;
     seqdata.analogchannels(21).maxvoltage = 10;
     seqdata.analogchannels(21).defaultvoltagefunc = 2;
-    %seqdata.analogchannels(21).voltagefunc{2} = @(a)(a*0.09107+0.13497*sign(a));
-    %seqdata.analogchannels(21).voltagefunc{2} = @(a)(a*0.1+0.1*sign(a));
-    %seqdata.analogchannels(21).voltagefunc{2} = @(a)(a*0.01+0);
-    %seqdata.analogchannels(21).voltagefunc{2} = @(a)(a*0.1039+0.1243*sign(a));
-     %seqdata.analogchannels(21).voltagefunc{2} =@(a)((a>0).*(a*0.10287+0.0921)+(a<=0).*(a*0.10509-0.10776));
-    %seqdata.analogchannels(21).voltagefunc{2} =@(a)((a>0).*(a*0.10+0.1 )+(a<=0).*(a*0.10-0.10)); %old sensor
+
     seqdata.analogchannels(21).voltagefunc{2} =@(a)((a>0).*(a*0.1234+0.06)+(a<=0).*(a*0.10-0.10));
-       
+    seqdata.analogchannels(21).voltagefunc{3} =@(A) (A/7.699)+0.07747; % current (in A) to voltage 2013/02/16; multimeter
+    seqdata.analogchannels(21).voltagefunc{4} =@(G) seqdata.analogchannels(21).voltagefunc{3}(G/51.2); % gradient (in G/cm) to V
+
     %channel 22 (1st vert--12a)
     seqdata.analogchannels(22).name = 'Coil 12a';
     seqdata.analogchannels(22).minvoltage = -1;

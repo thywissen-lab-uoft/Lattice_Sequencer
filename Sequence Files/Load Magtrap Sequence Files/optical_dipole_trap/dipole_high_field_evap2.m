@@ -77,8 +77,9 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
     %Wait a bit
     curtime = calctime(curtime,50);
 
-    % Turn off 15/16 switch
+    % Turn off 15/16 switch and coil 16 TTL
     setDigitalChannel(curtime,'15/16 Switch',0); 
+    setDigitalChannel(curtime,'Coil 16 TTL',1); 
     curtime = calctime(curtime,10);
 
     % Turn on reverse QP switch

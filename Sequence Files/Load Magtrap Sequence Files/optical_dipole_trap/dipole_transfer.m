@@ -79,8 +79,7 @@ Time_List =  [25]*1e3; 18;% [15000] for normal experiment
 evap_time_total = getScanParameter(Time_List,seqdata.scancycle,...
     seqdata.randcyclelist,'evap_time','ms');   
 
-% If you want to do a partial evaporation in time
-doPartialEvap = 0;
+
 
 % Exponetial time factor
 Tau_List = [3.5];%[5];
@@ -913,7 +912,7 @@ if seqdata.flags.xdt_ramp_FB_before_evap
 end
  
   
-%% Ramp QP for levitation
+%% QP Levitate Initialize
 % During optical evaporation, the maximum power for sympathetic evaporation
 % is limited because the stark shift for K is greater than Rb.  To allow
 % for efficient evaporation at high optical powers, apply a levitation
@@ -924,20 +923,21 @@ end
 
 if seqdata.flags.xdt_levitate_evap
     % QP Value to ramp to
-    LF_QP_List =  [0];.14;0.115;
+    LF_QP_List =  [7];.14;0.115;
     LF_QP = getScanParameter(LF_QP_List,seqdata.scancycle,...
-    seqdata.randcyclelist,'LF_QPReverse','V');  
+    seqdata.randcyclelist,'LF_QPReverse','G/cm');  
 
     % Ramp C16 and C15 to off values
     pre_ramp_time = 100;
     AnalogFuncTo(calctime(curtime,0),'Coil 16',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,-7);    
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0,4);    
     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0.062,1); 
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),pre_ramp_time,pre_ramp_time,0,4); 
 
     curtime = calctime(curtime,50);
-    % Turn off 15/16 switch
+    % Turn off 15/16 switch and coil 16 TTL
     setDigitalChannel(curtime,'15/16 Switch',0); 
+    setDigitalChannel(curtime,'Coil 16 TTL',1); 
     curtime = calctime(curtime,10);
 
     % Turn on reverse QP switch
@@ -946,17 +946,24 @@ if seqdata.flags.xdt_levitate_evap
 
     % Ramp up transport supply voltage
     QP_FFValue = 23*(LF_QP/.125/30); % voltage FF on delta supply
+    QP_FFValue = 1;
     curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
         100,100,QP_FFValue);
+    
     curtime = calctime(curtime,50);
-
     qp_ramp_time = 200;
+
+    AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        qp_ramp_time,qp_ramp_time,3);
+
+    
     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,LF_QP,1); 
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,LF_QP,4); 
 end
 
-%% Ramp QP for tilt evaporation
+%% QP Tilt Initialize
 % Apply a tilt gradient for more efficient KRb sympathetic evaporation
 %
 % Has not been shown to work
@@ -964,23 +971,29 @@ end
 if seqdata.flags.xdt_tilt_evap
     
     % QP Value to ramp to
-    LF_QP_List =  [0];.14;0.115;
-    LF_QP_initial = getScanParameter(LF_QP_List,seqdata.scancycle,...
-    seqdata.randcyclelist,'LF_QP_initial','V');  
+    gradient_list =  [0];
+    gradient_val = getScanParameter(gradient_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'xdt_evap_grad_1','G/cm');  
+
+    % voltage FF on delta supply
+    QP_FFValue = 23*(gradient_val/.125/30);
+    QP_FFValue = 1; % no idea what it should be in terms of G/cm
 
     % Enable Coil 16
     setDigitalChannel(calctime(curtime,0),'Coil 16 TTL',0);
-
-    % Ramp up transport supply voltage
-    QP_FFValue = 23*(LF_QP_initial/.125/30); % voltage FF on delta supply
+    
+    % Ramp the feedforward 
+    ff_ramp_time = 100;
     curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        100,100,QP_FFValue);
+        ff_ramp_time,ff_ramp_time,QP_FFValue);
     curtime = calctime(curtime,50);
 
+    % Ramp the QP coil
     qp_ramp_time = 100;
     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 16',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,LF_QP_initial,1); 
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,...
+        qp_ramp_time,gradient_val,4); 
 end
 %% Preramp
 % Ramp the optical powers to their sympathetic values
@@ -1025,31 +1038,38 @@ if ( seqdata.flags.CDT_evap == 1 )
     
     evap_time_evaluate = evap_time_total;
     
+    % If you want to do a partial evaporation in time
+    doPartialEvap = 1;
     if doPartialEvap
-        evap_time_evaluate_list =  [1]*evap_time_total;
+        evap_time_evaluate_list =  [.6]*evap_time_total;
         evap_time_evaluate = getScanParameter(evap_time_evaluate_list,seqdata.scancycle,...
             seqdata.randcyclelist,'evap_time_evaluate','ms');   
     end
 
-    if seqdata.flags.xdt_tilt_evap 
-        defVar('qp_ramp_time_KRb',evap_time_evaluate,'ms');
-        QP_ramp_time = getVar('qp_ramp_time_KRb');
-
-        defVar('LF_QP_final',[0.2],'V');
-        QP_end = getVar('LF_QP_final');
-
-        % Ramp transport supply voltage
-        QP_FFValue = 23*(QP_end/.125/30); % voltage FF on delta supply
-        curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-            100,100,QP_FFValue);
-        curtime = calctime(curtime,50);
-
-        % Ramp Coil 16 during evap
-        AnalogFuncTo(calctime(curtime,0),'Coil 16',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-            QP_ramp_time,QP_ramp_time,QP_end,1);     
-    end
+%     if seqdata.flags.xdt_tilt_evap 
+%         defVar('qp_ramp_time_KRb',evap_time_evaluate,'ms');
+%         QP_ramp_time = getVar('qp_ramp_time_KRb');
+% 
+%         defVar('LF_QP_final',[0],'G/cm');
+%         QP_end = getVar('LF_QP_final');
+% 
+%         % Ramp transport supply voltage
+%         QP_FFValue = 23*(QP_end/.125/30); % voltage FF on delta supply
+%         curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+%             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+%             100,100,QP_FFValue);
+%         curtime = calctime(curtime,50);
+% 
+%         % Ramp Coil 16 during evap (linear)
+%         AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+%             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+%             QP_ramp_time,QP_ramp_time,QP_end,4); 
+%         
+%          % Ramp Coil 16 during evap (exponential)
+% %         AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+% %             @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
+% %             QP_ramp_time,QP_ramp_time,exp_tau,QP_end,4);    
+%     end
 
     % Ramp down the optical powers
     AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
@@ -1058,61 +1078,160 @@ if ( seqdata.flags.CDT_evap == 1 )
 curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
         evap_time_evaluate,evap_time_total,exp_tau,seqdata.params.xdt_p2p1_ratio*DT2_power(4));
+    
+    
+    
+%     defVar('op_evap_t2',[6000 9000 10000 11000 12000 13000 14000 15000],'ms');
+%     t2 = getVar('op_evap_t2');
+%         % Ramp down the optical powers
+%     AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+%         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+%         t2,t2,DT1_power(4));  
+% curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+%         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+%         t2,t2,DT2_power(4));     
+    
 end
 
+%% Perform Tilt Evaporation
+% Perform tilt evaporation by ramping up the tilt
+
+if seqdata.flags.xdt_tilt_evap
+    defVar('tilt_evap_time',[16000],'ms');
+    
+    tilt_evap_time = getVar('tilt_evap_time');
+    
+    % QP Value to ramp to
+    gradient_list =  [5];
+    gradient_val = getScanParameter(gradient_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'xdt_evap_grad_2','G/cm');  
+
+    % voltage FF on delta supply
+    QP_FFValue = 23*(gradient_val/.125/30);
+    
+    
+    doPartialEvap = 1;
+    if doPartialEvap
+        t_partial_list =  [1]*tilt_evap_time;
+        t_partial = getScanParameter(t_partial_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'tilt_time_evaluate','ms');   
+    else
+        t_partial = tilt_evap_time;
+    end
+    
+    % Ramp the feedforward in concert with the QP coil
+    AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        t_partial,tilt_evap_time,3);
+
+    % Ramp the QP coil
+    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        t_partial,tilt_evap_time,gradient_val,4);   
+    
+    gradient_final = getChannelValue(seqdata,'Coil 16',1);
+    addOutputParam('xdt_tilt_gradient_end',gradient_final,'W');
+
+    
+    curtime=calctime(curtime,10);
+end
 
 %% Unramp Gradient for levitating evap
 
-if seqdata.flags.xdt_levitate_evap
-    ramp_time_1 = 100;
-    ramp_time_2 = 10;
-    
-    % Ramp off Coil 15
-    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        ramp_time_1,ramp_time_1,0,1);     
-    
-    % Make sure Coil 16 and kitten are low
-    AnalogFuncTo(calctime(curtime,0),'Coil 16',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        ramp_time_2,ramp_time_2,0);  
-    curtime = AnalogFuncTo(calctime(curtime,0),'Kitten',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        ramp_time_2,ramp_time_2,0,1);   
-    
-    % Enable QP mode of current control
-    setDigitalChannel(curtime,'15/16 Switch',1);
-    
-    % Disable Kitten
-    setDigitalChannel(curtime,'Kitten Relay',0);
-    
-    % Disable Transport FF
-    setAnalogChannel(calctime(curtime,0),'Transport FF',0);
-
-    % Wait for relay to switch
-    curtime = calctime(curtime,50); 
-end
+% if seqdata.flags.xdt_levitate_evap
+%     do_lev_tilt = 1;
+%     if do_lev_tilt
+% 
+%         tilt_evap_time = 5000;
+% 
+%         % QP Value to ramp to
+%         gradient_list =  [0];
+%         gradient_val = getScanParameter(gradient_list,seqdata.scancycle,...
+%             seqdata.randcyclelist,'xdt_evap_grad_2','G/cm');  
+% 
+%         % voltage FF on delta supply
+%         QP_FFValue = 23*(gradient_val/.125/30);
+% 
+% 
+%         doPartialEvap = 0;
+%         if doPartialEvap
+%             t_partial_list =  [0:.1:1]*tilt_evap_time;
+%             t_partial = getScanParameter(t_partial_list,seqdata.scancycle,...
+%                 seqdata.randcyclelist,'tilt_time_evaluate','ms');   
+%         else
+%             t_partial = tilt_evap_time;
+%         end
+% 
+% %         % Ramp the feedforward in concert with the QP coil
+% %         AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+% %             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+% %             t_partial,tilt_evap_time,3);
+% 
+%         % Ramp the QP coil
+%         curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+%             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+%             t_partial,tilt_evap_time,gradient_val,4);   
+% 
+%         gradient_final = getChannelValue(seqdata,'Coil 15',1);
+%         addOutputParam('xdt_lev_tilt_gradient_end',gradient_final,'W');
+% 
+% 
+%         curtime=calctime(curtime,10);
+%         
+%     end
+%     
+%     ramp_time_1 = 100;
+%     ramp_time_2 = 10;
+%     
+%     % Ramp off Coil 15
+%     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+%         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+%         ramp_time_1,ramp_time_1,0,1);   
+%     
+%     curtime = calctime(curtime,10); 
+%     
+%     % Make sure Coil 16 and kitten are low
+%     AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+%         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+%         ramp_time_2,ramp_time_2,0,1);  
+%     curtime = AnalogFuncTo(calctime(curtime,0),'Kitten',...
+%         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+%         ramp_time_2,ramp_time_2,0,1);   
+%     
+%     % Enable QP mode of current control
+%     setDigitalChannel(curtime,'15/16 Switch',1);
+%     
+%     % Disable Kitten
+%     setDigitalChannel(curtime,'Kitten Relay',0);
+%     
+%     % Disable Transport FF
+%     setAnalogChannel(calctime(curtime,0),'Transport FF',0);
+% 
+%     % Wait for relay to switch
+%     curtime = calctime(curtime,50); 
+% end
 
 %% Unramp Gradient for tilt evap
 
 if seqdata.flags.xdt_tilt_evap
-    ramp_time_1 = 100;
-    ramp_time_2 = 10;
+    ramp_time_1 = 100;    
+    ramp_time_2 = 30;
     
-    % Ramp off Coil 16
+    % Ramp off Coil 16 to 0 G/cm
     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 16',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        ramp_time_1,ramp_time_1,0,1);     
+        ramp_time_1,ramp_time_1,0,4);     
     
-    % Disable Transport FF
-    setAnalogChannel(calctime(curtime,0),'Transport FF',0);
-
-    % Wait for relay to switch
-    curtime = calctime(curtime,50); 
+    % Ramp of Coil 16 fully to 0V
+    AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        ramp_time_2,ramp_time_2,0,1);         
+    curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        ramp_time_2,ramp_time_2,0);     
+    % Wait a second
+    curtime = calctime(curtime,10);
 end
-
-%% Ramp Dipole Back Up
-% Compress XDT after Stage 1 Optical Evaporation
 
 
 %% CDT evap 2

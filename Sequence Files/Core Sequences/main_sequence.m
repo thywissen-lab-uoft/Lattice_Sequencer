@@ -539,8 +539,8 @@ SelectScopeTrigger(seqdata.scope_trigger);
 timeout = curtime;
 
 % Check if sequence is on for too long
-if (((timeout - timein)*(seqdata.deltat/seqdata.timeunit))>100000)
-    error('Cycle time greater than 100s! Is this correct?')
+if (((timeout - timein)*(seqdata.deltat/seqdata.timeunit))>120000)
+    error('Cycle time greater than 120s! Is this correct?')
 end
 
 %% Order Flags and Fields

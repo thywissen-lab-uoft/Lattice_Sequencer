@@ -2,9 +2,9 @@ function params = Load_Absorption_Image_Parameters()
     global seqdata;
     %% Set imaging detunings
     % Potassium - X-cam
-    kdet_shift_list = [0];%[2];%-1
-    kdet_shift = getScanParameter(kdet_shift_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'kdet_shift','MHz');
+%     kdet_shift_list = [30.5 31.5];%[2];%-1
+%     kdet_shift = getScanParameter(kdet_shift_list,...
+%         seqdata.scancycle,seqdata.randcyclelist,'kdet_shift','MHz');
     params.detunings.K.X.positive.normal = 22.2 ;
     params.detunings.K.X.positive.in_trap = 23.5;
     params.detunings.K.X.positive.QP_imaging = 21.5;
@@ -22,9 +22,10 @@ function params = Load_Absorption_Image_Parameters()
 %     params.detunings.K.X.negative.SG = 35.5+kdet_shift;
 
     
+    
     % Potassium - Y-cam
     params.detunings.K.Y.positive.normal = 21.5;
-    params.detunings.K.Y.negative.normal = 31.5+0;
+    params.detunings.K.Y.negative.normal = 31;
     % Potassium - MOT
     params.detunings.K.MOT.positive.normal = 20.5;
     params.detunings.K.MOT.positive.short_tof = 24.0;

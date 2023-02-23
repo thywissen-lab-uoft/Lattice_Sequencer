@@ -603,7 +603,7 @@ bReset.Callback=@bResetCB;
         
         % Is the sequence already running?        
         if (d.SequencerWatcher.isRunning)
-           warning('The sequencer running you dummy!');
+           warning('The sequencer running you clod!');
            return;
         end        
                 

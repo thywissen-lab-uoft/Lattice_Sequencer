@@ -5,16 +5,15 @@ global seqdata
 %% Zero optical power calibration
 % These voltages are the "zero" lattice levels.  Use these values when
 % ramping up the lattice from totally zero power to smooth out ramps.
-xLattice0_list = -0.835;-0.93;[-0.95];[-0.85];[-1.64];
+xLattice0_list = -0.44;
 xLattice0 = getScanParameter(xLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'xLatt0');
 
-yLattice0_list = -0.61;-0.61;-0.6;-0.58;%-0.955;-1.05;[-1.15];
+yLattice0_list = -0.13;
 yLattice0 = getScanParameter(yLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'yLatt0');
 
-zLattice0_list = -0.43; -0.42;0.35;0.26;0.46;[0.40];0.44;
-zLattice0_list = -0.4;-0.45;0.03;
+zLattice0_list = -0.44;
 zLattice0 = getScanParameter(zLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'zLatt0');  
 % These parameters could be super sensitive to cause spikes and kill atoms
@@ -24,13 +23,21 @@ seqdata.params.lattice_zero = [xLattice0 yLattice0 zLattice0];
 %% Create Lattice Calibration Structure
 latt_calib = struct;
 
-%% X Lattice new
+%% X Lattice
 % X Lattice calibration
-x_p_threshold = 0.24467;
-x_m1 = 48.2126;
-x_b1 = -9.6744;
-x_m2 = 4.0806;
-x_b2 = 1.1235;
+% x_p_threshold = 0.24467;
+% x_m1 = 48.2126;
+% x_b1 = -9.6744;
+% x_m2 = 4.0806;
+% x_b2 = 1.1235;
+% x_ErPerW = 330;372; %12/01/22 = 330
+
+% 2023/03/01
+x_p_threshold = 0.2263;
+x_m1 = 49.434;
+x_b1 = -9.7368;
+x_m2 = 1.377;
+x_b2 = 1.1387;
 x_ErPerW = 330;372; %12/01/22 = 330
 
 x_power2voltage = @(P) (P*x_m1 + x_b1).*(P < x_p_threshold) + ...
@@ -47,15 +54,17 @@ latt_calib(1).m2 = x_m2;
 latt_calib(1).b2 = x_b2;
 latt_calib(1).P_threshold = x_p_threshold;
 
-%% Y Lattice new
-% Y Lattice calibration
-y_p_threshold = 0.213147;
-y_m1 = 54.731069;
-y_b1 = - 9.655506;
-y_m2 = 4.166124;
-y_b2 = 1.122266;
 
-y_ErPerW = 382;
+%% Y Lattice
+% % Y Lattice calibration
+y_p_threshold = 0.1274;
+y_m1 = 86.983;
+y_b1 = - 9.713;
+y_m2 = 2.021;
+y_b2 = 1.11;
+
+% y_ErPerW = 382;
+y_ErPerW = 455; % 2023/03/14
 
 y_power2voltage = @(P) (P*y_m1 + y_b1).*(P < y_p_threshold) + ...
     (P*y_m2 + y_b2).*(P >= y_p_threshold);
@@ -72,11 +81,40 @@ latt_calib(2).m2 = y_m2;
 latt_calib(2).b2 = y_b2;
 latt_calib(2).P_threshold = y_p_threshold;
 
-%% Z Lattice new
-z_power2voltage = @(P) (P*22.724471 - 9.74512).*(P < 0.527164) + ...
-    (P*1.696746 + 1.339949).*(P >= 0.527164);
+%% Y Lattice new
+% % Y Lattice calibration
+% y_p_threshold = 0.213147;
+% y_m1 = 54.731069;
+% y_b1 = - 9.655506;
+% y_m2 = 4.166124;
+% y_b2 = 1.122266;
+% 
+% y_ErPerW = 382;
+% 
+% y_power2voltage = @(P) (P*y_m1 + y_b1).*(P < y_p_threshold) + ...
+%     (P*y_m2 + y_b2).*(P >= y_p_threshold);
+% 
+% yLattice = @(U) y_power2voltage(U/y_ErPerW);
+% 
+% latt_calib(2).Name = 'Y Lattice';
+% latt_calib(2).ErPerW = y_ErPerW;
+% latt_calib(2).power2voltage = @y_power2voltage;
+% latt_calib(2).depth2voltage = @yLattice;
+% latt_calib(2).m1 = y_m1;
+% latt_calib(2).b1 = y_b1;
+% latt_calib(2).m2 = y_m2;
+% latt_calib(2).b2 = y_b2;
+% latt_calib(2).P_threshold = y_p_threshold;
 
-z_ErPerW = 176;193;186; %12/01/22 = 176; %11/14/22 = 193
+%% Z Lattice new
+% z_power2voltage = @(P) (P*22.724471 - 9.74512).*(P < 0.527164) + ...
+%     (P*1.696746 + 1.339949).*(P >= 0.527164); %old
+
+z_power2voltage = @(P) (P*19.372 - 9.7514).*(P < 0.5863) + ...
+    (P*0.71 + 1.1905).*(P >= 0.5863); % 03/01/2023
+
+z_ErPerW = 183; % 2023/03/14
+% z_ErPerW = 176; 12/01/22;
 
 % x_lattice2voltage = @(U) x_power2voltage(U/x_ErPerW); 
 zLattice = @(U) z_power2voltage(U/z_ErPerW);

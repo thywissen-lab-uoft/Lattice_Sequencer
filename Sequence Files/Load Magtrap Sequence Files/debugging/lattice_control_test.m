@@ -13,11 +13,11 @@ curtime = calctime(curtime, 1000);
 wp_Trot1 = 600; % Rotation time during XDT
     
     P_RotWave_I = 0.8;
-    P_RotWave_II = 0.99;
+    P_RotWave_II = .0;
     
     AnalogFunc(calctime(curtime,-100-wp_Trot1),'latticeWaveplate',...
         @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
-        wp_Trot1,wp_Trot1,P_RotWave_I);    
+        wp_Trot1,wp_Trot1,P_RotWave_II);    
 
 scope_trigger =  'lattice control test';'Rampup ODT';
 
@@ -40,12 +40,19 @@ scope_trigger =  'lattice control test';'Rampup ODT';
     setAnalogChannel(calctime(curtime,0),'zLattice',L0(3));
 
     curtime = calctime(curtime,100);
+    
+    %% Ramp Lattice Up raw
+%     tramp = 100;
+% 
+%     AnalogFuncTo(calctime(curtime,0),'yLattice', @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+%         tramp, tramp, 1,1); 
+%     
 %%  Ramp Lattices Up
 
 
-Xdepth = 100;
-Ydepth = 100;
-Zdepth = 100;
+Xdepth = 0;
+Ydepth = 0;
+Zdepth = 0;
 tramp = 100;
 
 
@@ -57,16 +64,16 @@ AnalogFuncTo(calctime(curtime,0),'yLattice', @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,
 curtime = AnalogFuncTo(calctime(curtime,0),'zLattice', @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
     tramp, tramp, Zdepth);
 
-%  % Ramp xLattice to the first value ("0Er")
-%     setAnalogChannel(calctime(curtime,0),'xLattice',L0(1));
-% 
-%     % Ramp yLattice to the first value ("0Er")
-%     setAnalogChannel(calctime(curtime,0),'yLattice',L0(2));
-% 
-%     
-%     % Ramp zLattice to the first value ("0Er")
-%     setAnalogChannel(calctime(curtime,0),'zLattice',L0(3));
-% % setAnalogChannel(calctime(curtime,0),'xLattice',5,1);
+ % Ramp xLattice to the first value ("0Er")
+    setAnalogChannel(calctime(curtime,0),'xLattice',L0(1));
+
+    % Ramp yLattice to the first value ("0Er")
+    setAnalogChannel(calctime(curtime,0),'yLattice',L0(2));
+
+    
+    % Ramp zLattice to the first value ("0Er")
+    setAnalogChannel(calctime(curtime,0),'zLattice',L0(3));
+% setAnalogChannel(calctime(curtime,0),'xLattice',5,1);
 
 %%
 

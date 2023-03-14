@@ -72,7 +72,7 @@ seqdata.digchannels(29).name = 'Kitten Relay';      % Physical relay to use diff
 seqdata.digchannels(30).name = 'K Probe/OP shutter';% 0:OFF, 1:ON
 seqdata.digchannels(31).name = 'fast FB Switch';    % 1 = on (make sure channel 37 is set to -0.5 before opening to avoid current spike, after opening set channel 37 to 0 to have a smooth ramp on from zero)
 seqdata.digchannels(32).name = 'iXon Trigger';
-seqdata.digchannels(33).name = 'Shim Relay';        % 1 = on (MOT Shims)
+seqdata.digchannels(33).name = 'Shim Relay';        % 1 = on (MOT Shims) (BAD CHANNEL? CF 2023/03/13)
 seqdata.digchannels(34).name = 'yLatticeOFF';       % Controls all 3 lattice beams (i.e. Lattice TTL)
 seqdata.digchannels(35).name = 'D1 TTL';            % TTL for the EIT probe AOMs; 1: ON; 0 : OFF
 seqdata.digchannels(36).name = 'EIT Shutter';       % Shutter for EIT probe beam paths

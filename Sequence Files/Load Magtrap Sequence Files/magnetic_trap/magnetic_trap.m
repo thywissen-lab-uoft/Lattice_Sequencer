@@ -65,6 +65,14 @@ if ( seqdata.flags.RF_evap_stages(1) == 1 )
     % Do the RF evaporation
     curtime = do_evap_stage(curtime, fake_sweep, freqs_1, sweep_times_1, ...
         RF_gain_1, hold_time, (seqdata.flags.RF_evap_stages(3) == 0));
+    
+    %Including this I_shim definition or else we can't perform only RF1A
+    % Get the plug shim values
+    I0=seqdata.params.plug_shims;
+    Ix=I0(1);Iy=I0(2);Iz=I0(3);
+    % Record the starting shim values
+    I_shim = [Ix Iy Iz];
+    %%%%
 end
     
 %% RF1A Alternate : Fast RF for transport benchmark

@@ -171,7 +171,7 @@ setAnalogChannel(calctime(curtime,0),'F Pump',9.99);
 
 %Plug beam
 setDigitalChannel(calctime(curtime,0),'Plug Shutter',0); %1: off, 0: on
-setAnalogChannel(calctime(curtime,0),'Plug',2500); % Current in mA
+setAnalogChannel(calctime(curtime,0),'Plug',getVar('plugTA_current')); % Current in mA
 
 %High-field imaging
 setDigitalChannel(calctime(curtime,0),'High Field Shutter',0);
@@ -319,6 +319,7 @@ if (seqdata.flags.lattice_pulse_for_alignment ~= 0)
     curtime = Pulse_Lattice(curtime,...
         seqdata.flags.lattice_pulse_for_alignment);
 end
+
 
 %% Optical Lattice
 

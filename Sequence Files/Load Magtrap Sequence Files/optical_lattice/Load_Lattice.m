@@ -27,7 +27,7 @@ seqdata.params.xdt_p2p1_ratio = 1; %RHYS - Why is this defined here again?
 seqdata.flags.lattice_rotate_waveplate_1 = 1;        % First waveplate rotation for 90%
 seqdata.flags.lattice_lattice_ramp_1 = 1;            % Load the lattices
 
-seqdata.flags.do_lattice_am_spec = 0;               % Amplitude modulation spectroscopy             
+seqdata.flags.do_lattice_am_spec = 1;               % Amplitude modulation spectroscopy             
 
 seqdata.flags.lattice_rotate_waveplate_2 = 0;        % Second waveplate rotation 95% 
 seqdata.flags.lattice_lattice_ramp_2 = 0 ;            % Secondary lattice ramp for fluorescence imaging
@@ -86,7 +86,7 @@ else
 end
 
 
-% Band Map time
+% Band Map time (ms)
 lattice_rampdown_list = [3]; %0 for snap off (for in-situ latice postions for alignment)
                              %3 for band mapping
 lattice_rampdown = getScanParameter(lattice_rampdown_list,...
@@ -152,7 +152,7 @@ if seqdata.flags.lattice_lattice_ramp_1
                 'initial_latt_depth','Er');
             
             % Final lattice depth to ramp to
-            U = 100;
+            U = 200;
 
             %%% Lattice %%%
             % Ramp the optical powers of the lattice
@@ -255,6 +255,7 @@ if seqdata.flags.lattice_lattice_ramp_1
             
             %%% XDT Power and Time Vector %%%
             dip_pow=[dip_endpower latt_XDT_pow];
+%             dip_pow=[dip_endpower dip_endpower];
             dip_times=[150 50];   
             
              %%% DMD is fixed %%%
@@ -695,17 +696,17 @@ if seqdata.flags.lattice_uWave_spec
     
     % Frequency Shift
     % Only used for sweep spectroscopy
-    uwave_delta_freq_list = [200];
+    uwave_delta_freq_list = 1000;[200];
     uwave_delta_freq=getScanParameter(uwave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'uwave_delta_freq','kHz');
         
     % Time
-    uwave_time_list = [30];
+    uwave_time_list = [40];
     uwave_time = getScanParameter(uwave_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'uWave_time','ms');    
     
     % Power
-    uwave_power_list = [15];
+    uwave_power_list = [15]; 15;
     uwave_power = getScanParameter(uwave_power_list,seqdata.scancycle,...
         seqdata.randcyclelist,'uWave_power','dBm');  
         
@@ -861,7 +862,7 @@ if seqdata.flags.lattice_lattice_ramp_2
     ScopeTriggerPulse(curtime,'lattice_ramp_2');
 
     % 
-    imaging_depth_list = [400]; [675]; 
+    imaging_depth_list = [600]; [675]; 
     imaging_depth = getScanParameter(imaging_depth_list,seqdata.scancycle,...
         seqdata.randcyclelist,'FI_latt_depth','Er'); 
 
@@ -954,8 +955,8 @@ end
 %   - use SG to measure F ratios and also uWave spec.
 %   - For Fpump want to first tranfser to F=7 manifold with uWave
 %
-%  - 2022/07/04 - EIT Probe 2 gets 60% transfer w 100us pulse time
-%  - 2022/07/04 - EIT Prboe 1 gets 80% transfer w 100us pulse time
+%  - 2022/07/04 - EIT Probe 2 gets 60% transfer w 100us pulse time (2-3 uW)
+%  - 2022/07/04 - EIT Prboe 1 gets 80% transfer w 100us pulse time (2-3 uW)
 %  - 2022/09/26 - F pump gets 57% transfer back to F=9/2 w 0.1V and 1ms  
 
 % NOTES ON THE PHYSICS
@@ -980,7 +981,7 @@ if (seqdata.flags.Raman_transfers == 1)
     horizontal_plane_select_params.Fake_Pulse = 0;
     
     
-    Raman_On_Time_List =[0.2];[2000];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
+    Raman_On_Time_List =[2000];[4800];%2000ms for 1 images. [4800]= 2*2000+2*400, 400 is the dead time of EMCCD
 
    % uWave or Raman Tranfers
    % 1: uwave, 2: Raman 3:Raman with field sweep
@@ -998,7 +999,7 @@ if (seqdata.flags.Raman_transfers == 1)
 %     horizontal_plane_select_params.Enable_Raman = 0 ;
     
     %%%% F Pump Power %%%
-    F_Pump_List = [.6];[0.6];
+    F_Pump_List = [1.4];
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,...
         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V'); %1.4; (1.2 is typically max)
         
@@ -1091,7 +1092,7 @@ if (seqdata.flags.Raman_transfers == 1)
     
     % Shim values for quantizing field
     % This affects Raman, Microwave, and EIT mechanisms.
-    Field_Shift_List = [0.175];[0.155]; 0.155; %unit G 
+    Field_Shift_List = [.085];[0.175];[0.155]; 0.155; %unit G 
     horizontal_plane_select_params.Field_Shift = getScanParameter(...
         Field_Shift_List,seqdata.scancycle,seqdata.randcyclelist,...
         'Field_Shift','G');    

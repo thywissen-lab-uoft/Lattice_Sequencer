@@ -364,6 +364,14 @@ end
 % Update curtime to the imaging time (add the tof).
 curtime = calctime(curtime,params.timings.tof);
 
+plug_check =0;
+if plug_check ==1
+    pulse_length = params.timings.pulse_length;
+    
+    setDigitalChannel(calctime(curtime,-5),'Plug Shutter',1);% 0:OFF; 1: ON
+    setDigitalChannel(calctime(curtime,pulse_length+.5),'Plug Shutter',0);% 0:OFF; 1: ON
+end
+
     tD_list = [-20];-20;
 tD=getScanParameter(tD_list,seqdata.scancycle,...
     seqdata.randcyclelist,'pixel_delay','us');

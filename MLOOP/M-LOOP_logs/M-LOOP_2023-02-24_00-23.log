@@ -1,0 +1,14 @@
+2023-02-24 00:23:04,649 mloop                INFO     M-LOOP version 3.3.1
+2023-02-24 00:23:04,649 mloop                DEBUG    M-LOOP Logger configured.
+2023-02-24 00:23:04,649 mloop.interfaces     DEBUG    Creating interface.
+2023-02-24 00:23:04,650 mloop.interfaces     INFO     Using the file interface with the experiment.
+2023-02-24 00:23:04,650 mloop.controllers    DEBUG    Controller init completed.
+2023-02-24 00:23:04,651 mloop.learners.1     DEBUG    Learner init completed.
+2023-02-24 00:23:04,652 mloop.learners.2     DEBUG    Learner init completed.
+2023-02-24 00:23:04,653 mloop.controllers    INFO     Optimization started.
+2023-02-24 00:23:04,655 mloop.interfaces     DEBUG    Entering main loop of interface.
+2023-02-24 00:23:04,655 mloop.controllers    DEBUG    ML learner started.
+2023-02-24 00:23:04,732 mloop.controllers    DEBUG    Starting training optimization.
+2023-02-24 00:23:04,732 mloop.controllers    INFO     Run:1 (training)
+2023-02-24 00:23:04,733 mloop.controllers    INFO     params [0.5 0.5]
+2023-02-24 00:23:04,733 mloop.interfaces     DEBUG    Writing out_params to file. Count:1

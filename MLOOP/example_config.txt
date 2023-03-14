@@ -1,0 +1,32 @@
+#Tutorial Config
+#---------------
+
+#Interface settings
+interface_type = 'file'
+
+#Parameter settings
+num_params = 2                            #number of parameters
+min_boundary = [-1, -1]                   #minimum boundary
+max_boundary = [1, 1]                     #maximum boundary
+first_params = [0.5, 0.5]                 #first parameters to try
+trust_region = 0.4                        #maximum % move distance from best params
+
+#Halting conditions
+max_num_runs = 1000                       #maximum number of runs
+max_num_runs_without_better_params = 50   #maximum number of runs without finding better parameters
+target_cost = 0.01                        #optimization halts when a cost below this target is found
+max_duration = 36000                      #the optimization will not start a new iteration after max_duration seconds.
+
+#Learner options
+cost_has_noise = True                     #whether the costs are corrupted by noise or not
+
+#Timing options
+no_delay = True                           #wait for learner to make generate new parameters or use training algorithms
+
+#File format options
+interface_file_type = 'mat'               #file types of *exp_input.mat* and *exp_output.mat*
+controller_archive_file_type = 'mat'      #file type of the controller archive
+learner_archive_file_type = 'pkl'         #file type of the learner archive
+
+#Visualizations
+visualizations = True

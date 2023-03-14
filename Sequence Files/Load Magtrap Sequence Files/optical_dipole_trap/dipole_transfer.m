@@ -63,6 +63,7 @@ P12 = getScanParameter(P12_list,seqdata.scancycle,...
 P1 = P12;
 P2 = P12;       
 
+P_dip=0;
 % Sympathetic cooling powers
 Pevap_list = 0.8;[.8];
 Pevap = getScanParameter(Pevap_list,...
@@ -126,6 +127,8 @@ AnalogFunc(calctime(curtime,dipole_ramp_start_time),...
     'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
     dipole_ramp_up_time,dipole_ramp_up_time,...
     seqdata.params.ODT_zeros(2),DT2_power(1));
+
+P_dip = DT1_power(1);
     
 ScopeTriggerPulse(curtime,'Rampup ODT');
 %% Ramp the QP Down    

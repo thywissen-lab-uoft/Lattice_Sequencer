@@ -24,13 +24,6 @@ seqdata.params.lattice_zero = [xLattice0 yLattice0 zLattice0];
 latt_calib = struct;
 
 %% X Lattice
-% X Lattice calibration
-% x_p_threshold = 0.24467;
-% x_m1 = 48.2126;
-% x_b1 = -9.6744;
-% x_m2 = 4.0806;
-% x_b2 = 1.1235;
-% x_ErPerW = 330;372; %12/01/22 = 330
 
 % 2023/03/01
 x_p_threshold = 0.2263;
@@ -38,7 +31,7 @@ x_m1 = 49.434;
 x_b1 = -9.7368;
 x_m2 = 1.377;
 x_b2 = 1.1387;
-x_ErPerW = 330;372; %12/01/22 = 330
+x_ErPerW = 330; %12/01/22 = 330
 
 x_power2voltage = @(P) (P*x_m1 + x_b1).*(P < x_p_threshold) + ...
     (P*x_m2 + x_b2).*(P >= x_p_threshold);
@@ -81,34 +74,7 @@ latt_calib(2).m2 = y_m2;
 latt_calib(2).b2 = y_b2;
 latt_calib(2).P_threshold = y_p_threshold;
 
-%% Y Lattice new
-% % Y Lattice calibration
-% y_p_threshold = 0.213147;
-% y_m1 = 54.731069;
-% y_b1 = - 9.655506;
-% y_m2 = 4.166124;
-% y_b2 = 1.122266;
-% 
-% y_ErPerW = 382;
-% 
-% y_power2voltage = @(P) (P*y_m1 + y_b1).*(P < y_p_threshold) + ...
-%     (P*y_m2 + y_b2).*(P >= y_p_threshold);
-% 
-% yLattice = @(U) y_power2voltage(U/y_ErPerW);
-% 
-% latt_calib(2).Name = 'Y Lattice';
-% latt_calib(2).ErPerW = y_ErPerW;
-% latt_calib(2).power2voltage = @y_power2voltage;
-% latt_calib(2).depth2voltage = @yLattice;
-% latt_calib(2).m1 = y_m1;
-% latt_calib(2).b1 = y_b1;
-% latt_calib(2).m2 = y_m2;
-% latt_calib(2).b2 = y_b2;
-% latt_calib(2).P_threshold = y_p_threshold;
-
 %% Z Lattice new
-% z_power2voltage = @(P) (P*22.724471 - 9.74512).*(P < 0.527164) + ...
-%     (P*1.696746 + 1.339949).*(P >= 0.527164); %old
 
 z_power2voltage = @(P) (P*19.372 - 9.7514).*(P < 0.5863) + ...
     (P*0.71 + 1.1905).*(P >= 0.5863); % 03/01/2023
@@ -116,13 +82,7 @@ z_power2voltage = @(P) (P*19.372 - 9.7514).*(P < 0.5863) + ...
 z_ErPerW = 183; % 2023/03/14
 % z_ErPerW = 176; 12/01/22;
 
-% x_lattice2voltage = @(U) x_power2voltage(U/x_ErPerW); 
 zLattice = @(U) z_power2voltage(U/z_ErPerW);
-
-% 2022/02/14
-% zLattice = @(U) ...
-%     (U>=99.9412).*(U/99.1347+1.2132) + ...
-%     (U<99.9412).*(U/8.3137-9.8);
 
 %% Output Calibration
 seqdata.lattice_calibration = latt_calib;

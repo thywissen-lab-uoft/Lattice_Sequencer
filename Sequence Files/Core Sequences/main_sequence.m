@@ -258,6 +258,19 @@ if seqdata.flags.MOT_load_to_MT
     setAnalogChannel(calctime(curtime,0),'Y MOT Shim',0.0,3); %3
     setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.0,2); %2
     setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.0,2); %2
+else
+    
+    tramp = 20;    
+    tdel = 2000;
+    AnalogFuncTo(calctime(curtime,tdel),'X MOT Shim',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tramp, tramp, seqdata.params.MOT_shim(1),2);    
+    AnalogFuncTo(calctime(curtime,tdel),'Y MOT Shim',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tramp, tramp, seqdata.params.MOT_shim(2),2);    
+    AnalogFuncTo(calctime(curtime,tdel),'Z MOT Shim',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tramp, tramp, seqdata.params.MOT_shim(3),2);       
 end
 
 %% Transport 
@@ -290,6 +303,12 @@ curtime = Transport_Cloud(curtime, seqdata.flags.transport_hor_type,...
     disp(['Transport cloud calculation took ' num2str(t2) ' seconds']);
     
 end
+
+%% MOT Shim back for therml
+% Ramp MOT shims back to their steady state value
+
+
+ 
 
 %% Floursence image in MOT Cell
 % Perform fluoresence imaging. Comes after transport in case you want to do
@@ -506,7 +525,10 @@ curtime = DigitalPulse(calctime(curtime,0),'Remote field sensor SR',50,1);
 curtime = Reset_Channels(calctime(curtime,0));
 
 %turn on the Raman shutter for frquuency monitoring
-setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
+% setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
+
+% keep raman off
+setDigitalChannel(calctime(curtime,0),'Raman Shutter',0);
 
 % Set the shim values to zero
 setAnalogChannel(calctime(curtime,0),'X Shim',0,1);

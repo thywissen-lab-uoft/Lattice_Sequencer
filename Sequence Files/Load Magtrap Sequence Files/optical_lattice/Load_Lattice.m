@@ -15,7 +15,7 @@ global seqdata;
 
 curtime = timein;
 lattices = {'xLattice','yLattice','zLattice'};
-seqdata.params.xdt_p2p1_ratio = 1; %RHYS - Why is this defined here again?
+seqdata.params.xdt_p2p1_ratio = 1;
 
 
 %% Lattice Flags    
@@ -27,10 +27,10 @@ seqdata.params.xdt_p2p1_ratio = 1; %RHYS - Why is this defined here again?
 seqdata.flags.lattice_rotate_waveplate_1 = 1;        % First waveplate rotation for 90%
 seqdata.flags.lattice_lattice_ramp_1 = 1;            % Load the lattices
 
-seqdata.flags.do_lattice_am_spec = 1;               % Amplitude modulation spectroscopy             
+seqdata.flags.do_lattice_am_spec = 0;               % Amplitude modulation spectroscopy             
 
-seqdata.flags.lattice_rotate_waveplate_2 = 0;        % Second waveplate rotation 95% 
-seqdata.flags.lattice_lattice_ramp_2 = 0 ;            % Secondary lattice ramp for fluorescence imaging
+seqdata.flags.lattice_rotate_waveplate_2 = 1;        % Second waveplate rotation 95% 
+seqdata.flags.lattice_lattice_ramp_2 = 1 ;            % Secondary lattice ramp for fluorescence imaging
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -62,9 +62,8 @@ do_RF_spectroscopy = 0;                 % (3952,4970)
 seqdata.flags.lattice_do_optical_pumping = 0;                 % (1426) keep : optical pumping in lattice  
 seqdata.flags.do_plane_selection = 0;                 % Plane selection flag
 
-
 % Actual fluorsence image flag
-seqdata.flags.Raman_transfers = 0;                                % (4727)            keep : apply fluorescence imaging light
+seqdata.flags.Raman_transfers = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other Parameters
@@ -447,7 +446,6 @@ if seqdata.flags.lattice_lattice_ramp_1
         setAnalogChannel(calctime(curtime,T0+20),'DMD Power',2);
 
     end
-
     curtime=calctime(curtime,T_load_tot);   
 end
 
@@ -460,27 +458,17 @@ dispLineStr('Ramping FB field (not sure why?).',curtime);
     seqdata.params.time_out_HF = curtime;
     if (((seqdata.params.time_out_HF - seqdata.params.time_in_HF)*(seqdata.deltat/seqdata.timeunit))>3000)
             error('CHECK TIME FESHBACH IS ON! MAY BE TOO LONG')
-    end
-    
+    end    
      clear('ramp');
-
-        % FB coil settings for spectroscopy
-        ramp.fesh_ramptime = 150;
-        ramp.fesh_ramp_delay = -0;
-        ramp.fesh_final = 20;%before 2017-1-6 100*1.08962; %22.6
-        ramp.settling_time = 100;
-curtime = ramp_bias_fields(calctime(curtime,0), ramp);
-    
+    % FB coil settings for spectroscopy
+    ramp.fesh_ramptime = 150;
+    ramp.fesh_ramp_delay = -0;
+    ramp.fesh_final = 20;%before 2017-1-6 100*1.08962; %22.6
+    ramp.settling_time = 100;
+curtime = ramp_bias_fields(calctime(curtime,0), ramp);    
 end    
 
-
-
-%% conductivity modulation without dimple
-%RHYS - This is the code for the conductivity experiment. Should probably
-%keep for now, just clean up. A very long code: make its own module, delete
-%all the commented crap.
-%
-% CF: moved to a subfucnction, unclear if it rworks
+%% Conductivity Experiment
 
 if (seqdata.flags.do_conductivity == 1 )
    curtime = lattice_conductivity(curtime);
@@ -511,7 +499,7 @@ if (seqdata.flags.lattice_do_optical_pumping == 1)
         seqdata.randcyclelist, 'latt_op_time','ms');
     
     % OP repump power
-    repump_power_list = [0.5];
+    repump_power_list = [1];
     repump_power =getScanParameter(repump_power_list, seqdata.scancycle,...
         seqdata.randcyclelist, 'latt_op_repump_pwr');    
     
@@ -614,17 +602,15 @@ end
 %
 % The direction of the field gradient can also be accurately measured with
 % by applying a small shim field and measuring the "stripes"
-% 
-% (Descriptions to follow)
-
-%%Remove atoms in undesired vertical planes from the lattice.
-%RHYS - This code is a doozy of a mess. See Graham's
-%do_fast_plane_selection for ideals of modularizing. Should definitely be a
-%separate module at the least. 
 
 if seqdata.flags.do_plane_selection
     dispLineStr('Plane Selection',curtime);      
     curtime = plane_selection(curtime);
+    
+    % 2023/03/16 cf added to get rid of weird shadow on fluoresnce from the
+    % kill beam, there is probalby some werid exposure/timing issue gonig
+    % on that should be resolved.
+    curtime = calctime(curtime,1000);
 end
 
 %% Field Ramps BEFORE uWave/RF Spectroscopy
@@ -862,7 +848,7 @@ if seqdata.flags.lattice_lattice_ramp_2
     ScopeTriggerPulse(curtime,'lattice_ramp_2');
 
     % 
-    imaging_depth_list = [600]; [675]; 
+    imaging_depth_list = 1000;[1000]; [675]; 
     imaging_depth = getScanParameter(imaging_depth_list,seqdata.scancycle,...
         seqdata.randcyclelist,'FI_latt_depth','Er'); 
 
@@ -957,7 +943,10 @@ end
 %
 %  - 2022/07/04 - EIT Probe 2 gets 60% transfer w 100us pulse time (2-3 uW)
 %  - 2022/07/04 - EIT Prboe 1 gets 80% transfer w 100us pulse time (2-3 uW)
-%  - 2022/09/26 - F pump gets 57% transfer back to F=9/2 w 0.1V and 1ms  
+
+%  - 2023/02/26 - F pump gets 57% transfer back to F=9/2 w 0.1V and 1ms 
+%  - 2023/03/23 - EIT probe 1 gets 60% transfer w 10 us pulse time (2-3 uW)
+%  - 2023/03/23 - EIT probe 2 gets 65% transfer w 100 us pulse time (2-3 uW)
 
 % NOTES ON THE PHYSICS
 %
@@ -999,34 +988,35 @@ if (seqdata.flags.Raman_transfers == 1)
 %     horizontal_plane_select_params.Enable_Raman = 0 ;
     
     %%%% F Pump Power %%%
-    F_Pump_List = [1.4];
+    F_Pump_List = [2];
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,...
         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V'); %1.4; (1.2 is typically max)
         
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%% RAMAN SETTINGS %%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    V10 = 1.2;    % Max is 9.1 mW at 1.2 V, 0.44V is 2.6 mW
-    V20 = 1.09;   % Max is 7.45 mW at 1.09 V, 0.47V is 2.56mW
+    V10 = 1.3;1.2;    % Max is 9.1 mW at 1.2 V, 0.44V is 2.6 mW
+    V20 = 1.36;1.09;   % Max is 7.45 mW at 1.09 V, 0.47V is 2.56mW
     
  
     %%% Raman 1 Power (Vertical) %%%
-    Raman_Power_List =V10*.365;[0.365];   
+    Raman_Power_List = V10*[1];.7;[0.365];   
     horizontal_plane_select_params.Raman_Power1 = getScanParameter(Raman_Power_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_Power1','V');   
 
     %%% Raman 2 Power (Horizontal 1) %%%
-    Raman_Power2_List =V20*.449;[0.43];
+    Raman_Power2_List =V20*[1];[0.43];
     horizontal_plane_select_params.Raman_Power2 = getScanParameter(Raman_Power2_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_Power2','V');
     
     %%% Raman 1 Frequency (Vertical) %%%
-    Raman_List = [-80];-80;   %-30% : in kHz;
+    Raman_List =  [-170];-80;   %-30% : in kHz;
     horizontal_plane_select_params.Raman_AOM_Frequency = 110 + ...
         getScanParameter(Raman_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Freq','kHz')/1000;
 
     % Raman Rigol Mode
-    horizontal_plane_select_params.Rigol_Mode = 'Pulse';  %'Sweep', 'Pulse', 'Modulate'
+%     horizontal_plane_select_params.Rigol_Mode = 'Pulse';  %'Sweep', 'Pulse', 'Modulate'
+    horizontal_plane_select_params.Rigol_Mode = 'Sweep';  %'Sweep', 'Pulse', 'Modulate'
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%% MICROWAVE SETTINGS %%%%%%%%%
@@ -1051,7 +1041,7 @@ if (seqdata.flags.Raman_transfers == 1)
     %%%%%%%% Sweep Settings %%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    Range_List = [50];50;%in kHz
+    Range_List = [50];[10 20 50 100 200 500 750 1000];%in kHz
     horizontal_plane_select_params.Selection_Range = getScanParameter(Range_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Sweep_Range','kHz')/1000; 
 %     

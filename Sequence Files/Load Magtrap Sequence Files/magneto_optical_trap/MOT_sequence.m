@@ -17,6 +17,9 @@ global seqdata;
 setDigitalChannel(calctime(curtime,0),'K D1 GM Shutter',0);
 setDigitalChannel(calctime(curtime,0),'K D1 GM Shutter 2',1);
 
+loadK = 0;
+loadRb = 1;
+
 % MOT Load
 
 doMOT  =1;
@@ -41,25 +44,45 @@ setDigitalChannel(calctime(curtime,-0),'UV LED',1); % THe X axis bulb 1 on 0 off
 setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',...          
     6590+rb_MOT_detuning);      
 setAnalogChannel(calctime(curtime,0),'Rb Trap AM', 0.7);            % Rb MOT Trap power   (voltage)
-setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);             % Rb MOT trap TTL     (0 : ON)
-setDigitalChannel(calctime(curtime,-2),'Rb Trap Shutter',0);        % Rb MOT trap shutter (1 : ON)
+
+
+
+
 
 % Repump
 setAnalogChannel(calctime(curtime,0),'Rb Repump AM',0.9);           % Rb MOT repump power (voltage)
-setDigitalChannel(calctime(curtime,0),'Rb Repump Shutter',0);       % Rb MOT repumper shutter (1 : ON)
 
+if loadRb
+    setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);             % Rb MOT trap TTL     (0 : ON)
+    setDigitalChannel(calctime(curtime,-2),'Rb Trap Shutter',1);        % Rb MOT trap shutter (1 : ON)
+    setDigitalChannel(calctime(curtime,0),'Rb Repump Shutter',1);       % Rb MOT repumper shutter (1 : ON)
+else
+
+    setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);             % Rb MOT trap TTL     (0 : ON)
+    setDigitalChannel(calctime(curtime,-2),'Rb Trap Shutter',0);        % Rb MOT trap shutter (1 : ON)
+    setDigitalChannel(calctime(curtime,0),'Rb Repump Shutter',0);       % Rb MOT repumper shutter (1 : ON)
+end
 %%%%%%%%%%%%%%%% Set K MOT Beams %%%%%%%%%%%%%%%%
 % Trap
 setAnalogChannel(calctime(curtime,10),'K Trap FM',k_MOT_detuning);  % K Trap Detuning
 setAnalogChannel(calctime(curtime,0),'K Trap AM',0.8);              % K MOT trap power
-setDigitalChannel(calctime(curtime,0),'K Trap TTL',0);              % K MOT trap TTL
-setDigitalChannel(calctime(curtime,0),'K Trap Shutter',1);          % K mot trap shutter
 
 % Repump
 setAnalogChannel(calctime(curtime,10),'K Repump FM',0,2); %765      % K Repump Detuning
 setAnalogChannel(calctime(curtime,0),'K Repump AM',0.45);           % K MOT repump power
-setDigitalChannel(calctime(curtime,0),'K Repump TTL',0);            % K MOT repump TTL
-setDigitalChannel(calctime(curtime,0),'K Repump Shutter',1);        % K MOT repump shutter
+
+
+if loadK
+    setDigitalChannel(calctime(curtime,0),'K Trap TTL',0);              % K MOT trap TTL
+    setDigitalChannel(calctime(curtime,0),'K Trap Shutter',1);          % K mot trap shutter
+    setDigitalChannel(calctime(curtime,0),'K Repump TTL',0);            % K MOT repump TTL
+    setDigitalChannel(calctime(curtime,0),'K Repump Shutter',1);        % K MOT repump shutter
+else    
+    setDigitalChannel(calctime(curtime,0),'K Trap TTL',0);              % K MOT trap TTL
+    setDigitalChannel(calctime(curtime,0),'K Trap Shutter',0);          % K mot trap shutter
+    setDigitalChannel(calctime(curtime,0),'K Repump TTL',0);            % K MOT repump TTL
+    setDigitalChannel(calctime(curtime,0),'K Repump Shutter',0);        % K MOT repump shutter
+end
 
 %%%%%%%%%%%%%%%% MOT Field Gradient %%%%%%%%%%%%%%%%
 % Set MOT gradient
@@ -72,7 +95,6 @@ curtime = setDigitalChannel(calctime(curtime,0),'MOT TTL',0);
 
 %Feed Forward (why is this here? CF)
 setAnalogChannel(calctime(curtime,0),18,10); 
-
 
 %%%%%%%%%%%%%%%% MOT Chamber shims %%%%%%%%%%%%%%%%
 
@@ -102,9 +124,7 @@ setDigitalChannel(calctime(curtime,-0),'UV LED',0); % THe X axis bulb 1 on 0 off
 doKD1MOT = 0;
 if doKD1MOT
     setDigitalChannel(calctime(curtime,-2),'Rb Trap Shutter',0);        % Rb MOT trap shutter (1 : ON)
-setDigitalChannel(calctime(curtime,0),'Rb Repump Shutter',0);       % Rb MOT repumper shutter (1 : ON)
-
-     
+    setDigitalChannel(calctime(curtime,0),'Rb Repump Shutter',0);       % Rb MOT repumper shutter (1 : ON)     
     setDigitalChannel(calctime(curtime,0),'K Repump TTL',1);        % (1 : OFF)
     setDigitalChannel(calctime(curtime,-3),'K D1 GM Shutter',1);    % (1 : ON);
 end    
@@ -492,7 +512,7 @@ setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);
 %%%%%%%%%%%% Perform the time of flight %%%%%%%%%%%%
 
 % Set the time of flight
-tof_list = [1:1:15];
+tof_list = [15];
 tof =getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof_time'); 
 
 % Increment the time (ie. perform the time of flight)
@@ -520,15 +540,15 @@ setAnalogChannel(calctime(curtime,-1),'Rb Trap AM', 0.7);
 setAnalogChannel(calctime(curtime,-1),'Rb Repump AM',0.9);          
 
 % Imaging beams for K
-setDigitalChannel(calctime(curtime,-5),'K Repump Shutter',1); 
-setDigitalChannel(calctime(curtime,-5),'K Trap Shutter',1); 
-setDigitalChannel(calctime(curtime,0),'K Trap TTL',0); 
-setDigitalChannel(calctime(curtime,0),'K Repump TTL',0); 
+% setDigitalChannel(calctime(curtime,-5),'K Repump Shutter',1); 
+% setDigitalChannel(calctime(curtime,-5),'K Trap Shutter',1); 
+% setDigitalChannel(calctime(curtime,0),'K Trap TTL',0); 
+% setDigitalChannel(calctime(curtime,0),'K Repump TTL',0); 
 % % 
 % % Imaging beams for Rb
-% setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);      
-% setDigitalChannel(calctime(curtime,-2),'Rb Repump Shutter',1); 
-% setDigitalChannel(calctime(curtime,-5),'Rb Trap Shutter',1); 
+setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);      
+setDigitalChannel(calctime(curtime,-2),'Rb Repump Shutter',1); 
+setDigitalChannel(calctime(curtime,-5),'Rb Trap Shutter',1); 
 
 % Camera Trigger (1) : Light+Atoms
 setDigitalChannel(calctime(curtime,0),15,1);

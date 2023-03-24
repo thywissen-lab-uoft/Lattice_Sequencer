@@ -36,6 +36,13 @@ seqdata.params.plug_shims_slopes = [Cx Cy Cz];
 %Current shim values (x,y,z)- reset to zero
 seqdata.params.shim_val = [0 0 0]; 
 
+% MOT Shim values during the MOT (and steady state)
+seqdata.params.MOT_shim =  [0.2 2.0 0.9]; % in Amps
+
+% MOT Shim Zero (for any optical molasses that needs B= 0 G; GM/Mol
+seqdata.params.MOT_shim_zero =  [0.15 0.15 0.00]; % in Amps
+
+
 %% Flags
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -44,14 +51,17 @@ seqdata.params.shim_val = [0 0 0];
 
 seqdata.flags.misc_calibrate_PA             = 0; % Pulse for PD measurement
 seqdata.flags.misc_lock_PA                  = 0; % Update wavemeter lock
-seqdata.flags.misc_program4pass             = 1; % Update four-pass frequency
+seqdata.flags.misc_program4pass             = 0; % Update four-pass frequency
 seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
 seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[2],'V');
+defVar('objective_piezo',[2.1],'V');
 % 0.1V = 700 nm, larger means further away from chamber
+% 1 V= 7 um
 % 10 V = 70 um
 % tubeis m30 x .75 (750 um per turn)
+% Typically have around 10 planes at most --> 5 um width --> need to
+% specify to within 0.1V for a single plane and 1V for the entire cloud
 seqdata.flags.Rb_Probe_Order                = 1;   % 1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
                                                     % 2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
 defVar('PA_detuning',round(-49.539,6),'GHz');
@@ -68,7 +78,6 @@ defVar('UV_on_time',10000,'ms');                    % Can be just added onto the
 seqdata.flags.MOT_load_at_start             = 0; %do a specific load time
 defVar('MOT_controlled_load_time',20000,'ms');
 
-seqdata.params.MOT_shim = [];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOT to MT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -85,7 +94,7 @@ seqdata.flags.MOT_Mol_KGM_power_ramp        = 0; % 0: no ramp, 1:linear ramp
 
 seqdata.flags.MOT_optical_pumping           = 1; % optical pumping for MT
 
-seqdata.flags.MOT_load_to_MT                = 0;
+seqdata.flags.MOT_load_to_MT                = 0; % Makes things worse?
 
 % K CMOT parameters
 defVar('cmot_k_trap_detuning',5,'MHz');5;
@@ -143,7 +152,7 @@ seqdata.flags.High_Field_Imaging            = 0; % High field imaging (shouldn't
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[10],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[0],'ms');
@@ -223,7 +232,7 @@ seqdata.flags.xdt_K_p2n_rf_sweep_freq       = 1;    % RF Freq Sweep K +9-->-9
 
 % State Manipulation Before Optical Evaporation 
 seqdata.flags.xdt_d1op_start                = 0;    % D1 pump to purify
-seqdata.flags.xdt_rfmix_start               = 0;    % RF Mixing -9-->-9+-7    
+seqdata.flags.xdt_rfmix_start               = 1;    % RF Mixing -9-->-9+-7    
 seqdata.flags.xdt_kill_Rb_before_evap       = 0;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_before_evap       = 0;    % optical remove 7/2 K after (untested)
 
@@ -247,10 +256,14 @@ seqdata.flags.xdt_high_field_a              = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
-seqdata.flags.lattice                       = 1; 
+seqdata.flags.lattice                       = 0; 
 
 
 seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% QGM IMAGING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LATTICE COURES ALIGNMENT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -269,12 +282,13 @@ seqdata.flags.lattice_pulse_z_for_alignment = 0;
 % Choose which scope trigger to use.
 
 % seqdata.scope_trigger = 'rf_spectroscopy';
-seqdata.scope_trigger = 'Lattice_Mod';
+% seqdata.scope_trigger = 'Lattice_Mod';
 % seqdata.scope_trigger = 'FB_ramp';
 % seqdata.scope_trigger = 'lattice_ramp_1';
 % seqdata.scope_trigger = 'pulse lattice';
 % seqdata.scope_trigger = 'Raman Beams On';
 % seqdata.scope_trigger = 'PA_Pulse';
+seqdata.scope_trigger = 'lattice_ramp_2';
 
 %% end time
 

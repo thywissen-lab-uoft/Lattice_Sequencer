@@ -821,8 +821,8 @@ end
     seqdata.analogchannels(62).maxvoltage = 10;
     % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents  
     seqdata.analogchannels(62).defaultvoltagefunc = 2;
-    seqdata.analogchannels(62).voltagefunc{2} = @(a) (a+.268)/.842;  %old MOT shim calibration; a=current in Amps
-
+%     seqdata.analogchannels(62).voltagefunc{2} = @(a) (a+.268)/.842;  %old MOT shim calibration; a=current in Amps
+    seqdata.analogchannels(62).voltagefunc{2} = @(a) (a+.296)/.798; %03/20/2023 calibration (Shimmer channel 4)
 
     %channel 63 ( Y MOT Shim )
     % This analog channel controls the Y MOT shim.

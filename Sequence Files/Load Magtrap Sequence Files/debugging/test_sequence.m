@@ -5624,24 +5624,32 @@ end
 %  setDigitalChannel(calctime(curtime,0),'Raman TTL 1',1);
 %  setAnalogChannel(calctime(curtime,0),'Plug',2500); %0.12
  
-% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',0);  
-% setDigitalChannel(calctime(curtime,0),'K Probe/OP shutter',0); 
-% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.12);
+setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1);  
+setDigitalChannel(calctime(curtime,0),'K Probe/OP shutter',0); 
+setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
 
 % 
 % setAnalogChannel(calctime(curtime,0),'F Pump',9.99);
 % setDigitalChannel(calctime(curtime,0),'F Pump TTL',1);
 % setDigitalChannel(calctime(curtime,0),'D1 TTL',0);
 
-%     setDigitalChannel(calctime(curtime,0),'K Probe/OP Shutter',1); % Open K Shtter with pre-trigger
-    setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.5);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
-%     setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); 
-    setDigitalChannel(calctime(curtime,0),63,1); 
+% %     setDigitalChannel(calctime(curtime,0),'K Probe/OP Shutter',1); % Open K Shtter with pre-trigger
+%     setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.5);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
+% %     setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); 
+%     setDigitalChannel(calctime(curtime,0),63,1); 
+
+% DigitalPulse(calctime(curtime,0),'PA TTL',0.1,1);
+% setDigitalChannel(calctime(curtime,0),'PA TTL',1);
+% setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',1);
+
+% ScopeTriggerPulse(curtime,'Op amp on');
+% SelectScopeTrigger('Op amp on');
+
 
 % 
-%     setDigitalChannel(calctime(curtime,0),'Rb Probe/OP Shutter',1); % Open shutter
-%     setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',1); % Set 
-%     setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',0); % inverted logic
+    setDigitalChannel(calctime(curtime,0),'Rb Probe/OP Shutter',0); % Open shutter
+    setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',1); % Set 
+    setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',0); % inverted logic
 
 timeout = curtime;
 % SelectScopeTrigger('PA_Pulse');

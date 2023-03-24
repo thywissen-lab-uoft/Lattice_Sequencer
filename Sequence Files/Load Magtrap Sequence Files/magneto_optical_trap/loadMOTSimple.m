@@ -111,15 +111,24 @@ setDigitalChannel(curtime,21,0);
 %Turn on Shim Supply Relay
 setDigitalChannel(calctime(curtime,0),'Shim Relay',1);
 
+if ~isfield(seqdata,'params') || ~isfield(seqdata.params,'MOT_shim')
+    seqdata.params.MOT_shim = [0.2 2.0 0.9];    % Rb Optimized Shim values    
+%     seqdata.params.MOT_shim = [0.0 0.0 0.2];    % K Optimized Shim values
+end
+
 % Rb optimized shim values
-setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.2,2);
-setAnalogChannel(calctime(curtime,0),'Y MOT Shim',2.0,2);
-setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.9,2);
+% setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.2,2);
+% setAnalogChannel(calctime(curtime,0),'Y MOT Shim',2.0,2);
+% setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.9,2);
 
 % K optimized shim values
 % setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.0 ,2);  0.2;
 % setAnalogChannel(calctime(curtime,0),'Y MOT Shim', 0.0  ,2); 2;
 % setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.2 ,2);  0.9;
+
+setAnalogChannel(calctime(curtime,0),'X MOT Shim',seqdata.params.MOT_shim(1),2);
+setAnalogChannel(calctime(curtime,0),'Y MOT Shim',seqdata.params.MOT_shim(2),2);
+setAnalogChannel(calctime(curtime,0),'Z MOT Shim',seqdata.params.MOT_shim(3),2);
 
 %% UV ON : LIAD
 % Turn on UV cataract-inducing light.

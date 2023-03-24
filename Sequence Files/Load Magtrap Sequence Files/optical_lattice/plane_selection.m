@@ -140,10 +140,10 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     spect_pars.AM_ramp_time = 2;9;  
 %  spect_pars.AM_ramp_time = 9; %Used for pulse_type = 1      2*16.7
 
-    use_ACSync = 1;
+    use_ACSync = 0;
 
     % Define the SRS frequency
-    freq_list = [355];[340];[-300];       
+    freq_list = [750]; [355];[340];[-300];       
     
     % 2021/06/22 CF
     % Use this when Xshimd=3, zshimd=-1 and you vary yshimd
@@ -494,7 +494,7 @@ curtime = calctime(curtime,field_shift_settle+field_shift_time);
 
         %Kill SP AOM 
         mod_freq =  (120)*1E6;
-        mod_amp = 1;0.05;0.1;
+        mod_amp = 2;0.05;0.1;
         mod_offset =0;
         str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
         addVISACommand(8, str);  %Device 8 is the new kill beam Rigol changed on July 10, 2021

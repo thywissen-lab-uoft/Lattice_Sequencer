@@ -1,254 +1,117 @@
-function curtime = lattice_FL(timein,opts)
-% Author : CJ Fujiwara
-%
-% This code is meant to run the fluoresence imaging.  Due to the complexity
-% of fluorescence imaging and how one debugs it, this code is written in
-% what I consider to be the simplest form.
-%
-% Fluoresence imaging is at it's heart a manipulation of the internal
-% degrees of freedom via the EIT and RSC beams.  However, it is useful to
-% sometimes to debug the system using uWave as thid does not require laser
-% alignment.
+function curtime = lattice_FL(curtime)
 
+if nargin==0
+   curtime = 0; 
+end
 
-% Pulse time is the time for all spectroscopy (EIT/RSC/uWave)
-opts.PulseTime = 0; % in ms
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%% Enable and Disable Beams %%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    fluor = struct;
+    fluor.EnableUWave           = 0;
+    fluor.EnableFpump           = 0;
+    fluor.EnableEITProbe        = 0;
+    fluor.EnableRaman           = 0;
+    
+    fluor.PulseTime             = 10; % in ms
 
-% Field manipulations
-opts.doInitialFieldRamp = 1;
-opts.CenterField = 4.175;
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%% Camera Settings %%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    fluor.TriggerIxon          = 1;
+    fluor.NumberOfImages       = 1;
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%% Magnetic Field Settings %%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % This sets the quantizing field along the fpump axis.
+    fluor.doInitialFieldRamp    = 1;    
+    
+    B0 = 4; % Quantization Field
+    B0_shift_list = [0.095];
+    
+    % Quantization Field 
+    B0_shift = getScanParameter(...
+        B0_shift_list,seqdata.scancycle,seqdata.randcyclelist,...
+        'qgm_field_shift','G');  
+    
+    fluor.CenterField = B0 + B0_shift;
+    
+    addOutputParam('qgm_field',fluor.CenterField,'G');    
 
-% These flags enable or disable the entire section of code.  If these flags
-% % are set to zero, the code will program them to be off.
-% opts.EnableMicrowave = 0;
-% opts.EnableFPump = 0;
-% opts.EnableEITProbes = 0;
-% opts.EnableRaman = 0;
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%% uWave Settings %%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+    uWave_Freq_Shift_List = [-200:50:200];
+    
+    uwave_freq_shift = getScanParameter(...
+        uWave_Freq_Shift_List,seqdata.scancycle,seqdata.randcyclelist,...
+        'qgm_uwave_freq_shift','kHz');     
+    
+    
+    fluor.uWave_Frequency = 1296.824 + uwave_freq_shift/1000;
+    fluor.uWave_Power = 15;
+    
+    addOutputParam('qgm_uWave_Frequency',fluor.uWave_Frequency,'MHz');    
 
-
-%% CODE SUMMARY
-%
-% MAGNETIC FIELD
-% For imaging a small magnetic field establishes a quantization axis along
-% the FPUMP direction.  This means that the QP gradient needs to be off,
-% the feshbach needs to be off, and the shims need to be set appropriately
-% to elimnate Z fields and to rotate them to be correct.
-%
-%
-% APPLY RSC, EIT, UWAVE, TRIGGER IXON
-% With a quantization axis specified, the atomic states are manipulated
-% with application of RSC, EIT, and/or uWaves.  These can be pulsed or
-% frequency sweeps if one desires to measure the Rabi frequency. (We will
-% not include field sweeps because it makes the code more complicated). If
-% we are performing imaging (say EIT, RSC, or EIT+RSC), the iXon should be
-% triggerable.
-%
-% This particular code CONSTRAINS all of these times and triggers to happen
-% at the same time (since this is realistic for fluoresence imaging).  
-%
-
-global seqdata;
-curtime = timein;
-
-%% INTIAL MAGNETIC FIELD RAMP
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%% Magnetic Field Settings %%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-CenterField = opts.CenterField;
-
-% Additional Magnetic field offset
-X_Shim_Offset = 0;
-Y_Shim_Offset = 0;
-Z_Shim_Offset = 0.055;
-
-% Selection angle between X and Y shims
-theta_list = [62];
-theta = getScanParameter(theta_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'Raman_Angle');
-
-% Convert the quantization magnetic field to frequency (|9,-9>->|7,-7>)
-df = CenterField*2.4889; % MHz
-
-% Coefficients that convert from XY shim current (A) to frequency (MHz) 
-shim_calib = [2.4889*2, 0.983*2.4889*2]; % MHz/A
-
-% Field strength and angle into current
-X_Shim_Value = df*cosd(theta)/shim_calib(1);
-Y_Shim_Value = df*sind(theta)/shim_calib(2);
-
-    % Ramp up gradient and Feshbach field  
-    if opts.doInitialFieldRamp
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%% EIT Settings %%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    F_Pump_List = [2];
+    fluor.F_Pump_Power = getScanParameter(F_Pump_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V');
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%% Raman Settings %%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+      
+    %%% Raman 1 %%%
+    V10 = 1.3;
+    Raman1_Power_List = V10*[1];
+    Raman1_ShiftFreq_List = [-175];       
+    
+    Raman1_Freq_Shift = getScanParameter(Raman1_ShiftFreq_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'Raman1_Freq_Shift','kHz');       
+    Raman1_Power = getScanParameter(Raman1_Power_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'Raman1_Power','V'); 
+    
+    fluor.Raman1_EnableSweep = 0;
+    fluor.Raman1_Power = Raman1_Power;
+    fluor.Raman1_Frequency = 110 + Raman1_Freq_Shift/1000;
         
-        % What the code should do :
-        % Turn off Feshbachbach Field (close switch as well)
-        % Turn off QP Field (should probably set FF to zero)
-        % Ramp the shims to the correct value
-        
-        newramp = struct('ShimValues',seqdata.params.shim_zero + ...
-            [X_Shim_Value+X_Shim_Offset, ...
-            Y_Shim_Value+Y_Shim_Offset, ...
-            Z_Shim_Offset],...
-            'FeshValue',0.01,...
-            'QPValue',0,...
-            'SettlingTime',100);
-curtime = rampMagneticFields(calctime(curtime,0), newramp);
-    end      
+    %%% Raman 2 %%%
+    V20 = 1.36;   
+    Raman2_Power_List = V20*[1];
+    Raman2_ShiftFreq_List = [0];       
     
-%% Extra Settling Time
-
-curtime = calctime(curtime,100);
-
-
-%% uWave HS1 Settings
-
-if opts.EnableUWave && pulse_time > 0
-    % Spetroscopy parameters
-    spec_pars = struct;
-    spec_pars.Mode='sweep_frequency_chirp';
-    spec_pars.use_ACSync = 0;
-    spec_pars.PulseTime = pulse_time;
+    Raman2_Freq_Shift = getScanParameter(Raman2_ShiftFreq_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'Raman2_Freq_Shift','kHz');       
+    Raman2_Power = getScanParameter(Raman2_Power_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'Raman2_Power','V'); 
     
-    spec_pars.FREQ =  opts.uWave_Frequency;                % Center in MHz
-    spec_pars.FDEV = (opts.uWave_SweepRange/2)/1000; % Amplitude in MHz
-    spec_pars.AMPR = opts.uWave_power;               % Power in dBm
-    spec_pars.ENBR = 1;                         % Enable N Type
-    spec_pars.GPIB = 30;                        % SRS GPIB Address    
-
-    K_uWave_Spectroscopy(curtime,spec_pars);    
-end
-
-%% D1 and EIT Shutter Open and Close
-
-if (opts.EnableFpump || opts.EnableEITProbe) && pulse_time > 0
+    fluor.Raman2_EnableSweep = 0;
+    fluor.Raman2_Power = Raman2_Power;
+    fluor.Raman2_Frequency = 80 + Raman2_Freq_Shift/1000;        
     
-    % Open Shutter
-    setDigitalChannel(calctime(curtime,-5),'D1 Shutter',1);    
-    if opts.EnableEITProbe
-        setDigitalChannel(calctime(curtime,-5),'EIT Shutter',1);
-    end
+    % Calculate frequencies (the Rigol and EOM could be programmed every
+    % run, but for now they are manuually specified).
+    raman_eom_freq = 1266.924;
     
-    % Close Shutter
-    setDigitalChannel(calctime(curtime,pulse_time+5),'D1 Shutter',0);    
-    if opts.EnableEITProbe
-        setDigitalChannel(calctime(curtime,pulse_time+5),'EIT Shutter',0);
-    end   
-end
+    raman_2photon_freq = (raman_eom_freq + fluor.Raman2_Frequency) - ...
+        fluor.Raman1_Frequency;
+    raman_2photon_detuning = (raman_2photon_freq - seqdata.constants.hyperfine_ground)*1e3;
 
-%% FPump Settings and Pulse Sequence
-
-if opts.EnableFPump && pulse_time > 0
-    % Turn off P Pump AOM and Regulation
-    setAnalogChannel(calctime(curtime,-10),'F Pump',-1);
-    setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
+    addOutputParam('qgm_raman_eom_freq',raman_eom_freq,'MHz');    
+    addOutputParam('qgm_raman1_freq',fluor.Raman1_Frequency,'MHz');
+    addOutputParam('qgm_raman2_freq',fluor.Raman2_Frequency,'MHz');
+    addOutputParam('qgm_raman_2photon_freq',raman_2photon_freq,'MHz');
+    addOutputParam('qgm_raman_2photon_detuning',raman_2photon_detuning,'kHz');
     
-    % Enable Regulation 
-    setAnalogChannel(calctime(curtime,0),'F Pump',opts.F_Pump_Power);
-    setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
-    setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
     
-     % Disable Regulation 
-    setAnalogChannel(calctime(curtime,pulse_time),'F Pump',-1);
-    setDigitalChannel(calctime(curtime,pulse_time),'F Pump TTL',1);
-    setDigitalChannel(calctime(curtime,pulse_time),'FPump Direct',1);  
-    
-    % Turn it back on for thermal stability (not sure if very helpful)
-    setAnalogChannel(calctime(curtime,pulse_time+20),'F Pump',9);
-    setDigitalChannel(calctime(curtime,pulse_time+20),'F Pump TTL',0);    
-end
-
-%% EIT Probe Settings
-
-if opts.EnableEITProbe && pulse_time > 0
-    
-    % Make sure EIT Probe is off
-    setDigitalChannel(calctime(curtime,-10),'D1 TTL',0);
-
-    % Turn on Probe beams
-    setDigitalChannel(calctime(curtime,0),'D1 TTL',1);
-
-    % Turn off Probe beams
-    setDigitalChannel(calctime(curtime,pulse_time),'D1 TTL',0);
-    
-    % Turn on probe beams after shutter closed for thermal stability
-    setDigitalChannel(calctime(curtime,pulse_time+20),'D1 TTL',1);
-end
-    
-%% Raman Settings Pulse Sequence
-
-% Raman Settings
-if opts.EnableRaman
-    
-    ch1 = struct;
-    ch1.FREQUENCY = opts.Raman1_Frequency;
-    ch1.AMPLITUDE = opts.Raman1_Power;    
-    if opts.Raman1_EnableSweep 
-        ch1.SWEEP = 1; 
-        ch1.SWEEP_FREQUENCY_CENTER = opts.Raman1_Frequency; 
-        ch1.SWEEP_FREQUENCY_SPAN = opts.Raman1_SweepRange; 
-        ch1.SWEEP_TIME = pulse_time;
-        ch1.SWEEP_TRIGGER = 'EXT'; 
-    end
-
-    % Hmm what about rabi oscillations with a burst?
-    
-    % Program it
-    
-    ch2 = struct;
-    ch2.FREQUENCY = opts.Raman1_Frequency;
-    ch2.AMPLITUDE = opts.Raman1_Power;
-    if opts.Raman2_EnableSweep 
-        ch2.SWEEP = 1; 
-        ch2.SWEEP_FREQUENCY_CENTER = opts.Raman2_Frequency; 
-        ch2.SWEEP_FREQUENCY_SPAN = opts.Raman2_SweepRange; 
-        ch2.SWEEP_TIME = pulse_time;
-        ch2.SWEEP_TRIGGER = 'EXT'; 
-    end
-    
-    % Program it
-
-    
-end
-
-%% Raman Pulse Sequence
-if opts.EnableRaman && pulse_time > 0
-    % Make sure Raman beams are off ahead of time
-    % We have them on to keep them thermally stable
-    setDigitalChannel(calctime(curtime,-50),'Raman TTL 1',0); % (1: ON, 0:OFF)
-    setDigitalChannel(calctime(curtime,-50),'Raman TTL 2a',0);% (1: ON, 0:OFF)
-    setDigitalChannel(calctime(curtime,-50),'Raman TTL 3a',0);% (1: ON, 0:OFF)
-
-    % Make sure Raman shutter is closed
-    setDigitalChannel(calctime(curtime,-50),'Raman Shutter',0);
-
-    % Open Shutter (1: ON, 0: OFF)
-    setDigitalChannel(calctime(curtime,-10),'Raman Shutter',1);
-
-    % Turn on raman beam
-    setDigitalChannel(curtime,'Raman TTL 1',1);  % Vertical Raman (1: ON, 0:OFF)
-    setDigitalChannel(curtime,'Raman TTL 2a',1); % Horizontal Raman (1: ON, 0:OFF)
-
-    % Turn off beams
-    setDigitalChannel(calctime(curtime,pulse_time),'Raman TTL 1',0);
-    setDigitalChannel(calctime(curtime,pulse_time),'Raman TTL 2a',0);
-
-    % Close Shutter
-    setDigitalChannel(calctime(curtime,pulse_time),'Raman Shutter',0);    
-
-    % Turn on beams
-    setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 1',1);
-    setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 2a',1);
- 
-    curtime = calctime(curtime,pulse_time);
-end
-
-%% Ixon Trigger and Programming
-    if (opts.TriggerIxon == 1)
-%         iXon_FluorescenceImage(curtime,'ExposureOffsetTime',opt.Microwave_Pulse_Length,'ExposureDelay',0,'FrameTime',opt.Microwave_Pulse_Length/opt.Num_Frames,'NumFrames',opt.Num_Frames)
-    end     
-        
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%% Run Sub Function %%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
+    curtime = lattice_FL_helper(curtime,fluor);  
 end
 

@@ -64,6 +64,7 @@ seqdata.flags.do_plane_selection =0 ;                 % Plane selection flag
 
 % Actual fluorsence image flag
 seqdata.flags.Raman_transfers = 1;
+seqdata.flags.lattice_fluor=0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other Parameters
@@ -915,11 +916,10 @@ if seqdata.flags.lattice_PA
 end
 
 %% Raman Spec
-seqdata.flags.lattice_fluor=0;
 
 
 if seqdata.flags.lattice_fluor
-    curtime = lattice_FL_wrapper(curtime);  
+    curtime = lattice_FL(curtime);  
 end
 
 

@@ -1301,7 +1301,7 @@ if ( seqdata.flags.CDT_evap == 1 && seqdata.flags.xdt_evap2stage)
     dispLineStr('Optical evaporation 2',curtime);
     
     %%%%%%%%%%%%%%%% DO THE SECOND EVAP STAGE %%%%%%%%%%%%%%%%%%%%%
-    pend = 0.06;0.06;
+    pend = 0.08;0.06;
     evap_exp_ramp = @(t,tt,tau,y2,y1) ...
         (y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));    
     

@@ -9,18 +9,7 @@ function curtime = lattice_FI(timein,opts)
 % degrees of freedom via the EIT and RSC beams.  However, it is useful to
 % sometimes to debug the system using uWave as thid does not require laser
 % alignment.
-%
-% While this code could be lumped together with plane selection, which is a
-% kind of spectroscopy, I am electing to keep plane selection separate as
-% plane selection occurs sequentially with imaging. So I don't think it is
-% unreasonable to have them as separate pieces of code.
 
-% Flags : 
-% MicrowaveEnable
-% RamanEnable
-% FPumpEnable
-% EITProbeEnable
-% ixontrigger
 
 % Pulse time is the time for all spectroscopy (EIT/RSC/uWave)
 opts.PulseTime = 0; % in ms
@@ -35,7 +24,6 @@ opts.CenterField = 4.175;
 % opts.EnableFPump = 0;
 % opts.EnableEITProbes = 0;
 % opts.EnableRaman = 0;
-
 
 
 %% CODE SUMMARY
@@ -68,11 +56,9 @@ curtime = timein;
 %%%%%%%% Magnetic Field Settings %%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Quantization Field
-CenterField_list = 4.175;
-CenterField = getScanParameter(...
-    CenterField_list,seqdata.scancycle,seqdata.randcyclelist,...
-    'FI_field','G');        
+
+
+CenterField = opts.CenterField;
 
 % Additional Magnetic field offset
 X_Shim_Offset = 0;
@@ -110,23 +96,125 @@ Y_Shim_Value = df*sind(theta)/shim_calib(2);
             'QPValue',0,...
             'SettlingTime',100);
 curtime = rampMagneticFields(calctime(curtime,0), newramp);
-    end  
+    end      
     
-    
-%% Wait a hot second
+%% Extra Settling Time
+
 curtime = calctime(curtime,100);
 
-%% EIT Settings
-    
-%% uWave Settings
-    
-%% Raman Settings
 
-pulse_time_list = [0];
-pulse_time = getScanParameter(pulse_time_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'pulse_time');
+%% uWave HS1 Settings
 
-if pulse_time > 0
+if opts.EnableUWave && pulse_time > 0
+    % Spetroscopy parameters
+    spec_pars = struct;
+    spec_pars.Mode='sweep_frequency_chirp';
+    spec_pars.use_ACSync = 0;
+    spec_pars.PulseTime = pulse_time;
+    
+    spec_pars.FREQ =  opts.uWave_Frequency;                % Center in MHz
+    spec_pars.FDEV = (opts.uWave_SweepRange/2)/1000; % Amplitude in MHz
+    spec_pars.AMPR = opts.uWave_power;               % Power in dBm
+    spec_pars.ENBR = 1;                         % Enable N Type
+    spec_pars.GPIB = 30;                        % SRS GPIB Address    
+
+    K_uWave_Spectroscopy(curtime,spec_pars);    
+end
+
+%% D1 and EIT Shutter Open and Close
+
+if (opts.EnableFpump || opts.EnableEITProbe) && pulse_time > 0
+    
+    % Open Shutter
+    setDigitalChannel(calctime(curtime,-5),'D1 Shutter',1);    
+    if opts.EnableEITProbe
+        setDigitalChannel(calctime(curtime,-5),'EIT Shutter',1);
+    end
+    
+    % Close Shutter
+    setDigitalChannel(calctime(curtime,pulse_time+5),'D1 Shutter',0);    
+    if opts.EnableEITProbe
+        setDigitalChannel(calctime(curtime,pulse_time+5),'EIT Shutter',0);
+    end   
+end
+
+%% FPump Settings and Pulse Sequence
+
+if opts.EnableFPump && pulse_time > 0
+    % Turn off P Pump AOM and Regulation
+    setAnalogChannel(calctime(curtime,-10),'F Pump',-1);
+    setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
+    
+    % Enable Regulation 
+    setAnalogChannel(calctime(curtime,0),'F Pump',opts.F_Pump_Power);
+    setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
+    setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
+    
+     % Disable Regulation 
+    setAnalogChannel(calctime(curtime,pulse_time),'F Pump',-1);
+    setDigitalChannel(calctime(curtime,pulse_time),'F Pump TTL',1);
+    setDigitalChannel(calctime(curtime,pulse_time),'FPump Direct',1);  
+    
+    % Turn it back on for thermal stability (not sure if very helpful)
+    setAnalogChannel(calctime(curtime,0),'F Pump',9);
+    setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);    
+end
+
+%% EIT Probe Settings
+
+if opts.EnableEITProbe && pulse_time > 0
+    
+    % Make sure EIT Probe is off
+    setDigitalChannel(calctime(curtime,-10),'D1 TTL',0);
+
+    % Turn on Probe beams
+    setDigitalChannel(calctime(curtime,0),'D1 TTL',1);
+
+    % Turn off Probe beams
+    setDigitalChannel(calctime(curtime,pulse_time),'D1 TTL',0);
+    
+    % Turn on probe beams after shutter closed for thermal stability
+    setDigitalChannel(calctime(curtime,pulse_time),'D1 TTL',0);
+end
+    
+%% Raman Settings Pulse Sequence
+
+% Raman Settings
+if opts.EnableRaman
+    
+    ch1 = struct;
+    ch1.FREQUENCY = opts.Raman1_Frequency;
+    ch1.AMPLITUDE = opts.Raman1_Power;    
+    if opts.Raman1_EnableSweep 
+        ch1.SWEEP = 1; 
+        ch1.SWEEP_FREQUENCY_CENTER = opts.Raman1_Frequency; 
+        ch1.SWEEP_FREQUENCY_SPAN = opts.Raman1_SweepRange; 
+        ch1.SWEEP_TIME = pulse_time;
+        ch1.SWEEP_TRIGGER = 'EXT'; 
+    end
+
+    % Hmm what about rabi oscillations with a burst?
+    
+    % Program it
+    
+    ch2 = struct;
+    ch2.FREQUENCY = opts.Raman1_Frequency;
+    ch2.AMPLITUDE = opts.Raman1_Power;
+    if opts.Raman2_EnableSweep 
+        ch2.SWEEP = 1; 
+        ch2.SWEEP_FREQUENCY_CENTER = opts.Raman2_Frequency; 
+        ch2.SWEEP_FREQUENCY_SPAN = opts.Raman2_SweepRange; 
+        ch2.SWEEP_TIME = pulse_time;
+        ch2.SWEEP_TRIGGER = 'EXT'; 
+    end
+    
+    % Program it
+
+    
+end
+
+% Raman Pulse Sequence
+if opts.EnableRaman && pulse_time > 0
     % Make sure Raman beams are off ahead of time
     % We have them on to keep them thermally stable
     setDigitalChannel(calctime(curtime,-50),'Raman TTL 1',0); % (1: ON, 0:OFF)
@@ -156,6 +244,8 @@ if pulse_time > 0
  
     curtime = calctime(curtime,pulse_time);
 end
+
+%% Ixon Trigger and Programming
 
 end
 

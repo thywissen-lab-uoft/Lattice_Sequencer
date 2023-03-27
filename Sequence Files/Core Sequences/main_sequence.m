@@ -71,7 +71,11 @@ end
 detuning_list = [5];
 df = getScanParameter(detuning_list, seqdata.scancycle, seqdata.randcyclelist, 'detuning');
 DDSFreq = 324.206*1e6 + df*1e3/4;
-addOutputParam('FourPassFrequency',DDSFreq*1e-6,'MHz');
+
+
+addOutputParam('qgm_eit_4pass_freq',DDSFreq*1e-6,'MHz');
+addOutputParam('qgm_eit_2photon_detuning',...
+    ((4*DDSFreq*1e-6)-seqdata.constants.hyperfine_ground)*1e3,'kHz');
 
 if seqdata.flags.misc_program4pass
     DDS_sweep(calctime(curtime,0),2,DDSFreq,DDSFreq,calctime(curtime,1));

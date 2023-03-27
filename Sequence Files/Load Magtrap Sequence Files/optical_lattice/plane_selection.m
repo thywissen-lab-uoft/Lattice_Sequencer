@@ -6,8 +6,6 @@ global seqdata
     % Transfer atoms to |7/2,-7/2> initially. Do we need this??  
     initial_transfer = 0;   
     
-    % Ramp up lattices for plane selection (typically unesasaary)
-    planeselect_doPinLattices = 0; 
     
     % Establish field gradeint with QP, FB, and shim fields for plane selection
     ramp_fields = 1; 
@@ -25,30 +23,7 @@ global seqdata
     % Pulse repump to remove leftover F=7/2
     planeselect_doFinalRepumpPulse = 0;
     
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Apply pinning lattice for plane selection
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Increase the lattice depth to pin the atoms
-    % Typically unecessary as you have already pinned them
-    if planeselect_doPinLattices
-        disp('Ramping lattices and dipole traps.');
-        setDigitalChannel(calctime(curtime,-0.1),'yLatticeOFF',0);
-        
-        % Ramp Lattices
-        AnalogFuncTo(calctime(curtime,0),'xLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5,60); 
-        AnalogFuncTo(calctime(curtime,0),'yLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60);
-curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 60); 
-        
-        % Ramp dipole traps
-        AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 0);
-curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, 0);
-    end    
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Ramp magnetic field for planes selection
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -143,7 +118,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     use_ACSync = 0;
 
     % Define the SRS frequency
-    freq_list = [750]; [355];[340];[-300];       
+    freq_list = 1050;[750]; [355];[340];[-300];       
     
     % 2021/06/22 CF
     % Use this when Xshimd=3, zshimd=-1 and you vary yshimd
@@ -322,7 +297,7 @@ ScopeTriggerPulse(curtime,'Plane Select');
 
 
         % Determine the range of the sweep
-        uWave_delta_freq_list= [40] /1000; 130;
+        uWave_delta_freq_list= [20] /1000; 130;
         uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq','kHz');
         

@@ -147,9 +147,8 @@ X_Shim_Value = frequency_shift * cosd(opt.Selection_Angle) / Shim_Calibration_Va
 Y_Shim_Value = frequency_shift * sind(opt.Selection_Angle) / Shim_Calibration_Values(2);
 
 
-%% Plane Selection
 
-% Ramp up gradient and Feshbach field  
+%% Ramp up gradient and Feshbach field  
     if opt.Ramp_Fields_Up
         newramp = struct('ShimValues',seqdata.params.shim_zero + ...
             [X_Shim_Value+opt.X_Shim_Offset, ...
@@ -163,10 +162,10 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
         
 field_shift_time = 20;                  % time to shift the field to the initial value for the sweep (and from the final value)
 field_shift_settle = 40;                % settling time after initial and final field shifts
- 
-
+ %%
     if (opt.Microwave_Or_Raman == 1)
-%%   
+%%   %% Use Microwave
+
 
         %Settings for plane selection
         spect_pars.freq = opt.Selection_Frequency;
@@ -338,20 +337,12 @@ field_shift_settle = 40;                % settling time after initial and final 
             ramp_bias_fields(calctime(curtime,0), ramp);
         end       
        
-%Execute the transfer pulse
-% DigitalPulse(calctime(curtime,-2),'Raman TTL',opt.Microwave_Pulse_Length+4,1);
-% DigitalPulse(calctime(curtime,0),'Raman TTL',spect_pars.pulse_length,0);
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
-%         F_Pump_Time = 0.02;
-%         %F-mF pump AOM-shutter sequence.
-%         setAnalogChannel(calctime(curtime,0),'F Pump',opt.F_Pump_Power);
-%         DigitalPulse(calctime(curtime,-10),'F Pump TTL',10,1);
-%         DigitalPulse(calctime(curtime,-5),'D1 Shutter',F_Pump_Time+10,1);
-%         DigitalPulse(calctime(curtime,F_Pump_Time),'F Pump TTL',10,1);
-%         setAnalogChannel(calctime(curtime,F_Pump_Time),'F Pump',-1);
 
-%%
+
     elseif (opt.Microwave_Or_Raman == 2)
+        %% Use Raman
+
         % Program Rigol generator
         if strcmp(opt.Rigol_Mode, 'Sweep')
             str = sprintf(['SOURce1:SWEep:STATe ON;SOURce1:SWEep:TRIGger:SOURce ' ...
@@ -509,9 +500,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
 
         
         % add some wait time for the shims to ramp back
-        curtime = calctime(curtime,25);
-    
-    
+        curtime = calctime(curtime,25);   
     end
 %%
    
@@ -547,8 +536,7 @@ if opt.Resonant_Light_Removal
 curtime = DigitalPulse(calctime(curtime,pulse_offset_time),9,kill_time,0);
 
     %close K probe shutter
-    setDigitalChannel(calctime(curtime,2),'K Probe/OP shutter',0);
-    
+    setDigitalChannel(calctime(curtime,2),'K Probe/OP shutter',0);    
 end
 
 %%

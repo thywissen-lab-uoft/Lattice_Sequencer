@@ -30,7 +30,7 @@ seqdata.flags.lattice_lattice_ramp_1 = 1;            % Load the lattices
 seqdata.flags.do_lattice_am_spec = 0;               % Amplitude modulation spectroscopy             
 
 seqdata.flags.lattice_rotate_waveplate_2 = 1;        % Second waveplate rotation 95% 
-seqdata.flags.lattice_lattice_ramp_2 = 1 ;            % Secondary lattice ramp for fluorescence imaging
+seqdata.flags.lattice_lattice_ramp_2 =1 ;            % Secondary lattice ramp for fluorescence imaging
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -59,8 +59,8 @@ do_RF_spectroscopy = 0;                 % (3952,4970)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-seqdata.flags.lattice_do_optical_pumping = 0;                 % (1426) keep : optical pumping in lattice  
-seqdata.flags.do_plane_selection = 0;                 % Plane selection flag
+seqdata.flags.lattice_do_optical_pumping = 1;                 % (1426) keep : optical pumping in lattice  
+seqdata.flags.do_plane_selection =1 ;                 % Plane selection flag
 
 % Actual fluorsence image flag
 seqdata.flags.Raman_transfers = 1;
@@ -145,7 +145,7 @@ if seqdata.flags.lattice_lattice_ramp_1
             % by a quick snap to a pinning lattice depth
             
             % Initial lattice depth
-            initial_latt_depth_list = [10];%10;
+            initial_latt_depth_list = [5];%10;
             init_depth = getScanParameter(initial_latt_depth_list,...
                 seqdata.scancycle,seqdata.randcyclelist,...
                 'initial_latt_depth','Er');
@@ -161,7 +161,7 @@ if seqdata.flags.lattice_lattice_ramp_1
                  init_depth init_depth U U];    % Z Lattice 
              
              % Initial ramp on time
-             latt_ramp_time_list = [150];
+             latt_ramp_time_list = [300];
              latt_ramp_time = getScanParameter(latt_ramp_time_list,...
                 seqdata.scancycle,seqdata.randcyclelist,'latt_ramp_time','ms');
 
@@ -848,7 +848,7 @@ if seqdata.flags.lattice_lattice_ramp_2
     ScopeTriggerPulse(curtime,'lattice_ramp_2');
 
     % 
-    imaging_depth_list = 1000;[1000]; [675]; 
+    imaging_depth_list = 950;[1000]; [675]; 
     imaging_depth = getScanParameter(imaging_depth_list,seqdata.scancycle,...
         seqdata.randcyclelist,'FI_latt_depth','Er'); 
 
@@ -864,7 +864,13 @@ if seqdata.flags.lattice_lattice_ramp_2
     lat_rampup_imaging_depth = 1*[1*[xLatDepth xLatDepth];
                                1*[yLatDepth yLatDepth];
                                1*[zLatDepth zLatDepth]];  %[100 650 650;100 650 650;100 900 900]
-    lat_rampup_imaging_time =  [20 5 ];
+    
+    latt_ramp2_time_list = [50];20;
+    latt_ramp2_time = getScanParameter(latt_ramp2_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'latt_ramp2_time','ms'); 
+
+                           
+   lat_rampup_imaging_time =  [latt_ramp2_time 5];
      
     if (length(lat_rampup_imaging_time) ~= size(lat_rampup_imaging_depth,2)) || ...
             (size(lat_rampup_imaging_depth,1)~=length(lattices))
@@ -909,8 +915,125 @@ if seqdata.flags.lattice_PA
 end
 
 %% Raman Spec
+% seqdata.flags.lattice_fluor=0;
+% 
+% 
+% if seqdata.flags.lattice_fluor
+% 
+%     
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     %%%%%%%% Enable and Disable Beams %%%%%%%%
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     fluor = struct;
+%     fluor.EnableUWave           = 0;
+%     fluor.EnableFpump           = 0;
+%     fluor.EnableEITProbe        = 0;
+%     fluor.EnableRaman           = 0;
+%     
+%     fluor.PulseTime             = 10; % in ms
+% 
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     %%%%%%%% Camera Settings %%%%%%%%%%%%%%%%%
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     fluor.TriggerIxon          = 1;
+%     fluor.NumberOfImages       = 1;
+%     
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     %%%%%%%% Magnetic Field Settings %%%%%%%%
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     % This sets the quantizing field along the fpump axis.
+%     fluor.doInitialFieldRamp    = 1;    
+%     
+%     B0 = 4; % Quantization Field
+%     B0_shift_list = [0.095];
+%     
+%     % Quantization Field 
+%     B0_shift = getScanParameter(...
+%         B0_shift_list,seqdata.scancycle,seqdata.randcyclelist,...
+%         'qgm_field_shift','G');  
+%     
+%     fluor.CenterField = B0 + B0_shift;
+%     
+%     addOutputParam('qgm_field',fluor.CenterField,'G');    
+% 
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     %%%%%%%% uWave Settings %%%%%%
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     
+%     uWave_Freq_Shift_List = [-200:50:200];
+%     
+%     uwave_freq_shift = getScanParameter(...
+%         uWave_Freq_Shift_List,seqdata.scancycle,seqdata.randcyclelist,...
+%         'qgm_uwave_freq_shift','kHz'); 
+%     
+%     
+%     
+%     fluor.uWave_Frequency = 1296.824 + uwave_freq_shift/1000;
+%     fluor.uWave_Power = 15;
+%     
+%     addOutputParam('qgm_uWave_Frequency',fluor.uWave_Frequency,'MHz');    
+% 
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     %%%%%%%% EIT Settings %%%%%%%%
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     F_Pump_List = [2];
+%     fluor.F_Pump_Power = getScanParameter(F_Pump_List,...
+%         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V');
+%     
+%     
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     %%%%%%%% Raman Settings %%%%%%
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+%       
+%     %%% Raman 1 %%%
+%     V10 = 1.3;
+%     Raman1_Power_List = V10*[1];
+%     Raman1_ShiftFreq_List = [-175];       
+%     
+%     Raman1_Freq_Shift = getScanParameter(Raman1_ShiftFreq_List,...
+%         seqdata.scancycle,seqdata.randcyclelist,'Raman1_Freq_Shift','kHz');       
+%     Raman1_Power = getScanParameter(Raman1_Power_List,...
+%         seqdata.scancycle,seqdata.randcyclelist,'Raman1_Power','V'); 
+%     
+%     fluor.Raman1_EnableSweep = 0;
+%     fluor.Raman1_Power = Raman1_Power;
+%     fluor.Raman1_Frequency = 110 + Raman1_Freq_Shift/1000;
+%         
+%     %%% Raman 2 %%%
+%     V20 = 1.36;   
+%     Raman2_Power_List = V20*[1];
+%     Raman2_ShiftFreq_List = [0];       
+%     
+%     Raman2_Freq_Shift = getScanParameter(Raman2_ShiftFreq_List,...
+%         seqdata.scancycle,seqdata.randcyclelist,'Raman2_Freq_Shift','kHz');       
+%     Raman2_Power = getScanParameter(Raman2_Power_List,...
+%         seqdata.scancycle,seqdata.randcyclelist,'Raman2_Power','V'); 
+%     
+%     fluor.Raman2_EnableSweep = 0;
+%     fluor.Raman2_Power = Raman2_Power;
+%     fluor.Raman2_Frequency = 80 + Raman2_Freq_Shift/1000;        
+%     
+%     % Calculate frequencies (the Rigol and EOM could be programmed every
+%     % run, but for now they are manuually specified).
+%     raman_eom_freq = 1266.924;
+%     
+%     raman_2photon_freq = (raman_eom_freq + fluor.Raman2_Frequency) - ...
+%         fluor.Raman1_Frequency;
+%     raman_2photon_detuning = (raman_2photon_freq - seqdata.constants.hyperfine_ground)*1e3;
+% 
+%     addOutputParam('qgm_raman_eom_freq',raman_eom_freq,'MHz');    
+%     addOutputParam('qgm_raman1_freq',fluor.Raman1_Frequency,'MHz');
+%     addOutputParam('qgm_raman2_freq',fluor.Raman2_Frequency,'MHz');
+%     addOutputParam('qgm_raman_2photon_freq',raman_2photon_freq,'MHz');
+%     addOutputParam('qgm_raman_2photon_detuning',raman_2photon_detuning,'kHz');
+%     
+%     
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     %%%%%%%% Run Sub Function %%%%%%
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
+%     curtime = lattice_FI(curtime,fluor);  
+% end
 
-% curtime = lattice_FI(curtime);
 
 %% Fluorescence Imaging
 
@@ -974,7 +1097,7 @@ if (seqdata.flags.Raman_transfers == 1)
 
    % uWave or Raman Tranfers
    % 1: uwave, 2: Raman 3:Raman with field sweep
-    horizontal_plane_select_params.Microwave_Or_Raman = 2; %Set to 2 in order for iXon triggers to happen
+    horizontal_plane_select_params.Microwave_Or_Raman = 2;
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%% EIT Settings %%%%%%%%%
@@ -988,7 +1111,7 @@ if (seqdata.flags.Raman_transfers == 1)
 %     horizontal_plane_select_params.Enable_Raman = 0 ;
     
     %%%% F Pump Power %%%
-    F_Pump_List = [2];
+    F_Pump_List = [2];2.3;
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,...
         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V'); %1.4; (1.2 is typically max)
         
@@ -996,9 +1119,8 @@ if (seqdata.flags.Raman_transfers == 1)
     %%%%%%%% RAMAN SETTINGS %%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     V10 = 1.3;1.2;    % Max is 9.1 mW at 1.2 V, 0.44V is 2.6 mW
-    V20 = 1.36;1.09;   % Max is 7.45 mW at 1.09 V, 0.47V is 2.56mW
+    V20 = 1.36;1.09;   % Max is 7.45 mW at 1.09 V, 0.47V is 2.56mW  
     
- 
     %%% Raman 1 Power (Vertical) %%%
     Raman_Power_List = V10*[1];.7;[0.365];   
     horizontal_plane_select_params.Raman_Power1 = getScanParameter(Raman_Power_List,...
@@ -1010,13 +1132,29 @@ if (seqdata.flags.Raman_transfers == 1)
         seqdata.scancycle,seqdata.randcyclelist,'Raman_Power2','V');
     
     %%% Raman 1 Frequency (Vertical) %%%
-    Raman_List =  [-170];-80;   %-30% : in kHz;
+    Raman_List =  [-80];[-380];-175;   %-30% : in kHz;
     horizontal_plane_select_params.Raman_AOM_Frequency = 110 + ...
         getScanParameter(Raman_List,seqdata.scancycle,seqdata.randcyclelist,'Raman_Freq','kHz')/1000;
 
     % Raman Rigol Mode
-%     horizontal_plane_select_params.Rigol_Mode = 'Pulse';  %'Sweep', 'Pulse', 'Modulate'
-    horizontal_plane_select_params.Rigol_Mode = 'Sweep';  %'Sweep', 'Pulse', 'Modulate'
+     horizontal_plane_select_params.Rigol_Mode = 'Pulse';  %'Sweep', 'Pulse', 'Modulate'
+     %horizontal_plane_select_params.Rigol_Mode = 'Sweep';  %'Sweep', 'Pulse', 'Modulate'
+
+
+    % Calculate frequencies (the Rigol and EOM could be programmed every
+    % run, but for now they are manuually specified).
+    raman_eom_freq = 1266.924;
+    raman_aom1_freq = 80;
+    raman_aom2_freq = horizontal_plane_select_params.Raman_AOM_Frequency;
+    
+    raman_2photon_freq = (raman_eom_freq + raman_aom2_freq) - raman_aom1_freq;
+    raman_2photon_detuning = (raman_2photon_freq - seqdata.constants.hyperfine_ground)*1e3;
+
+    addOutputParam('qgm_raman_eom_freq',raman_eom_freq,'MHz');    
+    addOutputParam('qgm_raman1_freq',raman_aom1_freq,'MHz');
+    addOutputParam('qgm_raman2_freq',raman_aom2_freq,'MHz');
+    addOutputParam('qgm_raman_2photon_freq',raman_2photon_freq,'MHz');
+    addOutputParam('qgm_raman_2photon_detuning',raman_2photon_detuning,'kHz');
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%% MICROWAVE SETTINGS %%%%%%%%%
@@ -1041,7 +1179,7 @@ if (seqdata.flags.Raman_transfers == 1)
     %%%%%%%% Sweep Settings %%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    Range_List = [50];[10 20 50 100 200 500 750 1000];%in kHz
+    Range_List = 50;[10 20 50 100 150 200 300 500 750 1000 2000];50;%in kHz
     horizontal_plane_select_params.Selection_Range = getScanParameter(Range_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Sweep_Range','kHz')/1000; 
 %     
@@ -1082,7 +1220,7 @@ if (seqdata.flags.Raman_transfers == 1)
     
     % Shim values for quantizing field
     % This affects Raman, Microwave, and EIT mechanisms.
-    Field_Shift_List = [.085];[0.175];[0.155]; 0.155; %unit G 
+    Field_Shift_List = [.095];[0.175];[0.155]; 0.155; %unit G 
     horizontal_plane_select_params.Field_Shift = getScanParameter(...
         Field_Shift_List,seqdata.scancycle,seqdata.randcyclelist,...
         'Field_Shift','G');    

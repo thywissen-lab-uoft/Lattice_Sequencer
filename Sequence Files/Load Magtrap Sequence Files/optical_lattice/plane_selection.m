@@ -32,8 +32,6 @@ if ramp_fields
     clear('ramp');       
 
     xshimdlist = -0.257;
-%         xshimdlist = 3;
-
     yshimdlist = 0.125;
     zshimd = -1;
 
@@ -74,14 +72,10 @@ if ramp_fields
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
 end
-%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% uWave Settings for Plane Selection
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% This should be cleaned up a lot, yes it should
+%% uWave Settings
 
-planeselect_freq = 1606.75;
-spect_pars.freq = planeselect_freq;   % |9/2,-9/2>
+
+spect_pars.freq = 1606.75;   % |9/2,-9/2>
 spect_pars.power = 15;15;%6.5; %-15 %uncalibrated "gain" for rf
 
 ffscan_list = [100]/1000;%frequency sweep width
@@ -107,7 +101,6 @@ sweep_field = 0; %0 to sweep with SRS, 1 to sweep with z Shim
 %Options for spect_type = 1
 spect_pars.pulse_type = 1;  %0 - Basic Pulse; 1 - Ramp amplitude with min-jerk  
 spect_pars.AM_ramp_time = 2;9;  
-%  spect_pars.AM_ramp_time = 9; %Used for pulse_type = 1      2*16.7
 
 use_ACSync = 0;
 
@@ -153,7 +146,6 @@ setDigitalChannel(calctime(curtime,-20),'SRS Source',1);
 
 
 
-
 ScopeTriggerPulse(curtime,'Plane Select');
  %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -178,7 +170,7 @@ if (sweep_field == 0) %Sweeping frequency of SRS
 
 
     % Determine the range of the sweep
-    uWave_delta_freq_list= [20] /1000; 130;
+    uWave_delta_freq_list= [40] /1000; 130;
     uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
         seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq','kHz');
 

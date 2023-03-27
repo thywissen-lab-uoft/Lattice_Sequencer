@@ -1,4 +1,4 @@
-function curtime = lattice_FI(timein,opts)
+function curtime = lattice_FL(timein,opts)
 % Author : CJ Fujiwara
 %
 % This code is meant to run the fluoresence imaging.  Due to the complexity
@@ -156,8 +156,8 @@ if opts.EnableFPump && pulse_time > 0
     setDigitalChannel(calctime(curtime,pulse_time),'FPump Direct',1);  
     
     % Turn it back on for thermal stability (not sure if very helpful)
-    setAnalogChannel(calctime(curtime,0),'F Pump',9);
-    setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);    
+    setAnalogChannel(calctime(curtime,pulse_time+20),'F Pump',9);
+    setDigitalChannel(calctime(curtime,pulse_time+20),'F Pump TTL',0);    
 end
 
 %% EIT Probe Settings
@@ -174,7 +174,7 @@ if opts.EnableEITProbe && pulse_time > 0
     setDigitalChannel(calctime(curtime,pulse_time),'D1 TTL',0);
     
     % Turn on probe beams after shutter closed for thermal stability
-    setDigitalChannel(calctime(curtime,pulse_time),'D1 TTL',0);
+    setDigitalChannel(calctime(curtime,pulse_time+20),'D1 TTL',1);
 end
     
 %% Raman Settings Pulse Sequence
@@ -213,7 +213,7 @@ if opts.EnableRaman
     
 end
 
-% Raman Pulse Sequence
+%% Raman Pulse Sequence
 if opts.EnableRaman && pulse_time > 0
     % Make sure Raman beams are off ahead of time
     % We have them on to keep them thermally stable
@@ -246,6 +246,9 @@ if opts.EnableRaman && pulse_time > 0
 end
 
 %% Ixon Trigger and Programming
-
+    if (opts.TriggerIxon == 1)
+%         iXon_FluorescenceImage(curtime,'ExposureOffsetTime',opt.Microwave_Pulse_Length,'ExposureDelay',0,'FrameTime',opt.Microwave_Pulse_Length/opt.Num_Frames,'NumFrames',opt.Num_Frames)
+    end     
+        
 end
 

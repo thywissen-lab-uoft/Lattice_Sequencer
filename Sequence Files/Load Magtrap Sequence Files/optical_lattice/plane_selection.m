@@ -170,7 +170,7 @@ if (sweep_field == 0) %Sweeping frequency of SRS
 
 
     % Determine the range of the sweep
-    uWave_delta_freq_list= [40] /1000; 130;
+    uWave_delta_freq_list= [10] /1000; 130;
     uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
         seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq','kHz');
 

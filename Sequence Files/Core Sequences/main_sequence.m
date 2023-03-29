@@ -65,21 +65,7 @@ if seqdata.flags.misc_moveObjective
         getVarOrdered('objective_piezo'),1);
 end
     
-%% Four-Pass
 
-% Set 4-Pass Frequency
-detuning_list = [5];
-df = getScanParameter(detuning_list, seqdata.scancycle, seqdata.randcyclelist, 'detuning');
-DDSFreq = 324.206*1e6 + df*1e3/4;
-
-
-addOutputParam('qgm_eit_4pass_freq',DDSFreq*1e-6,'MHz');
-addOutputParam('qgm_eit_2photon_detuning',...
-    ((4*DDSFreq*1e-6)-seqdata.constants.hyperfine_ground)*1e3,'kHz');
-
-if seqdata.flags.misc_program4pass
-    DDS_sweep(calctime(curtime,0),2,DDSFreq,DDSFreq,calctime(curtime,1));
-end
 
 %% Gray Molasses
 % Why should this be here? Put it in the MOT part of the code?

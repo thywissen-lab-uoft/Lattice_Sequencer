@@ -1,34 +1,38 @@
 function curtime = lattice_FL(curtime)
+global seqdata
 
 if nargin==0
    curtime = 0; 
 end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%%%%% Enable and Disable Beams %%%%%%%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    fluor = struct;
-    fluor.EnableUWave           = 0;
-    fluor.EnableFpump           = 0;
-    fluor.EnableEITProbe        = 0;
-    fluor.EnableRaman           = 0;
-    
-    fluor.PulseTime             = 10; % in ms
+%% Flags
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%%%%% Camera Settings %%%%%%%%%%%%%%%%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    fluor.TriggerIxon          = 1;
-    fluor.NumberOfImages       = 1;
+    % uWave
+    fluor.EnableUWave           = 0;        % Use uWave freq sweep for n-->n
     
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%%%%% Magnetic Field Settings %%%%%%%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % This sets the quantizing field along the fpump axis.
-    fluor.doInitialFieldRamp    = 1;    
+    % Laser Beams
+    fluor.EnableFPump           = 1;        % Use FPUMP beam
+    fluor.EnableEITProbe        = 1;        % Use EIT Probe beams
+    fluor.EnableRaman           = 0;        % Use Raman Beams
     
-    B0 = 4; % Quantization Field
-    B0_shift_list = [0.095];
+    % Total Time
+    fluor.PulseTime             = 2000;       % pulse time for everything [ms]
+    
+    % Camera
+    fluor.TriggerIxon          = 1;         % Trigger the ixon?
+    fluor.NumberOfImages       = 2;         % How many images?
+
+    % Mangetic Field
+    fluor.doInitialFieldRamp    = 1;    % Auto specify ramps
+    fluor.doInitialFieldRamp2    = 0;       % Manuualy specify ramps
+
+
+%% Magnetic Field Settings
+% This sets the quantizing field along the fpump axis. It is assumed that
+% you are imaging along the FPUMP axis
+    
+    B0 = 4;         % Quantization Field
+    B0_shift_list = [.195];0.15;[0.095];
     
     % Quantization Field 
     B0_shift = getScanParameter(...
@@ -37,36 +41,72 @@ end
     
     fluor.CenterField = B0 + B0_shift;
     
-    addOutputParam('qgm_field',fluor.CenterField,'G');    
+    addOutputParam('qgm_field',fluor.CenterField,'G');   
+%% EIT Settings
+% This code set the Fpump power regulation and the 4 pass frequency
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%%%%% uWave Settings %%%%%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-    uWave_Freq_Shift_List = [-200:50:200];
+    F_Pump_List = [.7];
+    fluor.F_Pump_Power = getScanParameter(F_Pump_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V');
     
+    if ~isfield(seqdata,'flags')
+       seqdata.flags = struct; 
+    end
+    
+    if ~isfield(seqdata.flags,'misc_program4pass')
+        seqdata.flags.misc_program4pass = 1;
+    end
+    
+    % Set 4-Pass Frequency
+    detuning_list = [5];
+    df = getScanParameter(detuning_list, seqdata.scancycle, seqdata.randcyclelist, 'detuning');
+    DDSFreq = 324.206*1e6 + df*1e3/4;
+
+    % Hyperfine splitting at zero field
+    df0 = 714.327+571.462;
+
+    addOutputParam('qgm_eit_4pass_freq',DDSFreq*1e-6,'MHz');
+    addOutputParam('qgm_eit_2photon_detuning',...
+        ((4*DDSFreq*1e-6)-df0)*1e3,'kHz');
+    
+    if seqdata.flags.misc_program4pass
+        DDS_sweep(10,2,DDSFreq,DDSFreq,calctime(10,1));
+    end
+    
+    % Eventually program the EIT probe frequencies
+    
+%%  uWave Settings
+% If the uWave flag is enabled these settings are used to apply a uWave
+% frequency sweep in order to find the n-->n resonance location. It is
+% suggested that you match the frequency to the 4Pass frequency and then
+% vary the field since the 4Pass AOM will only remain coupled for a finite
+% range of frequencies.
+
+    uWave_Freq_Shift_List = [0];    
     uwave_freq_shift = getScanParameter(...
         uWave_Freq_Shift_List,seqdata.scancycle,seqdata.randcyclelist,...
-        'qgm_uwave_freq_shift','kHz');     
+        'qgm_uWave_freq_shift','kHz');     
     
+    uWave_SweepRange_list = [30];    
+    uWave_SweepRange = getScanParameter(...
+        uWave_SweepRange_list,seqdata.scancycle,seqdata.randcyclelist,...
+        'qgm_uWave_SweepRange','kHz');     
     
+    % Specify Frequency manually
     fluor.uWave_Frequency = 1296.824 + uwave_freq_shift/1000;
+    
+    % Specifiy Frequency using 4pass
+    fluor.uWave_Frequency = (4*DDSFreq)/1e6;
+    
+    
+    fluor.uWave_SweepRange = uWave_SweepRange;
     fluor.uWave_Power = 15;
     
     addOutputParam('qgm_uWave_Frequency',fluor.uWave_Frequency,'MHz');    
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%%%%% EIT Settings %%%%%%%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    F_Pump_List = [2];
-    fluor.F_Pump_Power = getScanParameter(F_Pump_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V');
-    
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%%%%% Raman Settings %%%%%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+
+%% Raman 1 Settings
       
-    %%% Raman 1 %%%
     V10 = 1.3;
     Raman1_Power_List = V10*[1];
     Raman1_ShiftFreq_List = [-175];       
@@ -79,8 +119,9 @@ end
     fluor.Raman1_EnableSweep = 0;
     fluor.Raman1_Power = Raman1_Power;
     fluor.Raman1_Frequency = 110 + Raman1_Freq_Shift/1000;
-        
-    %%% Raman 2 %%%
+    
+%% Raman 2 Settings
+
     V20 = 1.36;   
     Raman2_Power_List = V20*[1];
     Raman2_ShiftFreq_List = [0];       
@@ -93,10 +134,15 @@ end
     fluor.Raman2_EnableSweep = 0;
     fluor.Raman2_Power = Raman2_Power;
     fluor.Raman2_Frequency = 80 + Raman2_Freq_Shift/1000;        
-    
-    % Calculate frequencies (the Rigol and EOM could be programmed every
-    % run, but for now they are manuually specified).
+ %% Raman EOM Settings
+ % Eventually the Raman EOM should be programmed
+ 
     raman_eom_freq = 1266.924;
+
+%% Raman Calcuation
+% Based on the Raman AOM frequencies, calculate the 2photon detuning of the
+% Raman transition.  Ideally this should match the EIT 2photon detuning
+    
     
     raman_2photon_freq = (raman_eom_freq + fluor.Raman2_Frequency) - ...
         fluor.Raman1_Frequency;
@@ -108,10 +154,8 @@ end
     addOutputParam('qgm_raman_2photon_freq',raman_2photon_freq,'MHz');
     addOutputParam('qgm_raman_2photon_detuning',raman_2photon_detuning,'kHz');
     
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%%%%% Run Sub Function %%%%%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
+%% Run Sub Function
+     
     curtime = lattice_FL_helper(curtime,fluor);  
 end
 

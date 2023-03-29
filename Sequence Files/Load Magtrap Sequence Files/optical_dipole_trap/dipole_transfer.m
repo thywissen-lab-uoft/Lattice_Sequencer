@@ -76,7 +76,7 @@ xdt1_end_power = exp_end_pwr;
 xdt2_end_power = XDT2_power_func(exp_end_pwr);
 
 % Evaporation Time
-Time_List =  [25]*1e3; 18;% [15000] for normal experiment
+Time_List =  [25]*1e3; 25;18;% [15000] for normal experiment
 evap_time_total = getScanParameter(Time_List,seqdata.scancycle,...
     seqdata.randcyclelist,'evap_time','ms');   
 

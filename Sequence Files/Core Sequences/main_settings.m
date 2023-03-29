@@ -53,11 +53,11 @@ seqdata.constants.hyperfine_ground = 714.327+571.462;
 
 seqdata.flags.misc_calibrate_PA             = 0; % Pulse for PD measurement
 seqdata.flags.misc_lock_PA                  = 0; % Update wavemeter lock
-seqdata.flags.misc_program4pass             = 0; % Update four-pass frequency
+seqdata.flags.misc_program4pass             = 1; % Update four-pass frequency
 seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
 seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[1.7],'V');
+defVar('objective_piezo',[1.9],'V');1.7;
 % 0.1V = 700 nm, larger means further away from chamber
 % 1 V= 7 um
 % 10 V = 70 um
@@ -249,7 +249,7 @@ seqdata.flags.xdt_kill_Rb_after_evap        = 0;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_after_evap        = 0;    % optical remove 7/2 K after (untested)
 
 % XDT High Field Experiments
-seqdata.flags.xdt_evap2stage                = 0; %Perform K evap at low field
+seqdata.flags.xdt_evap2stage                = 1; %Perform K evap at low field
 seqdata.flags.xdt_evap2_HF                  = 0; %Perform K evap at high field (set rep. or attr. in file)
 seqdata.flags.xdt_high_field_a              = 0;
 

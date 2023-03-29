@@ -11,21 +11,6 @@ function curtime = lattice_FL_helper(timein,opts)
 % alignment.
 
 
-% Pulse time is the time for all spectroscopy (EIT/RSC/uWave)
-opts.PulseTime = 0; % in ms
-
-% Field manipulations
-opts.doInitialFieldRamp = 1;
-opts.CenterField = 4.175;
-
-% These flags enable or disable the entire section of code.  If these flags
-% % are set to zero, the code will program them to be off.
-% opts.EnableMicrowave = 0;
-% opts.EnableFPump = 0;
-% opts.EnableEITProbes = 0;
-% opts.EnableRaman = 0;
-
-
 %% CODE SUMMARY
 %
 % MAGNETIC FIELD
@@ -45,20 +30,18 @@ opts.CenterField = 4.175;
 %
 % This particular code CONSTRAINS all of these times and triggers to happen
 % at the same time (since this is realistic for fluoresence imaging).  
-%
+
 
 global seqdata;
 curtime = timein;
+
+pulse_time = opts.PulseTime;
 
 %% INTIAL MAGNETIC FIELD RAMP
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%% Magnetic Field Settings %%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-CenterField = opts.CenterField;
 
 % Additional Magnetic field offset
 X_Shim_Offset = 0;
@@ -68,10 +51,10 @@ Z_Shim_Offset = 0.055;
 % Selection angle between X and Y shims
 theta_list = [62];
 theta = getScanParameter(theta_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'Raman_Angle');
+    seqdata.scancycle,seqdata.randcyclelist,'qgm_Bfield_angle','deg');
 
 % Convert the quantization magnetic field to frequency (|9,-9>->|7,-7>)
-df = CenterField*2.4889; % MHz
+df = opts.CenterField*2.4889; % MHz
 
 % Coefficients that convert from XY shim current (A) to frequency (MHz) 
 shim_calib = [2.4889*2, 0.983*2.4889*2]; % MHz/A
@@ -79,31 +62,73 @@ shim_calib = [2.4889*2, 0.983*2.4889*2]; % MHz/A
 % Field strength and angle into current
 X_Shim_Value = df*cosd(theta)/shim_calib(1);
 Y_Shim_Value = df*sind(theta)/shim_calib(2);
+%%
+% Ramp up gradient and Feshbach field  
+if opts.doInitialFieldRamp
 
-    % Ramp up gradient and Feshbach field  
-    if opts.doInitialFieldRamp
-        
-        % What the code should do :
-        % Turn off Feshbachbach Field (close switch as well)
-        % Turn off QP Field (should probably set FF to zero)
-        % Ramp the shims to the correct value
-        
-        newramp = struct('ShimValues',seqdata.params.shim_zero + ...
-            [X_Shim_Value+X_Shim_Offset, ...
-            Y_Shim_Value+Y_Shim_Offset, ...
-            Z_Shim_Offset],...
-            'FeshValue',0.01,...
-            'QPValue',0,...
-            'SettlingTime',100);
+    % What the code should do :
+    % Turn off Feshbachbach Field (close switch as well)
+    % Turn off QP Field (should probably set FF to zero)
+    % Ramp the shims to the correct value
+
+    newramp = struct('ShimValues',seqdata.params.shim_zero + ...
+        [X_Shim_Value+X_Shim_Offset, ...
+        Y_Shim_Value+Y_Shim_Offset, ...
+        Z_Shim_Offset],...
+        'FeshValue',0.01,...
+        'QPValue',0,...
+        'SettlingTime',100);
 curtime = rampMagneticFields(calctime(curtime,0), newramp);
-    end      
+end      
+
+%% Magnetic Field Ramp 2
+
+if opts.doInitialFieldRamp2
+    tShimRamp = 100;
+    tShimSettle = 10;
+    tFBRamp = 100;
+    tFBSettle = 50;
+    
+    Ix = X_Shim_Value + X_Shim_Offset + seqdata.params.shim_zero(1);
+    Iy = Y_Shim_Value + Y_Shim_Offset + seqdata.params.shim_zero(2);
+    Iz = Z_Shim_Offset + seqdata.params.shim_zero(3);    
+    
+    %Ramp shim fields
+    AnalogFuncTo(calctime(curtime,0),'X Shim',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        tShimRamp,tShimRamp,Ix,3);
+    AnalogFuncTo(calctime(curtime,0),'Y Shim',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        tShimRamp,tShimRamp,Iy,4);
+    AnalogFuncTo(calctime(curtime,0),'Z Shim',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        tShimRamp,tShimRamp,Iz,3);
+    curtime = calctime(curtime,tShimRamp);
+    
+    curtime = calctime(curtime,tShimSettle);
+    
+    % Turn off FB and any QP Field
+    
+    % Turn off FB Current
+    AnalogFuncTo(calctime(curtime,0),'FB current',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        tFBRamp,tFBRamp,0);
+    
+    % Turn off transport supply
+    AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+        tFBRamp,tFBRamp,0);
+    
+    curtime = calctime(curtime,tFBRamp);    
+    curtime = calctime(curtime,tFBSettle); 
+end
     
 %% Extra Settling Time
 
 curtime = calctime(curtime,100);
 
 
-%% uWave HS1 Settings
+%% uWave Settings
 
 if opts.EnableUWave && pulse_time > 0
     % Spetroscopy parameters
@@ -114,7 +139,7 @@ if opts.EnableUWave && pulse_time > 0
     
     spec_pars.FREQ =  opts.uWave_Frequency;                % Center in MHz
     spec_pars.FDEV = (opts.uWave_SweepRange/2)/1000; % Amplitude in MHz
-    spec_pars.AMPR = opts.uWave_power;               % Power in dBm
+    spec_pars.AMPR = opts.uWave_Power;               % Power in dBm
     spec_pars.ENBR = 1;                         % Enable N Type
     spec_pars.GPIB = 30;                        % SRS GPIB Address    
 
@@ -123,7 +148,7 @@ end
 
 %% D1 and EIT Shutter Open and Close
 
-if (opts.EnableFpump || opts.EnableEITProbe) && pulse_time > 0
+if (opts.EnableFPump || opts.EnableEITProbe) && pulse_time > 0
     
     % Open Shutter
     setDigitalChannel(calctime(curtime,-5),'D1 Shutter',1);    
@@ -145,12 +170,12 @@ if opts.EnableFPump && pulse_time > 0
     setAnalogChannel(calctime(curtime,-10),'F Pump',-1);
     setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
     
-    % Enable Regulation 
+    % Turn on F Pump
     setAnalogChannel(calctime(curtime,0),'F Pump',opts.F_Pump_Power);
     setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
     setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
     
-     % Disable Regulation 
+    % Turn off F Pump
     setAnalogChannel(calctime(curtime,pulse_time),'F Pump',-1);
     setDigitalChannel(calctime(curtime,pulse_time),'F Pump TTL',1);
     setDigitalChannel(calctime(curtime,pulse_time),'FPump Direct',1);  
@@ -246,8 +271,17 @@ if opts.EnableRaman && pulse_time > 0
 end
 
 %% Ixon Trigger and Programming
-    if (opts.TriggerIxon == 1)
-%         iXon_FluorescenceImage(curtime,'ExposureOffsetTime',opt.Microwave_Pulse_Length,'ExposureDelay',0,'FrameTime',opt.Microwave_Pulse_Length/opt.Num_Frames,'NumFrames',opt.Num_Frames)
+    if (opts.TriggerIxon)        
+        % Pre Trigger a while before to flush camera?
+        DigitalPulse(calctime(curtime,-6000),...
+            'iXon Trigger',1,1);        
+        
+        % Trigger camera evenly throughout the pulse time
+        ts = linspace(0,opts.PulseTime,opts.NumberOfImages+1);
+        for kk=1:(length(ts)-1)
+            DigitalPulse(calctime(curtime,ts(kk)),...
+                'iXon Trigger',1,1);
+        end        
     end     
         
 end

@@ -60,7 +60,7 @@ do_RF_spectroscopy = 0;                 % (3952,4970)
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 seqdata.flags.lattice_do_optical_pumping = 1;                 % (1426) keep : optical pumping in lattice  
-seqdata.flags.do_plane_selection =0 ;                 % Plane selection flag
+seqdata.flags.do_plane_selection = 1 ;                 % Plane selection flag
 
 % Actual fluorsence image flag
 seqdata.flags.Raman_transfers = 1;
@@ -954,8 +954,9 @@ end
 %
 %  - 2022/07/04 - EIT Probe 2 gets 60% transfer w 100us pulse time (2-3 uW)
 %  - 2022/07/04 - EIT Prboe 1 gets 80% transfer w 100us pulse time (2-3 uW)
-
 %  - 2023/02/26 - F pump gets 57% transfer back to F=9/2 w 0.1V and 1ms 
+
+%  - 2023/03/28 - F pump gets 40% transfer back to F=9/2 w 0.1V and 100 us
 %  - 2023/03/23 - EIT probe 1 gets 60% transfer w 10 us pulse time (2-3 uW)
 %  - 2023/03/23 - EIT probe 2 gets 65% transfer w 100 us pulse time (2-3 uW)
 
@@ -999,7 +1000,7 @@ if (seqdata.flags.Raman_transfers == 1)
 %     horizontal_plane_select_params.Enable_Raman = 0 ;
     
     %%%% F Pump Power %%%
-    F_Pump_List = [2];2.3;
+    F_Pump_List = [1.1];[.9];2.3;
     horizontal_plane_select_params.F_Pump_Power = getScanParameter(F_Pump_List,...
         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V'); %1.4; (1.2 is typically max)
         
@@ -1108,7 +1109,7 @@ if (seqdata.flags.Raman_transfers == 1)
     
     % Shim values for quantizing field
     % This affects Raman, Microwave, and EIT mechanisms.
-    Field_Shift_List = [.095];[0.175];[0.155]; 0.155; %unit G 
+    Field_Shift_List = .195;[.095];[0.175];[0.155]; 0.155; %unit G 
     horizontal_plane_select_params.Field_Shift = getScanParameter(...
         Field_Shift_List,seqdata.scancycle,seqdata.randcyclelist,...
         'Field_Shift','G');    

@@ -1,32 +1,46 @@
-function [curtime] = plane_selection(timein)
+function [curtime] = plane_selection(timein,opts)
+
+ 
+ if nargin == 0
+     timein = 10;
+ end
+ 
+if nargin == 1
+    opts = struct;
+end
+ 
 
 global seqdata
  curtime = timein;
- 
 %% Flags
 
 % Establish field gradeint with QP, FB, and shim fields for plane selection
-ramp_fields = 1; 
+opts.ramp_fields = 1; 
 
 % Do you want to fake the plane selection sweep?
 %0=No, 1=Yes, no plane selection but remove all atoms.
 fake_the_plane_selection_sweep = 0; 
 
 % Pulse the vertical D2 kill beam to kill untransfered F=9/2
-planeselect_doVertKill = 1;
+opts.planeselect_doVertKill = 1;
 
 % Transfer back to -9/2 via uwave transfer
-planeselect_doMicrowaveBack = 0;    
+opts.planeselect_doMicrowaveBack = 0;    
 
 % Pulse repump to remove leftover F=7/2
-planeselect_doFinalRepumpPulse = 0;
+opts.planeselect_doFinalRepumpPulse = 0;
 
+% Choose the Selection Mode
+opts.SelectMode = 'SweepFreq';   % sweep freq 
+
+% opts.SelectMode = 'SweepField'; % Not programmed yet 
+% opts.SelectMode = 'SweepFieldLegacy'; % old way
 
 
 %% Magnetic Field Ramps
 
 FB_init = getChannelValue(seqdata,37,1,0);
-if ramp_fields
+if opts.ramp_fields
     % Ramp the SHIMs, QP, and FB to the appropriate level  
     disp(' Ramping fields');
     clear('ramp');       
@@ -72,62 +86,7 @@ if ramp_fields
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
 end
-%% uWave Settings
-
-
-spect_pars.freq = 1606.75;   % |9/2,-9/2>
-spect_pars.power = 15;15;%6.5; %-15 %uncalibrated "gain" for rf
-
-ffscan_list = [100]/1000;%frequency sweep width
-ffscan = getScanParameter(ffscan_list,seqdata.scancycle,seqdata.randcyclelist,'ffscan');
-
-
-planeselect_sweep_width = ffscan;%500/1000;
-spect_pars.delta_freq = planeselect_sweep_width; %300
-spect_pars.mod_dev = planeselect_sweep_width; %Frequency range of SRS (MHz/V, input range is +/-1V, eg: 1/1000 means +/-500Hz)
-Cycle_About_Freq_Val = 1; %1 if freq_val is centre freq, 0 if it is start freq.
-
-
-if(~Cycle_About_Freq_Val)
-    spect_pars.freq = spect_pars.freq + spect_pars.delta_freq / 2;
-end
-
-planeselect_pulse_length = planeselect_sweep_width * 1000 / 10 * 2; %2ms per 10kHz        
-spect_pars.pulse_length = planeselect_pulse_length; % also is sweep length (max is Keithley time - 20ms)       1*16.7
-spect_pars.uwave_delay = 0; %wait time before starting pulse
-spect_pars.uwave_window = 45; % time to wait during 60Hz sync pulse (Keithley time +20ms)
-spect_type = 2; %1: sweeps, 2: pulse, 7: 60Hz sync sweeps
-sweep_field = 0; %0 to sweep with SRS, 1 to sweep with z Shim
-%Options for spect_type = 1
-spect_pars.pulse_type = 1;  %0 - Basic Pulse; 1 - Ramp amplitude with min-jerk  
-spect_pars.AM_ramp_time = 2;9;  
-
-use_ACSync = 0;
-
-% Define the SRS frequency
-freq_list = 1050;[750]; [355];[340];[-300];       
-
-% 2021/06/22 CF
-% Use this when Xshimd=3, zshimd=-1 and you vary yshimd
-%     freq_list=interp1([-3 0.27 3],[100 -200 -500],yshimd);
-
-% use this when yshimd=3, zshim3=-1 an dyou vary xshimd
-% freq_list=interp1([-3 0 3],[-200 -400 -500],xshimd);
-
-freq_offset = getScanParameter(freq_list,seqdata.scancycle,...
-    seqdata.randcyclelist,'uwave_freq_offset','kHz from 1606.75 MHz');
-
-disp(['     Freq Offset  : ' num2str(freq_offset) ' kHz']);
-
-% SRS settings (may be overwritten later)
-uWave_opts=struct;
-uWave_opts.Address=30;                        % K uWave ("SRS B");
-uWave_opts.Frequency=1606.75+freq_offset*1E-3;% Frequency in MHz
-uWave_opts.Power= 15;%15                      % Power in dBm
-uWave_opts.Enable=1;                          % Enable SRS output    
-
-addOutputParam('uwave_pwr',uWave_opts.Power)
-addOutputParam('uwave_frequency',uWave_opts.Frequency);    
+%% Prepare for uWave Transitions
 
 % Make sure RF, Rb uWave, K uWave are all off for safety
 setDigitalChannel(calctime(curtime,-50),'RF TTL',0);
@@ -144,8 +103,6 @@ setDigitalChannel(calctime(curtime,-30),'K/Rb uWave Transfer',0);
 setDigitalChannel(calctime(curtime,-20),'K uWave Source',1); 
 setDigitalChannel(calctime(curtime,-20),'SRS Source',1);  
 
-
-
 ScopeTriggerPulse(curtime,'Plane Select');
  %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -155,9 +112,37 @@ ScopeTriggerPulse(curtime,'Plane Select');
 % sweep to transfer atoms from the F=9/2 manifold to the F=7/2 in a
 % specific plane.
 
-if (sweep_field == 0) %Sweeping frequency of SRS
-    disp('Using SRS to plane select');
+switch opts.SelectMode
+    case 'SweepFreq'
+    
+    % 2021/06/22 CF
+    % Use this when Xshimd=3, zshimd=-1 and you vary yshimd
+    %     freq_list=interp1([-3 0.27 3],[100 -200 -500],yshimd);
 
+    % use this when yshimd=3, zshim3=-1 an dyou vary xshimd
+    % freq_list=interp1([-3 0 3],[-200 -400 -500],xshimd);
+
+    % Define the SRS frequency
+    freq_list = 1050;[750]; [355];[340];[-300];       
+
+    freq_offset = getScanParameter(freq_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'uwave_freq_offset','kHz from 1606.75 MHz');
+
+    disp(['     Freq Offset  : ' num2str(freq_offset) ' kHz']);
+
+    % SRS settings (may be overwritten later)
+    uWave_opts=struct;
+    uWave_opts.Address=30;                        % K uWave ("SRS B");
+    uWave_opts.Frequency=1606.75+freq_offset*1E-3;% Frequency in MHz
+    uWave_opts.Power= 15;%15                      % Power in dBm
+    uWave_opts.Enable=1;                          % Enable SRS output    
+
+    addOutputParam('uwave_pwr',uWave_opts.Power)
+    addOutputParam('uwave_frequency',uWave_opts.Frequency);    
+
+    % Enanble/Disable the ACSynce
+    use_ACSync = 0;
+    
     disp('HS1 Sweep Pulse');
 
     % Calculate the beta parameter
@@ -167,7 +152,6 @@ if (sweep_field == 0) %Sweeping frequency of SRS
     % Relative envelope size (less than or equal to 1)
     env_amp=1;
     addOutputParam('uwave_HS1_amp',env_amp);
-
 
     % Determine the range of the sweep
     uWave_delta_freq_list= [10] /1000; 130;
@@ -209,14 +193,14 @@ if (sweep_field == 0) %Sweeping frequency of SRS
         sweep_time,sweep_time,beta,1);
 
     if  ~fake_the_plane_selection_sweep
-    % Sweep the VVA (use voltage func 2 to invert the vva transfer
-    % curve (normalized 0 to 10
-    AnalogFunc(calctime(curtime,0),'uWave VVA',...
-        @(t,T,beta,A) A*sech(2*beta*(t-0.5*sweep_time)/sweep_time),...
-        sweep_time,sweep_time,beta,env_amp,2);
+        % Sweep the VVA (use voltage func 2 to invert the vva transfer
+        % curve (normalized 0 to 10
+        AnalogFunc(calctime(curtime,0),'uWave VVA',...
+            @(t,T,beta,A) A*sech(2*beta*(t-0.5*sweep_time)/sweep_time),...
+            sweep_time,sweep_time,beta,env_amp,2);
     end
 
-    % Wait
+    % Wait for the sweep
     curtime = calctime(curtime,sweep_time);
 
     % Turn off the uWave
@@ -233,17 +217,49 @@ if (sweep_field == 0) %Sweeping frequency of SRS
 
     % Program the SRS
     programSRS(uWave_opts); 
+    
+    % Additional wait
 curtime = calctime(curtime,75);
 
-elseif (sweep_field == 1) % Sweeping field with z Shim, SRS frequency is fixed
+    case 'SweepFieldLegacy'
+    %%
     disp('Using Z shim to plane select');
+    
+    % uwave freq width (gets overwritten)
+    ffscan_list = [100]/1000;%frequency sweep width
+    ffscan = getScanParameter(ffscan_list,seqdata.scancycle,seqdata.randcyclelist,'ffscan');
+    planeselect_sweep_width = ffscan;%500/1000;
+
+    % SRS Settings (get's overwritten)
+    spect_pars.freq = 1606.75;   % |9/2,-9/2>
+    spect_pars.power = 15;15;%6.5; %-15 %uncalibrated "gain" for rf
+    spect_pars.delta_freq = planeselect_sweep_width; %300
+    spect_pars.mod_dev = planeselect_sweep_width; %Frequency range of SRS (MHz/V, input range is +/-1V, eg: 1/1000 means +/-500Hz)
+
+    % What does this mean?
+    Cycle_About_Freq_Val = 1; %1 if freq_val is centre freq, 0 if it is start freq.
+    if(~Cycle_About_Freq_Val)
+        spect_pars.freq = spect_pars.freq + spect_pars.delta_freq / 2;
+    end
+
+    % uWave Timings (get's overwritten)
+    planeselect_pulse_length = planeselect_sweep_width * 1000 / 10 * 2; %2ms per 10kHz        
+    spect_pars.pulse_length = planeselect_pulse_length; % also is sweep length (max is Keithley time - 20ms)       1*16.7
+    spect_pars.uwave_delay = 0; %wait time before starting pulse
+    spect_pars.uwave_window = 45; % time to wait during 60Hz sync pulse (Keithley time +20ms)
+
+    %Options for spect_type = 1
+    spect_pars.pulse_type = 1;  %0 - Basic Pulse; 1 - Ramp amplitude with min-jerk  
+    spect_pars.AM_ramp_time = 2;9;  
+    
+    
 
     %SRS in pulsed mode with amplitude modulation
     spect_type = 2;
 
     %Take frequency range in MHz, convert to shim range in Amps
     %  (-5.714 MHz/A on Jan 29th 2015)
-    if (seqdata.flags. K_RF_sweep==1 || seqdata.flags. xdt_K_p2n_rf_sweep_freq==1)
+    if (seqdata.flags.K_RF_sweep==1 || seqdata.flags.xdt_K_p2n_rf_sweep_freq==1)
         %In -ve mF state, frequency increases with field
         dBz = spect_pars.delta_freq / (5.714);
     else 
@@ -328,7 +344,7 @@ end
 % Apply a vertical *upwards* D2 beam resonant with the 9/2 manifold to 
 % remove any atoms not transfered to the F=7/2 manifold.
 
-if planeselect_doVertKill==1
+if opts.planeselect_doVertKill==1
     dispLineStr('Applying vertical D2 Kill Pulse',curtime);
 
     %Resonant light pulse to remove any untransferred atoms from
@@ -393,7 +409,7 @@ end
 % uWave Transfer back to |9/2,-9/2>
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-if planeselect_doMicrowaveBack
+if opts.planeselect_doMicrowaveBack
     % Transfer the |7,-7> back to |9,-9>.  This sweep can be broad
     % because everything else is dead (nominally). This step is
     % also somewhat uncessary because the Raman beams during
@@ -483,7 +499,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Repump to kill F=7/2
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-if planeselect_doFinalRepumpPulse
+if opts.planeselect_doFinalRepumpPulse
     %Pulse on repump beam to try to remove any atoms left in F=7/2
     repump_pulse_time = 5;
     repump_pulse_power = 0.7;

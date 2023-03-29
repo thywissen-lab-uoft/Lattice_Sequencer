@@ -19,7 +19,7 @@ opts.ramp_fields = 1;
 
 % Do you want to fake the plane selection sweep?
 %0=No, 1=Yes, no plane selection but remove all atoms.
-fake_the_plane_selection_sweep = 0; 
+opts.fake_the_plane_selection_sweep = 0; 
 
 % Pulse the vertical D2 kill beam to kill untransfered F=9/2
 opts.planeselect_doVertKill = 1;
@@ -31,9 +31,9 @@ opts.planeselect_doMicrowaveBack = 0;
 opts.planeselect_doFinalRepumpPulse = 0;
 
 % Choose the Selection Mode
-opts.SelectMode = 'SweepFreq';   % sweep freq 
+opts.SelectMode = 'SweepFreq';          % Sweep SRS frequency
 
-% opts.SelectMode = 'SweepField'; % Not programmed yet 
+% opts.SelectMode = 'SweepField';       % Not programmed yet 
 % opts.SelectMode = 'SweepFieldLegacy'; % old way
 
 
@@ -86,7 +86,7 @@ if opts.ramp_fields
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
 end
-%% Prepare for uWave Transitions
+%% Prepare Switches for uWave Radiation
 
 % Make sure RF, Rb uWave, K uWave are all off for safety
 setDigitalChannel(calctime(curtime,-50),'RF TTL',0);
@@ -100,6 +100,7 @@ setDigitalChannel(calctime(curtime,-40),'RF/uWave Transfer',1);
 setDigitalChannel(calctime(curtime,-30),'K/Rb uWave Transfer',0);
 
 % RF Switch for K SRS depreciated? (1:B, 0:A)
+% Warning : may need to check the RF diagram for this to be correct
 setDigitalChannel(calctime(curtime,-20),'K uWave Source',1); 
 setDigitalChannel(calctime(curtime,-20),'SRS Source',1);  
 
@@ -158,7 +159,7 @@ switch opts.SelectMode
     uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
         seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq','kHz');
 
-
+    % the sweep time is based on old calibration for rabi frequency
     uwave_sweep_time_list =[uWave_delta_freq]*1000/10*2; 
     sweep_time = getScanParameter(uwave_sweep_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'uwave_sweep_time');     
@@ -181,7 +182,7 @@ switch opts.SelectMode
     end
 
     % Turn on the uWave        
-    if  ~fake_the_plane_selection_sweep
+    if  ~opts.fake_the_plane_selection_sweep
         setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);    
     end
 
@@ -192,7 +193,7 @@ switch opts.SelectMode
         @(t,T,beta) tanh(2*beta*(t-0.5*sweep_time)/sweep_time),...
         sweep_time,sweep_time,beta,1);
 
-    if  ~fake_the_plane_selection_sweep
+    if  ~opts.fake_the_plane_selection_sweep
         % Sweep the VVA (use voltage func 2 to invert the vva transfer
         % curve (normalized 0 to 10
         AnalogFunc(calctime(curtime,0),'uWave VVA',...
@@ -325,7 +326,7 @@ curtime = calctime(curtime,75);
     ramp_bias_fields(calctime(curtime,0), ramp);
 
     %Extra Parameters for the plane selecting pulse
-    spect_pars.fake_pulse = fake_the_plane_selection_sweep;  %Whether to actually open the uWave switch (0: do pulse; 1: don't do pulse)
+    spect_pars.fake_pulse = opts.fake_the_plane_selection_sweep;  %Whether to actually open the uWave switch (0: do pulse; 1: don't do pulse)
     spect_pars.power_scale = 1; %Diminish the uWave power from the programmed value
 
         %Do plane selection pulse

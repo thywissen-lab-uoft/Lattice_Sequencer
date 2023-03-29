@@ -105,21 +105,16 @@ setDigitalChannel(calctime(curtime,-20),'K uWave Source',1);
 setDigitalChannel(calctime(curtime,-20),'SRS Source',1);  
 
 ScopeTriggerPulse(curtime,'Plane Select');
- %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Plane select via uWave application
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Apply microwaves inconjuction with a frequency or magnetic field
-% sweep to transfer atoms from the F=9/2 manifold to the F=7/2 in a
-% specific plane.
+
+%% Apply the uWaves
 
 switch opts.SelectMode
-    case 'SweepFreq'
+    case 'SweepFreq'        
+    %% Sweep Frequency
     
     % 2021/06/22 CF
     % Use this when Xshimd=3, zshimd=-1 and you vary yshimd
-    %     freq_list=interp1([-3 0.27 3],[100 -200 -500],yshimd);
-
+    % freq_list=interp1([-3 0.27 3],[100 -200 -500],yshimd);
     % use this when yshimd=3, zshim3=-1 an dyou vary xshimd
     % freq_list=interp1([-3 0 3],[-200 -400 -500],xshimd);
 
@@ -223,7 +218,7 @@ switch opts.SelectMode
 curtime = calctime(curtime,75);
 
     case 'SweepFieldLegacy'
-    %%
+    %% Sweep Field Legacy (Pre CF)
     disp('Using Z shim to plane select');
     
     % uwave freq width (gets overwritten)

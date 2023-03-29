@@ -56,9 +56,9 @@ if opts.ramp_fields
 
     %Both these x and y values can be large and negative. Draw from the
     %'positive' shim supply when negative. Just don't fry the shim.
-    ramp.xshim_final = seqdata.params. shim_zero(1)-2.548 + xshimd;% -0.7 @ 40/7, (0.46-0.008-.05-0.75)*1+0.25 @ 40/14
-    ramp.yshim_final = seqdata.params. shim_zero(2)-0.276 + yshimd;
-    ramp.zshim_final = seqdata.params. shim_zero(3)+zshimd; %Plane selection uses this shim to sweep... make its value larger?
+    ramp.xshim_final = seqdata.params. shim_zero(1) - 2.548 + xshimd;% -0.7 @ 40/7, (0.46-0.008-.05-0.75)*1+0.25 @ 40/14
+    ramp.yshim_final = seqdata.params. shim_zero(2) - 0.276 + yshimd;
+    ramp.zshim_final = seqdata.params. shim_zero(3) + zshimd; %Plane selection uses this shim to sweep... make its value larger?
     ramp.shim_ramptime = 100;
     ramp.shim_ramp_delay = -10; % ramp earlier than FB field if FB field is ramped to zero
 
@@ -76,7 +76,7 @@ if opts.ramp_fields
     fb_shift_list = [.6];[0.6];[0.56];%0.2 for 0.7xdt power
     fb_shift = getScanParameter(fb_shift_list,seqdata.scancycle,...
         seqdata.randcyclelist,'fb_shift');
-    ramp.fesh_final = 128-fb_shift;125.829-fb_shift; 
+    ramp.fesh_final = 128-fb_shift;
 
     % QP coil settings for spectroscopy
     ramp.QP_ramptime = 100;

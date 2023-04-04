@@ -1171,7 +1171,7 @@ if seqdata.flags.xdt_hf_crossFBDown
     pulse2.pulse_length     = ramptime/4;10;
     pulse2.power            = 0;            
     pulse2.freq             = f2;
-    f2_delay = ramptime - ramptime/4 -1;     % delay by -1ms from desired pulse delay bc rf_uwave_spectroscopy is dumb
+    f2_delay = ramptime - ramptime/4 -1;     % delay by -1ms from desired pulse delay bc rf__spectroscopy is dumb
 
 
     % Apply each pulse

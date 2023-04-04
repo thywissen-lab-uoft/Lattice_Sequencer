@@ -65,6 +65,7 @@ seqdata.flags.do_plane_selection            = 1;                 % Plane selecti
 % Actual fluorsence image flag
 seqdata.flags.Raman_transfers               = 0;
 seqdata.flags.lattice_fluor                 = 1;
+seqdata.flags.lattice_fluor_bkgd            = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other Parameters
@@ -560,7 +561,7 @@ curtime = calctime(curtime,optical_pump_time);
     % Turn off OP before F-pump so atoms repumped back to -9/2.
     setDigitalChannel(calctime(curtime,0),'D1 OP TTL',0);
 
-    op_repump_extra_time = 2; %additional time for which repump beams are on
+    op_repump_extra_time = 3; %additional time for which repump beams are on
     % Close optical pumping AOMS (no light)
     setDigitalChannel(calctime(curtime,op_repump_extra_time),'F Pump TTL',1);%1
     setAnalogChannel(calctime(curtime,op_repump_extra_time),'F Pump',-1);%1

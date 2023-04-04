@@ -1,7 +1,10 @@
-function curtime = lattice_FL(curtime)
+function curtime = lattice_FL(curtime,override)
 global seqdata
 
 %% Flags
+
+    fluor=struct;
+
 
     % uWave
     fluor.EnableUWave           = 0;        % Use uWave freq sweep for n-->n
@@ -13,7 +16,7 @@ global seqdata
     
     % Total Time
     fluor.PulseTime             = 2000;       % pulse time for everything [ms]
-    % 1 ms
+    % 1 ms for transfers and 
     
     % Camera
     fluor.TriggerIxon          = 1;     % Trigger the ixon?
@@ -28,7 +31,19 @@ global seqdata
 
     % Mangetic Field
     fluor.doInitialFieldRamp    = 1;    % Auto specify ramps
+    
+    
     fluor.doInitialFieldRamp2   = 0;    % Manuualy specify ramps
+    
+    
+%% Override flags if desired
+
+if nargin == 2
+    fnames = fieldnames(override);
+    for kk=1:length(fnames)
+        fluor.(fnames{kk}) = override.(fnames{kk});
+    end
+end    
     
     
 %% Edge cases

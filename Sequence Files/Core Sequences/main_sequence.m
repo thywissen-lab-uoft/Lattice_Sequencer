@@ -525,6 +525,18 @@ setAnalogChannel(calctime(curtime,0),'X Shim',0,1);
 setAnalogChannel(calctime(curtime,0),'Y Shim',0,1);
 setAnalogChannel(calctime(curtime,0),'Z Shim',0,1);   
 
+%% Take Background Fluoresence Image
+
+if seqdata.flags.lattice
+    
+    if (isfield(seqdata.flags.lattice,'lattice_fluor') && ...
+            isfield(seqdata.flags.lattice,'lattice_fluor_bkgd') && ...
+            seqdata.flags.lattice.lattice_fluor && ...
+            seqdata.flags.lattice.lattice_fluor_bkgd)
+    
+    end
+end
+
 %% Load MOT
 % Load the MOT
 dispLineStr('Load the MOT',curtime);

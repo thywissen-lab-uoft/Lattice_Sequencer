@@ -866,8 +866,8 @@ if seqdata.flags.xdt_rfmix_start
 
 
     T60=16.666; % 60 Hz period
-
-    do_ACync_rf = 1;
+    % 2023/04/04 disconnected from ACync for uwave
+    do_ACync_rf = 0;
     if do_ACync_rf
         ACync_start_time = calctime(curtime,-30);
         ACync_end_time = calctime(curtime,(sweep_pars.pulse_length+T60)*n_sweeps_mix+30);

@@ -5624,9 +5624,9 @@ end
 %  setDigitalChannel(calctime(curtime,0),'Raman TTL 1',1);
 %  setAnalogChannel(calctime(curtime,0),'Plug',2500); %0.12
  
-setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1);  
-setDigitalChannel(calctime(curtime,0),'K Probe/OP shutter',0); 
-setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1);  
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP shutter',0); 
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
 
 % 
 % setAnalogChannel(calctime(curtime,0),'F Pump',9.99);
@@ -5645,11 +5645,28 @@ setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
 % ScopeTriggerPulse(curtime,'Op amp on');
 % SelectScopeTrigger('Op amp on');
 
+setAnalogChannel(calctime(curtime,0),'uWave FM/AM',-1);
+curtime=calctime(curtime,100);
 
-% 
-    setDigitalChannel(calctime(curtime,0),'Rb Probe/OP Shutter',0); % Open shutter
-    setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',1); % Set 
-    setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',0); % inverted logic
+setDigitalChannel(curtime,'ACync Master',1);
+
+curtime = calctime(curtime,1);
+
+AnalogFuncTo(calctime(curtime,0),'uWave FM/AM',...
+    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,1,1);
+DigitalPulse(calctime(curtime,0),'K uWave TTL',1.0,1);
+
+curtime = calctime(curtime,25);
+
+setDigitalChannel(calctime(curtime,0),'ACync Master',0);
+
+curtime = calctime(curtime,15);
+
+
+% % 
+%     setDigitalChannel(calctime(curtime,0),'Rb Probe/OP Shutter',0); % Open shutter
+%     setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',1); % Set 
+%     setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',0); % inverted logic
 
 timeout = curtime;
 % SelectScopeTrigger('PA_Pulse');

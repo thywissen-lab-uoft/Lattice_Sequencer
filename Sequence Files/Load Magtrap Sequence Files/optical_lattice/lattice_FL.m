@@ -1,10 +1,6 @@
 function curtime = lattice_FL(curtime)
 global seqdata
 
-if nargin==0
-   curtime = 0; 
-end
-
 %% Flags
 
     % uWave
@@ -13,20 +9,39 @@ end
     % Laser Beams
     fluor.EnableFPump           = 1;        % Use FPUMP beam
     fluor.EnableEITProbe        = 1;        % Use EIT Probe beams
-    fluor.EnableRaman           = 0;        % Use Raman Beams
+    fluor.EnableRaman           = 1;        % Use Raman Beams
     
     % Total Time
     fluor.PulseTime             = 2000;       % pulse time for everything [ms]
+    % 1 ms
     
     % Camera
-    fluor.TriggerIxon          = 1;         % Trigger the ixon?
-    fluor.NumberOfImages       = 2;         % How many images?
+    fluor.TriggerIxon          = 1;     % Trigger the ixon?
+    fluor.NumberOfImages       = 2;     % How many fluoresence images?
+    
+    % Camera : clear buffer trig
+    % Trigger the camera ahead of time to clear it's buffer (useful??)
+    fluor.doClearBufferExposure = 1;
+    seqdata.flags.qgm_doClearBufferExposure = fluor.doClearBufferExposure;
+    
+    fluor.bufferPreTriggerTime  = -6000; % How far ahead to take the image
 
     % Mangetic Field
     fluor.doInitialFieldRamp    = 1;    % Auto specify ramps
-    fluor.doInitialFieldRamp2    = 0;       % Manuualy specify ramps
-
-
+    fluor.doInitialFieldRamp2   = 0;    % Manuualy specify ramps
+    
+    
+%% Edge cases
+if nargin==0 || curtime == 0
+   curtime = 0; 
+   main_settings;
+   curtime = calctime(curtime,7000);
+      
+   % If running code as a separate module, DO NOT change shims unless you 
+   % really mean to as they can overheat
+    fluor.doInitialFieldRamp2 = 0;
+    fluor.doInitialFieldRamp = 0;
+end
 %% Magnetic Field Settings
 % This sets the quantizing field along the fpump axis. It is assumed that
 % you are imaging along the FPUMP axis
@@ -45,7 +60,7 @@ end
 %% EIT Settings
 % This code set the Fpump power regulation and the 4 pass frequency
 
-    F_Pump_List = [.7];
+    F_Pump_List = [1.1];
     fluor.F_Pump_Power = getScanParameter(F_Pump_List,...
         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V');
     
@@ -87,7 +102,7 @@ end
         uWave_Freq_Shift_List,seqdata.scancycle,seqdata.randcyclelist,...
         'qgm_uWave_freq_shift','kHz');     
     
-    uWave_SweepRange_list = [30];    
+    uWave_SweepRange_list = [20];    
     uWave_SweepRange = getScanParameter(...
         uWave_SweepRange_list,seqdata.scancycle,seqdata.randcyclelist,...
         'qgm_uWave_SweepRange','kHz');     
@@ -105,11 +120,10 @@ end
     addOutputParam('qgm_uWave_Frequency',fluor.uWave_Frequency,'MHz');    
 
 
-%% Raman 1 Settings
-      
+%% Raman 1 Settings      
     V10 = 1.3;
     Raman1_Power_List = V10*[1];
-    Raman1_ShiftFreq_List = [-175];       
+    Raman1_ShiftFreq_List = [-80];        % kHz
     
     Raman1_Freq_Shift = getScanParameter(Raman1_ShiftFreq_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman1_Freq_Shift','kHz');       
@@ -118,13 +132,11 @@ end
     
     fluor.Raman1_EnableSweep = 0;
     fluor.Raman1_Power = Raman1_Power;
-    fluor.Raman1_Frequency = 110 + Raman1_Freq_Shift/1000;
-    
+    fluor.Raman1_Frequency = 110*1e6 + Raman1_Freq_Shift*1e3;    
 %% Raman 2 Settings
-
     V20 = 1.36;   
     Raman2_Power_List = V20*[1];
-    Raman2_ShiftFreq_List = [0];       
+    Raman2_ShiftFreq_List = [0];       % kHz
     
     Raman2_Freq_Shift = getScanParameter(Raman2_ShiftFreq_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman2_Freq_Shift','kHz');       
@@ -133,12 +145,10 @@ end
     
     fluor.Raman2_EnableSweep = 0;
     fluor.Raman2_Power = Raman2_Power;
-    fluor.Raman2_Frequency = 80 + Raman2_Freq_Shift/1000;        
- %% Raman EOM Settings
- % Eventually the Raman EOM should be programmed
- 
+    fluor.Raman2_Frequency = 80*1e6 + Raman2_Freq_Shift*1e3;        
+ %% Raman EOM Settings 
+    % Eventually the Raman EOM should be programmed 
     raman_eom_freq = 1266.924;
-
 %% Raman Calcuation
 % Based on the Raman AOM frequencies, calculate the 2photon detuning of the
 % Raman transition.  Ideally this should match the EIT 2photon detuning

@@ -43,11 +43,11 @@ end
 if isnan(out) % check whether out was set to a numerical value after all
     warning(sprintf(['getChannelValue :: No value found for ' chstr ... 
         ' channel #%g (' name '). Will assume original output is zero!'],channel));
-%     if (isanalog)
-%        out = [0 1 0 0];
-%     else 
-%         out = [0 0 0];
-%     end
+    if (isanalog)
+       out = [0 1 0 0];
+    else 
+        out = [0 0 0];
+    end
 end
 
 if ( ~(isrealvoltage) && (isanalog) ) % reorder output if last setvalue was requested and not the last adwin voltage

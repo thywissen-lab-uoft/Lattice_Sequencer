@@ -369,14 +369,10 @@ end
     % the shim current in the science chamber as well as the MOT cell.    
     seqdata.analogchannels(19).name = 'Y Shim';
     seqdata.analogchannels(19).minvoltage = -5;
-    seqdata.analogchannels(19).maxvoltage = 10; 
-    % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents  
-    seqdata.analogchannels(19).voltagefunc{2} = @(a) (a+.293)/.77;  %MOT shim calibration; a=current in Amps    
-    
-    seqdata.analogchannels(19).defaultvoltagefunc = 4; %3 BIPOLAR SHIM SUPPLY CHANGE
+    seqdata.analogchannels(19).maxvoltage = 10;    
     %'Field' in G (not well calibrated)
+    seqdata.analogchannels(19).defaultvoltagefunc = 4; %3 BIPOLAR SHIM SUPPLY CHANGE
     seqdata.analogchannels(19).voltagefunc{3} = @(a)(a*1.1875+0.52); % calibration for Shimmer control
-%     seqdata.analogchannels(19).voltagefunc{5} = @(a)(a*0.3692-0.006); % calibration for bip source control after replacing pos side transistor
     seqdata.analogchannels(19).voltagefunc{4} = @(a)(0.9271*a-0.0327); % Amps: new shim supplies, calibrated to match old shim supply voltagefunc
     %Bipolar Shims (Alan's Box)
     %Max Positive Current = 4A (Supply is HP 6286A)
@@ -454,26 +450,18 @@ end
     seqdata.analogchannels(27).name = 'X Shim';
     seqdata.analogchannels(27).minvoltage = -10;
     seqdata.analogchannels(27).maxvoltage = 10;
-    
-    % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents  
     seqdata.analogchannels(27).defaultvoltagefunc = 3;
-    seqdata.analogchannels(27).voltagefunc{2} = @(a) (a+.268)/.842;  %MOT shim calibration; a=current in Amps
-        
-    seqdata.analogchannels(27).voltagefunc{4} = @(a)((a-0.081)/0.91); %Amps: When used to control bipolar supply  a*0.506-0.013 for old supply
     seqdata.analogchannels(27).voltagefunc{3} = @(a)(1.0536*a-0.1132); % Amps: new shim supplies, calibrated to match old shim supply voltagefunc
-    
+    seqdata.analogchannels(27).voltagefunc{4} = @(a)((a-0.081)/0.91); %Amps: When used to control bipolar supply  a*0.506-0.013 for old supply
+     
     %channel 28 (Shim Channel 3+6, Z Shim)
     seqdata.analogchannels(28).name = 'Z Shim';
     seqdata.analogchannels(28).minvoltage = -10;
     seqdata.analogchannels(28).maxvoltage = 10;
-    % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents
     seqdata.analogchannels(28).defaultvoltagefunc = 3;
-    seqdata.analogchannels(28).voltagefunc{2} = @(a)(a+.266)/.819;  %MOT shim calibration; a=current in Amps
-    
-    
-    seqdata.analogchannels(28).voltagefunc{4} = @(a)((a-0*0.115)/0.977);   %a*0.506-0.013 for old supply
-    seqdata.analogchannels(28).voltagefunc{3} = @(a)(0.9271*a-0.0327); % Amps: new shim supplies, calibrated to match old shim supply voltagefunc
-                                                    %((a-0.11)/0.97)
+    seqdata.analogchannels(28).voltagefunc{3} = @(a)(0.9271*a-0.0327);    % Amps: new shim supplies, calibrated to match old shim supply voltagefunc
+    seqdata.analogchannels(28).voltagefunc{4} = @(a)((a-0*0.115)/0.977);  % a*0.506-0.013 for old supply
+                                                 
     %Ch 29/30 removed June 20, 2012
 %       %channel 29 (Y Cube Shim Channel)
 %    seqdata.analogchannels(29).minvoltage = -1;
@@ -821,7 +809,6 @@ end
     seqdata.analogchannels(62).maxvoltage = 10;
     % MOT SHIM Calibration; votlage to current 2020/09/23. Only >0 currents  
     seqdata.analogchannels(62).defaultvoltagefunc = 2;
-%     seqdata.analogchannels(62).voltagefunc{2} = @(a) (a+.268)/.842;  %old MOT shim calibration; a=current in Amps
     seqdata.analogchannels(62).voltagefunc{2} = @(a) (a+.296)/.798; %03/20/2023 calibration (Shimmer channel 4)
 
     %channel 63 ( Y MOT Shim )
@@ -834,7 +821,6 @@ end
     seqdata.analogchannels(63).voltagefunc{3} = @(a)(a*1.1875+0.52); % calibration for Shimmer control
     seqdata.analogchannels(63).defaultvoltagefunc = 2;
     %'Field' in G (not well calibrated)
- 
 
     %channel 64 (Z MOT Shim)
     seqdata.analogchannels(64).name = 'Z MOT Shim';

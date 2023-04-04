@@ -59,12 +59,12 @@ do_RF_spectroscopy = 0;                 % (3952,4970)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-seqdata.flags.lattice_do_optical_pumping = 1;                 % (1426) keep : optical pumping in lattice  
-seqdata.flags.do_plane_selection = 1 ;                 % Plane selection flag
+seqdata.flags.lattice_do_optical_pumping    = 1;                 % (1426) keep : optical pumping in lattice  
+seqdata.flags.do_plane_selection            = 1;                 % Plane selection flag
 
 % Actual fluorsence image flag
-seqdata.flags.Raman_transfers = 1;
-seqdata.flags.lattice_fluor=0;
+seqdata.flags.Raman_transfers               = 0;
+seqdata.flags.lattice_fluor                 = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other Parameters

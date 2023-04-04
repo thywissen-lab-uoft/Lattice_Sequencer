@@ -16,7 +16,7 @@ global seqdata
 
 % Establish field gradeint with QP, FB, and shim fields for plane selection
 opts.ramp_fields = 1; 
-
+opts.dotilt     = 1;
 % Do you want to fake the plane selection sweep?
 %0=No, 1=Yes, no plane selection but remove all atoms.
 opts.fake_the_plane_selection_sweep = 0; 
@@ -39,50 +39,76 @@ opts.SelectMode = 'SweepFreq';          % Sweep SRS frequency
 
 %% Magnetic Field Ramps
 
-FB_init = getChannelValue(seqdata,37,1,0);
 if opts.ramp_fields
     % Ramp the SHIMs, QP, and FB to the appropriate level  
     disp(' Ramping fields');
-    clear('ramp');       
+    clear('ramp');           
 
-    xshimdlist = -0.257;
-    yshimdlist = 0.125;
-    zshimd = -1;
-
-    xshimd = getScanParameter(xshimdlist,seqdata.scancycle,...
-        seqdata.randcyclelist,'xshimd','A');
-    yshimd = getScanParameter(yshimdlist,seqdata.scancycle,...
-        seqdata.randcyclelist,'yshimd','A');
-
-    %Both these x and y values can be large and negative. Draw from the
-    %'positive' shim supply when negative. Just don't fry the shim.
-    ramp.xshim_final = seqdata.params. shim_zero(1) - 2.548 + xshimd;% -0.7 @ 40/7, (0.46-0.008-.05-0.75)*1+0.25 @ 40/14
-    ramp.yshim_final = seqdata.params. shim_zero(2) - 0.276 + yshimd;
-    ramp.zshim_final = seqdata.params. shim_zero(3) + zshimd; %Plane selection uses this shim to sweep... make its value larger?
-    ramp.shim_ramptime = 100;
-    ramp.shim_ramp_delay = -10; % ramp earlier than FB field if FB field is ramped to zero
-
-    addOutputParam('PSelect_xShim',ramp.xshim_final)
-    addOutputParam('PSelect_yShim',ramp.yshim_final)
-    addOutputParam('PSelect_zShim',ramp.zshim_final)
-
-%         addOutputParam('xshimd',xshimd);
-%         addOutputParam('yshimd',yshimd);
-    addOutputParam('zshimd',zshimd,'A');
-
-    % FB coil settings for spectroscopy
-    ramp.fesh_ramptime = 100;
-    ramp.fesh_ramp_delay = -0;
-    fb_shift_list = [.6];[0.6];[0.56];%0.2 for 0.7xdt power
+    % Fesbhach Field (in gauss)
+    B0 = 128;    %old value 128G, 0.6G shift
+    fb_shift_list = [.6];
     fb_shift = getScanParameter(fb_shift_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'fb_shift');
-    ramp.fesh_final = 128-fb_shift;
+        seqdata.randcyclelist,'qgm_plane_FB_shift','G');    
+    Bfb = B0 - fb_shift;
+    
+    % QP Field (in Amps)
+    IQP = 14*1.78; % 210 G/cm (not sure if calibrated)
+    
+    % Shim Fields (in Amps)
+    xshimdlist  = - 2.8050;
+    yshimdlist  = - 0.1510;
+    zshimdlist  = -1;    
+        
+    xshimd = getScanParameter(xshimdlist,seqdata.scancycle,...
+        seqdata.randcyclelist,'qgm_plane_dIx','A');
+    yshimd = getScanParameter(yshimdlist,seqdata.scancycle,...
+        seqdata.randcyclelist,'qgm_plane_dIy','A');    
+    zshimd = getScanParameter(zshimdlist,seqdata.scancycle,...
+        seqdata.randcyclelist,'qgm_plane_dIz','A');        
+    
+    % Shim Calibrations (unsure how correct
+    % X/Y   : 1.983 G/A (from raman transfers)
+    % Z     : 2.35 G/A  (from high field measurements)
+    cxy = 1.983;
+    cz = 2.35;
+    
+    if opts.dotilt        
+        Breal     = 125.99; % actual field in gauss
+        xshimtilt = 5;
+        yshimtilt = 0;        
+        zshimtilt = -0.5*((cxy*xshimtilt)^2 + (cxy*yshimtilt)^2)/(Breal*cz);
+        zshimtilt = 0;
+    else
+        xshimtilt = 0;
+        yshimtilt = 0;
+        zshimtilt = 0;
+    end    
+    
 
-    % QP coil settings for spectroscopy
-    ramp.QP_ramptime = 100;
-    ramp.QP_ramp_delay = -0;
-    ramp.QP_final =  14*1.78; %7 %210G/cm
-    ramp.settling_time = 300; %200
+
+    % Shim Ramp
+    ramp.xshim_final = seqdata.params.shim_zero(1) + xshimd + xshimtilt;
+    ramp.yshim_final = seqdata.params.shim_zero(2) + yshimd + yshimtilt;
+    ramp.zshim_final = seqdata.params.shim_zero(3) + zshimd + zshimtilt;        
+    ramp.shim_ramptime = 100;
+    ramp.shim_ramp_delay = -10;
+    
+    % FB and QP values
+    ramp.fesh_final         = Bfb; % in Gauss
+    ramp.QP_final           = IQP; % in Amps?   
+
+    % FB Timings
+    ramp.fesh_ramptime      = 100;
+    ramp.fesh_ramp_delay    = 0;
+
+    % QP timings
+    ramp.QP_ramptime        = 100;
+    ramp.QP_ramp_delay      = 0;
+    ramp.settling_time      = 300; %200   
+  
+    % Extra Labeling
+    addOutputParam('qgm_plane_Bfb',Bfb,'G');
+    addOutputParam('qgm_plane_IQP',IQP,'A');
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
 end
@@ -119,7 +145,7 @@ switch opts.SelectMode
     % freq_list=interp1([-3 0 3],[-200 -400 -500],xshimd);
 
     % Define the SRS frequency
-    freq_list = 1050;[750]; [355];[340];[-300];       
+    freq_list = 1050 + [330]; %old value 1380kHz
 
     freq_offset = getScanParameter(freq_list,seqdata.scancycle,...
         seqdata.randcyclelist,'uwave_freq_offset','kHz from 1606.75 MHz');
@@ -150,7 +176,7 @@ switch opts.SelectMode
     addOutputParam('uwave_HS1_amp',env_amp);
 
     % Determine the range of the sweep
-    uWave_delta_freq_list= [10] /1000; 130;
+    uWave_delta_freq_list= [7] /1000; 130;
     uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
         seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq','kHz');
 

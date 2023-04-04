@@ -127,7 +127,6 @@ end
 
 curtime = calctime(curtime,100);
 
-
 %% uWave Settings
 
 if opts.EnableUWave && pulse_time > 0
@@ -137,11 +136,11 @@ if opts.EnableUWave && pulse_time > 0
     spec_pars.use_ACSync = 0;
     spec_pars.PulseTime = pulse_time;
     
-    spec_pars.FREQ =  opts.uWave_Frequency;                % Center in MHz
+    spec_pars.FREQ =  opts.uWave_Frequency;          % Center in MHz
     spec_pars.FDEV = (opts.uWave_SweepRange/2)/1000; % Amplitude in MHz
     spec_pars.AMPR = opts.uWave_Power;               % Power in dBm
-    spec_pars.ENBR = 1;                         % Enable N Type
-    spec_pars.GPIB = 30;                        % SRS GPIB Address    
+    spec_pars.ENBR = 1;                              % Enable N Type
+    spec_pars.GPIB = 30;                             % SRS GPIB Address    
 
     K_uWave_Spectroscopy(curtime,spec_pars);    
 end
@@ -150,17 +149,24 @@ end
 
 if (opts.EnableFPump || opts.EnableEITProbe) && pulse_time > 0
     
+        % Turn off optical pumping AOM
+    setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);   
+    
+    
     % Open Shutter
     setDigitalChannel(calctime(curtime,-5),'D1 Shutter',1);    
     if opts.EnableEITProbe
         setDigitalChannel(calctime(curtime,-5),'EIT Shutter',1);
     end
     
+
     % Close Shutter
     setDigitalChannel(calctime(curtime,pulse_time+5),'D1 Shutter',0);    
     if opts.EnableEITProbe
         setDigitalChannel(calctime(curtime,pulse_time+5),'EIT Shutter',0);
     end   
+    % Turn on optical pumping AOM for thermal stability
+    setDigitalChannel(calctime(curtime,pulse_time+5),'D1 OP TTL',1);
 end
 
 %% FPump Settings and Pulse Sequence
@@ -218,13 +224,9 @@ if opts.EnableRaman
         ch1.SWEEP_TRIGGER = 'EXT'; 
     end
 
-    % Hmm what about rabi oscillations with a burst?
-    
-    % Program it
-    
     ch2 = struct;
-    ch2.FREQUENCY = opts.Raman1_Frequency;
-    ch2.AMPLITUDE = opts.Raman1_Power;
+    ch2.FREQUENCY = opts.Raman2_Frequency;
+    ch2.AMPLITUDE = opts.Raman2_Power;
     if opts.Raman2_EnableSweep 
         ch2.SWEEP = 1; 
         ch2.SWEEP_FREQUENCY_CENTER = opts.Raman2_Frequency; 
@@ -233,18 +235,17 @@ if opts.EnableRaman
         ch2.SWEEP_TRIGGER = 'EXT'; 
     end
     
-    % Program it
-
-    
+    InternalAddress=1;    
+    programRigol(InternalAddress,ch1,ch2)    
 end
 
 %% Raman Pulse Sequence
 if opts.EnableRaman && pulse_time > 0
     % Make sure Raman beams are off ahead of time
     % We have them on to keep them thermally stable
-    setDigitalChannel(calctime(curtime,-50),'Raman TTL 1',0); % (1: ON, 0:OFF)
-    setDigitalChannel(calctime(curtime,-50),'Raman TTL 2a',0);% (1: ON, 0:OFF)
-    setDigitalChannel(calctime(curtime,-50),'Raman TTL 3a',0);% (1: ON, 0:OFF)
+    setDigitalChannel(calctime(curtime,-50),'Raman TTL 1',0); % (1: ON, 0:OFF) Raman 1 ZASWA + Rigol Trigger
+    setDigitalChannel(calctime(curtime,-50),'Raman TTL 2a',0);% (1: ON, 0:OFF) Raman 2 ZASWA
+    setDigitalChannel(calctime(curtime,-50),'Raman TTL 3a',0);% (1: ON, 0:OFF) Raman 3 ZASWA
 
     % Make sure Raman shutter is closed
     setDigitalChannel(calctime(curtime,-50),'Raman Shutter',0);
@@ -254,7 +255,7 @@ if opts.EnableRaman && pulse_time > 0
 
     % Turn on raman beam
     setDigitalChannel(curtime,'Raman TTL 1',1);  % Vertical Raman (1: ON, 0:OFF)
-    setDigitalChannel(curtime,'Raman TTL 2a',1); % Horizontal Raman (1: ON, 0:OFF)
+    setDigitalChannel(curtime,'Raman TTL 2a',1); % Horizontal Raman (1: ON, 0:OFF)    
 
     % Turn off beams
     setDigitalChannel(calctime(curtime,pulse_time),'Raman TTL 1',0);
@@ -265,17 +266,20 @@ if opts.EnableRaman && pulse_time > 0
 
     % Turn on beams
     setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 1',1);
-    setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 2a',1);
- 
-    curtime = calctime(curtime,pulse_time);
+    setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 2a',1);    
+   
+    
 end
 
 %% Ixon Trigger and Programming
-    if (opts.TriggerIxon)        
-        % Pre Trigger a while before to flush camera?
-        DigitalPulse(calctime(curtime,-6000),...
-            'iXon Trigger',1,1);        
-        
+
+    % ixon pre trigger to clear the buffer with an extra image    
+    if opts.TriggerIxon && opts.doClearBufferExposure
+        DigitalPulse(calctime(curtime, opts.bufferPreTriggerTime),...
+            'iXon Trigger',1,1);   
+    end
+
+    if (opts.TriggerIxon)   
         % Trigger camera evenly throughout the pulse time
         ts = linspace(0,opts.PulseTime,opts.NumberOfImages+1);
         for kk=1:(length(ts)-1)
@@ -283,6 +287,10 @@ end
                 'iXon Trigger',1,1);
         end        
     end     
-        
+    
+    
+%% Wait for Pulse
+    curtime = calctime(curtime,pulse_time);
+
 end
 

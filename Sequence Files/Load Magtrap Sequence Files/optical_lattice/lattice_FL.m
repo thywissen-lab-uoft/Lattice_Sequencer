@@ -5,7 +5,6 @@ global seqdata
 
     fluor=struct;
 
-
     % uWave
     fluor.EnableUWave           = 0;        % Use uWave freq sweep for n-->n
     
@@ -14,26 +13,44 @@ global seqdata
     fluor.EnableEITProbe        = 1;        % Use EIT Probe beams
     fluor.EnableRaman           = 1;        % Use Raman Beams
     
-    % Total Time
-    fluor.PulseTime             = 2000;       % pulse time for everything [ms]
-    % 1 ms for transfers and 
+    % Sets the total time of radiation (optical or otherwise)
+        pulse_list = [1000:500:6000];
+
+    pulse_time = getScanParameter(...
+        pulse_list,seqdata.scancycle,seqdata.randcyclelist,...
+        'qgm_pulse_time','ms');  
+    
+    fluor.PulseTime             = pulse_time;     % [ms]
+    
+    
+    % 1 ms is typical for Raman spectroscopy
+    % 1 ms is typical for uWave spectroscopy
+    % 2000 ms is typical for fluoresence imaging
     
     % Camera
-    fluor.TriggerIxon          = 1;     % Trigger the ixon?
-    fluor.NumberOfImages       = 2;     % How many fluoresence images?
+    fluor.TriggerIxon          = 1;         % Trigger the ixon?
     
-    % Camera : clear buffer trig
-    % Trigger the camera ahead of time to clear it's buffer (useful??)
-    fluor.doClearBufferExposure = 1;
-    seqdata.flags.qgm_doClearBufferExposure = fluor.doClearBufferExposure;
+    % Camera Exposure
+    % The exposure time is set by how long the IxonTrigger is high if the
+    % camera is in "External Exposure" Mode.
+    % Warning : Dont make the exposure times longer than the total light time or else
+    % the camera will be exposing without fluoresence.
+    % Warning : After exposing the camera needs around 400 ms to read out
+    % the image before it can accept a new trigger.
     
-    fluor.bufferPreTriggerTime  = -6000; % How far ahead to take the image
+    
+%     fluor.NumberOfImages       = 1;     % Normal operation
+    fluor.NumberOfImages       = 2;     % For hopping
+   
+    % Calculate Xposures
+    fluor.DwellTime            = 600; % Wait Time beween shots for readout
+    fluor.IxonExposureTime     = (fluor.PulseTime-(fluor.NumberOfImages-1)*fluor.DwellTime)/fluor.NumberOfImages;  
+
+  
 
     % Mangetic Field
-    fluor.doInitialFieldRamp    = 1;    % Auto specify ramps
-    
-    
-    fluor.doInitialFieldRamp2   = 0;    % Manuualy specify ramps
+    fluor.doInitialFieldRamp    = 1;        % Auto specify ramps       
+    fluor.doInitialFieldRamp2   = 0;        % Manuualy specify ramps
     
     
 %% Override flags if desired

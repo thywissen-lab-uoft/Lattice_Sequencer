@@ -16,7 +16,7 @@ global seqdata
 
 % Establish field gradeint with QP, FB, and shim fields for plane selection
 opts.ramp_fields = 1; 
-opts.dotilt     = 1; %tilt for stripe pattern
+opts.dotilt     = 0; %tilt for stripe pattern
 
 % Do you want to fake the plane selection sweep?
 %0=No, 1=Yes, no plane selection but remove all atoms.
@@ -161,9 +161,12 @@ switch opts.SelectMode
         % freq_list=interp1([-3 0 3],[-200 -400 -500],xshimd);
 
         % Define the SRS frequency
-        freq_list = 1050 + [1220];
-%         freq_list = 1050 + [400];
-
+        if opts.dotilt
+            freq_list = 1050 + [1220];
+        else
+            freq_list = 1050 + [-70];
+        end
+        
         freq_offset = getScanParameter(freq_list,seqdata.scancycle,...
             seqdata.randcyclelist,'uwave_freq_offset','kHz from 1606.75 MHz');
 

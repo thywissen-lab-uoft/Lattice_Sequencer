@@ -62,10 +62,20 @@ do_RF_spectroscopy = 0;                 % (3952,4970)
 seqdata.flags.lattice_do_optical_pumping    = 1;                 % (1426) keep : optical pumping in lattice  
 seqdata.flags.do_plane_selection            = 1;                 % Plane selection flag
 
-% Actual fluorsence image flag
+% Actual fluorsence image flags
 seqdata.flags.Raman_transfers               = 0;
-seqdata.flags.lattice_fluor                 = 1;
-seqdata.flags.lattice_fluor_bkgd            = 1;
+
+% Note:
+% It is sometimes helpful to run the fluorence imaging code as other things
+% such as :
+% - alignment of EIT/FPUMP beams
+% - Raman spectroscopy (to show Raman is working)
+% - uWave spectroscopy (to find two photon frequency/field)
+
+% New Standard Fluoresnce Image Flags
+seqdata.flags.lattice_ClearCCD_IxonTrigger  = 1;    % Add additional trigger to clear CCD
+seqdata.flags.lattice_fluor                 = 1;    % Do Fluoresnce imaging
+seqdata.flags.lattice_fluor_bkgd            = 0;    % 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other Parameters
@@ -918,8 +928,32 @@ end
 
 %% Raman Spec
 
-
 if seqdata.flags.lattice_fluor
+    
+    if seqdata.flags.lattice_ClearCCD_IxonTrigger
+        disp('Pre triggering the ixon to clear the CCD');
+        
+        % The exposure time is set by how long the IxonTrigger is high if the
+        % camera is in "External Exposure" Mode.
+
+        % Give the iXon an extra trigger before fluoresence imaging in
+        % order to help clear the CCD of charge (unsure if helpful)
+        
+        % Timing : Warning, the camera readout time is about 400 ms, dont
+        % make triggers closer than that or else the camera will
+        % malfunction
+        tpre = -1000;   % how far in advance to trigger
+        texp = 100;     % how long of an exposure to clear the CCD
+        
+        % Send the pretrriger
+        DigitalPulse(calctime(curtime, tpre),'iXon Trigger',texp,1);  
+        
+        % Record information about the ixon triggers (helpful for image
+        % analysis)
+        %   seqdata.params.NumberIxonTriggers = seqdata.params.NumberIxonTriggers  +1
+        %   seqdata.params.IxonTriggerTypes{end+1}='clear'
+
+    end
     curtime = lattice_FL(curtime);  
 end
 

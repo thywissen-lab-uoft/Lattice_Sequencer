@@ -273,20 +273,16 @@ end
 
 %% Ixon Trigger and Programming
 
-    % ixon pre trigger to clear the buffer with an extra image    
-    if opts.TriggerIxon && opts.doClearBufferExposure
-        DigitalPulse(calctime(curtime, opts.bufferPreTriggerTime),...
-            'iXon Trigger',1,1);   
-    end
-
     if (opts.TriggerIxon)   
-        % Trigger camera evenly throughout the pulse time
-        ts = linspace(0,opts.PulseTime,opts.NumberOfImages+1);
-        for kk=1:(length(ts)-1)
-            DigitalPulse(calctime(curtime,ts(kk)),...
-                'iXon Trigger',1,1);
+        tlist = (opts.IxonExposureTime+opts.DwellTime)*[0:(opts.NumberOfImages-1)];  
+        for kk=1:length(tlist)
+            DigitalPulse(calctime(curtime,tlist(kk)),...
+                'iXon Trigger',opts.IxonExposureTime,1);
+            
         end        
     end     
+    
+    
     
     
 %% Wait for Pulse

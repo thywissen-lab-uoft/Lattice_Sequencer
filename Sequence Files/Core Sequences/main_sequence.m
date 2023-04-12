@@ -465,6 +465,18 @@ if seqdata.flags.image_type == 0
     dispLineStr('Absorption Imaging.',curtime);
     curtime = absorption_image2(calctime(curtime,0.0));         
 end    
+%% Take Background Fluoresence Image
+
+if seqdata.flags.lattice
+    
+    if (isfield(seqdata.flags.lattice,'lattice_fluor') && ...
+            isfield(seqdata.flags.lattice,'lattice_fluor_bkgd') && ...
+            seqdata.flags.lattice.lattice_fluor && ...
+            seqdata.flags.lattice.lattice_fluor_bkgd)
+        disp('Running the fluorence imaging code again to take background light');    
+        curtime = lattice_FL(curtime);  
+    end
+end
 
 %% Post-sequence: rotate diople trap waveplate to default value
 if (seqdata.flags.lattice_reset_waveplate == 1)
@@ -525,17 +537,6 @@ setAnalogChannel(calctime(curtime,0),'X Shim',0,1);
 setAnalogChannel(calctime(curtime,0),'Y Shim',0,1);
 setAnalogChannel(calctime(curtime,0),'Z Shim',0,1);   
 
-%% Take Background Fluoresence Image
-
-if seqdata.flags.lattice
-    
-    if (isfield(seqdata.flags.lattice,'lattice_fluor') && ...
-            isfield(seqdata.flags.lattice,'lattice_fluor_bkgd') && ...
-            seqdata.flags.lattice.lattice_fluor && ...
-            seqdata.flags.lattice.lattice_fluor_bkgd)
-    
-    end
-end
 
 %% Load MOT
 % Load the MOT

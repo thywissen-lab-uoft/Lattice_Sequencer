@@ -24,6 +24,7 @@ seqdata.params.shim_zero = [0.1425, -0.0652, -0.1015];
 seqdata.params.plug_shims = seqdata.params.shim_zero + ...
     [-1.3400 +0.125 +0.35];
 
+
 % Slope relation between shim and QP currents to keep field center fixed.
 % Important for ramping QP at end of RF1B and during QP ramp down in ODT
 Cx = -0.0507;
@@ -142,7 +143,7 @@ seqdata.flags.image_atomtype                = 1; % 0:Rb,1:K,2:K+Rb (double shutt
 
 seqdata.flags.image_loc                     = 1; % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.image_direction               = 1; % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
-seqdata.flags.image_stern_gerlach           = 1; % 1: Do a gradient pulse at the beginning of ToF
+seqdata.flags.image_stern_gerlach           = 0; % 1: Do a gradient pulse at the beginning of ToF
 seqdata.flags.image_levitate                = 0; % 2: apply a gradient during ToF to levitate atoms (not yet tested)
 seqdata.flags.image_iXon                    = 0; % (unused?) use iXon camera to take an absorption image (only vertical)
 seqdata.flags.image_F1_pulse                = 0; % (unused?) repump Rb F=1 before/during imaging (unused?)
@@ -214,7 +215,7 @@ seqdata.flags.mt_plug_ramp_end              = 0;
 defVar('RF1A_time_scale',[0.6],'arb');      % RF1A timescale
 defVar('RF1B_time_scale',[0.8],'arb');      % RF1B timescale
 defVar('RF1A_finalfreq',[16],'MHz');        % RF1A Ending Frequency
-defVar('RF1B_finalfreq',[0.8],'MHz'); [0.8];        % RF1B Ending Frequency
+defVar('RF1B_finalfreq',[1],'MHz'); [0.8];        % RF1B Ending Frequency
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% DIPOLE TRAP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -230,7 +231,7 @@ seqdata.flags.xdt                           = 1;
 % MT to XDT State Transfer
 seqdata.flags.xdt_Rb_21uwave_sweep_field    = 1;    % Field Sweep Rb 2-->1
 seqdata.flags.xdt_Rb_21uwave_sweep_freq     = 0;    % uWave Frequency sweep Rb 2-->1
-seqdata.flags.xdt_K_p2n_rf_sweep_freq       =1;    % RF Freq Sweep K +9-->-9  
+seqdata.flags.xdt_K_p2n_rf_sweep_freq       = 1;    % RF Freq Sweep K +9-->-9  
 
 % State Manipulation Before Optical Evaporation 
 seqdata.flags.xdt_d1op_start                = 0;    % D1 pump to purify
@@ -249,7 +250,7 @@ seqdata.flags.xdt_kill_Rb_after_evap        = 0;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_after_evap        = 0;    % optical remove 7/2 K after (untested)
 
 % XDT High Field Experiments
-seqdata.flags.xdt_evap2stage                = 1; %Perform K evap at low field
+seqdata.flags.xdt_evap2stage                = 0; %Perform K evap at low field
 seqdata.flags.xdt_evap2_HF                  = 0; %Perform K evap at high field (set rep. or attr. in file)
 seqdata.flags.xdt_high_field_a              = 0;
 

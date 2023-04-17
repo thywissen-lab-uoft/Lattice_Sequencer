@@ -2,9 +2,9 @@ function params = Load_Absorption_Image_Parameters()
     global seqdata;
     %% Set imaging detunings
     % Potassium - X-cam
-%     kdet_shift_list = [30.5 31.5];%[2];%-1
-%     kdet_shift = getScanParameter(kdet_shift_list,...
-%         seqdata.scancycle,seqdata.randcyclelist,'kdet_shift','MHz');
+    kdet_shift_list = [-3:.5:.3];%[2];%-1
+    kdet_shift = getScanParameter(kdet_shift_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'kdet_shift','MHz');
     params.detunings.K.X.positive.normal = 22.2 ;
     params.detunings.K.X.positive.in_trap = 23.5;
     params.detunings.K.X.positive.QP_imaging = 21.5;
@@ -13,13 +13,13 @@ function params = Load_Absorption_Image_Parameters()
     params.detunings.K.X.negative.normal = 32.6; %(32.6) for DFG, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
     
     % for mF stern gerlach
-    params.detunings.K.X.negative.SG = 34.5; 
+%     params.detunings.K.X.negative.SG = 34.5; 
     
     % for F stern gerlach
 %     params.detunings.K.X.negative.SG = 35.5; 
     
     % Lattice F Stern Gerlach, TOF = 15 ms
-%     params.detunings.K.X.negative.SG = 35.5+kdet_shift;
+    params.detunings.K.X.negative.SG = 35.5+kdet_shift;
 
     
     

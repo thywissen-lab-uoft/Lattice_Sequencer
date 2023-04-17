@@ -11,10 +11,10 @@ global seqdata
     % Laser Beams
     fluor.EnableFPump           = 1;        % Use FPUMP beam
     fluor.EnableEITProbe        = 1;        % Use EIT Probe beams
-    fluor.EnableRaman           = 1;        % Use Raman Beams
+    fluor.EnableRaman           = 0;        % Use Raman Beams
     
     % Sets the total time of radiation (optical or otherwise)
-        pulse_list = [1000:500:6000];
+        pulse_list = [2000];
 
     pulse_time = getScanParameter(...
         pulse_list,seqdata.scancycle,seqdata.randcyclelist,...
@@ -39,8 +39,8 @@ global seqdata
     % the image before it can accept a new trigger.
     
     
-%     fluor.NumberOfImages       = 1;     % Normal operation
-    fluor.NumberOfImages       = 2;     % For hopping
+    fluor.NumberOfImages       = 1;     % Normal operation
+%     fluor.NumberOfImages       = 2;     % For hopping
    
     % Calculate Xposures
     fluor.DwellTime            = 600; % Wait Time beween shots for readout
@@ -64,10 +64,11 @@ end
     
     
 %% Edge cases
+% In case you run from here
 if nargin==0 || curtime == 0
    curtime = 0; 
    main_settings;
-   curtime = calctime(curtime,7000);
+   curtime = calctime(curtime,500);
       
    % If running code as a separate module, DO NOT change shims unless you 
    % really mean to as they can overheat
@@ -79,7 +80,7 @@ end
 % you are imaging along the FPUMP axis
     
     B0 = 4;         % Quantization Field
-    B0_shift_list = [.195];0.15;[0.095];
+    B0_shift_list = [0.21];[.17];.195;[.195];0.15;[0.095];
     
     % Quantization Field 
     B0_shift = getScanParameter(...
@@ -91,6 +92,8 @@ end
     addOutputParam('qgm_field',fluor.CenterField,'G');   
 %% EIT Settings
 % This code set the Fpump power regulation and the 4 pass frequency
+
+
 
     F_Pump_List = [1.1];
     fluor.F_Pump_Power = getScanParameter(F_Pump_List,...

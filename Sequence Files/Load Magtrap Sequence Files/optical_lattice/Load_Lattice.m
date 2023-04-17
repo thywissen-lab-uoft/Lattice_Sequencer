@@ -30,7 +30,7 @@ seqdata.flags.lattice_lattice_ramp_1 = 1;            % Load the lattices
 seqdata.flags.do_lattice_am_spec = 0;               % Amplitude modulation spectroscopy             
 
 seqdata.flags.lattice_rotate_waveplate_2 = 1;        % Second waveplate rotation 95% 
-seqdata.flags.lattice_lattice_ramp_2 =1 ;            % Secondary lattice ramp for fluorescence imaging
+seqdata.flags.lattice_lattice_ramp_2 = 1;            % Secondary lattice ramp for fluorescence imaging
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -59,8 +59,8 @@ do_RF_spectroscopy = 0;                 % (3952,4970)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-seqdata.flags.lattice_do_optical_pumping    = 1;                 % (1426) keep : optical pumping in lattice  
-seqdata.flags.do_plane_selection            = 1;                 % Plane selection flag
+seqdata.flags.lattice_do_optical_pumping    = 0;                 % (1426) keep : optical pumping in lattice  
+seqdata.flags.do_plane_selection            = 0;                 % Plane selection flag
 
 % Actual fluorsence image flags
 seqdata.flags.Raman_transfers               = 0;
@@ -622,7 +622,7 @@ if seqdata.flags.do_plane_selection
     % 2023/03/16 cf added to get rid of weird shadow on fluoresnce from the
     % kill beam, there is probalby some werid exposure/timing issue gonig
     % on that should be resolved.
-    curtime = calctime(curtime,1000);
+    curtime = calctime(curtime,100);
 end
 
 %% Field Ramps BEFORE uWave/RF Spectroscopy
@@ -877,7 +877,7 @@ if seqdata.flags.lattice_lattice_ramp_2
                                1*[yLatDepth yLatDepth];
                                1*[zLatDepth zLatDepth]];  %[100 650 650;100 650 650;100 900 900]
     
-    latt_ramp2_time_list = [50];20;
+    latt_ramp2_time_list = [1];20;
     latt_ramp2_time = getScanParameter(latt_ramp2_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'latt_ramp2_time','ms'); 
 

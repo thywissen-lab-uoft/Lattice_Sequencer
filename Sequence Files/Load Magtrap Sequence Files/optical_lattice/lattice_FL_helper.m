@@ -195,6 +195,13 @@ end
 
 if opts.EnableEITProbe && pulse_time > 0
     
+    
+    probe_power_list = [10];
+    probe_power = getScanParameter(probe_power_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'probe_power','V');
+    setAnalogChannel(calctime(curtime,-100),58,probe_power);
+
+    
     % Make sure EIT Probe is off
     setDigitalChannel(calctime(curtime,-10),'D1 TTL',0);
 
@@ -206,6 +213,8 @@ if opts.EnableEITProbe && pulse_time > 0
     
     % Turn on probe beams after shutter closed for thermal stability
     setDigitalChannel(calctime(curtime,pulse_time+20),'D1 TTL',1);
+    
+
 end
     
 %% Raman Settings Pulse Sequence
@@ -214,6 +223,7 @@ end
 if opts.EnableRaman
     
     ch1 = struct;
+    ch1.STATE= 'ON';
     ch1.FREQUENCY = opts.Raman1_Frequency;
     ch1.AMPLITUDE = opts.Raman1_Power;    
     if opts.Raman1_EnableSweep 
@@ -225,6 +235,7 @@ if opts.EnableRaman
     end
 
     ch2 = struct;
+    ch2.STATE= 'ON';
     ch2.FREQUENCY = opts.Raman2_Frequency;
     ch2.AMPLITUDE = opts.Raman2_Power;
     if opts.Raman2_EnableSweep 

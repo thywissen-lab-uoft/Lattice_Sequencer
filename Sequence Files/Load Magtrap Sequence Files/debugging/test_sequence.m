@@ -5664,9 +5664,11 @@ end
 
 
 % % 
-    setDigitalChannel(calctime(curtime,0),'PA TTL',0); % Open shutter
-    setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',1); % Set 
+%     setDigitalChannel(calctime(curtime,0),'PA TTL',0); % Open shutter
+%     setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',1); % Set 
 %     setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',0); % inverted logic
+setAnalogChannel(calctime(curtime,0),58,3)
+setDigitalChannel(calctime(curtime,0),'D1 TTL',0)
 
 timeout = curtime;
 % SelectScopeTrigger('PA_Pulse');

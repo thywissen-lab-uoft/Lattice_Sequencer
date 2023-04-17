@@ -23,13 +23,20 @@ seqdata.flags.xdt_unlevitate_evap       = 0; % Unclear what this is for
 % Dipole trap asymmetry (useful for making a symmetric trap for lattice + QGM)
 seqdata.params.xdt_p2p1_ratio           = 1; % ratio of ODT2:ODT1 power
 
-Evap_End_Power_List = [.12];[.12];
+seqdata.flags.xdt_ramp2sympathetic      = 1;  
 
-% Ending optical evaporation
+
+% Stage 1 (Rb+K) Evaporation
+Evap_End_Power_List = [.12];[.12];
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...
     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');  
 
-seqdata.flags.xdt_ramp2sympathetic      = 1;  
+% Stage 2 Low Filed (K+K) evaporation
+pend = 0.08;0.06;
+evap_time_2_list =  [10000];
+evap_time_2 = getScanParameter(evap_time_2_list,seqdata.scancycle,...
+    seqdata.randcyclelist,'evap_time_2','ms');
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -76,11 +83,9 @@ xdt1_end_power = exp_end_pwr;
 xdt2_end_power = XDT2_power_func(exp_end_pwr);
 
 % Evaporation Time
-Time_List =  [25]*1e3; 25;18;% [15000] for normal experiment
+Time_List =  25e3;[25]*1e3; 25;18;% [15000] for normal experiment
 evap_time_total = getScanParameter(Time_List,seqdata.scancycle,...
     seqdata.randcyclelist,'evap_time','ms');   
-
-
 
 % Exponetial time factor
 Tau_List = [3.5];%[5];
@@ -1301,14 +1306,9 @@ if ( seqdata.flags.CDT_evap == 1 && seqdata.flags.xdt_evap2stage)
     dispLineStr('Optical evaporation 2',curtime);
     
     %%%%%%%%%%%%%%%% DO THE SECOND EVAP STAGE %%%%%%%%%%%%%%%%%%%%%
-    pend = 0.08;0.06;
     evap_exp_ramp = @(t,tt,tau,y2,y1) ...
         (y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));    
     
-
-    evap_time_2_list =  [10000];
-    evap_time_2 = getScanParameter(evap_time_2_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'evap_time_2','ms');
 
     % Ramp down the optical powers
     AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...

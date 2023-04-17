@@ -40,7 +40,7 @@ setDigitalChannel(curtime,'fast FB Switch',);%31
 setDigitalChannel(curtime,'iXon Trigger',0);%32
 setDigitalChannel(curtime,'Shim Relay',1);%33
 setDigitalChannel(curtime,'yLatticeOFF',1);%34
-setDigitalChannel(curtime,'D1 TTL',1);%35
+setDigitalChannel(curtime,'EIT Probe TTL',1);%35
 setDigitalChannel(curtime,'EIT Shutter',0);%36
 setDigitalChannel(curtime,'Channel 37',0);%37
 setDigitalChannel(curtime,'405nm TTL',1);%38

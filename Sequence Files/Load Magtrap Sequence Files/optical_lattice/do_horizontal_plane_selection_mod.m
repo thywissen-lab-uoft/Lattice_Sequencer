@@ -264,7 +264,7 @@ elseif (opt.Microwave_Or_Raman == 2)
         setAnalogChannel(calctime(curtime,0),'F Pump',opt.F_Pump_Power);
         DigitalPulse(calctime(curtime,-10),'F Pump TTL',10,1);
         DigitalPulse(calctime(curtime,-5),'EIT Shutter',opt.Microwave_Pulse_Length+10,1);
-        DigitalPulse(calctime(curtime,-10),'D1 TTL',10,0);
+        DigitalPulse(calctime(curtime,-10),'EIT Probe TTL',10,0);
         DigitalPulse(calctime(curtime,-5),'D1 Shutter',opt.Microwave_Pulse_Length+10,1);
 %             DigitalPulse(calctime(curtime,-10),'D1 OP TTL',10,0);
     end
@@ -293,7 +293,7 @@ elseif (opt.Microwave_Or_Raman == 2)
         DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'F Pump TTL',10,1);
         setAnalogChannel(calctime(curtime,opt.Microwave_Pulse_Length),'F Pump',-1);
 %             DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'D1 OP TTL',10,0);
-curtime =   DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'D1 TTL',10,0);
+curtime =   DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'EIT Probe TTL',10,0);
     end
     if (opt.Fluorescence_Image == 1)
         iXon_FluorescenceImage(curtime,'ExposureOffsetTime',opt.Microwave_Pulse_Length,'ExposureDelay',0,'FrameTime',opt.Microwave_Pulse_Length/opt.Num_Frames,'NumFrames',opt.Num_Frames)

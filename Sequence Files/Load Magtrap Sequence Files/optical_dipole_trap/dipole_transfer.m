@@ -760,7 +760,7 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
     setDigitalChannel(calctime(curtime,-20),'EIT Shutter',0);
     
     % Break the thermal stabilzation of AOMs by turning them off
-    setDigitalChannel(calctime(curtime,-10),'D1 TTL',0);
+    setDigitalChannel(calctime(curtime,-10),'EIT Probe TTL',0);
     setAnalogChannel(calctime(curtime,-10),'F Pump',-1);
     setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
     setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);    
@@ -793,7 +793,7 @@ curtime = calctime(curtime,optical_pump_time);
     
     %After optical pumping, turn on all AOMs for thermal stabilzation
     
-    setDigitalChannel(calctime(curtime,10),'D1 TTL',1);
+    setDigitalChannel(calctime(curtime,10),'EIT Probe TTL',1);
     setDigitalChannel(calctime(curtime,10),'F Pump TTL',0);
 %     setAnalogChannel(calctime(curtime,10),'D1 AM',10); 
 

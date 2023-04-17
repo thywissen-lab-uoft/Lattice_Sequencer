@@ -82,7 +82,7 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
     setDigitalChannel(calctime(curtime,-20),'D1 Shutter', 0);%2
       
     % Break the thermal stabilzation of AOMs by turning them off
-    setDigitalChannel(calctime(curtime,-10),'D1 TTL',0);        % EIT probe off
+    setDigitalChannel(calctime(curtime,-10),'EIT Probe TTL',0);        % EIT probe off
     setAnalogChannel(calctime(curtime,-10),'F Pump',-1);        % fpump regulation low
     setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);    % fpump aom off
     setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);     % d1 AOM off
@@ -124,7 +124,7 @@ if ~leave_on
     setDigitalChannel(calctime(curtime,fpump_extratime),'D1 Shutter', 0);%2
     
     % After shutters are closed, turn on all AOMs for thermal stabilzation    
-    setDigitalChannel(calctime(curtime,fpump_extratime + 5),'D1 TTL',1);
+    setDigitalChannel(calctime(curtime,fpump_extratime + 5),'EIT Probe TTL',1);
     setDigitalChannel(calctime(curtime,fpump_extratime + 5),'F Pump TTL',0);
     setDigitalChannel(calctime(curtime,fpump_extratime + 5),'D1 OP TTL',1);        
 end

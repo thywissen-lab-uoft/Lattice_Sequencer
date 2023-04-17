@@ -203,16 +203,16 @@ if opts.EnableEITProbe && pulse_time > 0
 
     
     % Make sure EIT Probe is off
-    setDigitalChannel(calctime(curtime,-10),'D1 TTL',0);
+    setDigitalChannel(calctime(curtime,-10),'EIT Probe TTL',0);
 
     % Turn on Probe beams
-    setDigitalChannel(calctime(curtime,0),'D1 TTL',1);
+    setDigitalChannel(calctime(curtime,0),'EIT Probe TTL',1);
 
     % Turn off Probe beams
-    setDigitalChannel(calctime(curtime,pulse_time),'D1 TTL',0);
+    setDigitalChannel(calctime(curtime,pulse_time),'EIT Probe TTL',0);
     
     % Turn on probe beams after shutter closed for thermal stability
-    setDigitalChannel(calctime(curtime,pulse_time+20),'D1 TTL',1);
+    setDigitalChannel(calctime(curtime,pulse_time+20),'EIT Probe TTL',1);
     
 
 end

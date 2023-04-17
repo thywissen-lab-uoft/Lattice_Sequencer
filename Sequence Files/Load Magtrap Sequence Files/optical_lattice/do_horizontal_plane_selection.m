@@ -368,7 +368,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
                 setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
 
 
-                setDigitalChannel(calctime(curtime,-10),'D1 TTL',0);
+                setDigitalChannel(calctime(curtime,-10),'EIT Probe TTL',0);
 
                 %Open shutters just before beams turn on.
                 setDigitalChannel(calctime(curtime,-5),'EIT Shutter',1);
@@ -378,7 +378,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
                 setAnalogChannel(calctime(curtime,0),'F Pump',opt.F_Pump_Power);
                 setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
                 setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
-                setDigitalChannel(calctime(curtime,0),'D1 TTL',1);            
+                setDigitalChannel(calctime(curtime,0),'EIT Probe TTL',1);            
             end
             %Raman excitation beam AOM-shutter sequence.
             DigitalPulse(calctime(curtime,-150),'Raman TTL 1',150,0);
@@ -402,14 +402,14 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
                 setAnalogChannel(calctime(curtime,opt.Microwave_Pulse_Length),'F Pump',-1);
                 setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length),'F Pump TTL',1);
                 setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length),'FPump Direct',1);
-                setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length),'D1 TTL',0);
+                setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length),'EIT Probe TTL',0);
                 %Close shutters after AOMs off.
                 setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length+5),'EIT Shutter',0);
                 setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length+5),'D1 Shutter',0);            
                 %Turn AOMs back on for stability. 
                 setAnalogChannel(calctime(curtime,opt.Microwave_Pulse_Length+10),'F Pump',9.99);
                 setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length+10),'F Pump TTL',0);
-                setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length+10),'D1 TTL',1);
+                setDigitalChannel(calctime(curtime,opt.Microwave_Pulse_Length+10),'EIT Probe TTL',1);
     %             DigitalPulse(calctime(curtime,opt.Microwave_Pulse_Length),'D1 OP TTL',10,0);
     curtime =   calctime(curtime,opt.Microwave_Pulse_Length);
             end        

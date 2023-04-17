@@ -74,7 +74,7 @@ seqdata.digchannels(31).name = 'fast FB Switch';    % 1 = on (make sure channel 
 seqdata.digchannels(32).name = 'iXon Trigger';
 seqdata.digchannels(33).name = 'Shim Relay';        % 1 = on (MOT Shims) (BAD CHANNEL? CF 2023/03/13)
 seqdata.digchannels(34).name = 'yLatticeOFF';       % Controls all 3 lattice beams (i.e. Lattice TTL)
-seqdata.digchannels(35).name = 'D1 TTL';            % TTL for the EIT probe AOMs; 1: ON; 0 : OFF
+seqdata.digchannels(35).name = 'EIT Probe TTL';            % TTL for the EIT probe AOMs; 1: ON; 0 : OFF
 seqdata.digchannels(36).name = 'EIT Shutter';       % Shutter for EIT probe beam paths
 seqdata.digchannels(37).name = 'Reverse QP Switch'; % MOSFET to switch direction of QP  
 seqdata.digchannels(37).resetvalue = 0;

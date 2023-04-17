@@ -204,7 +204,7 @@ end
 %Turn off F-Pump and probe AOMs before use. 
 setAnalogChannel(calctime(curtime,-10),'F Pump',-1);
 setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
-setDigitalChannel(calctime(curtime,-10),'D1 TTL',0);
+setDigitalChannel(calctime(curtime,-10),'EIT Probe TTL',0);
 
 % Open D1 Shutter if any beam is used
 if EIT.EnableFPump || EIT.EnableProbe
@@ -233,11 +233,11 @@ end
 if EIT.EnableProbe
     % Turn on EIT Probe
     setDigitalChannel(calctime(curtime,-5),'EIT Shutter',1);
-    setDigitalChannel(calctime(curtime,0),'D1 TTL',1);   
+    setDigitalChannel(calctime(curtime,0),'EIT Probe TTL',1);   
     
     % Turn off EIT Probe
     setDigitalChannel(calctime(curtime,EIT.PulseTime),'EIT Shutter',0);
-    setDigitalChannel(calctime(curtime,EIT.PulseTime),'D1 TTL',0);   
+    setDigitalChannel(calctime(curtime,EIT.PulseTime),'EIT Probe TTL',0);   
 end
           
         

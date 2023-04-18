@@ -678,10 +678,10 @@ end
     % IS THERE ACTUALLY A 10x voltage divider in place?
 
 
-    % %channel 47 (D1 AM Control)
-    % CF : Needs better descriptor. Multiple D1 light in the sequence
-    % CF : 2022/09/20 This controls the optical pumping AOM (but could control
-    % other things?)
+    % %channel 47 (D1 OP AM Control)
+    % AM modulation input to Rigol that controls D1 OP light.  The
+    % modulatoin voltag goes from [-2.5,2.5] which we scale to from [0,1]
+    % input
     seqdata.analogchannels(47).name = 'D1 OP AM';
     seqdata.analogchannels(47).minvoltage = -2.5;
     seqdata.analogchannels(47).maxvoltage = 2.5;

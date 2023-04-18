@@ -11,7 +11,7 @@ if nargin == 1
    opts = struct;
    opts.op_time = 5;
    opts.fpump_power = 0.2;
-   opts.d1op_power = 8; 
+   opts.d1op_power = 1; 
    opts.fpump_extratime = 2;
    
    opts.leave_on = 1;
@@ -86,7 +86,7 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
     setAnalogChannel(calctime(curtime,-10),'F Pump',-1);        % fpump regulation low
     setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);    % fpump aom off
     setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);     % d1 AOM off
-    setAnalogChannel(calctime(curtime,-10),'D1 AM',d1op_power); % d1 AOM AM set
+    setAnalogChannel(calctime(curtime,-10),'D1 OP AM',d1op_power); % d1 AOM AM set
     
 %% Turn on beams
     disp(' Pulsing light');

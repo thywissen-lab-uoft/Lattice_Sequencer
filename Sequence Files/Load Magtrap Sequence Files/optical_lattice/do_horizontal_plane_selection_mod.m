@@ -242,7 +242,7 @@ setAnalogChannel(calctime(curtime,0),'Raman VVA',10);
 % curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);
 %         F_Pump_Time = 0.02;
 %         %F-mF pump AOM-shutter sequence.
-%         setAnalogChannel(calctime(curtime,0),'D1 AM',opt.mF_Pump_Power);
+%         setAnalogChannel(calctime(curtime,0),'D1 OP AM',opt.mF_Pump_Power);
 %         setAnalogChannel(calctime(curtime,0),'F Pump',opt.F_Pump_Power);
 %         DigitalPulse(calctime(curtime,-10),'D1 TTL B',10,1);
 %         DigitalPulse(calctime(curtime,-5),'405nm Shutter',F_Pump_Time+10,1);

@@ -682,9 +682,11 @@ end
     % CF : Needs better descriptor. Multiple D1 light in the sequence
     % CF : 2022/09/20 This controls the optical pumping AOM (but could control
     % other things?)
-    seqdata.analogchannels(47).name = 'D1 AM';
-    seqdata.analogchannels(47).minvoltage = 0;
-    seqdata.analogchannels(47).maxvoltage = 10;
+    seqdata.analogchannels(47).name = 'D1 OP AM';
+    seqdata.analogchannels(47).minvoltage = -2.5;
+    seqdata.analogchannels(47).maxvoltage = 2.5;
+    seqdata.analogchannels(47).defaultvoltagefunc = 2; 
+    seqdata.analogchannels(47).voltagefunc{2} = @(P_rel)(P_rel*5-2.5); % Convert [0,1]-->[-2.5,2.5]
 
 
     %channel 48 (Unused)

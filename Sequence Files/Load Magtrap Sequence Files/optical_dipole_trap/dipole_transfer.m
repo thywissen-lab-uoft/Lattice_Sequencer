@@ -729,7 +729,7 @@ if (seqdata.flags.xdt_d1op_start==1)
     optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_op_time1','ms'); %optical pumping pulse length
     repump_power_list = [0.2];
     repump_power =getScanParameter(repump_power_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_op_repump_pwr1','V'); %optical pumping repump power
-    D1op_pwr_list = [8]; %min: 0, max:10
+    D1op_pwr_list = [1]; %min: 0, max:11
     D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_D1op_pwr1','V'); %optical power
 
     
@@ -764,7 +764,7 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
     setAnalogChannel(calctime(curtime,-10),'F Pump',-1);
     setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
     setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);    
-    setAnalogChannel(calctime(curtime,-10),'D1 AM',D1op_pwr); 
+    setAnalogChannel(calctime(curtime,-10),'D1 OP AM',D1op_pwr); 
 
     
     % Open D1 shutter (FPUMP + OPT PUMP)
@@ -795,7 +795,7 @@ curtime = calctime(curtime,optical_pump_time);
     
     setDigitalChannel(calctime(curtime,10),'EIT Probe TTL',1);
     setDigitalChannel(calctime(curtime,10),'F Pump TTL',0);
-%     setAnalogChannel(calctime(curtime,10),'D1 AM',10); 
+%     setAnalogChannel(calctime(curtime,10),'D1 OP AM',10); 
 
 curtime =  setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);    
 
@@ -1467,7 +1467,7 @@ if (seqdata.flags.xdt_d1op_end==1 && seqdata.flags.CDT_evap==1)
         seqdata.randcyclelist, 'ODT_op_repump_pwr2','V'); 
     
     %optical power
-    D1op_pwr_list = [8]; %min: 0, max:10 (CF : I think the AOM power is too low)
+    D1op_pwr_list = [1]; %min: 0, max:11
     D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle,...
         seqdata.randcyclelist, 'ODT_D1op_pwr2','V'); 
 

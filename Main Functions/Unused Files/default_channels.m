@@ -118,7 +118,7 @@ setAnalogChannel(curtime,'zLattice',0,2);%43
 setAnalogChannel(curtime,'yLattice',0,2);%44
 setAnalogChannel(curtime,'xLattice',0,2);%45
 setAnalogChannel(curtime,'uWave FM/AM',0);%46
-setAnalogChannel(curtime,'D1 AM',);%47
+setAnalogChannel(curtime,'D1 OP AM',);%47
 setAnalogChannel(curtime,'D1 FM',);%48
 setAnalogChannel(curtime,'D1 EOM',);%49
 setAnalogChannel(curtime,'K Repump FM',);%50

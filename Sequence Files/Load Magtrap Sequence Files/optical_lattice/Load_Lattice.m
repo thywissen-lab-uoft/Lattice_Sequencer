@@ -553,7 +553,7 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
     setAnalogChannel(calctime(curtime,-10),'F Pump',-1);
     setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
     setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);    
-    setAnalogChannel(calctime(curtime,-10),'D1 AM',D1op_pwr); 
+    setAnalogChannel(calctime(curtime,-10),'D1 OP AM',D1op_pwr); 
 
     
     % Open D1 shutter (FPUMP + OPT PUMP)
@@ -584,7 +584,7 @@ curtime = calctime(curtime,optical_pump_time);
     
     setDigitalChannel(calctime(curtime,10),'EIT Probe TTL',1);
     setDigitalChannel(calctime(curtime,10),'F Pump TTL',0);
-%     setAnalogChannel(calctime(curtime,10),'D1 AM',10); 
+%     setAnalogChannel(calctime(curtime,10),'D1 OP AM',10); 
 
 curtime =  setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);    
 

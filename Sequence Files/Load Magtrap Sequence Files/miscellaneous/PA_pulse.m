@@ -53,6 +53,7 @@ if pulse_number == 1
     addOutputParam('PA_pow',PA_pow,'V');
 end
 
+error('WRONG RIGOL, CF REMOVED THIS');
 adrr = 10;
 ch_PA=struct;
 ch_PA.FREQUENCY=110E6;     % Modulation Frequency

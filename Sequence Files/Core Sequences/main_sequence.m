@@ -151,7 +151,7 @@ setDigitalChannel(calctime(curtime,0),'Raman TTL 3',1);
 setDigitalChannel(calctime(curtime,0),'Raman TTL 3a',1);
 
 %Set 'D1' Raman AOMs to open, shutter closed.
-setDigitalChannel(calctime(curtime,0),'D1 TTL',1);
+setDigitalChannel(calctime(curtime,0),'EIT Probe TTL',1);
 setDigitalChannel(calctime(curtime,0),'D1 Shutter',0);
 
 %Set TTL to keep F-pump and mF-pump warm.

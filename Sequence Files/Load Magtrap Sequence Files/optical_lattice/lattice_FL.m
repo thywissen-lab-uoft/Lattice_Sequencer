@@ -11,7 +11,7 @@ global seqdata
     % Laser Beams
     fluor.EnableFPump           = 1;        % Use FPUMP beam
     fluor.EnableEITProbe        = 1;        % Use EIT Probe beams
-    fluor.EnableRaman           = 0;        % Use Raman Beams
+    fluor.EnableRaman           = 1;        % Use Raman Beams
     
     % Sets the total time of radiation (optical or otherwise)
         pulse_list = [2000];
@@ -40,7 +40,7 @@ global seqdata
     
     
     fluor.NumberOfImages       = 1;     % Normal operation
-%     fluor.NumberOfImages       = 2;     % For hopping
+%     fluor.NumberOfImages       = 10;     % For hopping
    
     % Calculate Xposures
     fluor.DwellTime            = 600; % Wait Time beween shots for readout
@@ -80,7 +80,7 @@ end
 % you are imaging along the FPUMP axis
     
     B0 = 4;         % Quantization Field
-    B0_shift_list = [0.21];[.17];.195;[.195];0.15;[0.095];
+    B0_shift_list =[.19]; [0.21];[.17];
     
     % Quantization Field 
     B0_shift = getScanParameter(...
@@ -95,7 +95,7 @@ end
 
 
 
-    F_Pump_List = [1.1];
+    F_Pump_List = [1.2];
     fluor.F_Pump_Power = getScanParameter(F_Pump_List,...
         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V');
     
@@ -124,6 +124,9 @@ end
     end
     
     % Eventually program the EIT probe frequencies
+    
+    %% EIT Probe Settings
+    
     
 %%  uWave Settings
 % If the uWave flag is enabled these settings are used to apply a uWave
@@ -154,10 +157,15 @@ end
     
     addOutputParam('qgm_uWave_Frequency',fluor.uWave_Frequency,'MHz');    
 
+%%
 
+raman_rel_pow_list = [.5];
+  raman_rel_pow = getScanParameter(raman_rel_pow_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'qgm_raman_rel_pow','arb');     
+    
 %% Raman 1 Settings      
     V10 = 1.3;
-    Raman1_Power_List = V10*[1];
+    Raman1_Power_List = V10*raman_rel_pow;V10*[1];
     Raman1_ShiftFreq_List = [-80];        % kHz
     
     Raman1_Freq_Shift = getScanParameter(Raman1_ShiftFreq_List,...
@@ -170,7 +178,7 @@ end
     fluor.Raman1_Frequency = 110*1e6 + Raman1_Freq_Shift*1e3;    
 %% Raman 2 Settings
     V20 = 1.36;   
-    Raman2_Power_List = V20*[1];
+    Raman2_Power_List = V20*raman_rel_pow;V20*[1];
     Raman2_ShiftFreq_List = [0];       % kHz
     
     Raman2_Freq_Shift = getScanParameter(Raman2_ShiftFreq_List,...
@@ -189,8 +197,8 @@ end
 % Raman transition.  Ideally this should match the EIT 2photon detuning
     
     
-    raman_2photon_freq = (raman_eom_freq + fluor.Raman2_Frequency) - ...
-        fluor.Raman1_Frequency;
+    raman_2photon_freq = (raman_eom_freq + fluor.Raman1_Frequency*1e-6) - ...
+        fluor.Raman2_Frequency*1e-6;
     raman_2photon_detuning = (raman_2photon_freq - seqdata.constants.hyperfine_ground)*1e3;
 
     addOutputParam('qgm_raman_eom_freq',raman_eom_freq,'MHz');    

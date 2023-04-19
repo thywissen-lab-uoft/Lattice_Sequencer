@@ -30,7 +30,7 @@ seqdata.flags.lattice_lattice_ramp_1 = 1;            % Load the lattices
 seqdata.flags.do_lattice_am_spec = 0;               % Amplitude modulation spectroscopy             
 
 seqdata.flags.lattice_rotate_waveplate_2 = 1;        % Second waveplate rotation 95% 
-seqdata.flags.lattice_lattice_ramp_2 = 1;            % Secondary lattice ramp for fluorescence imaging
+seqdata.flags.lattice_lattice_ramp_2 =1;            % Secondary lattice ramp for fluorescence imaging
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -59,8 +59,8 @@ do_RF_spectroscopy = 0;                 % (3952,4970)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-seqdata.flags.lattice_do_optical_pumping    = 0;                 % (1426) keep : optical pumping in lattice  
-seqdata.flags.do_plane_selection            = 0;                 % Plane selection flag
+seqdata.flags.lattice_do_optical_pumping    = 1;                 % (1426) keep : optical pumping in lattice  
+seqdata.flags.do_plane_selection            = 1;                 % Plane selection flag
 
 % Actual fluorsence image flags
 seqdata.flags.Raman_transfers               = 0;
@@ -516,7 +516,7 @@ if (seqdata.flags.lattice_do_optical_pumping == 1)
         seqdata.randcyclelist, 'latt_op_repump_pwr');    
     
     % OP power
-    D1op_pwr_list = [10]; %min: 0, max:10 %5
+    D1op_pwr_list = [1]; %min: 0, max:1 
     D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle,...
         seqdata.randcyclelist, 'latt_D1op_pwr'); 
     
@@ -553,7 +553,7 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
     setAnalogChannel(calctime(curtime,-10),'F Pump',-1);
     setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
     setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);    
-    setAnalogChannel(calctime(curtime,-10),'D1 OP AM',D1op_pwr); 
+    setAnalogChannel(calctime(curtime,-10),'D1 OP AM',1); 
 
     
     % Open D1 shutter (FPUMP + OPT PUMP)
@@ -877,7 +877,7 @@ if seqdata.flags.lattice_lattice_ramp_2
                                1*[yLatDepth yLatDepth];
                                1*[zLatDepth zLatDepth]];  %[100 650 650;100 650 650;100 900 900]
     
-    latt_ramp2_time_list = [1];20;
+    latt_ramp2_time_list = [10];20;
     latt_ramp2_time = getScanParameter(latt_ramp2_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'latt_ramp2_time','ms'); 
 
@@ -1227,6 +1227,12 @@ end
     lat_rampdowntime =lattice_rampdown*1; % how long to ramp (0: switch off)   %1ms
     lat_rampdowntau = 1*lattice_rampdown/5;    % time-constant for exponential rampdown (0: min-jerk)
         
+    
+
+xlat_endpower=seqdata.params.lattice_zero(1)    ;
+ylat_endpower=seqdata.params.lattice_zero(2)    ;
+zlat_endpower=seqdata.params.lattice_zero(3)    ;
+
     if ( lat_rampdowntime > 0 )
         dispLineStr('Band mapping',curtime);
         
@@ -1263,7 +1269,6 @@ curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice',...
     %TTLs
     setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);  %0: ON / 1: OFF,yLatticeOFF
     setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1); % Added 2014-03-06 in order to avoid integrator wind-up 
-    
 end
 
 

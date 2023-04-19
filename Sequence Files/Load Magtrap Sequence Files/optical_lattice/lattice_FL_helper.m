@@ -287,9 +287,11 @@ end
     if (opts.TriggerIxon)   
         tlist = (opts.IxonExposureTime+opts.DwellTime)*[0:(opts.NumberOfImages-1)];  
         for kk=1:length(tlist)
+            
+%             if tlist(kk)>0
             DigitalPulse(calctime(curtime,tlist(kk)),...
                 'iXon Trigger',opts.IxonExposureTime,1);
-            
+%             end
         end        
     end     
     

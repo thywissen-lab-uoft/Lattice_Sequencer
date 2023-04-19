@@ -60,11 +60,11 @@ setDigitalChannel(calctime(curtime,20),'K/Rb uWave Transfer',0);
 setDigitalChannel(calctime(curtime,25),'K uWave Source',1); 
 
 % For SRS GPIB 30
-% setDigitalChannel(calctime(curtime,25),'SRS Source',1);  
+setDigitalChannel(calctime(curtime,25),'SRS Source',1);  
         
 % For SRS GPIB 29
-setDigitalChannel(calctime(curtime,25),'SRS Source post spec',1);
-setDigitalChannel(calctime(curtime,25),'SRS Source',0);
+% setDigitalChannel(calctime(curtime,25),'SRS Source post spec',1);
+% setDigitalChannel(calctime(curtime,25),'SRS Source',0);
 
 % Wait for switches to finish
 curtime = calctime(curtime,30);
@@ -164,7 +164,7 @@ switch opts.SelectMode
         if opts.dotilt
             freq_list = 1050 + [1220];
         else
-            freq_list = 1050 + [100];
+            freq_list = 1050 + [50:10:150];
         end
         
         freq_offset = getScanParameter(freq_list,seqdata.scancycle,...
@@ -174,8 +174,8 @@ switch opts.SelectMode
 
         % SRS settings (may be overwritten later)
         uWave_opts=struct;
-    %     uWave_opts.Address=30;                        % K uWave ("SRS B");
-        uWave_opts.Address=29; % 4/4/2023
+        uWave_opts.Address=30;                        % K uWave ("SRS B");
+%         uWave_opts.Address=29; % 4/4/2023
         uWave_opts.Frequency=1606.75+freq_offset*1E-3;1488.5+freq_offset*1E-3; % Frequency in MHz
         uWave_opts.Power= 15;%15                      % Power in dBm
         uWave_opts.Enable=1;                          % Enable SRS output    

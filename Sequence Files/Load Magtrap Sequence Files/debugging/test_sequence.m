@@ -5503,21 +5503,21 @@ end
 % setAnalogChannel(calctime(curtime,0),'zLattice',-10,1);
 % setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);
 % setDigitalChannel(calctime(curtime,0),'yLatticeOFF',0);%0: ON
+
+doRotateWaveplate=1;
+if doRotateWaveplate
+    wp_Trot1 = 600; % Rotation time during XDT
+    wp_Trot2 = 150; 
+    P_RotWave_I = 0.8;
+    P_RotWave_II = 0.99;    
+%     P_RotWave_II = 0.01;    
 % 
-% doRotateWaveplate=1;
-% if doRotateWaveplate
-%     wp_Trot1 = 600; % Rotation time during XDT
-%     wp_Trot2 = 150; 
-%     P_RotWave_I = 0.8;
-%     P_RotWave_II = 0.99;    
-% %     P_RotWave_II = 0.01;    
-% 
-%     dispLineStr('Rotate waveplate again',curtime)    
-%         %Rotate waveplate again to divert the rest of the power to lattice beams
-% curtime = AnalogFunc(calctime(curtime,0),41,...
-%         @(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),...
-%         wp_Trot2,wp_Trot2,P_RotWave_I,P_RotWave_II);             
-% end
+    dispLineStr('Rotate waveplate again',curtime)    
+        %Rotate waveplate again to divert the rest of the power to lattice beams
+curtime = AnalogFunc(calctime(curtime,0),41,...
+        @(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),...
+        wp_Trot2,wp_Trot2,P_RotWave_I,P_RotWave_II);             
+end
 % 
 % curtime=calctime(curtime,550);
 % 
@@ -5667,8 +5667,8 @@ end
 %     setDigitalChannel(calctime(curtime,0),'PA TTL',0); % Open shutter
 %     setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',1); % Set 
 %     setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',0); % inverted logic
-setAnalogChannel(calctime(curtime,0),'D1 OP AM',1)
-setDigitalChannel(calctime(curtime,0),'EIT Probe TTL',0)
+% setAnalogChannel(calctime(curtime,0),'D1 OP AM',1)
+% setDigitalChannel(calctime(curtime,0),'EIT Probe TTL',0)
 
 timeout = curtime;
 % SelectScopeTrigger('PA_Pulse');

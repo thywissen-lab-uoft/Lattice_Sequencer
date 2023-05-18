@@ -1987,7 +1987,7 @@ end
 
 if seqdata.flags.xdt_do_hold_end 
     dispLineStr('Holding XDT at End',curtime);
-    xdt_wait_time_list = [15000];
+    xdt_wait_time_list = [10000];
     xdt_wait_time = getScanParameter(xdt_wait_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'xdt_wait_time','ms');   
     curtime = calctime(curtime,xdt_wait_time);

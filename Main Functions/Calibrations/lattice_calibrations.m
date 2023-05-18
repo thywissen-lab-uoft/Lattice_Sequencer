@@ -9,11 +9,11 @@ xLattice0_list = 0;
 xLattice0 = getScanParameter(xLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'xLatt0');
 
-yLattice0_list = -.45;
+yLattice0_list = -.4;
 yLattice0 = getScanParameter(yLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'yLatt0');
 
-zLattice0_list = -0.5;
+zLattice0_list =-.59; -0.4;
 zLattice0 = getScanParameter(zLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'zLatt0');  
 % These parameters could be super sensitive to cause spikes and kill atoms
@@ -76,15 +76,39 @@ latt_calib(2).m2 = y_m2;
 latt_calib(2).b2 = y_b2;
 latt_calib(2).P_threshold = y_p_threshold;
 
-%% Z Lattice new
+%% Z Lattice 
 
-z_power2voltage = @(P) (P*19.372 - 9.7514).*(P < 0.5863) + ...
-    (P*0.71 + 1.1905).*(P >= 0.5863); % 03/01/2023
+
+% Z Lattice calibration 2023/05/17
+z_p_threshold = 0.5678;
+z_m1 = 19.9913;
+z_b1 = - 9.7425;
+z_m2 = 0.7799;
+z_b2 = 1.1649;
 
 z_ErPerW = 183; % 2023/03/14
-% z_ErPerW = 176; 12/01/22;
+
+z_power2voltage = @(P) (P*z_m1 + z_b1).*(P < z_p_threshold) + ...
+    (P*z_m2 + z_b2).*(P >= z_p_threshold);
 
 zLattice = @(U) z_power2voltage(U/z_ErPerW);
+
+latt_calib(3).Name = 'Z Lattice';
+latt_calib(3).ErPerW = z_ErPerW;
+latt_calib(3).power2voltage = @z_power2voltage;
+latt_calib(3).depth2voltage = @zLattice;
+latt_calib(3).m1 = z_m1;
+latt_calib(3).b1 = z_b1;
+latt_calib(3).m2 = z_m2;
+latt_calib(3).b2 = z_b2;
+latt_calib(3).P_threshold = z_p_threshold;
+
+
+
+% z_power2voltage = @(P) (P*19.372 - 9.7514).*(P < 0.5863) + ...
+%     (P*0.71 + 1.1905).*(P >= 0.5863); % 03/01/2023
+% z_ErPerW = 183; % 2023/03/14
+% zLattice = @(U) z_power2voltage(U/z_ErPerW);
 
 %% Output Calibration
 seqdata.lattice_calibration = latt_calib;

@@ -20,7 +20,7 @@ opts.dotilt     = 0; %tilt for stripe pattern
 
 % Do you want to fake the plane selection sweep?
 %0=No, 1=Yes, no plane selection but remove all atoms.
-opts.fake_the_plane_selection_sweep = 0; 
+opts.fake_the_plane_selection_sweep = 1; 
 
 % Pulse the vertical D2 kill beam to kill untransfered F=9/2
 opts.planeselect_doVertKill = 1;
@@ -164,7 +164,7 @@ switch opts.SelectMode
         if opts.dotilt
             freq_list = 1050 + [1220];
         else
-            freq_list = 1050 + [50:10:150];
+            freq_list = 1050 + [80];
         end
         
         freq_offset = getScanParameter(freq_list,seqdata.scancycle,...

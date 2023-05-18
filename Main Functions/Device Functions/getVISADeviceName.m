@@ -34,7 +34,7 @@ devices = {'USB0::0x1AB1::0x0641::DG4E180900374::INSTR', ...
 % devices(08) DG4E221100169 is for upwards K kill beam
 % devices(09) DG4E225202524 is for X & Y lattice modulation(new, 02/02/2022)
 % devices(10) DG4E224101686 is FPUMP & EIT 2        (2023/04/18);
-% devices(11) DG4E231700442 is EIT 2 and K D1 OPP   (2023/04/18);
+% devices(11) DG4E231700442 is EIT 1 and K D1 OPP   (2023/04/18);
 
 out = '';
 

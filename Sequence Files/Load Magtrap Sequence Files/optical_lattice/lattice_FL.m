@@ -14,7 +14,7 @@ global seqdata
     fluor.EnableRaman           = 1;        % Use Raman Beams
     
     % Sets the total time of radiation (optical or otherwise)
-        pulse_list = [2000];
+        pulse_list = [10000];
 
     pulse_time = getScanParameter(...
         pulse_list,seqdata.scancycle,seqdata.randcyclelist,...
@@ -52,7 +52,14 @@ global seqdata
     fluor.doInitialFieldRamp    = 1;        % Auto specify ramps       
     fluor.doInitialFieldRamp2   = 0;        % Manuualy specify ramps
     
+        
+    if ~isfield(seqdata,'flags')
+       seqdata.flags = struct; 
+    end
     
+    if ~isfield(seqdata.flags,'misc_program4pass')
+        seqdata.flags.misc_program4pass = 1;
+    end
 %% Override flags if desired
 
 if nargin == 2
@@ -90,26 +97,48 @@ end
     fluor.CenterField = B0 + B0_shift;
     
     addOutputParam('qgm_field',fluor.CenterField,'G');   
-%% EIT Settings
+%% EIT FPUMP Settings
 % This code set the Fpump power regulation and the 4 pass frequency
 
-
-
-    F_Pump_List = [1.2];
+    % Power that the Fpump beam regulates to
+    F_Pump_List = [1.3];
+    
+    % Voltage of the Rigol output (this sets the max RF power after the
+    % ALPS box)
+    fluor.F_Pump_Voltage = 1.1;
+    
+    % Frequency of the FPUMP single pass (MHz)
+    fluor.F_Pump_Frequency = 80;
+    
     fluor.F_Pump_Power = getScanParameter(F_Pump_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V');
+        seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V');    
+
+    addOutputParam('qgm_FPUMP_Rigol_V',fluor.F_Pump_Voltage,'V');
+    addOutputParam('qgm_FPUMP_Frequency',fluor.F_Pump_Voltage,'MHz');
+
+    %% EIT Probe Settings   
     
-    if ~isfield(seqdata,'flags')
-       seqdata.flags = struct; 
-    end
+    % Voltage corresponding to maximum AOM deflection
+    EIT1_max_voltage = 1.1;
+    EIT2_max_voltage = .850;
+
+    % Relative power choice (0 to 1)
+    EIT_probe_rel_pow_list =[.5];
+    EIT_probe_rel_pow = getScanParameter(EIT_probe_rel_pow_list, ...
+        seqdata.scancycle,seqdata.randcyclelist,'qgm_eit_rel_pow','arb');
     
-    if ~isfield(seqdata.flags,'misc_program4pass')
-        seqdata.flags.misc_program4pass = 1;
-    end
+    % Voltage that gets written to Rigol
+    fluor.EIT1_Power = EIT1_max_voltage*EIT_probe_rel_pow;
+    fluor.EIT2_Power = EIT2_max_voltage*EIT_probe_rel_pow;
+    
+    % Frequency (MHz) that gets written to Rigol
+    fluor.EIT1_Frequency = 80;
+    fluor.EIT2_Frequency = 80.01;
     
     % Set 4-Pass Frequency
     detuning_list = [5];
-    df = getScanParameter(detuning_list, seqdata.scancycle, seqdata.randcyclelist, 'detuning');
+    df = getScanParameter(detuning_list, seqdata.scancycle, ...
+        seqdata.randcyclelist, 'qgm_eit_4pass_shift','kHz');
     DDSFreq = 324.206*1e6 + df*1e3/4;
 
     % Hyperfine splitting at zero field
@@ -124,10 +153,6 @@ end
     end
     
     % Eventually program the EIT probe frequencies
-    
-    %% EIT Probe Settings
-    
-    
 %%  uWave Settings
 % If the uWave flag is enabled these settings are used to apply a uWave
 % frequency sweep in order to find the n-->n resonance location. It is
@@ -159,7 +184,7 @@ end
 
 %%
 
-raman_rel_pow_list = [.5];
+raman_rel_pow_list = [0.5];
   raman_rel_pow = getScanParameter(raman_rel_pow_list,...
         seqdata.scancycle,seqdata.randcyclelist,'qgm_raman_rel_pow','arb');     
     

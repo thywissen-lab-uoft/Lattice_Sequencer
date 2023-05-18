@@ -195,6 +195,22 @@ end
 
 if opts.EnableEITProbe && pulse_time > 0
     
+    if isfield(opts,'EIT1_Power')
+       ch1 = struct;
+        ch1.AMPLITUDE = opts.EIT1_Power;    
+        InternalAddress = 11;    
+        programRigol(InternalAddress,ch1,[])   
+    end
+    
+    if isfield(opts,'EIT2_Power')
+        ch2 = struct;
+        ch2.AMPLITUDE = opts.EIT2_Power;    
+        InternalAddress = 10;    
+        programRigol(InternalAddress,[],ch2)    
+    end
+    
+
+    
     
     probe_power_list = [10];
     probe_power = getScanParameter(probe_power_list,...

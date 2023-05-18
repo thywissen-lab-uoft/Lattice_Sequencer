@@ -17,6 +17,11 @@ curtime = timein;
 lattices = {'xLattice','yLattice','zLattice'};
 seqdata.params.xdt_p2p1_ratio = 1;
 
+if curtime==0
+    main_settings;
+    curtime = calctime(curtime,1000);
+end
+
 
 %% Lattice Flags    
 % These are the lattice flags sorted roughly chronologically. 
@@ -27,16 +32,16 @@ seqdata.params.xdt_p2p1_ratio = 1;
 seqdata.flags.lattice_rotate_waveplate_1 = 1;        % First waveplate rotation for 90%
 seqdata.flags.lattice_lattice_ramp_1 = 1;            % Load the lattices
 
-seqdata.flags.do_lattice_am_spec = 0;               % Amplitude modulation spectroscopy             
+seqdata.flags.do_lattice_am_spec = 1;               % Amplitude modulation spectroscopy             
 
-seqdata.flags.lattice_rotate_waveplate_2 = 1;        % Second waveplate rotation 95% 
-seqdata.flags.lattice_lattice_ramp_2 =1;            % Secondary lattice ramp for fluorescence imaging
+seqdata.flags.lattice_rotate_waveplate_2 = 0;        % Second waveplate rotation 95% 
+seqdata.flags.lattice_lattice_ramp_2 =0;            % Secondary lattice ramp for fluorescence imaging
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 seqdata.flags.lattice_PA = 0;
-
+seqdata.flags.lattice_hold_at_end = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Conductivity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -59,10 +64,10 @@ do_RF_spectroscopy = 0;                 % (3952,4970)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-seqdata.flags.lattice_do_optical_pumping    = 1;                 % (1426) keep : optical pumping in lattice  
-seqdata.flags.do_plane_selection            = 1;                 % Plane selection flag
+seqdata.flags.lattice_do_optical_pumping    = 0;                 % (1426) keep : optical pumping in lattice  
+seqdata.flags.do_plane_selection            = 0;                 % Plane selection flag
 
-% Actual fluorsence image flags
+% Actual fluorsence image flags - no longer used
 seqdata.flags.Raman_transfers               = 0;
 
 % Note:
@@ -74,7 +79,7 @@ seqdata.flags.Raman_transfers               = 0;
 
 % New Standard Fluoresnce Image Flags
 seqdata.flags.lattice_ClearCCD_IxonTrigger  = 1;    % Add additional trigger to clear CCD
-seqdata.flags.lattice_fluor                 = 1;    % Do Fluoresnce imaging
+seqdata.flags.lattice_fluor                 = 0;    % Do Fluoresnce imaging
 seqdata.flags.lattice_fluor_bkgd            = 0;    % 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -141,7 +146,7 @@ if seqdata.flags.lattice_lattice_ramp_1
     dip_endpower = 1.0*getChannelValue(seqdata,'dipoleTrap1',1,0);        
     
     % Ramp Mode
-    rampMode=0;    
+    rampMode=2;    
     % 0 : Ramp only the lattice
     % 1 : Ramp lattice,XDT,and DMD
     % 2 : Simple ramp used to measure the lattice alignment
@@ -163,7 +168,7 @@ if seqdata.flags.lattice_lattice_ramp_1
                 'initial_latt_depth','Er');
             
             % Final lattice depth to ramp to
-            U = 200;
+            U = 100;
 
             %%% Lattice %%%
             % Ramp the optical powers of the lattice
@@ -171,6 +176,8 @@ if seqdata.flags.lattice_lattice_ramp_1
                 [init_depth init_depth U U;     % X lattice
                  init_depth init_depth U U;     % Y lattice
                  init_depth init_depth U U];    % Z Lattice 
+          
+             
              
              % Initial ramp on time
              latt_ramp_time_list = [300];
@@ -230,9 +237,9 @@ if seqdata.flags.lattice_lattice_ramp_1
             % Simple square ramp of only one lattice 
             
             %Select the lattice direction to load
-            direction = 'X';
+%             direction = 'X';
 %             direction = 'Y';
-%             direction = 'Z';
+            direction = 'Z';
             switch direction
                 case 'X'
                   latt_depth=...
@@ -249,6 +256,11 @@ if seqdata.flags.lattice_lattice_ramp_1
                      [L0(1) L0(1); % X lattice
                      L0(2) L0(2);  % Y lattice
                      U_align U_align];    % Z Lattice
+                case 'XDT'
+                  latt_depth=...
+                     [L0(1) L0(1); % X lattice
+                     L0(2) L0(2);  % Y lattice
+                     L0(3)  L0(3)];    % Z Lattice
             end
             
             % Lattice Ramp Times
@@ -263,6 +275,10 @@ if seqdata.flags.lattice_lattice_ramp_1
             latt_XDT_pow = getScanParameter(latt_XDT_pow_list,...
                 seqdata.scancycle,seqdata.randcyclelist,...
                 'latt_XDT_pow','V');
+            
+            if isequal(direction,'XDT')
+                latt_XDT_pow = dip_endpower;
+            end
             
             %%% XDT Power and Time Vector %%%
             dip_pow=[dip_endpower latt_XDT_pow];
@@ -464,7 +480,7 @@ end
 
 %% Ramp down HF used for loading lattice (this flag is in dipole transfer)
 
-if seqdata.flags.xdt_ramp_up_FB_for_lattice
+if isfield(seqdata.flags,'xdt_ramp_up_FB_for_lattice') && seqdata.flags.xdt_ramp_up_FB_for_lattice
 dispLineStr('Ramping FB field (not sure why?).',curtime);
 
     seqdata.params.time_out_HF = curtime;
@@ -722,7 +738,7 @@ if seqdata.flags.lattice_uWave_spec
     
     % Do you sweep back after a variable hold time?
     spec_pars.doSweepBack = 0;
-    uwave_hold_time_list = [0];
+    uwave_hold_time_list = [1];
     uwave_hold_time  = getScanParameter(uwave_hold_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'hold_time','ms');     
     spec_pars.HoldTime = uwave_hold_time;
@@ -860,7 +876,7 @@ if seqdata.flags.lattice_lattice_ramp_2
     ScopeTriggerPulse(curtime,'lattice_ramp_2');
 
     % 
-    imaging_depth_list = 950;[1000]; [675]; 
+    imaging_depth_list = 200;[1000]; [675]; 
     imaging_depth = getScanParameter(imaging_depth_list,seqdata.scancycle,...
         seqdata.randcyclelist,'FI_latt_depth','Er'); 
 
@@ -1183,10 +1199,22 @@ end
 %% Extra Wait For funsies
 curtime = calctime(curtime,25);
 
+
+
 %% High Field transfers + Imaging
 
 if seqdata.flags.High_Field_Imaging
    curtime = lattice_HF(curtime);
+end
+
+%% Lattice Hold
+
+if seqdata.flags.lattice_hold_at_end
+    dispLineStr('Holding lattice at End',curtime);
+    wait_time_list = [0];
+    wait_time = getScanParameter(wait_time_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'lattice_hold_time','ms');   
+    curtime = calctime(curtime,wait_time);
 end
 
 %% Lattice Turn Off

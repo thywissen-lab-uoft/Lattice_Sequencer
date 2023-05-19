@@ -81,6 +81,9 @@ latt_calib(2).P_threshold = y_p_threshold;
 
 % Z Lattice calibration 2023/05/17
 z_p_threshold = 0.5678;
+
+% z_p_threshold = 0.53;
+
 z_m1 = 19.9913;
 z_b1 = - 9.7425;
 z_m2 = 0.7799;

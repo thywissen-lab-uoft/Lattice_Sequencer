@@ -3,50 +3,32 @@ curtime = timein;
 global seqdata
 
 if seqdata.flags.xdt_rfmix_start
-        error('DONT DO AM SPEC WITH A SPIN MIXTURE!!')
+    warning('DONT DO AM SPEC WITH A SPIN MIXTURE!!')
 end
     
     dispLineStr('Amplitude Modulation Spectroscopy',curtime)
     
-    lattice_ramp = 0; %if we need to ramp up the lattice for am spec
-    if lattice_ramp
-        AM_spec_latt_depth = paramGet('AM_spec_depth');
-        AM_spec_direction = paramGet('AM_direction');
-        
-        AM_spec_latt_ramptime_list = [50];
-        AM_spec_latt_ramptime = getScanParameter(AM_spec_latt_ramptime_list,...
-            seqdata.scancycle,seqdata.randcyclelist,'AM_spec_latt_ramptime','ms');
- 
-
- AnalogFuncTo(calctime(curtime,T0),'xLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-            AM_spec_latt_ramptime, AM_spec_latt_ramptime, AM_spec_latt_depth);   
-        AnalogFuncTo(calctime(curtime,T0),'yLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-            AM_spec_latt_ramptime, AM_spec_latt_ramptime, AM_spec_latt_depth);    
-curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-            AM_spec_latt_ramptime, AM_spec_latt_ramptime, AM_spec_latt_depth); 
-        
-
-
-curtime = calctime(curtime,50);  %extra wait time
-    else 
-        AM_spec_direction = 'X';
-        AM_spec_latt_depth = 200;
-        addOutputParam('AM_spec_depth',AM_spec_latt_depth);
-    end
+%% AM Spec Parameters
+    AM_spec_direction = 'Z';
+    AM_spec_latt_depth = 200;
+    addOutputParam('AM_spec_depth',AM_spec_latt_depth);
 
     x_latt_voltage = getChannelValue(seqdata,'xLattice',1,1);
     y_latt_voltage = getChannelValue(seqdata,'yLattice',1,1);
     z_latt_voltage = getChannelValue(seqdata,'zLattice',1,1);    
 
+%     mod_freq = paramGet('AM_spec_freq'); 
+    
+    defVar('AM_spec_freq',[160:5:260]*1e3,'kHz'); 
 
+    mod_freq = getVar('AM_spec_freq'); 
+
+    mod_time = 3;%0.2; %Closer to 100ms to kill atoms, 3ms for band excitations only. 
     addOutputParam('adwin_am_spec_X',x_latt_voltage);
     addOutputParam('adwin_am_spec_Y',y_latt_voltage);
     addOutputParam('adwin_am_spec_Z',z_latt_voltage);
         
-    % Turn off ODTs before modulation (if not already off)
+%% Turn off ODTs before modulation (if not already off)
     switch_off_XDT_before_Lat_modulation = 0;
     if (switch_off_XDT_before_Lat_modulation == 1) 
         AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 50,50,-1);
@@ -56,9 +38,8 @@ curtime = calctime (curtime,50);
     
     curtime=calctime(curtime,100);
  
-    mod_freq = paramGet('AM_spec_freq');    
-    mod_time = 3;%0.2; %Closer to 100ms to kill atoms, 3ms for band excitations only. 
-
+  
+%% Rigol Settings
     % OFF Channel settings
     ch_off = struct;
     ch_off.STATE = 'OFF';
@@ -76,7 +57,8 @@ curtime = calctime (curtime,50);
     ch_on.BURST_TRIGGER_SLOPE='POS';% Positive trigger slope
     ch_on.BURST_TRIGGER='EXT';    % External trigger.    
     ch_on.STATE = 'ON';
-    
+
+%% Program the Rigols
     addr_mod_xy = 9; % ch1 x mod, ch2 y mod
     addr_z = 5; %ch1 z lat, ch2 z mod  
     switch AM_spec_direction    
@@ -163,7 +145,8 @@ curtime = calctime (curtime,50);
                         
             mod_amp = mod_amp+d_amp;
             
-            mod_amp = mod_amp;
+            mod_amp = mod_amp*.5;
+            
             
             ch_on.AMPLITUDE = mod_amp;
             % Program the Rigols for modulation
@@ -176,7 +159,10 @@ curtime = calctime (curtime,50);
     
     addOutputParam('mod_amp',mod_amp);
    
-    % We leave the feedback on as it cannot keep up. This + the VVA will
+
+%% Run the code
+
+% We leave the feedback on as it cannot keep up. This + the VVA will
     % make a frequency dependent drive.
     % Trigger and wait
     setDigitalChannel(calctime(curtime,0),'Lattice FM',1); 

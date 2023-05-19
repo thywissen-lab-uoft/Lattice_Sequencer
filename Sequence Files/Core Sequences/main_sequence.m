@@ -429,7 +429,7 @@ if seqdata.flags.image_type == 0
         setDigitalChannel(calctime(curtime,qp_switch1_delay_time),'15/16 Switch',0);
     end
     
-    % XDT TOF (CF : What about if the lattice is on?)
+    % Turn of XDT (if they aren't already off)
     if seqdata.flags.xdt        
         % Read XDT Powers right before tof
         P1 = getChannelValue(seqdata,'dipoleTrap1',1);
@@ -450,12 +450,19 @@ if seqdata.flags.image_type == 0
         setDigitalChannel(calctime(curtime,-1),'XDT Direct Control',1);
     end          
 
-    if ( seqdata.flags.lattice ~= 0 )
-        % Make sure lattices are off (whhat about the TTL?)
-        % Load lattice handles band mapping
-        setAnalogChannel(calctime(curtime,0),'zLattice',-10,1); % Z lattice
-        setAnalogChannel(calctime(curtime,0),'yLattice',-10,1); % Y lattice
-        setAnalogChannel(calctime(curtime,0),'xLattice',-10,1); % X lattice
+    % Turn off lattices (if they haven't already turned off)
+    if seqdata.flags.lattice
+        % Set Analog Channels to zero lattice depth
+        setAnalogChannel(calctime(curtime,0),'xLattice', ...
+            seqdata.params.lattice_zero(1));
+        setAnalogChannel(calctime(curtime,0),'yLattice', ...
+            seqdata.params.lattice_zero(2));
+        setAnalogChannel(calctime(curtime,0),'zLattice', ...
+            seqdata.params.lattice_zero(3));
+            
+        % Turn off TTL and disable the integrator
+        setDigitalChannel(calctime(curtime + 0.5,0),'yLatticeOFF',1); 
+        setDigitalChannel(calctime(curtime + 0.5,0),'Lattice Direct Control',1);         
     end    
 end
 

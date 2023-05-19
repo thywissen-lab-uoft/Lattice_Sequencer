@@ -32,10 +32,10 @@ end
 seqdata.flags.lattice_rotate_waveplate_1 = 1;        % First waveplate rotation for 90%
 seqdata.flags.lattice_lattice_ramp_1 = 1;            % Load the lattices
 
-seqdata.flags.do_lattice_am_spec = 1;               % Amplitude modulation spectroscopy             
+seqdata.flags.do_lattice_am_spec = 0;               % Amplitude modulation spectroscopy             
 
-seqdata.flags.lattice_rotate_waveplate_2 = 0;        % Second waveplate rotation 95% 
-seqdata.flags.lattice_lattice_ramp_2 =0;            % Secondary lattice ramp for fluorescence imaging
+seqdata.flags.lattice_rotate_waveplate_2 = 1;        % Second waveplate rotation 95% 
+seqdata.flags.lattice_lattice_ramp_2 =1;            % Secondary lattice ramp for fluorescence imaging
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -83,6 +83,12 @@ seqdata.flags.lattice_fluor                 = 0;    % Do Fluoresnce imaging
 seqdata.flags.lattice_fluor_bkgd            = 0;    % 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% BandMapping
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+seqdata.flags.lattice_bandmap               = 1;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other Parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
 
@@ -100,13 +106,6 @@ else
    lattice_holdtime = getScanParameter(lattice_holdtime_list,...
        seqdata.scancycle,seqdata.randcyclelist,'latt_holdtime','ms');%maximum is 4 
 end
-
-
-% Band Map time (ms)
-lattice_rampdown_list = [3]; %0 for snap off (for in-situ latice postions for alignment)
-                             %3 for band mapping
-lattice_rampdown = getScanParameter(lattice_rampdown_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'latt_rampdown_time','ms'); %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
 
 
 %% Rotate waveplate to shift power to lattice beams
@@ -146,7 +145,7 @@ if seqdata.flags.lattice_lattice_ramp_1
     dip_endpower = 1.0*getChannelValue(seqdata,'dipoleTrap1',1,0);        
     
     % Ramp Mode
-    rampMode=2;    
+    rampMode=0;    
     % 0 : Ramp only the lattice
     % 1 : Ramp lattice,XDT,and DMD
     % 2 : Simple ramp used to measure the lattice alignment
@@ -168,7 +167,9 @@ if seqdata.flags.lattice_lattice_ramp_1
                 'initial_latt_depth','Er');
             
             % Final lattice depth to ramp to
-            U = 100;
+            defVar('U1',[60]);
+            U = getVar('U1');
+%             U = 200;
 
             %%% Lattice %%%
             % Ramp the optical powers of the lattice
@@ -233,7 +234,7 @@ if seqdata.flags.lattice_lattice_ramp_1
             % insitu position measured here. (Use a TOF~0);
             % This also is used for lattice alignment with the ixon.
             
-            U_align = 100; % Lattice depth to align to
+            U_align = 200; % Lattice depth to align to
             % Simple square ramp of only one lattice 
             
             %Select the lattice direction to load
@@ -876,7 +877,7 @@ if seqdata.flags.lattice_lattice_ramp_2
     ScopeTriggerPulse(curtime,'lattice_ramp_2');
 
     % 
-    imaging_depth_list = 200;[1000]; [675]; 
+    imaging_depth_list = 500;[1000]; [675]; 
     imaging_depth = getScanParameter(imaging_depth_list,seqdata.scancycle,...
         seqdata.randcyclelist,'FI_latt_depth','Er'); 
 
@@ -1217,18 +1218,14 @@ if seqdata.flags.lattice_hold_at_end
     curtime = calctime(curtime,wait_time);
 end
 
-%% Lattice Turn Off
-% Turn off the lattices.
-%
-% During typical operation :
-%
-% Ramp off the XDTs
-% Perform Bandmapping
+%% Lattice Band Map
 
 % Turn off of lattices
- if (seqdata.flags.lattice)
-   
-    % Ramp XDTs before the lattices
+ if (seqdata.flags.lattice_bandmap)
+    % Scope Trigger for bandmap
+    ScopeTriggerPulse(curtime,'lattice_off');     
+     
+    % Ramp off the XDTs before the lattices    
     dispLineStr('Ramping down XDTs',curtime);
     dip_rampstart = -15;
     dip_ramptime = 5;
@@ -1237,29 +1234,27 @@ end
     disp([' Ramp Start (ms) : ' num2str(dip_rampstart) ]);
     disp([' Ramp Time  (ms) : ' num2str(dip_ramptime) ]);
     disp([' End Power   (W) : ' num2str(dip_endpower)]);
+    
     AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         dip_ramptime,dip_ramptime,dip1_endpower);
     AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         dip_ramptime,dip_ramptime,dip2_endpower);
-    seqdata.params.xdt_p2p1_ratio*dip2_endpower;
     setDigitalChannel(calctime(curtime,dip_rampstart+dip_ramptime),...
-        'XDT TTL',1); %cut lattice power for bandmapping?    
+        'XDT TTL',1);   
     
-     ScopeTriggerPulse(curtime,'lattice_off');
-    % Parameters for ramping down the lattice (after things have been done)
-    zlat_endpower = L0(3)-1;-19;-0.2;       % where to end the ramp
-    ylat_endpower = L0(2)-1;-20;-0.2;       % where to end the ramp
-    xlat_endpower = L0(1)-1;-22; -0.2;       % where to end the ramp
-    lat_rampdowntime =lattice_rampdown*1; % how long to ramp (0: switch off)   %1ms
-    lat_rampdowntau = 1*lattice_rampdown/5;    % time-constant for exponential rampdown (0: min-jerk)
-        
-    
+    % Band Map time (ms)
+    bm_time_list = [3];
+    bm_time = getScanParameter(bm_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'lattice_bm_time','ms'); %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
 
-xlat_endpower=seqdata.params.lattice_zero(1)    ;
-ylat_endpower=seqdata.params.lattice_zero(2)    ;
-zlat_endpower=seqdata.params.lattice_zero(3)    ;
+    lat_rampdowntime =bm_time*1;        % how long to ramp (0: switch off)   %1ms
+    lat_rampdowntau = 1*bm_time/5;      % time-constant for exponential rampdown (0: min-jerk)
+       
+    xlat_endpower=seqdata.params.lattice_zero(1);
+    ylat_endpower=seqdata.params.lattice_zero(2);
+    zlat_endpower=seqdata.params.lattice_zero(3);
 
     if ( lat_rampdowntime > 0 )
         dispLineStr('Band mapping',curtime);
@@ -1281,22 +1276,11 @@ zlat_endpower=seqdata.params.lattice_zero(3)    ;
 curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice', ...
                 @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
                 lat_rampdowntime,lat_rampdowntime,zlat_endpower);
-        else
-            AnalogFuncTo(calctime(curtime,0),'xLattice',...
-                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-                lat_rampdowntime,lat_rampdowntime,xlat_endpower);
-            AnalogFuncTo(calctime(curtime,0),'yLattice',...
-                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),lat_rampdowntime,...
-                lat_rampdowntime,ylat_endpower);
-curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice',...
-                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),lat_rampdowntime,...
-                lat_rampdowntime,zlat_endpower);
         end
     end   
     
-    %TTLs
-    setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);  %0: ON / 1: OFF,yLatticeOFF
-    setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1); % Added 2014-03-06 in order to avoid integrator wind-up 
+    setDigitalChannel(calctime(curtime + 0.5,0),'yLatticeOFF',1); 
+    setDigitalChannel(calctime(curtime + 0.5,0),'Lattice Direct Control',1); 
 end
 
 

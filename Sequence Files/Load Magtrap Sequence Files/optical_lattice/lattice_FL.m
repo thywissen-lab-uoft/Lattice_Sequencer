@@ -9,12 +9,12 @@ global seqdata
     fluor.EnableUWave           = 0;        % Use uWave freq sweep for n-->n
     
     % Laser Beams
-    fluor.EnableFPump           = 1;        % Use FPUMP beam
+    fluor.EnableFPump           = 1;        % Use FPUMP beam DOESNT WORK??
     fluor.EnableEITProbe        = 1;        % Use EIT Probe beams
     fluor.EnableRaman           = 1;        % Use Raman Beams
     
     % Sets the total time of radiation (optical or otherwise)
-        pulse_list = [10000];
+        pulse_list = [2000];
 
     pulse_time = getScanParameter(...
         pulse_list,seqdata.scancycle,seqdata.randcyclelist,...
@@ -87,7 +87,7 @@ end
 % you are imaging along the FPUMP axis
     
     B0 = 4;         % Quantization Field
-    B0_shift_list =[.19]; [0.21];[.17];
+    B0_shift_list = [0.19];[.19]; [0.21];[.17];
     
     % Quantization Field 
     B0_shift = getScanParameter(...
@@ -101,11 +101,7 @@ end
 % This code set the Fpump power regulation and the 4 pass frequency
 
     % Power that the Fpump beam regulates to
-    F_Pump_List = [1.3];
-    
-    % Voltage of the Rigol output (this sets the max RF power after the
-    % ALPS box)
-    fluor.F_Pump_Voltage = 1.1;
+    F_Pump_List = [1]; [1.3];    
     
     % Frequency of the FPUMP single pass (MHz)
     fluor.F_Pump_Frequency = 80;
@@ -113,8 +109,7 @@ end
     fluor.F_Pump_Power = getScanParameter(F_Pump_List,...
         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V');    
 
-    addOutputParam('qgm_FPUMP_Rigol_V',fluor.F_Pump_Voltage,'V');
-    addOutputParam('qgm_FPUMP_Frequency',fluor.F_Pump_Voltage,'MHz');
+    addOutputParam('qgm_FPUMP_Frequency',fluor.F_Pump_Frequency,'MHz');
 
     %% EIT Probe Settings   
     
@@ -123,7 +118,7 @@ end
     EIT2_max_voltage = .850;
 
     % Relative power choice (0 to 1)
-    EIT_probe_rel_pow_list =[.5];
+    EIT_probe_rel_pow_list =[1];
     EIT_probe_rel_pow = getScanParameter(EIT_probe_rel_pow_list, ...
         seqdata.scancycle,seqdata.randcyclelist,'qgm_eit_rel_pow','arb');
     

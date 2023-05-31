@@ -5,7 +5,7 @@ global seqdata
 %% Zero optical power calibration
 % These voltages are the "zero" lattice levels.  Use these values when
 % ramping up the lattice from totally zero power to smooth out ramps.
-xLattice0_list = 0;
+xLattice0_list = -.1;
 xLattice0 = getScanParameter(xLattice0_list,...
     seqdata.scancycle,seqdata.randcyclelist,'xLatt0');
 
@@ -27,6 +27,7 @@ latt_calib = struct;
 
 % 2023/03/01
 x_p_threshold = 0.2263;
+
 x_m1 = 49.434;
 x_b1 = -9.7368;
 x_m2 = 1.377;

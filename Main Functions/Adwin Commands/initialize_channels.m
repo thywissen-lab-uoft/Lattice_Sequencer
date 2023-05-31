@@ -83,17 +83,17 @@ seqdata.digchannels(38).name = 'FPump Direct';      % 0 regulate, 1 don't regula
 seqdata.digchannels(39).name = 'K uWave TTL';       % 0 off, 1 on
 seqdata.digchannels(40).name = 'K/Rb uWave Transfer'; %0 = K, 1 = Rb
 seqdata.digchannels(40).resetvalue = 0;
-seqdata.digchannels(41).name = 'Lattice Direct Control'; 
+seqdata.digchannels(41).name = 'Lattice Direct Control'; % unused & disconnected
 seqdata.digchannels(42).name = 'FB Integrator OFF'; % 0 = integrator enabled (DO NOT SET TO 1 - March 2014)
 seqdata.digchannels(43).name = 'Bipolar Shim Relay';% 1 = shims on, 0 = shims off | temporary?
-seqdata.digchannels(44).name = 'FB offset select';  % 1 = divide by 10 and add 6.6 V to 'FB current' voltage
+seqdata.digchannels(44).name = 'FB offset select';  % (disconnected) 1 = divide by 10 and add 6.6 V to 'FB current' voltage
 seqdata.digchannels(45).name = 'DMD AOM TTL';       % 1 on 0 off
 seqdata.digchannels(45).resetvalue = 1;
 seqdata.digchannels(46).name = 'Field sensor SR';   % Set/Reset of the field sensor inside thebucket (Minimag)
 seqdata.digchannels(47).name = 'High Field Shutter';% 0: OFF, 1: ON
 seqdata.digchannels(48).name = 'Rb Sci Repump';     % Rb repump in science chamber
 seqdata.digchannels(48).resetvalue = 0;
-seqdata.digchannels(49).name = 'Rb Source Transfer';% (CF : obsolete?) Use Anritsu (0) or Sextupler (1) for Rb uWaves
+seqdata.digchannels(49).name = 'Rb Source Transfer';% disconnected (CF : obsolete?) Use Anritsu (0) or Sextupler (1) for Rb uWaves
 seqdata.digchannels(49).resetvalue = 0;
 seqdata.digchannels(50).name = 'Gray Molasses switch'; % (CF : obsolete?) Switch between K D2 gray molasses, 0: MOT; 1: gray molasses
 seqdata.digchannels(51).name = 'Lattice FM';        % Used to gate a frequency source which applies FM to the lattice beams (1 = on, 0 = off)

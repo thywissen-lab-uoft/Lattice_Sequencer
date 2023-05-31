@@ -9,8 +9,8 @@ end
     dispLineStr('Amplitude Modulation Spectroscopy',curtime)
     
 %% AM Spec Parameters
-    AM_spec_direction = 'Z';
-    AM_spec_latt_depth = 200;
+    AM_spec_direction = 'X';
+    AM_spec_latt_depth = 1000;
     addOutputParam('AM_spec_depth',AM_spec_latt_depth);
 
     x_latt_voltage = getChannelValue(seqdata,'xLattice',1,1);
@@ -19,7 +19,7 @@ end
 
 %     mod_freq = paramGet('AM_spec_freq'); 
     
-    defVar('AM_spec_freq',[160:5:260]*1e3,'kHz'); 
+    defVar('AM_spec_freq',[554]*1e3,'kHz'); 
 
     mod_freq = getVar('AM_spec_freq'); 
 
@@ -87,6 +87,7 @@ curtime = calctime (curtime,50);
             % Shift for frequency dependence
             mod_amp = mod_amp+d_amp;            
 
+            mod_amp = mod_amp;
   
             % Program the Rigols for modulation
             ch_on.AMPLITUDE = mod_amp;
@@ -117,10 +118,14 @@ curtime = calctime (curtime,50);
             % Shift for frequency dependence
             mod_amp = mod_amp+d_amp;
             
+            mod_amp = mod_amp*.25;
+            
             ch_on.AMPLITUDE = mod_amp;
             % Program the Rigols for modulation
             programRigol(addr_mod_xy,ch_off,ch_on);  % Turn off x mod, turn on y mod
             programRigol(addr_z,[],ch_off);          % Turn off z mod        
+            
+            
         case 'Z'
              m_slope = 0.05; % Per 100 kHz increase the amplitude by this amount
 
@@ -146,7 +151,9 @@ curtime = calctime (curtime,50);
             mod_amp = mod_amp+d_amp;
             
             mod_amp = mod_amp*.5;
-            
+                        
+%             mod_amp = mod_amp*.25;
+
             
             ch_on.AMPLITUDE = mod_amp;
             % Program the Rigols for modulation

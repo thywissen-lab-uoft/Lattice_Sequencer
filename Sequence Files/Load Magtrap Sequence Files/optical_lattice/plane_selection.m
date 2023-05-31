@@ -20,7 +20,7 @@ opts.dotilt     = 0; %tilt for stripe pattern
 
 % Do you want to fake the plane selection sweep?
 %0=No, 1=Yes, no plane selection but remove all atoms.
-opts.fake_the_plane_selection_sweep = 1; 
+opts.fake_the_plane_selection_sweep = 0; 
 
 % Pulse the vertical D2 kill beam to kill untransfered F=9/2
 opts.planeselect_doVertKill = 1;
@@ -194,7 +194,7 @@ switch opts.SelectMode
         addOutputParam('uwave_HS1_amp',env_amp);
 
         % Determine the range of the sweep
-        uWave_delta_freq_list= [15]/1000; [7]/1000;
+        uWave_delta_freq_list= [30]/1000; [7]/1000;
         uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq','kHz');
 
@@ -391,7 +391,7 @@ if opts.planeselect_doVertKill==1
 
     %Resonant light pulse to remove any untransferred atoms from
     %F=9/2
-    kill_time_list = [1];2;
+    kill_time_list = [3];2;
     kill_time = getScanParameter(kill_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'kill_time','ms'); %10 
     kill_detuning_list = [42.7];%42.7

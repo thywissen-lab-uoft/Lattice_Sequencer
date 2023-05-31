@@ -35,7 +35,8 @@ seqdata.flags.lattice_lattice_ramp_1 = 1;            % Load the lattices
 seqdata.flags.do_lattice_am_spec = 0;               % Amplitude modulation spectroscopy             
 
 seqdata.flags.lattice_rotate_waveplate_2 = 1;        % Second waveplate rotation 95% 
-seqdata.flags.lattice_lattice_ramp_2 =1;            % Secondary lattice ramp for fluorescence imaging
+seqdata.flags.lattice_lattice_ramp_2 = 0;            % Secondary lattice ramp for fluorescence imaging
+seqdata.flags.lattice_lattice_ramp_3 = 1;            % Secondary lattice ramp for fluorescence imaging
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -65,7 +66,7 @@ do_RF_spectroscopy = 0;                 % (3952,4970)
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 seqdata.flags.lattice_do_optical_pumping    = 0;                 % (1426) keep : optical pumping in lattice  
-seqdata.flags.do_plane_selection            = 0;                 % Plane selection flag
+seqdata.flags.do_plane_selection            = 1;                 % Plane selection flag
 
 % Actual fluorsence image flags - no longer used
 seqdata.flags.Raman_transfers               = 0;
@@ -79,7 +80,7 @@ seqdata.flags.Raman_transfers               = 0;
 
 % New Standard Fluoresnce Image Flags
 seqdata.flags.lattice_ClearCCD_IxonTrigger  = 1;    % Add additional trigger to clear CCD
-seqdata.flags.lattice_fluor                 = 0;    % Do Fluoresnce imaging
+seqdata.flags.lattice_fluor                 = 1;    % Do Fluoresnce imaging
 seqdata.flags.lattice_fluor_bkgd            = 0;    % 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -169,7 +170,6 @@ if seqdata.flags.lattice_lattice_ramp_1
             % Final lattice depth to ramp to
             defVar('U1',[60]);
             U = getVar('U1');
-%             U = 200;
 
             %%% Lattice %%%
             % Ramp the optical powers of the lattice
@@ -238,9 +238,9 @@ if seqdata.flags.lattice_lattice_ramp_1
             % Simple square ramp of only one lattice 
             
             %Select the lattice direction to load
-%             direction = 'X';
+            direction = 'X';
 %             direction = 'Y';
-            direction = 'Z';
+%             direction = 'Z';
             switch direction
                 case 'X'
                   latt_depth=...
@@ -847,14 +847,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     
 end
  
-%% Amplitude Modulation Spectroscopy of Lattice
-% This code applies amplitude modulation to XYZ optical lattices.  This is
-% done by programming a Rigol generator that goes into the sum input of the
-% Newport regulation boxes.
 
-if seqdata.flags.do_lattice_am_spec
-   curtime = lattice_am_spectroscopy(curtime);
-end
 
 
 %% Second Waveplate Rotation
@@ -876,8 +869,17 @@ if seqdata.flags.lattice_lattice_ramp_2
     dispLineStr('Lattice Ramp 2',curtime)    
     ScopeTriggerPulse(curtime,'lattice_ramp_2');
 
-    % 
-    imaging_depth_list = 500;[1000]; [675]; 
+    % Lattice Ramp Time
+    latt_ramp2_time_list = [10];20;
+    latt_ramp2_time = getScanParameter(latt_ramp2_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'latt_ramp2_time','ms');    
+    
+    % Lattice Depth Request
+    defVar('lattice_FI_depth_X',1000,'Er');
+    defVar('lattice_FI_depth_Y',1000,'Er');
+    defVar('lattice_FI_depth_Z',1000,'Er');    
+    
+    imaging_depth_list = 1000;
     imaging_depth = getScanParameter(imaging_depth_list,seqdata.scancycle,...
         seqdata.randcyclelist,'FI_latt_depth','Er'); 
 
@@ -892,12 +894,7 @@ if seqdata.flags.lattice_lattice_ramp_2
 
     lat_rampup_imaging_depth = 1*[1*[xLatDepth xLatDepth];
                                1*[yLatDepth yLatDepth];
-                               1*[zLatDepth zLatDepth]];  %[100 650 650;100 650 650;100 900 900]
-    
-    latt_ramp2_time_list = [10];20;
-    latt_ramp2_time = getScanParameter(latt_ramp2_time_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'latt_ramp2_time','ms'); 
-
+                               1*[zLatDepth zLatDepth]];    
                            
    lat_rampup_imaging_time =  [latt_ramp2_time 5];
      
@@ -911,11 +908,13 @@ if seqdata.flags.lattice_lattice_ramp_2
         for k = 1:length(lattices)
             if j==1
                 if lat_rampup_imaging_depth(k,j) ~= latt_depth(k,end) % only do a minjerk ramp if there is a change in depth
-                    AnalogFuncTo(calctime(curtime,0),lattices{k},@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_imaging_time(j), lat_rampup_imaging_time(j), lat_rampup_imaging_depth(k,j));
+                    AnalogFuncTo(calctime(curtime,0),...
+                        lattices{k},@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_imaging_time(j), lat_rampup_imaging_time(j), lat_rampup_imaging_depth(k,j));
                 end
             else
                 if lat_rampup_imaging_depth(k,j) ~= lat_rampup_imaging_depth(k,j-1) % only do a minjerk ramp if there is a change in depth
-                    AnalogFuncTo(calctime(curtime,0),lattices{k},@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_imaging_time(j), lat_rampup_imaging_time(j), lat_rampup_imaging_depth(k,j));
+                    AnalogFuncTo(calctime(curtime,0),...
+                        lattices{k},@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), lat_rampup_imaging_time(j), lat_rampup_imaging_time(j), lat_rampup_imaging_depth(k,j));
                 end
             end
         end
@@ -936,6 +935,57 @@ curtime=calctime(curtime,deep_latt_holdtime);
 else
     curtime = calctime(curtime,50);
     
+end
+%% Ramp lattice after spectroscopy/plane selection
+
+if seqdata.flags.lattice_lattice_ramp_3
+    dispLineStr('Lattice Ramp 3',curtime)    
+    ScopeTriggerPulse(curtime,'lattice_ramp_3');
+
+    %  Ramp Time
+    defVar('lattice_FI_ramptime',10,'ms');
+        
+    % Lattice Depth Request
+    defVar('lattice_FI_depth_X',[1050],'Er');
+    defVar('lattice_FI_depth_Y',[1000],'Er');
+    defVar('lattice_FI_depth_Z',[1150],'Er');    
+
+   % Perform the rest of the lattice ramps
+   dT = getVar('lattice_FI_ramptime');
+   Ux = getVar('lattice_FI_depth_X');
+   Uy = getVar('lattice_FI_depth_Y');
+   Uz = getVar('lattice_FI_depth_Z');
+
+   % Define Ramp Ups
+    AnalogFuncTo(calctime(curtime,0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Ux); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Uy);
+    AnalogFuncTo(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Uz);    
+    
+    % Wait for ramp to occur
+    curtime = calctime(curtime,dT);
+    
+    % Wait for ramp to settle
+    curtime = calctime(curtime,5);
+     
+    % Turn off dipole traps
+    setAnalogChannel(calctime(curtime,0),'dipoleTrap1',0);
+    setAnalogChannel(calctime(curtime,0),'dipoleTrap2',0);
+    setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
+
+    % Additional Wait Time
+    curtime = calctime(curtime,10);    
+end
+
+%% Amplitude Modulation Spectroscopy of Lattice
+% This code applies amplitude modulation to XYZ optical lattices.  This is
+% done by programming a Rigol generator that goes into the sum input of the
+% Newport regulation boxes.
+
+if seqdata.flags.do_lattice_am_spec
+   curtime = lattice_am_spectroscopy(curtime);
 end
 
 %% Vortex Pulse
@@ -1198,7 +1248,7 @@ curtime = do_horizontal_plane_selection(curtime, ...
 end
 
 %% Extra Wait For funsies
-curtime = calctime(curtime,25);
+% curtime = calctime(curtime,25);
 
 
 
@@ -1222,6 +1272,8 @@ end
 
 % Turn off of lattices
  if (seqdata.flags.lattice_bandmap)
+     curtime = calctime(curtime,15);
+     
     % Scope Trigger for bandmap
     ScopeTriggerPulse(curtime,'lattice_off');     
      
@@ -1234,7 +1286,7 @@ end
     disp([' Ramp Start (ms) : ' num2str(dip_rampstart) ]);
     disp([' Ramp Time  (ms) : ' num2str(dip_ramptime) ]);
     disp([' End Power   (W) : ' num2str(dip_endpower)]);
-    
+   
     AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         dip_ramptime,dip_ramptime,dip1_endpower);
@@ -1250,13 +1302,12 @@ end
         seqdata.scancycle,seqdata.randcyclelist,'lattice_bm_time','ms'); %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
 
     lat_rampdowntime =bm_time*1;        % how long to ramp (0: switch off)   %1ms
-    lat_rampdowntau = 1*bm_time/5;      % time-constant for exponential rampdown (0: min-jerk)
        
     xlat_endpower=seqdata.params.lattice_zero(1);
     ylat_endpower=seqdata.params.lattice_zero(2);
     zlat_endpower=seqdata.params.lattice_zero(3);
 
-    if ( lat_rampdowntime > 0 )
+    if lat_rampdowntime > 0
         dispLineStr('Band mapping',curtime);
         
         disp([' Band Map Time (ms) : ' num2str(lat_rampdowntime)])
@@ -1264,19 +1315,15 @@ end
         disp([' yLattice End (Er)  : ' num2str(ylat_endpower)])
         disp([' zLattice End (Er)  : ' num2str(zlat_endpower)])
 
-        % ramp down lattice (min-jerk or exponential)
-        if ( lat_rampdowntau == 0 )
-            % Min-jerk ramp-down of lattices
-            AnalogFuncTo(calctime(curtime,0),'xLattice',...
-                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-                lat_rampdowntime,lat_rampdowntime,xlat_endpower);
-            AnalogFuncTo(calctime(curtime,0),'yLattice',...
-                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-                lat_rampdowntime,lat_rampdowntime,ylat_endpower);
-curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice', ...
-                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-                lat_rampdowntime,lat_rampdowntime,zlat_endpower);
-        end
+        AnalogFuncTo(calctime(curtime,0),'xLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+            lat_rampdowntime,lat_rampdowntime,xlat_endpower);
+        AnalogFuncTo(calctime(curtime,0),'yLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),lat_rampdowntime,...
+            lat_rampdowntime,ylat_endpower);
+curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),lat_rampdowntime,...
+            lat_rampdowntime,zlat_endpower);
     end   
     
     setDigitalChannel(calctime(curtime + 0.5,0),'yLatticeOFF',1); 

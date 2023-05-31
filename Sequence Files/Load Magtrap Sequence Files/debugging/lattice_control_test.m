@@ -44,9 +44,9 @@ scope_trigger =  'lattice control test';'Rampup ODT';
 %%  Ramp Lattices Up
 
 
-Xdepth = 0;1095; 1095;
-Ydepth = 0;1045;
-Zdepth = 1000;
+Xdepth =200;1095; 1095;
+Ydepth = 200;1045;
+Zdepth = 200;
 tramp = 100;
 
 ScopeTriggerPulse(calctime(curtime,0),'lattice_ramp_up');

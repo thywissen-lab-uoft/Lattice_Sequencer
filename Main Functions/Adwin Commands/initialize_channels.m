@@ -770,7 +770,7 @@ end
 
     %channel 57 (XDT1 Piezo Mirror Mod) %Disconnected
     seqdata.analogchannels(57).name = 'XDT1 Piezo';
-    seqdata.analogchannels(57).minvoltage = -10;
+    seqdata.analogchannels(57).minvoltage = 0;
     seqdata.analogchannels(57).maxvoltage = 10;
     seqdata.analogchannels(57).defaultvoltagefunc = 2; 
     seqdata.analogchannels(57).voltagefunc{2} = @(a)(a);

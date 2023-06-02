@@ -27,7 +27,7 @@ seqdata.flags.xdt_ramp2sympathetic      = 1;
 
 
 % Stage 1 (Rb+K) Evaporation
-Evap_End_Power_List = [.12];[.12];
+Evap_End_Power_List = .12;[.12];[.12];
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...
     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');  
 
@@ -663,18 +663,18 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
     k_rf_freq_list = [6.1];[6.05];
     k_rf_pulsetime_list = [100];100;
     k_rf_power_list = [-3];0;-3;
-    k_rf_delta_list=[-1.2];[-1];-0.5;   
+    k_rf_delta_list=[-1];[-1.2];[-1];-0.5;   
     
     clear('sweep');
     sweep=struct;
     sweep_pars.freq = getScanParameter(k_rf_freq_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'k_rftransfer_freq'); 
+        seqdata.randcyclelist,'k_rftransfer_freq','MHz'); 
     sweep_pars.power = getScanParameter(k_rf_power_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'k_rftransfer_power'); 
+        seqdata.randcyclelist,'k_rftransfer_power','V'); 
     sweep_pars.pulse_length = getScanParameter(k_rf_pulsetime_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'k_rftransfer_pulsetime');
+        seqdata.scancycle,seqdata.randcyclelist,'k_rftransfer_pulsetime','ms');
     sweep_pars.delta_freq = getScanParameter(k_rf_delta_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'k_rftransfer_delta');        
+        seqdata.scancycle,seqdata.randcyclelist,'k_rftransfer_delta','MHz');        
     sweep_pars.fake_pulse = 0;      %Fake the pulse (for debugging)         
     disp(['     Center Freq     (MHz) : ' num2str(sweep_pars.freq)]);
     disp(['     Delta Freq      (MHz) : ' num2str(sweep_pars.delta_freq)]);
@@ -719,13 +719,14 @@ curtime = calctime(curtime,10);
     setAnalogChannel(calctime(curtime,0),'K Repump AM',0.0);
 end
 
+
     
 %% D1 Optical Pumping in ODT before evap!
 
 if (seqdata.flags.xdt_d1op_start==1)
     dispLineStr('D1 Optical Pumping pre op evap',curtime);  
 
-    op_time_list = [1];
+    op_time_list = [5];
     optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_op_time1','ms'); %optical pumping pulse length
     repump_power_list = [0.2];
     repump_power =getScanParameter(repump_power_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_op_repump_pwr1','V'); %optical pumping repump power
@@ -888,7 +889,21 @@ if seqdata.flags.xdt_rfmix_start
 curtime = calctime(curtime,50);
 
 end
-
+%% Ramp DDS away
+% curtime = calctime(curtime,10);
+% 
+%    DigitalPulse(curtime,'DDS ADWIN Trigger',1,1);  
+%     
+%     % Increment the number of DDS sweeps
+%     seqdata.numDDSsweeps=seqdata.numDDSsweeps+1;   
+%     
+%     % Define the RF sweep amd add it to the DDS sweep list
+%     dT=10;     % Duration of this sweep in ms
+%     f1=1;          % Starting Frequency in Hz
+%     f2=2;        % Ending Frequency in Hz      
+%     sweep=[1 f1 f2 dT];    % Sweep data;
+%     seqdata.DDSsweeps(seqdata.numDDSsweeps,:)=sweep;
+% curtime = calctime(curtime,10);
 %% Ramp Magnetic Fields before Optical Evaporation
 % Ramp the FB field. This typically is already done by the spin manulations
 % so it is unclear if this code is necessary
@@ -1467,7 +1482,7 @@ if (seqdata.flags.xdt_d1op_end==1 && seqdata.flags.CDT_evap==1)
         seqdata.randcyclelist, 'ODT_op_repump_pwr2','V'); 
     
     %optical power
-    D1op_pwr_list = [1]; %min: 0, max:11
+    D1op_pwr_list = [1]; %min: 0, max:1
     D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle,...
         seqdata.randcyclelist, 'ODT_D1op_pwr2','V'); 
 
@@ -1515,8 +1530,7 @@ if (seqdata.flags.xdt_rfmix_end==1 && seqdata.flags.CDT_evap==1)
         clear('sweep');
                 
         
-        rf_k_sweep_freqs=[5.995];
-
+        rf_k_sweep_freqs = [5.995];
         % With delta_freq =0.1;
         % 3.01 --> (-7,-5) (a little -9)
         % 3.07 --> (-1,+1,+3); 
@@ -1525,9 +1539,10 @@ if (seqdata.flags.xdt_rfmix_end==1 && seqdata.flags.CDT_evap==1)
         
         sweep_pars.freq=rf_k_sweep_center;    
         
-        sweep_pars.power = -8.5;-9.1;-9.2;   
-        
+        sweep_pars.power =-5; -8.5;      
         delta_freq_list =-.01;[0.0040];%0.006; 0.01
+        
+        
         sweep_pars.delta_freq = getScanParameter(delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_range_post_evap','MHz');
         pulse_length_list = 1.25;[0.75];%0.4ms for mixing 2ms for 80% transfer remove further sweeps

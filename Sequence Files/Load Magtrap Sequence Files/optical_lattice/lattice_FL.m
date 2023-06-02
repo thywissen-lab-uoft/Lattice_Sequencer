@@ -14,8 +14,8 @@ global seqdata
     fluor.EnableRaman           = 1;        % Use Raman Beams
     
     % Sets the total time of radiation (optical or otherwise)
-        pulse_list = [2000];
-
+        pulse_list = [10000];
+        
     pulse_time = getScanParameter(...
         pulse_list,seqdata.scancycle,seqdata.randcyclelist,...
         'qgm_pulse_time','ms');  
@@ -39,8 +39,8 @@ global seqdata
     % the image before it can accept a new trigger.
     
     
-    fluor.NumberOfImages       = 1;     % Normal operation
-%     fluor.NumberOfImages       = 10;     % For hopping
+%     fluor.NumberOfImages       = 1;     % Normal operation
+    fluor.NumberOfImages       = 5;     % For hopping
    
     % Calculate Xposures
     fluor.DwellTime            = 600; % Wait Time beween shots for readout
@@ -101,7 +101,7 @@ end
 % This code set the Fpump power regulation and the 4 pass frequency
 
     % Power that the Fpump beam regulates to
-    F_Pump_List = [1]; [1.3];    
+    F_Pump_List = [1];[1.5];[1]; [1.3];    
     
     % Frequency of the FPUMP single pass (MHz)
     fluor.F_Pump_Frequency = 80;
@@ -186,7 +186,7 @@ raman_rel_pow_list = [0.5];
 %% Raman 1 Settings      
     V10 = 1.3;
     Raman1_Power_List = V10*raman_rel_pow;V10*[1];
-    Raman1_ShiftFreq_List = [-80];        % kHz
+    Raman1_ShiftFreq_List = [-100];[-80];        % kHz
     
     Raman1_Freq_Shift = getScanParameter(Raman1_ShiftFreq_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman1_Freq_Shift','kHz');       

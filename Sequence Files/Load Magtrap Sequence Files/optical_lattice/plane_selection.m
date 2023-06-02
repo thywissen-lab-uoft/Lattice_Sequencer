@@ -164,7 +164,7 @@ switch opts.SelectMode
         if opts.dotilt
             freq_list = 1050 + [1220];
         else
-            freq_list = 1050 + [80];
+            freq_list = 1050 + [520];
         end
         
         freq_offset = getScanParameter(freq_list,seqdata.scancycle,...
@@ -176,7 +176,7 @@ switch opts.SelectMode
         uWave_opts=struct;
         uWave_opts.Address=30;                        % K uWave ("SRS B");
 %         uWave_opts.Address=29; % 4/4/2023
-        uWave_opts.Frequency=1606.75+freq_offset*1E-3;1488.5+freq_offset*1E-3; % Frequency in MHz
+        uWave_opts.Frequency=1606.75+freq_offset*1E-3;% Frequency in MHz
         uWave_opts.Power= 15;%15                      % Power in dBm
         uWave_opts.Enable=1;                          % Enable SRS output    
 
@@ -194,7 +194,7 @@ switch opts.SelectMode
         addOutputParam('uwave_HS1_amp',env_amp);
 
         % Determine the range of the sweep
-        uWave_delta_freq_list= [30]/1000; [7]/1000;
+        uWave_delta_freq_list= [20]/1000; [7]/1000;
         uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq','kHz');
 
@@ -210,12 +210,10 @@ switch opts.SelectMode
         uWave_opts.EnableSweep=1;                    
         uWave_opts.SweepRange=uWave_delta_freq;   
 
-        % Set uWave power to low
-        setAnalogChannel(calctime(curtime,-20),'uWave VVA',0);
+        setAnalogChannel(calctime(curtime,-20),'uWave VVA',0);      % Set uWave to low
+        setAnalogChannel(calctime(curtime,-10),'uWave FM/AM',-1);   % Set initial modulation
 
-        % Set initial modulation
-        setAnalogChannel(calctime(curtime,-10),'uWave FM/AM',-1);
-
+        % Enable ACync
         if opts.use_ACSync
             setDigitalChannel(calctime(curtime,-5),'ACync Master',1);
         end
@@ -241,28 +239,18 @@ switch opts.SelectMode
                 sweep_time,sweep_time,beta,env_amp,2);
         end
 
-        % Wait for the sweep
-        curtime = calctime(curtime,sweep_time);
-
-        % Turn off the uWave
-        setDigitalChannel(calctime(curtime,0),'K uWave TTL',0);  
-
-        % Turn off VVA
-        setAnalogChannel(calctime(curtime,0),'uWave VVA',0);
-
-        % Reset the uWave deviation after a while
-        setAnalogChannel(calctime(curtime,10),'uWave FM/AM',0);-1;
+        curtime = calctime(curtime,sweep_time);                     % Wait for sweep
+        setDigitalChannel(calctime(curtime,0),'K uWave TTL',0);     % Turn off the uWave
+        setAnalogChannel(calctime(curtime,0),'uWave VVA',0);        % Turn off VVA        
+        setAnalogChannel(calctime(curtime,10),'uWave FM/AM',-1);    % Reset the uWave deviation after a while
 
         % Reset the ACync
         if opts.use_ACSync
             setDigitalChannel(calctime(curtime,30),'ACync Master',0);
         end
 
-        % Program the SRS
-        programSRS(uWave_opts); 
-
-        % Additional wait
-        curtime = calctime(curtime,30);
+        programSRS(uWave_opts);                     % Program the SRS        
+        curtime = calctime(curtime,30);             % Additional wait
 
     case 'SweepFieldLegacy'
         %% Sweep Field Legacy (Pre CF)

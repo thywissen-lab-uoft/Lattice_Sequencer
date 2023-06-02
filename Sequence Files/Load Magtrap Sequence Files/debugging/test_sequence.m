@@ -5667,7 +5667,7 @@ end
 %     setDigitalChannel(calctime(curtime,0),'PA TTL',0); % Open shutter
 %     setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',1); % Set 
 %     setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',0); % inverted logic
-% setAnalogChannel(calctime(curtime,0),'D1 OP AM',1)
+setAnalogChannel(calctime(curtime,0),'D1 DP',-3)
 % setDigitalChannel(calctime(curtime,0),'EIT Probe TTL',0)
 
 timeout = curtime;

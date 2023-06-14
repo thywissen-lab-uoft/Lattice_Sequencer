@@ -31,8 +31,8 @@ Evap_End_Power_List = .12;[.12];[.12];
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...
     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');  
 
-% Stage 2 Low Filed (K+K) evaporation
-pend = 0.08;0.06;
+% Stage 2 Low Field (K+K) evaporation
+pend = 0.06;0.06;
 evap_time_2_list =  [10000];
 evap_time_2 = getScanParameter(evap_time_2_list,seqdata.scancycle,...
     seqdata.randcyclelist,'evap_time_2','ms');
@@ -837,7 +837,7 @@ if seqdata.flags.xdt_rfmix_start
     %Do RF Sweep
     clear('sweep');
 
-    rf_k_sweep_freqs=[5.995];
+    rf_k_sweep_freqs = [6.005];[5.995];
 
     % With delta_freq =0.1;
     % 3.01 --> (-7,-5) (a little -9)
@@ -845,8 +845,11 @@ if seqdata.flags.xdt_rfmix_start
     rf_k_sweep_center = getScanParameter(rf_k_sweep_freqs,...
         seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_freq_post_evap');
 
-    sweep_pars.freq=rf_k_sweep_center;        
-    sweep_pars.power = -9.2;-9.1;   
+    sweep_pars.freq=rf_k_sweep_center;
+    
+    rf_power_list = [-9];-9.2;
+    sweep_pars.power = getScanParameter(rf_power_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_power_post_evap'); 
 
     delta_freq_list = -0.01;[0.01];%0.006; 0.01
     sweep_pars.delta_freq = getScanParameter(delta_freq_list,...
@@ -1346,12 +1349,18 @@ end
 % Compress XDT after Stage 2 optical evaporation
 
 if seqdata.flags.xdt_ramp_power_end 
-    dispLineStr('Ramping XDT Power Back Up',curtime);    
-    dip_1 = .15; %1.5
-    dip_2 = .15; %1.5
-    dip_ramptime = 1000; %1000
+    dispLineStr('Ramping XDT Power Back Up',curtime); 
+    
+    xdt_rampup_power_list = [0.12:0.01:0.25];
+    
+    xdt_rampup_power = getScanParameter(xdt_rampup_power_list,seqdata.scancycle,...
+    seqdata.randcyclelist,'xdt_rampup_power', 'mW');
+    
+    dip_1 = xdt_rampup_power; .15; %1.5
+    dip_2 = xdt_rampup_power; .15; %1.5
+    dip_ramptime = 100; %1000
     dip_rampstart = 0;
-    dip_waittime = 500;
+    dip_waittime = 100;
     AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_1);
     AnalogFuncTo(calctime(curtime,dip_rampstart),...
@@ -1562,7 +1571,7 @@ if (seqdata.flags.xdt_rfmix_end==1 && seqdata.flags.CDT_evap==1)
         n_sweeps_mix = getScanParameter(n_sweeps_mix_list,...
             seqdata.scancycle,seqdata.randcyclelist,'n_sweeps_mix');  % also is sweep length  0.5               
         T60=16.666; % 60 Hz period        
-        do_ACync_rf = 1;
+        do_ACync_rf = 0;
         if do_ACync_rf
             ACync_start_time = calctime(curtime,-30);
             ACync_end_time = calctime(curtime,(sweep_pars.pulse_length+T60)*n_sweeps_mix+30);

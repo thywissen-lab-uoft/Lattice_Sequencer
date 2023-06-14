@@ -58,7 +58,7 @@ seqdata.flags.misc_program4pass             = 1; % Update four-pass frequency
 seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
 seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[1.7],'V');2.06;1.7;
+defVar('objective_piezo',[1.4],'V');1.5;1.7;2.06;
 % 0.1V = 700 nm, larger means further away from chamber
 % 1 V= 7 um
 % 10 V = 70 um
@@ -155,7 +155,7 @@ seqdata.flags.High_Field_Imaging            = 0; % High field imaging (shouldn't
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[15],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[0],'ms');
@@ -235,7 +235,7 @@ seqdata.flags.xdt_K_p2n_rf_sweep_freq       = 1;    % RF Freq Sweep K +9-->-9
 
 % State Manipulation Before Optical Evaporation 
 seqdata.flags.xdt_d1op_start                = 1;    % D1 pump to purify
-seqdata.flags.xdt_rfmix_start               = 0;    % RF Mixing -9-->-9+-7    
+seqdata.flags.xdt_rfmix_start               = 1;    % RF Mixing -9-->-9+-7    
 seqdata.flags.xdt_kill_Rb_before_evap       = 0;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_before_evap       = 0;    % optical remove 7/2 K after (untested)
 
@@ -250,7 +250,7 @@ seqdata.flags.xdt_kill_Rb_after_evap        = 0;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_after_evap        = 0;    % optical remove 7/2 K after (untested)
 
 % XDT High Field Experiments
-seqdata.flags.xdt_evap2stage                = 0; %Perform K evap at low field
+seqdata.flags.xdt_evap2stage                = 1; %Perform K evap at low field
 seqdata.flags.xdt_evap2_HF                  = 0; %Perform K evap at high field (set rep. or attr. in file)
 seqdata.flags.xdt_high_field_a              = 0;
 
@@ -259,7 +259,7 @@ seqdata.flags.xdt_high_field_a              = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
-seqdata.flags.lattice                       = 1; 
+seqdata.flags.lattice                       = 0; 
 
 
 seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate

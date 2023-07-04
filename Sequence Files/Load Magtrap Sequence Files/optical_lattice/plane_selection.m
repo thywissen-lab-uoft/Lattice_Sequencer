@@ -26,13 +26,18 @@ opts.fake_the_plane_selection_sweep = 0;
 opts.planeselect_doVertKill = 1;
 
 % Transfer back to -9/2 via uwave transfer
-opts.planeselect_doMicrowaveBack = 0;    
+opts.planeselect_doMicrowaveBack = 1;   
 
 % Pulse repump to remove leftover F=7/2
 opts.planeselect_doFinalRepumpPulse = 0;
 
+%Repeat plane selection
+opts.planeselect_again = 1;
+
+
 % Choose the Selection Mode
 opts.SelectMode = 'SweepFreqHS1';          % Sweep SRS HS1 frequency
+opts.SelectModeBack = 'SweepFreqHS1';       %Sweep SRS HS1 frequency backwards
 
 % opts.SelectMode = 'SweepField';       % Not programmed yet 
 % opts.SelectMode = 'SweepFieldLegacy'; % old way
@@ -80,7 +85,7 @@ if opts.ramp_fields
 
     % Fesbhach Field (in gauss)
     B0 = 128;    %old value 128G, 0.6G shift
-    fb_shift_list = [0.6];[0];[.6];
+    fb_shift_list = [0.49];[0.6];[0];[.6];
     fb_shift = getScanParameter(fb_shift_list,seqdata.scancycle,...
         seqdata.randcyclelist,'qgm_plane_FB_shift','G');    
     Bfb = B0 - fb_shift;
@@ -193,8 +198,8 @@ switch opts.SelectMode
         env_amp=1;
         addOutputParam('uwave_HS1_amp',env_amp);
 
-        % Determine the range of the sweep
-        uWave_delta_freq_list= [20]/1000; [7]/1000;
+        % Determine the range of the sweep -- Amplitude or full range?
+        uWave_delta_freq_list= [20]/1000;[20]/1000; [7]/1000;
         uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq','kHz');
 
@@ -379,16 +384,18 @@ if opts.planeselect_doVertKill==1
 
     %Resonant light pulse to remove any untransferred atoms from
     %F=9/2
-    kill_time_list = [3];2;
+    kill_time_list = [5];2;
     kill_time = getScanParameter(kill_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'kill_time','ms'); %10 
-    kill_detuning_list = [42.7];%42.7
+    kill_detuning_list = [42];[42.7];%42.7
     kill_detuning = getScanParameter(kill_detuning_list,...
         seqdata.scancycle,seqdata.randcyclelist,'kill_det');        
 
     %Kill SP AOM 
     mod_freq =  (120)*1E6;
-    mod_amp = 2;0.05;0.1;
+    mod_amp_list = [0.02]; 0.1;
+    mod_amp = getScanParameter(mod_amp_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'k_kill_power','V');
     mod_offset =0;
     str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
     addVISACommand(8, str);  %Device 8 is the new kill beam Rigol changed on July 10, 2021
@@ -440,91 +447,203 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 if opts.planeselect_doMicrowaveBack
-    % Transfer the |7,-7> back to |9,-9>.  This sweep can be broad
-    % because everything else is dead (nominally). This step is
-    % also somewhat uncessary because the Raman beams during
-    % imaging Rabi oscillates between the two
+    
+    switch opts.SelectModeBack
+        case 'SweepFreqHS1'        
+            %Sweep the frequency
+            disp('sweeping frequency HS1');
+            
+            % For SRS GPIB 29
+            setDigitalChannel(calctime(curtime,0),'SRS Source post spec',1);
+            setDigitalChannel(calctime(curtime,0),'SRS Source',0);
+            
+            % Wait for switches to finish
+            curtime = calctime(curtime,30);
+            
+            % 2021/06/22 CF
+            % Use this when Xshimd=3, zshimd=-1 and you vary yshimd
+            % freq_list=interp1([-3 0.27 3],[100 -200 -500],yshimd);
+            % use this when yshimd=3, zshim3=-1 an dyou vary xshimd
+            % freq_list=interp1([-3 0 3],[-200 -400 -500],xshimd);
 
-    % wait time (code related -- need to accomodate for AnalogFuncTo
-    % calls to the past in rf_uwave_spectroscopy)
-    curtime = calctime(curtime,65);
+            % Define the SRS frequency
+            if opts.dotilt
+                freq_list = 1050 + [1220];
+            else
+                freq_list = 1050 + [520];
+            end
 
-    %SRS in pulsed mode with amplitude modulation
-    spect_type = 2;
+            freq_offset = getScanParameter(freq_list,seqdata.scancycle,...
+                seqdata.randcyclelist,'uwave_freq_offset_back','kHz from 1606.75 MHz');
 
-    %Take frequency range in MHz, convert to shim range in Amps
-    %(-5.714 MHz/A on Jan 29th 2015)
+            disp(['     Freq Offset  : ' num2str(freq_offset) ' kHz']);
 
-    final_transfer_range = 2; %MHz
-    back_transfer_range = 1;
-    if (seqdata.flags. K_RF_sweep==1 || seqdata.flags. xdt_K_p2n_rf_sweep_freq==1)
+            % SRS settings (may be overwritten later)
+            uWave_opts=struct;
+            uWave_opts.Address=29;                        % K uWave ("SRS B");
+            uWave_opts.Frequency=1606.75+freq_offset*1E-3;% Frequency in MHz
+            uWave_opts.Power= 15;%15                      % Power in dBm
+            uWave_opts.Enable=1;                          % Enable SRS output    
 
-        %In -ve mF state, frequency increases with field
-        dBz = back_transfer_range*final_transfer_range / (5.714);
-    else 
-        %In +ve mF state, frequency decreases with field
-        dBz = back_transfer_range*final_transfer_range / (-5.714);
+            addOutputParam('uwave_pwr_back',uWave_opts.Power)
+            addOutputParam('uwave_frequency_back',uWave_opts.Frequency);    
+
+            disp('HS1 Sweep Pulse Backwards');
+
+            % Calculate the beta parameter
+            beta=asech(0.005);   
+            addOutputParam('uwave_HS1_beta_back',beta);
+
+            % Relative envelope size (less than or equal to 1)
+            env_amp=1;
+            addOutputParam('uwave_HS1_amp_back',env_amp);
+
+            % Determine the range of the sweep
+            uWave_delta_freq_list= [1000]/1000; [7]/1000;
+            uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
+                seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq_back','kHz');
+
+            % the sweep time is based on old calibration for rabi frequency
+            uwave_sweep_time_list =[uWave_delta_freq]*1000/10*2; 
+            sweep_time = getScanParameter(uwave_sweep_time_list,...
+                seqdata.scancycle,seqdata.randcyclelist,'uwave_sweep_time_back');     
+
+            disp(['     Pulse Time   : ' num2str(sweep_time) ' ms']);
+            disp(['     Freq Delta   : ' num2str(uWave_delta_freq*1E3) ' kHz']);
+
+            % Enable uwave frequency sweep
+            uWave_opts.EnableSweep=1;                    
+            uWave_opts.SweepRange=uWave_delta_freq;   
+
+            setAnalogChannel(calctime(curtime,-20),'uWave VVA',0);      % Set uWave to low
+            setAnalogChannel(calctime(curtime,-10),'uWave FM/AM',-1);   % Set initial modulation
+
+            % Enable ACync
+            if opts.use_ACSync
+                setDigitalChannel(calctime(curtime,-5),'ACync Master',1);
+            end
+
+            % Turn on the uWave        
+            if  ~opts.fake_the_plane_selection_sweep
+                disp('disabling ');
+                setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);  
+            end
+
+            % Ramp the SRS modulation using a TANH
+            % At +-1V input for +- full deviation
+            % The last argument means which votlage fucntion to use
+            AnalogFunc(calctime(curtime,0),'uWave FM/AM',...
+                @(t,T,beta) -tanh(2*beta*(t-0.5*sweep_time)/sweep_time),...
+                sweep_time,sweep_time,beta,1);
+
+            if  ~opts.fake_the_plane_selection_sweep
+                % Sweep the VVA (use voltage func 2 to invert the vva transfer
+                % curve (normalized 0 to 10
+                AnalogFunc(calctime(curtime,0),'uWave VVA',...
+                    @(t,T,beta,A) A*sech(2*beta*(t-0.5*sweep_time)/sweep_time),...
+                    sweep_time,sweep_time,beta,env_amp,2);
+            end
+
+            curtime = calctime(curtime,sweep_time);                     % Wait for sweep
+            setDigitalChannel(calctime(curtime,0),'K uWave TTL',0);     % Turn off the uWave
+            setAnalogChannel(calctime(curtime,0),'uWave VVA',0);        % Turn off VVA        
+            setAnalogChannel(calctime(curtime,10),'uWave FM/AM',-1);    % Reset the uWave deviation after a while
+
+            % Reset the ACync
+            if opts.use_ACSync
+                setDigitalChannel(calctime(curtime,30),'ACync Master',0);
+            end
+
+            programSRS(uWave_opts);                     % Program the SRS        
+            curtime = calctime(curtime,30);             % Additional wait  
+
+        case 'SweepFieldLegacy'
+            % Transfer the |7,-7> back to |9,-9>.  This sweep can be broad
+            % because everything else is dead (nominally). This step is
+            % also somewhat uncessary because the Raman beams during
+            % imaging Rabi oscillates between the two
+
+            % wait time (code related -- need to accomodate for AnalogFuncTo
+            % calls to the past in rf_uwave_spectroscopy)
+            curtime = calctime(curtime,65);
+
+            %SRS in pulsed mode with amplitude modulation
+            spect_type = 2;
+
+            %Take frequency range in MHz, convert to shim range in Amps
+            %(-5.714 MHz/A on Jan 29th 2015)
+
+            final_transfer_range = 2; %MHz
+            back_transfer_range = 1;
+            if (seqdata.flags. K_RF_sweep==1 || seqdata.flags. xdt_K_p2n_rf_sweep_freq==1)
+
+                %In -ve mF state, frequency increases with field
+                dBz = back_transfer_range*final_transfer_range / (5.714);
+            else 
+                %In +ve mF state, frequency decreases with field
+                dBz = back_transfer_range*final_transfer_range / (-5.714);
+            end
+
+            spect_pars.pulse_length = 100*final_transfer_range; %Seems to give good LZ transfer for power = -12dBm peak
+
+            final_sweep_time = back_transfer_range*spect_pars.pulse_length;
+            field_shift_time = 10; % time to shift the field to the initial value for the sweep (and from the final value)
+            field_shift_settle = spect_pars.AM_ramp_time + 10; % settling time after initial and final field shifts
+
+            z_shim_sweep_center = getChannelValue(seqdata,'Z Shim',1,0);
+            z_shim_sweep_start = z_shim_sweep_center-1*dBz/2;
+            z_shim_sweep_final = z_shim_sweep_center+1*dBz/2;
+
+            %Ramp shim to start value before generator turns on
+            clear('ramp');
+            ramp.shim_ramptime = field_shift_time;
+            ramp.shim_ramp_delay = spect_pars.uwave_delay-field_shift_settle-field_shift_time; %offset from the beginning of uwave pulse
+            ramp.zshim_final = z_shim_sweep_start;
+            ramp_bias_fields(calctime(curtime,0), ramp);
+
+            %Ramp shim during uwave pulse to transfer atoms
+            ramp.shim_ramptime = final_sweep_time;
+            ramp.shim_ramp_delay = spect_pars.uwave_delay;
+            ramp.zshim_final = z_shim_sweep_final;
+            ramp_bias_fields(calctime(curtime,0), ramp);
+
+            %Ramp shim back to initial value after pulse is complete
+            ramp.shim_ramptime = field_shift_time;
+            ramp.shim_ramp_delay = spect_pars.uwave_delay+spect_pars.pulse_length+field_shift_settle; %offset from the beginning of uwave pulse
+            ramp.zshim_final = z_shim_sweep_center;
+            ramp_bias_fields(calctime(curtime,0), ramp);
+
+        curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);     
+
+            %Wait for shim field to return to initial value
+        curtime = calctime(curtime,field_shift_settle+field_shift_time); 
+
+            followup_repump_pulse = 1;1;%remove mF = -7/2 atoms
+            if (followup_repump_pulse)
+                %Ensure atoms are all returned to F=9/2 with repump light
+                % (do this during the shim field wait time above)
+                % (would be great to use FM to get the repump to resonance in the 40G field)
+
+                %Pulse on repump beam to try to remove any atoms left in F=7/2
+                repump_pulse_time = 5;
+                repump_pulse_power = 0.7;
+
+                %Open Repump Shutter
+                setDigitalChannel(calctime(curtime,-field_shift_settle-10),3,1);
+                %turn repump back up
+                setAnalogChannel(calctime(curtime,-field_shift_settle-10),25,repump_pulse_power);
+                %repump TTL
+                setDigitalChannel(calctime(curtime,-field_shift_settle-10),7,1);
+
+                %Repump pulse
+                DigitalPulse(calctime(curtime,-field_shift_settle),7,repump_pulse_time,0);
+
+                %Close Repump Shutter
+                setDigitalChannel(calctime(curtime,-field_shift_settle+repump_pulse_time+5),3,0);
+            end
     end
-
-    spect_pars.pulse_length = 100*final_transfer_range; %Seems to give good LZ transfer for power = -12dBm peak
-
-    final_sweep_time = back_transfer_range*spect_pars.pulse_length;
-    field_shift_time = 10; % time to shift the field to the initial value for the sweep (and from the final value)
-    field_shift_settle = spect_pars.AM_ramp_time + 10; % settling time after initial and final field shifts
-
-    z_shim_sweep_center = getChannelValue(seqdata,'Z Shim',1,0);
-    z_shim_sweep_start = z_shim_sweep_center-1*dBz/2;
-    z_shim_sweep_final = z_shim_sweep_center+1*dBz/2;
-
-    %Ramp shim to start value before generator turns on
-    clear('ramp');
-    ramp.shim_ramptime = field_shift_time;
-    ramp.shim_ramp_delay = spect_pars.uwave_delay-field_shift_settle-field_shift_time; %offset from the beginning of uwave pulse
-    ramp.zshim_final = z_shim_sweep_start;
-    ramp_bias_fields(calctime(curtime,0), ramp);
-
-    %Ramp shim during uwave pulse to transfer atoms
-    ramp.shim_ramptime = final_sweep_time;
-    ramp.shim_ramp_delay = spect_pars.uwave_delay;
-    ramp.zshim_final = z_shim_sweep_final;
-    ramp_bias_fields(calctime(curtime,0), ramp);
-
-    %Ramp shim back to initial value after pulse is complete
-    ramp.shim_ramptime = field_shift_time;
-    ramp.shim_ramp_delay = spect_pars.uwave_delay+spect_pars.pulse_length+field_shift_settle; %offset from the beginning of uwave pulse
-    ramp.zshim_final = z_shim_sweep_center;
-    ramp_bias_fields(calctime(curtime,0), ramp);
-
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),spect_type,spect_pars);     
-
-    %Wait for shim field to return to initial value
-curtime = calctime(curtime,field_shift_settle+field_shift_time); 
-
-    followup_repump_pulse = 1;1;%remove mF = -7/2 atoms
-    if (followup_repump_pulse)
-        %Ensure atoms are all returned to F=9/2 with repump light
-        % (do this during the shim field wait time above)
-        % (would be great to use FM to get the repump to resonance in the 40G field)
-
-        %Pulse on repump beam to try to remove any atoms left in F=7/2
-        repump_pulse_time = 5;
-        repump_pulse_power = 0.7;
-
-        %Open Repump Shutter
-        setDigitalChannel(calctime(curtime,-field_shift_settle-10),3,1);
-        %turn repump back up
-        setAnalogChannel(calctime(curtime,-field_shift_settle-10),25,repump_pulse_power);
-        %repump TTL
-        setDigitalChannel(calctime(curtime,-field_shift_settle-10),7,1);
-
-        %Repump pulse
-        DigitalPulse(calctime(curtime,-field_shift_settle),7,repump_pulse_time,0);
-
-        %Close Repump Shutter
-        setDigitalChannel(calctime(curtime,-field_shift_settle+repump_pulse_time+5),3,0);
-    end
-
 end
+
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Repump to kill F=7/2
@@ -546,6 +665,143 @@ if opts.planeselect_doFinalRepumpPulse
 
     %Close Repump Shutter
     setDigitalChannel(calctime(curtime,repump_pulse_time+5),3,0);
-end      
+end 
+
+%% Plane select a second time
+if opts.planeselect_again
+
+    
+    % For SRS GPIB 30
+    setDigitalChannel(calctime(curtime,0),'SRS Source',1); 
+    setDigitalChannel(calctime(curtime,0),'SRS Source post spec',0);
+    % Wait for switches to finish
+    curtime = calctime(curtime,30);
+    
+    disp('HS1 Sweep Pulse');
+
+        % Calculate the beta parameter
+        beta=asech(0.005);   
+        addOutputParam('uwave_HS1_beta_2',beta);
+
+        % Relative envelope size (less than or equal to 1)
+        env_amp=1;
+        addOutputParam('uwave_HS1_amp_2',env_amp);
+
+        % Determine the range of the sweep
+        uWave_delta_freq_list= [20]/1000; [7]/1000;
+        uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq_2','kHz');
+
+        % the sweep time is based on old calibration for rabi frequency
+        uwave_sweep_time_list =[uWave_delta_freq]*1000/10*2; 
+        sweep_time = getScanParameter(uwave_sweep_time_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'uwave_sweep_time_2');     
+
+        disp(['     Pulse Time   : ' num2str(sweep_time) ' ms']);
+        disp(['     Freq Delta   : ' num2str(uWave_delta_freq*1E3) ' kHz']);
+
+        % Enable uwave frequency sweep
+        uWave_opts.EnableSweep=1;                    
+        uWave_opts.SweepRange=uWave_delta_freq;   
+
+        setAnalogChannel(calctime(curtime,-20),'uWave VVA',0);      % Set uWave to low
+        setAnalogChannel(calctime(curtime,-10),'uWave FM/AM',-1);   % Set initial modulation
+
+        % Enable ACync
+        if opts.use_ACSync
+            setDigitalChannel(calctime(curtime,-5),'ACync Master',1);
+        end
+
+        % Turn on the uWave        
+        if  ~opts.fake_the_plane_selection_sweep
+            disp('disabling ');
+            setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);  
+        end
+
+        % Ramp the SRS modulation using a TANH
+        % At +-1V input for +- full deviation
+        % The last argument means which votlage fucntion to use
+        AnalogFunc(calctime(curtime,0),'uWave FM/AM',...
+            @(t,T,beta) tanh(2*beta*(t-0.5*sweep_time)/sweep_time),...
+            sweep_time,sweep_time,beta,1);
+
+ 
+        if  ~opts.fake_the_plane_selection_sweep
+            % Sweep the VVA (use voltage func 2 to invert the vva transfer
+            % curve (normalized 0 to 10
+            AnalogFunc(calctime(curtime,0),'uWave VVA',...
+                @(t,T,beta,A) A*sech(2*beta*(t-0.5*sweep_time)/sweep_time),...
+                sweep_time,sweep_time,beta,env_amp,2);
+        end
+
+        curtime = calctime(curtime,sweep_time);                     % Wait for sweep
+        setDigitalChannel(calctime(curtime,0),'K uWave TTL',0);     % Turn off the uWave
+        setAnalogChannel(calctime(curtime,0),'uWave VVA',0);        % Turn off VVA        
+        setAnalogChannel(calctime(curtime,10),'uWave FM/AM',-1);    % Reset the uWave deviation after a while
+
+        % Reset the ACync
+        if opts.use_ACSync
+            setDigitalChannel(calctime(curtime,30),'ACync Master',0);
+        end
+        curtime = calctime(curtime,30);             % Additional wait
+        
+        if opts.planeselect_doVertKill==1
+
+                    %Resonant light pulse to remove any untransferred atoms from
+            %F=9/2
+            kill_time_list = kill_time;2;
+            kill_time = getScanParameter(kill_time_list,seqdata.scancycle,...
+                seqdata.randcyclelist,'kill_time_2','ms'); %10 
+            kill_detuning_list = kill_detuning;[42.7];%42.7
+            kill_detuning = getScanParameter(kill_detuning_list,...
+                seqdata.scancycle,seqdata.randcyclelist,'kill_det_2');        
+               
+            %Kill SP AOM 
+            mod_freq =  (120)*1E6;
+            mod_amp = mod_amp;0.05;0.1; % use same power for both pulses 
+            
+            % Display update about
+            disp(' D2 Kill pulse');
+            disp(['     Kill Time       (ms) : ' num2str(kill_time)]); 
+            disp(['     Kill Frequency (MHz) : ' num2str(mod_freq*1E-6)]); 
+            disp(['     Kill Amp         (V) : ' num2str(mod_amp)]); 
+            disp(['     Kill Detuning  (MHz) : ' num2str(kill_detuning)]); 
+
+            % Offset time of pulse (why?)
+            pulse_offset_time = -5;       
+
+            if kill_time>0
+                % Set trap AOM detuning to change probe
+                setAnalogChannel(calctime(curtime,pulse_offset_time-50),...
+                    'K Trap FM',kill_detuning); %54.5
+
+                % Turn off kill SP (0= off, 1=on)(we keep it on for thermal stability)
+                setDigitalChannel(calctime(curtime,pulse_offset_time-20),...
+                    'Kill TTL',0);
+
+                % Open K Kill shutter (0=closed, 1=open)
+                setDigitalChannel(calctime(curtime,pulse_offset_time-5),...
+                    'Downwards D2 Shutter',1);     
+
+                % Pulse K Kill AOM
+                DigitalPulse(calctime(curtime,pulse_offset_time),'Kill TTL',...
+                    kill_time,1);
+
+                % Close K Kill shutter
+                setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time+2),...
+                    'Downwards D2 Shutter',0);
+
+                % Turn on kill SP (thermal stability)
+                setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time+5),...
+                    'Kill TTL',1);
+
+                % Advance Time
+                curtime=calctime(curtime,pulse_offset_time+kill_time+5);
+            end
+            
+        end
+    
+end
+     
 end
 

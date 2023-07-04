@@ -58,7 +58,7 @@ seqdata.flags.misc_program4pass             = 1; % Update four-pass frequency
 seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
 seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[1.4],'V');1.5;1.7;2.06;
+defVar('objective_piezo',[2.2],'V');1.5;1.7;2.06;
 % 0.1V = 700 nm, larger means further away from chamber
 % 1 V= 7 um
 % 10 V = 70 um
@@ -155,7 +155,7 @@ seqdata.flags.High_Field_Imaging            = 0; % High field imaging (shouldn't
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[5],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[0],'ms');
@@ -224,24 +224,24 @@ seqdata.params.ODT_zeros = [-0.04,-0.04];
 
 % Dipole trap
 % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
-seqdata.flags.xdt                           = 1;
+seqdata.flags.xdt                           = 0;
 
 % Dipole trap flags will be ignored if XDT is off
 
 % MT to XDT State Transfer
-seqdata.flags.xdt_Rb_21uwave_sweep_field    = 1;    % Field Sweep Rb 2-->1
+seqdata.flags.xdt_Rb_21uwave_sweep_field    = 0;    % Field Sweep Rb 2-->1
 seqdata.flags.xdt_Rb_21uwave_sweep_freq     = 0;    % uWave Frequency sweep Rb 2-->1
-seqdata.flags.xdt_K_p2n_rf_sweep_freq       = 1;    % RF Freq Sweep K +9-->-9  
+seqdata.flags.xdt_K_p2n_rf_sweep_freq       = 0;    % RF Freq Sweep K +9-->-9  
 
 % State Manipulation Before Optical Evaporation 
-seqdata.flags.xdt_d1op_start                = 1;    % D1 pump to purify
-seqdata.flags.xdt_rfmix_start               = 1;    % RF Mixing -9-->-9+-7    
+seqdata.flags.xdt_d1op_start                = 0;    % D1 pump to purify
+seqdata.flags.xdt_rfmix_start               = 0;    % RF Mixing -9-->-9+-7    
 seqdata.flags.xdt_kill_Rb_before_evap       = 0;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_before_evap       = 0;    % optical remove 7/2 K after (untested)
 
 % Optical Evaporation
 % 1: exp 2: fast linear 3: piecewise linear
-seqdata.flags.CDT_evap                      = 1;       
+seqdata.flags.CDT_evap                      = 0;       
 
 % State Manipulatoin After Stage 1 optical evaporation
 seqdata.flags.xdt_d1op_end                  = 0;    % D1 optical pumping
@@ -250,7 +250,7 @@ seqdata.flags.xdt_kill_Rb_after_evap        = 0;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_after_evap        = 0;    % optical remove 7/2 K after (untested)
 
 % XDT High Field Experiments
-seqdata.flags.xdt_evap2stage                = 1; %Perform K evap at low field
+seqdata.flags.xdt_evap2stage                = 0; %Perform K evap at low field
 seqdata.flags.xdt_evap2_HF                  = 0; %Perform K evap at high field (set rep. or attr. in file)
 seqdata.flags.xdt_high_field_a              = 0;
 
@@ -285,7 +285,7 @@ seqdata.flags.lattice_pulse_z_for_alignment = 0;
 % Choose which scope trigger to use.
 
 % seqdata.scope_trigger = 'rf_spectroscopy';
-seqdata.scope_trigger = 'Lattice_Mod';
+% seqdata.scope_trigger = 'Lattice_Mod';
 % seqdata.scope_trigger = 'FB_ramp';
 % seqdata.scope_trigger = 'lattice_ramp_1';
 % seqdata.scope_trigger = 'pulse lattice';
@@ -294,6 +294,7 @@ seqdata.scope_trigger = 'Lattice_Mod';
 % seqdata.scope_trigger = 'lattice_ramp_2';
 % seqdata.scope_trigger = 'lattice_off';
 % seqdata.scope_trigger = 'lattice_ramp_3';
+seqdata.scope_trigger = 'Start Transport';
 
 %% end time
 

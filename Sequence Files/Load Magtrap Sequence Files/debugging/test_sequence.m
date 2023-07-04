@@ -5504,7 +5504,7 @@ end
 % setAnalogChannel(calctime(curtime,0),'xLattice',-10,1);
 % setDigitalChannel(calctime(curtime,0),'yLatticeOFF',0);%0: ON
 
-doRotateWaveplate=1;
+doRotateWaveplate=0;
 if doRotateWaveplate
     wp_Trot1 = 600; % Rotation time during XDT
     wp_Trot2 = 150; 
@@ -5665,10 +5665,44 @@ end
 
 % % 
 %     setDigitalChannel(calctime(curtime,0),'PA TTL',0); % Open shutter
-%     setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',1); % Set 
-%     setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',0); % inverted logic
-setAnalogChannel(calctime(curtime,0),'D1 DP',-3)
+    setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0); % Set 
+    setDigitalChannel(calctime(curtime,0),'Kill TTL',1); % inverted logic
+    
+        mod_freq =  (120)*1E6;
+    mod_amp_list = [2]; 0.1;
+    mod_amp = getScanParameter(mod_amp_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'k_kill_power','V');
+    mod_offset =0;
+    str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
+    addVISACommand(8, str);  %Device 8 is the new kill beam Rigol changed on July 10, 2021
+
+% setAnalogChannel(calctime(curtime,0),'D1 DP',-3)
 % setDigitalChannel(calctime(curtime,0),'EIT Probe TTL',0)
+
+
+% T60=16.666; % 60 Hz period
+% % 2023/04/04 disconnected from ACync for uwave
+% curtime = calctime(curtime,30);    
+% n_sweeps_mix = 11;
+% do_ACync_rf = 0;
+% if do_ACync_rf
+%     ACync_start_time = calctime(curtime,-30);
+%     ACync_end_time = calctime(curtime,(3+T60)*n_sweeps_mix+30);
+%     setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
+%     setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
+%     
+% end
+% 
+%         
+% setDigitalChannel(calctime(curtime,0),'RF TTL',1)
+% 
+% for kk=1:n_sweeps_mix
+%       setDigitalChannel(calctime(curtime,0),'RF TTL',1);
+%       setDigitalChannel(calctime(curtime,3),'RF TTL',0);
+%       curtime = calctime(curtime,T60);
+%     
+% end     
+
 
 timeout = curtime;
 % SelectScopeTrigger('PA_Pulse');

@@ -13,13 +13,13 @@ function params = Load_Absorption_Image_Parameters()
     params.detunings.K.X.negative.normal = 32.6+kdet_shift; %(32.6) for DFG, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
     
     % for mF stern gerlach
-%     params.detunings.K.X.negative.SG = 34.5; 
+    params.detunings.K.X.negative.SG = 34.5; 
     
     % for F stern gerlach
 %     params.detunings.K.X.negative.SG = 35.5; 
     
     % Lattice F Stern Gerlach, TOF = 15 ms
-    params.detunings.K.X.negative.SG = 35.5;
+%     params.detunings.K.X.negative.SG = 35.5;
 
     
     
@@ -121,7 +121,7 @@ function params = Load_Absorption_Image_Parameters()
     params.k_repump_shift.positive = 28;
     params.k_repump_shift.negative = 21;21;
     %% Probe beam powers
-    K_probe_pwr_list = [0.12];%.15;%[0.5];
+    K_probe_pwr_list = [0.11];%.15;%[0.5];
     K_probe_pwr = getScanParameter(K_probe_pwr_list,seqdata.scancycle,...
         seqdata.randcyclelist,'K_probe_pwr','V');
     
@@ -148,12 +148,12 @@ function params = Load_Absorption_Image_Parameters()
     SG_QP_val_list = [7.5];%7.5;%5
     SG_QP_val = getScanParameter(SG_QP_val_list,seqdata.scancycle,seqdata.randcyclelist,'SG_QP_val');
     
-% %    mF Stern Gerlach For |9,-9> vs |9,-7> low field (15ms TOF K)
+% % %    mF Stern Gerlach For |9,-9> vs |9,-7> low field (15ms TOF K)
     params.SG.SG_QP_val = 7.5*1.78;
     params.SG.SG_QP_pulsetime = 5;
     params.SG.SG_QP_ramptime =2;
-% %  
-% %     % F Stern Gerlach : |9,-9> vs |7,-7> low field (~20G) (15ms TOF)
+ 
+    % F Stern Gerlach : |9,-9> vs |7,-7> low field (~20G) (15ms TOF)
 %     params.SG.SG_QP_val = 1.78*5;
 %     params.SG.SG_QP_pulsetime = 2; 
 %     params.SG.SG_QP_ramptime =1; 

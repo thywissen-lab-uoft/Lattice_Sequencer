@@ -38,7 +38,7 @@ global seqdata
     % Warning : After exposing the camera needs around 400 ms to read out
     % the image before it can accept a new trigger.
     
-    
+    %Set NumKin on iXon GUI equal to NumberOfImages+1
     fluor.NumberOfImages       = 1;     % Normal operation
 %     fluor.NumberOfImages       = 5;     % For hopping
    

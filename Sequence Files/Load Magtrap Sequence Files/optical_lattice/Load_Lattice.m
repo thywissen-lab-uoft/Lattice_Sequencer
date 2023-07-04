@@ -65,10 +65,10 @@ do_RF_spectroscopy = 0;                 % (3952,4970)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-seqdata.flags.lattice_do_optical_pumping    = 0;                 % (1426) keep : optical pumping in lattice  
+seqdata.flags.lattice_do_optical_pumping    = 1;                 % (1426) keep : optical pumping in lattice  
 seqdata.flags.do_plane_selection            = 1;                 % Plane selection flag
 
-% Actual fluorsence image flags - no longer used
+% Actual fluorsence image flags - NO LONGER USED
 seqdata.flags.Raman_transfers               = 0;
 
 % Note:
@@ -162,7 +162,7 @@ if seqdata.flags.lattice_lattice_ramp_1
             % by a quick snap to a pinning lattice depth
             
             % Initial lattice depth
-            initial_latt_depth_list = [5];%10;
+            initial_latt_depth_list = 14;%5, 10;
             init_depth = getScanParameter(initial_latt_depth_list,...
                 seqdata.scancycle,seqdata.randcyclelist,...
                 'initial_latt_depth','Er');
@@ -588,8 +588,11 @@ curtime = calctime(curtime,optical_pump_time);
     % Turn off OP before F-pump so atoms repumped back to -9/2.
     setDigitalChannel(calctime(curtime,0),'D1 OP TTL',0);
 
-    op_repump_extra_time = 3; %additional time for which repump beams are on
+    op_repump_extra_time_list = [3]; %additional time for which repump beams are on
     % Close optical pumping AOMS (no light)
+    op_repump_extra_time = getScanParameter(op_repump_extra_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'lattice_OP_extra_repump_time','ms');    
+    
     setDigitalChannel(calctime(curtime,op_repump_extra_time),'F Pump TTL',1);%1
     setAnalogChannel(calctime(curtime,op_repump_extra_time),'F Pump',-1);%1
     setDigitalChannel(calctime(curtime,op_repump_extra_time),'FPump Direct',1);
@@ -998,6 +1001,7 @@ end
 if seqdata.flags.lattice_fluor
     
     if seqdata.flags.lattice_ClearCCD_IxonTrigger
+        
         disp('Pre triggering the ixon to clear the CCD');
         
         % The exposure time is set by how long the IxonTrigger is high if the

@@ -9,6 +9,7 @@ global seqdata;
 
 % Channel to test
 pulsetime = 2000;       % Duration of pulse
+ramptime = 500;
 current = 5;            % Current in amps
 
 % Define current ramp function
@@ -34,12 +35,12 @@ setDigitalChannel(curtime,'15/16 Switch',0); %0: OFF, 1: ON
 % Turn off Reverse QP Switch
 setDigitalChannel(curtime,'Reverse QP Switch',0);
 
-% Turn on Coil 16 TTL
+% Turn off Coil 16 TTL
 setDigitalChannel(curtime,'Coil 16 TTL',1); %1: turns coil off; 0: coil can be on
 curtime = calctime(curtime,500);
 
 % Set Tranport PSU Feed Forward
-setAnalogChannel(calctime(curtime,-100), 'Transport FF',80*(abs(current)/30)/3 + 0.5);
+setAnalogChannel(calctime(curtime,-100), 'Transport FF',80*(abs(8)/30)/3 + 0.5);
 %% Ramp for QP Mode
 
 % Wait a moment
@@ -48,37 +49,61 @@ curtime = calctime(curtime,100);
 % Turn off reverse QP switch
 setDigitalChannel(curtime,'Reverse QP Switch',0);
 
+setDigitalChannel(curtime,'Coil 16 TTL',0); %1: turns coil off; 0: coil can be on
+
 % Turn on 15/16 switch
 setDigitalChannel(curtime,'15/16 Switch',1);
 
+% Turn on Kitten relay
+setDigitalChannel(curtime,'Kitten Relay',1); %0: OFF, 1: ON
+setAnalogChannel(calctime(curtime,0),'kitten',current,2) %5 is max voltage
 % Wait a moment
 curtime = calctime(curtime,100);
 
 % Trigger scope
 DigitalPulse(calctime(curtime,0),'ScopeTrigger',10,1);
 
-% Ramp Coil 16
-curtime = AnalogFunc(calctime(curtime,0),'Coil 16',@(t,tt,y1) ...
-    ramp_iparabola(t,tt,0.0,y1),pulsetime,pulsetime,current,2);
+% Ramp test Coil
+AnalogFunc(calctime(curtime,0),'Coil 16',@(t,tt,y1,y2) ...
+    ramp_linear(t,tt,y1,y2),ramptime,ramptime,0,8,2);
+% AnalogFunc(calctime(curtime,0),'kitten',@(t,tt,y1,y2) ...
+%     ramp_linear(t,tt,y1,y2),ramptime,ramptime,0,current,2);
+% AnalogFunc(calctime(curtime,0),'Coil 15',@(t,tt,y1,y2) ...
+%     ramp_linear(t,tt,y1,y2),ramptime,ramptime,0,current,2);
+curtime = calctime(curtime,ramptime);
+
+% Wait a moment
+curtime = calctime(curtime,2000);
+% % Ramp test Coil 
+AnalogFunc(calctime(curtime,0),'Coil 16',@(t,tt,y1,y2) ...
+    ramp_linear(t,tt,y1,y2),ramptime,ramptime,8,0,2);
+% AnalogFunc(calctime(curtime,0),'kitten',@(t,tt,y1,y2) ...
+%     ramp_linear(t,tt,y1,y2),ramptime,ramptime,current,0,2);
+% AnalogFunc(calctime(curtime,0),'Coil 15',@(t,tt,y1,y2) ...
+%     ramp_linear(t,tt,y1,y2),ramptime,ramptime,current,0,2);
+curtime = calctime(curtime,ramptime);
+
+% curtime = AnalogFunc(calctime(curtime,0),'Coil 12b',@(t,tt,y1) ...
+%     ramp_iparabola(t,tt,0.0,y1),pulsetime,pulsetime,-current,2);
 
 %% Wait and switch mode
-curtime = calctime(curtime,100);
-
-% Turn on reverse QP switch
-setDigitalChannel(curtime,'Reverse QP Switch',1);
-
-% Turn off 15/16 switch
-setDigitalChannel(curtime,'15/16 Switch',0);
-
-% Wait
-curtime = calctime(curtime,100);
+% curtime = calctime(curtime,100);
+% 
+% % Turn on reverse QP switch
+% setDigitalChannel(curtime,'Reverse QP Switch',1);
+% 
+% % Turn off 15/16 switch
+% setDigitalChannel(curtime,'15/16 Switch',0);
+% 
+% % Wait
+% curtime = calctime(curtime,100);
 
 %% Ramp for Reverse QP Mode
 
 % Ramp Coil 15
-curtime = AnalogFunc(calctime(curtime,0),'Coil 15',@(t,tt,y1) ...
-    ramp_iparabola(t,tt,0.0,y1),pulsetime,pulsetime,current,2);
-
+% curtime = AnalogFunc(calctime(curtime,0),'Coil 15',@(t,tt,y1) ...
+%     ramp_iparabola(t,tt,0.0,y1),pulsetime,pulsetime,current,2);
+% 
 
 %% Wait
 
@@ -86,14 +111,14 @@ curtime = calctime(curtime,1000);
 
 %% Go back to MOT gradient for wait time
 
-% MOT Gradient
-gradient = 2;
-
-% Set the transport feed forwards
-setAnalogChannel(calctime(curtime,-30),'Transport FF',23*(gradient/30) + 0.5);
-
-%Turn on Coil
-curtime = setAnalogChannel(calctime(curtime,0),'MOT Coil',gradient,2);
+% % MOT Gradient
+% gradient = 2;
+% 
+% % Set the transport feed forwards
+% setAnalogChannel(calctime(curtime,-30),'Transport FF',23*(gradient/30) + 0.5);
+% 
+% %Turn on Coil
+% curtime = setAnalogChannel(calctime(curtime,0),'MOT Coil',gradient,2);
 
 %set all transport coils to zero (except MOT)
 for i = [7 9:17 22:24 20] 
@@ -104,6 +129,7 @@ end
 setAnalogChannel(calctime(curtime,0),'Coil 15',-.8,1); %15
 curtime = setAnalogChannel(calctime(curtime,0),'Coil 16',0,1); %16
 curtime = setAnalogChannel(curtime,'kitten',0,1); %kitten
+setDigitalChannel(curtime,'Kitten Relay',0); %0: OFF, 1: ON
 curtime = setDigitalChannel(curtime,'15/16 Switch',0);
 curtime = setDigitalChannel(curtime,'Reverse QP Switch',0);
 

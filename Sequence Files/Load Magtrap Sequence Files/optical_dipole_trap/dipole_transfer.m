@@ -27,12 +27,15 @@ seqdata.flags.xdt_ramp2sympathetic      = 1;
 
 
 % Stage 1 (Rb+K) Evaporation
-Evap_End_Power_List = .12;[.12];[.12];
+Evap_End_Power_List = [.12];[.12];
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...
     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');  
 
 % Stage 2 Low Field (K+K) evaporation
-pend = 0.06;0.06;
+pend_list = [0.08]; 0.08; 0.06;
+pend = getScanParameter(pend_list,seqdata.scancycle,...
+    seqdata.randcyclelist,'pend_evap2','W');
+
 evap_time_2_list =  [10000];
 evap_time_2 = getScanParameter(evap_time_2_list,seqdata.scancycle,...
     seqdata.randcyclelist,'evap_time_2','ms');
@@ -838,7 +841,6 @@ if seqdata.flags.xdt_rfmix_start
     clear('sweep');
 
     rf_k_sweep_freqs = [6.005];[5.995];
-
     % With delta_freq =0.1;
     % 3.01 --> (-7,-5) (a little -9)
     % 3.07 --> (-1,+1,+3); 
@@ -851,7 +853,7 @@ if seqdata.flags.xdt_rfmix_start
     sweep_pars.power = getScanParameter(rf_power_list,...
         seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_power_post_evap'); 
 
-    delta_freq_list = -0.01;[0.01];%0.006; 0.01
+    delta_freq_list = -1*[0.008];[0.01];%0.006; 0.01
     sweep_pars.delta_freq = getScanParameter(delta_freq_list,...
         seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_range_post_evap');
     pulse_length_list = 1.25;[0.75];%0.4ms for mixing 2ms for 80% transfer remove further sweeps
@@ -1112,7 +1114,7 @@ if ( seqdata.flags.CDT_evap == 1 )
     % If you want to do a partial evaporation in time
     doPartialEvap = 0;
     if doPartialEvap
-        evap_time_evaluate_list =  [.6]*evap_time_total;
+        evap_time_evaluate_list =  [0.45 0.55 0.65 0.75]*evap_time_total;
         evap_time_evaluate = getScanParameter(evap_time_evaluate_list,seqdata.scancycle,...
             seqdata.randcyclelist,'evap_time_evaluate','ms');   
     end
@@ -1193,7 +1195,7 @@ if seqdata.flags.xdt_tilt_evap
     QP_FFValue = 23*(gradient_val/.125/30);
     
     
-    doPartialEvap = 1;
+    doPartialEvap = 0;
     if doPartialEvap
         t_partial_list =  [1]*tilt_evap_time;
         t_partial = getScanParameter(t_partial_list,seqdata.scancycle,...
@@ -1351,7 +1353,7 @@ end
 if seqdata.flags.xdt_ramp_power_end 
     dispLineStr('Ramping XDT Power Back Up',curtime); 
     
-    xdt_rampup_power_list = [0.12:0.01:0.25];
+    xdt_rampup_power_list = .3;[0.12:0.01:0.25];
     
     xdt_rampup_power = getScanParameter(xdt_rampup_power_list,seqdata.scancycle,...
     seqdata.randcyclelist,'xdt_rampup_power', 'mW');

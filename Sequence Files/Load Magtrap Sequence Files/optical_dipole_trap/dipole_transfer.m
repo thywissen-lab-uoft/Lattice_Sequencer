@@ -1114,7 +1114,7 @@ if ( seqdata.flags.CDT_evap == 1 )
     % If you want to do a partial evaporation in time
     doPartialEvap = 0;
     if doPartialEvap
-        evap_time_evaluate_list =  [0.45 0.55 0.65 0.75]*evap_time_total;
+        evap_time_evaluate_list =  [0:0.1:1]*evap_time_total;
         evap_time_evaluate = getScanParameter(evap_time_evaluate_list,seqdata.scancycle,...
             seqdata.randcyclelist,'evap_time_evaluate','ms');   
     end

@@ -85,7 +85,7 @@ if opts.ramp_fields
 
     % Fesbhach Field (in gauss)
     B0 = 128;    %old value 128G, 0.6G shift
-    fb_shift_list = [0.49];[0.6];[0];[.6];
+    fb_shift_list = [0.52];[0.51];[0.6];[0];[.6];
     fb_shift = getScanParameter(fb_shift_list,seqdata.scancycle,...
         seqdata.randcyclelist,'qgm_plane_FB_shift','G');    
     Bfb = B0 - fb_shift;

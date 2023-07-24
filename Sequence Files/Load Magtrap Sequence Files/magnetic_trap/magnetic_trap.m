@@ -123,6 +123,12 @@ else
         seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
 end
 
+MT_wait_list = [0];
+MT_wait = getScanParameter(MT_wait_list, seqdata.scancycle,...
+        seqdata.randcyclelist, 'MT_wait_afterRF1a','ms');
+
+curtime = calctime(curtime,MT_wait);
+
 if ramp_after_transfer
     [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_transfer_test(curtime,...
         seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);

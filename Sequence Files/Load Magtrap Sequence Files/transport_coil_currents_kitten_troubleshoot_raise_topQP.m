@@ -251,14 +251,15 @@ coil_scale_factors(18) = 1.0*qp_scale_factor;
 coil_offset(18) = 0.00; %0
 
 %top qp coil
+defVar('QP_16_scale',[1],'arb.')
 coil_range(1,19) = 410; 
 coil_range(2,19) = 539; 
-coil_scale_factors(19) = 1.0*qp_scale_factor;
+coil_scale_factors(19) = 1*qp_scale_factor*getVar('QP_16_scale');
 
 %kitten 
 coil_range(1,20) = 427; 
 coil_range(2,20) = 539;
-coil_scale_factors(20) = 0.95*qp_scale_factor*1.0;
+coil_scale_factors(20) = 0.95*qp_scale_factor;
 coil_offset(20) = -0.75; %-0.75
 
 %power dump into 8th horizontal
@@ -523,7 +524,7 @@ y = currentarray;
                  
                  %ramp 3
                  vert_voltage(1,3) = vert_voltage(2,2);
-                 vert_voltage(2,3) = 11.25;%10%12.25; %10.5 %11
+                 vert_voltage(2,3) = 11.25;%11.25
                  vert_volt_pos(1,3) = vert_volt_pos(2,2);
                  vert_volt_pos(2,3) = 365 + 65; %65
                  
@@ -537,7 +538,10 @@ y = currentarray;
                  
                  %ramp 5
                  vert_voltage(1,5) = vert_voltage(2,4);
-                 vert_voltage(2,5) = 13.00; %13.75
+                 FF_list = [11.75];11.75;[13];11.75;
+                 FF_Voltage = getScanParameter(FF_list, seqdata.scancycle,...
+                        seqdata.randcyclelist, 'FF_Voltage_Ramp5','V');
+                 vert_voltage(2,5) = FF_Voltage; %13.00 %13.75
                  vert_volt_pos(1,5) = 365+120; %365+110
                  vert_volt_pos(2,5) = 365+140; %365+130
                 
@@ -629,7 +633,7 @@ y = currentarray;
                 y(ind) = y(ind) + (x>365).*(x<365.1).*...
                     (ppval(pp,365)-(ppval(pp,365)+coilone).*(x-365)/0.1);
 
-                %ramp between the values from 360.1-->363
+                %ramp between the values from 365.1-->368
                 y(ind) = y(ind) + (x>=365.1).*(x<368).*...
                     (-coilone+(ppval(pp,368)+coilone).*(x-365.1)/2.9);
 
@@ -657,11 +661,11 @@ y = currentarray;
 %                     %horizontal section
 %                      y(ind) = y(ind) + (x<=365).*ppval(pp,x);
                     
-                    %ramp between the values from 360-->360.1
+                    %ramp between the values from 365-->365.1
                     y(ind) = y(ind) + (x>365).*(x<365.1).*...
                         (ppval(pp,365)-(ppval(pp,365)-coiltwo).*(x-365)/0.1);
                     
-                    %ramp between the values from 360.1-->363
+                    %ramp between the values from 365.1-->368
                     y(ind) = y(ind) + (x>=365.1).*(x<368).*...
                         (coiltwo+(ppval(pp,368)-coiltwo).*(x-365.1)/2.9);
                     
@@ -768,7 +772,8 @@ y = currentarray;
                  %when 15 is negative this is 16-15
                     
                 pp1 = create_transport_splines_nb(17);
-                pp2 = create_transport_splines_nb(18);
+%                 pp2 = create_transport_splines_nb(18);
+                pp2 = create_transport_splines_nb(21);
 
                 if length(x)>1
                      

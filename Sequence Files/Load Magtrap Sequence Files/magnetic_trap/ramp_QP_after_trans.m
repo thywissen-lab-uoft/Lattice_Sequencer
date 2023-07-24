@@ -17,7 +17,7 @@ global seqdata;
 
 %raise QP starting value
 %rev 45
-    QP_value = 18.89;
+    QP_value = 18.89*getVar('QP_16_scale');
     %QP_value = 15.25; %relaxed gradient
 %rev 48
     %QP_value = 16.5;

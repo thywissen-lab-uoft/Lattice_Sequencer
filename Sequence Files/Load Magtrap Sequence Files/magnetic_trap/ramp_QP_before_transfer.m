@@ -27,7 +27,7 @@ Feshval = I_fesh ;
     %values). Recently raised, although one would think smaller would be
     %better here. Could try the JILA trick of decompressing further during
     %RF1B evaporation also.
-    ramp_factor_list = 0.8;[0.02:0.01:0.3];
+    ramp_factor_list = [0.8];[0.8];[0.02:0.01:0.3];
     ramp_factor = getScanParameter(ramp_factor_list,seqdata.scancycle,seqdata.randcyclelist,'ramp_factor');
 %     ramp_factor = 0.8; %0.7 DCM added 0.6 Aug 18
     

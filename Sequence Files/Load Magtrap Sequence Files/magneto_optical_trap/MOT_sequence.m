@@ -4,6 +4,8 @@ curtime = timein;
 
 global seqdata;
 
+%% Settings
+
 
 
 
@@ -42,9 +44,14 @@ setDigitalChannel(calctime(curtime,-0),'UV LED',1); % THe X axis bulb 1 on 0 off
 %%%%%%%%%%%%%%%% Set Rb MOT Beams %%%%%%%%%%%%%%%%
 % Trap
 setAnalogChannel(calctime(curtime,0),'Rb Beat Note FM',...          
-    6590+rb_MOT_detuning);      
+    6590+rb_MOT_detuning); %outdated?
+
 setAnalogChannel(calctime(curtime,0),'Rb Trap AM', 0.7);            % Rb MOT Trap power   (voltage)
 
+% Rb_Trap_MOT_detuning = -25;
+% f_osc = calcOffsetLockFreq(Rb_Trap_MOT_detuning,'MOT');
+% DDS_id = 3;    
+% DDS_sweep(curtime,DDS_id,f_osc*1e6,f_osc*1e6,1); 
 
 
 
@@ -512,7 +519,7 @@ setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);
 %%%%%%%%%%%% Perform the time of flight %%%%%%%%%%%%
 
 % Set the time of flight
-tof_list = [15];
+tof_list = [1:1:15];
 tof =getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof_time'); 
 
 % Increment the time (ie. perform the time of flight)
@@ -540,15 +547,19 @@ setAnalogChannel(calctime(curtime,-1),'Rb Trap AM', 0.7);
 setAnalogChannel(calctime(curtime,-1),'Rb Repump AM',0.9);          
 
 % Imaging beams for K
-% setDigitalChannel(calctime(curtime,-5),'K Repump Shutter',1); 
-% setDigitalChannel(calctime(curtime,-5),'K Trap Shutter',1); 
-% setDigitalChannel(calctime(curtime,0),'K Trap TTL',0); 
-% setDigitalChannel(calctime(curtime,0),'K Repump TTL',0); 
-% % 
+if loadK  
+    setDigitalChannel(calctime(curtime,-5),'K Repump Shutter',1); 
+    setDigitalChannel(calctime(curtime,-5),'K Trap Shutter',1); 
+    setDigitalChannel(calctime(curtime,0),'K Trap TTL',0); 
+    setDigitalChannel(calctime(curtime,0),'K Repump TTL',0); 
+end
+
 % % Imaging beams for Rb
-setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);      
-setDigitalChannel(calctime(curtime,-2),'Rb Repump Shutter',1); 
-setDigitalChannel(calctime(curtime,-5),'Rb Trap Shutter',1); 
+if loadRb
+    setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);      
+    setDigitalChannel(calctime(curtime,-2),'Rb Repump Shutter',1); 
+    setDigitalChannel(calctime(curtime,-5),'Rb Trap Shutter',1); 
+end
 
 % Camera Trigger (1) : Light+Atoms
 setDigitalChannel(calctime(curtime,0),15,1);

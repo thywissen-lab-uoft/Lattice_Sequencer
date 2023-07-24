@@ -58,6 +58,7 @@ M13 = dlmread([transportfolder cur_rev 'coil3.txt'],',',0,1)*vertical_scale;
 M14 = dlmread([transportfolder cur_rev 'coil4.txt'],',',0,1)*vertical_scale;
 M15 = dlmread([transportfolder cur_rev 'coil5.txt'],',',0,1)*vertical_scale;
 M16 = dlmread([transportfolder cur_rev 'coil6.txt'],',',0,1)*vertical_scale;
+M16_old = dlmread([transportfolder cur_rev 'coil6.txt'],',',0,1)*vertical_scale;
 
 %vertical fill
 M17 = dlmread([transportfolder cur_rev 'coilpushfill.txt'],',',0,2)*vertical_scale;
@@ -438,6 +439,24 @@ elseif coil_num == 19
     x = [x (366:1:ver_vec_length)];
     
     y2 = [y2 18.5 0.8*M18];
+    
+    %spline or splinefit this
+    y = spline(x,y2);
+    
+    
+ elseif coil_num == 21
+    
+    %top QP - old cal
+    
+    %horizontal section
+    x = [x (0:1:365)];
+    
+    y2 = [y2 (0:1:365)*0];
+    
+    %vertical section
+    x = [x (366:1:ver_vec_length)];
+    
+    y2 = [y2 M16_old];
     
     %spline or splinefit this
     y = spline(x,y2);

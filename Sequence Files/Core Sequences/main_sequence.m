@@ -410,9 +410,11 @@ if seqdata.flags.image_type == 0
         
         if ~seqdata.flags.image_levitate
             % Turn off QP Coils (analog control)    
-            setAnalogChannel(calctime(curtime,0),'Coil 15',0,1);            % C15
+            setAnalogChannel(calctime(curtime,0),'Coil 15',-1,1);            % C15
             curtime = setAnalogChannel(calctime(curtime,0),'Coil 16',0,1);  % C16
-            curtime = setAnalogChannel(curtime,'kitten',0,1);               % Kitten    
+            curtime = setAnalogChannel(curtime,'kitten',-1,1);               % Kitten    
+            
+          
         end
 
         % MOT/QCoil TTL (separate switch for coil 15 (TTL) and 16 (analog))
@@ -426,7 +428,9 @@ if seqdata.flags.image_type == 0
             %imaging direction!
         end
         % Turn off 15/16 switch (10 ms later)
-        setDigitalChannel(calctime(curtime,qp_switch1_delay_time),'15/16 Switch',0);
+        if ~seqdata.flags.image_stern_gerlach
+            setDigitalChannel(calctime(curtime,qp_switch1_delay_time),'15/16 Switch',0);
+        end
     end
     
     % Turn of XDT (if they aren't already off)
@@ -469,8 +473,11 @@ end
 %% Absorption Imaging
 
 if seqdata.flags.image_type == 0
+    
+    ScopeTriggerPulse(calctime(curtime,0),'TOF');
+    
     dispLineStr('Absorption Imaging.',curtime);
-    curtime = absorption_image2(calctime(curtime,0.0));         
+    curtime = absorption_image2(calctime(curtime,0.0));   
 end    
 %% Take Background Fluoresence Image
 

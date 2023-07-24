@@ -10,7 +10,7 @@ global seqdata;
 % Channel to test
 pulsetime = 2000;       % Duration of pulse
 ramptime = 500;
-current = 5;            % Current in amps
+current = 3;            % Current in amps
 
 % Define current ramp function
 ramp_iparabola = @(t,tt,y0,y1) (y1-y0)*(1-(2*t/tt-1).^2)+y0;
@@ -41,6 +41,8 @@ curtime = calctime(curtime,500);
 
 % Set Tranport PSU Feed Forward
 setAnalogChannel(calctime(curtime,-100), 'Transport FF',80*(abs(8)/30)/3 + 0.5);
+% setAnalogChannel(calctime(curtime,-100), 'Transport FF',5*abs(current)/6.6+0);
+% setAnalogChannel(calctime(curtime,-100), 'Transport FF',13);
 %% Ramp for QP Mode
 
 % Wait a moment
@@ -71,9 +73,10 @@ AnalogFunc(calctime(curtime,0),'Coil 16',@(t,tt,y1,y2) ...
 % AnalogFunc(calctime(curtime,0),'Coil 15',@(t,tt,y1,y2) ...
 %     ramp_linear(t,tt,y1,y2),ramptime,ramptime,0,current,2);
 curtime = calctime(curtime,ramptime);
+% setAnalogChannel(calctime(curtime,0),'kitten',current,2) %5 is max voltage
 
 % Wait a moment
-curtime = calctime(curtime,2000);
+curtime = calctime(curtime,1000);
 % % Ramp test Coil 
 AnalogFunc(calctime(curtime,0),'Coil 16',@(t,tt,y1,y2) ...
     ramp_linear(t,tt,y1,y2),ramptime,ramptime,8,0,2);

@@ -21,7 +21,7 @@ optime = getScanParameter(optime_list,...
     seqdata.scancycle,seqdata.randcyclelist,'optime','ms');
 
 % K
-k_op_am_list = [0.4];[0.5];[0.25]; %0.1:0.1:0.9
+k_op_am_list = [0.4];[0.4];[0.25]; %0.1:0.1:0.9
 k_op_am = getScanParameter(k_op_am_list,...
     seqdata.scancycle,seqdata.randcyclelist,'k_op_am','??');
 k_op_offset = 0.0;
@@ -31,7 +31,7 @@ k_op_detuning = getScanParameter(k_op_detuning_list,...
     seqdata.scancycle,seqdata.randcyclelist,'k_op_det');
 
 % Rb
-rb_op_am_list = [1];[0.8];[0.8];  %  (1) RF amplitude (V)       
+rb_op_am_list = [1];[1];[0.8];[0.8];  %  (1) RF amplitude (V)       
 rb_op_am = getScanParameter(rb_op_am_list,...
     seqdata.scancycle,seqdata.randcyclelist,'rb_op_am','V');
 rb_op_offset = 0.0;

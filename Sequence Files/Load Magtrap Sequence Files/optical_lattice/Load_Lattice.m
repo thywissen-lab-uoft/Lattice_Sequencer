@@ -162,7 +162,7 @@ if seqdata.flags.lattice_lattice_ramp_1
             % by a quick snap to a pinning lattice depth
             
             % Initial lattice depth
-            initial_latt_depth_list = 14;%5, 10;
+            initial_latt_depth_list = 5;14;%5, 10;
             init_depth = getScanParameter(initial_latt_depth_list,...
                 seqdata.scancycle,seqdata.randcyclelist,...
                 'initial_latt_depth','Er');
@@ -238,9 +238,9 @@ if seqdata.flags.lattice_lattice_ramp_1
             % Simple square ramp of only one lattice 
             
             %Select the lattice direction to load
-            direction = 'X';
+%             direction = 'X';
 %             direction = 'Y';
-%             direction = 'Z';
+            direction = 'Z';
             switch direction
                 case 'X'
                   latt_depth=...

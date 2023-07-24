@@ -5,12 +5,12 @@ function params = Load_Absorption_Image_Parameters()
     kdet_shift_list = [0];%[2];%-1
     kdet_shift = getScanParameter(kdet_shift_list,...
         seqdata.scancycle,seqdata.randcyclelist,'kdet_shift','MHz');
-    params.detunings.K.X.positive.normal = 22.2 ;
+    params.detunings.K.X.positive.normal = 22.2;
     params.detunings.K.X.positive.in_trap = 23.5;
-    params.detunings.K.X.positive.QP_imaging = 21.5;
+    params.detunings.K.X.positive.QP_imaging = 20.5;21.5;
     params.detunings.K.X.positive.SG = 24.5;
     params.detunings.K.X.positive.short_tof = 24.5;
-    params.detunings.K.X.negative.normal = 32.6+kdet_shift; %(32.6) for DFG, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
+    params.detunings.K.X.negative.normal = 30.6; %(32.6) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
     
     % for mF stern gerlach
     params.detunings.K.X.negative.SG = 34.5; 
@@ -53,7 +53,7 @@ function params = Load_Absorption_Image_Parameters()
 
 
     % Rubidium XCAM
-    params.detunings.Rb.X.positive.normal = 10;    % |2,2> 2022/09/02
+    params.detunings.Rb.X.positive.normal = 10;    % |2,2> 2023/07/20
     params.detunings.Rb.X.positive.in_trap = 0;             % |2,2> Uncalibrated
     params.detunings.Rb.X.positive.QP_imaging = 10;         % QP imaging 15 ms tof |2,2> 2022/09/02
     params.detunings.Rb.X.positive.SG = 0;                  % Uncalibrated
@@ -121,7 +121,7 @@ function params = Load_Absorption_Image_Parameters()
     params.k_repump_shift.positive = 28;
     params.k_repump_shift.negative = 21;21;
     %% Probe beam powers
-    K_probe_pwr_list = [0.11];%.15;%[0.5];
+    K_probe_pwr_list = [0.125];[0.11];%.15;%[0.5];
     K_probe_pwr = getScanParameter(K_probe_pwr_list,seqdata.scancycle,...
         seqdata.randcyclelist,'K_probe_pwr','V');
     
@@ -137,7 +137,7 @@ function params = Load_Absorption_Image_Parameters()
     params.powers.Rb.MOT = 0.25;
     
     %% Stern Gerlach parameters
-    params.SG.SG_shim_val = [-0.45,+0.1,2]; %[x,y,z] [0,0,2.5] March 16th, 2014 %-0.6 %2
+    params.SG.SG_shim_val =  [-0.45,+0.1,2]; %[x,y,z] [0,0,2.5] March 16th, 2014 %-0.6 %2
     params.SG.SG_fesh_val = 0;
     params.SG.SG_shim_ramptime = 1; 
     params.SG.SG_shim_rampdelay = 0; %0 with respect to pulse start
@@ -149,7 +149,7 @@ function params = Load_Absorption_Image_Parameters()
     SG_QP_val = getScanParameter(SG_QP_val_list,seqdata.scancycle,seqdata.randcyclelist,'SG_QP_val');
     
 % % %    mF Stern Gerlach For |9,-9> vs |9,-7> low field (15ms TOF K)
-    params.SG.SG_QP_val = 7.5*1.78;
+    params.SG.SG_QP_val = SG_QP_val*1.78;
     params.SG.SG_QP_pulsetime = 5;
     params.SG.SG_QP_ramptime =2;
  
@@ -157,7 +157,7 @@ function params = Load_Absorption_Image_Parameters()
 %     params.SG.SG_QP_val = 1.78*5;
 %     params.SG.SG_QP_pulsetime = 2; 
 %     params.SG.SG_QP_ramptime =1; 
-%     
+    
     % Stern Gerlach feed forward
     params.SG.SG_QP_FF = 23*(params.SG.SG_QP_val/30); % voltage FF on delta supplySS
 

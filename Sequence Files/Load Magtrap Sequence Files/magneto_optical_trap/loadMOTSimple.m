@@ -76,7 +76,7 @@ setDigitalChannel(curtime,'Rb Trap TTL',0);   % Rb MOT trap TTL     (0 : ON)
 
 %Added 06/10/2022 by FC and RL
 %This modulates the frequency and amplitude of the Rb Trap AOM
-%frequency source (Rigol DG 4162) (Device 8). 
+% %frequency source (Rigol DG 4162) (Device 8). 
 rb_trap_freq_list =  [109]; % in MHz
 rb_trap_freq=getScanParameter(rb_trap_freq_list,...
 seqdata.scancycle,seqdata.randcyclelist,...

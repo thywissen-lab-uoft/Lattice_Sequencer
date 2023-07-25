@@ -19,8 +19,8 @@ global seqdata;
 setDigitalChannel(calctime(curtime,0),'K D1 GM Shutter',0);
 setDigitalChannel(calctime(curtime,0),'K D1 GM Shutter 2',1);
 
-loadK = 0;
-loadRb = 1;
+loadK = 1;
+loadRb = 0;
 
 % MOT Load
 

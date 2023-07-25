@@ -79,7 +79,7 @@ defVar('UV_on_time',10000,'ms');                    % Can be just added onto the
 % beginning of the sequence and the MOT is given time to load.
 
 seqdata.flags.MOT_load_at_start             = 0; %do a specific load time
-defVar('MOT_controlled_load_time',2000,'ms');
+defVar('MOT_controlled_load_time',10000,'ms');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -100,7 +100,7 @@ seqdata.flags.MOT_optical_pumping           = 1; % optical pumping for MT
 seqdata.flags.MOT_load_to_MT                = 0; % Makes things worse?
 
 % K CMOT parameters
-defVar('cmot_k_trap_detuning',5,'MHz');5;
+defVar('cmot_k_trap_detuning',2,'MHz');5;
 defVar('cmot_k_repump_detuning',0,'MHz');0;
 defVar('cmot_k_trap_power',0.5,'V');0.5;
 defVar('cmot_k_repump_power',0.25,'V');0.25;
@@ -116,7 +116,7 @@ defVar('cmot_rb_ramp_time',20,'ms');20;
 defVar('cmot_grad',10,'G/cm');
 
 % Rb Molasses
-defVar('mol_rb_trap_detuning',-81,'MHz');
+defVar('mol_rb_trap_detuning',[-110],'MHz');-110;-81;
 defVar('mol_rb_trap_power',0.15,'V');
 defVar('mol_rb_repump_power',0.08,'V');
 defVar('mol_rb_time',8,'ms');
@@ -126,7 +126,7 @@ defVar('mol_kd1_single_photon_detuning_shift',0,'MHz');
 defVar('mol_kd1_trap_power_start',1.3,'V');
 defVar('mol_kd1_trap_power_end',1.3,'V');
 defVar('mol_kd1_two_photon_detuning',0,'MHz');
-defVar('mol_kd1_sideband_power',4,'dBm');
+defVar('mol_kd1_sideband_power',[8],'dBm');
 defVar('mol_kd1_time',8,'ms');
 
 seqdata.params.Mol_shim = [];
@@ -259,7 +259,7 @@ seqdata.flags.xdt_high_field_a              = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
-seqdata.flags.lattice                       = 1; 
+seqdata.flags.lattice                       = 0; 
 
 
 seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate

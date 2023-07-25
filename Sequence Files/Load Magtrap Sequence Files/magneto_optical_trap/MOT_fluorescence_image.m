@@ -41,18 +41,20 @@ global seqdata
     %%%%%%%%%%%%%% Perform fluoresence imaging %%%%%%%%%%%%
     switch seqdata.flags.image_atomtype
         case 1
+            % 30 dB gain works with 64 us exposure
             setDigitalChannel(calctime(curtime,0),'K Trap TTL',0); 
             setDigitalChannel(calctime(curtime,0),'K Repump TTL',0); 
             setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);  
             
-            setDigitalChannel(calctime(curtime,1),'K Trap TTL',1); 
-            setDigitalChannel(calctime(curtime,1),'K Repump TTL',1); 
+            setDigitalChannel(calctime(curtime,5),'K Trap TTL',1); 
+            setDigitalChannel(calctime(curtime,5),'K Repump TTL',1); 
         case 0
+            % 10 dB gain works with 64 us exposure
             setDigitalChannel(calctime(curtime,0),'K Trap TTL',1); 
             setDigitalChannel(calctime(curtime,0),'K Repump TTL',1); 
             setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);  
             
-            setDigitalChannel(calctime(curtime,1),'Rb Trap TTL',1);  
+            setDigitalChannel(calctime(curtime,3),'Rb Trap TTL',1);  
     end 
 
     % Camera Trigger (1) : Light+Atoms

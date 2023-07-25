@@ -140,17 +140,18 @@ if seqdata.flags.MOT_Mol == 1
 
     %%%%%%%%%%%% K D1 GM Settings %%%%%%%%%%%%
     % K D1 GM two photon detuning
-    SRS_det_list = [0];%0
-    SRS_det = getScanParameter(SRS_det_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'GM_SRS_det');
+%     SRS_det_list = [0];%0
+%     SRS_det = getScanParameter(SRS_det_list,seqdata.scancycle,...
+%         seqdata.randcyclelist,'GM_SRS_det');
 
     % K D1 GM two photon sideband power
-    SRSpower_list = [4];   %%8
-    SRSpower = getScanParameter(SRSpower_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'SRSpower');
+%     SRSpower_list = [4];   %%8
+%     SRSpower = getScanParameter(SRSpower_list,seqdata.scancycle,...
+%         seqdata.randcyclelist,'SRSpower');
+    SRSpower = getVar('mol_kd1_sideband_power');
 
     % Set the two-photon detuning (SRS)
-    SRSAddress = 27; rf_on = 1; SRSfreq = 1285.8+SRS_det;%1285.8
+    SRSAddress = 27; rf_on = 1; SRSfreq = 1285.8+getVar('mol_kd1_two_photon_detuning');%1285.8
     addGPIBCommand(SRSAddress,...
         sprintf('FREQ %fMHz; AMPR %gdBm; MODL 0; DISP 2; ENBR %g; FREQ?',...
         SRSfreq,SRSpower,rf_on));

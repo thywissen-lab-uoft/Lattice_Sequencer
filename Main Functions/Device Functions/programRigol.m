@@ -92,13 +92,21 @@ cmds.CLOCK_SOURCE=':SYSTEM:ROSCILLATOR:SOURCE';         % Technically a global c
 
 cmds.LOAD=':OUTPUT<n>:LOAD';                                    % INF, 50 OHM
 cmds.STATE=':OUTPUT<n>:STATE';                                  % ON, OFF
+cmds.POL=':OUTPUT<n>:POL';
 
-cmds.FREQUENCY=':SOURCE<n>:FREQUENCY';                               % Hz
+cmds.FREQUENCY=':SOURCE<n>:FREQUENCY';                          % Hz
 cmds.AMPLITUDE_UNIT=':SOURCE<n>:VOLTAGE:UNIT';                  % 
 cmds.AMPLITUDE=':SOURCE<n>:VOLTAGE:LEVEL:IMMEDIATE:AMPLITUDE';  % VPP VRMS DBM
 cmds.BURST=':SOURCE<n>:BURST:STATE';                            % ON, OFF
+cmds.FUNC = ':SOURCE<n>:FUNC';                                  % SIN, SQU, etc.
+
+cmds.PULSETIME = ':SOURCE<n>:FUNC:PULSE:WIDTH';
+cmds.PULSELEADTIME = ':SOURCE<n>:FUNC:PULSE:TRANSITION:LEADING';
+cmds.PULSETRAILTIME = ':SOURCE<n>:FUNC:PULSE:TRANSITION:TRAILING';
+
 cmds.MOD=':SOURCE<n>:MOD:STATE';                                % ON, OFF
 cmds.SWEEP=':SOURCE<n>:SWEEP:STATE';                            % ON, OFF
+cmds.OFFSET=':SOURCE<n>:VOLTAGE:LEVEL:IMMEDIATE:OFFSET';        % V
 
 % Specific to SWEEP mode
 cmds.SWEEP_FREQUENCY_CENTER=':SOURCE<n>:FREQUENCY:CENTER';  % Hz
@@ -107,8 +115,8 @@ cmds.SWEEP_TIME=':SOURCE<n>:SWEEP:TIME';                    % seconds
 cmds.SWEEP_TYPE=':SOURCE<n>:SWEEP:SPACING';                 % LIN, LOG, STE
 cmds.SWEEP_TRIGGER=':SOURCE<n>:SWEEP:TRIGGER:SOURCE';       % INT, EXT, MAN
 cmds.SWEEP_TRIGGER_SLOPE=':SOURCE<n>:SWEEP:TRIGGER:SLOPE';  % POS,NEG
-cmds.SWEEP_HOLDTIME_STOP='SOURCE<n>:SWEEP:HTIME:STOP';      % seconds
-cmds.SWEEP_HOLDTIME_START='SOURCE<n>:SWEEP:HTIME:START';    % seconds
+cmds.SWEEP_HOLDTIME_STOP=':SOURCE<n>:SWEEP:HTIME:STOP';      % seconds
+cmds.SWEEP_HOLDTIME_START=':SOURCE<n>:SWEEP:HTIME:START';    % seconds
 
 % Specific to BURST MODE
 cmds.BURST_MODE=':SOURCE<n>:BURST:MODE';                    % TRIG, GAT, INF
@@ -116,7 +124,10 @@ cmds.BURST_TRIGGER=':SOURCE<n>:BURST:TRIGGER:SOURCE';       % INT, EXT, MAN
 cmds.BURST_TRIGGER_SLOPE=':SOURCE<n>:BURST:TRIGGER:SLOPE';  % POS, NEG
 cmds.BURST_PHASE=':SOURCE<n>:BURST:PHASE';                  % degress (also be 0?)
 cmds.BURST_NCYCLES=':SOURCE<n>:BURST:NCYCLES';              % Number of cycles
+cmds.BURST_IDLE = ':SOURCE<n>:BURST:IDLE';                  % Final value after burst
 
+% Override to DC value
+cmds.DC = ':SOURCE<n>:APPLY:DC';
 %% Notify the user
 disp(' ');
 
@@ -157,13 +168,13 @@ end
 %% Read
 try 
     % Read channe 1 and channel 2 settings.
-    if ~isempty(ch1_set)    
-        ch1_get=readRigol(1);
+    if ~isempty(ch1_set)            
+%         ch1_get=readRigol(1);
 %         disp(ch1_get)
     end
     
     if ~isempty(ch2_set)
-        ch2_get=readRigol(2);
+%         ch2_get=readRigol(2);
 %         disp(ch2_get)
     end
 catch ME    
@@ -172,7 +183,6 @@ catch ME
 end
 
 %% Close Connect and Delete
-
 fclose(obj);
 delete(obj);
 
@@ -182,18 +192,32 @@ delete(obj);
         out=struct;
         out.NAME=['OUTPUT' num2str(ch)];
         fnames=fieldnames(cmds);
-
         for kk=1:length(fieldnames(cmds))
             str=cmds.(fnames{kk});              % Get the command for this parameter
             str=strrep(str,'<n>',num2str(ch));  % Replace <n> with the channel  
             str=[str '?'];                      % Add question mark for query
             out.(fnames{kk})=strtrim(query(obj,str));
+            disp(out.(fnames{kk}));
         end       
     end
+% 
+%     function out=readRigol2(ch)
+%         out=struct;
+%         out.NAME=['OUTPUT' num2str(ch)];
+%         fnames=fieldnames(cmds);
+%         for kk=1:length(fieldnames(cmds))
+%             str=cmds.(fnames{kk});              % Get the command for this parameter
+%             str=strrep(str,'<n>',num2str(ch));  % Replace <n> with the channel  
+%             str=[str '?'];                      % Add question mark for query
+%             out.(fnames{kk})=strtrim(query(obj,str));
+%             disp(out.(fnames{kk}));
+%         end       
+%     end
 
     function writeRigol(ch,ch_set)              
         fnamesSet=fieldnames(ch_set);   % All field names in the write
         fnamesAll=fieldnames(cmds);     % All possible field names
+
         for kk=1:length(fnamesSet)
             fname=fnamesSet{kk};    % This field name
             
@@ -204,10 +228,10 @@ delete(obj);
                 if isnumeric(ch_set.(fname))
                     % Convert number to string
                     str=[str ' ' sprintf('%g',ch_set.(fname))];
-                else
+                                 else
                     % Assumed you gave me string otherwise
                     str=[str ' ' ch_set.(fname)];
-                end                
+                end 
                 fprintf(obj,str);
             end
         end       

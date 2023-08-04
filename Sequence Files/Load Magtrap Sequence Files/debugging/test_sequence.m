@@ -5665,16 +5665,16 @@ end
 
 % % 
 %     setDigitalChannel(calctime(curtime,0),'PA TTL',0); % Open shutter
-    setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0); % Set 
-    setDigitalChannel(calctime(curtime,0),'Kill TTL',1); % inverted logic
-    
-        mod_freq =  (120)*1E6;
-    mod_amp_list = [2]; 0.1;
-    mod_amp = getScanParameter(mod_amp_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'k_kill_power','V');
-    mod_offset =0;
-    str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
-    addVISACommand(8, str);  %Device 8 is the new kill beam Rigol changed on July 10, 2021
+%     setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0); % Set 
+%     setDigitalChannel(calctime(curtime,0),'Kill TTL',1); % inverted logic
+%     
+%         mod_freq =  (120)*1E6;
+%     mod_amp_list = [2]; 0.1;
+%     mod_amp = getScanParameter(mod_amp_list,...
+%         seqdata.scancycle,seqdata.randcyclelist,'k_kill_power','V');
+%     mod_offset =0;
+%     str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
+%     addVISACommand(8, str);  %Device 8 is the new kill beam Rigol changed on July 10, 2021
 
 % setAnalogChannel(calctime(curtime,0),'D1 DP',-3)
 % setDigitalChannel(calctime(curtime,0),'EIT Probe TTL',0)
@@ -5701,9 +5701,154 @@ end
 %       setDigitalChannel(calctime(curtime,3),'RF TTL',0);
 %       curtime = calctime(curtime,T60);
 %     
-% end     
+% end  
+
+%% Test ODT Modulation
 
 
+
+    %Set a random analog channel because we need to
+    setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0);
+    setDigitalChannel(calctime(curtime,0),'XDT TTL',0);
+
+    curtime = calctime(curtime,10);
+% 
+% % OFF Channel settings
+% 
+% defVar('Vpp',[1],'V')
+% 
+%     mod_pp = abs(getVar('Vpp')); %V
+%     mod_time = 100; %ms
+%     mod_freq = 0.5/(mod_time*0.001);
+%     
+%     mod_offset = getVar('Vpp')/2;
+%     if mod_offset > 0
+%         mod_phase = 359;
+%     else
+%       mod_phase = 179;
+%     end
+%     
+%     
+%     addr_odt1 = 12;
+% 
+%     ch_off = struct;
+%     ch_off.OFFSET = 0;
+% 
+%     % ON Channel Settings
+%     ch_on=struct;
+% 
+%     ch_on.FREQUENCY=mod_freq;     % Modulation Frequency
+%     ch_on.OFFSET = mod_offset;
+%     ch_on.AMPLITUDE = mod_pp;
+%     ch_on.AMPLITUDE_UNIT='VPP';   % Unit of modulation (Volts PP)
+%     ch_on.FUNC = 'SQU';
+%     ch_on.BURST_PHASE = mod_phase;
+%     ch_on.SWEEP='OFF';
+%     ch_on.MOD='OFF';
+%     ch_on.BURST='ON';             % Burst MODE 
+%     ch_on.BURST_MODE='GATED';     % Trig via the gate
+%     ch_on.BURST_TRIGGER_SLOPE='POS';% Positive trigger slope
+%     ch_on.BURST_TRIGGER='EXT';    % External trigger.    
+%     ch_on.STATE = 'ON';
+%     
+%     % Ramp dipole 1 trap on
+% % AnalogFunc(calctime(curtime,dipole_ramp_start_time),...
+% %     'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+% %     dipole_ramp_up_time,dipole_ramp_up_time,...
+% %     seqdata.params.ODT_zeros(1),DT1_power(1));
+% 
+% %     setAnalogChannel(calctime(curtime,-5),'dipoleTrap1',0.02);
+% %     setAnalogChannel(calctime(curtime,-5),'dipoleTrap2',-1);
+% 
+%     
+%     %Turn on odt1 modulation
+%     programRigol(addr_odt1,ch_on,[]);
+%     
+%     setDigitalChannel(calctime(curtime,0),'ODT Piezo Mod TTL',1);
+%     
+% %     %Keep on for a set time
+%     curtime=calctime(curtime,mod_time);     
+%     setDigitalChannel(calctime(curtime,0),'ODT Piezo Mod TTL',0);    
+% %     setAnalogChannel(calctime(curtime,5),'dipoleTrap1',-1);
+% %     setAnalogChannel(calctime(curtime,5),'dipoleTrap2',-1);
+% %     setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
+% 
+%  %Turn off odt1 modulation
+% %     programRigol(addr_odt1,ch_off,[]);
+
+    setAnalogChannel(calctime(curtime,-5),'dipoleTrap1',.1);
+    setAnalogChannel(calctime(curtime,-5),'dipoleTrap2',.01);
+    
+    curtime=calctime(curtime,1000);
+
+curtime = lattice_conductivity_new(curtime);
+
+    setAnalogChannel(calctime(curtime,5),'dipoleTrap1',-1);
+    setAnalogChannel(calctime(curtime,5),'dipoleTrap2',-1);
+    
+%     defVar('ODT1_piezo_mod_Vpp',[8],'V')
+%     defVar('Modulation_time',[322],'ms')
+% 
+%     mod_pp = abs(getVar('ODT1_piezo_mod_Vpp')); %V
+%     mod_time = getVar('Modulation_time'); %ms
+%     mod_freq = 40; %Hz
+%     mod_phase = 0; % deg
+%     mod_offset = 0; % V
+%     final_mod_amp = 10;
+%     
+%     addr_odt1 = 12;
+%     
+%      
+%         % ON Channel Settings
+%     ch_on=struct;
+% 
+%     ch_on.FREQUENCY=mod_freq;     % Modulation Frequency
+%     ch_on.OFFSET = mod_offset;
+%     ch_on.AMPLITUDE = mod_pp;
+%     ch_on.AMPLITUDE_UNIT='VPP';   % Unit of modulation (Volts PP)
+%     ch_on.FUNC = 'SIN';
+%     ch_on.BURST_PHASE = mod_phase;
+%     ch_on.SWEEP='OFF';
+%     ch_on.MOD='OFF';
+%     ch_on.BURST='ON';             % Burst MODE 
+%     ch_on.BURST_MODE='GATED';     % Trig via the gate
+%     ch_on.BURST_TRIGGER_SLOPE='POS';% Positive trigger slope
+%     ch_on.BURST_TRIGGER='EXT';    % External trigger.   
+%     ch_on.BURST_IDLE = (2^16-1)*(sin(2*pi*mod_freq*mod_time/1000)+1)/2;
+%     ch_on.STATE = 'ON';
+%     
+%     %set modulation amplitude to zero
+%      setAnalogChannel(curtime,'Modulation Ramp',-10,1);%0 means output is 0* input, 1 means output is 1*input;
+%      
+%      %wait a hot second
+% curtime = calctime(curtime,10);
+%     
+%     %program odt1 modulation RIGOL
+% %     programRigol(addr_odt1,ch_on,[]);
+%     
+%     %program odt modulation the same for both channels
+%     programRigol(addr_odt1,ch_on,ch_on);
+%  
+%     setDigitalChannel(calctime(curtime,0),'ODT Piezo Mod TTL',1);
+%     
+%     
+%         %ramp the modulation on 
+%         defVar('mod_ramp_time',100,'ms')
+%         mod_ramp_time = getVar('mod_ramp_time'); %how fast to ramp up the modulation amplitude
+%         AnalogFunc(calctime(curtime,0),'Modulation Ramp',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), mod_ramp_time, mod_ramp_time,-10,10,1); 
+% %         AnalogFunc(calctime(curtime,mod_time-mod_ramp_time),'Modulation Ramp',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), mod_ramp_time, mod_ramp_time,10,-10,1); 
+% 
+%     
+%     %Do the modulation
+% curtime=calctime(curtime,mod_time); 
+% 
+%     %Turn off odt1 modulation
+%     setDigitalChannel(calctime(curtime,0),'ODT Piezo Mod TTL',0);
+%     curtime=calctime(curtime,20); 
+%     setAnalogChannel(curtime,'Modulation Ramp',-10,1);
+%     
+    
+    
 timeout = curtime;
 % SelectScopeTrigger('PA_Pulse');
 

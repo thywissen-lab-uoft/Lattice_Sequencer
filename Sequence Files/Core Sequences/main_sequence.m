@@ -78,7 +78,7 @@ end
 % CF: All of these should be put into some separate reset code
 
 %Initialize modulation ramp to off.
-setAnalogChannel(calctime(curtime,0),'Modulation Ramp',0);
+setAnalogChannel(calctime(curtime,0),'Modulation Ramp',-10,1);
 
 %Initialize the Raman VVA to on.
 setAnalogChannel(calctime(curtime,0),'Raman VVA',9.9);
@@ -269,7 +269,7 @@ end
 
 if seqdata.flags.transport
     dispLineStr('Magnetic Transport',curtime);
-
+    DigitalPulse(calctime(curtime,0),'PA LabJack Trigger',50,1)
     % Open kitten relay
     curtime = setDigitalChannel(curtime,'Kitten Relay',1);
     
@@ -452,6 +452,7 @@ if seqdata.flags.image_type == 0
         setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));
         % I think this channel is unused now
         setDigitalChannel(calctime(curtime,-1),'XDT Direct Control',1);
+       
     end          
 
     % Turn off lattices (if they haven't already turned off)

@@ -74,7 +74,7 @@ seqdata.digchannels(31).name = 'fast FB Switch';    % 1 = on (make sure channel 
 seqdata.digchannels(32).name = 'iXon Trigger';
 seqdata.digchannels(33).name = 'Shim Relay';        % 1 = on (MOT Shims) (BAD CHANNEL? CF 2023/03/13)
 seqdata.digchannels(34).name = 'yLatticeOFF';       % Controls all 3 lattice beams (i.e. Lattice TTL)
-seqdata.digchannels(35).name = 'EIT Probe TTL';            % TTL for the EIT probe AOMs; 1: ON; 0 : OFF
+seqdata.digchannels(35).name = 'EIT Probe TTL';     % TTL for the EIT probe AOMs; 1: ON; 0 : OFF
 seqdata.digchannels(36).name = 'EIT Shutter';       % Shutter for EIT probe beam paths
 seqdata.digchannels(37).name = 'Reverse QP Switch'; % MOSFET to switch direction of QP  
 seqdata.digchannels(37).resetvalue = 0;
@@ -139,8 +139,8 @@ seqdata.digchannels(77).name = 'ODT Rigol Trigger';   % unused
 seqdata.digchannels(78).name = 'DDS Rb Trap Trigger'; % To trigger the DDS that sets the offset lock
 seqdata.digchannels(79).name = 'PA TTL';              % For testing Vortex as PA laser (1: ON)
 seqdata.digchannels(80).name = 'PA Shutter';          % For testing Vortex as PA laser (0: ON)
-seqdata.digchannels(81).name = 'ODT Piezo Mod. TTL';        % TTL for the piezo modulation
-seqdata.digchannels(82).name = 'Channel 82';        % unused
+seqdata.digchannels(81).name = 'ODT Piezo Mod TTL';        % TTL for the piezo modulation
+seqdata.digchannels(82).name = 'QPD Monitor Trigger';      % To trigger LabJack/scope for monitoring QPDs (Added 2023.08.02)
 seqdata.digchannels(83).name = 'Channel 83';        % unused
 seqdata.digchannels(84).name = 'Channel 84';        % unused
 seqdata.digchannels(85).name = 'Channel 85';        % unused
@@ -515,11 +515,11 @@ end
     seqdata.analogchannels(31).defaultvoltagefunc = 2;
     seqdata.analogchannels(31).voltagefunc{2} = @(a)(a);
     
-    %channel 32 (Ramp on modulation)
+    %channel 32 (Ramp on modulation) VGA gain for conductivity
     seqdata.analogchannels(32).name = 'Modulation Ramp';
     seqdata.analogchannels(32).minvoltage = -10;
     seqdata.analogchannels(32).maxvoltage = 10;
-    seqdata.analogchannels(32).defaultvoltagefunc = 2;
+    seqdata.analogchannels(32).defaultvoltagefunc = 1;
     seqdata.analogchannels(32).voltagefunc{2} = @(a)max(min((20*a-10),10),-10);%@(a)((log10(a) + 1) * (-5/2)); %Roughly linearizing.
     seqdata.analogchannels(32).voltagefunc{3} = @(a)((a-151.64)/8.2101);
     

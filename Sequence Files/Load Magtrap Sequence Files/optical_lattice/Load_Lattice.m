@@ -47,7 +47,8 @@ seqdata.flags.lattice_hold_at_end = 0;
 % Conductivity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % These flags are associated with the conducitivity experiment
-seqdata.flags.do_conductivity = 0;      
+seqdata.flags.lattice_conductivity = 0;  
+seqdata.flags.lattice_conductivity_new = 0; %New sequence created July 25th, 2023
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy
@@ -65,8 +66,8 @@ do_RF_spectroscopy = 0;                 % (3952,4970)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-seqdata.flags.lattice_do_optical_pumping    = 1;                 % (1426) keep : optical pumping in lattice  
-seqdata.flags.do_plane_selection            = 1;                 % Plane selection flag
+seqdata.flags.lattice_do_optical_pumping    = 0;                 % (1426) keep : optical pumping in lattice  
+seqdata.flags.do_plane_selection            = 0;                 % Plane selection flag
 
 % Actual fluorsence image flags - NO LONGER USED
 seqdata.flags.Raman_transfers               = 0;
@@ -92,7 +93,8 @@ seqdata.flags.lattice_bandmap               = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other Parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
-
+    defVar('piezo_val',[74],'V')
+getVar('piezo_val')
 
 %% Other parameters
 % To be consolidated and simplified.
@@ -162,13 +164,13 @@ if seqdata.flags.lattice_lattice_ramp_1
             % by a quick snap to a pinning lattice depth
             
             % Initial lattice depth
-            initial_latt_depth_list = 5;14;%5, 10;
+            initial_latt_depth_list = 2;5;14;%5, 10;
             init_depth = getScanParameter(initial_latt_depth_list,...
                 seqdata.scancycle,seqdata.randcyclelist,...
                 'initial_latt_depth','Er');
             
             % Final lattice depth to ramp to
-            defVar('U1',[60]);
+            defVar('U1',[2]);60;
             U = getVar('U1');
 
             %%% Lattice %%%
@@ -234,7 +236,7 @@ if seqdata.flags.lattice_lattice_ramp_1
             % insitu position measured here. (Use a TOF~0);
             % This also is used for lattice alignment with the ixon.
             
-            U_align = 200; % Lattice depth to align to
+            U_align = 20; % Lattice depth to align to
             % Simple square ramp of only one lattice 
             
             %Select the lattice direction to load
@@ -499,8 +501,15 @@ end
 
 %% Conductivity Experiment
 
-if (seqdata.flags.do_conductivity == 1 )
+if (seqdata.flags.lattice_conductivity == 1 )
    curtime = lattice_conductivity(curtime);
+end
+
+if (seqdata.flags.lattice_conductivity_new == 1)
+   curtime = lattice_conductivity_new(curtime);
+   
+   curtime = calctime(curtime,50);
+   
 end
 
 
@@ -878,11 +887,11 @@ if seqdata.flags.lattice_lattice_ramp_2
         seqdata.scancycle,seqdata.randcyclelist,'latt_ramp2_time','ms');    
     
     % Lattice Depth Request
-    defVar('lattice_FI_depth_X',1000,'Er');
-    defVar('lattice_FI_depth_Y',1000,'Er');
-    defVar('lattice_FI_depth_Z',1000,'Er');    
+    defVar('lattice_FI_depth_X',60,'Er');1000;
+    defVar('lattice_FI_depth_Y',60,'Er');1000;
+    defVar('lattice_FI_depth_Z',60,'Er');1000;
     
-    imaging_depth_list = 1000;
+    imaging_depth_list = 60; 1000;
     imaging_depth = getScanParameter(imaging_depth_list,seqdata.scancycle,...
         seqdata.randcyclelist,'FI_latt_depth','Er'); 
 
@@ -922,6 +931,11 @@ if seqdata.flags.lattice_lattice_ramp_2
             end
         end
 curtime =   calctime(curtime,lat_rampup_imaging_time(j));
+    end
+    
+    %Turn off the xdt modulation after pinning
+    if seqdata.flags.lattice_conductivity_new == 1
+        setDigitalChannel(calctime(curtime,0),'ODT Piezo Mod TTL',0);
     end
     
     % Turn off dipole traps
@@ -996,7 +1010,7 @@ if seqdata.flags.lattice_PA
     curtime = PA_pulse(curtime);
 end
 
-%% Raman Spec
+%% Fluorescence Imaging (current code)
 
 if seqdata.flags.lattice_fluor
     
@@ -1025,11 +1039,17 @@ if seqdata.flags.lattice_fluor
         %   seqdata.params.IxonTriggerTypes{end+1}='clear'
 
     end
-    curtime = lattice_FL(curtime);  
+    % Trigger the QPD monitor scope/LabJack 
+    DigitalPulse(curtime,'QPD Monitor Trigger',10,1);
+    
+    curtime = lattice_FL(curtime);
+    
+     
+
 end
 
 
-%% Fluorescence Imaging
+%% Fluorescence Imaging (Legacy code)
 
 
 % Plane Selection (earlier)

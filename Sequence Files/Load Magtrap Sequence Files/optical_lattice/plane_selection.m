@@ -32,7 +32,7 @@ opts.planeselect_doMicrowaveBack = 1;
 opts.planeselect_doFinalRepumpPulse = 0;
 
 %Repeat plane selection
-opts.planeselect_again = 1;
+opts.planeselect_again = 0;
 
 
 % Choose the Selection Mode

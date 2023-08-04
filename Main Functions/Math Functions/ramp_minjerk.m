@@ -5,6 +5,8 @@
 %------
 
 function out = ramp_minjerk(t,tt,y1,y2)
+% t time when to eval
+% tt ramp time
 % ramp_exponential(t,tt,initial,final)
 
 if tt==0 && (y2-y1)==0

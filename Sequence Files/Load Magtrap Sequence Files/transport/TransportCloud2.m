@@ -1,7 +1,52 @@
-% TransportCloud2
-%
-% This is CF's attempt at rewriting this code.
+
 function timeout = TransportCloud2(timein,opts)
+% TransportCloud2.m
+%
+% Author : C. Fujiwara
+% Date : 2023/08/14
+%
+% This is CF's attempt at rewriting this code. This code really sucked to
+% begin with, so forgive me if its still bad.
+%
+% Magnetic transport is one of the most complicated things that we do.
+%
+% The code for this is conceptually split into the following :
+%
+% (A) What are [x(t),z(t)]? Here, x(t) is horizontal transport distance and 
+%     and z(t) is the vertical transport distance.  This needs to be smooth
+%     to not shake the atoms around.
+%
+% (B) What are the gradients along the distance G_x(x,z),G_y(x,z),G_z(x,z)?
+%     This characterizes the strength of the magnetic trap.  For physics
+%     reasons this should held as constant as possible to avoid heating.
+%
+% (B) What are the set of currents {I(x,z}} given the constraints on
+%     reasonable restrictions on the gradient?
+%
+% (D) What are the time varying currents {I(t)} to produce the desired G(t)
+%     and [x(t), z(t)].
+%
+%
+%
+% (A) The distance curve is defined by the user in this code and can be
+% changed if someone would like test different parts of the transport. For
+% example if you wanted to test the adiabaticity of transport or you wanted
+% to round trip measurements.
+%
+% (B) The desired gradients [G(x,z)] are specified by the user in some external
+% code.  The achievable gradients are limited by the geometry of the coils
+% as well as reasonable constraints on the amount of current running
+% through the system.
+%
+% (C) The set of currents are then calculated by external code using the
+% physical parameters of the coils.  This can be very tricky because it
+% depends on how accurately the coils are wound and also wear they are
+% mounted.
+%
+% (D) This is simply done by the parametrization {I((x(t),z(t))}.
+
+%%
+
 
 curtime = timein;
 global seqdata;
@@ -39,39 +84,35 @@ curtime = AnalogFunc(calctime(curtime,0),0, ...
 
 %% Vertical Transport
 
-vert_lin_trans_times = [450 250 450 800 450 250 500 200 150 500 500 300];
-vert_lin_trans_distances = [0 20  40  60  80  100 120 140 151 154 160 173.9 174];
+% Duration of each segment
+vert_lin_trans_times = [450 250 450 800 450 250 500 200 150 500 500 300]; % N
+
+% Endpoints of each segment (MAKE SURE THE LAST ONE IS 174)
+vert_lin_trans_distances = [0 20 40 60 80 100 120 140 151 154 160 173.9 174]; % N+1
             
 
-percent_trans = 1;
+% Copy them
 dist_temp = vert_lin_trans_distances;
 time_temp = vert_lin_trans_times;
 
+% Position starts at 0
 vert_lin_trans_distances = [0];
+
+% No sweeps just yet
 vert_lin_trans_times = [];
 
+% Iterate over distance endpoints
 for ii = 2:length(dist_temp)
-
-    if percent_trans==0
-        break;
-    end
-
-    if dist_temp(ii) < (percent_trans*174)
+        disp('increasing the damn thing');
         vert_lin_trans_distances(ii) = dist_temp(ii);
         vert_lin_trans_times(ii-1) = time_temp(ii-1);
-    else
-        vert_lin_trans_distances(ii) = (percent_trans*174);
-        vert_lin_trans_times(ii-1) = ((percent_trans*174)-dist_temp(ii-1))*time_temp(ii-1)/(dist_temp(ii)-dist_temp(ii-1));
-        break;
-    end
 end     
 
 vert_lin_total_time = zeros(size(vert_lin_trans_distances));
 for ii = 2:length(vert_lin_trans_distances)
-vert_lin_total_time(ii) = vert_lin_total_time(ii-1) + vert_lin_trans_times(ii-1);
+    vert_lin_total_time(ii) = vert_lin_total_time(ii-1) + vert_lin_trans_times(ii-1);
 end             
 vert_pp = pchip(vert_lin_total_time,vert_lin_trans_distances+horiz_length);  
-DigitalPulse(curtime,12,100,1);
 
 
 % Where the currents actually get set (special arguement)

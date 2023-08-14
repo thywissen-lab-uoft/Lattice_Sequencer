@@ -90,38 +90,22 @@ elseif hor_transport_type  == 1
      
 %RHYS - Here is the call to analog func that determines horizontal transport currents.     
 curtime = AnalogFunc(calctime(curtime,0),0,@(t,d1,t1,dm,tm,d2,t2)(for_hor_minimum_jerk(t,d1,t1,dm,tm,d2,t2)),T1+Tm+T2,D1,T1,Dm,Tm,D2,T2);
-    
-% CF: Some kind of error handling which I don't understand
-    if (ver_transport_distance~=0 && ver_transport_type==0) || ...
-            ((D1Vert + DmVert + D2Vert)~=0 && ver_transport_type==1) || ...
-            (length(vert_lin_trans_distances)>1 && ver_transport_type==3)||...
-            ((Dtriple1+Dtriple1+Dtriple1)~=0 && ver_transport_type==4)  
-           
-          if ver_transport_type==0       
-              
-          elseif ver_transport_type==1
-          
-          %RHYS - We typically use this.
-          elseif ver_transport_type==3          
-              vert_lin_total_time = zeros(size(vert_lin_trans_distances));
-              for ii = 2:length(vert_lin_trans_distances)
-                vert_lin_total_time(ii) = vert_lin_total_time(ii-1) + vert_lin_trans_times(ii-1);
-              end             
-              vert_pp = pchip(vert_lin_total_time,vert_lin_trans_distances+horiz_length);  
-              DigitalPulse(curtime,12,100,1);
-              
-              %RHYS - I think this is where the vertical transport currents
-              %are set.
-              curtime = AnalogFunc(calctime(curtime,0),0,@(t,tt,aa)(ppval(aa,t)),vert_lin_total_time(end),vert_lin_total_time(end),vert_pp);
-            
-          elseif ver_transport_type==4             
 
-          else             
-              
-          end
+%% Vertical Transport
+
+      vert_lin_total_time = zeros(size(vert_lin_trans_distances));
+      for ii = 2:length(vert_lin_trans_distances)
+        vert_lin_total_time(ii) = vert_lin_total_time(ii-1) + vert_lin_trans_times(ii-1);
+      end             
+      vert_pp = pchip(vert_lin_total_time,vert_lin_trans_distances+horiz_length);  
+      DigitalPulse(curtime,12,100,1);
+
+      %RHYS - I think this is where the vertical transport currents
+      %are set.
+      curtime = AnalogFunc(calctime(curtime,0),0,@(t,tt,aa)(ppval(aa,t)),vert_lin_total_time(end),vert_lin_total_time(end),vert_pp);
+
+      curtime = calctime(curtime,ver_wait_time);
           
-          curtime = calctime(curtime,ver_wait_time);
-    end      
 end
 
 

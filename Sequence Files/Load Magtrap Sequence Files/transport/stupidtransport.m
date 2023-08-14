@@ -26,7 +26,6 @@ end
 %define the transport parameters
 
 %% Spline Parameters
-% CF : The spline input data is just two numbers.  What is this?
 
 %import currents for spline
 vertical_scale = 1.0;
@@ -296,16 +295,13 @@ currentarray = zeros(length(time)*sum(enable),3);
 %go through for each channel
 j = 0;
 for i = 1:num_channels
-
     %indices for the current channel
-    channel_indices = ((i-1)*length(time)+1):(i*length(time));
-    
+    channel_indices = ((i-1)*length(time)+1):(i*length(time));    
     if i==21
         %for future considerations to keep current constant
         currentarray(channel_indices,3) = nullval;
         continue;
-    end
-    
+    end    
     currentarray(channel_indices,1) = time;
     currentarray(channel_indices,2) = transport_channels(i);
     % implemented July 2016; ST
@@ -314,39 +310,30 @@ for i = 1:num_channels
     else
         currentarray(channel_indices,3) = nullval;
         continue;        
-    end
-    
+    end    
     %digital channels
     if transport_channels(i)<0 
         %see when it switches and set the digital channel high or low
         f = currentarray(channel_indices(2:end),3)-currentarray(channel_indices(1:(end-1)),3);
-        g = currentarray(channel_indices(1:(end-1)),1).*(f~=0);
-        
+        g = currentarray(channel_indices(1:(end-1)),1).*(f~=0);        
         ff = nonzeros(f);
-        gg = nonzeros(g);
-        
+        gg = nonzeros(g);        
         for j = 1:length(ff)
             if ff(j)==2
                 %set digital high
-                setDigitalChannel(gg(j),transport_channels(i)*-1,1);
-                
+                setDigitalChannel(gg(j),transport_channels(i)*-1,1);                
             elseif ff(j)==-2
                 %set digital low
-                setDigitalChannel(gg(j),transport_channels(i)*-1,0);
-                
+                setDigitalChannel(gg(j),transport_channels(i)*-1,0);                
             end
-        end
-        
+        end        
     end
     
     if i==1 %voltage channel, save for calculating powers later
         voltages = currentarray(channel_indices,3);
     end
     
-    if (~flag && i<=num_analog_channels)
-        
-        
-        
+    if (~flag && i<=num_analog_channels)          
         %check max FET power is not exceeded
         %NOTE: This should not be viewed as perfect...FET's may still fail
         if (transport_channels(i)~=18 && transport_channels(i)~=3) %skip the voltage and kitten channels
@@ -355,37 +342,27 @@ for i = 1:num_channels
                 warning(['FET Power exceeded for channel:' num2str(transport_channels(i))]);
             end
             
-        end
-        
+        end       
         %convert currents to channel voltages
         currentarray(channel_indices,3) = seqdata.analogchannels(transport_channels(i)).voltagefunc{2}(currentarray(channel_indices,3).*overallscale*coil_scale_factors(i)).*(currentarray(channel_indices,3)~=nullval)+...
             currentarray(channel_indices,3).*(currentarray(channel_indices,3)==nullval);
-
         %check the voltages are in range
         if sum((currentarray(channel_indices,3)~=nullval).*(currentarray(channel_indices,3)>seqdata.analogchannels(transport_channels(i)).maxvoltage))||...
                 sum((currentarray(channel_indices,3)~=nullval).*(currentarray(channel_indices,3)<seqdata.analogchannels(transport_channels(i)).minvoltage))
             error(['Voltage out of range when computing transport Channel:' num2str(transport_channels(i))]);
-        end
-        
-        
-        
-    end
-    
-    
-    
+        end       
+    end      
 end
 
 if flag
     ind = logical(currentarray(:,3)==nullval);
-    currentarray(ind,3) = 0;
-    
+    currentarray(ind,3) = 0;    
     y = zeros(num_analog_channels,length(position));
     for i = 1:num_analog_channels
         if (enable(i)) % implemented July 2016; ST
             y(i,:) = currentarray(((i-1)*length(position)+1):(i*length(position)),3);
         end
-    end
-       
+    end       
     return;
 end
 
@@ -396,80 +373,69 @@ currentarray = currentarray(ind,:);
 
 %return
 y = currentarray;
+%% 
+
+% I belive this function is the real meat which is where we are actually
+% use the splines to specify the current value.
 
 %sub function that calculates the current values of the different channels
-    function y = channel_current(channel,pos,offset,width,coilrange)
-       
+    function y = channel_current(channel,pos,offset,width,coilrange)       
         y = (pos<coilrange(1))*nullval;
-        y = y + (pos>=coilrange(2))*nullval;
-        
+        y = y + (pos>=coilrange(2))*nullval;        
         %indices of non-null value entries
-        ind = (y~=nullval);
-        
+        ind = (y~=nullval);        
         %put the position coordinates into the frame of the coil
         x = (pos(ind)-offset)/width;
-        
-
-            
-        switch channel
-            
+        switch channel            
             case 1  %This is the FF channel
-
+                % CF: The FF is in some sense, the most complicated because
+                % it is non-linear relationship to ALL the currents running
+                % from the power supply. It's probably not even a good idea
+                % to try to calculate anything.
+                %
+                % Because we operate the MOSFETs away from saturation for
+                % thermal reasons, the MOSFETs are probably close to being
+                % modeled as a resistor, whose values depends on the GS
+                % voltage. (But the GS votlage controls the current, so
+                % does this make a quadratic function more or less?)
+    
                  %FET + coil resistances
                  %MOT: 357mOhm
                  %Push:312.5mOhm
                  %Horiz Trans: 85mOhm
                  %12a: 167mOhm
-                 %12b: 192mOhm
-                
+                 %12b: 192mOhm                
                  %------------------------
                  %feedforward parameters
-                 %------------------------
-                 
- 
-                 
-                 
+                 %------------------------                        
                  %voltage when MOT trapping
-                 MOTvoltage = 10*overallscale; 
-                 
+                 MOTvoltage = 10*overallscale;                  
                  %ramp up and down for the push
                  maxpushvoltage = (30)*overallscale; %24/6.6 %27.66 for 1.2 
                  startpushramp = 10; %10
                  pushramppeak = 43; %40
-                 endpushramp = 60; %60
-                 
+                 endpushramp = 60; %60                 
                  %steady voltage for horizontal transfer stage
-                 horizontalvoltage = 9*overallscale; %9/6.6
-                 
-                 %steady_voltage =10/6.6;
-                 
+                 horizontalvoltage = 9*overallscale; %9/6.6 
                  %ramp up and down for the last horiz transport coil
                  maxhorizvoltage = 12.95*overallscale; %10/6.6
                  starthorizramp = 270; %260
                  peakhorizramp = 310;  %350
                  starthorizrampdown = 340;
-                 endhorizramp = 365; %360                 
-
-                  
+                 endhorizramp = 365; %360                     
                  %steady voltage for beginning of vertical transfer
-                 beginningverticalvoltage = 10.0*overallscale; %11/4 %12/4
-                 
-   
+                 beginningverticalvoltage = 10.0*overallscale; %11/4 %12/4      
                  %=============
                  %BE VERY CAREFUL HERE TO NOT DAMAGE THE BRIDGES!!!!
-                 %=============
-                 
+                 %=============                 
                  %DO NOT GO ABOVE 11.0 volts for the bridges...does not get
                  %more current due to circuit gate voltage limit (~14.3V)
                  
                  %initial_voltage
-                 initial_voltage = 10.0;
-                 
-                 num_vert_ramps = 6;
-                 
+                 initial_voltage = 10.0;                 
+                 num_vert_ramps = 6;                 
                  vert_voltage = zeros(2,num_vert_ramps);
-                 vert_volt_pos = zeros(2,num_vert_ramps+1);
-                 
+                 vert_volt_pos = zeros(2,num_vert_ramps+1);                 
                                  
                  %ramp 1
                  vert_voltage(1,1) = initial_voltage;
@@ -517,55 +483,33 @@ y = currentarray;
 %                   %horizontal voltage
 %                
                  %MOT Voltage
-                 y(ind) = y(ind) + MOTvoltage.*(pos(ind)<startpushramp);
-                 
+                 y(ind) = y(ind) + MOTvoltage.*(pos(ind)<startpushramp);                 
                  %Ramp up for the push
                  y(ind) = y(ind) + ((maxpushvoltage-MOTvoltage)/(pushramppeak-startpushramp).*(pos(ind)-startpushramp)+MOTvoltage).*(pos(ind)>=startpushramp).*(pos(ind)<pushramppeak);
-                 
                  %Ramp down for the middle of the horizontal
-                 y(ind) = y(ind) + ((horizontalvoltage-maxpushvoltage)/(endpushramp-pushramppeak).*(pos(ind)-pushramppeak)+maxpushvoltage).*(pos(ind)<endpushramp).*(pos(ind)>=pushramppeak);
-                 
+                 y(ind) = y(ind) + ((horizontalvoltage-maxpushvoltage)/(endpushramp-pushramppeak).*(pos(ind)-pushramppeak)+maxpushvoltage).*(pos(ind)<endpushramp).*(pos(ind)>=pushramppeak);                 
                  %Steady voltage for the horizontal
-                 y(ind) = y(ind) + horizontalvoltage.*(pos(ind)>=endpushramp).*(pos(ind)<starthorizramp);
-                 
+                 y(ind) = y(ind) + horizontalvoltage.*(pos(ind)>=endpushramp).*(pos(ind)<starthorizramp);                 
                  %Ramp up at the end of the horizontal
-                 y(ind) = y(ind) + ((maxhorizvoltage-horizontalvoltage)/(peakhorizramp-starthorizramp).*(pos(ind)-starthorizramp)+horizontalvoltage).*(pos(ind)>=starthorizramp).*(pos(ind)<peakhorizramp);
-                 
+                 y(ind) = y(ind) + ((maxhorizvoltage-horizontalvoltage)/(peakhorizramp-starthorizramp).*(pos(ind)-starthorizramp)+horizontalvoltage).*(pos(ind)>=starthorizramp).*(pos(ind)<peakhorizramp);                 
                  %hold after the ramp
-                 y(ind) = y(ind) + maxhorizvoltage.*(pos(ind)>=peakhorizramp).*(pos(ind)<starthorizrampdown);
-                 
-                y(ind) = y(ind) + ((beginningverticalvoltage-maxhorizvoltage)/(endhorizramp-starthorizrampdown).*(pos(ind)-starthorizrampdown)+maxhorizvoltage).*(pos(ind)<endhorizramp).*(pos(ind)>=starthorizrampdown);
-                
+                 y(ind) = y(ind) + maxhorizvoltage.*(pos(ind)>=peakhorizramp).*(pos(ind)<starthorizrampdown);                 
+                y(ind) = y(ind) + ((beginningverticalvoltage-maxhorizvoltage)/(endhorizramp-starthorizrampdown).*(pos(ind)-starthorizrampdown)+maxhorizvoltage).*(pos(ind)<endhorizramp).*(pos(ind)>=starthorizrampdown);                
                 y(ind) = y(ind) + beginningverticalvoltage.*(pos(ind)<365).*(pos(ind)>=endhorizramp);
-                %y(ind) = y(ind) + beginningverticalvoltage.*(pos(ind)<startverticalrampup).*(pos(ind)>=endhorizramp);
-                 
                 %-----------------
-                %Vertical
-                
-                  y(ind) = y(ind) + initial_voltage.*(pos(ind)<vert_volt_pos(1,1)).*(pos(ind)>=365);
-                  
+                %Vertical                
+                  y(ind) = y(ind) + initial_voltage.*(pos(ind)<vert_volt_pos(1,1)).*(pos(ind)>=365);                  
                     for jj = 1:num_vert_ramps
-
                          %ramp voltage from previous value
-                         vert_volt_slope = (vert_voltage(2,jj)-vert_voltage(1,jj))/(vert_volt_pos(2,jj)-vert_volt_pos(1,jj));
-                         
-                         y(ind) = y(ind) + (vert_volt_slope.*(pos(ind)-vert_volt_pos(1,jj))+ vert_voltage(1,jj)).*(pos(ind)>=vert_volt_pos(1,jj)).*(pos(ind)<vert_volt_pos(2,jj));
-                         
+                         vert_volt_slope = (vert_voltage(2,jj)-vert_voltage(1,jj))/(vert_volt_pos(2,jj)-vert_volt_pos(1,jj));                         
+                         y(ind) = y(ind) + (vert_volt_slope.*(pos(ind)-vert_volt_pos(1,jj))+ vert_voltage(1,jj)).*(pos(ind)>=vert_volt_pos(1,jj)).*(pos(ind)<vert_volt_pos(2,jj));                         
                          %set voltage in between
-                         y(ind) = y(ind) + vert_voltage(2,jj).*(pos(ind)<vert_volt_pos(1,jj+1)).*(pos(ind)>=vert_volt_pos(2,jj));
-                    
-                    end
-         
-                 %------------------------
-          
-                 
-            case {2,3,4,5,6,7,8,9,10,11,12} %push and all horizontal    
-                
-               
+                         y(ind) = y(ind) + vert_voltage(2,jj).*(pos(ind)<vert_volt_pos(1,jj+1)).*(pos(ind)>=vert_volt_pos(2,jj));                    
+                    end         
+                 %------------------------          
+            case {2,3,4,5,6,7,8,9,10,11,12} %push and all horizontal   
                  pp = create_transport_splines_nb(channel-1);
-                 y(ind) = y(ind) + ppval(pp,x);
-                 
-            
+                 y(ind) = y(ind) + ppval(pp,x);            
             case 13 %Extra coil                
                 %eventually can put into the above when the splines are
                 %fixed                

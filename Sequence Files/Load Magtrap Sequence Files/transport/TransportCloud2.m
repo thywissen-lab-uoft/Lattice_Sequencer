@@ -99,14 +99,14 @@ if vert_lin_trans_distances(end)~=174
 end
 
 
-
+% Convert durations in time into endpoints of time
 vert_lin_total_time = zeros(size(vert_lin_trans_distances));
 for ii = 2:length(vert_lin_trans_distances)
     vert_lin_total_time(ii) = vert_lin_total_time(ii-1) + vert_lin_trans_times(ii-1);
 end             
 
+% Piecewise Cubic Hermit spline to remove kinks from piecewise linear
 vert_pp = pchip(vert_lin_total_time,vert_lin_trans_distances+horiz_length);  
-
 
 % Where the currents actually get set (special arguement)
 curtime = AnalogFunc(calctime(curtime,0),0, ...
@@ -115,10 +115,12 @@ curtime = AnalogFunc(calctime(curtime,0),0, ...
 
 %% Turn off Vertical Coils 12A-14
 
-setAnalogChannel(calctime(curtime,0),22,0,1);
-setAnalogChannel(calctime(curtime,0),23,0,1);
-setAnalogChannel(calctime(curtime,0),24,0,1);
-setAnalogChannel(calctime(curtime,0),20,0,1);
+% CF: This seems like a bad idea to do diabatically.
+
+setAnalogChannel(calctime(curtime,0),'Coil 12a',0,1);
+setAnalogChannel(calctime(curtime,0), 'Coil 12b',0,1);
+setAnalogChannel(calctime(curtime,0),'Coil 13',0,1);
+setAnalogChannel(calctime(curtime,0),'Coil 14',0,1);
 
 timeout = curtime;
 

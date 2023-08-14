@@ -98,8 +98,11 @@ else
         %this is the transport with the coil raised
         %RHYS - This function determines the coil currents during the
         %transport sequence.
-        funcarray = transport_coil_currents_kitten_troubleshoot_raise_topQP(funcarray(:,1),funcarray(:,3),0,seqdata.coil_enable);
+%         funcarray = transport_coil_currents_kitten_troubleshoot_raise_topQP(funcarray(:,1),funcarray(:,3),0,seqdata.coil_enable);
 
+        % CF Testing
+        funcarray = stupidtransport(funcarray(:,1),funcarray(:,3),0,seqdata.coil_enable);
+        
     else
         
         % store set value, voltage function and end-time of ramp in seqdata.params for later use.

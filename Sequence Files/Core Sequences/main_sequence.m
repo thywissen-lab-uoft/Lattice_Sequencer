@@ -295,10 +295,19 @@ if seqdata.flags.transport
 
     DigitalPulse(calctime(curtime,trigger_offset-trigger_length),...
         'LabJack Trigger Transport',trigger_length,1)
-curtime = Transport_Cloud(curtime, seqdata.flags.transport_hor_type,...
-        seqdata.flags.transport_ver_type, seqdata.flags.image_loc);
     
-    % Transport_Cloud(timein,hor_transport_type,ver_transport_type, image_loc)
+    
+    DigitalPulse(calctime(curtime,1000),...
+        'LabJack Trigger Transport',trigger_length,1)
+    
+% curtime = Transport_Cloud(curtime, seqdata.flags.transport_hor_type,...
+%         seqdata.flags.transport_ver_type, seqdata.flags.image_loc);
+    
+
+    % New Code
+curtime = TransportCloud2(curtime);
+    
+
 
     
     
@@ -337,7 +346,7 @@ if seqdata.flags.transport_save
     opts = struct;
     opts.FileName = 'transport.mat';
     opts.StartTime = transport_start_time;
-    opts.Duration = 100000; % in ms
+    opts.Duration = 10; % in s
     opts.AnalogChannels = {'Push Coil','MOT Coil',...
         'Coil 3','Coil 4','Coil 5','Coil 6',...
         'Coil 7','Coil 8','Coil 9','Coil 10',...

@@ -87,31 +87,24 @@ curtime = AnalogFunc(calctime(curtime,0),0, ...
 % Duration of each segment
 vert_lin_trans_times = [450 250 450 800 450 250 500 200 150 500 500 300]; % N
 
-% Endpoints of each segment (MAKE SURE THE LAST ONE IS 174)
+% Endpoints of each segment (MAKE SURE THE FIRST IS 0 LAST ONE IS 174)
 vert_lin_trans_distances = [0 20 40 60 80 100 120 140 151 154 160 173.9 174]; % N+1
-            
 
-% Copy them
-dist_temp = vert_lin_trans_distances;
-time_temp = vert_lin_trans_times;
+if vert_lin_trans_distances(1)~=0
+    error('why u no start at zero distance');
+end
 
-% Position starts at 0
-vert_lin_trans_distances = [0];
+if vert_lin_trans_distances(end)~=174
+    error('why u no end at 174 mm distance; end of transport');
+end
 
-% No sweeps just yet
-vert_lin_trans_times = [];
 
-% Iterate over distance endpoints
-for ii = 2:length(dist_temp)
-        disp('increasing the damn thing');
-        vert_lin_trans_distances(ii) = dist_temp(ii);
-        vert_lin_trans_times(ii-1) = time_temp(ii-1);
-end     
 
 vert_lin_total_time = zeros(size(vert_lin_trans_distances));
 for ii = 2:length(vert_lin_trans_distances)
     vert_lin_total_time(ii) = vert_lin_total_time(ii-1) + vert_lin_trans_times(ii-1);
 end             
+
 vert_pp = pchip(vert_lin_total_time,vert_lin_trans_distances+horiz_length);  
 
 

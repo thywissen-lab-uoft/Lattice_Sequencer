@@ -5757,7 +5757,7 @@ end
 % %     dipole_ramp_up_time,dipole_ramp_up_time,...
 % %     seqdata.params.ODT_zeros(1),DT1_power(1));
 % 
-% %     setAnalogChannel(calctime(curtime,-5),'dipoleTrap1',0.02);
+% %     setAnalogChannel(calctime(curtime,-5),'dipoleTrap1',-1);
 % %     setAnalogChannel(calctime(curtime,-5),'dipoleTrap2',-1);
 % 
 %     
@@ -5775,17 +5775,18 @@ end
 % 
 %  %Turn off odt1 modulation
 % %     programRigol(addr_odt1,ch_off,[]);
+% setAnalogChannel(calctime(curtime,0),'Plug',2500); % Current in mA
 
-    setAnalogChannel(calctime(curtime,-5),'dipoleTrap1',.1);
-    setAnalogChannel(calctime(curtime,-5),'dipoleTrap2',.01);
+    setAnalogChannel(calctime(curtime,-5),'dipoleTrap1',-1);
+    setAnalogChannel(calctime(curtime,-5),'dipoleTrap2',-1);
     
     curtime=calctime(curtime,1000);
 
-curtime = lattice_conductivity_new(curtime);
-
-    setAnalogChannel(calctime(curtime,5),'dipoleTrap1',-1);
-    setAnalogChannel(calctime(curtime,5),'dipoleTrap2',-1);
-    
+% curtime = lattice_conductivity_new(curtime);
+% 
+%     setAnalogChannel(calctime(curtime,5),'dipoleTrap1',-1);
+%     setAnalogChannel(calctime(curtime,5),'dipoleTrap2',-1);
+%     
 %     defVar('ODT1_piezo_mod_Vpp',[8],'V')
 %     defVar('Modulation_time',[322],'ms')
 % 

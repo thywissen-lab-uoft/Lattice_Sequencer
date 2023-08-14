@@ -6,12 +6,15 @@ curtime = timein;
 setAnalogChannel(curtime,'Modulation Ramp',-10,1);      
 
 %% Flags
-seqdata.flags.conductivity_ODT1_mode            = 1; % 0:OFF, 1:SINE, 2:DC
-seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
+seqdata.flags.conductivity_ODT1_mode            = 2; % 0:OFF, 1:SINE, 2:DC
+seqdata.flags.conductivity_ODT2_mode            = 2; % 0:OFF, 1:SINE, 2:DC
 
 seqdata.flags.conductivity_enable_mod_ramp      = 1;
-seqdata.flags.conductivity_QPD_trigger          = 0; % Trigger QPD monitor LabJack/Scope 
-seqdata.flags.conductivity_dopin                = 0; % Pin after modulation
+seqdata.flags.conductivity_QPD_trigger          = 1; % Trigger QPD monitor LabJack/Scope 
+
+seqdata.flags.conductivity_snap_and_hold        = 1; % Diabatically turn off mod for quench measurement
+
+seqdata.flags.conductivity_dopin                = 1; % Pin after modulation
 
 %% Modulation Settings
 
@@ -19,12 +22,12 @@ seqdata.flags.conductivity_dopin                = 0; % Pin after modulation
 rigol_address = 12;           
 
 defVar('conductivity_mod_freq',[40],'Hz')       % Modulation Frequency
-defVar('conductivity_mod_time',[280],'ms');       % Modulation Time
-defVar('conductivity_mod_ramp_time',400,'ms');  % Ramp Time
+defVar('conductivity_mod_time',[50],'ms');       % Modulation Time
+defVar('conductivity_mod_ramp_time',300,'ms');  % Ramp Time
     
 % Modulation amplitude not to exceed +-4V.
 defVar('conductivity_ODT1_mod_amp',[4],'V');  % ODT1 Mod Depth
-defVar('conductivity_ODT2_mod_amp',[4],'V');  % ODT1 Mod Depth
+defVar('conductivity_ODT2_mod_amp',[4],'V');  % ODT2 Mod Depth
 
 %% Calculate Timings and Phase
 
@@ -66,7 +69,9 @@ switch seqdata.flags.conductivity_ODT1_mode
     case 2
         ch1_on = struct;
         ch1_on.STATE='ON';
-        ch1_on.DC = ['1,1,' num2str(getVar('conductivity_ODT1_mod_amp'))];  
+%         ch1_on.DC = ['1,1,' num2str(getVar('conductivity_ODT1_mod_amp'))];  
+        ch1_on.DC = ['1,1,' num2str(getVarOrdered('conductivity_ODT1_mod_amp'))];  
+
         programRigol(rigol_address,ch1_on,[]);
 end
 
@@ -95,93 +100,17 @@ switch seqdata.flags.conductivity_ODT2_mode
     case 2
         ch2_on = struct;
         ch2_on.STATE='ON';
-        ch2_on.DC = ['1,1,' num2str(getVar('conductivity_ODT2_mod_amp'))];  
+%         ch2_on.DC = ['1,1,' num2str(getVar('conductivity_ODT2_mod_amp'))];  
+        ch2_on.DC = ['1,1,' num2str(getVarOrdered('conductivity_ODT2_mod_amp'))];  
+
         programRigol(rigol_address,[],ch2_on);
 end
-    
-%% Test DC
-% if seqdata.flags.conductivity_test_DC    
-%     ch1_on = struct;
-%     ch1_on.STATE='ON';
-%     ch1_on.DC = '1,1,5';  
-%     programRigol(rigol_address,ch1_on,[]);
-% end
-
-    
-%     %Modulation Parameters
-%     mod_freq = 50; %Hz
-%     mod_amp = 2; %Vpp
-%     mod_offset = 0; %V
-%     mod_time = 100; %ms
-%     addr_odt1 = 12;
-%     
-%     % ON Channel Settings
-%     ch_on=struct;
-%     ch_on.FREQUENCY=mod_freq;     % Modulation Frequency
-%     ch_on.OFFSET = mod_offset;
-%     ch_on.AMPLITUDE = mod_amp;
-%     ch_on.AMPLITUDE_UNIT='VPP';   % Unit of modulation (Volts PP)
-%     ch_on.SWEEP='OFF';
-%     ch_on.MOD='OFF';
-%     ch_on.BURST='ON';             % Burst MODE 
-%     ch_on.BURST_MODE='GATED';     % Trig via the gate
-%     ch_on.BURST_TRIGGER_SLOPE='POS';% Positive trigger slope
-%     ch_on.BURST_TRIGGER='EXT';    % External trigger.    
-%     ch_on.STATE = 'ON';
-
-%     defVar('ODT1_piezo_mod_Vpp',[-5:1:5],'V')
-% 
-%     mod_pp = abs(getVar('ODT1_piezo_mod_Vpp')); %V
-%     mod_time = 200; %ms
-%     mod_freq = 0.5/(mod_time*0.001);
-%     
-%     mod_offset = getVar('ODT1_piezo_mod_Vpp')/2;
-%     if mod_offset > 0
-%         mod_phase = 359;
-%     else
-%       mod_phase = 179;
-%     end
-%     
-%     
-%     addr_odt1 = 12;
-%     
-%         % ON Channel Settings
-%     ch_on=struct;
-% 
-%     ch_on.FREQUENCY=mod_freq;     % Modulation Frequency
-%     ch_on.OFFSET = mod_offset;
-%     ch_on.AMPLITUDE = mod_pp;
-%     ch_on.AMPLITUDE_UNIT='VPP';   % Unit of modulation (Volts PP)
-%     ch_on.FUNC = 'SQU';
-%     ch_on.BURST_PHASE = mod_phase;
-%     ch_on.SWEEP='OFF';
-%     ch_on.MOD='OFF';
-%     ch_on.BURST='ON';             % Burst MODE 
-%     ch_on.BURST_MODE='GATED';     % Trig via the gate
-%     ch_on.BURST_TRIGGER_SLOPE='POS';% Positive trigger slope
-%     ch_on.BURST_TRIGGER='EXT';    % External trigger.    
-%     ch_on.STATE = 'ON';
-%     
-%     
-%     
-%     %Turn on odt1 modulation
-%     programRigol(addr_odt1,ch_on,[]);
-%     
-%     setDigitalChannel(calctime(curtime,0),'ODT Piezo Mod TTL',1);
-%     
-%     %Keep on for a set time
-% %     curtime=calctime(curtime,mod_time); 
-%     
-%     %Turn off odt1 modulation
-% %     setDigitalChannel(calctime(curtime,0),'ODT Piezo Mod TTL',0);
-
-% end
-
+   
 
 %% Modulation
     
 if seqdata.flags.conductivity_QPD_trigger
-    DigitalPulse(curtime,'QPD Monitor Trigger',50,1);
+    DigitalPulse(calctime(curtime,-100),'QPD Monitor Trigger',50,1);
 end
 
 setDigitalChannel(curtime,'ODT Piezo Mod TTL',1);
@@ -201,70 +130,57 @@ curtime = calctime(curtime,getVarOrdered('conductivity_mod_time'));
 % Stop Modulation
 setDigitalChannel(curtime,'ODT Piezo Mod TTL',0);
 
-% Turn off modulation amplitude after 1 ms for pinning
-setAnalogChannel(calctime(curtime,1),'Modulation Ramp',-10,1);
+%% Additional hold
+% For decay/quench measurement
 
 
+if seqdata.flags.conductivity_snap_and_hold
+    defVar('conductivity_snap_and_hold_time',[0:2.5:75],'ms');  
+
+    % Turn off modulation envelope (go back to initial position
+    % diabatically)
+%     setAnalogChannel(calctime(curtime,0),'Modulation Ramp',-10,1);
+    AnalogFuncTo(calctime(curtime,0),'Modulation Ramp',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, -9.999,1);    
+    
+    curtime = calctime(curtime,getVarOrdered('conductivity_snap_and_hold_time'));
+
+
+end
 %% Pin atoms
 % Ramp lattices to in atoms
-
 if seqdata.flags.conductivity_dopin    
     pin_time = 0.1;
     pin_depth = 60;
     
+    % Ramp lattices to pin
     AnalogFuncTo(calctime(curtime,0),'xLattice',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), pin_time, pin_time, pin_depth); 
     AnalogFuncTo(calctime(curtime,0),'yLattice',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), pin_time, pin_time, pin_depth)
     AnalogFuncTo(calctime(curtime,0),'zLattice',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), pin_time, pin_time, pin_depth);
-
-    curtime = calctime(curtime,pin_time);
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), pin_time, pin_time, pin_depth);    
+    curtime = calctime(curtime,pin_time); % Wait for pin
+    
+    % Settling Time
+    curtime = calctime(curtime,10);
+    
+    % Turn off modulation amplitude after atoms are pinned
+    setAnalogChannel(calctime(curtime,0),'Modulation Ramp',-10,1);
+    
+    % Wait a bit
+    curtime = calctime(curtime,5);
 
    % Turn off XDT
-   AnalogFuncTo(calctime(curtime,50),'dipoleTrap1',...
-       @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 50, 50, -0.2);
-   AnalogFuncTo(calctime(curtime,50),'dipoleTrap2',...
-       @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 50, 50, -0.2);
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 10, 10, -0.2);
+curtime=AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 10, 10, -0.2);
+    setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
 
+%     setAnalogChannel(calctime(curtime,0),'dipoleTrap1',-0.2);
+%     setAnalogChannel(calctime(curtime,0),'dipoleTrap2',-0.2);
 end  
-
-%% legacy
-% %% Do modulation
-%     
-%     % Wait a lukewarm second
-% curtime = calctime(curtime,10);
-% 
-% 
-%     % Program Rigol for conductivity
-%    
-%     
-%     if seqdata.flags.conductivity_modulate_ODT2
-%         programRigol(mod_device,[],ch2_on);
-%     end
-%     
-%   
-%     
-%     % Ramp on the modulation
-% 
-% 
-% %     
-% 
-% %     % Ramp the modulation on with the VGAs
-% %     if mod_time > mod_ramp_time        
-% %         AnalogFunc(calctime(curtime,0),'Modulation Ramp',...
-% %             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), mod_ramp_time, mod_ramp_time,-10,final_mod_amp,1); 
-% %     else        
-% % curtime = AnalogFunc(calctime(curtime,0),'Modulation Ramp',...
-% %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), mod_time, mod_time,-10,final_mod_amp*mod_time/mod_ramp_time,1); 
-% %   
-% %     end
-% 
-%     %Do the modulation
-% %     if mod_time > mod_ramp_time
-% %         curtime=calctime(curtime,mod_time); 
-% %     end
-
 
     
      

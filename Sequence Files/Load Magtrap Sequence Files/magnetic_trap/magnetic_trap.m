@@ -137,7 +137,7 @@ end
 %% Turn on Plug Beam
 % Turn on the plug beam.  We currently only have a shutter on the plug beam
 
-if  seqdata.flags.mt_use_plug==1       
+if  seqdata.flags.mt_use_plug == 1       
     dispLineStr('Turning on the plug',curtime);
     plug_offset = -500; % -200
     setDigitalChannel(calctime(curtime,plug_offset),'Plug Shutter',1); %0: CLOSED; 1: OPEN
@@ -146,6 +146,70 @@ end
 ramp_after_plug=0;
 if ramp_after_plug
     [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_transfer_test(curtime, seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
+end
+
+if  seqdata.flags.mt_use_plug == 2       
+    dispLineStr('Turning on the plug for death alignment',curtime);
+%     setDigitalChannel(calctime(curtime,0),'Plug Shutter',1);
+    
+    pulse_time = 100;
+    
+   % Break the thermal stabilzation of AOMs by turning them off
+    setDigitalChannel(calctime(curtime,-50),'D1 OP TTL',0);    
+    setAnalogChannel(calctime(curtime,-50),'D1 OP AM',1); 
+    
+    % Open D1 shutter (FPUMP + OPT PUMP)
+    setDigitalChannel(calctime(curtime,-10),'D1 Shutter', 1);%1: turn on laser; 0: turn off laser
+        
+    % Open optical pumping AOMS (allow light) and regulate F-pump
+    setDigitalChannel(curtime,'D1 OP TTL',1);   %1:on 
+    
+    %Optical pumping time
+curtime = calctime(curtime,pulse_time);
+    
+    % Turn off OP before F-pump so atoms repumped back to -9/2.
+    setDigitalChannel(calctime(curtime,0),'D1 OP TTL',0);
+
+    % Close D1 shutter 
+    setDigitalChannel(calctime(curtime,10),'D1 Shutter', 0);%2
+    
+    %After optical pumping, turn on all AOMs for thermal stabilzation
+    setDigitalChannel(calctime(curtime,100),'D1 OP TTL',1);
+    
+
+
+    
+    
+    
+    % We have them on to keep them thermally stable
+%     setDigitalChannel(calctime(curtime,-50),'Raman TTL 1',0); % (1: ON, 0:OFF) Raman 1 ZASWA + Rigol Trigger
+%     setDigitalChannel(calctime(curtime,-50),'Raman TTL 2a',0);% (1: ON, 0:OFF) Raman 2 ZASWA
+%     setDigitalChannel(calctime(curtime,-50),'Raman TTL 3a',0);% (1: ON, 0:OFF) Raman 3 ZASWA
+
+    % Make sure Raman shutter is closed
+%     setDigitalChannel(calctime(curtime,-50),'Raman Shutter',0);
+
+    % Open Shutter (1: ON, 0: OFF)
+%     setDigitalChannel(calctime(curtime,-10),'Raman Shutter',1);
+
+    % Turn on raman beam
+%     setDigitalChannel(curtime,'Raman TTL 1',1);  % Vertical Raman (1: ON, 0:OFF)
+%     setDigitalChannel(curtime,'Raman TTL 2a',1); % Horizontal Raman (1: ON, 0:OFF) 
+    
+curtime = calctime(curtime,pulse_time);
+
+    % Turn off beams
+%     setDigitalChannel(calctime(curtime,0),'Raman TTL 1',0);
+%     setDigitalChannel(calctime(curtime,0),'Raman TTL 2a',0);
+
+    % Close Shutter
+%     setDigitalChannel(calctime(curtime,10),'Raman Shutter',0);    
+
+    % Turn on beams
+%     setDigitalChannel(calctime(curtime,100),'Raman TTL 1',1);
+%     setDigitalChannel(calctime(curtime,100),'Raman TTL 2a',1);      
+    
+%     curtime = calctime(curtime,pulse_time);
 end
 
 %% Evaporation Stage 1b
@@ -157,6 +221,8 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     sweep_time_list = [3000];
     sweep_time = getScanParameter(sweep_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'RF1B_sweep_time');
+    
+    
     sweep_times_1b = [6000 3000 2]*getVar('RF1B_time_scale'); 
     
     evap_end_gradient_factor_list = [1];.9; %0.75
@@ -165,6 +231,13 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     
     currs_1b = [1 1 evap_end_gradient_factor evap_end_gradient_factor]*I_QP;
     freqs_1b = [freqs_1(end)/MHz*1.1 7  getVar('RF1B_finalfreq') 2]*MHz;
+    
+%     
+%     sweep_times_1b = [6000]*getVar('RF1B_time_scale'); 
+%     currs_1b = [1 1]*I_QP;
+%     freqs_1b = [freqs_1(end)/MHz*1.1 6]*MHz;
+%     
+    
     
     rf_1b_gain_list = [-2];
     rf_1b_gain = getScanParameter(rf_1b_gain_list,...
@@ -302,7 +375,7 @@ if ( seqdata.flags.mt_use_plug == 1)
     if (seqdata.flags.xdt ~= 1)
         % Dipole transfer has its own code for turning off the plug after
         % loading the XDTs
-        dispLineStr('Turning off plug at',calctime(curtime,plug_offset));
+        dispLineStr('Closing plug shutter',calctime(curtime,plug_offset));
         setDigitalChannel(calctime(curtime,plug_offset),'Plug Shutter',0);% 0:OFF; 1: ON
         ScopeTriggerPulse(calctime(curtime,0),'plug test');
     end        

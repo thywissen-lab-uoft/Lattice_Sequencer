@@ -182,7 +182,7 @@ programRigol(addr_mod_xy,ch_off,ch_off);    % Turn off xy mod
 programRigol(addr_z,[],ch_off);             % Turn off z mod
 
 %% Load the MOT
-curtime = calctime(curtime,500);
+curtime = calctime(curtime,1000);
 
 % Rerun load MOT if necessary for controller load
 if (seqdata.flags.MOT_load_at_start == 1)
@@ -269,7 +269,6 @@ end
 
 if seqdata.flags.transport
     dispLineStr('Magnetic Transport',curtime);
-    DigitalPulse(calctime(curtime,0),'PA LabJack Trigger',50,1)
     % Open kitten relay
     curtime = setDigitalChannel(curtime,'Kitten Relay',1);
     
@@ -287,11 +286,27 @@ if seqdata.flags.transport
     ScopeTriggerPulse(calctime(curtime,0),'Start Transport');
     
     tic;
+    
+    trigger_offset = -200;
+    trigger_length = 50;
+    
+    transport_start_time = calctime(curtime,trigger_offset);
+    addOutputParam('transport_start_time',transport_start_time,'ms');
+
+    DigitalPulse(calctime(curtime,trigger_offset-trigger_length),...
+        'LabJack Trigger Transport',trigger_length,1)
 curtime = Transport_Cloud(curtime, seqdata.flags.transport_hor_type,...
         seqdata.flags.transport_ver_type, seqdata.flags.image_loc);
+    
+    % Transport_Cloud(timein,hor_transport_type,ver_transport_type, image_loc)
+
+    
+    
+    
     t2=toc;
     disp(['Transport cloud calculation took ' num2str(t2) ' seconds']);
     
+
 end
 
 %% MOT Shim back for therml
@@ -313,6 +328,26 @@ end
 if seqdata.flags.mt
     [curtime, I_QP, I_kitt, V_QP, I_fesh, I_shim] = magnetic_trap(curtime);
 end
+
+%% Save Transport and Part of RF
+
+seqdata.flags.transport_save = 1;
+
+if seqdata.flags.transport_save
+    opts = struct;
+    opts.FileName = 'transport.mat';
+    opts.StartTime = transport_start_time;
+    opts.Duration = 100000; % in ms
+    opts.AnalogChannels = {'Push Coil','MOT Coil',...
+        'Coil 3','Coil 4','Coil 5','Coil 6',...
+        'Coil 7','Coil 8','Coil 9','Coil 10',...
+        'Coil 11','Coil 12a','Coil 12b','Coil 13',...
+        'Coil 14','Coil 15','Coil 16','kitten','Transport FF'};
+    opts.DigitalChannels = {'MOT TTL','Coil 16 TTL','15/16 Switch','Transport Relay',...
+        'Kitten Relay','Reverse QP Switch','LabJack Trigger Transport'};
+    opts.FileName = 'magnetic_transport.mat';
+    saveTraces(opts)
+end    
 
 %% Dipole Trap
 

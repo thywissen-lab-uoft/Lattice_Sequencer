@@ -260,13 +260,8 @@ for i = 1:num_channels
     end    
     currentarray(channel_indices,1) = time;
     currentarray(channel_indices,2) = transport_channels(i);
-    % implemented July 2016; ST
-%     if enable(i)
-        currentarray(channel_indices,3) = channel_current(i,position,coil_offset(i),coil_widths(i),coil_range(:,i));
-%     else
-%         currentarray(channel_indices,3) = nullval;
-%         continue;        
-%     end    
+    currentarray(channel_indices,3) = channel_current(i,position,coil_offset(i),coil_widths(i),coil_range(:,i));
+   
     %digital channels
     if transport_channels(i)<0 
         %see when it switches and set the digital channel high or low
@@ -315,9 +310,7 @@ if flag
     currentarray(ind,3) = 0;    
     y = zeros(num_analog_channels,length(position));
     for i = 1:num_analog_channels
-%         if (enable(i)) % implemented July 2016; ST
         y(i,:) = currentarray(((i-1)*length(position)+1):(i*length(position)),3);
-%         end
     end       
     return;
 end

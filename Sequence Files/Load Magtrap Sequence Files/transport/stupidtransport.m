@@ -17,11 +17,8 @@ function y = stupidtransport(time,position)
 
 global seqdata;
 
-
-
 %% Spline Parameters
 
-%import currents for spline
 vertical_scale = 1.0;
 
 % Location of splines (MOVED!!!)
@@ -46,6 +43,7 @@ num_analog_channels = 21;
 num_dig_channels = 2;
 
 overallscale = 1.0; %scales all the transport currents
+
 verticalscale = 1*1.00; %scales the vertical currents
 
 coil_scale_factors = 1*ones(1,num_channels);%scaling of the max current in each coil
@@ -224,8 +222,7 @@ coil_range(2,23) = 220;
 % coil_range(2,20) = 534;
 
 %check the bounds on position
-if (sum(position<-0.1)); 
-   
+if (sum(position<-0.1));    
     error('negative Position')
 elseif (sum(position>539.1));
     error('position too far')

@@ -59,7 +59,8 @@ max_fet_power = [0 700 5000 5000 700 700 700 700 700 700 700 ...
 % channels the coils correspond to on the ADWIN
 % Negative corresponds to a digital channel
 transport_channels = [18 7:17 9 22:24 20:21 1 3 17 -22 -28];
-% corresponding coils : [FF Push MOT 3:11 3 12a-13 14 15 16 kitten 11]
+% corresponding coils : [FF Push MOT 3:11 3 12a-13 14 15 16 kitten 11] WHY
+% IS 11 REPERATED?
 
 % transport_analog = {'Transport FF','Push Coil','MOT Coil',...
 %     'Coil 3','Coil 4','Coil 5','Coil 6','Coil 7','Coil 8', 'Coil 9', ...

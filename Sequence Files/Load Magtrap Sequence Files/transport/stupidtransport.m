@@ -19,9 +19,7 @@ global seqdata;
 
 %% Spline Parameters
 
-% vertical_scale = 1.0;
-
-% Location of splines (MOVED!!!)
+% Location of splines (MOVED!!! CF)
 curpath = fileparts(mfilename('fullpath'));
 mydir = 'transport_splines';
 filename1 = 'rev48coilone.txt';
@@ -33,20 +31,15 @@ coiltwo = dlmread(fullfile(curpath,mydir,filename2),',',0,1);
 
 %% Some Parameters
 
-%number of transport channels
-num_channels = 23; 
+num_channels = 23;          % number of transport channels
+num_analog_channels = 21; % number of analog channels
 
-%number of analog channels
-num_analog_channels = 21;
 
-%number of digital channels (these MUST be at the end)
+% number of digital channels (these MUST be at the end)
 num_dig_channels = 2;
 
-overallscale = 1.0; %scales all the transport currents
-
-% verticalscale = 1*1.00; %scales the vertical currents
-
-coil_scale_factors = 1*ones(1,num_channels);%scaling of the max current in each coil
+% scaling of the max current in each coil
+coil_scale_factors = 1*ones(1,num_channels);
 
 coil_widths = ones(1,num_channels);%widths of each of the coil curves
 
@@ -80,7 +73,7 @@ enable = ones(1,23);
 coil_range(1,1) = 0;
 coil_range(2,1) = 539;
 coil_widths(1) = 1.0;
-coil_scale_factors(1) = 1.00/overallscale;
+coil_scale_factors(1) = 1.00;
 
 %Push Coil Range
 coil_range(1,2) = 0; %0
@@ -289,7 +282,7 @@ for i = 1:num_channels
             
         end       
         %convert currents to channel voltages
-        currentarray(channel_indices,3) = seqdata.analogchannels(transport_channels(i)).voltagefunc{2}(currentarray(channel_indices,3).*overallscale*coil_scale_factors(i)).*(currentarray(channel_indices,3)~=nullval)+...
+        currentarray(channel_indices,3) = seqdata.analogchannels(transport_channels(i)).voltagefunc{2}(currentarray(channel_indices,3).*coil_scale_factors(i)).*(currentarray(channel_indices,3)~=nullval)+...
             currentarray(channel_indices,3).*(currentarray(channel_indices,3)==nullval);
         %check the voltages are in range
         if sum((currentarray(channel_indices,3)~=nullval).*(currentarray(channel_indices,3)>seqdata.analogchannels(transport_channels(i)).maxvoltage))||...
@@ -341,22 +334,22 @@ y = currentarray;
                  %feedforward parameters
                  %------------------------                        
                  %voltage when MOT trapping
-                 MOTvoltage = 10*overallscale;                  
+                 MOTvoltage = 10;                  
                  %ramp up and down for the push
-                 maxpushvoltage = (30)*overallscale; %24/6.6 %27.66 for 1.2 
+                 maxpushvoltage = (30); %24/6.6 %27.66 for 1.2 
                  startpushramp = 10; %10
                  pushramppeak = 43; %40
                  endpushramp = 60; %60                 
                  %steady voltage for horizontal transfer stage
-                 horizontalvoltage = 9*overallscale; %9/6.6 
+                 horizontalvoltage = 9; %9/6.6 
                  %ramp up and down for the last horiz transport coil
-                 maxhorizvoltage = 12.95*overallscale; %10/6.6
+                 maxhorizvoltage = 12.95; %10/6.6
                  starthorizramp = 270; %260
                  peakhorizramp = 310;  %350
                  starthorizrampdown = 340;
                  endhorizramp = 365; %360                     
                  %steady voltage for beginning of vertical transfer
-                 beginningverticalvoltage = 10.0*overallscale; %11/4 %12/4      
+                 beginningverticalvoltage = 10.0; %11/4 %12/4      
                  %=============
                  %BE VERY CAREFUL HERE TO NOT DAMAGE THE BRIDGES!!!!
                  %=============                 

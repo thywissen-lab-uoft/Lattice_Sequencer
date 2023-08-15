@@ -498,7 +498,15 @@ y = currentarray;
                 y = ppval(pp,pos);                      % Evaluate the spline everywhere                
                 y(x<250.0) = nullval;                   % Assign null value to regions outside
                 y(x>=380.0) = nullval;                  % Assign null value to regions outside 
-            case 'Coil Extra'
+            case 'Coil Extra'   
+                 % Doesn't work for some reason? also causes oscillations
+                 % for some reason....
+                
+%                 pp = create_transport_splines_nb(12);    % Load the spline
+%                 y = ppval(pp,(pos-3)/0.96);                      % Evaluate the spline everywhere                
+%                 y(x<250.0) = nullval;                   % Assign null value to regions outside
+%                 y(x>=380.0) = nullval;                  % Assign null value to regions outside 
+%                 
                 pp = create_transport_splines_nb(12);
                 y(ind) = y(ind) + ppval(pp,x);                        
             case 'Coil 12a'    

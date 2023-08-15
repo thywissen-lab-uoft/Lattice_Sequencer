@@ -253,6 +253,8 @@ for i = 1:num_channels
     % If channel is negative it is a digital channel
     if transport_channels(i)<0 
         %see when it switches and set the digital channel high or low
+        % ACTUALLY THIS IS WRONG ALSO WE NEED BETTER TIME SPECIFICATION
+        % HERE
         f = currentarray(channel_indices(2:end),3)-currentarray(channel_indices(1:(end-1)),3); % The difference in value (be careful of -100's)        
         g = currentarray(channel_indices(1:(end-1)),1).*(f~=0);        
         ff = nonzeros(f);
@@ -286,9 +288,12 @@ for i = 1:num_channels
         for kk=1:length(inds)
             n = inds(kk);
             if dV(n)>0; state = 1;else;state = 0;end            
-            t = vals(n+1,1);            
-%            setDigitalChannel(gg(j),abs(transport_channels(i)),state);  
+            t = vals(n,1); 
+%             t = vals(n+1,1);            
+
+%             setDigitalChannel(gg(j),abs(transport_channels(i)),state);  
             disp(['Ch' num2str(abs(transport_channels(i))) ' ' num2str(t) ',' num2str(state)]);
+            keyboard
         end              
     end
     

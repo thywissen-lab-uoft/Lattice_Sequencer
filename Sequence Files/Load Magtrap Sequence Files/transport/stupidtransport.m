@@ -269,7 +269,8 @@ for i = 1:num_channels
         end              
     end
     
-    %voltage channel, save for calculating powers later
+    % voltage channel, save for calculating powers later
+    % CF: This is the feedforward channel
     if i==1 
         voltages = currentarray(channel_indices,3);
     end

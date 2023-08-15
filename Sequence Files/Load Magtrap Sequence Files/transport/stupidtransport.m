@@ -279,8 +279,7 @@ for i = 1:num_channels
         voltages = currentarray(channel_indices,3);
     end
     
-    if (~flag && i<=num_analog_channels)          
-%         keyboard
+    if (i<=num_analog_channels)          
         disp('hi1')
         %check max FET power is not exceeded
         %NOTE: This should not be viewed as perfect...FET's may still fail

@@ -18,7 +18,6 @@ function y = stupidtransport(time,position)
 global seqdata;
 
 
-flag = 0;
 
 %% Spline Parameters
 
@@ -280,7 +279,6 @@ for i = 1:num_channels
     end
     
     if (i<=num_analog_channels)          
-        disp('hi1')
         %check max FET power is not exceeded
         %NOTE: This should not be viewed as perfect...FET's may still fail
         if (transport_channels(i)~=18 && transport_channels(i)~=3) %skip the voltage and kitten channels
@@ -298,8 +296,6 @@ for i = 1:num_channels
                 sum((currentarray(channel_indices,3)~=nullval).*(currentarray(channel_indices,3)<seqdata.analogchannels(transport_channels(i)).minvoltage))
             error(['Voltage out of range when computing transport Channel:' num2str(transport_channels(i))]);
         end
-    else
-        disp('hi2');
     end      
 end
 

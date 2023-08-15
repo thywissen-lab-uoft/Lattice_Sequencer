@@ -251,46 +251,21 @@ for i = 1:num_channels
         
    
     % If channel is negative it is a digital channel
-    if transport_channels(i)<0 
-        %see when it switches and set the digital channel high or low
-        % WRONG INDEXING, MAY ALSO NEED TO ADJUST TIME SPACING
-        f = currentarray(channel_indices(2:end),3)-currentarray(channel_indices(1:(end-1)),3); % The difference in value (be careful of -100's)        
-        g = currentarray(channel_indices(1:(end-1)),1).*(f~=0);        
-        ff = nonzeros(f);
-        gg = nonzeros(g);        
-        disp(['digital channel ' num2str(abs(transport_channels(i)))]);
-        disp('old');
-        for j = 1:length(ff)
-            if ff(j)==2
-                %set digital high
-%                 setDigitalChannel(gg(j),transport_channels(i)*-1,1);    
-                disp(['Ch' num2str(abs(transport_channels(i))) ' ' num2str(gg(j)) ',' num2str(1)]);
-
-            elseif ff(j)==-2
-                %set digital low
-%                 setDigitalChannel(gg(j),transport_channels(i)*-1,0);    
-                disp(['Ch' num2str(abs(transport_channels(i))) ' ' num2str(gg(j)) ',' num2str(0)]);
-
-            end
-        end    
-        
-        disp('New');
-        
-        % Alternative way of doing digital by CF which makes more sense
-        ch = abs(transport_channels(i));            % digital channel number
+    % CF : Edited to make more sense.
+    if transport_channels(i)<0                
         vals = currentarray(channel_indices,:);        
-        % Remove all references to the null value
-        binds = [vals(:,3)==nullval];
+        binds = [vals(:,3)==nullval];          % Remove all references to the null value
+
         vals(binds,:)=[];        
         dV = diff(vals(:,3));
         inds = find(dV~=0); % Indeces where a change is perceived
         for kk=1:length(inds)
             n = inds(kk);
             if dV(n)>0; state = 1;else;state = 0;end            
-%             t = vals(n,1); 
-            t = vals(n+1,1);           
+%             t = vals(n,1);        % What it really should be
+            t = vals(n+1,1);      % To match old code,      
             setDigitalChannel(t,abs(transport_channels(i)),state);  
-            disp(['Ch' num2str(abs(transport_channels(i))) ' ' num2str(t) ',' num2str(state)]);            
+%             disp(['Ch' num2str(abs(transport_channels(i))) ' ' num2str(t) ',' num2str(state)]);            
         end              
     end
     

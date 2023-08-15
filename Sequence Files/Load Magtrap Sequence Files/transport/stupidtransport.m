@@ -256,7 +256,7 @@ for i = 1:length(transport_names)
     currentarray(channel_indices,2) = transport_channels(i);
      currentarray(channel_indices,3) = channel_current(transport_names{i},position,coil_offset(i),...
         coil_widths(i),coil_range(:,i));       
-   
+%    
     % If channel is negative it is a digital channel
     % CF : Edited to make more sense.
     if transport_channels(i)<0                
@@ -315,6 +315,7 @@ y = currentarray;
         ind = (y~=nullval);        
         %put the position coordinates into the frame of the coil
         x = (pos(ind)-offset)/width;
+        keyboard
         switch channel_name            
             case 'Transport FF'  %This is the FF channel
                 % CF: The FF is in some sense, the most complicated because
@@ -437,12 +438,18 @@ y = currentarray;
                     end         
                  %------------------------   
             case 'Push Coil'
+%                 x = pos;
+%                 pp = create_transport_splines_nb(1);    % Load the spline
+%                 y = ppval(pp,x);                        % Evaluate the spline everywhere                
+%                 y(x<000.0) = nullval;
+%                 y(x>=100.0) = nullval;
+                
                 x = pos;
                 x(x<000.0)  = [];                       % Dont update Adwin channel before here
                 x(x>=100.0) = [];                       % Dont update Adwin channel after here
                 x = (x-0.00)/1.00;                      % Offset and scale the region
                 pp = create_transport_splines_nb(1);    % Load the spline
-                y(ind) = y(ind) + ppval(pp,x);          % Evaluate the spline
+                y(ind) = y(ind) + ppval(pp,x);          % Evaluate the spline        
             case 'MOT Coil'
                 pp = create_transport_splines_nb(2);
                 y(ind) = y(ind) + ppval(pp,x); 

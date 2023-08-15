@@ -47,15 +47,6 @@ coil_offset(1:13) = 0;          % coil_offset(12:end) = 0;
 coil_offset(14:end) = 0;        % coil_offset(12:end) = 0;
 coil_range = ones(2,num_channels);  % relevant range of the given coil (2xnumber of channels)
 
-
-% Resistance of each coil (CF : This seems not very useful to caculate since
-% thermal parameters are difficult to predict)
-coil_resistance = [0 375 418 100 100 100 100 100 100 100 100 ...
-    100 100 188 173 173 173+70 310 310 310 310];
-% Also kind of dumb since the FETs change.
-max_fet_power = [0 700 5000 5000 700 700 700 700 700 700 700 ...
-    5000 5000 700 208 208 208 700 5000 700 700]; 
-
 % channels the coils correspond to on the ADWIN
 % Negative corresponds to a digital channel
 transport_channels = [18 7:17 9 22:24 20:21 1 3 17 -22 -28];

@@ -103,7 +103,7 @@ else
 %         funcarray = transport_coil_currents_kitten_troubleshoot_raise_topQP(funcarray(:,1),funcarray(:,3),0,seqdata.coil_enable);
 
         % CF Testing
-        funcarray = stupidtransport(funcarray(:,1),funcarray(:,3),0);
+        funcarray = stupidtransport(funcarray(:,1),funcarray(:,3));
         
     else
         

@@ -13,16 +13,17 @@
 %
 % This is me trying to make it ismpler
 %------
-function y = stupidtransport(time,position,flag)
+function y = stupidtransport(time,position)
 
 global seqdata;
 
 %if the flag = 1 this outputs a nxm array where n is the number of channels
 %and m is the position
-if nargin < 3
-    flag = 0; 
-end
+% if nargin < 3
+%     flag = 0; 
+% end
 
+flag = 0;
 %define the transport parameters
 
 %% Spline Parameters
@@ -305,15 +306,15 @@ for i = 1:num_channels
     end      
 end
 
-if flag
-    ind = logical(currentarray(:,3)==nullval);
-    currentarray(ind,3) = 0;    
-    y = zeros(num_analog_channels,length(position));
-    for i = 1:num_analog_channels
-        y(i,:) = currentarray(((i-1)*length(position)+1):(i*length(position)),3);
-    end       
-    return;
-end
+% if flag
+%     ind = logical(currentarray(:,3)==nullval);
+%     currentarray(ind,3) = 0;    
+%     y = zeros(num_analog_channels,length(position));
+%     for i = 1:num_analog_channels
+%         y(i,:) = currentarray(((i-1)*length(position)+1):(i*length(position)),3);
+%     end       
+%     return;
+% end
 
 %weed out any entries that are less than zero
 %and only return the analog channels

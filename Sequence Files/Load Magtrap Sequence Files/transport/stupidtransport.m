@@ -233,7 +233,10 @@ currentarray = zeros(length(time)*sum(enable),3); %[time,channel,value]
 %go through for each channel
 j = 0;
 
-for i = 1:num_channels
+
+
+for i = 1:length(transport_names)
+
     % indices for the current channel
     channel_indices = ((i-1)*length(time)+1):(i*length(time));         
     if i==21
@@ -245,9 +248,8 @@ for i = 1:num_channels
     % At each position get the value of the current (or digital channel)
     currentarray(channel_indices,1) = time;
     currentarray(channel_indices,2) = transport_channels(i);
-    currentarray(channel_indices,3) = channel_current(i,position,coil_offset(i),...
-        coil_widths(i),coil_range(:,i));
-        
+     currentarray(channel_indices,3) = channel_current(transport_names{i},position,coil_offset(i),...
+        coil_widths(i),coil_range(:,i));       
    
     % If channel is negative it is a digital channel
     % CF : Edited to make more sense.
@@ -291,267 +293,16 @@ currentarray = currentarray(ind,:);
 
 % Return
 y = currentarray;
-%% 
 
+%%
 % CF : I belive this function is the real meat which is where we are actually
 % use the splines to specify the current value.
 
 %sub function that calculates the current values of the different channels
-    function y = channel_current(channel,pos,offset,width,coilrange)       
-        y = (pos<coilrange(1))*nullval;
-        y = y + (pos>=coilrange(2))*nullval;        
-        %indices of non-null value entries
-        ind = (y~=nullval);        
-        %put the position coordinates into the frame of the coil
-        x = (pos(ind)-offset)/width;
-        switch channel            
-            case 1  %This is the FF channel
-                % CF: The FF is in some sense, the most complicated because
-                % it is non-linear relationship to ALL the currents running
-                % from the power supply. It's probably not even a good idea
-                % to try to calculate anything.
-                %
-                % Because we operate the MOSFETs away from saturation for
-                % thermal reasons, the MOSFETs are probably close to being
-                % modeled as a resistor, whose values depends on the GS
-                % voltage. (But the GS votlage controls the current, so
-                % does this make a quadratic function more or less?)
-    
-                 %FET + coil resistances
-                 %MOT: 357mOhm
-                 %Push:312.5mOhm
-                 %Horiz Trans: 85mOhm
-                 %12a: 167mOhm
-                 %12b: 192mOhm                
-                 %------------------------
-                 %feedforward parameters
-                 %------------------------                        
-                 %voltage when MOT trapping
-                 MOTvoltage = 10;                  
-                 %ramp up and down for the push
-                 maxpushvoltage = (30); %24/6.6 %27.66 for 1.2 
-                 startpushramp = 10; %10
-                 pushramppeak = 43; %40
-                 endpushramp = 60; %60                 
-                 %steady voltage for horizontal transfer stage
-                 horizontalvoltage = 9; %9/6.6 
-                 %ramp up and down for the last horiz transport coil
-                 maxhorizvoltage = 12.95; %10/6.6
-                 starthorizramp = 270; %260
-                 peakhorizramp = 310;  %350
-                 starthorizrampdown = 340;
-                 endhorizramp = 365; %360                     
-                 %steady voltage for beginning of vertical transfer
-                 beginningverticalvoltage = 10.0; %11/4 %12/4      
-                 %=============
-                 %BE VERY CAREFUL HERE TO NOT DAMAGE THE BRIDGES!!!!
-                 %=============                 
-                 %DO NOT GO ABOVE 11.0 volts for the bridges...does not get
-                 %more current due to circuit gate voltage limit (~14.3V)
-                 
-                 %initial_voltage
-                 initial_voltage = 10.0;                 
-                 num_vert_ramps = 6;                 
-                 vert_voltage = zeros(2,num_vert_ramps);
-                 vert_volt_pos = zeros(2,num_vert_ramps+1);                 
-                                 
-                 %ramp 1
-                 vert_voltage(1,1) = initial_voltage;
-                 vert_voltage(2,1) = 10.5; %10.5
-                 vert_volt_pos(1,1) = 365 + 1;
-                 vert_volt_pos(2,1) = 365 + 21;
-                 
-                 %ramp 2
-                 vert_voltage(1,2) = vert_voltage(2,1);
-                 vert_voltage(2,2) =10.5; %10.5
-                 vert_volt_pos(1,2) = vert_volt_pos(2,1);
-                 vert_volt_pos(2,2) = 365 + 50;
-                 
-                 %ramp 3
-                 vert_voltage(1,3) = vert_voltage(2,2);
-                 vert_voltage(2,3) = 11.25;%11.25
-                 vert_volt_pos(1,3) = vert_volt_pos(2,2);
-                 vert_volt_pos(2,3) = 365 + 65; %65
-                 
-                 %ramp 4
-                 vert_voltage(1,4) = vert_voltage(2,3);
-                 vert_voltage(2,4) = 11.5;11.5; %10.5 11.5
-                 vert_volt_pos(1,4) = vert_volt_pos(2,3);
-                 vert_volt_pos(2,4) = 365 + 85; %85                
-                 
-                 %ramp 5
-                 vert_voltage(1,5) = vert_voltage(2,4);
-                 FF_list = [11.75];11.75;[13];11.75;
-                 FF_Voltage = getScanParameter(FF_list, seqdata.scancycle,...
-                        seqdata.randcyclelist, 'FF_Voltage_Ramp5','V');
-                 vert_voltage(2,5) = FF_Voltage; %13.00 %13.75
-                 vert_volt_pos(1,5) = 365+120; %365+110
-                 vert_volt_pos(2,5) = 365+140; %365+130     
-                 
-                 %ramp 6
-                 vert_voltage(1,6) = vert_voltage(2,5);
-                 vert_voltage(2,6) = 12.25;12.25; %10.0 12.25
-                 vert_volt_pos(1,6) = 365+166; %166 %365+160
-                 vert_volt_pos(2,6) = 365+174; %365+174
-                 
-                 %end
-                 vert_volt_pos(1,7) = 365+174;
-
-%                %------------------------
-%                %horizontal voltage
-%                
-                 %MOT Voltage
-                 y(ind) = y(ind) + MOTvoltage.*(pos(ind)<startpushramp);                 
-                 %Ramp up for the push
-                 y(ind) = y(ind) + ((maxpushvoltage-MOTvoltage)/(pushramppeak-startpushramp).*(pos(ind)-startpushramp)+MOTvoltage).*(pos(ind)>=startpushramp).*(pos(ind)<pushramppeak);
-                 %Ramp down for the middle of the horizontal
-                 y(ind) = y(ind) + ((horizontalvoltage-maxpushvoltage)/(endpushramp-pushramppeak).*(pos(ind)-pushramppeak)+maxpushvoltage).*(pos(ind)<endpushramp).*(pos(ind)>=pushramppeak);                 
-                 %Steady voltage for the horizontal
-                 y(ind) = y(ind) + horizontalvoltage.*(pos(ind)>=endpushramp).*(pos(ind)<starthorizramp);                 
-                 %Ramp up at the end of the horizontal
-                 y(ind) = y(ind) + ((maxhorizvoltage-horizontalvoltage)/(peakhorizramp-starthorizramp).*(pos(ind)-starthorizramp)+horizontalvoltage).*(pos(ind)>=starthorizramp).*(pos(ind)<peakhorizramp);                 
-                 %hold after the ramp
-                 y(ind) = y(ind) + maxhorizvoltage.*(pos(ind)>=peakhorizramp).*(pos(ind)<starthorizrampdown);                 
-                y(ind) = y(ind) + ((beginningverticalvoltage-maxhorizvoltage)/(endhorizramp-starthorizrampdown).*(pos(ind)-starthorizrampdown)+maxhorizvoltage).*(pos(ind)<endhorizramp).*(pos(ind)>=starthorizrampdown);                
-                y(ind) = y(ind) + beginningverticalvoltage.*(pos(ind)<365).*(pos(ind)>=endhorizramp);
-                %-----------------
-                %Vertical                
-                  y(ind) = y(ind) + initial_voltage.*(pos(ind)<vert_volt_pos(1,1)).*(pos(ind)>=365);                  
-                    for jj = 1:num_vert_ramps
-                         %ramp voltage from previous value
-                         vert_volt_slope = (vert_voltage(2,jj)-vert_voltage(1,jj))/(vert_volt_pos(2,jj)-vert_volt_pos(1,jj));                         
-                         y(ind) = y(ind) + (vert_volt_slope.*(pos(ind)-vert_volt_pos(1,jj))+ vert_voltage(1,jj)).*(pos(ind)>=vert_volt_pos(1,jj)).*(pos(ind)<vert_volt_pos(2,jj));                         
-                         %set voltage in between
-                         y(ind) = y(ind) + vert_voltage(2,jj).*(pos(ind)<vert_volt_pos(1,jj+1)).*(pos(ind)>=vert_volt_pos(2,jj));                    
-                    end         
-                 %------------------------          
-            case {2,3,4,5,6,7,8,9,10,11,12} %push and all horizontal   
-                 pp = create_transport_splines_nb(channel-1);
-                 y(ind) = y(ind) + ppval(pp,x);            
-            case 13 %Extra coil                
-                %eventually can put into the above when the splines are
-                %fixed                
-                %for testing just check using the last horizontal channel
-                %y(ind) = y(ind) + ppval(create_transport_splines_nb(12-1),x);                
-                pp = create_transport_splines_nb(12);
-                 y(ind) = y(ind) + ppval(pp,x);                 
-            case 14 %1st vert transport coil [Coil 12A]    
-                 pp = create_transport_splines_nb(13);                 
-                  y(ind) = y(ind) + (x<=365).*ppval(pp,x);%horizontal section
-                %ramp between the values from 365-->365.1
-                y(ind) = y(ind) + (x>365).*(x<365.1).*...
-                    (ppval(pp,365)-(ppval(pp,365)+coilone).*(x-365)/0.1);
-                %ramp between the values from 365.1-->368
-                y(ind) = y(ind) + (x>=365.1).*(x<368).*...
-                    (-coilone+(ppval(pp,368)+coilone).*(x-365.1)/2.9);
-                %vertical section
-                y(ind) = y(ind) + (x>=368).*ppval(pp,x);     
-            case 15 %2nd vert transport coil [Coil 12B]
-                 pp = create_transport_splines_nb(14);
-                %Modified Nov 1, 2019: ramp coil up explicitly to
-                %avoid oscillations at begining
-                %horizontal section 
-                y(ind) = y(ind) + (x<=365).*(x>=310.0).*ppval(pp,x);
-                %ramp between the values from 365-->365.1
-                y(ind) = y(ind) + (x>365).*(x<365.1).*...
-                    (ppval(pp,365)-(ppval(pp,365)-coiltwo).*(x-365)/0.1);
-                %ramp between the values from 365.1-->368
-                y(ind) = y(ind) + (x>=365.1).*(x<368).*...
-                    (coiltwo+(ppval(pp,368)-coiltwo).*(x-365.1)/2.9);
-                %Modified Nov 1, 2019: sets coil to 0 explicitly to
-                %avoid oscillations at end 
-                %vertical section
-                y(ind) = y(ind) + (x>=368).*(x<=467.0).*ppval(pp,x);  
-            case 16 %3rd vert transport coil [Coil 13]   
-                 pp = create_transport_splines_nb(15);
-                %horizontal section
-                y(ind) = y(ind) + 0*(x<=365).*ppval(pp,x);
-                %ramp between the values from 360-->360.1
-                y(ind) = y(ind) + (x>365).*(x<365.1).*...
-                    (0.*(x-365)/0.1);
-                %ramp between the values from 360.1-->363
-                y(ind) = y(ind) + (x>=365.1).*(x<370).*...
-                    (0+(ppval(pp,370)+0).*(x-365.1)/4.9);
-                %Modified Nov 1, 2019: sets coil to 0 explicitly to
-                %avoid oscillations at end
-                %vertical section
-                y(ind) = y(ind) + (x>=370).*(x<=518.0).*ppval(pp,x);
-            case 17 %4th vert transport coil [coil 14]                
-                 pp = create_transport_splines_nb(16);  
-                 coil14_endpos = 538.9; %538.9           
-                %Modified Nov 1, 2019: ramp coil up explicitly to
-                %avoid oscillations at begining 
-                %curves
-                 y(ind) = y(ind) + (x>=387).*(x<=coil14_endpos).*ppval(pp,x);    
-                %Modified Nov 1, 2019: sets coil to 0 explicitly to
-                %avoid oscillations at end
-               y(ind) = y(ind) + (x>coil14_endpos).*(ppval(pp,coil14_endpos)+(+0.01-ppval(pp,coil14_endpos)).*(x-coil14_endpos)/(539-coil14_endpos)); 
-            case 18 %bottom QP coil lower FET [coil 15]                
-                 %this controls the FET which connects coil 15 to
-                 %ground  
-                 pp = create_transport_splines_nb(17);
-                %Modified Nov 1, 2019: ramp coil up explicitly to
-                %avoid oscillations at begining 
-                 y(ind) = y(ind) + (x>=431).*ppval(pp,x);                                                            
-            case 19 %top qp coil (FET 16)               
-                %this is just the current in the top coil
-                pp = create_transport_splines_nb(18);
-                y(ind) = y(ind) + ppval(pp,x); 
-            case 20 %kitten FET
-                 %when 15 is positive this is saturated                 
-                 %when 15 is negative this is 16-15                    
-                pp1 = create_transport_splines_nb(17);
-                pp2 = create_transport_splines_nb(21);
-                if length(x)>1                     
-                     if (x(2)-x(1))>0 %increasing position                     
-                        k_turn_on_point = 0.0;                                                  
-                     else %coming back                                                   
-                        k_turn_on_point = 0;                         
-                     end  
-                    y(ind) = y(ind) + 60.0*(ppval(pp1,x)>=k_turn_on_point); %some very large current
-                    %prevent rippling at the beginning
-                    y(ind) = y(ind) + nullval.*(y(ind)==0).*(x<=450);
-                    y(ind) = y(ind) + (ppval(pp2,x)+ppval(pp1,x)).*(ppval(pp1,x)<k_turn_on_point).*(x>450);                
-                end
-            case 21 %Power Dump                
-                pp_vert12a = create_transport_splines_nb(13);
-                pp_vert12b = create_transport_splines_nb(14);
-                pp_vert13 = create_transport_splines_nb(15);
-                pp_vert14 = create_transport_splines_nb(16);
-                pp_vert15 = create_transport_splines_nb(17);
-                pp_vert16 = create_transport_splines_nb(16);                
-                Itotal = 100;                
-                Ivert = abs(ppval(pp_vert12a,x))+abs(ppval(pp_vert12b,x))+...
-                    abs(ppval(pp_vert13,x))+abs(ppval(pp_vert14,x))+...
-                    abs(ppval(pp_vert15,x)).*(ppval(pp_vert15,x)>0)+abs(ppval(pp_vert16,x));                
-                y(ind) = y(ind) + ...
-                (Itotal - Ivert).*...
-                ((Itotal - Ivert)>0);                
-                y(ind) = y(ind).*(x<429);
-            case 22 %15/16 TTL switch           
-                %this is TTL low when the current is less than zero                                
-                 pp = create_transport_splines_nb(17);                 
-                 if length(x)>1                     
-                     if (x(2)-x(1))>0 %increasing position    
-                        turn_on_point = 0*1.2; %1.2 %0.75                                                 
-                     else %coming back
-                        turn_on_point = 2.4; %1.5                         
-                     end                     
-                     y(ind) = y(ind) + (ppval(pp,x)<turn_on_point) + (ppval(pp,x)>=turn_on_point)*-1.0;
-                 end            
-            case 23 %new coil relay                
-                coil_relay_switch_pt = 210;                
-                y(ind) = y(ind) + (x>coil_relay_switch_pt) - (x<=coil_relay_switch_pt);                
-            otherwise                 
-                error('Invalid channel');                
-        end        
-    end      
-
-%%
-
+   
 % Making a new version that is simpler and easier to read.
 %sub function that calculates the current values of the different channels
-    function y = channel_current2(channel_name,pos,offset,width,coilrange)       
+    function y = channel_current(channel_name,pos,offset,width,coilrange)       
         y = (pos<coilrange(1))*nullval;
         y = y + (pos>=coilrange(2))*nullval;        
         %indices of non-null value entries

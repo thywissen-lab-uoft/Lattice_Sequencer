@@ -36,7 +36,7 @@ num_analog_channels = 21;                       % number analog channels
 num_dig_channels = 2;                           % number digital channels (these MUST be at the end)
 
 coil_scale_factors = 1*ones(1,num_channels);    % scaling of the max current in each coil
-coil_widths = ones(1,num_channels);             % widths of each of the coil curves
+coil_widths = ones(1,num_channels);             % widths of each of the coil curves (CF I believe this is scaling factor and not a position)
 
 % Center axis position of each coil in mm (why are there 23 entries?0
 coil_offset = [0 30 41 43 85 116 148 179 212 242 274 338 350 365 365 365 ...
@@ -46,6 +46,12 @@ coil_offset = [0 30 41 43 85 116 148 179 212 242 274 338 350 365 365 365 ...
 coil_offset(1:13) = 0;          % coil_offset(12:end) = 0;
 coil_offset(14:end) = 0;        % coil_offset(12:end) = 0;
 coil_range = ones(2,num_channels);  % relevant range of the given coil (2xnumber of channels)
+
+% coil_range are the start and endpoints of when this coil is active. The
+% code will not do any new digital write outside of this region (it sends
+% it to the null value.)
+%
+% Coil width must then scale up and down the size of activity.
 
 % channels the coils correspond to on the ADWIN
 % Negative corresponds to a digital channel

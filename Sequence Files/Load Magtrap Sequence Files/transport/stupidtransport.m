@@ -442,35 +442,55 @@ y = currentarray;
                 y(x<000.0) = nullval;                   % Assign null value to regions outside
                 y(x>=100.0) = nullval;                  % Assign null value to regions outside
             case 'MOT Coil'
-                pp = create_transport_splines_nb(2);
-                y(ind) = y(ind) + ppval(pp,x); 
+                pp = create_transport_splines_nb(2);    % Load the spline
+                y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                y(x<000.0) = nullval;                   % Assign null value to regions outside
+                y(x>=100.0) = nullval;                  % Assign null value to regions outside
             case 'Coil 3'
-                pp = create_transport_splines_nb(3);
-                y(ind) = y(ind) + ppval(pp,x);     
+                pp = create_transport_splines_nb(3);    % Load the spline
+                y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                y(x<000.0) = nullval;                   % Assign null value to regions outside
+                y(x>=115.0) = nullval;                  % Assign null value to regions outside
             case 'Coil 4'
-                pp = create_transport_splines_nb(4);
-                y(ind) = y(ind) + ppval(pp,x);    
+                pp = create_transport_splines_nb(4);    % Load the spline
+                y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                y(x<035.0) = nullval;                   % Assign null value to regions outside
+                y(x>=140.0) = nullval;                  % Assign null value to regions outside
             case 'Coil 5'
-                pp = create_transport_splines_nb(5);
-                y(ind) = y(ind) + ppval(pp,x);    
+                pp = create_transport_splines_nb(5);    % Load the spline
+                y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                y(x<050.0) = nullval;                   % Assign null value to regions outside
+                y(x>=180.0) = nullval;                  % Assign null value to regions outside
             case 'Coil 6'
-                pp = create_transport_splines_nb(6);
-                y(ind) = y(ind) + ppval(pp,x);    
+                pp = create_transport_splines_nb(6);    % Load the spline
+                y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                y(x<090.0) = nullval;                   % Assign null value to regions outside
+                y(x>=210.0) = nullval;                  % Assign null value to regions outside
             case 'Coil 7'
-                pp = create_transport_splines_nb(7);
-                y(ind) = y(ind) + ppval(pp,x);    
+                pp = create_transport_splines_nb(7);    % Load the spline
+                y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                y(x<110.0) = nullval;                   % Assign null value to regions outside
+                y(x>=250.0) = nullval;                  % Assign null value to regions outside
             case 'Coil 8'
-                pp = create_transport_splines_nb(8);
-                y(ind) = y(ind) + ppval(pp,x);    
+                pp = create_transport_splines_nb(8);    % Load the spline
+                y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                y(x<150.0) = nullval;                   % Assign null value to regions outside
+                y(x>=270.0) = nullval;                  % Assign null value to regions outside
             case 'Coil 9'
-                pp = create_transport_splines_nb(9);
-                y(ind) = y(ind) + ppval(pp,x);    
+                pp = create_transport_splines_nb(9);    % Load the spline
+                y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                y(x<180.0) = nullval;                   % Assign null value to regions outside
+                y(x>=300.0) = nullval;                  % Assign null value to regions outside
             case 'Coil 10'
-                pp = create_transport_splines_nb(10);
-                y(ind) = y(ind) + ppval(pp,x);    
+                pp = create_transport_splines_nb(10);    % Load the spline
+                y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                y(x<200.0) = nullval;                   % Assign null value to regions outside
+                y(x>=330.0) = nullval;                  % Assign null value to regions outside
             case 'Coil 11'
-                pp = create_transport_splines_nb(11);
-                y(ind) = y(ind) + ppval(pp,x);    
+                pp = create_transport_splines_nb(11);    % Load the spline
+                y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                y(x<250.0) = nullval;                   % Assign null value to regions outside
+                y(x>=380.0) = nullval;                  % Assign null value to regions outside 
             case 'Coil Extra'
                 pp = create_transport_splines_nb(12);
                 y(ind) = y(ind) + ppval(pp,x);                        

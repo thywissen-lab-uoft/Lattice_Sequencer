@@ -79,15 +79,6 @@ transport_channels = [18 7:17 9 22:24 20:21 1 3 17 -22 -28];
 enable = ones(1,23);
 
 
-%% Error Handling
-% check that 'switch 15/16' is enabled if coils 15&16 are enabled
-if (enable(transport_channels==21) || enable(transport_channels==1)) && (~enable(transport_channels==-22))
-    error('Switch 15/16 (d-ch 22, array-idx 22) needs to be enabled when enabling coil 15 or 16!')
-end
-% check that the 3/11b relay is renabled when coil 11b (used with coil 3 FET) is enabled
-if enable(13) && ~enable(transport_channels==-28)
-    error('Coil 3/11b relay (d-ch 28, array-idx 23) needs to be enabled when enabling coil 11b!')
-end
 %% Defining the Coil Ranges
 % coil_range is 2xN
 % The first row is where the control starts and the seconds row is where it

@@ -230,39 +230,66 @@ nullval = -100;
 % preallocate the full array (we are going to output the current in each
 % channel as a function of time); only need to allocate space for those
 % channels that are enabled.
-currentarray = zeros(length(time)*sum(enable),3);
+currentarray = zeros(length(time)*sum(enable),3); %[time,channel,value]
 
 %go through for each channel
 j = 0;
 for i = 1:num_channels
-    %indices for the current channel
+    % indices for the current channel
     channel_indices = ((i-1)*length(time)+1):(i*length(time));         
     if i==21
         %for future considerations to keep current constant
         currentarray(channel_indices,3) = nullval;
         continue;
     end    
+    
+    % At each position get the value of the current
     currentarray(channel_indices,1) = time;
     currentarray(channel_indices,2) = transport_channels(i);
     currentarray(channel_indices,3) = channel_current(i,position,coil_offset(i),...
         coil_widths(i),coil_range(:,i));
+        
    
-    % Digital channels
+    % If channel is negative it is a digital channel
     if transport_channels(i)<0 
         %see when it switches and set the digital channel high or low
-        f = currentarray(channel_indices(2:end),3)-currentarray(channel_indices(1:(end-1)),3);
+        f = currentarray(channel_indices(2:end),3)-currentarray(channel_indices(1:(end-1)),3); % The difference in value (be careful of -100's)        
         g = currentarray(channel_indices(1:(end-1)),1).*(f~=0);        
         ff = nonzeros(f);
         gg = nonzeros(g);        
+        disp(['digital channel ' num2str(abs(transport_channels(i)))]);
+        disp('old');
         for j = 1:length(ff)
             if ff(j)==2
                 %set digital high
-                setDigitalChannel(gg(j),transport_channels(i)*-1,1);                
+                setDigitalChannel(gg(j),transport_channels(i)*-1,1);    
+                disp(['Ch' num2str(abs(transport_channels(i))) ' ' num2str(gg(j)) ',' num2str(1)]);
+
             elseif ff(j)==-2
                 %set digital low
-                setDigitalChannel(gg(j),transport_channels(i)*-1,0);                
+                setDigitalChannel(gg(j),transport_channels(i)*-1,0);    
+                disp(['Ch' num2str(abs(transport_channels(i))) ' ' num2str(gg(j)) ',' num2str(0)]);
+
             end
-        end        
+        end    
+        
+        disp('New');
+        
+        % Alternative way of doing digital by CF which makes more sense
+        ch = abs(transport_channels(i));            % digital channel number
+        vals = currentarray(channel_indices,:);        
+        % Remove all references to the null value
+        binds = [vals(:,3)==nullval];
+        vals(binds,:)=[];        
+        dV = diff(vals(:,3));
+        inds = find(dV~=0); % Indeces where a change is perceived
+        for kk=1:length(inds)
+            n = inds(kk);
+            if dV(n)>0; state = 1;else;state = 0;end            
+            t = vals(n+1,1);            
+%            setDigitalChannel(gg(j),abs(transport_channels(i)),state);  
+            disp(['Ch' num2str(abs(transport_channels(i))) ' ' num2str(t) ',' num2str(state)]);
+        end              
     end
     
     %voltage channel, save for calculating powers later
@@ -291,9 +318,10 @@ for i = 1:num_channels
     end      
 end
 
-%weed out any entries that are less than zero and only return the analog channels
+% Remove unused entries and only return the analog channels
 ind = logical(currentarray(1:length(time)*num_analog_channels,3)~=nullval);
 currentarray = currentarray(ind,:);
+
 
 % Return
 y = currentarray;

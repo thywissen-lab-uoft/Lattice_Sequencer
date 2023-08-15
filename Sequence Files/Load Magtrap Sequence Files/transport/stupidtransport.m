@@ -247,6 +247,7 @@ j = 0;
 for i = 1:num_channels
     %indices for the current channel
     channel_indices = ((i-1)*length(time)+1):(i*length(time));    
+    
     if i==21
         %for future considerations to keep current constant
         currentarray(channel_indices,3) = nullval;
@@ -254,9 +255,10 @@ for i = 1:num_channels
     end    
     currentarray(channel_indices,1) = time;
     currentarray(channel_indices,2) = transport_channels(i);
-    currentarray(channel_indices,3) = channel_current(i,position,coil_offset(i),coil_widths(i),coil_range(:,i));
+    currentarray(channel_indices,3) = channel_current(i,position,coil_offset(i),...
+        coil_widths(i),coil_range(:,i));
    
-    %digital channels
+    % Digital channels
     if transport_channels(i)<0 
         %see when it switches and set the digital channel high or low
         f = currentarray(channel_indices(2:end),3)-currentarray(channel_indices(1:(end-1)),3);
@@ -274,7 +276,8 @@ for i = 1:num_channels
         end        
     end
     
-    if i==1 %voltage channel, save for calculating powers later
+    %voltage channel, save for calculating powers later
+    if i==1 
         voltages = currentarray(channel_indices,3);
     end
     
@@ -299,16 +302,15 @@ for i = 1:num_channels
     end      
 end
 
-%weed out any entries that are less than zero
-%and only return the analog channels
+%weed out any entries that are less than zero and only return the analog channels
 ind = logical(currentarray(1:length(time)*num_analog_channels,3)~=nullval);
 currentarray = currentarray(ind,:);
 
-%return
+% Return
 y = currentarray;
 %% 
 
-% I belive this function is the real meat which is where we are actually
+% CF : I belive this function is the real meat which is where we are actually
 % use the splines to specify the current value.
 
 %sub function that calculates the current values of the different channels
@@ -412,8 +414,8 @@ y = currentarray;
                  %end
                  vert_volt_pos(1,7) = 365+174;
 
-%                   %------------------------
-%                   %horizontal voltage
+%                %------------------------
+%                %horizontal voltage
 %                
                  %MOT Voltage
                  y(ind) = y(ind) + MOTvoltage.*(pos(ind)<startpushramp);                 

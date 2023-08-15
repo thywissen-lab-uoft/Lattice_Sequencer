@@ -19,7 +19,7 @@ global seqdata;
 
 %% Spline Parameters
 
-vertical_scale = 1.0;
+% vertical_scale = 1.0;
 
 % Location of splines (MOVED!!!)
 curpath = fileparts(mfilename('fullpath'));
@@ -28,8 +28,8 @@ filename1 = 'rev48coilone.txt';
 filename2 = 'rev48coiltwo.txt';
 
 % Load the splines WHAT ARE THESE?
-coilone = dlmread(fullfile(curpath,mydir,filename1) ,',',0,1)*vertical_scale;
-coiltwo = dlmread(fullfile(curpath,mydir,filename2),',',0,1)*vertical_scale;
+coilone = dlmread(fullfile(curpath,mydir,filename1) ,',',0,1);
+coiltwo = dlmread(fullfile(curpath,mydir,filename2),',',0,1);
 
 %% Some Parameters
 
@@ -44,7 +44,7 @@ num_dig_channels = 2;
 
 overallscale = 1.0; %scales all the transport currents
 
-verticalscale = 1*1.00; %scales the vertical currents
+% verticalscale = 1*1.00; %scales the vertical currents
 
 coil_scale_factors = 1*ones(1,num_channels);%scaling of the max current in each coil
 
@@ -159,29 +159,29 @@ coil_widths(13) = 0.96;
 %first vertical transport -- coil 12A
 coil_range(1,14) = 260; 
 coil_range(2,14) = 430; %430
-coil_scale_factors(14) = 1.0*verticalscale; %1.0
+coil_scale_factors(14) = 1.0; %1.0
 coil_offset(14) = 0; 
 coil_widths(14) = 1.0; 
 
 %second vertical transport -- coil 12B
 coil_range(1,15) = 280; 
 coil_range(2,15) = 480; %450 %460
-coil_scale_factors(15) = -1.0*verticalscale; %-1.0
+coil_scale_factors(15) = -1.0; %-1.0
 coil_offset(15) = 0; 
 coil_widths(15) = 1.0; 
 
 %third vertical transport -- coil 13
 coil_range(1,16) = 358; 
 coil_range(2,16) = 520;
-coil_scale_factors(16) = 1.0*verticalscale; %1.1  *rev1*1.0  *rev2* 1.3 SC: 1.1
+coil_scale_factors(16) = 1.0; %1.1  *rev1*1.0  *rev2* 1.3 SC: 1.1
 
 %fourth vertical transport -- coil 14
 coil_range(1,17) = 370; %70
 coil_range(2,17) = 539;
-coil_scale_factors(17) = 1.0*verticalscale;
+coil_scale_factors(17) = 1.0;
 
 %Quadrupole factor
-qp_scale_factor = 1.0*verticalscale; %1.0  *rev1*1.15  *rev2* 1.0 SC: 1.1
+qp_scale_factor = 1.0; %1.0  *rev1*1.15  *rev2* 1.0 SC: 1.1
 
 %bottom qp coil
 coil_range(1,18) = 427; %427 

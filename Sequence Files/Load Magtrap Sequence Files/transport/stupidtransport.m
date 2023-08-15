@@ -36,7 +36,7 @@ mydir = 'transport_splines';
 filename1 = 'rev48coilone.txt';
 filename2 = 'rev48coiltwo.txt';
 
-% Load the splines
+% Load the splines WHAT ARE THESE?
 coilone = dlmread(fullfile(curpath,mydir,filename1) ,',',0,1)*vertical_scale;
 coiltwo = dlmread(fullfile(curpath,mydir,filename2),',',0,1)*vertical_scale;
 
@@ -127,6 +127,9 @@ if enable(13) && ~enable(transport_channels==-28)
     error('Coil 3/11b relay (d-ch 28, array-idx 23) needs to be enabled when enabling coil 11b!')
 end
 %% Defining the Coil Ranges
+% coil_range is 2xN
+% The first row is where the control starts and the seconds row is where it
+% finishes in position?
 
 %FEED FORWARD
 coil_range(1,1) = 0;

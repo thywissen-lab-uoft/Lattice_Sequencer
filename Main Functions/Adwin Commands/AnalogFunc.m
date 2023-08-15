@@ -6,6 +6,8 @@ global seqdata;
 %fhandle is the handle to a function that takes as its first argument a
 %time array. The rest of the parameters are passed in form varargin
 
+% CF : This is basically obsolete now as we always use all the coils, also
+% this is a stupid place to such a flag
 if ~isfield(seqdata,'coil_enable')
     % enables all transport channels -- also the default (can be changed for debugging)
     seqdata.coil_enable = ones(1,23);

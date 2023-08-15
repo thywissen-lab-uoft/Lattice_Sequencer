@@ -227,17 +227,16 @@ end
 %array
 nullval = -100;
 
-%preallocate the full array (we are going to output the current in each
-%channel as a function of time); only need to allocate space for those
-%channels that are enabled.
+% preallocate the full array (we are going to output the current in each
+% channel as a function of time); only need to allocate space for those
+% channels that are enabled.
 currentarray = zeros(length(time)*sum(enable),3);
 
 %go through for each channel
 j = 0;
 for i = 1:num_channels
     %indices for the current channel
-    channel_indices = ((i-1)*length(time)+1):(i*length(time));    
-    
+    channel_indices = ((i-1)*length(time)+1):(i*length(time));         
     if i==21
         %for future considerations to keep current constant
         currentarray(channel_indices,3) = nullval;

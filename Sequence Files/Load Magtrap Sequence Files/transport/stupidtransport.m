@@ -61,6 +61,13 @@ max_fet_power = [0 700 5000 5000 700 700 700 700 700 700 700 ...
 transport_channels = [18 7:17 9 22:24 20:21 1 3 17 -22 -28];
 % corresponding coils : [FF Push MOT 3:11 3 12a-13 14 15 16 kitten 11]
 
+% transport_analog = {'Transport FF','Push Coil','MOT Coil',...
+%     'Coil 3','Coil 4','Coil 5','Coil 6','Coil 7','Coil 8', 'Coil 9', ...
+%     'Coil 10','Coil 11','Coil Extra','Coil 12a','Coil 12b','Coil 13',...
+%     'Coil 14', 'Coil 15','Coil 16','kitten','Coil 11'};
+% transport_digital = {'15/16 Switch', 'Transport Relay'};
+%
+
 % Whether to enable each channel
 enable = ones(1,23);
 
@@ -243,7 +250,7 @@ for i = 1:num_channels
         continue;
     end    
     
-    % At each position get the value of the current
+    % At each position get the value of the current (or digital channel)
     currentarray(channel_indices,1) = time;
     currentarray(channel_indices,2) = transport_channels(i);
     currentarray(channel_indices,3) = channel_current(i,position,coil_offset(i),...
@@ -262,26 +269,28 @@ for i = 1:num_channels
         for kk=1:length(inds)
             n = inds(kk);
             if dV(n)>0; state = 1;else;state = 0;end            
-%             t = vals(n,1);        % What it really should be
+%             t = vals(n,1);      % What it really should be
             t = vals(n+1,1);      % To match old code,      
             setDigitalChannel(t,abs(transport_channels(i)),state);  
-%             disp(['Ch' num2str(abs(transport_channels(i))) ' ' num2str(t) ',' num2str(state)]);            
         end              
     end
     
-    if (i<=num_analog_channels)          
-  
-        %convert currents to channel voltages
-        currentarray(channel_indices,3) = seqdata.analogchannels(transport_channels(i)).voltagefunc{2}(currentarray(channel_indices,3).*coil_scale_factors(i)).*(currentarray(channel_indices,3)~=nullval)+...
-            currentarray(channel_indices,3).*(currentarray(channel_indices,3)==nullval);
-        
-        % check the voltages are in range
-        if sum((currentarray(channel_indices,3)~=nullval).*(currentarray(channel_indices,3)>seqdata.analogchannels(transport_channels(i)).maxvoltage))||...
-                sum((currentarray(channel_indices,3)~=nullval).*(currentarray(channel_indices,3)<seqdata.analogchannels(transport_channels(i)).minvoltage))
-            error(['Voltage out of range when computing transport Channel:' num2str(transport_channels(i))]);
-        end
+    if (i<=num_analog_channels)  
+        % Convert current to voltage!!
+        currentarray(channel_indices,3) = ...
+            seqdata.analogchannels(transport_channels(i)).voltagefunc{2}...
+            (currentarray(channel_indices,3).*coil_scale_factors(i)).*(currentarray(channel_indices,3)~=nullval)+...
+            currentarray(channel_indices,3).*(currentarray(channel_indices,3)==nullval); 
     end      
 end
+
+% check the voltages are in range
+% THIS IS USEFUL BUT I REMOVED FOR SIMPLICITY< SHOULD PUT IT BACK TO MAKE
+% SURE NOT REQUESTING OVER ADWIN VOTLAGFES
+%         if sum((currentarray(channel_indices,3)~=nullval).*(currentarray(channel_indices,3)>seqdata.analogchannels(transport_channels(i)).maxvoltage))||...
+%                 sum((currentarray(channel_indices,3)~=nullval).*(currentarray(channel_indices,3)<seqdata.analogchannels(transport_channels(i)).minvoltage))
+%             error(['Voltage out of range when computing transport Channel:' num2str(transport_channels(i))]);
+%         end
 
 % Remove unused entries and only return the analog channels
 ind = logical(currentarray(1:length(time)*num_analog_channels,3)~=nullval);

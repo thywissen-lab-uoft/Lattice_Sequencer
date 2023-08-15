@@ -230,23 +230,12 @@ elseif (sum(position>539.1));
 end
 
 %% Iterate and assign current values
+nullval = -100; % This is dumb and we should use NaN
 
-%This value means that this channel value can be neglected from the update
-%array
-nullval = -100;
-
-% preallocate the full array (we are going to output the current in each
-% channel as a function of time); only need to allocate space for those
-% channels that are enabled.
+% Preallocate the entire array
 currentarray = zeros(length(time)*sum(enable),3); %[time,channel,value]
 
-%go through for each channel
-j = 0;
-
-
-
 for i = 1:length(transport_names)
-
     % indices for the current channel
     channel_indices = ((i-1)*length(time)+1):(i*length(time));         
     if i==21
@@ -258,15 +247,14 @@ for i = 1:length(transport_names)
     % At each position get the value of the current (or digital channel)
     currentarray(channel_indices,1) = time;
     currentarray(channel_indices,2) = transport_channels(i);
-     currentarray(channel_indices,3) = channel_current(transport_names{i},position,coil_offset(i),...
-        coil_widths(i),coil_range(:,i));       
+    currentarray(channel_indices,3) = channel_current(...
+        transport_names{i},position,coil_offset(i),coil_widths(i),coil_range(:,i));       
 %    
     % If channel is negative it is a digital channel
     % CF : Edited to make more sense.
     if transport_channels(i)<0                
         vals = currentarray(channel_indices,:);        
         binds = [vals(:,3)==nullval];          % Remove all references to the null value
-
         vals(binds,:)=[];        
         dV = diff(vals(:,3));
         inds = find(dV~=0); % Indeces where a change is perceived
@@ -279,8 +267,8 @@ for i = 1:length(transport_names)
         end              
     end
     
+    % Convert current to voltage.
     if (i<=num_analog_channels)  
-        % Convert current to voltage!!
         currentarray(channel_indices,3) = ...
             seqdata.analogchannels(transport_channels(i)).voltagefunc{2}...
             (currentarray(channel_indices,3).*coil_scale_factors(i)).*(currentarray(channel_indices,3)~=nullval)+...

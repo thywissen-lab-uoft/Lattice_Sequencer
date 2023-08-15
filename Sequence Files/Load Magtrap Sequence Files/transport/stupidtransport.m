@@ -76,46 +76,8 @@ coil_range = ones(2,num_channels); %relevant range of the given coil (2xnumber o
 transport_channels = [18 7:17 9 22:24 20:21 1 3 17 -22 -28];
 % corresponding coils : [FF Push MOT 3:11 3 12a-13 14 15 16 kitten 11]
 
-%%
+enable = ones(1,23);
 
-% UNTESTED
-% This is a new feature added in July 2016 for debugging
-% Only added to the file
-% transport_coil_current_kitten_troubleshoot_raise_topQP.m, which is the
-% one currently used in the expreimental sequence (called from AnalogFunc
-% and AnalogFuncTo). Copy/paste if needed in other transport coil current
-% functions.
-% An optional fourth argument may be given, that represents a list
-% of channels (not coil numbers) that are to be enabled. Alternatively, an
-% arrays of ones and zeros with length 'num_channels' can be given, where
-% a one enables the respective channel in the order used by this function.
-% The default state (no fourth argument given) is that all channels are
-% enabled.
-% Search for 'enable' to find all places where this feature has been added.
-
-% which channels are enabled?
-if nargin < 4
-    % default: all transport channels are enabled
-    enable = ones(1,num_channels);
-else
-    if length(varargin{1}) == num_channels
-        % option one: give an arrau o ones and zeros for every transport
-        % channel; also covers the case where all channels are selected via
-        % their channel number
-        enable = (varargin{1} ~= 0);
-    else
-        % option two: give an array with channel numbers that should be
-        % enabled. Then generate the enable array of ones and zeros
-        % accordingly.
-        enable = zeros(1,num_channels);
-        selection = varargin{1};
-        for i=1:length(num_channels)
-            if ~isempty(find(selection==transport_channels(i),1))
-                enable(i) = 1;
-            end
-        end
-    end
-end
 
 %% Error Handling
 % check that 'switch 15/16' is enabled if coils 15&16 are enabled

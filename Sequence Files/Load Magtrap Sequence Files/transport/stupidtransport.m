@@ -13,7 +13,7 @@
 %
 % This is me trying to make it ismpler
 %------
-function y = stupidtransport(time,position,flag,varargin)
+function y = stupidtransport(time,position,flag)
 
 global seqdata;
 

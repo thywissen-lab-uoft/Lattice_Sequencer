@@ -269,22 +269,8 @@ for i = 1:num_channels
         end              
     end
     
-    % voltage channel, save for calculating powers later
-    % CF: This is the feedforward channel
-%     if i==1 
-%         voltages = currentarray(channel_indices,3);
-%     end
-    
     if (i<=num_analog_channels)          
-        %check max FET power is not exceeded
-        %NOTE: This should not be viewed as perfect...FET's may still fail
-%         if (transport_channels(i)~=18 && transport_channels(i)~=3) %skip the voltage and kitten channels
-%             
-%             if sum(((abs(currentarray(channel_indices,3)).*voltages-currentarray(channel_indices,3).^2*coil_resistance(i)/1000).*(currentarray(channel_indices,3)~=nullval))>max_fet_power(i))
-%                 warning(['FET Power exceeded for channel:' num2str(transport_channels(i))]);
-%             end
-%             
-%         end       
+  
         %convert currents to channel voltages
         currentarray(channel_indices,3) = seqdata.analogchannels(transport_channels(i)).voltagefunc{2}(currentarray(channel_indices,3).*coil_scale_factors(i)).*(currentarray(channel_indices,3)~=nullval)+...
             currentarray(channel_indices,3).*(currentarray(channel_indices,3)==nullval);

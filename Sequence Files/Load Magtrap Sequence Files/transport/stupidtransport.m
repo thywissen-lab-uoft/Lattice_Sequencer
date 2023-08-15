@@ -17,14 +17,8 @@ function y = stupidtransport(time,position)
 
 global seqdata;
 
-%if the flag = 1 this outputs a nxm array where n is the number of channels
-%and m is the position
-% if nargin < 3
-%     flag = 0; 
-% end
 
 flag = 0;
-%define the transport parameters
 
 %% Spline Parameters
 
@@ -286,6 +280,8 @@ for i = 1:num_channels
     end
     
     if (~flag && i<=num_analog_channels)          
+%         keyboard
+        disp('hi1')
         %check max FET power is not exceeded
         %NOTE: This should not be viewed as perfect...FET's may still fail
         if (transport_channels(i)~=18 && transport_channels(i)~=3) %skip the voltage and kitten channels
@@ -302,19 +298,11 @@ for i = 1:num_channels
         if sum((currentarray(channel_indices,3)~=nullval).*(currentarray(channel_indices,3)>seqdata.analogchannels(transport_channels(i)).maxvoltage))||...
                 sum((currentarray(channel_indices,3)~=nullval).*(currentarray(channel_indices,3)<seqdata.analogchannels(transport_channels(i)).minvoltage))
             error(['Voltage out of range when computing transport Channel:' num2str(transport_channels(i))]);
-        end       
+        end
+    else
+        disp('hi2');
     end      
 end
-
-% if flag
-%     ind = logical(currentarray(:,3)==nullval);
-%     currentarray(ind,3) = 0;    
-%     y = zeros(num_analog_channels,length(position));
-%     for i = 1:num_analog_channels
-%         y(i,:) = currentarray(((i-1)*length(position)+1):(i*length(position)),3);
-%     end       
-%     return;
-% end
 
 %weed out any entries that are less than zero
 %and only return the analog channels

@@ -84,21 +84,23 @@ coil_range(1,2) = 0; %0
 coil_range(2,2) = 100; %50 for non-divergent curves
 coil_widths(2) = 1.0;
 coil_scale_factors(2) = 1.2; %1.05
+coil_scale_factors(2) = 1; %1.05
+
 coil_offset(2) = 0; %-0.65
 
-%MOT Coil range
+% MOT Coil range
 coil_range(1,3) = 0;
 coil_range(2,3) = 100; %75 for non-divergent curves
 coil_scale_factors(3) = 1.0;
 coil_offset(3) =  0;
 
- %First horizontal transport
+% First horizontal transport
 coil_range(1,4) = 0;
 coil_range(2,4) = 115; %115 for non-divergent curves
 coil_scale_factors(4) = 1.0;
 coil_offset(4) = 0;
 
-%second horizontal transport
+% second horizontal transport
 coil_range(1,5) = 35;
 coil_range(2,5) = 140;
 coil_scale_factors(5) = 1.0;
@@ -447,10 +449,13 @@ y = currentarray;
                 y(x<000.0) = nullval;                   % Assign null value to regions outside
                 y(x>=100.0) = nullval;                  % Assign null value to regions outside
             case 'Coil 3'
-                pp = create_transport_splines_nb(3);    % Load the spline
-                y = ppval(pp,pos);                      % Evaluate the spline everywhere                
-                y(x<000.0) = nullval;                   % Assign null value to regions outside
-                y(x>=115.0) = nullval;                  % Assign null value to regions outside
+                % This causes MASSIVE oscillations... why?
+%                 pp = create_transport_splines_nb(3);    % Load the spline
+%                 y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+%                 y(x<000.0) = nullval;                   % Assign null value to regions outside
+%                 y(x>=115.0) = nullval;                  % Assign null value to regions outside
+                pp = create_transport_splines_nb(3);
+                y(ind) = y(ind) + ppval(pp,x);     
             case 'Coil 4'
                 pp = create_transport_splines_nb(4);    % Load the spline
                 y = ppval(pp,pos);                      % Evaluate the spline everywhere                

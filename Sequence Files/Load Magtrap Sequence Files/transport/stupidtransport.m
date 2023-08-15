@@ -231,6 +231,7 @@ currentarray = zeros(length(time)*sum(enable),3); %[time,channel,value]
 
 %go through for each channel
 j = 0;
+
 for i = 1:num_channels
     % indices for the current channel
     channel_indices = ((i-1)*length(time)+1):(i*length(time));         

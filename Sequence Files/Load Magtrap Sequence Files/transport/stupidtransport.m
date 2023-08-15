@@ -440,7 +440,7 @@ y = currentarray;
                 x = pos;
                 x(x<000.0)  = [];                       % Dont update Adwin channel before here
                 x(x>=100.0) = [];                       % Dont update Adwin channel after here
-                x = (x-0)/1.00;                         % Offset and scale the region
+                x = (x-0.00)/1.00;                      % Offset and scale the region
                 pp = create_transport_splines_nb(1);    % Load the spline
                 y(ind) = y(ind) + ppval(pp,x);          % Evaluate the spline
             case 'MOT Coil'

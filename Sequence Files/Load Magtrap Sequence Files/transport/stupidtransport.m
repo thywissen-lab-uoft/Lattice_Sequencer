@@ -153,6 +153,8 @@ coil_scale_factors(13) = 0.96; %0.96 %.93
 coil_offset(13) = 3; %0 %6
 coil_widths(13) = 0.96;
 
+% These offset and widths are really important. I dont see a physical
+% reason for the width, but alas, I don't want to change the values
 %% Vertical Transport Ranges
 
 %first vertical transport -- coil 12A

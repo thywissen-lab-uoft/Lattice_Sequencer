@@ -31,38 +31,38 @@ coiltwo = dlmread(fullfile(curpath,mydir,filename2),',',0,1);
 
 %% Some Parameters
 
-num_channels = 23;          % number of transport channels
-num_analog_channels = 21; % number of analog channels
+num_channels = 23;                              % number transport channels
+num_analog_channels = 21;                       % number analog channels
+num_dig_channels = 2;                           % number digital channels (these MUST be at the end)
 
+coil_scale_factors = 1*ones(1,num_channels);    % scaling of the max current in each coil
+coil_widths = ones(1,num_channels);             % widths of each of the coil curves
 
-% number of digital channels (these MUST be at the end)
-num_dig_channels = 2;
+% Center axis position of each coil in mm (why are there 23 entries?0
+coil_offset = [0 30 41 43 85 116 148 179 212 242 274 338 350 365 365 365 ...
+    365 365 365 365 365 365 365]; 
 
-% scaling of the max current in each coil
-coil_scale_factors = 1*ones(1,num_channels);
-
-coil_widths = ones(1,num_channels);%widths of each of the coil curves
-
-% Center axis position in mm
-coil_offset = [0 30 41 43 85 116 148 179 212 242 274 338 350 365 365 365 365 365 365 365 365 365 365]; %338
-coil_offset(1:13) = 0; %coil_offset(12:end) = 0;
-coil_offset(14:end) = 0; %coil_offset(12:end) = 0;
 % CF : Why does coil offset get overwritten?
+coil_offset(1:13) = 0;          % coil_offset(12:end) = 0;
+coil_offset(14:end) = 0;        % coil_offset(12:end) = 0;
+coil_range = ones(2,num_channels);  % relevant range of the given coil (2xnumber of channels)
 
 
-coil_resistance = [0 375 418 100 100 100 100 100 100 100 100 100 100 188 173 173 173+70 310 310 310 310];
+% Resistance of each coil (CF : This seems not very useful to caculate since
+% thermal parameters are difficult to predict)
+coil_resistance = [0 375 418 100 100 100 100 100 100 100 100 ...
+    100 100 188 173 173 173+70 310 310 310 310];
+% Also kind of dumb since the FETs change.
+max_fet_power = [0 700 5000 5000 700 700 700 700 700 700 700 ...
+    5000 5000 700 208 208 208 700 5000 700 700]; 
 
-max_fet_power = [0 700 5000 5000 700 700 700 700 700 700 700 5000 5000 700 208 208 208 700 5000 700 700]; 
-
-coil_range = ones(2,num_channels); %relevant range of the given coil (2xnumber of channels)
-
-%channels the coils correspond to on the ADWIN
-%Negative corresponds to a digital channel
+% channels the coils correspond to on the ADWIN
+% Negative corresponds to a digital channel
 transport_channels = [18 7:17 9 22:24 20:21 1 3 17 -22 -28];
 % corresponding coils : [FF Push MOT 3:11 3 12a-13 14 15 16 kitten 11]
 
+% Whether to enable each channel
 enable = ones(1,23);
-
 
 %% Defining the Coil Ranges
 % coil_range is 2xN

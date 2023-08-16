@@ -439,6 +439,8 @@ y = currentarray;
                 y(x<000.0) = nullval;                   % Assign null value to regions outside
                 y(x>=100.0) = nullval;                  % Assign null value to regions outside
             case 'Coil 3'
+                % References to x should be pos instead. Be careful when
+                % changing this back
                 % This causes MASSIVE oscillations... why?
 %                 pp = create_transport_splines_nb(3);    % Load the spline
 %                 y = ppval(pp,pos);                      % Evaluate the spline everywhere                
@@ -487,6 +489,8 @@ y = currentarray;
                 y(x<250.0) = nullval;                   % Assign null value to regions outside
                 y(x>=380.0) = nullval;                  % Assign null value to regions outside 
             case 'Coil Extra'   
+                % References to x should be pos instead. Be careful when
+                % changing this back, could affect things
                  % Doesn't work for some reason? also causes oscillations
                  % for some reason....
                 

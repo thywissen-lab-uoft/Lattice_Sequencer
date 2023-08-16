@@ -239,8 +239,10 @@ for i = 1:length(transport_names)
     % At each position get the value of the current (or digital channel)
     currentarray(channel_indices,1) = time;
     currentarray(channel_indices,2) = transport_channels(i);
-    currentarray(channel_indices,3) = channel_current(...
-        transport_names{i},position,coil_offset(i),coil_widths(i),coil_range(:,i));       
+    
+    currents = channel_current(transport_names{i},position,coil_offset(i),coil_widths(i),coil_range(:,i));  
+    currents = round(currents,3); % CF : rounding to nearest mA eliminates weird numerical noise
+    currentarray(channel_indices,3) = currents;  
 %    
     % If channel is negative it is a digital channel
     % CF : Edited to make more sense.
@@ -257,15 +259,14 @@ for i = 1:length(transport_names)
             t = vals(n+1,1);      % To match old code,      
             setDigitalChannel(t,abs(transport_channels(i)),state);  
         end              
-    end
-    
+    end    
     % Convert current to voltage.
-    if (i<=num_analog_channels)  
-        currentarray(channel_indices,3) = ...
-            seqdata.analogchannels(transport_channels(i)).voltagefunc{2}...
+    if (i<=num_analog_channels)        
+        voltages = seqdata.analogchannels(transport_channels(i)).voltagefunc{2}...
             (currentarray(channel_indices,3).*coil_scale_factors(i)).*(currentarray(channel_indices,3)~=nullval)+...
-            currentarray(channel_indices,3).*(currentarray(channel_indices,3)==nullval); 
-    end      
+            currentarray(channel_indices,3).*(currentarray(channel_indices,3)==nullval);
+        currentarray(channel_indices,3) = voltages;       
+    end          
 end
 
 % check the voltages are in range
@@ -277,9 +278,9 @@ end
 %         end
 
 % Remove unused entries and only return the analog channels
+
 ind = logical(currentarray(1:length(time)*num_analog_channels,3)~=nullval);
 currentarray = currentarray(ind,:);
-
 
 % Return
 y = currentarray;

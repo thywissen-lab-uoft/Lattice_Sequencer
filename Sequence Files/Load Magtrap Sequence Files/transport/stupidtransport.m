@@ -480,19 +480,46 @@ y = currentarray;
                 y = ppval(pp,(pos-3)/0.96);             % Evaluate the spline everywhere                
                 y(pos<250.0) = nullval;                 % Assign null value to regions outside
                 y(pos>=380.0) = nullval;                % Assign null value to regions outside                    
+            
             case 'Coil 12a'  
                 % New Way
                 pp = create_transport_splines_nb(13);   % Load the spline
                 y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % Spline Interpolant to smooth the end
+                % a+b(x-x0)+c(x-x0)^2/2+d(x-x0)^3/3
+                x0 = 360;x1 = 365;                      % Positions
+                y0 = ppval(pp,x0);y1 = ppval(pp,x1);    % Values
+                dx = x1-x0;                             % Displacement                
+                
+                m0 = (ppval(pp,x0)-ppval(pp,x0-.5))/.5; % Derivative
+                m1 = 0;                                 % Derivative (assume 0 at end)
+                
+                a = y0;b = m0;                          % First two coefficients                
+                % Turn into matrix equation and sovle
+                bvec = [y1-a-b*dx; m1-b];
+                amat = [dx^2/2 dx^3/3; dx dx^2];                
+                v = linsolve(amat,bvec);                
+                c=v(1);d=v(2);   
+                                
+                foo = @(xq) a+b*(xq-x0)+c*(xq-x0).^2/2+d*(xq-x0).^3/3;
+                ii = logical([pos>=x0].*[pos<=x1]);
+                y(ii) = foo(pos(ii));
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 
                 % Linear smoothing 365-368 mm due to spline noise
                 xa = 365;xb = 368;ya = ppval(pp,xa);yb = ppval(pp,xb);                
                 ii = logical([pos>=xa].*[pos<=xb]);                
                 lin_func = @(x_lin) ya+(yb-ya)/(xb-xa)*(x_lin-xa);
-                y(ii) = lin_func(pos(ii));                  
+                y(ii) = lin_func(pos(ii));
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                
                 y(pos<260.0) = nullval;                 % Assign null value to regions outside
                 y(pos>=440.0) = nullval;                % Assign null value to regions outside       
-                                                
+                                
+                                
                 % Old way (I feel like coil range is too small)
 %                 pp = create_transport_splines_nb(13);                 
 %                 y(ind) = y(ind) + (x<=365).*ppval(pp,x);%horizontal section
@@ -504,10 +531,35 @@ y = currentarray;
 %                     (-coilone+(ppval(pp,368)+coilone).*(x-365.1)/2.9);
 %                 %vertical section
 %                 y(ind) = y(ind) + (x>=368).*ppval(pp,x);  
+% keyboard
             case 'Coil 12b'                  
                 % New Way 
                 pp = create_transport_splines_nb(14);   % Load the spline
                 y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % Spline Interpolant to smooth the end
+                % a+b(x-x0)+c(x-x0)^2/2+d(x-x0)^3/3
+                x0 = 360;x1 = 365;                      % Positions
+                y0 = ppval(pp,x0);y1 = ppval(pp,x1);    % Values
+                dx = x1-x0;                             % Displacement                
+                
+                m0 = (ppval(pp,x0)-ppval(pp,x0-.5))/.5; % Derivative
+                m1 = 0;                                 % Derivative (assume 0 at end)
+                
+                a = y0;b = m0;                          % First two coefficients                
+                % Turn into matrix equation and sovle
+                bvec = [y1-a-b*dx; m1-b];
+                amat = [dx^2/2 dx^3/3; dx dx^2];                
+                v = linsolve(amat,bvec);                
+                c=v(1);d=v(2);   
+                                
+                foo = @(xq) a+b*(xq-x0)+c*(xq-x0).^2/2+d*(xq-x0).^3/3;
+                ii = logical([pos>=x0].*[pos<=x1]);
+                y(ii) = foo(pos(ii));
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                
                 % Linear smoothing 365-368 mm due to spline noise
                 xa = 365;xb = 368;ya = ppval(pp,xa);yb = ppval(pp,xb);                
                 ii = logical([pos>=xa].*[pos<=xb]);                
@@ -515,7 +567,7 @@ y = currentarray;
                 y(ii) = lin_func(pos(ii));                  
                 y(pos<260.0) = nullval;                 % Assign null value to regions outside
                 y(pos>=480.0) = nullval;                % Assign null value to regions outside       
-                                           
+                   
 %                 pp = create_transport_splines_nb(14);
 %                 %Modified Nov 1, 2019: ramp coil up explicitly to
 %                 %avoid oscillations at begining
@@ -531,6 +583,7 @@ y = currentarray;
 %                 %avoid oscillations at end 
 %                 %vertical section
 %                 y(ind) = y(ind) + (x>=368).*(x<=467.0).*ppval(pp,x);  
+%                   keyboard
             case 'Coil 13'    
                 % New Way 
                 pp = create_transport_splines_nb(15);   % Load the spline

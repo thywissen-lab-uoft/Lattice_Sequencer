@@ -439,15 +439,10 @@ y = currentarray;
                 y(pos<000.0) = nullval;                   % Assign null value to regions outside
                 y(pos>=100.0) = nullval;                  % Assign null value to regions outside
             case 'Coil 3'
-                % References to x should be pos instead. Be careful when
-                % changing this back
-                % This causes MASSIVE oscillations... why?
-%                 pp = create_transport_splines_nb(3);    % Load the spline
-%                 y = ppval(pp,pos);                      % Evaluate the spline everywhere                
-%                 y(x<000.0) = nullval;                   % Assign null value to regions outside
-%                 y(x>=115.0) = nullval;                  % Assign null value to regions outside
-                pp = create_transport_splines_nb(3);
-                y(ind) = y(ind) + ppval(pp,x);     
+                pp = create_transport_splines_nb(3);    % Load the spline
+                y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                y(pos<000.0) = nullval;                   % Assign null value to regions outside
+                y(pos>=115.0) = nullval;                  % Assign null value to regions outside
             case 'Coil 4'
                 pp = create_transport_splines_nb(4);    % Load the spline
                 y = ppval(pp,pos);                      % Evaluate the spline everywhere                
@@ -488,22 +483,14 @@ y = currentarray;
                 y = ppval(pp,pos);                      % Evaluate the spline everywhere                
                 y(pos<250.0) = nullval;                   % Assign null value to regions outside
                 y(pos>=380.0) = nullval;                  % Assign null value to regions outside 
-            case 'Coil Extra'   
-                % References to x should be pos instead. Be careful when
-                % changing this back, could affect things
-                 % Doesn't work for some reason? also causes oscillations
-                 % for some reason....
-                
-%                 pp = create_transport_splines_nb(12);    % Load the spline
-%                 y = ppval(pp,(pos-3)/0.96);                      % Evaluate the spline everywhere                
-%                 y(x<250.0) = nullval;                   % Assign null value to regions outside
-%                 y(x>=380.0) = nullval;                  % Assign null value to regions outside 
-%                 
-                pp = create_transport_splines_nb(12);
-                y(ind) = y(ind) + ppval(pp,x);                        
+            case 'Coil Extra'                   
+                pp = create_transport_splines_nb(12);    % Load the spline
+                y = ppval(pp,(pos-3)/0.96);                      % Evaluate the spline everywhere                
+                y(pos<250.0) = nullval;                   % Assign null value to regions outside
+                y(pos>=380.0) = nullval;                  % Assign null value to regions outside                    
             case 'Coil 12a'    
-                 pp = create_transport_splines_nb(13);                 
-                  y(ind) = y(ind) + (x<=365).*ppval(pp,x);%horizontal section
+                pp = create_transport_splines_nb(13);                 
+                y(ind) = y(ind) + (x<=365).*ppval(pp,x);%horizontal section
                 %ramp between the values from 365-->365.1
                 y(ind) = y(ind) + (x>365).*(x<365.1).*...
                     (ppval(pp,365)-(ppval(pp,365)+coilone).*(x-365)/0.1);

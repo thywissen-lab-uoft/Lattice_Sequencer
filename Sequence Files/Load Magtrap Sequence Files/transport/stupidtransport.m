@@ -58,7 +58,28 @@ coil_range = ones(2,num_channels);  % relevant range of the given coil (2xnumber
 transport_channels = [18 7:17 9 22:24 20:21 1 3 17 -22 -28];
 % corresponding coils : [FF Push MOT 3:11 3 12a-13 14 15 16 kitten 11] WHY
 % IS 11 REPERATED?
-
+transport_functions = ...
+    [2; % Transport FF
+    2; % Push Coil
+    2;% MOT Coil
+    2;% Coil 3
+    2;% Coil 4
+    2;% Coil 5
+    2;% Coil 6
+    2;% Coil 7
+    2;% Coil 8
+    2;% Coil 9
+    2;% Coil 10
+    2;% Coil 11
+    2;% Coil Extra
+    2;% Coil 12a
+    2;% Coil 12b
+    2;% Coil 13
+    2;% Coil 14
+    2;% Coil 15
+    2;% Coil 16
+    2;% kitten
+    2]; %Stupid];
 transport_names = {'Transport FF','Push Coil','MOT Coil',...
     'Coil 3','Coil 4','Coil 5','Coil 6','Coil 7','Coil 8', 'Coil 9', ...
     'Coil 10','Coil 11','Coil Extra','Coil 12a','Coil 12b','Coil 13',...
@@ -262,9 +283,15 @@ for i = 1:length(transport_names)
     end    
     % Convert current to voltage.
     if (i<=num_analog_channels)        
-        voltages = seqdata.analogchannels(transport_channels(i)).voltagefunc{2}...
-            (currentarray(channel_indices,3).*coil_scale_factors(i)).*(currentarray(channel_indices,3)~=nullval)+...
-            currentarray(channel_indices,3).*(currentarray(channel_indices,3)==nullval);
+        function_index = transport_functions(i);
+        current2voltage = seqdata.analogchannels(transport_channels(i)).voltagefunc{function_index};
+        bad_inds = [currents == nullval];
+        voltages = current2voltage(currents*coil_scale_factors(i));
+        voltages(bad_inds) = nullval;
+        
+%         voltages = seqdata.analogchannels(transport_channels(i)).voltagefunc{2}...
+%             (currentarray(channel_indices,3).*coil_scale_factors(i)).*(currentarray(channel_indices,3)~=nullval)+...
+%             currentarray(channel_indices,3).*(currentarray(channel_indices,3)==nullval);
         currentarray(channel_indices,3) = voltages;       
     end          
 end

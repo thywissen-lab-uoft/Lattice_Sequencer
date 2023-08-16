@@ -483,7 +483,9 @@ y = currentarray;
             case 'Coil 12a'  
                 % New Way
                 pp = create_transport_splines_nb(13);   % Load the spline
-                y = ppval(pp,pos);                     % Evaluate the spline everywhere                
+                y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                
+                % Linear smoothing 365-368 mm due to spline noise
                 xa = 365;xb = 368;ya = ppval(pp,xa);yb = ppval(pp,xb);                
                 ii = logical([pos>=xa].*[pos<=xb]);                
                 lin_func = @(x_lin) ya+(yb-ya)/(xb-xa)*(x_lin-xa);
@@ -506,6 +508,7 @@ y = currentarray;
                 % New Way 
                 pp = create_transport_splines_nb(14);   % Load the spline
                 y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                % Linear smoothing 365-368 mm due to spline noise
                 xa = 365;xb = 368;ya = ppval(pp,xa);yb = ppval(pp,xb);                
                 ii = logical([pos>=xa].*[pos<=xb]);                
                 lin_func = @(x_lin) ya+(yb-ya)/(xb-xa)*(x_lin-xa);
@@ -532,6 +535,7 @@ y = currentarray;
                 % New Way 
                 pp = create_transport_splines_nb(15);   % Load the spline
                 y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                % Linear smoothing 365-368 mm due to spline noise
                 xa = 365;xb = 368;ya = ppval(pp,xa);yb = ppval(pp,xb);                
                 ii = logical([pos>=xa].*[pos<=xb]);                
                 lin_func = @(x_lin) ya+(yb-ya)/(xb-xa)*(x_lin-xa);

@@ -483,76 +483,76 @@ y = currentarray;
             case 'Coil 12a'  
                 % New Way
                 pp = create_transport_splines_nb(13);   % Load the spline
-                y2 = ppval(pp,pos);                     % Evaluate the spline everywhere                
+                y = ppval(pp,pos);                     % Evaluate the spline everywhere                
                 xa = 365;xb = 368;ya = ppval(pp,xa);yb = ppval(pp,xb);                
                 ii = logical([pos>=xa].*[pos<=xb]);                
                 lin_func = @(x_lin) ya+(yb-ya)/(xb-xa)*(x_lin-xa);
-                y2(ii) = lin_func(pos(ii));                  
-                y2(pos<260.0) = nullval;                 % Assign null value to regions outside
-                y2(pos>=440.0) = nullval;                % Assign null value to regions outside       
+                y(ii) = lin_func(pos(ii));                  
+                y(pos<260.0) = nullval;                 % Assign null value to regions outside
+                y(pos>=440.0) = nullval;                % Assign null value to regions outside       
                                                 
                 % Old way (I feel like coil range is too small)
-                pp = create_transport_splines_nb(13);                 
-                y(ind) = y(ind) + (x<=365).*ppval(pp,x);%horizontal section
-                %ramp between the values from 365-->365.1
-                y(ind) = y(ind) + (x>365).*(x<365.1).*...
-                    (ppval(pp,365)-(ppval(pp,365)+coilone).*(x-365)/0.1);
-                %ramp between the values from 365.1-->368
-                y(ind) = y(ind) + (x>=365.1).*(x<368).*...
-                    (-coilone+(ppval(pp,368)+coilone).*(x-365.1)/2.9);
-                %vertical section
-                y(ind) = y(ind) + (x>=368).*ppval(pp,x);  
+%                 pp = create_transport_splines_nb(13);                 
+%                 y(ind) = y(ind) + (x<=365).*ppval(pp,x);%horizontal section
+%                 %ramp between the values from 365-->365.1
+%                 y(ind) = y(ind) + (x>365).*(x<365.1).*...
+%                     (ppval(pp,365)-(ppval(pp,365)+coilone).*(x-365)/0.1);
+%                 %ramp between the values from 365.1-->368
+%                 y(ind) = y(ind) + (x>=365.1).*(x<368).*...
+%                     (-coilone+(ppval(pp,368)+coilone).*(x-365.1)/2.9);
+%                 %vertical section
+%                 y(ind) = y(ind) + (x>=368).*ppval(pp,x);  
             case 'Coil 12b'                  
                 % New Way 
                 pp = create_transport_splines_nb(14);   % Load the spline
-                y2 = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                y = ppval(pp,pos);                      % Evaluate the spline everywhere                
                 xa = 365;xb = 368;ya = ppval(pp,xa);yb = ppval(pp,xb);                
                 ii = logical([pos>=xa].*[pos<=xb]);                
                 lin_func = @(x_lin) ya+(yb-ya)/(xb-xa)*(x_lin-xa);
-                y2(ii) = lin_func(pos(ii));                  
-                y2(pos<260.0) = nullval;                 % Assign null value to regions outside
-                y2(pos>=480.0) = nullval;                % Assign null value to regions outside       
+                y(ii) = lin_func(pos(ii));                  
+                y(pos<260.0) = nullval;                 % Assign null value to regions outside
+                y(pos>=480.0) = nullval;                % Assign null value to regions outside       
                                            
-                pp = create_transport_splines_nb(14);
-                %Modified Nov 1, 2019: ramp coil up explicitly to
-                %avoid oscillations at begining
-                %horizontal section 
-                y(ind) = y(ind) + (x<=365).*(x>=310.0).*ppval(pp,x);
-                %ramp between the values from 365-->365.1
-                y(ind) = y(ind) + (x>365).*(x<365.1).*...
-                    (ppval(pp,365)-(ppval(pp,365)-coiltwo).*(x-365)/0.1);
-                %ramp between the values from 365.1-->368
-                y(ind) = y(ind) + (x>=365.1).*(x<368).*...
-                    (coiltwo+(ppval(pp,368)-coiltwo).*(x-365.1)/2.9);
-                %Modified Nov 1, 2019: sets coil to 0 explicitly to
-                %avoid oscillations at end 
-                %vertical section
-                y(ind) = y(ind) + (x>=368).*(x<=467.0).*ppval(pp,x);  
+%                 pp = create_transport_splines_nb(14);
+%                 %Modified Nov 1, 2019: ramp coil up explicitly to
+%                 %avoid oscillations at begining
+%                 %horizontal section 
+%                 y(ind) = y(ind) + (x<=365).*(x>=310.0).*ppval(pp,x);
+%                 %ramp between the values from 365-->365.1
+%                 y(ind) = y(ind) + (x>365).*(x<365.1).*...
+%                     (ppval(pp,365)-(ppval(pp,365)-coiltwo).*(x-365)/0.1);
+%                 %ramp between the values from 365.1-->368
+%                 y(ind) = y(ind) + (x>=365.1).*(x<368).*...
+%                     (coiltwo+(ppval(pp,368)-coiltwo).*(x-365.1)/2.9);
+%                 %Modified Nov 1, 2019: sets coil to 0 explicitly to
+%                 %avoid oscillations at end 
+%                 %vertical section
+%                 y(ind) = y(ind) + (x>=368).*(x<=467.0).*ppval(pp,x);  
             case 'Coil 13'    
                 % New Way 
                 pp = create_transport_splines_nb(15);   % Load the spline
-                y2 = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                y = ppval(pp,pos);                      % Evaluate the spline everywhere                
                 xa = 365;xb = 368;ya = ppval(pp,xa);yb = ppval(pp,xb);                
                 ii = logical([pos>=xa].*[pos<=xb]);                
                 lin_func = @(x_lin) ya+(yb-ya)/(xb-xa)*(x_lin-xa);
-                y2(pos<=365)=0;
-                y2(ii) = lin_func(pos(ii));
-                y2(pos<358.0) = nullval;                 % Assign null value to regions outside
-                y2(pos>=520.0) = nullval;                % Assign null value to regions outside       
+                y(pos<=365)=0;
+                y(ii) = lin_func(pos(ii));
+                y(pos<358.0) = nullval;                 % Assign null value to regions outside
+                y(pos>=520.0) = nullval;                % Assign null value to regions outside       
                                      
-                pp = create_transport_splines_nb(15);
-                %horizontal section
-                y(ind) = y(ind) + 0*(x<=365).*ppval(pp,x);
-                %ramp between the values from 360-->360.1
-                y(ind) = y(ind) + (x>365).*(x<365.1).*...
-                    (0.*(x-365)/0.1);
-                %ramp between the values from 360.1-->363
-                y(ind) = y(ind) + (x>=365.1).*(x<370).*...
-                    (0+(ppval(pp,370)+0).*(x-365.1)/4.9);
-                %Modified Nov 1, 2019: sets coil to 0 explicitly to
-                %avoid oscillations at end
-                %vertical section
-                y(ind) = y(ind) + (x>=370).*(x<=518.0).*ppval(pp,x);                
+%                 pp = create_transport_splines_nb(15);
+%                 %horizontal section
+%                 y(ind) = y(ind) + 0*(x<=365).*ppval(pp,x);
+%                 %ramp between the values from 360-->360.1
+%                 y(ind) = y(ind) + (x>365).*(x<365.1).*...
+%                     (0.*(x-365)/0.1);
+%                 %ramp between the values from 360.1-->363
+%                 y(ind) = y(ind) + (x>=365.1).*(x<370).*...
+%                     (0+(ppval(pp,370)+0).*(x-365.1)/4.9);
+%                 %Modified Nov 1, 2019: sets coil to 0 explicitly to
+%                 %avoid oscillations at end
+%                 %vertical section
+%                 y(ind) = y(ind) + (x>=370).*(x<=518.0).*ppval(pp,x);                
             case 'Coil 14'                  
                  pp = create_transport_splines_nb(16);  
                  coil14_endpos = 538.9; %538.9           

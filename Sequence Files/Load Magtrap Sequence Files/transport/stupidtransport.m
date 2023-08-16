@@ -181,25 +181,21 @@ coil_range(1,17) = 370; %70
 coil_range(2,17) = 539;
 coil_scale_factors(17) = 1.0;
 
-%Quadrupole factor
-qp_scale_factor = 1.0; %1.0  *rev1*1.15  *rev2* 1.0 SC: 1.1
-
 %bottom qp coil
 coil_range(1,18) = 427; %427 
 coil_range(2,18) = 539;
-coil_scale_factors(18) = 1.0*qp_scale_factor;
+coil_scale_factors(18) = 1.0;
 coil_offset(18) = 0.00; %0
 
 %top qp coil
-defVar('QP_16_scale',[1],'arb.')
 coil_range(1,19) = 410; 
 coil_range(2,19) = 539; 
-coil_scale_factors(19) = 1*qp_scale_factor*getVar('QP_16_scale');
+coil_scale_factors(19) = 1;
 
 %kitten 
 coil_range(1,20) = 427; 
 coil_range(2,20) = 539;
-coil_scale_factors(20) = 0.95*qp_scale_factor;
+coil_scale_factors(20) = 0.95;
 coil_offset(20) = -0.75; %-0.75
 
 %power dump into 8th horizontal
@@ -223,9 +219,9 @@ coil_range(2,23) = 220;
 % coil_range(2,20) = 534;
 
 %check the bounds on position
-if (sum(position<-0.1));    
+if (sum(position<-0.1))
     error('negative Position')
-elseif (sum(position>539.1));
+elseif (sum(position>539.1))
     error('position too far')
 end
 

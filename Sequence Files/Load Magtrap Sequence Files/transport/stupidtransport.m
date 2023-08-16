@@ -485,52 +485,71 @@ y = currentarray;
                 y(pos>=380.0) = nullval;                  % Assign null value to regions outside 
             case 'Coil Extra'                   
                 pp = create_transport_splines_nb(12);    % Load the spline
-                y = ppval(pp,(pos-3)/0.96);                      % Evaluate the spline everywhere                
+                y = ppval(pp,(pos-3)/0.96);               % Evaluate the spline everywhere                
                 y(pos<250.0) = nullval;                   % Assign null value to regions outside
                 y(pos>=380.0) = nullval;                  % Assign null value to regions outside                                
             case 'Coil 12a'    
-                 pp = create_transport_splines_nb(13);                 
-                  y(ind) = y(ind) + (x<=365).*ppval(pp,x);%horizontal section
-                %ramp between the values from 365-->365.1
+                pp = create_transport_splines_nb(13);       % Load the splin
+                
+                y(ind) = y(ind) + (x<=365).*ppval(pp,x);    % Horizontal Evaluation
+                
+                % CF : I have no idea what this does?
+                % ramp between the values from 365-->365.1
                 y(ind) = y(ind) + (x>365).*(x<365.1).*...
                     (ppval(pp,365)-(ppval(pp,365)+coilone).*(x-365)/0.1);
-                %ramp between the values from 365.1-->368
+                
+                % Horizontal to vertical transfer
+                % ramp between the values from 365.1-->368
                 y(ind) = y(ind) + (x>=365.1).*(x<368).*...
                     (-coilone+(ppval(pp,368)+coilone).*(x-365.1)/2.9);
-                %vertical section
+                
+                % Verticla Transport
                 y(ind) = y(ind) + (x>=368).*ppval(pp,x);     
             case 'Coil 12b'  
-                 pp = create_transport_splines_nb(14);
+                 pp = create_transport_splines_nb(14);      % Load the spline
+                 
                 %Modified Nov 1, 2019: ramp coil up explicitly to
                 %avoid oscillations at begining
-                %horizontal section 
-                y(ind) = y(ind) + (x<=365).*(x>=310.0).*ppval(pp,x);
-                %ramp between the values from 365-->365.1
+                
+                y(ind) = y(ind) + (x<=365).*(x>=310.0).*ppval(pp,x); % Horizontal Evaluation
+                
+                % CF: I have no idea what this does?
+                % ramp between the values from 365-->365.1
                 y(ind) = y(ind) + (x>365).*(x<365.1).*...
                     (ppval(pp,365)-(ppval(pp,365)-coiltwo).*(x-365)/0.1);
-                %ramp between the values from 365.1-->368
+                
+                % Horizontal to vertical transfer
+                % ramp between the values from 365.1-->368
                 y(ind) = y(ind) + (x>=365.1).*(x<368).*...
                     (coiltwo+(ppval(pp,368)-coiltwo).*(x-365.1)/2.9);
-                %Modified Nov 1, 2019: sets coil to 0 explicitly to
-                %avoid oscillations at end 
-                %vertical section
+                
+                % Modified Nov 1, 2019: sets coil to 0 explicitly to
+                % avoid oscillations at end 
+                % vertical section
                 y(ind) = y(ind) + (x>=368).*(x<=467.0).*ppval(pp,x);  
             case 'Coil 13'    
-                 pp = create_transport_splines_nb(15);
-                %horizontal section
+                pp = create_transport_splines_nb(15);           % Load the spline
+                
+                % Horizontal section (shouldn't 13 be off during
+                % horizontal anyway?)
                 y(ind) = y(ind) + 0*(x<=365).*ppval(pp,x);
-                %ramp between the values from 360-->360.1
+                
+                % CF: No idea what purpose this servers
+                % ramp between the values from 360-->360.1
                 y(ind) = y(ind) + (x>365).*(x<365.1).*...
-                    (0.*(x-365)/0.1);
-                %ramp between the values from 360.1-->363
+                (0.*(x-365)/0.1);
+             
+                % I assume this is for horizontal to vertical transfer
+                % ramp between the values from 360.1-->363
                 y(ind) = y(ind) + (x>=365.1).*(x<370).*...
                     (0+(ppval(pp,370)+0).*(x-365.1)/4.9);
+                
                 %Modified Nov 1, 2019: sets coil to 0 explicitly to
                 %avoid oscillations at end
-                %vertical section
+                % vertical section
                 y(ind) = y(ind) + (x>=370).*(x<=518.0).*ppval(pp,x);
             case 'Coil 14'                  
-                 pp = create_transport_splines_nb(16);  
+                 pp = create_transport_splines_nb(16);          % Load the spline
                  coil14_endpos = 538.9; %538.9           
                 %Modified Nov 1, 2019: ramp coil up explicitly to
                 %avoid oscillations at begining 

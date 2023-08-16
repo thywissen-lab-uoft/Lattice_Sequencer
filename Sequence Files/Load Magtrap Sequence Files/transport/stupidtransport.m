@@ -485,6 +485,9 @@ y = currentarray;
                 y(pos<250.0) = nullval;                   % Assign null value to regions outside
                 y(pos>=380.0) = nullval;                  % Assign null value to regions outside                    
             case 'Coil 12a'    
+%                 coil_range(1,14) = 260; 
+%                 coil_range(2,14) = 430; %430
+                
                 pp = create_transport_splines_nb(13);                 
                 y(ind) = y(ind) + (x<=365).*ppval(pp,x);%horizontal section
                 %ramp between the values from 365-->365.1

@@ -136,8 +136,8 @@ switch coil_identifier
         yV = dlmread(fullfile(mydir,filenames.Coil12a),',',0,1);
         if length(yH)~=366;error('on no, unexpected length');end
         if length(yV)~=174;error('on no, unexpected length');end    
-        curr(1:1:366) = -yH;
-        curr(367:end) = yV;
+        curr(1:1:366) = yH;
+        curr(367:end) = -yV;
         curr(pos==366)=[];pos(pos==366)=[];
         curr(pos==367)=[];pos(pos==367)=[];
         curr(pos==368)=[];pos(pos==368)=[];

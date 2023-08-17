@@ -566,8 +566,9 @@ y = currentarray;
                 ii = logical([pos>=xa].*[pos<=xb]);                
                 lin_func = @(x_lin) ya+(yb-ya)/(xb-xa)*(x_lin-xa);
                 y(ii) = lin_func(pos(ii));
-                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                
+%                 pos2curr = loadTransportCurve('Coil 12a');
+%                 y = pos2curr(pos);            
                 y(pos<260.0) = nullval;                 % Assign null value to regions outside
                 y(pos>=440.0) = nullval;                % Assign null value to regions outside       
                                 
@@ -616,7 +617,10 @@ y = currentarray;
                 xa = 365;xb = 368;ya = ppval(pp,xa);yb = ppval(pp,xb);                
                 ii = logical([pos>=xa].*[pos<=xb]);                
                 lin_func = @(x_lin) ya+(yb-ya)/(xb-xa)*(x_lin-xa);
-                y(ii) = lin_func(pos(ii));                  
+                y(ii) = lin_func(pos(ii));  
+                
+%                 pos2curr = loadTransportCurve('Coil 12b');
+%                 y = pos2curr(pos);    
                 y(pos<260.0) = nullval;                 % Assign null value to regions outside
                 y(pos>=480.0) = nullval;                % Assign null value to regions outside       
                    
@@ -646,6 +650,9 @@ y = currentarray;
                 lin_func = @(x_lin) ya+(yb-ya)/(xb-xa)*(x_lin-xa);
                 y(pos<=365)=0;
                 y(ii) = lin_func(pos(ii));
+                
+%                 pos2curr = loadTransportCurve('Coil 13');
+%                 y = pos2curr(pos);   
                 y(pos<358.0) = nullval;                 % Assign null value to regions outside
                 y(pos>=520.0) = nullval;                % Assign null value to regions outside       
                                      

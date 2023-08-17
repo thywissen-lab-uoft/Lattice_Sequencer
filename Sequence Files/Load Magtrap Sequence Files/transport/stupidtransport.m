@@ -72,9 +72,9 @@ transport_functions = ...
     2;% Coil 10
     2;% Coil 11
     2;% Coil Extra
-    2;% Coil 12a
-    2;% Coil 12b
-    2;% Coil 13
+    3;% Coil 12a
+    3;% Coil 12b
+    3;% Coil 13
     2;% Coil 14
     2;% Coil 15
     2;% Coil 16

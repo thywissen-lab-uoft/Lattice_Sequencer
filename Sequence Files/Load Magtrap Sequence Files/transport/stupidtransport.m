@@ -450,7 +450,9 @@ y = currentarray;
                  %------------------------   
             case 'Push Coil'
                 pp = create_transport_splines_nb(1);    % Load the spline
-                y = ppval(pp,pos);                      % Evaluate the spline everywhere                
+                y = ppval(pp,pos);                      % Evaluate the spline everywhere                                
+%                 pos2curr = loadTransportCurve('Push Coil');
+%                 y2 = pos2curr(pos);                
                 y(pos<000.0) = nullval;                 % Assign null value to regions outside
                 y(pos>=100.0) = nullval;                % Assign null value to regions outside
             case 'MOT Coil'

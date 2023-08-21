@@ -187,12 +187,12 @@ hZ.ActionPostCallback=@chZoomPost;
     function chZoomPre(~,obj)
         ax=obj.Axes;            
         htbl_time.Data(1:2)=ax.XLim;
-        htbl_time.Data(3)=range(htbl_time.Data(1:2));
+        htbl_time.Data(3) = htbl_time.Data(2) - htbl_time.Data(1);
     end
     function chZoomPost(~,obj)
         ax=obj.Axes;            
         htbl_time.Data(1:2)=ax.XLim;
-        htbl_time.Data(3)=range(htbl_time.Data(1:2));
+        htbl_time.Data(3) = htbl_time.Data(2) - htbl_time.Data(1);
     end
 
 % Add a left hand slider to control the relative size of the analog and
@@ -586,6 +586,7 @@ function refreshPlotData
         set(aTracesShow(nn).Plot,'XData',X,'YData',Y);
     end
     
+    
     for nn=1:length(dTracesShow)        
         % Grab the trace
         trc=dTracesShow(nn);                     % Get the trace
@@ -673,7 +674,7 @@ function [X,Y,funcnum] = getAnalogValue(trc,funcnum)
             v2 = max(V);                    % Maximal voltage written
             
             % Edge case if no change in parameter
-            if range(V)==0
+            if max(V)==min(V)
                 p = fzero(@(x) real(f(x))-V(1),0);  % Find mapping
                 Y = (V/V(1))*p;                     % Scale                
             else

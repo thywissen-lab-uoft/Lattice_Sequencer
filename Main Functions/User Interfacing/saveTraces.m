@@ -46,6 +46,8 @@ start_time = opts.StartTime*seqdata.deltat;
 duration = opts.Duration;
 
 % Save to File
+if exist(rootDir,'dir')
 save(fullfile(rootDir,opts.FileName),'aTraces','dTraces','start_time','duration');
+end
 end
 

@@ -363,6 +363,51 @@ if seqdata.flags.mt_plug_ramp_end
     curtime = calctime(curtime,500);
 end
 
+%% Ramp down Gradient (useful for measuring levitation)
+
+seqdata.flags.mt_ramp_down_end = 0;
+if seqdata.flags.mt_ramp_down_end
+    defVar('mt_IQP_endramp',[.5 .6 .7 .8 .9 1 .5 2 2.5 3 3.5 4],'A');
+    
+    I_QP_end = getVar('mt_IQP_endramp');
+    dT = 500;
+    hold_time = 500;
+            
+    AnalogFuncTo(curtime,'Coil 16',@(t,tt,y1,y2) ramp_linear(t,tt,y1,y2), ...
+        dT,dT,I_QP_end,3);
+    
+    Cx = seqdata.params.plug_shims_slopes(1);
+    Cy = seqdata.params.plug_shims_slopes(2);
+    Cz = seqdata.params.plug_shims_slopes(3);
+    
+    Ix = I_shim(1);
+    Iy = I_shim(2);
+    Iz = I_shim(3);
+    
+    dI_QP = I_QP_end - I_QP;
+    dIx = dI_QP * Cx;
+    dIy = dI_QP * Cy;
+    dIz = dI_QP * Cz;
+
+    Ix=Ix+dIx;
+    Iy=Iy+dIy;
+    Iz=Iz+dIz;   
+    
+    
+    % Ramp XYZ shims to their next value in the sweep
+    AnalogFuncTo(curtime,'X Shim',@(t,tt,y1,y2) ramp_linear(t,tt,y1,y2), ...
+        dT,dT,Ix,3);
+    AnalogFuncTo(curtime,'Y Shim',@(t,tt,y1,y2) ramp_linear(t,tt,y1,y2), ...
+        dT,dT,Iy,4); 
+    AnalogFuncTo(curtime,'Z Shim',@(t,tt,y1,y2) ramp_linear(t,tt,y1,y2), ...
+        dT,dT,Iz,3); 
+    
+    curtime = calctime(curtime,hold_time);
+    
+    I_QP = I_QP_end;
+    I_shim = [Ix Iy Iz];
+end
+
 %% Post QP Evap Tasks
 
 if ( seqdata.flags.mt_use_plug == 1)       

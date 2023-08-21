@@ -372,37 +372,42 @@ y = currentarray;
                  %DO NOT GO ABOVE 11.0 volts for the bridges...does not get
                  %more current due to circuit gate voltage limit (~14.3V)
                  
+      
+                 
+                 
                  %initial_voltage
                  initial_voltage = 10.0;                 
                  num_vert_ramps = 6;                 
                  vert_voltage = zeros(2,num_vert_ramps);
                  vert_volt_pos = zeros(2,num_vert_ramps+1);                 
                                  
-                 %ramp 1
+                 % ramp 1 Vertical Transport 365 to 386 mm (to the center
+                 % of 12a and 13)
                  vert_voltage(1,1) = initial_voltage;
                  vert_voltage(2,1) = 10.5; %10.5
                  vert_volt_pos(1,1) = 365 + 1;
                  vert_volt_pos(2,1) = 365 + 21;
                  
-                 %ramp 2
+                 % ramp 2 Vertical Transport to 415 (some random spot?;
+                 % around peak 13 current)
                  vert_voltage(1,2) = vert_voltage(2,1);
                  vert_voltage(2,2) =10.5; %10.5
                  vert_volt_pos(1,2) = vert_volt_pos(2,1);
                  vert_volt_pos(2,2) = 365 + 50;
                  
-                 %ramp 3
+                 % ramp 3 V Transport to 430 (near 12 and 14 peak)
                  vert_voltage(1,3) = vert_voltage(2,2);
                  vert_voltage(2,3) = 11.25;%11.25
                  vert_volt_pos(1,3) = vert_volt_pos(2,2);
                  vert_volt_pos(2,3) = 365 + 65; %65
                  
-                 %ramp 4
+                 % ramp 4 V Transport to 
                  vert_voltage(1,4) = vert_voltage(2,3);
                  vert_voltage(2,4) = 11.5;11.5; %10.5 11.5
                  vert_volt_pos(1,4) = vert_volt_pos(2,3);
                  vert_volt_pos(2,4) = 365 + 85; %85                
                  
-                 %ramp 5
+                 % ramp 5
                  vert_voltage(1,5) = vert_voltage(2,4);
                  FF_list = [11.75];11.75;[13];11.75;
                  FF_Voltage = getScanParameter(FF_list, seqdata.scancycle,...
@@ -411,7 +416,7 @@ y = currentarray;
                  vert_volt_pos(1,5) = 365+120; %365+110
                  vert_volt_pos(2,5) = 365+140; %365+130     
                  
-                 %ramp 6
+                 % ramp 6
                  vert_voltage(1,6) = vert_voltage(2,5);
                  vert_voltage(2,6) = 12.25;12.25; %10.0 12.25
                  vert_volt_pos(1,6) = 365+166; %166 %365+160
@@ -419,6 +424,9 @@ y = currentarray;
                  
                  %end
                  vert_volt_pos(1,7) = 365+174;
+                 
+                 
+                 
 
 %                %------------------------
 %                %horizontal voltage
@@ -438,15 +446,40 @@ y = currentarray;
                 y(ind) = y(ind) + ((beginningverticalvoltage-maxhorizvoltage)/(endhorizramp-starthorizrampdown).*(pos(ind)-starthorizrampdown)+maxhorizvoltage).*(pos(ind)<endhorizramp).*(pos(ind)>=starthorizrampdown);                
                 y(ind) = y(ind) + beginningverticalvoltage.*(pos(ind)<365).*(pos(ind)>=endhorizramp);
                 %-----------------
-                %Vertical                
-                  y(ind) = y(ind) + initial_voltage.*(pos(ind)<vert_volt_pos(1,1)).*(pos(ind)>=365);                  
-                    for jj = 1:num_vert_ramps
-                         %ramp voltage from previous value
-                         vert_volt_slope = (vert_voltage(2,jj)-vert_voltage(1,jj))/(vert_volt_pos(2,jj)-vert_volt_pos(1,jj));                         
-                         y(ind) = y(ind) + (vert_volt_slope.*(pos(ind)-vert_volt_pos(1,jj))+ vert_voltage(1,jj)).*(pos(ind)>=vert_volt_pos(1,jj)).*(pos(ind)<vert_volt_pos(2,jj));                         
-                         %set voltage in between
-                         y(ind) = y(ind) + vert_voltage(2,jj).*(pos(ind)<vert_volt_pos(1,jj+1)).*(pos(ind)>=vert_volt_pos(2,jj));                    
-                    end         
+                %Vertical OLD         
+%                   y(ind) = y(ind) + initial_voltage.*(pos(ind)<vert_volt_pos(1,1)).*(pos(ind)>=365);                  
+%                     for jj = 1:num_vert_ramps
+%                          %ramp voltage from previous value
+%                          vert_volt_slope = (vert_voltage(2,jj)-vert_voltage(1,jj))/(vert_volt_pos(2,jj)-vert_volt_pos(1,jj));                         
+%                          y(ind) = y(ind) + (vert_volt_slope.*(pos(ind)-vert_volt_pos(1,jj))+ vert_voltage(1,jj)).*(pos(ind)>=vert_volt_pos(1,jj)).*(pos(ind)<vert_volt_pos(2,jj));                         
+%                          %set voltage in between
+%                          y(ind) = y(ind) + vert_voltage(2,jj).*(pos(ind)<vert_volt_pos(1,jj+1)).*(pos(ind)>=vert_volt_pos(2,jj));                    
+%                     end 
+% %                     
+                %Vertical NEW
+%                 Positions of ff specification (high,low,high,low,high,...)
+                defVar('transport_FF',[11.75],'V');
+                 feed_forward_endpoints =[ ...
+                     0 10;      % Start at horizontal
+                     1 10.5;    % start 2 (after changing curren tot match boudnary conditoin)                 
+                     24 11.25;  % 12a 13 center
+                     48 11.25;  % low current in between zone
+                     68 11.25;  % 12b 14 center
+                     89 11.5;   % low current in between zone
+                     104 11.5   % 13 15 center
+                     120 11.5;  % low in between
+                     150 11.75  % 14 16 cetner
+                     174 12.25];  % Ending (all on)];
+                 
+%                  feed_forward_endpoints(9,2) = getVar('transport_FF');
+                 
+                 xff = feed_forward_endpoints(:,1);
+                 xff = xff+365;                 
+                 vff = feed_forward_endpoints(:,2);    
+                y(ind) = y(ind) + interp1(xff,vff,pos(ind),'pchip').*...
+                    (pos(ind)>=min(xff)).*(pos(ind)<max(xff));
+
+
                  %------------------------   
             case 'Push Coil'
                 pp = create_transport_splines_nb(1);    % Load the spline

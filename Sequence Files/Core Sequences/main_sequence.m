@@ -304,11 +304,12 @@ if seqdata.flags.transport
 %         seqdata.flags.transport_ver_type, seqdata.flags.image_loc);
     
     % New Code
-% curtime = TransportCloud2(curtime);    
+curtime = TransportCloud2(curtime);    
     % New Code
-curtime = TransportCloud3(curtime);
+% curtime = TransportCloud3(curtime);
 
-    
+    curtime = TransportCloud4(curtime);
+
     
     
     t2=toc;

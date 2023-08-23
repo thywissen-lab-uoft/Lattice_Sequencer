@@ -37,7 +37,7 @@ curtime = AnalogFunc(calctime(curtime,0),0, ...
 
 %% Specify Vertical Transport
 
-vertical_transport_time_1 = 5000;
+vertical_transport_time_1 = 3000;
 data = load('transport_calcs.mat');
 
 % Find distance where Coil 15 goes to zero (zd)
@@ -51,6 +51,18 @@ i14Switch = data.i4(data.zz == data.zd);
 % Minimum Jerk curve. 
 % T is the ramp time; dY amount to change; t : time to evaluate [0,T] (typically a vector)
 min_jerk = @(T,dY,t) (10*dY/T^3)*t.^3 - (15*dY/T^4)*t.^4 + (6*dY/T^5)*t.^5;                      
+
+%% 12a 12 b ramp
+
+i12a_0 = -data.i1(1);
+i12b_0 = -data.i2(1);
+
+AnalogFunc(calctime(curtime,0),'Coil 12a',...
+    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+    100, 100,18.89,i12a_0,3);
+curtime = AnalogFunc(calctime(curtime,0),'Coil 12b',...
+    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+    100, 100,-18.89,i12b_0,3);
 
 %% Vertical Transport 1
 % The coils change the MT to go from the center of 12a and 12b (z=0) to
@@ -81,15 +93,17 @@ curtime = calctime(curtime,10);
 % Ramp Coil 15 to negative to make sure it is off
 curtime = AnalogFunc(calctime(curtime,0),'Coil 15',...
     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-    10, 10, i15Switch,-1,5);
+    200, 200, i15Switch,-1,5);
+
+ikit_switch =i16Switch;
 
 % Ramp the kitten regulation to the same level as Coil 16
 curtime = AnalogFunc(calctime(curtime,0),'kitten',...
     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-    100, 100, 60,i16Switch,3);
+    1000, 1000, 60,ikit_switch,3);
 
 % Settling Time
-curtime = calctime(curtime,10);
+curtime = calctime(curtime,100);
 
 % Engage 15/16 switch
 setDigitalChannel(calctime(curtime,0),'15/16 Switch',1);
@@ -104,15 +118,15 @@ AnalogFunc(calctime(curtime,0),'Coil 14',...
 
 AnalogFunc(calctime(curtime,0),'kitten',...
     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-    Tfinal, Tfinal, i16Switch,6.8,3);
-
-AnalogFunc(calctime(curtime,0),'Transport FF',...
-    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-    Tfinal, Tfinal,20,12.25,2);
+    Tfinal, Tfinal, ikit_switch,6.8,3);
 
 curtime = AnalogFunc(calctime(curtime,0),'Coil 16',...
     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
     Tfinal, Tfinal, i16Switch,18,5);
+
+curtime = AnalogFunc(calctime(curtime,0),'Transport FF',...
+    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+    Tfinal, Tfinal,15,12.25,2);
 
 %% Compress Trap
 % With the cloud at the at the RF1A position, we want to increase the field

@@ -740,6 +740,8 @@ y = currentarray;
                         k_turn_on_point = 0;                         
                      end  
                     y(ind) = y(ind) + 60.0*(ppval(pp1,x)>=k_turn_on_point); %some very large current
+%                                         y(ind) = y(ind) + 80.0*(ppval(pp1,x)>=k_turn_on_point); %some very large current
+
                     %prevent rippling at the beginning
                     y(ind) = y(ind) + nullval.*(y(ind)==0).*(x<=450);
                     y(ind) = y(ind) + (ppval(pp2,x)+ppval(pp1,x)).*(ppval(pp1,x)<k_turn_on_point).*(x>450);                

@@ -406,10 +406,12 @@ end
 %     seqdata.analogchannels(21).voltagefunc{2} =@(a)((a>0).*(a*0.1191+0.0790)+ (a<=0).*(a*0.10-0.10)); % dummy calibration to match old code
     seqdata.analogchannels(21).voltagefunc{3} =@(A) (A/7.699)+0.07747; % current (in A) to voltage 2013/02/16; multimeter
     seqdata.analogchannels(21).voltagefunc{4} =@(G) seqdata.analogchannels(21).voltagefunc{3}(G/6.1913); % gradient (in G/cm) to V
-    seqdata.analogchannels(21).voltagefunc{5} =@(current) ( ...
-        (current>0).*(current*0.1334+0.1247) + ...
-        (current<=0).*(current*0.10-0.10)); % 2023/06/29
-
+%     seqdata.analogchannels(21).voltagefunc{5} =@(current) ( ...
+%         (current>0).*(current*0.1334+0.1247) + ...
+%         (current<=0).*(current*0.10-0.10)); % 2023/06/29
+    seqdata.analogchannels(21).voltagefunc{5} =@(current) ...
+        (current*0.1334+0.1247);  % 2023/06/29
+    
     %channel 22 (1st vert--12a)
     seqdata.analogchannels(22).name = 'Coil 12a';
     seqdata.analogchannels(22).minvoltage = -1;

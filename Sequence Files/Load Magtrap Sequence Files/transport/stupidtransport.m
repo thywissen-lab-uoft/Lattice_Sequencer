@@ -294,6 +294,10 @@ for i = 1:length(transport_names)
 %             currentarray(channel_indices,3).*(currentarray(channel_indices,3)==nullval);
         currentarray(channel_indices,3) = voltages;       
     end          
+    
+    
+    
+   
 end
 
 % check the voltages are in range
@@ -311,6 +315,7 @@ currentarray = currentarray(ind,:);
 
 % Return
 y = currentarray;
+
 
 %%
 % CF : I belive this function is the real meat which is where we are actually

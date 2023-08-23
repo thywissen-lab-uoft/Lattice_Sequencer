@@ -38,10 +38,10 @@ for kk=1:length(transport_names)
                  48 11.25;  % low current in between zone
                  68 11.25;  % 12b 14 center
                  89 11.5;   % low current in between zone
-                 104 11.5   % 13 15 center
-                 120 11.5;  % low in between
-                 150 11.75  % 14 16 cetner
-                 174 12.25];  % Ending (all on)];  
+                 104 20   % 13 15 center
+                 120 20;  % low in between
+                 150 20  % 14 16 cetner
+                 174 20];  % Ending (all on)];  
              x = ff_endpoints(:,1);
              y = ff_endpoints(:,2);
     end

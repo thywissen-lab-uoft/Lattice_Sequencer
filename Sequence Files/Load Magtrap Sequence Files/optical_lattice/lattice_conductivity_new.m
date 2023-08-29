@@ -9,6 +9,8 @@ setAnalogChannel(curtime,'Modulation Ramp',-10,1);
 seqdata.flags.conductivity_ODT1_mode            = 2; % 0:OFF, 1:SINE, 2:DC
 seqdata.flags.conductivity_ODT2_mode            = 2; % 0:OFF, 1:SINE, 2:DC
 
+seqdata.flags.conductivity_ramp_FB              = 1; % Ramp FB field to resonance
+
 seqdata.flags.conductivity_enable_mod_ramp      = 1;
 seqdata.flags.conductivity_QPD_trigger          = 1; % Trigger QPD monitor LabJack/Scope 
 
@@ -105,8 +107,41 @@ switch seqdata.flags.conductivity_ODT2_mode
 
         programRigol(rigol_address,[],ch2_on);
 end
-   
 
+%% Ramp FB field to s-wave resonance
+   
+if seqdata.flags.conductivity_ramp_FB
+ 
+      % Feshbach Field ramp
+        HF_FeshValue_Initial_List = [185]; 
+        HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
+            seqdata.scancycle,seqdata.randcyclelist,'conductivity_FB_field','G');
+         
+        zshim_list = [0];
+        zshim = getScanParameter(zshim_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'conductivity_zshim','A');
+
+          % Define the ramp structure
+        ramp=struct;
+        ramp.shim_ramptime = 150;
+        ramp.shim_ramp_delay = 0; % ramp earlier than FB field if needed
+        ramp.xshim_final = seqdata.params.shim_zero(1); 
+        ramp.yshim_final = seqdata.params.shim_zero(2);
+        ramp.zshim_final = seqdata.params.shim_zero(3)+zshim;
+        % FB coil 
+        ramp.fesh_ramptime = 150;
+        ramp.fesh_ramp_delay = 0;
+        ramp.fesh_final = HF_FeshValue_Initial; %22.6
+        ramp.settling_time = 50;   
+        
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+        ScopeTriggerPulse(curtime,'FB_ramp');
+
+        seqdata.params.HF_fb = HF_FeshValue_Initial;
+        
+        % wait for things to thermalize ??
+curtime = calctime(curtime,200);        
+end
 %% Modulation
     
 if seqdata.flags.conductivity_QPD_trigger
@@ -135,11 +170,13 @@ setDigitalChannel(curtime,'ODT Piezo Mod TTL',0);
 
 
 if seqdata.flags.conductivity_snap_and_hold
-    defVar('conductivity_snap_and_hold_time',[0:2.5:75],'ms');  
+    defVar('conductivity_snap_and_hold_time',0:2.5:75,'ms');  
 
     % Turn off modulation envelope (go back to initial position
     % diabatically)
 %     setAnalogChannel(calctime(curtime,0),'Modulation Ramp',-10,1);
+
+    % Ramp it down smoothly
     AnalogFuncTo(calctime(curtime,0),'Modulation Ramp',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, -9.999,1);    
     
@@ -183,7 +220,27 @@ curtime=AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
 end  
 
     
-     
+%% Ramp FB field back down to 20 G
+   
+if seqdata.flags.conductivity_ramp_FB
+ 
+          % Define the ramp structure
+        ramp=struct;
+        ramp.shim_ramptime = 150;
+        ramp.shim_ramp_delay = 0; % ramp earlier than FB field if needed
+        ramp.xshim_final = seqdata.params.shim_zero(1); 
+        ramp.yshim_final = seqdata.params.shim_zero(2);
+        ramp.zshim_final = seqdata.params.shim_zero(3);
+        % FB coil 
+        ramp.fesh_ramptime = 150;
+        ramp.fesh_ramp_delay = 0;
+        ramp.fesh_final = 20; %22.6
+        ramp.settling_time = 50;   
+        
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+        ScopeTriggerPulse(curtime,'FB_ramp');
+
+end
 
 
 end

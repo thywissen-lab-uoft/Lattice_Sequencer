@@ -3,6 +3,8 @@ function curtime = QP_test(timein)
 curtime = timein;
 global seqdata;
 seqdata.flags.Frank = 1;
+
+%% Turn off all coils
 %% Ramp up QP coils to some value
 
 LF_QP_List =  [0.099];.14;0.115;

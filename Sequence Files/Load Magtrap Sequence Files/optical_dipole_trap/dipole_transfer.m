@@ -1347,18 +1347,18 @@ if (seqdata.flags.xdt_evap2_HF && seqdata.flags.xdt_evap2stage == 0)
     curtime = dipole_high_field_evap2(curtime);
 end
 
-%% Ramp Dipole Back Up
+%% Ramp Dipole After Evap
 % Compress XDT after Stage 2 optical evaporation
 
 if seqdata.flags.xdt_ramp_power_end 
     dispLineStr('Ramping XDT Power Back Up',curtime); 
     
-    xdt_rampup_power_list = .3;[0.12:0.01:0.25];
+    xdt_rampup_power_list = 0.12;[0.12:0.01:0.25];
     
     xdt_rampup_power = getScanParameter(xdt_rampup_power_list,seqdata.scancycle,...
     seqdata.randcyclelist,'xdt_rampup_power', 'mW');
     
-    dip_1 = xdt_rampup_power; .15; %1.5
+    dip_1 = 0.02; seqdata.params.ODT_zeros(1);xdt_rampup_power; .15; %1.5
     dip_2 = xdt_rampup_power; .15; %1.5
     dip_ramptime = 100; %1000
     dip_rampstart = 0;

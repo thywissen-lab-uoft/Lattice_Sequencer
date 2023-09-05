@@ -144,7 +144,13 @@ end
         ((4*DDSFreq*1e-6)-df0)*1e3,'kHz');
     
     if seqdata.flags.misc_program4pass
-        DDS_sweep(10,2,DDSFreq,DDSFreq,calctime(10,1));
+%         DDS_sweep(10,2,DDSFreq,DDSFreq,calctime(10,1));        
+%         uWave_opts=struct;
+%         uWave_opts.Address=29;                        % K uWave ("SRS B");
+%         uWave_opts.Frequency= DDSFreq*1e-6;% Frequency in MHz
+%         uWave_opts.Power= 3;%15                      % Power in dBm
+%         uWave_opts.Enable=1;                          % Enable SRS output%         
+%         programSRS(uWave_opts);                     % Program the SRS         
     end
     
     % Eventually program the EIT probe frequencies

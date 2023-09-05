@@ -34,9 +34,9 @@ seqdata.flags.lattice_lattice_ramp_1        = 1;    % Load the lattices
 
 seqdata.flags.do_lattice_am_spec            = 0;    % Amplitude modulation spectroscopy             
 
-seqdata.flags.lattice_rotate_waveplate_2    = 1;    % Second waveplate rotation 95% 
+seqdata.flags.lattice_rotate_waveplate_2    = 0;    % Second waveplate rotation 95% 
 seqdata.flags.lattice_lattice_ramp_2        = 0;    % Secondary lattice ramp for fluorescence imaging
-seqdata.flags.lattice_lattice_ramp_3        = 1;    % Secondary lattice ramp for fluorescence imaging
+seqdata.flags.lattice_lattice_ramp_3        = 0;    % Secondary lattice ramp for fluorescence imaging
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -47,8 +47,8 @@ seqdata.flags.lattice_hold_at_end           = 0;
 % Conductivity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % These flags are associated with the conducitivity experiment
-seqdata.flags.lattice_conductivity          = 0;     % old sequence
-seqdata.flags.lattice_conductivity_new      = 1;    % New sequence created July 25th, 2023
+seqdata.flags.lattice_conductivity          = 0;    % old sequence
+seqdata.flags.lattice_conductivity_new      = 0;    % New sequence created July 25th, 2023
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy
@@ -66,7 +66,7 @@ do_RF_spectroscopy                          = 0;    % (3952,4970)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-seqdata.flags.lattice_do_optical_pumping    = 1;    % (1426) keep : optical pumping in lattice  
+seqdata.flags.lattice_do_optical_pumping    = 0;    % (1426) keep : optical pumping in lattice  
 seqdata.flags.do_plane_selection            = 0;    % Plane selection flag
 
 % Actual fluorsence image flags - NO LONGER USED
@@ -81,7 +81,7 @@ seqdata.flags.Raman_transfers               = 0;
 
 % New Standard Fluoresnce Image Flags
 seqdata.flags.lattice_ClearCCD_IxonTrigger  = 1;    % Add additional trigger to clear CCD
-seqdata.flags.lattice_fluor                 = 1;    % Do Fluoresnce imaging
+seqdata.flags.lattice_fluor                 = 0;    % Do Fluoresnce imaging
 seqdata.flags.lattice_fluor_bkgd            = 0;    % 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -163,13 +163,13 @@ if seqdata.flags.lattice_lattice_ramp_1
             % by a quick snap to a pinning lattice depth
             
             % Initial lattice depth
-            initial_latt_depth_list = 3;5;14;%5, 10;
+            initial_latt_depth_list = 2;14;%5, 10;
             init_depth = getScanParameter(initial_latt_depth_list,...
                 seqdata.scancycle,seqdata.randcyclelist,...
                 'initial_latt_depth','Er');
             
             % Final lattice depth to ramp to
-            defVar('U1',[3]);60;
+            defVar('U1',[40]);60;
             U = getVar('U1');
 
             %%% Lattice %%%
@@ -239,8 +239,8 @@ if seqdata.flags.lattice_lattice_ramp_1
             % Simple square ramp of only one lattice 
             
             %Select the lattice direction to load
-%             direction = 'X';
-            direction = 'Y';
+            direction = 'X';
+%             direction = 'Y';
 %             direction = 'Z';
             switch direction
                 case 'X'
@@ -408,26 +408,26 @@ if seqdata.flags.lattice_lattice_ramp_1
 
     % Perform first dipole trap framp
     
-    T0=0;
-    AnalogFuncTo(calctime(curtime,T0),'dipoleTrap1',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        dip_times(1), dip_times(1), dip_pow(1));   
-    T0=0;
-    AnalogFuncTo(calctime(curtime,T0),'dipoleTrap2',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        dip_times(1), dip_times(1), dip_pow(1));   
-    T0=dip_times(1);
-
-    % Rest of ramp
-    for jj=2:length(dip_times)        
-        AnalogFuncTo(calctime(curtime,T0),'dipoleTrap1',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-            dip_times(jj), dip_times(jj), dip_pow(jj)); 
-        AnalogFuncTo(calctime(curtime,T0),'dipoleTrap2',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-            dip_times(jj), dip_times(jj), dip_pow(jj));
-        T0=T0+dip_times(jj);
-    end      
+%     T0=0;
+%     AnalogFuncTo(calctime(curtime,T0),'dipoleTrap1',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+%         dip_times(1), dip_times(1), dip_pow(1));   
+%     T0=0;
+%     AnalogFuncTo(calctime(curtime,T0),'dipoleTrap2',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+%         dip_times(1), dip_times(1), dip_pow(1));   
+%     T0=dip_times(1);
+% 
+%     % Rest of ramp
+%     for jj=2:length(dip_times)        
+%         AnalogFuncTo(calctime(curtime,T0),'dipoleTrap1',...
+%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+%             dip_times(jj), dip_times(jj), dip_pow(jj)); 
+%         AnalogFuncTo(calctime(curtime,T0),'dipoleTrap2',...
+%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+%             dip_times(jj), dip_times(jj), dip_pow(jj));
+%         T0=T0+dip_times(jj);
+%     end      
         
     % Stupid error handling
     dipole_trap_off_after_lattice_on=0;
@@ -653,6 +653,7 @@ if seqdata.flags.do_plane_selection
     % kill beam, there is probalby some werid exposure/timing issue gonig
     % on that should be resolved.
     curtime = calctime(curtime,100);
+    
 end
 
 %% Field Ramps BEFORE uWave/RF Spectroscopy
@@ -964,9 +965,9 @@ if seqdata.flags.lattice_lattice_ramp_3
     defVar('lattice_FI_ramptime',10,'ms');
         
     % Lattice Depth Request
-    defVar('lattice_FI_depth_X',[1050],'Er');
-    defVar('lattice_FI_depth_Y',[1000],'Er');
-    defVar('lattice_FI_depth_Z',[1150],'Er');    
+    defVar('lattice_FI_depth_X',[1050],'Er');1050;
+    defVar('lattice_FI_depth_Y',[1000],'Er');1000;
+    defVar('lattice_FI_depth_Z',[1150],'Er');1150;    
 
    % Perform the rest of the lattice ramps
    dT = getVar('lattice_FI_ramptime');

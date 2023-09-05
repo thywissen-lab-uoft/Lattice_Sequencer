@@ -477,7 +477,9 @@ if seqdata.flags.image_type == 0
         end
     end
     
-    % Turn of XDT (if they aren't already off)
+%     latt_times = [300];
+    
+    % Turn off XDT (if they aren't already off)
     if seqdata.flags.xdt        
         % Read XDT Powers right before tof
         P1 = getChannelValue(seqdata,'dipoleTrap1',1);
@@ -487,13 +489,13 @@ if seqdata.flags.image_type == 0
         addOutputParam('xdt2_final_power',P2,'W');
 
         % Turn off AOMs 
-        setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
+        setDigitalChannel(calctime(curtime,0),'XDT TTL',1);     %add latt_times+50 for round-trip
 
         % XDT1 Power Req. Off
-        setAnalogChannel(calctime(curtime,0),'dipoleTrap1',...
-            seqdata.params.ODT_zeros(1));
+        setAnalogChannel(calctime(curtime,0),'dipoleTrap1',... 
+            seqdata.params.ODT_zeros(1));                       %add latt_times+50 for round-trip
         % XDT2 Power Req. Off
-        setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));
+        setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));    %add latt_times+50 for round-trip
         % I think this channel is unused now
         setDigitalChannel(calctime(curtime,-1),'XDT Direct Control',1);
        
@@ -501,6 +503,7 @@ if seqdata.flags.image_type == 0
 
     % Turn off lattices (if they haven't already turned off)
     if seqdata.flags.lattice
+        
         % Set Analog Channels to zero lattice depth
         setAnalogChannel(calctime(curtime,0),'xLattice', ...
             seqdata.params.lattice_zero(1));
@@ -508,11 +511,39 @@ if seqdata.flags.image_type == 0
             seqdata.params.lattice_zero(2));
         setAnalogChannel(calctime(curtime,0),'zLattice', ...
             seqdata.params.lattice_zero(3));
-            
+        
         % Turn off TTL and disable the integrator
-        setDigitalChannel(calctime(curtime + 0.5,0),'yLatticeOFF',1); 
-        setDigitalChannel(calctime(curtime + 0.5,0),'Lattice Direct Control',1);         
-    end    
+        setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1); 
+        setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1);        
+        
+        
+        % used for round trip measurements from lattice
+%         %  Ramp xLattice to the first value ("0Er")
+%         
+%         AnalogFuncTo(calctime(curtime,0),'xLattice',...
+%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+%             latt_times(1), latt_times(1), seqdata.params.lattice_zero(1));
+% 
+%         % Ramp yLattice to the first value ("0Er")
+% 
+%         AnalogFuncTo(calctime(curtime,0),'yLattice',...
+%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+%             latt_times(1), latt_times(1), seqdata.params.lattice_zero(2));   
+% 
+%         % Ramp zLattice to the first value ("0Er")
+% 
+%         AnalogFuncTo(calctime(curtime,0),'zLattice',...
+%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+%             latt_times(1), latt_times(1), seqdata.params.lattice_zero(3));   
+            
+%         % Turn off TTL and disable the integrator
+%         setDigitalChannel(calctime(curtime,latt_times(1)),'yLatticeOFF',1); 
+%         setDigitalChannel(calctime(curtime,latt_times(1)),'Lattice Direct Control',1);  
+       
+    end 
+    
+%     curtime = calctime(curtime,latt_times(1)+50);
+    
 end
 
 %% Absorption Imaging

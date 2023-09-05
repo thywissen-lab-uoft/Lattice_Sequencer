@@ -9,14 +9,18 @@ setAnalogChannel(curtime,'Modulation Ramp',-10,1);
 seqdata.flags.conductivity_ODT1_mode            = 2; % 0:OFF, 1:SINE, 2:DC
 seqdata.flags.conductivity_ODT2_mode            = 2; % 0:OFF, 1:SINE, 2:DC
 
-seqdata.flags.conductivity_ramp_FB              = 1; % Ramp FB field to resonance
+seqdata.flags.conductivity_ramp_FB              = 0; % Ramp FB field to resonance
 
 seqdata.flags.conductivity_enable_mod_ramp      = 1;
 seqdata.flags.conductivity_QPD_trigger          = 1; % Trigger QPD monitor LabJack/Scope 
 
+seqdata.flags.conductivity_snap_off_XDT         = 1; % Quick ramp of ODTs while atoms are displaced
+
 seqdata.flags.conductivity_snap_and_hold        = 1; % Diabatically turn off mod for quench measurement
 
 seqdata.flags.conductivity_dopin                = 1; % Pin after modulation
+
+seqdata.flags.ramp_up_XDT                       = 0; %Ramp up XDTs after pinning
 
 %% Modulation Settings
 
@@ -24,12 +28,13 @@ seqdata.flags.conductivity_dopin                = 1; % Pin after modulation
 rigol_address = 12;           
 
 defVar('conductivity_mod_freq',[40],'Hz')       % Modulation Frequency
-defVar('conductivity_mod_time',[50],'ms');       % Modulation Time
+defVar('conductivity_mod_time',[50],'ms');      % Modulation Time
 defVar('conductivity_mod_ramp_time',300,'ms');  % Ramp Time
+defVar('conductivity_rel_mod_phase',0,'deg');   % Phase shift of sinusoidal mod - should be 180 for mod along y
     
 % Modulation amplitude not to exceed +-4V.
-defVar('conductivity_ODT1_mod_amp',[4],'V');  % ODT1 Mod Depth
-defVar('conductivity_ODT2_mod_amp',[4],'V');  % ODT2 Mod Depth
+defVar('conductivity_ODT1_mod_amp',[4],'V');  % ODT1 Mod Depth   4V, 4V for X (DC) 4V, -1.7V for Y (DC);
+defVar('conductivity_ODT2_mod_amp',[-1.7],'V');  % ODT2 Mod Depth
 
 %% Calculate Timings and Phase
 
@@ -89,7 +94,7 @@ switch seqdata.flags.conductivity_ODT2_mode
         ch2_on.AMPLITUDE = abs(getVar('conductivity_ODT2_mod_amp'))*2;
         ch2_on.AMPLITUDE_UNIT='VPP';   % Unit of modulation (Volts PP)
         ch2_on.FUNC = 'SIN';
-        ch2_on.BURST_PHASE = 0;
+        ch2_on.BURST_PHASE = getVar('conductivity_rel_mod_phase');
         ch2_on.SWEEP='OFF';
         ch2_on.MOD='OFF';
         ch2_on.BURST='ON';             % Burst MODE 
@@ -113,7 +118,7 @@ end
 if seqdata.flags.conductivity_ramp_FB
  
       % Feshbach Field ramp
-        HF_FeshValue_Initial_List = [185]; 
+        HF_FeshValue_Initial_List = [190]; 
         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
             seqdata.scancycle,seqdata.randcyclelist,'conductivity_FB_field','G');
          
@@ -148,13 +153,21 @@ if seqdata.flags.conductivity_QPD_trigger
     DigitalPulse(calctime(curtime,-100),'QPD Monitor Trigger',50,1);
 end
 
-setDigitalChannel(curtime,'ODT Piezo Mod TTL',1);
 
 if seqdata.flags.conductivity_enable_mod_ramp
+    
+    setDigitalChannel(curtime,'ODT Piezo Mod TTL',1);
+    
     curtime = AnalogFunc(calctime(curtime,0),'Modulation Ramp',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
         getVar('conductivity_mod_ramp_time'),...
-        getVar('conductivity_mod_ramp_time'),-10,9.999,1);    
+        getVar('conductivity_mod_ramp_time'),-10,9.999,1);   
+    
+    % for round trip measurment
+%     curtime = AnalogFunc(calctime(curtime,0),'Modulation Ramp',...
+%         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+%         getVar('conductivity_mod_ramp_time'),...
+%         getVar('conductivity_mod_ramp_time'),9.999,-9.999,1);
 else
     setAnalogChannel(curtime,'Modulation Ramp',9.999,1);
 end
@@ -162,25 +175,46 @@ end
 % Wait for modulation to finish
 curtime = calctime(curtime,getVarOrdered('conductivity_mod_time'));
 
-% Stop Modulation
+% Stop Modulation - only affects AC modulation
 setDigitalChannel(curtime,'ODT Piezo Mod TTL',0);
+
+%% Snap off ODTs while modulating
+
+if seqdata.flags.conductivity_snap_off_XDT        
+
+        % Turn off AOMs 
+        setDigitalChannel(calctime(curtime,0),'XDT TTL',1);  
+
+        % XDT1 Power Req. Off
+        setAnalogChannel(calctime(curtime,0),'dipoleTrap1',... 
+            seqdata.params.ODT_zeros(1));                      
+        % XDT2 Power Req. Off
+curtime = setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));  
+        % I think this channel is unused now
+        setDigitalChannel(calctime(curtime,-1),'XDT Direct Control',1);
+       
+end     
 
 %% Additional hold
 % For decay/quench measurement
 
 
 if seqdata.flags.conductivity_snap_and_hold
-    defVar('conductivity_snap_and_hold_time',0:2.5:75,'ms');  
+    defVar('conductivity_snap_and_hold_time',[0:0.5:15],'ms');  
 
     % Turn off modulation envelope (go back to initial position
     % diabatically)
 %     setAnalogChannel(calctime(curtime,0),'Modulation Ramp',-10,1);
 
     % Ramp it down smoothly
-    AnalogFuncTo(calctime(curtime,0),'Modulation Ramp',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 5, 5, -9.999,1);    
+    defVar('piezo_diabat_ramp_time',2,'ms');
+    piezo_diabat_ramp_time = getVar('piezo_diabat_ramp_time');
     
-    curtime = calctime(curtime,getVarOrdered('conductivity_snap_and_hold_time'));
+    
+    AnalogFuncTo(calctime(curtime,0),'Modulation Ramp',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), piezo_diabat_ramp_time, piezo_diabat_ramp_time, -9.999,1);    
+    
+curtime = calctime(curtime,getVarOrdered('conductivity_snap_and_hold_time'));
 
 
 end
@@ -208,16 +242,28 @@ if seqdata.flags.conductivity_dopin
     % Wait a bit
     curtime = calctime(curtime,5);
 
-   % Turn off XDT
-    AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 10, 10, -0.2);
-curtime=AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 10, 10, -0.2);
-    setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
-
+%    % Turn off XDT
+%     AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+%         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 10, 10, -0.2);
+% curtime=AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+%         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 10, 10, -0.2);
+%     setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
+% 
 %     setAnalogChannel(calctime(curtime,0),'dipoleTrap1',-0.2);
 %     setAnalogChannel(calctime(curtime,0),'dipoleTrap2',-0.2);
 end  
+
+%%Ramp up the XDTs again after pinning
+
+if seqdata.flags.ramp_up_XDT
+    
+        AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 10, 10, 0.2);
+curtime=AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), 10, 10, 0.2);
+    
+end
+
 
     
 %% Ramp FB field back down to 20 G

@@ -211,11 +211,11 @@ if opts.EnableEITProbe && pulse_time > 0
     
 
     
-    
-    probe_power_list = [10];
-    probe_power = getScanParameter(probe_power_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'probe_power','V');
-    setAnalogChannel(calctime(curtime,-100),58,probe_power);
+%     
+%     probe_power_list = [10];
+%     probe_power = getScanParameter(probe_power_list,...
+%         seqdata.scancycle,seqdata.randcyclelist,'probe_power','V');
+%     setAnalogChannel(calctime(curtime,-100),58,probe_power);
 
     
     % Make sure EIT Probe is off

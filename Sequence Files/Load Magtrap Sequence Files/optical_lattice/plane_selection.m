@@ -26,7 +26,7 @@ opts.fake_the_plane_selection_sweep = 0;
 opts.planeselect_doVertKill = 1;
 
 % Transfer back to -9/2 via uwave transfer
-opts.planeselect_doMicrowaveBack = 1;   
+opts.planeselect_doMicrowaveBack = 0;   
 
 % Pulse repump to remove leftover F=7/2
 opts.planeselect_doFinalRepumpPulse = 0;
@@ -85,7 +85,7 @@ if opts.ramp_fields
 
     % Fesbhach Field (in gauss)
     B0 = 128;    %old value 128G, 0.6G shift
-    fb_shift_list = [0.52];[0.51];[0.6];[0];[.6];
+    fb_shift_list = [0.45];[0.52];[0.52];[0.51];[0.6];[0];[.6];
     fb_shift = getScanParameter(fb_shift_list,seqdata.scancycle,...
         seqdata.randcyclelist,'qgm_plane_FB_shift','G');    
     Bfb = B0 - fb_shift;
@@ -169,7 +169,7 @@ switch opts.SelectMode
         if opts.dotilt
             freq_list = 1050 + [1220];
         else
-            freq_list = 1050 + [520];
+            freq_list = 1050 + [700];520;
         end
         
         freq_offset = getScanParameter(freq_list,seqdata.scancycle,...
@@ -199,7 +199,7 @@ switch opts.SelectMode
         addOutputParam('uwave_HS1_amp',env_amp);
 
         % Determine the range of the sweep -- Amplitude or full range?
-        uWave_delta_freq_list= [20]/1000;[20]/1000; [7]/1000;
+        uWave_delta_freq_list= [25]/1000;[20]/1000; [7]/1000;
         uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq','kHz');
 
@@ -211,7 +211,7 @@ switch opts.SelectMode
         disp(['     Pulse Time   : ' num2str(sweep_time) ' ms']);
         disp(['     Freq Delta   : ' num2str(uWave_delta_freq*1E3) ' kHz']);
 
-        % Enable uwave frequency sweep
+%         % Enable uwave frequency sweep
         uWave_opts.EnableSweep=1;                    
         uWave_opts.SweepRange=uWave_delta_freq;   
 
@@ -225,7 +225,6 @@ switch opts.SelectMode
 
         % Turn on the uWave        
         if  ~opts.fake_the_plane_selection_sweep
-            disp('disabling ');
             setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);  
         end
 
@@ -249,7 +248,7 @@ switch opts.SelectMode
         setAnalogChannel(calctime(curtime,0),'uWave VVA',0);        % Turn off VVA        
         setAnalogChannel(calctime(curtime,10),'uWave FM/AM',-1);    % Reset the uWave deviation after a while
 
-        % Reset the ACync
+%         Reset the ACync
         if opts.use_ACSync
             setDigitalChannel(calctime(curtime,30),'ACync Master',0);
         end
@@ -499,7 +498,7 @@ if opts.planeselect_doMicrowaveBack
             addOutputParam('uwave_HS1_amp_back',env_amp);
 
             % Determine the range of the sweep
-            uWave_delta_freq_list= [1000]/1000; [7]/1000;
+            uWave_delta_freq_list= [120]/1000; [7]/1000;
             uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
                 seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq_back','kHz');
 

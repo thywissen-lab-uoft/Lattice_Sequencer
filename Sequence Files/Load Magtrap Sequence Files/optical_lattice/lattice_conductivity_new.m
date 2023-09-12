@@ -8,18 +8,12 @@ setAnalogChannel(curtime,'Modulation Ramp',-10,1);
 %% Flags
 seqdata.flags.conductivity_ODT1_mode            = 2; % 0:OFF, 1:SINE, 2:DC
 seqdata.flags.conductivity_ODT2_mode            = 2; % 0:OFF, 1:SINE, 2:DC
-
-seqdata.flags.conductivity_ramp_FB              = 0; % Ramp FB field to resonance
-
+seqdata.flags.conductivity_ramp_FB              = 1; % Ramp FB field to resonance
 seqdata.flags.conductivity_enable_mod_ramp      = 1;
-seqdata.flags.conductivity_QPD_trigger          = 1; % Trigger QPD monitor LabJack/Scope 
-
-seqdata.flags.conductivity_snap_off_XDT         = 1; % Quick ramp of ODTs while atoms are displaced
-
+seqdata.flags.conductivity_QPD_trigger          = 1; % Trigger QPD monitor LabJack/Scope
+seqdata.flags.conductivity_snap_off_XDT         = 0; % Quick ramp of ODTs while atoms are displaced
 seqdata.flags.conductivity_snap_and_hold        = 1; % Diabatically turn off mod for quench measurement
-
 seqdata.flags.conductivity_dopin                = 1; % Pin after modulation
-
 seqdata.flags.ramp_up_XDT                       = 0; %Ramp up XDTs after pinning
 
 %% Modulation Settings
@@ -34,7 +28,7 @@ defVar('conductivity_rel_mod_phase',0,'deg');   % Phase shift of sinusoidal mod 
     
 % Modulation amplitude not to exceed +-4V.
 defVar('conductivity_ODT1_mod_amp',[4],'V');  % ODT1 Mod Depth   4V, 4V for X (DC) 4V, -1.7V for Y (DC);
-defVar('conductivity_ODT2_mod_amp',[-1.7],'V');  % ODT2 Mod Depth
+defVar('conductivity_ODT2_mod_amp',[4],'V');  % ODT2 Mod Depth
 
 %% Calculate Timings and Phase
 
@@ -117,6 +111,8 @@ end
    
 if seqdata.flags.conductivity_ramp_FB
  
+        
+    
       % Feshbach Field ramp
         HF_FeshValue_Initial_List = [190]; 
         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
@@ -125,7 +121,10 @@ if seqdata.flags.conductivity_ramp_FB
         zshim_list = [0];
         zshim = getScanParameter(zshim_list,...
             seqdata.scancycle,seqdata.randcyclelist,'conductivity_zshim','A');
-
+        
+        HF_FeshValue_Initial = getVar('conductivity_FB_field');
+        zshim = getVar('conductivity_zshim');
+        
           % Define the ramp structure
         ramp=struct;
         ramp.shim_ramptime = 150;
@@ -200,23 +199,20 @@ end
 
 
 if seqdata.flags.conductivity_snap_and_hold
-    defVar('conductivity_snap_and_hold_time',[0:0.5:15],'ms');  
+    defVar('conductivity_snap_and_hold_time',[0:1:40],'ms');  [0:1:40];
 
     % Turn off modulation envelope (go back to initial position
     % diabatically)
 %     setAnalogChannel(calctime(curtime,0),'Modulation Ramp',-10,1);
 
     % Ramp it down smoothly
-    defVar('piezo_diabat_ramp_time',2,'ms');
-    piezo_diabat_ramp_time = getVar('piezo_diabat_ramp_time');
+    defVar('piezo_diabat_ramp_time',4,'ms');4;
+    piezo_diabat_ramp_time = getVar('piezo_diabat_ramp_time');   
     
-    
-    AnalogFuncTo(calctime(curtime,0),'Modulation Ramp',...
+curtime = AnalogFuncTo(calctime(curtime,0),'Modulation Ramp',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), piezo_diabat_ramp_time, piezo_diabat_ramp_time, -9.999,1);    
-    
+
 curtime = calctime(curtime,getVarOrdered('conductivity_snap_and_hold_time'));
-
-
 end
 %% Pin atoms
 % Ramp lattices to in atoms

@@ -47,9 +47,9 @@ function timeout = TransportCloud2(timein)
 
 %%
 
-
 curtime = timein;
 global seqdata;
+dispLineStr('TRANSPORT',curtime);
 
 % % hor_transport_type,ver_transport_type, image_loc
 % % 
@@ -63,7 +63,6 @@ image_loc                     = 1;
 
 % Horitzonl used "1 : slow down in middle section curv"
 % Vertical uses "3 : linear"
-
 
 %% Horizontal Transport
 
@@ -120,6 +119,10 @@ setAnalogChannel(calctime(curtime,0),'Coil 12a',0,1);
 setAnalogChannel(calctime(curtime,0),'Coil 12b',0,1);
 setAnalogChannel(calctime(curtime,0),'Coil 13',0,1);
 setAnalogChannel(calctime(curtime,0),'Coil 14',0,1);
+
+disp(['Transport over at ' num2str(curtime2realtime(curtime))]);
 timeout = curtime;
+
+
 
 end

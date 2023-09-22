@@ -292,23 +292,16 @@ if seqdata.flags.transport
     
     transport_start_time = calctime(curtime,trigger_offset);
     addOutputParam('transport_start_time',transport_start_time,'ms');
-
     DigitalPulse(calctime(curtime,trigger_offset-trigger_length),...
-        'LabJack Trigger Transport',trigger_length,1)
-    
-    
+        'LabJack Trigger Transport',trigger_length,1);      
     DigitalPulse(calctime(curtime,1000),...
-        'LabJack Trigger Transport',trigger_length,1)
+        'LabJack Trigger Transport',trigger_length,1);
     
 % curtime = Transport_Cloud(curtime, seqdata.flags.transport_hor_type,...
 %         seqdata.flags.transport_ver_type, seqdata.flags.image_loc);
     
     % New Code
- curtime = TransportCloud2(curtime);    
-    % New Code
-%curtime = TransportCloud3(curtime);
-
-%     curtime = TransportCloud4(curtime);
+     curtime = TransportCloud2(curtime);    
 
     
     

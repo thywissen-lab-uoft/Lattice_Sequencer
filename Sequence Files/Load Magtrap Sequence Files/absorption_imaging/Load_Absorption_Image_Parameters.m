@@ -121,7 +121,7 @@ function params = Load_Absorption_Image_Parameters()
     params.k_repump_shift.positive = 28;
     params.k_repump_shift.negative = 21;21;
     %% Probe beam powers
-    K_probe_pwr_list = [0.125];[0.11];%.15;%[0.5];
+    K_probe_pwr_list = [0.1:.01:.14];[0.125];[0.11];%.15;%[0.5];
     K_probe_pwr = getScanParameter(K_probe_pwr_list,seqdata.scancycle,...
         seqdata.randcyclelist,'K_probe_pwr','V');
     

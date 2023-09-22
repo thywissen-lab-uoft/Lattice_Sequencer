@@ -238,7 +238,6 @@ seqdata.params.ODT_zeros = [-0.04,-0.04];
 % Dipole trap
 % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
 seqdata.flags.xdt                           = 1;
-
 % Dipole trap flags will be ignored if XDT is off
 
 % MT to XDT State Transfer
@@ -278,8 +277,11 @@ seqdata.flags.lattice                       = 0;
 seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% OPTICAL LATTICE %%%%%%%%%s%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% CONDUCTIVITY %%%%%%%%%s%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+defVar('conductivity_snap_and_hold_time',[0:1:50],'ms');  [0:2.5:80];
+defVar('conductivity_FB_field',201.5,'G')
+defVar('conductivity_zshim',0,'A')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% QGM IMAGING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

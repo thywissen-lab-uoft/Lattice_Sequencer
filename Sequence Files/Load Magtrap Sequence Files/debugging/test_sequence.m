@@ -5707,9 +5707,9 @@ end
 
 
 
-    %Set a random analog channel because we need to
-    setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0);
-    setDigitalChannel(calctime(curtime,0),'XDT TTL',0);
+%     %Set a random analog channel because we need to
+%     setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0);
+%     setDigitalChannel(calctime(curtime,0),'XDT TTL',0);
 
     curtime = calctime(curtime,10);
 % 
@@ -5757,9 +5757,10 @@ end
 % %     dipole_ramp_up_time,dipole_ramp_up_time,...
 % %     seqdata.params.ODT_zeros(1),DT1_power(1));
 % 
-% %     setAnalogChannel(calctime(curtime,-5),'dipoleTrap1',-1);
-% %     setAnalogChannel(calctime(curtime,-5),'dipoleTrap2',-1);
-% 
+
+    setDigitalChannel(calctime(curtime,0),'XDT TTL',0);
+    setAnalogChannel(calctime(curtime,0),'dipoleTrap1',-1);
+    setAnalogChannel(calctime(curtime,0),'dipoleTrap2',-1);
 %     
 %     %Turn on odt1 modulation
 %     programRigol(addr_odt1,ch_on,[]);
@@ -5771,16 +5772,16 @@ end
 %     setDigitalChannel(calctime(curtime,0),'ODT Piezo Mod TTL',0);    
 % %     setAnalogChannel(calctime(curtime,5),'dipoleTrap1',-1);
 % %     setAnalogChannel(calctime(curtime,5),'dipoleTrap2',-1);
-% %     setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
+%     setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
 % 
 %  %Turn off odt1 modulation
 % %     programRigol(addr_odt1,ch_off,[]);
 % setAnalogChannel(calctime(curtime,0),'Plug',2500); % Current in mA
 
-    setAnalogChannel(calctime(curtime,-5),'dipoleTrap1',-1);
-    setAnalogChannel(calctime(curtime,-5),'dipoleTrap2',-1);
-    
-    curtime=calctime(curtime,1000);
+%     setAnalogChannel(calctime(curtime,-5),'dipoleTrap1',-1);
+%     setAnalogChannel(calctime(curtime,-5),'dipoleTrap2',-1);
+%     
+%     curtime=calctime(curtime,1000);
 
 % curtime = lattice_conductivity_new(curtime);
 % 
@@ -5845,11 +5846,49 @@ end
 % 
 %     %Turn off odt1 modulation
 %     setDigitalChannel(calctime(curtime,0),'ODT Piezo Mod TTL',0);
-%     curtime=calctime(curtime,20); 
-%     setAnalogChannel(curtime,'Modulation Ramp',-10,1);
+% %     curtime=calctime(curtime,20); 
+% %     setAnalogChannel(curtime,'Modulation Ramp',-10,1);
+% k_op_am_list = [0.4];[0.4];[0.25]; %0.1:0.1:0.9
+% k_op_am = getScanParameter(k_op_am_list,...
+%     seqdata.scancycle,seqdata.randcyclelist,'k_op_am','??');
+% 
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP Shutter',1); % Open K Shtter with pre-trigger
+% %Now at k_op_offset time because there is no TTL (turns on pulse). 
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',k_op_am);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
+% % CF : Why do the probe beams have a pre-trigger?; Seems odd to turn on
+% % beams with the amplitude modulation call
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); 
+% 
+% 
+%  %Kill SP AOM 
+%     mod_freq =  (120)*1E6;
+%     mod_amp_list = [1.5]; 0.1;
+%     mod_amp = getScanParameter(mod_amp_list,...
+%         seqdata.scancycle,seqdata.randcyclelist,'k_kill_power','V');
+%     mod_offset =0;
+%     str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
+%     addVISACommand(8, str);
+% setDigitalChannel(calctime(curtime,0),...
+%             'Kill TTL',1);
+% % 
+% rb_op_am_list = [1];[1];[0.8];[0.8];  %  (1) RF amplitude (V)       
+% rb_op_am = getScanParameter(rb_op_am_list,...
+%     seqdata.scancycle,seqdata.randcyclelist,'rb_op_am','V');
+% 
+% setDigitalChannel(calctime(curtime,0),'Rb Probe/OP Shutter',1); % Open shutter
+% setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',rb_op_am); % Set 
+% setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',0); % inverted logic
+% 
+% setAnalogChannel(calctime(curtime,0),'F Pump',9);
+%     setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
+%     setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
+% %     
 %     
-    
-    
+
+setDigitalChannel(curtime,'K High Field Probe',0);
+% setAnalogChannel(calctime(curtime,0),'Plug',2500); % Current in mA
+
+%     
 timeout = curtime;
 % SelectScopeTrigger('PA_Pulse');
 

@@ -81,7 +81,7 @@ seqdata = struct('analogadwinlist',[],...   % adwin list is [time channel value]
     'outputparams',[],...                   % parameters to output
     'numDDSsweeps',0,...                    % Add these two lines! 
     'DDSsweeps',[],...
-    'atomtype',4,...                        % 1 - K-40, 2 - K-41, 3 - Rb-87 , 4 - Rb+K % seems bad to me
+    'atomtype',4,...                        % 1 - K-40, 2 - K-41, 3 - Rb-87 , 4 - Rb+K % seems bad to me yes bad
     'params', [],...                        % various parameters, recently defined here by FC 07/23/2020
     'flags',[]); 
 

@@ -34,9 +34,9 @@ seqdata.flags.lattice_lattice_ramp_1        = 1;    % Load the lattices
 
 seqdata.flags.do_lattice_am_spec            = 0;    % Amplitude modulation spectroscopy             
 
-seqdata.flags.lattice_rotate_waveplate_2    = 1;    % Second waveplate rotation 95% 
+seqdata.flags.lattice_rotate_waveplate_2    = 0;    % Second waveplate rotation 95% 
 seqdata.flags.lattice_lattice_ramp_2        = 0;    % Secondary lattice ramp for fluorescence imaging
-seqdata.flags.lattice_lattice_ramp_3        = 1;    % Secondary lattice ramp for fluorescence imaging
+seqdata.flags.lattice_lattice_ramp_3        = 0;    % Secondary lattice ramp for fluorescence imaging
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -48,7 +48,7 @@ seqdata.flags.lattice_hold_at_end           = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % These flags are associated with the conducitivity experiment
 seqdata.flags.lattice_conductivity          = 0;    % old sequence
-seqdata.flags.lattice_conductivity_new      = 1;    % New sequence created July 25th, 2023
+seqdata.flags.lattice_conductivity_new      = 0;    % New sequence created July 25th, 2023
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy
@@ -81,7 +81,7 @@ seqdata.flags.Raman_transfers               = 0;
 
 % New Standard Fluoresnce Image Flags
 seqdata.flags.lattice_ClearCCD_IxonTrigger  = 1;    % Add additional trigger to clear CCD
-seqdata.flags.lattice_fluor                 = 1;    % Do Fluoresnce imaging
+seqdata.flags.lattice_fluor                 = 0;    % Do Fluoresnce imaging
 seqdata.flags.lattice_fluor_bkgd            = 0;    % 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -169,7 +169,7 @@ if seqdata.flags.lattice_lattice_ramp_1
                 'initial_latt_depth','Er');
             
             % Final lattice depth to ramp to
-            defVar('U1',[1]);60;
+            defVar('U1',[60]);60;
             U = getVar('U1');
 
             %%% Lattice %%%
@@ -233,13 +233,13 @@ if seqdata.flags.lattice_lattice_ramp_1
             % insitu position measured here. (Use a TOF~0);
             % This also is used for lattice alignment with the ixon.
             
-            U_align = 4; % Lattice depth to align to TOO LOW WILL MESS THINGS UP
+            U_align = 200; % Lattice depth to align to TOO LOW WILL MESS THINGS UP
             % Simple square ramp of only one lattice 
             
             %Select the lattice direction to load
-            direction = 'X';
+%             direction = 'X';
 %             direction = 'Y';
-%             direction = 'Z';
+            direction = 'Z';
             switch direction
                 case 'X'
                   latt_depth=...

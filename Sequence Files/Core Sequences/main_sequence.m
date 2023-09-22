@@ -512,37 +512,37 @@ if seqdata.flags.image_type == 0
         setAnalogChannel(calctime(curtime,0),'zLattice', ...
             seqdata.params.lattice_zero(3));
         
-        % Turn off TTL and disable the integrator
+        %Turn off TTL and disable the integrator
         setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1); 
         setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1);        
         
         
         % used for round trip measurements from lattice
 %         %  Ramp xLattice to the first value ("0Er")
-%         
+% %         
 %         AnalogFuncTo(calctime(curtime,0),'xLattice',...
 %             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
 %             latt_times(1), latt_times(1), seqdata.params.lattice_zero(1));
-% 
-%         % Ramp yLattice to the first value ("0Er")
-% 
+% % 
+% %         % Ramp yLattice to the first value ("0Er")
+% % 
 %         AnalogFuncTo(calctime(curtime,0),'yLattice',...
 %             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
 %             latt_times(1), latt_times(1), seqdata.params.lattice_zero(2));   
-% 
-%         % Ramp zLattice to the first value ("0Er")
-% 
+% % 
+% %         % Ramp zLattice to the first value ("0Er")
+% % 
 %         AnalogFuncTo(calctime(curtime,0),'zLattice',...
 %             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
 %             latt_times(1), latt_times(1), seqdata.params.lattice_zero(3));   
-            
-%         % Turn off TTL and disable the integrator
+%             
+% %         % Turn off TTL and disable the integrator
 %         setDigitalChannel(calctime(curtime,latt_times(1)),'yLatticeOFF',1); 
 %         setDigitalChannel(calctime(curtime,latt_times(1)),'Lattice Direct Control',1);  
        
     end 
     
-%     curtime = calctime(curtime,latt_times(1)+50);
+    curtime = calctime(curtime,0);
     
 end
 

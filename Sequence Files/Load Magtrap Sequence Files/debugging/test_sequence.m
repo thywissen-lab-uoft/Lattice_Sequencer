@@ -5885,8 +5885,8 @@ end
 % %     
 %     
 
-setDigitalChannel(curtime,'K High Field Probe',0);
-% setAnalogChannel(calctime(curtime,0),'Plug',2500); % Current in mA
+% setDigitalChannel(curtime,'K High Field Probe',0);
+setAnalogChannel(calctime(curtime,0),57,10,1); % Current in mA
 
 %     
 timeout = curtime;

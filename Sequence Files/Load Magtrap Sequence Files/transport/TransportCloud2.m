@@ -114,12 +114,6 @@ curtime = AnalogFunc(calctime(curtime,0),0, ...
 
 %% Turn off Vertical Coils 12A-14
 
-% CF: This seems like a bad idea to do diabatically.
-setAnalogChannel(calctime(curtime,0),'Coil 12a',0,1);
-setAnalogChannel(calctime(curtime,0),'Coil 12b',0,1);
-setAnalogChannel(calctime(curtime,0),'Coil 13',0,1);
-setAnalogChannel(calctime(curtime,0),'Coil 14',0,1);
-
 disp(['Transport over at ' num2str(curtime2realtime(curtime))]);
 timeout = curtime;
 

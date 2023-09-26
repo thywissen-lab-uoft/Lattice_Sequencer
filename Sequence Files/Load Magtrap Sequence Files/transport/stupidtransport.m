@@ -75,11 +75,11 @@ transport_functions = ...
     3;% Coil 12a
     3;% Coil 12b
     3;% Coil 13
-    2;% Coil 14
-    2;% Coil 15
-    2;% Coil 16
-    2;% kitten
-    2]; %Stupid];
+    3;% Coil 14; 2
+    5;% Coil 15; 2
+    2;% Coil 16; 2 
+    2;% kitten; 2
+    2]; %Stupid;2];
 transport_names = {'Transport FF','Push Coil','MOT Coil',...
     'Coil 3','Coil 4','Coil 5','Coil 6','Coil 7','Coil 8', 'Coil 9', ...
     'Coil 10','Coil 11','Coil Extra','Coil 12a','Coil 12b','Coil 13',...
@@ -414,7 +414,7 @@ y = currentarray;
                  
                  % ramp 5
                  vert_voltage(1,5) = vert_voltage(2,4);
-                 FF_list = [11.75];11.75;[13];11.75;
+                 FF_list = 11.75;[11.75];11.75;[13];11.75;
                  FF_Voltage = getScanParameter(FF_list, seqdata.scancycle,...
                         seqdata.randcyclelist, 'FF_Voltage_Ramp5','V');
                  vert_voltage(2,5) = FF_Voltage; %13.00 %13.75

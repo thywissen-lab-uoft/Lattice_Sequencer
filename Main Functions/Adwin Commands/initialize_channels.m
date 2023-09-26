@@ -214,7 +214,7 @@ end
     seqdata.analogchannels(3).defaultvoltagefunc = 2;
     seqdata.analogchannels(3).voltagefunc{2} = @(a)(a*0.11+0.25); %0.11*a+0.25 %FW Bell sensor %before transport fix in June 2023
     seqdata.analogchannels(3).voltagefunc{3} = @(current)(current*0.15+0.34); % June 29, 2023 (a*0.1286+0.318)
-    
+    seqdata.analogchannels(3).voltagefunc{4}  = @(current)(current*0.1286+0.318);
     
     %channel 4 (Rb Trap AOM AM)
     seqdata.analogchannels(4).name = 'Rb Trap AM';

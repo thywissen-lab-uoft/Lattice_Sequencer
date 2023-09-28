@@ -7,7 +7,7 @@ function params = Load_Absorption_Image_Parameters()
         seqdata.scancycle,seqdata.randcyclelist,'kdet_shift','MHz');
     params.detunings.K.X.positive.normal = 22.2;
     params.detunings.K.X.positive.in_trap = 23.5;
-    params.detunings.K.X.positive.QP_imaging = 20.5;21.5;
+    params.detunings.K.X.positive.QP_imaging = 20.5+kdet_shift;21.5;
     params.detunings.K.X.positive.SG = 24.5;
     params.detunings.K.X.positive.short_tof = 24.5;
     params.detunings.K.X.negative.normal = 30.6; %(32.6) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?

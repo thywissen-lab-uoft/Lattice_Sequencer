@@ -12,7 +12,7 @@ seqdata.flags.conductivity_ramp_FB              = 1; % Ramp FB field to resonanc
 seqdata.flags.conductivity_enable_mod_ramp      = 1;
 seqdata.flags.conductivity_QPD_trigger          = 1; % Trigger QPD monitor LabJack/Scope
 seqdata.flags.conductivity_snap_off_XDT         = 0; % Quick ramp of ODTs while atoms are displaced
-seqdata.flags.conductivity_snap_and_hold        = 0; % Diabatically turn off mod for quench measurement
+seqdata.flags.conductivity_snap_and_hold        = 1; % Diabatically turn off mod for quench measurement
 seqdata.flags.conductivity_dopin                = 1; % Pin after modulation
 seqdata.flags.ramp_up_XDT                       = 0; %Ramp up XDTs after pinning
 

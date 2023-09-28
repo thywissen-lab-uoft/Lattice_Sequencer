@@ -169,7 +169,7 @@ switch opts.SelectMode
         if opts.dotilt
             freq_list = 1050 + [1220];
         else
-            freq_list = [1750];1050+600;520;
+            freq_list = [1700];1750;1050+600;520;
         end
         
         freq_offset = getScanParameter(freq_list,seqdata.scancycle,...
@@ -199,7 +199,7 @@ switch opts.SelectMode
         addOutputParam('uwave_HS1_amp',env_amp);
 
         % Determine the range of the sweep -- Amplitude or full range?
-        uWave_delta_freq_list= [25]/1000;[20]/1000; [7]/1000;
+        uWave_delta_freq_list= [25]/1000;[25]/1000; [7]/1000;
         uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq','kHz');
 

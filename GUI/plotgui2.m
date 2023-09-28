@@ -704,9 +704,7 @@ function [X,Y,funcnum] = getAnalogValue(trc,funcnum)
     
     % Add endpoints at t=0 and t=ifnity
     X = [0; X; Tseq];    
-    Y = [Y(end); Y; Y(end)];
-    
-    
+    Y = [Y(end); Y; Y(end)];   
 end
 
 % Callback function for automatic ylimits adjust

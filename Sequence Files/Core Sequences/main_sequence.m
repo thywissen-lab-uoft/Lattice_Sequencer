@@ -302,30 +302,35 @@ if seqdata.flags.transport
 %         seqdata.flags.transport_ver_type, seqdata.flags.image_loc);
     
     % New Code
-     curtime = TransportCloud2(curtime);
-     
-    [aTraces, dTraces]=generateTraces(seqdata); 
-    [~,ind]=ismember('Coil 15',{aTraces.name});
-    a15 = aTraces(ind);
-    curlist = linspace(-50,50,1e3);      
-    curr2v = aTraces(ind).voltagefunc{5};
-    vlist = curr2v(curlist);    
-    data_curr = interp1(vlist,curlist,a15.data(:,2));
-    ip = length(data_curr)-find(flip(data_curr)>0,1)+1;
-    t1 = a15.data(ip,1);t2 = a15.data(ip+1,1);
-    i1 = data_curr(ip); i2 = data_curr(ip+1);    
-    t0 = interp1([i1 i2],[t1 t2],0);
-    t0 = round(t0);
-    tout=t0*seqdata.deltat/seqdata.timeunit;
-    disp(tout/1e3);    
-%     setAnalogChannel(t0,'15/16 GS',6.9,1); 
-%     setAnalogChannel(t0,'15/16 GS',5.5,1); 
-    defVar('ramp_time_1516',[500],'ms');200;
-    tr = getVar('ramp_time_1516');
-    AnalogFunc(t0,'15/16 GS',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        tr,tr, 0,5.5,1);
+%      curtime = TransportCloud2(curtime);
+% 
+%     [aTraces, dTraces]=generateTraces(seqdata); 
+%     [~,ind]=ismember('Coil 15',{aTraces.name});
+%     a15 = aTraces(ind);
+%     curlist = linspace(-50,50,1e3);      
+%     curr2v = aTraces(ind).voltagefunc{5};
+%     vlist = curr2v(curlist);    
+%     data_curr = interp1(vlist,curlist,a15.data(:,2));
+%     ip = length(data_curr)-find(flip(data_curr)>0,1)+1;
+%     t1 = a15.data(ip,1);t2 = a15.data(ip+1,1);
+%     i1 = data_curr(ip); i2 = data_curr(ip+1);    
+%     t0 = interp1([i1 i2],[t1 t2],0);
+%     t0 = round(t0);
+%     tout=t0*seqdata.deltat/seqdata.timeunit;
+%     disp(tout/1e3);    
+% %     setAnalogChannel(t0,'15/16 GS',6.9,1); 
+% %     setAnalogChannel(t0,'15/16 GS',5.5,1); 
+%     defVar('ramp_time_1516',[500],'ms');200;
+%     tr = getVar('ramp_time_1516');
+%     AnalogFunc(t0,'15/16 GS',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+%         tr,tr, 0,5.5,1);
     
+
+     curtime = TransportCloud5(curtime);
+
+
+
 %     curtime = transport_round_trip(curtime);
 %      
     % CF: This seems like a bad idea to do diabatically.

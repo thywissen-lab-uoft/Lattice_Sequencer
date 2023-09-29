@@ -6,6 +6,7 @@ function J=job_conductivity_quench
 %         if field>=200.5
 %             defVar('conductivity_snap_and_hold_time',[0:1:40],'ms');
 %         else
+    defVar('lattice_depth_load',1.5,'Er');
         defVar('conductivity_snap_and_hold_time',[0 2.5 5 7.5 10 15:5:150],'ms');
 %         end
 

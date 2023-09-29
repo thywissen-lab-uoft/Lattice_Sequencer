@@ -163,21 +163,23 @@ if seqdata.flags.lattice_lattice_ramp_1
             % by a quick snap to a pinning lattice depth
             
             % Initial lattice depth
-            initial_latt_depth_list = 2.5;2;14;%5, 10;
-            init_depth = getScanParameter(initial_latt_depth_list,...
-                seqdata.scancycle,seqdata.randcyclelist,...
-                'initial_latt_depth','Er');
+
+            
+            Ui = getVar('lattice_depth_load');
             
             % Final lattice depth to ramp to
-            defVar('U1',[2.5]);60;
-            U = getVar('U1');
+%             defVar('U1',[2.5]);60;
+%             U = getVar('U1');
+
+            U = Ui;
+% U = 60;
 
             %%% Lattice %%%
             % Ramp the optical powers of the lattice
             latt_depth=...
-                [init_depth init_depth U U;     % X lattice
-                 init_depth init_depth U U;     % Y lattice
-                 init_depth init_depth U U];    % Z Lattice     
+                [Ui Ui U U;     % X lattice
+                 Ui Ui U U;     % Y lattice
+                 Ui Ui U U];    % Z Lattice     
              
              % Initial ramp on time
              latt_ramp_time_list = [300];

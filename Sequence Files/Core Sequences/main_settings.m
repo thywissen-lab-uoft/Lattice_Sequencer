@@ -191,7 +191,7 @@ seqdata.flags.transport_ver_type            = 3;
 seqdata.flags.mt                            = 1;
 
  % compress QP after transport
-seqdata.flags.mt_compress_after_transport   = 1;
+seqdata.flags.mt_compress_after_transport   = 0;
 
  % ramp science shims for plugging
 seqdata.flags.mt_ramp_to_plugs_shims        = 1;

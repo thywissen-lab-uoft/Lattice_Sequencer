@@ -13,6 +13,11 @@ if seqdata.flags.mt_compress_after_transport
     % Compression stage after the transport to the science cell
     [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_trans(curtime, ...
         seqdata.flags.mt_compress_after_transport);
+else    
+    I_QP =    33;
+    I_kitt =    4.0200;
+    V_QP =   24.8050;
+    I_fesh =     0;    
 end
 
 %% Ramp shims for magnetic trap
@@ -39,6 +44,20 @@ if ( seqdata.flags.RF_evap_stages(1) == 1 )
     % |2,2>-->|2,1>=h*f ==> E = 2*h*f
     % 1 MHz == 48 uK
     
+    defVar('RF1A_freq_0',42,'MHz');
+    defVar('RF1A_freq_1',28,'MHz');
+    defVar('RF1A_freq_2',20,'MHz');
+    defVar('RF1A_freq_3',getVar('RF1A_finalfreq'),'MHz');
+
+    defVar('RF1A_time_1',14000,'ms');
+    defVar('RF1A_time_2',8000,'ms');
+    defVar('RF1A_time_3',4000,'ms');
+
+    defVar('RF1A_gain_0',-2.05,'arb');
+    defVar('RF1A_gain_1',-2.05,'arb');
+    defVar('RF1A_gain_1',-2.05,'arb');
+    defVar('RF1A_gain_1',-2.05,'arb');
+
     dispLineStr('RF1A',curtime);
 
     fake_sweep = 0;             % do a fake RF sweep

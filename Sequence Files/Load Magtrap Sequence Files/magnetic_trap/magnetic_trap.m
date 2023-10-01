@@ -40,23 +40,12 @@ end
 
 %% RF1A
 if ( seqdata.flags.RF_evap_stages(1) == 1 )
-    
-    % |2,2>-->|2,1>=h*f ==> E = 2*h*f
-    % 1 MHz == 48 uK
-    
-    defVar('RF1A_freq_0',42,'MHz');
-    defVar('RF1A_freq_1',28,'MHz');
-    defVar('RF1A_freq_2',20,'MHz');
-    defVar('RF1A_freq_3',getVar('RF1A_finalfreq'),'MHz');
 
-    defVar('RF1A_time_1',14000,'ms');
-    defVar('RF1A_time_2',8000,'ms');
-    defVar('RF1A_time_3',4000,'ms');
+    % For Rubidium we evaporate on 2-->1
+    % |2,2>-->|2,1>=h*f ==> E_atom = 2*h*f
+    % Accounting for the factor of two : 1 MHz evaporates 96 uK atoms
+    
 
-    defVar('RF1A_gain_0',-2.05,'arb');
-    defVar('RF1A_gain_1',-2.05,'arb');
-    defVar('RF1A_gain_1',-2.05,'arb');
-    defVar('RF1A_gain_1',-2.05,'arb');
 
     dispLineStr('RF1A',curtime);
 
@@ -64,15 +53,46 @@ if ( seqdata.flags.RF_evap_stages(1) == 1 )
     hold_time = 100;            % hold time after sweeps
     pre_hold_time =  100;       % Hold time before sweeps
     start_freq = 42;            % Beginning RF1A frequnecy 42 MHz 
+    
+
+    defVar('RF1A_freq_0',42,'MHz');42;36;
+    defVar('RF1A_freq_1',28,'MHz');28;28;
+    defVar('RF1A_freq_2',20,'MHz');20;20;
+    defVar('RF1A_freq_3',getVar('RF1A_finalfreq'),'MHz');
+    defVar('RF1A_time_1',14000,'ms');14000;6000;
+    defVar('RF1A_time_2',8000,'ms');8000;5500;
+    defVar('RF1A_time_3',4000,'ms');4000;4000;
+    defVar('RF1A_gain_0',-2.05,'arb');
+    defVar('RF1A_gain_1',-2.05,'arb');
+    defVar('RF1A_gain_2',-2.05,'arb');
+    defVar('RF1A_gain_3',-2.05,'arb');
 
     % Frequency points
     freqs_1 = [start_freq 28 20 getVar('RF1A_finalfreq')]*MHz;
-    
+        
     % Gains during each sweep
     RF_gain_1 = 0.5*[-4.1 -4.1 -4.1 -4.1]; 
     
     % Duration of each sweep interval
     sweep_times_1 =[14000 8000 4000].*getVar('RF1A_time_scale');    
+    
+    freqs_1 = [...
+          getVar('RF1A_freq_0') ... 
+          getVar('RF1A_freq_1') ...
+          getVar('RF1A_freq_2') ...
+          getVar('RF1A_freq_3')]*MHz;
+
+    RF_gain_1 = [...
+          getVar('RF1A_gain_0') ... 
+          getVar('RF1A_gain_1') ...
+          getVar('RF1A_gain_2') ...
+          getVar('RF1A_gain_3')];
+
+    sweep_times_1 = [...
+          getVar('RF1A_time_1') ... 
+          getVar('RF1A_time_2') ...
+          getVar('RF1A_time_3')].*getVar('RF1A_time_scale');
+
     
     disp(['     Times        (ms) : ' mat2str(sweep_times_1) ]);
     disp(['     Frequencies (MHz) : ' mat2str(freqs_1*1E-6) ]);
@@ -425,6 +445,13 @@ if seqdata.flags.mt_ramp_down_end
     
     I_QP = I_QP_end;
     I_shim = [Ix Iy Iz];
+end
+
+%% MT Lifetime
+if seqdata.flags.mt_lifetime == 1
+    
+    th = getVar('mt_hold_time');
+    curtime = calctime(curtime,th):
 end
 
 %% Post QP Evap Tasks

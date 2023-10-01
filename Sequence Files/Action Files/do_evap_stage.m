@@ -5,7 +5,6 @@
 %------
 function timeout = do_evap_stage(timein, fake_sweep, freqs, sweep_times, rf_gains, hold_time, last_rf_stage)
 
-
 curtime = timein;
 global seqdata;
 

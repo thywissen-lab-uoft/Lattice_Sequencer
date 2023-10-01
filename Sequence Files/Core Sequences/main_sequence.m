@@ -389,11 +389,13 @@ if seqdata.flags.transport_save
 end    
 
 %% Dipole Trap
+%     curtime = xdt_load(curtime);
 
 if ( seqdata.flags.xdt == 1 )
     dispLineStr('Caling dipole_transfer.m',curtime);   
     [curtime, I_QP, V_QP, P_dip, I_shim] = ...
         dipole_transfer(curtime, I_QP, V_QP, I_shim);
+    
 end
 
 %% Pulse lattice after releasing from trap
@@ -533,6 +535,7 @@ if seqdata.flags.image_type == 0
         setDigitalChannel(calctime(curtime,-1),'XDT Direct Control',1);
        
     end          
+%         setDigitalChannel(calctime(curtime,0),'XDT TTL',1);     %add latt_times+50 for round-trip
 
     % Turn off lattices (if they haven't already turned off)
     if seqdata.flags.lattice

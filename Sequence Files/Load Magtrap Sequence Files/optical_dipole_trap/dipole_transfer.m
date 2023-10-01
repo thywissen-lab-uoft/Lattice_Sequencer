@@ -109,6 +109,7 @@ dCz = getScanParameter(dCz_list,seqdata.scancycle,...
 
 
 %% Dipole trap initial ramp on
+
 dispLineStr('ODT 1 ramp up started at',calctime(curtime,0));
 
 % XDT Ramp time delay (or pre turn on)
@@ -144,7 +145,7 @@ ScopeTriggerPulse(curtime,'Rampup ODT');
 setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);
 
 % QP1 Value
-QP_ramp_end1_list = [0.9];
+QP_ramp_end1_list = [0.9];0.9;
 QP_ramp_end1 = getScanParameter(QP_ramp_end1_list*1.78,seqdata.scancycle,...
     seqdata.randcyclelist,'QP_ramp_end1');
 
@@ -322,13 +323,28 @@ setDigitalChannel(calctime(curtime,plug_turnoff_time),'Plug Shutter',0);%0:OFF; 
 dispLineStr('Turning off plug ',calctime(curtime,plug_turnoff_time));
 
 
+    
+% 
+% %%% TESTING NEW LOADING
+% curtime = xdt_load(curtime);
+% setDigitalChannel(calctime(curtime,0),'fast FB Switch',1); %switch Feshbach field on
+% setAnalogChannel(calctime(curtime,0),'FB current',0.0); %switch Feshbach field closer to on
+% setDigitalChannel(calctime(curtime,0),'FB Integrator OFF',0); %switch Feshbach integrator on            
+% % Ramp up FB Current
+%  AnalogFunc(calctime(curtime,0),'Transport FF',...
+%     @(t,tt,y1,y2)(ramp_func(t,tt,y1,y2)),...
+%     50,50, 20,0);
+% curtime = AnalogFunc(calctime(curtime,0),'FB current',...
+%     @(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),...
+%     50,50, 5,0);
+
+%%% TESTING NEW LOADING
+
 %% Turn Off Voltage on Transport and Shim Supply 
 
 ScopeTriggerPulse(calctime(curtime,0),'Transport Supply Off');
-
 %Use QP TTL to shut off coil 16 
 setDigitalChannel(calctime(curtime,0),'Coil 16 TTL',1);
-
 %Turn Coil 15 FET off
 setAnalogChannel(calctime(curtime,0),'Coil 15',0,1);
 
@@ -1847,7 +1863,7 @@ end
         curtime = calctime(curtime,kick_wait_time);
     else
         % Why is this hold time here?
-        exxdthold_list= [100];
+        exxdthold_list= [100];100;
         exxdthold = getScanParameter(exxdthold_list,...
             seqdata.scancycle,seqdata.randcyclelist,'exxdthold','ms');
         curtime=calctime(curtime,exxdthold);%for sparse image

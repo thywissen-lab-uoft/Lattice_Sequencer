@@ -44,9 +44,6 @@ if ( seqdata.flags.RF_evap_stages(1) == 1 )
     % For Rubidium we evaporate on 2-->1
     % |2,2>-->|2,1>=h*f ==> E_atom = 2*h*f
     % Accounting for the factor of two : 1 MHz evaporates 96 uK atoms
-    
-
-
     dispLineStr('RF1A',curtime);
 
     fake_sweep = 0;             % do a fake RF sweep

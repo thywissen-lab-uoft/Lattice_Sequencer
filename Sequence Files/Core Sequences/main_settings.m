@@ -152,7 +152,7 @@ seqdata.flags.High_Field_Imaging            = 0; % High field imaging (shouldn't
 
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
-seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
+seqdata.flags.image_insitu                  = 1; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
 defVar('tof',[5],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
@@ -217,14 +217,12 @@ defVar('RF1B_time_scale',[1],'arb');   [0.8];   % RF1B timescale
 defVar('RF1A_finalfreq',[16],'MHz');8;16;         % RF1A Ending Frequency
 defVar('RF1B_finalfreq',[1],'MHz'); [1];[0.8];        % RF1B Ending Frequency
 
-%%% MT HOLD %%%
-
-    
+%%% MT HOLD %%%    
 defVar('mt_ramp_grad_time',100,'ms');
 defVar('mt_ramp_grad_value',[10],'A');
 seqdata.flags.mt_ramp_down_end = 0;
-seqdata.flags.mt_lifetime = 1;
-defVar('mt_hold_time',[0:500:10000]);
+seqdata.flags.mt_lifetime = 0;
+defVar('mt_hold_time',[100]);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% DIPOLE TRAP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

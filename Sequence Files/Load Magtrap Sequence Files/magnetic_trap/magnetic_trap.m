@@ -130,17 +130,6 @@ if ( seqdata.flags.RF_evap_stages(1) == 2 )
     curtime = do_evap_stage(curtime, fake_sweep, freqs_1, sweep_times_1, ...
         RF_gain_1, hold_time, (seqdata.flags.RF_evap_stages(3) ~= 0));
 end
-        
-%% Evaporation during compression
-do_evap_during_compression = 0;
-if (do_evap_during_compression && seqdata.flags.RF_evap_stages(2)==1)
-    dispLineStr('Evaporate during compression',curtime);
-    freqs_1 = [freqs_1(end)/MHz*1 25]*MHz;
-    RF_gain_1 = [0.5 0.5]*[-4.1];
-    sweep_times_1 = 560; %560 is maximum
-    do_evap_stage(curtime,0, freqs_1, sweep_times_1, ...
-            RF_gain_1, 0, (seqdata.flags.RF_evap_stages(3) == 0));
-end
 
 %% Ramp down QP and/or transfer to the window
 % Decompress the QP trap and transpor the atoms closer to the window.
@@ -184,69 +173,6 @@ if ramp_after_plug
     [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_transfer_test(curtime, seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
 end
 
-if  seqdata.flags.mt_use_plug == 2       
-    dispLineStr('Turning on the plug for death alignment',curtime);
-%     setDigitalChannel(calctime(curtime,0),'Plug Shutter',1);
-    
-    pulse_time = 100;
-    
-   % Break the thermal stabilzation of AOMs by turning them off
-    setDigitalChannel(calctime(curtime,-50),'D1 OP TTL',0);    
-    setAnalogChannel(calctime(curtime,-50),'D1 OP AM',1); 
-    
-    % Open D1 shutter (FPUMP + OPT PUMP)
-    setDigitalChannel(calctime(curtime,-10),'D1 Shutter', 1);%1: turn on laser; 0: turn off laser
-        
-    % Open optical pumping AOMS (allow light) and regulate F-pump
-    setDigitalChannel(curtime,'D1 OP TTL',1);   %1:on 
-    
-    %Optical pumping time
-curtime = calctime(curtime,pulse_time);
-    
-    % Turn off OP before F-pump so atoms repumped back to -9/2.
-    setDigitalChannel(calctime(curtime,0),'D1 OP TTL',0);
-
-    % Close D1 shutter 
-    setDigitalChannel(calctime(curtime,10),'D1 Shutter', 0);%2
-    
-    %After optical pumping, turn on all AOMs for thermal stabilzation
-    setDigitalChannel(calctime(curtime,100),'D1 OP TTL',1);
-    
-
-
-    
-    
-    
-    % We have them on to keep them thermally stable
-%     setDigitalChannel(calctime(curtime,-50),'Raman TTL 1',0); % (1: ON, 0:OFF) Raman 1 ZASWA + Rigol Trigger
-%     setDigitalChannel(calctime(curtime,-50),'Raman TTL 2a',0);% (1: ON, 0:OFF) Raman 2 ZASWA
-%     setDigitalChannel(calctime(curtime,-50),'Raman TTL 3a',0);% (1: ON, 0:OFF) Raman 3 ZASWA
-
-    % Make sure Raman shutter is closed
-%     setDigitalChannel(calctime(curtime,-50),'Raman Shutter',0);
-
-    % Open Shutter (1: ON, 0: OFF)
-%     setDigitalChannel(calctime(curtime,-10),'Raman Shutter',1);
-
-    % Turn on raman beam
-%     setDigitalChannel(curtime,'Raman TTL 1',1);  % Vertical Raman (1: ON, 0:OFF)
-%     setDigitalChannel(curtime,'Raman TTL 2a',1); % Horizontal Raman (1: ON, 0:OFF) 
-    
-curtime = calctime(curtime,pulse_time);
-
-    % Turn off beams
-%     setDigitalChannel(calctime(curtime,0),'Raman TTL 1',0);
-%     setDigitalChannel(calctime(curtime,0),'Raman TTL 2a',0);
-
-    % Close Shutter
-%     setDigitalChannel(calctime(curtime,10),'Raman Shutter',0);    
-
-    % Turn on beams
-%     setDigitalChannel(calctime(curtime,100),'Raman TTL 1',1);
-%     setDigitalChannel(calctime(curtime,100),'Raman TTL 2a',1);      
-    
-%     curtime = calctime(curtime,pulse_time);
-end
 
 %% Evaporation Stage 1b
 
@@ -254,32 +180,56 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     dispLineStr('RF1B begins.',curtime);  
     
     % Define RF1B parameters (frequency, gain, timescale, gradient, etc)
-    sweep_time_list = [3000];
-    sweep_time = getScanParameter(sweep_time_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'RF1B_sweep_time');
-    
-    
-    sweep_times_1b = [6000 3000 2]*getVar('RF1B_time_scale'); 
-    
+    sweep_times_1b = [6000 3000 2]*getVar('RF1B_time_scale');     
     evap_end_gradient_factor_list = [1];.9; %0.75
     evap_end_gradient_factor = getScanParameter(evap_end_gradient_factor_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'evap_end_gradient_factor');
-    
+        seqdata.scancycle,seqdata.randcyclelist,'evap_end_gradient_factor');    
     currs_1b = [1 1 evap_end_gradient_factor evap_end_gradient_factor]*I_QP;
-    freqs_1b = [freqs_1(end)/MHz*1.1 7  getVar('RF1B_finalfreq') 2]*MHz;
-    
-%     
-%     sweep_times_1b = [6000]*getVar('RF1B_time_scale'); 
-%     currs_1b = [1 1]*I_QP;
-%     freqs_1b = [freqs_1(end)/MHz*1.1 6]*MHz;
-%     
-    
-    
+    freqs_1b = [freqs_1(end)/MHz*1.1 7  getVar('RF1B_finalfreq') 2]*MHz;  
     rf_1b_gain_list = [-2];
     rf_1b_gain = getScanParameter(rf_1b_gain_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'RF1B_gain','V');
-    
+        seqdata.scancycle,seqdata.randcyclelist,'RF1B_gain','V');    
     gains = ones(1,length(freqs_1b))*rf_1b_gain;
+    
+    defVar('RF1B_freq_0',getVar('RF1A_freq_3')*1.1,'MHz');
+    defVar('RF1B_freq_1',7,'MHz');7;
+    defVar('RF1B_freq_2',1,'MHz');1;
+    defVar('RF1B_freq_3',2,'MHz');
+    defVar('RF1B_time_1',6000,'ms');6000;
+    defVar('RF1B_time_2',3000,'ms');3000;
+    defVar('RF1B_time_3',2,'ms');2;
+    defVar('RF1B_gain_0',-2,'arb');
+    defVar('RF1B_gain_1',-2,'arb');
+    defVar('RF1B_gain_2',-2,'arb');
+    defVar('RF1B_gain_3',-2,'arb');
+    defVar('RF1B_current_0',I_QP,'A');
+    defVar('RF1B_current_1',I_QP,'A');
+    defVar('RF1B_current_2',I_QP,'A');
+    defVar('RF1B_current_3',I_QP,'A');
+    
+% 
+%     freqs_1b = [...
+%           getVar('RF1B_freq_0') ... 
+%           getVar('RF1B_freq_1') ...
+%           getVar('RF1B_freq_2') ...
+%           getVar('RF1B_freq_3')]*MHz;
+% 
+%     gains = [...
+%           getVar('RF1B_gain_0') ... 
+%           getVar('RF1B_gain_1') ...
+%           getVar('RF1B_gain_2') ...
+%           getVar('RF1B_gain_3')];
+% 
+%     sweep_times_1b = [...
+%           getVar('RF1B_time_1') ... 
+%           getVar('RF1B_time_2') ...
+%           getVar('RF1B_time_3')].*getVar('RF1B_time_scale');
+%     currs_1b = [...
+%           getVar('RF1B_current_0') ... 
+%           getVar('RF1B_current_1') ...
+%           getVar('RF1B_current_2') ...
+%           getVar('RF1B_current_3')];
+% 
     
     % Create RF1B structure object
     RF1Bopts=struct;
@@ -314,26 +264,6 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
             seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
     end
 
-%     % Hold at the new ramp factor
-%     hold_time_list = [100];
-%     hold_time = getScanParameter(hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'QP_hold_time');
-% %     setDigitalChannel(calctime(curtime,-2.5),'Plug Shutter',0);% 0:OFF; 1: ON
-%     curtime = calctime(curtime,hold_time);  % This goes away if you want to keep knife on
-  
-
-% % % % 
-% %     Keep RF on
-%     RFgain=-2.05;
-%     f_hold=2*MHz;
-%     setDigitalChannel(calctime(curtime,0),17,0);    % RF switch
-%     setDigitalChannel(calctime(curtime,0),19,1);    % swithing on
-%     setAnalogChannel(calctime(curtime,0), 39,RFgain,1); % RF gain
-% 
-%     curtime = DDS_sweep(calctime(curtime,10),1,f_hold,f_hold,hold_time);
-%     
-% this has a "hold" built into it 
-%     setDigitalChannel(calctime(curtime,0),19,0);    % swithing off
-%     setAnalogChannel(calctime(curtime,0), 39,-10,1); % RF gain low
  
 end
 
@@ -381,21 +311,17 @@ end
 
 %% Ramp Down Plug Power a little bit
 if seqdata.flags.mt_plug_ramp_end
-    plug_ramp_time = 200;
-    
+    plug_ramp_time = 200;    
     plug_ramp_power_list = [1500];
     plug_ramp_power=getScanParameter(plug_ramp_power_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'plug_ramp_power','mA');
-    
+        seqdata.scancycle,seqdata.randcyclelist,'plug_ramp_power','mA');    
     curtime = AnalogFuncTo(calctime(curtime,0),'Plug',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        plug_ramp_time,plug_ramp_time,plug_ramp_power,3); 
-    
+        plug_ramp_time,plug_ramp_time,plug_ramp_power,3);     
     % Ramp back to full a while later
     AnalogFuncTo(calctime(curtime,2000),'Plug',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        plug_ramp_time,plug_ramp_time,2500,3); 
-    
+        plug_ramp_time,plug_ramp_time,2500,3);     
     curtime = calctime(curtime,500);
 end
 
@@ -416,13 +342,10 @@ if seqdata.flags.mt_ramp_down_end
     I_s(1) = getChannelValue(seqdata,'X Shim',1);
     I_s(2) = getChannelValue(seqdata,'Y Shim',1);
     I_s(3) = getChannelValue(seqdata,'Z Shim',1);
-
     dI_QP = i1 - I_QP;    
     
     % Calculate the change in shim currents    
-    Cx = -0.0507; % "XSHIM (induces motion along Y lattice dir)
-
-    
+    Cx = -0.0507; % "XSHIM (induces motion along Y lattice dir)    
     defVar('Cy',0.0037);0.0037;
     Cy = getVar('Cy');
     defVar('Cz',0.015);0.014;

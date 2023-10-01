@@ -90,8 +90,7 @@ for kk=1:length(opts.SweepTimes)
         AnalogFuncTo(curtime,'Coil 16',@(t,tt,y1,y2) ramp_linear(t,tt,y1,y2), ...
             dT,dT,I_QP,2);
         AnalogFuncTo(curtime,'Transport FF',@(t,tt,y1,y2) ramp_linear(t,tt,y1,y2),...
-            dT,dT,V_QP,2);    
-        
+            dT,dT,V_QP,2);           
 
         % Calculate change in shim currents
         dI_QP = I_QP - opts.QPCurrents(kk);

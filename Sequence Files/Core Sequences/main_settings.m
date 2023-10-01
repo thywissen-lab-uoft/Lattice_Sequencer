@@ -152,7 +152,7 @@ seqdata.flags.High_Field_Imaging            = 0; % High field imaging (shouldn't
 
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
-seqdata.flags.image_insitu                  = 1; % Does this flag work for QP/XDT? Or only QP?
+seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
 defVar('tof',[5],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
@@ -199,7 +199,7 @@ seqdata.flags.mt_ramp_to_plugs_shims        = 1;
 % Use stage1  = 2 to evaporate fast for transport benchmarking 
 %[stage1, decomp/transport, stage1b] 
 %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
-seqdata.flags.RF_evap_stages                = [1, 1, 0];
+seqdata.flags.RF_evap_stages                = [1, 1, 1];
 
 % Turn on plug beam during RF1B
 seqdata.flags.mt_use_plug                   = 1;

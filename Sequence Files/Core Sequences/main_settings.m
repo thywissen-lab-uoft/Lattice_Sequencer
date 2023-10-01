@@ -199,7 +199,7 @@ seqdata.flags.mt_ramp_to_plugs_shims        = 1;
 % Use stage1  = 2 to evaporate fast for transport benchmarking 
 %[stage1, decomp/transport, stage1b] 
 %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
-seqdata.flags.RF_evap_stages                = [1, 1, 1];
+seqdata.flags.RF_evap_stages                = [1, 1, 0];
 
 % Turn on plug beam during RF1B
 seqdata.flags.mt_use_plug                   = 1;
@@ -217,10 +217,14 @@ defVar('RF1B_time_scale',[1],'arb');   [0.8];   % RF1B timescale
 defVar('RF1A_finalfreq',[16],'MHz');8;16;         % RF1A Ending Frequency
 defVar('RF1B_finalfreq',[1],'MHz'); [1];[0.8];        % RF1B Ending Frequency
 
+%%% MT HOLD %%%
 
-
-seqdata.flags.mt_lifetime = 0;
-defVar('mt_hold_time',[500:500:10000]);
+    
+defVar('mt_ramp_grad_time',100,'ms');
+defVar('mt_ramp_grad_value',[10],'A');
+seqdata.flags.mt_ramp_down_end = 0;
+seqdata.flags.mt_lifetime = 1;
+defVar('mt_hold_time',[0:500:10000]);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% DIPOLE TRAP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

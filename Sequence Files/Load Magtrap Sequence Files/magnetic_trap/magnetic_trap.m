@@ -402,56 +402,68 @@ if seqdata.flags.mt_plug_ramp_end
     curtime = calctime(curtime,500);
 end
 
-%% Ramp down Gradient (useful for measuring levitation)
+%% Ramp down Gradient
+% Ramp down the gradient at the end of RF evaporation.  This is useful for
+% the following reasons
+%
+% - Checking for density dependent loss rates (since density propto
+% gradient)
+% - Checking for adiabaticity of gradient ramps
 
-seqdata.flags.mt_ramp_down_end = 0;
-if seqdata.flags.mt_ramp_down_end
-    defVar('mt_IQP_endramp',[.5 .6 .7 .8 .9 1 .5 2 2.5 3 3.5 4],'A');
+if seqdata.flags.mt_ramp_down_end 
+    tr1 = getVar('mt_ramp_grad_time');
+    i1 = getVar('mt_ramp_grad_value');
     
-    I_QP_end = getVar('mt_IQP_endramp');
-    dT = 500;
-    hold_time = 500;
-            
-    AnalogFuncTo(curtime,'Coil 16',@(t,tt,y1,y2) ramp_linear(t,tt,y1,y2), ...
-        dT,dT,I_QP_end,3);
-    
-    Cx = seqdata.params.plug_shims_slopes(1);
-    Cy = seqdata.params.plug_shims_slopes(2);
-    Cz = seqdata.params.plug_shims_slopes(3);
-    
-    Ix = I_shim(1);
-    Iy = I_shim(2);
-    Iz = I_shim(3);
-    
-    dI_QP = I_QP_end - I_QP;
-    dIx = dI_QP * Cx;
-    dIy = dI_QP * Cy;
-    dIz = dI_QP * Cz;
+    I_QP = getChannelValue(seqdata,'Coil 16',1);    
+    I_s = [0 0 0];
+    I_s(1) = getChannelValue(seqdata,'X Shim',1);
+    I_s(2) = getChannelValue(seqdata,'Y Shim',1);
+    I_s(3) = getChannelValue(seqdata,'Z Shim',1);
 
-    Ix=Ix+dIx;
-    Iy=Iy+dIy;
-    Iz=Iz+dIz;   
+    dI_QP = i1 - I_QP;    
     
+    % Calculate the change in shim currents    
+    Cx = -0.0507; % "XSHIM (induces motion along Y lattice dir)
+
     
-    % Ramp XYZ shims to their next value in the sweep
-    AnalogFuncTo(curtime,'X Shim',@(t,tt,y1,y2) ramp_linear(t,tt,y1,y2), ...
-        dT,dT,Ix,3);
-    AnalogFuncTo(curtime,'Y Shim',@(t,tt,y1,y2) ramp_linear(t,tt,y1,y2), ...
-        dT,dT,Iy,4); 
-    AnalogFuncTo(curtime,'Z Shim',@(t,tt,y1,y2) ramp_linear(t,tt,y1,y2), ...
-        dT,dT,Iz,3); 
+    defVar('Cy',0.0037);0.0037;
+    Cy = getVar('Cy');
+    defVar('Cz',0.015);0.014;
+    Cz = getVar('Cz');
+    dIx=dI_QP*Cx;
+    dIy=dI_QP*Cy;
+    dIz=dI_QP*Cz;   
     
-    curtime = calctime(curtime,hold_time);
-    
-    I_QP = I_QP_end;
-    I_shim = [Ix Iy Iz];
+    % Ramp the QP Current
+    AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+        @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2),...
+        tr1,tr1,i1);  
+    % Ramp the XYZ shims
+    AnalogFunc(calctime(curtime,0),'X Shim',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+        tr1,tr1,I_s(1),I_s(1)+dIx,3); 
+    AnalogFunc(calctime(curtime,0),'Y Shim',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+        tr1,tr1,I_s(2),I_s(2)+dIy,4); 
+    AnalogFunc(calctime(curtime,0),'Z Shim',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+        tr1,tr1,I_s(3),I_s(3)+dIz,3);  
+    curtime = calctime(curtime,tr1);    
+       
+    I_QP = getChannelValue(seqdata,'Coil 16',1);    
+    I_s = [0 0 0];
+    I_s(1) = getChannelValue(seqdata,'X Shim',1);
+    I_s(2) = getChannelValue(seqdata,'Y Shim',1);
+    I_s(3) = getChannelValue(seqdata,'Z Shim',1);
+    I_shim = I_s;
 end
 
 %% MT Lifetime
-if seqdata.flags.mt_lifetime == 1
-    
+if seqdata.flags.mt_lifetime == 1    
+%     setDigitalChannel(calctime(curtime,0),'Plug Shutter',0);% 0:OFF; 1: ON
+
     th = getVar('mt_hold_time');
-    curtime = calctime(curtime,th):
+    curtime = calctime(curtime,th);
 end
 
 %% Post QP Evap Tasks

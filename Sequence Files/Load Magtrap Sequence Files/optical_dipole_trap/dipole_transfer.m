@@ -27,7 +27,7 @@ seqdata.flags.xdt_ramp2sympathetic      = 1;
 
 
 % Stage 1 (Rb+K) Evaporation
-Evap_End_Power_List = [.12];[.12];
+Evap_End_Power_List = .08;[.12];[.12];
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...
     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');  
 
@@ -1369,12 +1369,12 @@ end
 if seqdata.flags.xdt_ramp_power_end 
     dispLineStr('Ramping XDT Power Back Up',curtime); 
     
-    xdt_rampup_power_list = 0.12;[0.12:0.01:0.25];
+    xdt_rampup_power_list = 0.2;[0.12:0.01:0.25];
     
     xdt_rampup_power = getScanParameter(xdt_rampup_power_list,seqdata.scancycle,...
     seqdata.randcyclelist,'xdt_rampup_power', 'mW');
     
-    dip_1 = 0.02; seqdata.params.ODT_zeros(1);xdt_rampup_power; .15; %1.5
+    dip_1 = xdt_rampup_power; 0.02; seqdata.params.ODT_zeros(1);; .15; %1.5
     dip_2 = xdt_rampup_power; .15; %1.5
     dip_ramptime = 100; %1000
     dip_rampstart = 0;

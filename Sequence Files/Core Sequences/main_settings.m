@@ -139,7 +139,7 @@ defVar('D1_DP_FM',222.5,'MHz');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 seqdata.flags.image_type                    = 0; % 0: absorption, 1 : MOT fluor  
-seqdata.flags.image_atomtype                = 2; % 0:Rb,1:K,2:K+Rb (double shutter), applies to fluor and absorption
+seqdata.flags.image_atomtype                = 1; % 0:Rb,1:K,2:K+Rb (double shutter), applies to fluor and absorption
 
 seqdata.flags.image_loc                     = 1; % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.image_direction               = 1; % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
@@ -155,7 +155,7 @@ seqdata.flags.High_Field_Imaging            = 0; % High field imaging (shouldn't
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[5],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[15],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[10],'ms');
@@ -213,16 +213,16 @@ seqdata.flags.mt_kill_K_after_evap          = 0;
 seqdata.flags.mt_plug_ramp_end              = 0;
 
 defVar('RF1A_time_scale',[0.6],'arb');1.2;0.6;      % RF1A timescale
-defVar('RF1B_time_scale',[1],'arb');   [0.8];   % RF1B timescale
+defVar('RF1B_time_scale',[1],'arb');[0.8];   % RF1B timescale
 defVar('RF1A_finalfreq',[16],'MHz');8;16;         % RF1A Ending Frequency
-defVar('RF1B_finalfreq',[1],'MHz'); [1];[0.8];        % RF1B Ending Frequency
+defVar('RF1B_finalfreq',[4],'MHz');[1];[0.8];        % RF1B Ending Frequency
 
 %%% MT HOLD %%%    
 defVar('mt_ramp_grad_time',100,'ms');
 defVar('mt_ramp_grad_value',[10],'A');
 seqdata.flags.mt_ramp_down_end = 0;
 seqdata.flags.mt_lifetime = 0;
-defVar('mt_hold_time',[100]);
+defVar('mt_hold_time',[0:500:10000]);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% DIPOLE TRAP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -231,23 +231,23 @@ seqdata.params.ODT_zeros = [-0.04,-0.04];
 
 % Dipole trap
 % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
-seqdata.flags.xdt                           = 0;
+seqdata.flags.xdt                           = 1;
 % Dipole trap flags will be ignored if XDT is off
 
 % MT to XDT State Transfer
-seqdata.flags.xdt_Rb_21uwave_sweep_field    = 0;    % Field Sweep Rb 2-->1
+seqdata.flags.xdt_Rb_21uwave_sweep_field    = 1;    % Field Sweep Rb 2-->1
 seqdata.flags.xdt_Rb_21uwave_sweep_freq     = 0;    % uWave Frequency sweep Rb 2-->1
-seqdata.flags.xdt_K_p2n_rf_sweep_freq       = 0;    % RF Freq Sweep K +9-->-9  
+seqdata.flags.xdt_K_p2n_rf_sweep_freq       = 1;    % RF Freq Sweep K +9-->-9  
 
 % State Manipulation Before Optical Evaporation 
-seqdata.flags.xdt_d1op_start                = 0;    % D1 pump to purify
-seqdata.flags.xdt_rfmix_start               = 0;    % RF Mixing -9-->-9+-7    
+seqdata.flags.xdt_d1op_start                = 1;    % D1 pump to purify
+seqdata.flags.xdt_rfmix_start               = 1;    % RF Mixing -9-->-9+-7    
 seqdata.flags.xdt_kill_Rb_before_evap       = 0;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_before_evap       = 0;    % optical remove 7/2 K after (untested)
 
 % Optical Evaporation
 % 1: exp 2: fast linear 3: piecewise linear
-seqdata.flags.CDT_evap                      = 0;       
+seqdata.flags.CDT_evap                      = 1;       
 
 % State Manipulation After Stage 1 optical evaporation
 seqdata.flags.xdt_d1op_end                  = 0;    % D1 optical pumping
@@ -265,7 +265,7 @@ seqdata.flags.xdt_high_field_a              = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
-seqdata.flags.lattice                       = 0; 
+seqdata.flags.lattice                       = 1; 
 
 
 seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate

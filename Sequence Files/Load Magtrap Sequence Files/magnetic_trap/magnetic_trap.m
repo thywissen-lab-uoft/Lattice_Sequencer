@@ -193,42 +193,43 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     
     defVar('RF1B_freq_0',getVar('RF1A_freq_3')*1.1,'MHz');
     defVar('RF1B_freq_1',7,'MHz');7;
-    defVar('RF1B_freq_2',1,'MHz');1;
-    defVar('RF1B_freq_3',2,'MHz');
-    defVar('RF1B_time_1',6000,'ms');6000;
-    defVar('RF1B_time_2',3000,'ms');3000;
+     defVar('RF1B_freq_2',[1],'MHz');1;
+    defVar('RF1B_freq_3',2,'MHz');2;
+    defVar('RF1B_time_1',[6000],'ms');6000;2500;
+    defVar('RF1B_time_2',[3000],'ms');3000;2000;
     defVar('RF1B_time_3',2,'ms');2;
-    defVar('RF1B_gain_0',-2,'arb');
-    defVar('RF1B_gain_1',-2,'arb');
-    defVar('RF1B_gain_2',-2,'arb');
-    defVar('RF1B_gain_3',-2,'arb');
+    defVar('RF1B_gain_0',-2,'arb');-2;0;
+    defVar('RF1B_gain_1',-2,'arb');-2;0;
+    defVar('RF1B_gain_2',-2,'arb');-2;0;
+    defVar('RF1B_gain_3',-2,'arb');-2;0;
     defVar('RF1B_current_0',I_QP,'A');
     defVar('RF1B_current_1',I_QP,'A');
     defVar('RF1B_current_2',I_QP,'A');
     defVar('RF1B_current_3',I_QP,'A');
     
-% 
-%     freqs_1b = [...
-%           getVar('RF1B_freq_0') ... 
-%           getVar('RF1B_freq_1') ...
-%           getVar('RF1B_freq_2') ...
-%           getVar('RF1B_freq_3')]*MHz;
-% 
-%     gains = [...
-%           getVar('RF1B_gain_0') ... 
-%           getVar('RF1B_gain_1') ...
-%           getVar('RF1B_gain_2') ...
-%           getVar('RF1B_gain_3')];
-% 
-%     sweep_times_1b = [...
-%           getVar('RF1B_time_1') ... 
-%           getVar('RF1B_time_2') ...
-%           getVar('RF1B_time_3')].*getVar('RF1B_time_scale');
-%     currs_1b = [...
-%           getVar('RF1B_current_0') ... 
-%           getVar('RF1B_current_1') ...
-%           getVar('RF1B_current_2') ...
-%           getVar('RF1B_current_3')];
+
+    freqs_1b = [...
+          getVar('RF1B_freq_0') ... 
+          getVar('RF1B_freq_1') ...
+          getVar('RF1B_freq_2') ...
+          getVar('RF1B_freq_3')]*MHz;
+
+    gains = [...
+          getVar('RF1B_gain_0') ... 
+          getVar('RF1B_gain_1') ...
+          getVar('RF1B_gain_2') ...
+          getVar('RF1B_gain_3')];
+
+    sweep_times_1b = [...
+          getVar('RF1B_time_1') ... 
+          getVar('RF1B_time_2') ...
+          getVar('RF1B_time_3')].*getVar('RF1B_time_scale');
+      
+    currs_1b = [...
+          getVar('RF1B_current_0') ... 
+          getVar('RF1B_current_1') ...
+          getVar('RF1B_current_2') ...
+          getVar('RF1B_current_3')];
 % 
     
     % Create RF1B structure object
@@ -264,7 +265,14 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
             seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
     end
 
- 
+    
+end
+%% MT Lifetime
+if seqdata.flags.mt_lifetime == 1    
+%     setDigitalChannel(calctime(curtime,0),'Plug Shutter',0);% 0:OFF; 1: ON
+
+    th = getVar('mt_hold_time');
+    curtime = calctime(curtime,th);
 end
 
 %% Kill Rb after evap
@@ -378,13 +386,7 @@ if seqdata.flags.mt_ramp_down_end
     I_shim = I_s;
 end
 
-%% MT Lifetime
-if seqdata.flags.mt_lifetime == 1    
-%     setDigitalChannel(calctime(curtime,0),'Plug Shutter',0);% 0:OFF; 1: ON
 
-    th = getVar('mt_hold_time');
-    curtime = calctime(curtime,th);
-end
 
 %% Post QP Evap Tasks
 

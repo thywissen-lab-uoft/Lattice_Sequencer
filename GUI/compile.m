@@ -1,6 +1,17 @@
 function compile(funcs,doProgramDevices)
 global seqdata
 
+% Added to avoid multiple compile commands, not well tested (CF
+% 2023/10/04);
+if ~isfield(seqdata,'compiler_status')
+    seqdata.compiler_status = 'idle';
+end
+if ~isequal(seqdata.compiler_status, 'idle')
+    error('An additional compile command detected while compiling');
+end
+seqdata.compiler_status = 'busy';
+
+
 if nargin == 1
     doProgramDevices = 1;
 end
@@ -60,5 +71,8 @@ data.Status.ForegroundColor = [17,59,8]/255;
 
 %% Update scan var
 updateScanVarText;
+
+%%
+seqdata.compiler_status = 'idle';
 end
 

@@ -100,7 +100,7 @@ end
 [~, name] = system('hostname');
 name = strrep(name,newline,'');     % remove new line character
 name = strrep(name,char(13),'');    % remove carriage return
-if isequal(name,'kitty')
+if isequal(name,'kitty') || isequal(name,'sunny')
     seqdata.debugMode = 1;
 else
     seqdata.debugMode = 0;

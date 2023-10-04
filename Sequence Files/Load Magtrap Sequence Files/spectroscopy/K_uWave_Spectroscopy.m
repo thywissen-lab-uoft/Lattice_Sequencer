@@ -36,7 +36,7 @@ curtime = timein;
     programSRSFinal(srs); 
 
 %% Prepare uwave Switches
-curtime = calctime(curtime,20);
+% curtime = calctime(curtime,20); to remove - screws up timing
 
     % Turn off all RF, Rb uWave, K uWave are all off for safety
     setDigitalChannel(calctime(curtime,-20),'RF TTL',0);

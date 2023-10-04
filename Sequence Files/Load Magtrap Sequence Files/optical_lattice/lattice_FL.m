@@ -9,7 +9,7 @@ global seqdata
     fluor.EnableUWave           = 0;        % Use uWave freq sweep for n-->n
     
     % Laser Beams
-    fluor.EnableFPump           = 1;        % Use FPUMP beam DOESNT WORK??
+    fluor.EnableFPump           = 1;        % Use FPUMP beam DOESNT WORK ZIF LOW???
     fluor.EnableEITProbe        = 1;        % Use EIT Probe beams
     fluor.EnableRaman           = 1;        % Use Raman Beams
     
@@ -26,6 +26,8 @@ global seqdata
     % 1 ms is typical for Raman spectroscopy
     % 1 ms is typical for uWave spectroscopy
     % 2000 ms is typical for fluoresence imaging
+    
+    % FPUMP 1000Er, 83% transfer at 1 ms, 0.1 V
     
     % Camera
     fluor.TriggerIxon          = 1;         % Trigger the ixon?
@@ -87,7 +89,7 @@ end
 % you are imaging along the FPUMP axis
     
     B0 = 4;         % Quantization Field
-    B0_shift_list = [0.19];[0.21];[.17];
+    B0_shift_list = [0.2];[0.19];[0.21];[.17];
     
     % Quantization Field 
     B0_shift = getScanParameter(...
@@ -101,7 +103,7 @@ end
 % This code set the Fpump power regulation and the 4 pass frequency
 
     % Power that the Fpump beam regulates to
-    F_Pump_List = [1.25]; [1.1];[1];    
+    F_Pump_List = [1.1];1.1;    
     
     % Frequency of the FPUMP single pass (MHz)
     fluor.F_Pump_Frequency = 80;
@@ -172,10 +174,10 @@ end
         'qgm_uWave_SweepRange','kHz');     
     
     % Specify Frequency manually
-    fluor.uWave_Frequency = 1296.824 + uwave_freq_shift/1000;
+    fluor.uWave_Frequency = 1296.770 + uwave_freq_shift/1000;
     
     % Specifiy Frequency using 4pass
-    fluor.uWave_Frequency = (4*DDSFreq)/1e6;
+%     fluor.uWave_Frequency = (4*DDSFreq)/1e6; 1296.829;
     
     
     fluor.uWave_SweepRange = uWave_SweepRange;

@@ -7,7 +7,7 @@ if ~isfield(seqdata,'compiler_status')
     seqdata.compiler_status = 'idle';
 end
 if ~isequal(seqdata.compiler_status, 'idle')
-    error('An additional compile command detected while compiling');
+    error('An additional compile command detected while compiling. Throwing error to prevent bad things. DONT DO THIS AGAIN YOU CLOD');
 end
 seqdata.compiler_status = 'busy';
 

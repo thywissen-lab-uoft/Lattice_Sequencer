@@ -505,7 +505,7 @@ if seqdata.flags.image_type == 0
             %imaging direction!
         end
         % Turn off 15/16 switch (10 ms later)
-        if ~seqdata.flags.image_stern_gerlach
+        if ~seqdata.flags.image_stern_gerlach_F && ~seqdata.flags.image_stern_gerlach_mF
             setDigitalChannel(calctime(curtime,qp_switch1_delay_time),'15/16 Switch',0);
             setAnalogChannel(calctime(curtime,qp_switch1_delay_time),'15/16 GS',0);
         end

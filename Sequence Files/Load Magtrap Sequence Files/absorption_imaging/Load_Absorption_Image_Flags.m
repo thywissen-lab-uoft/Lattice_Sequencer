@@ -34,7 +34,8 @@ function flags = Load_Absorption_Image_Flags()
       flags.condition = 'QP_imaging';
     end
     
-    if seqdata.flags.image_stern_gerlach == 1
+        
+    if seqdata.flags.image_stern_gerlach_F == 1 || seqdata.flags.image_stern_gerlach_mF
       flags.condition = 'SG';
     end
     

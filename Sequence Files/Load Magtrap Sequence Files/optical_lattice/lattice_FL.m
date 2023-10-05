@@ -187,7 +187,7 @@ end
 
 %%
 
-raman_rel_pow_list = [0.5];
+raman_rel_pow_list = 0.5;[0.5];
   raman_rel_pow = getScanParameter(raman_rel_pow_list,...
         seqdata.scancycle,seqdata.randcyclelist,'qgm_raman_rel_pow','arb');     
     

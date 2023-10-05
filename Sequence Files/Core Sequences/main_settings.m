@@ -143,7 +143,9 @@ seqdata.flags.image_atomtype                = 1; % 0:Rb,1:K,2:K+Rb (double shutt
 
 seqdata.flags.image_loc                     = 1; % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.image_direction               = 1; % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
-seqdata.flags.image_stern_gerlach           = 0; % 1: Do a gradient pulse at the beginning of ToF
+seqdata.flags.image_stern_gerlach_F         = 0; % 1: Do a gradient pulse at the beginning of ToF
+seqdata.flags.image_stern_gerlach_mF        = 1; % 1: Do a gradient pulse at the beginning of ToF
+        
 seqdata.flags.image_levitate                = 0; % 2: apply a gradient during ToF to levitate atoms (not yet tested)
 seqdata.flags.image_iXon                    = 0; % (unused?) use iXon camera to take an absorption image (only vertical)
 seqdata.flags.image_F1_pulse                = 0; % (unused?) repump Rb F=1 before/during imaging (unused?)
@@ -271,13 +273,14 @@ seqdata.flags.lattice                       = 1;
 seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate
 
 defVar('lattice_depth_load',2.5,'Er');
-defVar('lattice_depth_pin',60,'Er');
+defVar('lattice_pin_depth',60,'Er');
+defVar('lattice_pin_time', 0.2, 'ms');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% CONDUCTIVITY %%%%%%%%%s%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 defVar('conductivity_snap_and_hold_time',[0:2.5:80],'ms');  [0:2.5:80];
-defVar('conductivity_FB_field',180,'G')
+defVar('conductivity_FB_field',200,'G')
 defVar('conductivity_zshim',0,'A')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

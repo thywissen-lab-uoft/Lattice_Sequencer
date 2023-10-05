@@ -78,7 +78,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
     curtime = calctime(curtime,50);
 
     % Turn off 15/16 switch and coil 16 TTL
-    setDigitalChannel(curtime,'15/16 Switch',0); 
+    setDigitalChannel(curtime,'15/16 Switch',0); %CHANGE THIS TO 15/16 GS VOLTAGE 
     setDigitalChannel(curtime,'Coil 16 TTL',1); 
     curtime = calctime(curtime,10);
 
@@ -224,7 +224,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
         curtime = calctime(curtime,10);
 
         % Turn on 15/16 switch
-        setDigitalChannel(curtime,'15/16 Switch',1);
+        setDigitalChannel(curtime,'15/16 Switch',1); %CHANGE THIS TO 15/16 GS VOLTAGE
         curtime = calctime(curtime,200);
         
     end
@@ -291,7 +291,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
         curtime = calctime(curtime,50);
 
         % Turn off 15/16 switch
-        setDigitalChannel(curtime,'15/16 Switch',0); 
+        setDigitalChannel(curtime,'15/16 Switch',0); %CHANGE THIS TO 15/16 GS VOLTAGE
         curtime = calctime(curtime,10);
 
         % Turn on reverse QP switch
@@ -694,7 +694,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
             curtime = calctime(curtime,10);
 
             % Turn on 15/16 switch
-            setDigitalChannel(curtime,'15/16 Switch',1);
+            setDigitalChannel(curtime,'15/16 Switch',1); %CHANGE THIS TO 15/16 GS VOLTAGE
             curtime = calctime(curtime,200);  
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

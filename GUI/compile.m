@@ -55,6 +55,7 @@ for kk = 1:length(funcs)
         warning( getReport( ME, 'extended', 'hyperlinks', 'on' ) )
         data.Status.String = ['sequence error'];
         data.Status.ForegroundColor = 'r';
+        seqdata.compiler_status = 'idle';
         return
     end
 end

@@ -36,7 +36,8 @@ seqdata.flags.do_lattice_am_spec            = 0;    % Amplitude modulation spect
 
 seqdata.flags.lattice_rotate_waveplate_2    = 1;    % Second waveplate rotation 95% 
 seqdata.flags.lattice_lattice_ramp_2        = 0;    % Secondary lattice ramp for fluorescence imaging
-seqdata.flags.lattice_lattice_ramp_3        = 1;    % Secondary lattice ramp for fluorescence imaging
+seqdata.flags.lattice_lattice_ramp_3        = 0;    % Secondary lattice ramp for fluorescence imaging
+seqdata.flags.lattice_pin = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -48,7 +49,7 @@ seqdata.flags.lattice_hold_at_end           = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % These flags are associated with the conducitivity experiment
 seqdata.flags.lattice_conductivity          = 0;    % old sequence
-seqdata.flags.lattice_conductivity_new      = 0;    % New sequence created July 25th, 2023
+seqdata.flags.lattice_conductivity_new      = 1;    % New sequence created July 25th, 2023
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy
@@ -81,7 +82,7 @@ seqdata.flags.Raman_transfers               = 0;
 
 % New Standard Fluoresnce Image Flags
 seqdata.flags.lattice_ClearCCD_IxonTrigger  = 1;    % Add additional trigger to clear CCD
-seqdata.flags.lattice_fluor                 = 1;    % Do Fluoresnce imaging
+seqdata.flags.lattice_fluor                 = 0;    % Do Fluoresnce imaging
 seqdata.flags.lattice_fluor_bkgd            = 0;    % 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -162,17 +163,9 @@ if seqdata.flags.lattice_lattice_ramp_1
             % Typically this involves a ramp to a moderate depth followed
             % by a quick snap to a pinning lattice depth
             
-            % Initial lattice depth
-
-            
-            Ui = getVar('lattice_depth_load');
-            
-            % Final lattice depth to ramp to
-%             defVar('U1',[2.5]);60;
-%             U = getVar('U1');
-
-            U = 60;
-%             U = Ui;
+            % Initial lattice depth            
+            Ui = getVar('lattice_depth_load'); 
+            U = Ui;
 
             %%% Lattice %%%
             % Ramp the optical powers of the lattice
@@ -479,14 +472,13 @@ if seqdata.flags.lattice_lattice_ramp_1
     curtime=calctime(curtime,T_load_tot);   
     
     DigitalPulse(curtime,'QPD Monitor Trigger',10,1);    
+    disp([' end loading : ' num2str(curtime2realtime(curtime)) ' ms']);
 end
-
 
 %% Ramp down HF used for loading lattice (this flag is in dipole transfer)
 
 if isfield(seqdata.flags,'xdt_ramp_up_FB_for_lattice') && seqdata.flags.xdt_ramp_up_FB_for_lattice
-dispLineStr('Ramping FB field (not sure why?).',curtime);
-
+    dispLineStr('Ramping FB field (not sure why?).',curtime);
     seqdata.params.time_out_HF = curtime;
     if (((seqdata.params.time_out_HF - seqdata.params.time_in_HF)*(seqdata.deltat/seqdata.timeunit))>3000)
             error('CHECK TIME FESHBACH IS ON! MAY BE TOO LONG')
@@ -507,12 +499,33 @@ if (seqdata.flags.lattice_conductivity == 1 )
 end
 
 if (seqdata.flags.lattice_conductivity_new == 1)
-   curtime = lattice_conductivity_new(curtime);
-   
-   curtime = calctime(curtime,50);
-   
+   curtime = lattice_conductivity_new(curtime);   
+%    curtime = calctime(curtime,50);   
 end
 
+%% Pin Lattice
+% Currently unused
+
+if (seqdata.flags.lattice_pin)
+    dispLineStr('Pinning optical lattice',curtime);
+    U_pin = getVar('lattice_pin_depth');
+    T_pin = getVar('lattice_pin_time');
+    disp([' U pin : ' num2str(U_pin) ' Er']);
+    disp([' T pin : ' num2str(T_pin) ' ms']);
+
+    AnalogFuncTo(calctime(curtime,0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        T_pin, T_pin, U_pin); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        T_pin, T_pin, U_pin);     
+    AnalogFuncTo(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        T_pin, T_pin, U_pin);   
+    curtime = calctime(curtime,T_pin);    
+    % Wait a moment for PID to settle (just in case);
+    curtime = calctime(curtime,2);    
+end
 
 %% Optical Pumping
 % Optical pumping
@@ -1266,11 +1279,6 @@ curtime = do_horizontal_plane_selection(curtime, ...
     
     dispLineStr('do_horizontal_plane_selection execution finished at',curtime);
 end
-
-%% Extra Wait For funsies
-% curtime = calctime(curtime,25);
-
-
 
 %% High Field transfers + Imaging
 

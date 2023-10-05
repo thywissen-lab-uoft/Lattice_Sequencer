@@ -169,7 +169,7 @@ switch opts.SelectMode
         if opts.dotilt
             freq_list = 1050 + [1220];
         else
-            freq_list = [1700];1750;1050+600;520;
+            freq_list = [1585];[1700];1750;1050+600;520;
         end
         
         freq_offset = getScanParameter(freq_list,seqdata.scancycle,...

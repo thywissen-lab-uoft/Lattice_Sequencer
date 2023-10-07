@@ -10,25 +10,17 @@ seqdata.flags.conductivity_ODT1_mode            = 0; % 0:OFF, 1:SINE, 2:DC
 seqdata.flags.conductivity_ODT2_mode            = 0; % 0:OFF, 1:SINE, 2:DC
 seqdata.flags.conductivity_ramp_FB              = 1; % Ramp FB field to resonance
 seqdata.flags.conductivity_ramp_QP              = 1; % Ramp QP reverse with FB (only works if ramp_FB is enabled)
-seqdata.flags.conductivity_rf_spec              = 1;
-seqdata.flags.conductivity_enable_mod_ramp      = 0;
-seqdata.flags.conductivity_QPD_trigger          = 0; % Trigger QPD monitor LabJack/Scope
+seqdata.flags.conductivity_rf_spec              = 0;
+seqdata.flags.conductivity_enable_mod_ramp      = 1;
+seqdata.flags.conductivity_QPD_trigger          = 1; % Trigger QPD monitor LabJack/Scope
 seqdata.flags.conductivity_snap_off_XDT         = 0; % Quick ramp of ODTs while atoms are displaced
 seqdata.flags.conductivity_snap_and_hold        = 0; % Diabatically turn off mod for quench measurement
-seqdata.flags.conductivity_dopin                = 0; % Pin after modulation
+seqdata.flags.conductivity_dopin                = 1; % Pin after modulation
 %% Modulation Settings
 
 % VISA Address of Rigol
 rigol_address = 12;           
 
-defVar('conductivity_mod_freq',[40],'Hz')       % Modulation Frequency
-defVar('conductivity_mod_time',[50],'ms');      % Modulation Time
-defVar('conductivity_mod_ramp_time',300,'ms');  % Ramp Time
-defVar('conductivity_rel_mod_phase',0,'deg');   % Phase shift of sinusoidal mod - should be 180 for mod along y
-    
-% Modulation amplitude not to exceed +-4V.
-defVar('conductivity_ODT1_mod_amp',[4],'V');  % ODT1 Mod Depth   4V, 4V for X (DC) 4V, -1.7V for Y (DC);
-defVar('conductivity_ODT2_mod_amp',[4],'V');  % ODT2 Mod Depth
 
 %% Calculate Timings and Phase
 
@@ -114,16 +106,17 @@ if seqdata.flags.conductivity_ramp_FB
         Bfb = getVar('conductivity_FB_field');
         zshim = getVar('conductivity_zshim');
         Bzshim = zshim*2.35;
-        Boff = 0.11;
+        Boff = 0.1238;
         
         Breal = Bfb + Bzshim + Boff;
+        addOutputParam('conductivity_FB_field_maybe_calibrated',Breal,'G');
 
         ramptime_all_list = 150;
         ramptime_all = getScanParameter(ramptime_all_list,seqdata.scancycle,...
             seqdata.randcyclelist,'conductivity_field_ramptime','ms');
         
         if seqdata.flags.conductivity_ramp_QP            
-            defVar('conductivity_QP_reverse',[0.2],'A');            
+            defVar('conductivity_QP_reverse',[0.1],'A');            
             IQP = getVar('conductivity_QP_reverse');
             QP_ramptime = ramptime_all;            
             % Turn off 15/16 switch and coil 16 TTL
@@ -194,6 +187,10 @@ else
     setAnalogChannel(curtime,'Modulation Ramp',9.999,1);
 end
 
+if seqdata.flags.conductivity_QPD_trigger
+    DigitalPulse(calctime(curtime,0),'QPD Monitor Trigger',5,1);
+end
+
 % Wait for modulation to finish
 curtime = calctime(curtime,getVarOrdered('conductivity_mod_time'));
 
@@ -221,7 +218,11 @@ end
 if seqdata.flags.conductivity_snap_and_hold
     % Ramp it down smoothly
     defVar('piezo_diabat_ramp_time',4,'ms');4;
-    piezo_diabat_ramp_time = getVar('piezo_diabat_ramp_time');       
+    piezo_diabat_ramp_time = getVar('piezo_diabat_ramp_time');     
+    if seqdata.flags.conductivity_QPD_trigger
+        DigitalPulse(calctime(curtime,0),'QPD Monitor Trigger',5,1);
+    end
+    
 curtime = AnalogFuncTo(calctime(curtime,0),'Modulation Ramp',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), piezo_diabat_ramp_time, piezo_diabat_ramp_time, -9.999,1); 
 curtime = calctime(curtime,getVarOrdered('conductivity_snap_and_hold_time'));
@@ -254,8 +255,9 @@ end
      
     Bfb = getChannelValue(seqdata,'FB Current',1);    
     Iz_shim = getChannelValue(seqdata,'Z Shim',1);    
-    Bz_shim = Iz_shim*2.35;
-    Boff = 0.11;
+    Bz_shim = (Iz_shim-seqdata.params.shim_zero(3))*2.35;
+    Boff = 0.1238;
+
     
     Bguess = Bfb + Boff + Bz_shim;
     
@@ -265,13 +267,17 @@ end
     mFi = -9/2; mFf = -7/2;
     rf0 = 1e-6*abs(BreitRabiK(Bguess,Fi,mFi) - BreitRabiK(Bguess,Ff,mFf))/h;
 
-    rf_list =  1e-3*[-200:25:200] + rf0;           
+    rf_shift_list =  1e-3*[-100:10:100];   
+    
+    rf_list = rf_shift_list + rf0;
     
     defVar('conductivity_rf_freq',rf_list,'MHz');
-    defVar('conductivity_rf_power',2.5,'arb');
+    defVar('conductivity_rf_power',-2,'arb');
     defVar('conductivity_rf_delta',25,'kHz');
     defVar('conductivity_rf_time',10,'ms');
     
+    addOutputParam('conductivity_rf_freq_shift',...
+        1e3*(getVar('conductivity_rf_freq')-rf0),'kHz');
 
     sweep = struct;
     sweep.freq = getVar('conductivity_rf_freq');
@@ -323,10 +329,13 @@ if seqdata.flags.conductivity_ramp_FB
              
             % Go back to "normal" configuration
             % Turn off reverse QP switch
-            setDigitalChannel(calctime(curtime,QP_ramptime+10),'Reverse QP Switch',0);
             AnalogFuncTo(calctime(curtime,QP_ramptime),'Coil 15',...
-                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,0,1);  
-            
+                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),10,10,0,1);  
+            AnalogFuncTo(calctime(curtime,QP_ramptime),'Transport FF',...
+                    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),10,10,0);
+                
+            setDigitalChannel(calctime(curtime,QP_ramptime+15),'Reverse QP Switch',0);
+
             % Turn on 15/16 switch
             setDigitalChannel(calctime(curtime,QP_ramptime+20),'15/16 Switch',1); %CHANGE THIS TO 15/16 GS VOLTAGE
             setAnalogChannel(calctime(curtime,QP_ramptime+20),'15/16 GS',5.5); 

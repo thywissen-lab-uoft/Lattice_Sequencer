@@ -27,7 +27,7 @@ seqdata.flags.xdt_ramp2sympathetic      = 1;
 
 
 % Stage 1 (Rb+K) Evaporation
-Evap_End_Power_List = .12;[.08];0.08;[.12];
+Evap_End_Power_List = .073;[.08];0.08;[.12];
 exp_end_pwr = getScanParameter(Evap_End_Power_List,...
     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');  
 
@@ -67,7 +67,7 @@ seqdata.flags.xdt_ramp_up_FB_for_lattice    = 0;    %Ramp FB up at the end of ev
 XDT2_power_func = @(x) x;
 
 % Initial XDT power
-P12_list = [1.5];
+P12_list = [.8];
 P12 = getScanParameter(P12_list,seqdata.scancycle,...
     seqdata.randcyclelist,'XDT_initial_power','W');
 P1 = P12;

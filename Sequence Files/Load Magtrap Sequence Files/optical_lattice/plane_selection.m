@@ -76,16 +76,93 @@ curtime = calctime(curtime,30);
 
 ScopeTriggerPulse(curtime,'Plane Select');
 
-%% Magnetic Field Ramps
+%% Magnetic Field Ramps 2
+ramp_field_CF=0;
+doTriggerLabJack=0;
+if ramp_field_CF
+    
+    % FF Settings
+    defVar('qgm_pselect_FF',25,'V');
+    defVar('qgm_pselect_FF_ramp_time',20,'ms');
 
+    % Timings
+    defVar('qgm_pselect_ramp_time',25,'ms')
+    defVar('qgm_pselect_settle_time',50,'ms');
+    
+    defVar('qgm_pselect_QP',24.92,'A');func_qp = 2;     % QP Settings
+    defVar('qgm_pselect_FB',128-0.45,'G');func_fb = 2;   % FB Settings
+    
+    % Shim Setting
+    func_x = 3; func_y = 4; func_z = 3;
+    dIx0 = - 2.8050;
+    dIy0 = - 0.1510;
+    dIz0 = -1;         
+    
+    Ix = dIx0 + seqdata.params.shim_zero(1);
+    Iy = dIy0 + seqdata.params.shim_zero(2);
+    Iz = dIz0 + seqdata.params.shim_zero(3);
+    
+    Vff = getVar('qgm_pselect_FF');
+    Tff = getVar('qgm_pselect_FF_ramp_time');
+    IQP = getVar('qgm_pselect_QP');
+    BFB = getVar('qgm_pselect_FB');
+    Tr  = getVar('qgm_pselect_ramp_time');
+    Ts  = getVar('qgm_pselect_settle_time');
+
+    % Useful for looking at field stability
+    if doTriggerLabJack
+        DigitalPulse(calctime(curtime,-100),...
+            'LabJack Trigger Transport',10,1);      
+        DigitalPulse(calctime(curtime,100),...
+            'LabJack Trigger Transport',10,1);
+    end    
+    
+    dispLineStr('Ramping Fields CF', curtime);
+    val_FF = getChannelValue(seqdata,'Transport FF',1);
+    val_16 = getChannelValue(seqdata,'Coil 16',1);
+    val_FB = getChannelValue(seqdata,'FB Current',1);
+    val_X = getChannelValue(seqdata,'X Shim',1);
+    val_Y = getChannelValue(seqdata,'Y Shim',1);
+    val_Z = getChannelValue(seqdata,'Z Shim',1);
+
+    % Ramp up QP Feedforward
+    AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Tff, Tff, Vff);    
+    AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Tr, Tr, IQP,func_qp);
+    AnalogFuncTo(calctime(curtime,0),'FB Current',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Tr, Tr, BFB,func_fb);  
+    AnalogFuncTo(calctime(curtime,0),'X Shim',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Tr, Tr, Ix,func_x);  
+    AnalogFuncTo(calctime(curtime,0),'Y Shim',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Tr, Tr, Iy,func_y);  
+    AnalogFuncTo(calctime(curtime,0),'Z Shim',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Tr, Tr, Iz,func_z);  
+    curtime = calctime(curtime,Tr);
+    curtime = calctime(curtime,Ts);
+end
+
+%% Magnetic Field Ramps
+opts.ramp_fields=1;
 if opts.ramp_fields
+    DigitalPulse(calctime(curtime,-100),...
+        'LabJack Trigger Transport',10,1);      
+    DigitalPulse(calctime(curtime,100),...
+        'LabJack Trigger Transport',10,1);
+    
     % Ramp the SHIMs, QP, and FB to the appropriate level  
-    disp(' Ramping fields');
+    dispLineStr('Ramping Fields', curtime);
     clear('ramp');           
 
     % Fesbhach Field (in gauss)
     B0 = 128;    %old value 128G, 0.6G shift
-    fb_shift_list = [0.45];[0.52];[0.52];[0.51];[0.6];[0];[.6];
+    fb_shift_list = [0.45];
     fb_shift = getScanParameter(fb_shift_list,seqdata.scancycle,...
         seqdata.randcyclelist,'qgm_plane_FB_shift','G');    
     Bfb = B0 - fb_shift;
@@ -96,7 +173,7 @@ if opts.ramp_fields
     % Shim Fields (in Amps)
     xshimdlist  = - 2.8050;
     yshimdlist  = - 0.1510;
-    zshimdlist  = -1;    
+    zshimdlist  = -1;           
         
     xshimd = getScanParameter(xshimdlist,seqdata.scancycle,...
         seqdata.randcyclelist,'qgm_plane_dIx','A');
@@ -156,8 +233,10 @@ switch opts.SelectMode
     case 'SweepFreq'
         
     case 'SweepFreqHS1'        
-        %% Sweep Frequency
-        disp('sweeping frequency HS1');
+        %% Sweep Frequency 
+        % This does an HS1 plane frequency sweep, this is only good for one
+        % plane really.
+        dispLineStr('HS1 Frequency Sweep',curtime);
 
         % 2021/06/22 CF
         % Use this when Xshimd=3, zshimd=-1 and you vary yshimd
@@ -167,54 +246,51 @@ switch opts.SelectMode
 
         % Define the SRS frequency
         if opts.dotilt
-            freq_list = 1050 + [1220];
+            freq_offset_list = 1050 + [1220];
         else
-            freq_list = [1585];[1700];1750;1050+600;520;
+            freq_offset_list = [1250];[1700];1750;1050+600;520;
         end
         
-        freq_offset = getScanParameter(freq_list,seqdata.scancycle,...
-            seqdata.randcyclelist,'uwave_freq_offset','kHz from 1606.75 MHz');
+        freq_amp_list = [30]; % 30 kHz is about 2 planes
+        freq_amp_list = [14]; % 14 kHz is about 1 plane       
+        sweep_time_list = 2*freq_amp_list/10; % CF has no idea when this was calibrated
 
-        disp(['     Freq Offset  : ' num2str(freq_offset) ' kHz']);
-
-        % SRS settings (may be overwritten later)
+        defVar('qgm_plane_uwave_frequency_offset',freq_offset_list,'kHz');
+        defVar('qgm_plane_uwave_amplitude',freq_amp_list,'kHz');
+        defVar('qmg_plane_uwave_time',sweep_time_list,'ms')
+        
+        freq_offset = getVar('qgm_plane_uwave_frequency_offset');
+        freq_amp = getVar('qgm_plane_uwave_amplitude');
+        sweep_time = getVar('qmg_plane_uwave_time');        
+        uWave_delta_freq = freq_amp*1e-3;
+        
+    
+       % Configure the SRS
         uWave_opts=struct;
-        uWave_opts.Address=30;                        % K uWave ("SRS B");
+        uWave_opts.Address      = 30;                       % SRS GPIB Addr
 %         uWave_opts.Address=29; % 4/4/2023
-        uWave_opts.Frequency=1606.75+freq_offset*1E-3;% Frequency in MHz
-        uWave_opts.Power= 15;%15                      % Power in dBm
-        uWave_opts.Enable=1;                          % Enable SRS output    
-
-        addOutputParam('uwave_pwr',uWave_opts.Power)
-        addOutputParam('uwave_frequency',uWave_opts.Frequency);    
-
-        disp('HS1 Sweep Pulse');
-
-        % Calculate the beta parameter
-        beta=asech(0.005);   
-        addOutputParam('uwave_HS1_beta',beta);
-
-        % Relative envelope size (less than or equal to 1)
-        env_amp=1;
-        addOutputParam('uwave_HS1_amp',env_amp);
-
-        % Determine the range of the sweep -- Amplitude or full range?
-        uWave_delta_freq_list= [25]/1000;[25]/1000; [7]/1000;
-        uWave_delta_freq=getScanParameter(uWave_delta_freq_list,...
-            seqdata.scancycle,seqdata.randcyclelist,'plane_delta_freq','kHz');
-
-        % the sweep time is based on old calibration for rabi frequency
-        uwave_sweep_time_list =[uWave_delta_freq]*1000/10*2; 
-        sweep_time = getScanParameter(uwave_sweep_time_list,...
-            seqdata.scancycle,seqdata.randcyclelist,'uwave_sweep_time');     
-
+        uWave_opts.Frequency    = 1606.75+freq_offset*1E-3; % Frequency [MHz]
+        uWave_opts.Power        = 15;%15                    % Power [dBm]
+        uWave_opts.Enable       = 1;                        % Enable SRS output    
+        uWave_opts.EnableSweep  = 1;                    
+        uWave_opts.SweepRange   = uWave_delta_freq;         % Sweep Amplitude [MHz]
+        
+        env_amp     = 1;              % Relative amplitude of the sweep (keep it at 1 for max)
+        beta        = asech(0.005);   % Beta defines sharpness of HS1
+        
+        addOutputParam('qgm_plane_uwave_power',uWave_opts.Power)
+        addOutputParam('qgm_plane_uwave_frequency',uWave_opts.Frequency);            
+        addOutputParam('qgm_plane_uwave_HS1_beta',beta);
+        addOutputParam('qgm_plane_uwave_HS1_amp',env_amp);
+        
+        disp(['     Freq         : ' num2str(uWave_opts.Frequency) ' MHz']);    
+        disp(['     Freq Offset  : ' num2str(freq_offset) ' kHz']);    
         disp(['     Pulse Time   : ' num2str(sweep_time) ' ms']);
-        disp(['     Freq Delta   : ' num2str(uWave_delta_freq*1E3) ' kHz']);
+        disp(['     Freq Amp     : ' num2str(uWave_delta_freq*1E3) ' kHz']);
 
-%         % Enable uwave frequency sweep
-        uWave_opts.EnableSweep=1;                    
-        uWave_opts.SweepRange=uWave_delta_freq;   
 
+        %%%% The uWave Sweep Code Begins Here %%%%
+        
         setAnalogChannel(calctime(curtime,-20),'uWave VVA',0);      % Set uWave to low
         setAnalogChannel(calctime(curtime,-10),'uWave FM/AM',-1);   % Set initial modulation
 
@@ -286,8 +362,6 @@ switch opts.SelectMode
         %Options for spect_type = 1
         spect_pars.pulse_type = 1;  %0 - Basic Pulse; 1 - Ramp amplitude with min-jerk  
         spect_pars.AM_ramp_time = 2;9;  
-
-
 
         %SRS in pulsed mode with amplitude modulation
         spect_type = 2;
@@ -800,6 +874,32 @@ if opts.planeselect_again
             
         end
     
+end
+
+%%
+if ramp_field_CF
+    % Ramp up QP Feedforward
+    AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Tr, Tr, val_16,func_qp);
+    AnalogFuncTo(calctime(curtime,0),'FB Current',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Tr, Tr, val_FB,func_fb);  
+    AnalogFuncTo(calctime(curtime,0),'X Shim',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Tr, Tr, val_X,func_x);  
+    AnalogFuncTo(calctime(curtime,0),'Y Shim',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Tr, Tr, val_Y,func_y);  
+    AnalogFuncTo(calctime(curtime,0),'Z Shim',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Tr, Tr, val_Z,func_z);  
+    AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Tff+20, Tff+20, val_FF); 
+    curtime = calctime(curtime,Tr);
+    curtime = calctime(curtime,Ts);
+     
 end
      
 end

@@ -27,10 +27,10 @@ seqdata.flags.xdt_ramp2sympathetic      = 1;
 
 
 % Stage 1 (Rb+K) Evaporation
-Evap_End_Power_List = .073;[.08];0.08;[.12];
-exp_end_pwr = getScanParameter(Evap_End_Power_List,...
-    seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');  
-
+% Evap_End_Power_List = .07;[.08];0.08;[.12];
+% exp_end_pwr = getScanParameter(Evap_End_Power_List,...
+%     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');  
+exp_end_pwr=getVar('Evap_End_Power');
 % Stage 2 Low Field (K+K) evaporation
 pend_list = [0.1]; 0.08; 0.06;
 pend = getScanParameter(pend_list,seqdata.scancycle,...
@@ -45,7 +45,7 @@ evap_time_2 = getScanParameter(evap_time_2_list,seqdata.scancycle,...
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdt_ramp_power_end        = 1;    % Ramp dipole back up after evaporation before any further physics 
+seqdata.flags.xdt_ramp_power_end        = 0;    % Ramp dipole back up after evaporation before any further physics 
 seqdata.flags.xdt_do_dipole_trap_kick   = 0;    % Kick the dipole trap, inducing coherent oscillations for temperature measurement
 seqdata.flags.xdt_do_hold_end           = 0;
 seqdata.flags.xdt_am_modulate           = 0;    % 1: ODT1, 2:ODT2

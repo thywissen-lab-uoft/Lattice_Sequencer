@@ -370,7 +370,7 @@ end
 
 %% Save Transport and Part of RF
 
-seqdata.flags.transport_save = 1;
+seqdata.flags.transport_save = 0;
 
 if seqdata.flags.transport_save
     opts = struct;

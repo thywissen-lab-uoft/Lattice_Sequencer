@@ -248,11 +248,11 @@ switch opts.SelectMode
         if opts.dotilt
             freq_offset_list = 1050 + [1220];
         else
-            freq_offset_list = [1250];[1700];1750;1050+600;520;
+            freq_offset_list = [1450];[1700];1750;1050+600;520;
         end
         
         freq_amp_list = [30]; % 30 kHz is about 2 planes
-        freq_amp_list = [14]; % 14 kHz is about 1 plane       
+        freq_amp_list = [12]; % 12 kHz is about 1 plane       
         sweep_time_list = 2*freq_amp_list/10; % CF has no idea when this was calibrated
 
         defVar('qgm_plane_uwave_frequency_offset',freq_offset_list,'kHz');
@@ -262,8 +262,7 @@ switch opts.SelectMode
         freq_offset = getVar('qgm_plane_uwave_frequency_offset');
         freq_amp = getVar('qgm_plane_uwave_amplitude');
         sweep_time = getVar('qmg_plane_uwave_time');        
-        uWave_delta_freq = freq_amp*1e-3;
-        
+        uWave_delta_freq = freq_amp*1e-3;        
     
        % Configure the SRS
         uWave_opts=struct;

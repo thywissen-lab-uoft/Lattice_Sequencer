@@ -1,4 +1,4 @@
-function J=job_conductivity_quench
+function J=job_conducivity_ac_shake
     function curtime = bob(curtime,var)
         global seqdata;
         
@@ -6,13 +6,30 @@ function J=job_conductivity_quench
         defVar('conductivity_FB_field',field,'G');
        
         freq = 54;
-        defVar('conductivity_mod_freq',freq,'Hz');    
+        defVar('conductivity_mod_freq',freq,'Hz');  
         
-        defVar('Evap_End_Power',0.075,'W');
-
+        defVar('Evap_End_Power',0.08,'W');
+        
         t0 = 50;
         T = 1e3/freq;
         tvec = round(t0 + linspace(0,3*T,30),1);
+        defVar('conductivity_mod_time',tvec,'ms');      % Modulation Time
+    end
+
+    function curtime = bob2(curtime,var)
+        global seqdata;
+        
+        field = 170;
+        defVar('conductivity_FB_field',field,'G');
+       
+        freq = var;
+        defVar('conductivity_mod_freq',freq,'Hz');  
+        
+        defVar('Evap_End_Power',0.075,'W');
+        
+        t0 = 50;
+        T = 1e3/freq;
+        tvec = round(t0 + linspace(0,2*T,20),1);
         defVar('conductivity_mod_time',tvec,'ms');      % Modulation Time
     end
 
@@ -35,14 +52,14 @@ function J=job_conductivity_quench
     end
 %%
 
-var_list = [170 175 180 185 190 195 196 197 198 199 200];
+var_list = [45:1:75];
 var_list = var_list(randperm(numel(var_list)));
 clear J
 for ii = 1:length(var_list)
     x = var_list(ii);
     
     npt = struct;   
-    npt.SequenceFunctions   = {@main_settings,@(curtime) bob(curtime,x),@main_sequence};
+    npt.SequenceFunctions   = {@main_settings,@(curtime) bob2(curtime,x),@main_sequence};
 %     npt.CycleStartFcn       = @cycleStart;
 %     npt.CycleCompleteFcn    = @cycleComplete;
 %     npt.JobCompleteFcn      = @jobComplete;
@@ -50,7 +67,7 @@ for ii = 1:length(var_list)
 %     if B>=200.5
 %         npt.ScanCyclesRequested = 1:41;
 %     else
-        npt.ScanCyclesRequested = 1:30;
+        npt.ScanCyclesRequested = 1:20;
 %     end
     npt.JobName             = [num2str(ii) ' 2.5Er Modulate ' num2str(x)];
     npt.SaveDirName         = npt.JobName;    

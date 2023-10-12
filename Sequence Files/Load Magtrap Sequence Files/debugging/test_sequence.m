@@ -5758,9 +5758,9 @@ end
 % %     seqdata.params.ODT_zeros(1),DT1_power(1));
 % 
 
-    setDigitalChannel(calctime(curtime,0),'XDT TTL',0);
-    setAnalogChannel(calctime(curtime,0),'dipoleTrap1',-1);
-    setAnalogChannel(calctime(curtime,0),'dipoleTrap2',-1);
+%     setDigitalChannel(calctime(curtime,0),'XDT TTL',0);
+%     setAnalogChannel(calctime(curtime,0),'dipoleTrap1',-1);
+%     setAnalogChannel(calctime(curtime,0),'dipoleTrap2',-1);
 %     
 %     %Turn on odt1 modulation
 %     programRigol(addr_odt1,ch_on,[]);
@@ -5851,12 +5851,12 @@ end
 % k_op_am_list = [0.4];[0.4];[0.25]; %0.1:0.1:0.9
 % k_op_am = getScanParameter(k_op_am_list,...
 %     seqdata.scancycle,seqdata.randcyclelist,'k_op_am','??');
-% 
+% % 
 % setDigitalChannel(calctime(curtime,0),'K Probe/OP Shutter',1); % Open K Shtter with pre-trigger
 % %Now at k_op_offset time because there is no TTL (turns on pulse). 
 % setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',k_op_am);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
-% % CF : Why do the probe beams have a pre-trigger?; Seems odd to turn on
-% % beams with the amplitude modulation call
+% % % CF : Why do the probe beams have a pre-trigger?; Seems odd to turn on
+% % % beams with the amplitude modulation call
 % setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); 
 % 
 % 
@@ -5886,8 +5886,10 @@ end
 %     
 
 % setDigitalChannel(curtime,'K High Field Probe',0);
-% setAnalogChannel(calctime(curtime,0),57,6.9,1); % Current in mA
+% % setAnalogChannel(calctime(curtime,0),57,6.9,1); % Current in mA
 % setDigitalChannel(curtime,'15/16 Switch',1);
+
+setAnalogChannel(curtime,'K Repump AM',0.55);0.45; % K MOT repump power
 
 %     
 timeout = curtime;

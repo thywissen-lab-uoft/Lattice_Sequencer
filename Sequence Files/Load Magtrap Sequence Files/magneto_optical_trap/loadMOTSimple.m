@@ -68,7 +68,7 @@ setAnalogChannel(curtime,'K Trap AM',0.8);    % K MOT trap power
 setDigitalChannel(curtime,'K Trap TTL',0);    % K MOT trap TTL
 
 % K Repump Power
-setAnalogChannel(curtime,'K Repump AM',0.45); % K MOT repump power
+setAnalogChannel(curtime,'K Repump AM',0.55); % K MOT repump power
 setDigitalChannel(curtime,'K Repump TTL',0);  % K MOT repump TTL
 
 % Rb Trap Power
@@ -156,7 +156,7 @@ end
 setDigitalChannel(calctime(curtime,0),'Rb Trap Shutter',1);        % Rb MOT trap shutter (1 : ON)
 setDigitalChannel(calctime(curtime,0),'Rb Repump Shutter',1);      % Rb MOT repumper shutter (1 : ON)
 
-setDigitalChannel(calctime(curtime,0),'K Trap Shutter',1);         % Rb MOT trap shutter (1 : ON)
+setDigitalChannel(calctime(curtime,0),'K Trap Shutter',1);         % K MOT trap shutter (1 : ON)
 setDigitalChannel(calctime(curtime,0),'K Repump Shutter',1);       % K MOT repump shutter
 
 

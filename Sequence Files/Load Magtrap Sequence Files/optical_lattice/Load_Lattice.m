@@ -49,7 +49,7 @@ seqdata.flags.lattice_hold_at_end           = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % These flags are associated with the conducitivity experiment
 seqdata.flags.lattice_conductivity          = 0;    % old sequence
-seqdata.flags.lattice_conductivity_new      = 1;   % New sequence created July 25th, 2023
+seqdata.flags.lattice_conductivity_new      = 0;   % New sequence created July 25th, 2023
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy
@@ -68,7 +68,7 @@ do_RF_spectroscopy                          = 0;    % (3952,4970)
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 seqdata.flags.lattice_do_optical_pumping    = 1;    % (1426) keep : optical pumping in lattice  
-seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
+seqdata.flags.do_plane_selection            = 0;    % Plane selection flag
 
 % Actual fluorsence image flags - NO LONGER USED
 seqdata.flags.Raman_transfers               = 0;

@@ -8,8 +8,14 @@ global seqdata
 
     % Turn off the D2 beams, if they arent off already
     setDigitalChannel(calctime(curtime,0),'K Trap TTL',1); 
-    setDigitalChannel(calctime(curtime,0),'K Repump TTL',1); 
-    setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);   
+    setDigitalChannel(calctime(curtime,0),'K Repump TTL',1);
+    setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1); 
+    
+
+    % Keep shutters open
+    setDigitalChannel(calctime(curtime,0),'Rb Trap Shutter',1);
+    setDigitalChannel(calctime(curtime,0),'K Trap Shutter',1);
+    
 
     % Turn off the D1 beams. The GM stage automattically does this
     
@@ -42,24 +48,33 @@ global seqdata
     switch seqdata.flags.image_atomtype
         case 1
             % 30 dB gain works with 64 us exposure
+            
+            %turn K light on 
             setDigitalChannel(calctime(curtime,0),'K Trap TTL',0); 
             setDigitalChannel(calctime(curtime,0),'K Repump TTL',0); 
-            setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);  
             
+            
+            %turn K light off
             setDigitalChannel(calctime(curtime,5),'K Trap TTL',1); 
-            setDigitalChannel(calctime(curtime,5),'K Repump TTL',1); 
+            setDigitalChannel(calctime(curtime,5),'K Repump TTL',1);
+            
         case 0
             % 10 dB gain works with 64 us exposure
-            setDigitalChannel(calctime(curtime,0),'K Trap TTL',1); 
-            setDigitalChannel(calctime(curtime,0),'K Repump TTL',1); 
-            setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);  
-            
-            setDigitalChannel(calctime(curtime,3),'Rb Trap TTL',1);  
+
+            setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',0);
+%             setDigitalChannel(calctime(curtime,-2),'Rb Repump Shutter',1);
+
+            setDigitalChannel(calctime(curtime,10),'Rb Trap TTL',1);
+
+
+
     end 
 
     % Camera Trigger (1) : Light+Atoms
     setDigitalChannel(calctime(curtime,0),'MOT Camera Trigger',1);
     setDigitalChannel(calctime(curtime,2),'MOT Camera Trigger',0);
+    
+    ScopeTriggerPulse(calctime(curtime,0),'MOT Trigger');
 
     % Wait for second image trigger
     curtime = calctime(curtime,1000);

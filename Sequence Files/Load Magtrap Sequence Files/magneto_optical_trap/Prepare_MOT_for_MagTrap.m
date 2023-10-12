@@ -112,6 +112,9 @@ end
 
 if seqdata.flags.MOT_Mol == 1
     dispLineStr('Molasses',curtime);
+    
+    ScopeTriggerPulse(calctime(curtime,0),'Molasses');
+
 
     %%%%%%%%%%%% Shift the fields %%%%%%%%%%%%
     % Set field gradient and shim values (ideally) to zero

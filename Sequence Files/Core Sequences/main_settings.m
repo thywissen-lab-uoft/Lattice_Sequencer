@@ -130,7 +130,7 @@ defVar('D1_DP_FM',222.5,'MHz');
 
 %% Imaging
 seqdata.flags.image_type                    = 0; % 0: absorption, 1 : MOT fluor  
-seqdata.flags.image_atomtype                = 1; % 0:Rb,1:K,2:K+Rb (double shutter), applies to fluor and absorption
+seqdata.flags.image_atomtype                = 2; % 0:Rb,1:K,2:K+Rb (double shutter), applies to fluor and absorption
 
 seqdata.flags.image_loc                     = 1; % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.image_direction               = 1; % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
@@ -247,6 +247,9 @@ seqdata.flags.xdt_evap2stage                = 0; %Perform K evap at low field
 seqdata.flags.xdt_evap2_HF                  = 0; %Perform K evap at high field (set rep. or attr. in file)
 seqdata.flags.xdt_high_field_a              = 0;
 
+% 
+seqdata.flags.xdt_ramp_power_end        = 1;    % Ramp dipole back up after evaporation before any further physics 
+
 
 defVar('Evap_End_Power',0.120,'W');
 %% Optical Lattice
@@ -273,6 +276,10 @@ seqdata.flags.lattice_pulse_for_alignment   = 0;
 % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 seqdata.flags.lattice_pulse_z_for_alignment = 0; 
 
+%% Plane Selection
+
+
+%%
 %% Conductivity
 
 defVar('conductivity_snap_and_hold_time',[0],'ms');  
@@ -306,6 +313,9 @@ seqdata.scope_trigger = 'lattice_ramp_1';
 % seqdata.scope_trigger = 'Camera triggers';
 % seqdata.scope_trigger = 'Start Transport';
 % seqdata.scope_trigger = 'TOF';
+% seqdata.scope_trigger = 'Molasses';
+% seqdata.scope_trigger = 'MOT Trigger';
+
 
 %% end time
 

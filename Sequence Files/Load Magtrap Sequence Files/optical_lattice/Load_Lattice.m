@@ -23,78 +23,8 @@ if curtime==0
 end
 
 
-%% Lattice Flags    
-% These are the lattice flags sorted roughly chronologically. 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Lattice Ramps and Waveplates
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.lattice_rotate_waveplate_1    = 1;    % First waveplate rotation for 90%
-seqdata.flags.lattice_lattice_ramp_1        = 1;    % Load the lattices
-
-seqdata.flags.do_lattice_am_spec            = 0;    % Amplitude modulation spectroscopy             
-
-seqdata.flags.lattice_rotate_waveplate_2    = 1;    % Second waveplate rotation 95% 
-seqdata.flags.lattice_lattice_ramp_2        = 0;    % Secondary lattice ramp for fluorescence imaging
-seqdata.flags.lattice_lattice_ramp_3        = 1;    % Secondary lattice ramp for fluorescence imaging
-seqdata.flags.lattice_pin                   = 0;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Other
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
-seqdata.flags.lattice_PA                    = 0;
-seqdata.flags.lattice_hold_at_end           = 0;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Conductivity
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% These flags are associated with the conducitivity experiment
-seqdata.flags.lattice_conductivity          = 0;    % old sequence
-seqdata.flags.lattice_conductivity_new      = 0;   % New sequence created July 25th, 2023
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% RF/uWave Spectroscopy
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.lattice_uWave_spec            = 0;
-
 do_K_uwave_spectroscopy_old                 = 0;    % (3786) keep
 do_RF_spectroscopy                          = 0;    % (3952,4970)
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% DMD
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Plane Selection, Raman Transfers, and Fluorescence Imaging
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-seqdata.flags.lattice_do_optical_pumping    = 1;    % (1426) keep : optical pumping in lattice  
-seqdata.flags.do_plane_selection            = 0;    % Plane selection flag
-
-% Actual fluorsence image flags - NO LONGER USED
-seqdata.flags.Raman_transfers               = 0;
-
-% Note:
-% It is sometimes helpful to run the fluorence imaging code as other things
-% such as :
-% - alignment of EIT/FPUMP beams
-% - Raman spectroscopy (to show Raman is working)
-% - uWave spectroscopy (to find two photon frequency/field)
-
-% New Standard Fluoresnce Image Flags
-seqdata.flags.lattice_ClearCCD_IxonTrigger  = 1;    % Add additional trigger to clear CCD
-seqdata.flags.lattice_fluor                 = 1;    % Do Fluoresnce imaging
-seqdata.flags.lattice_fluor_bkgd            = 0;    % 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% BandMapping
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-seqdata.flags.lattice_bandmap               = 1;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Other Parameters
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
- 
 
 %% Other parameters
 % To be consolidated and simplified.
@@ -228,13 +158,13 @@ if seqdata.flags.lattice_lattice_ramp_1
             % insitu position measured here. (Use a TOF~0);
             % This also is used for lattice alignment with the ixon.
             
-            U_align = 200; % Lattice depth to align to TOO LOW WILL MESS THINGS UP
+            U_align = 60; % Lattice depth to align to TOO LOW WILL MESS THINGS UP
             % Simple square ramp of only one lattice 
             
             %Select the lattice direction to load
 %             direction = 'X';
-%             direction = 'Y';
-            direction = 'Z';
+            direction = 'Y';
+%             direction = 'Z';
             switch direction
                 case 'X'
                   latt_depth=...

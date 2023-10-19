@@ -195,11 +195,24 @@ raman_rel_pow_list = 0.5;[0.5];
     V10 = 1.3;
     Raman1_Power_List = V10*raman_rel_pow;V10*[1];
     Raman1_ShiftFreq_List = [-100];[-80];        % kHz
+        V20 = 1.36;   
+
+    r1 = linspace(0,1,10);
+    r2 = linspace(0,1,10);
+    [R1,R2]=meshgrid(r1,r2);
     
+    R1 = V10*R1(:);
+    R2 = V20*R2(:);
+    
+    Raman1_Power = getScanParameter(R1,...
+        seqdata.scancycle,seqdata.randcyclelist,'Raman1_Power','V'); 
+        Raman2_Power = getScanParameter(R2,...
+        seqdata.scancycle,seqdata.randcyclelist,'Raman2_Power','V'); 
+
     Raman1_Freq_Shift = getScanParameter(Raman1_ShiftFreq_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman1_Freq_Shift','kHz');       
-    Raman1_Power = getScanParameter(Raman1_Power_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'Raman1_Power','V'); 
+%     Raman1_Power = getScanParameter(Raman1_Power_List,...
+%         seqdata.scancycle,seqdata.randcyclelist,'Raman1_Power','V'); 
     
     fluor.Raman1_EnableSweep = 0;
     fluor.Raman1_Power = Raman1_Power;
@@ -211,8 +224,8 @@ raman_rel_pow_list = 0.5;[0.5];
     
     Raman2_Freq_Shift = getScanParameter(Raman2_ShiftFreq_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman2_Freq_Shift','kHz');       
-    Raman2_Power = getScanParameter(Raman2_Power_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'Raman2_Power','V'); 
+%     Raman2_Power = getScanParameter(Raman2_Power_List,...
+%         seqdata.scancycle,seqdata.randcyclelist,'Raman2_Power','V'); 
     
     fluor.Raman2_EnableSweep = 0;
     fluor.Raman2_Power = Raman2_Power;

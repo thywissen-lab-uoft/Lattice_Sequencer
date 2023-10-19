@@ -22,26 +22,25 @@ seqdata.flags.xdt_unlevitate_evap       = 0; % Unclear what this is for
 
 % Dipole trap asymmetry (useful for making a symmetric trap for lattice + QGM)
 seqdata.params.xdt_p2p1_ratio           = 1; % ratio of ODT2:ODT1 power
-
 seqdata.flags.xdt_ramp2sympathetic      = 1;  
 
 
 % Stage 1 (Rb+K) Evaporation
-% Evap_End_Power_List = .07;[.08];0.08;[.12];
-% exp_end_pwr = getScanParameter(Evap_End_Power_List,...
-%     seqdata.scancycle,seqdata.randcyclelist,'Evap_End_Power','W');  
-exp_end_pwr=getVar('Evap_End_Power');
+exp_end_pwr=getVar('xdt_evap1_power');
+
 % Stage 2 Low Field (K+K) evaporation
-pend_list = [0.1]; 0.08; 0.06;
-pend = getScanParameter(pend_list,seqdata.scancycle,...
-    seqdata.randcyclelist,'pend_evap2','W');
+% pend_list = [0.1]; 0.08; 0.06;
+% pend = getScanParameter(pend_list,seqdata.scancycle,...
+%     seqdata.randcyclelist,'pend_evap2','W');
 
-evap_time_2_list =  [10000];
-evap_time_2 = getScanParameter(evap_time_2_list,seqdata.scancycle,...
-    seqdata.randcyclelist,'evap_time_2','ms');
+% Stage 2 (K+K) Evaporation
+pend=getVar('xdt_evap2_power');
 
+% evap_time_2_list =  [10000];
+% evap_time_2 = getScanParameter(evap_time_2_list,seqdata.scancycle,...
+%     seqdata.randcyclelist,'evap_time_2','ms');
 
-
+evap_time_2=getVar('xdt_evap2_time');
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -66,17 +65,21 @@ seqdata.flags.xdt_ramp_up_FB_for_lattice    = 0;    %Ramp FB up at the end of ev
 XDT2_power_func = @(x) x;
 
 % Initial XDT power
-P12_list = [.8];
-P12 = getScanParameter(P12_list,seqdata.scancycle,...
-    seqdata.randcyclelist,'XDT_initial_power','W');
-P1 = P12;
-P2 = P12;       
+% P12_list = [.8];
+% P12 = getScanParameter(P12_list,seqdata.scancycle,...
+%     seqdata.randcyclelist,'XDT_initial_power','W');
+  
 
-P_dip=0;
-% Sympathetic cooling powers
-Pevap_list = 0.8;[.8];
-Pevap = getScanParameter(Pevap_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'XDT_Pevap','W');
+% P_dip=0;
+% % Sympathetic cooling powers
+% Pevap_list = 0.8;[.8];
+% Pevap = getScanParameter(Pevap_list,...
+%     seqdata.scancycle,seqdata.randcyclelist,'XDT_Pevap','W');
+
+P12 = getVar('xdt_load_power');
+P1 = P12;P2 = P12;     
+
+Pevap = getVar('xdt_sympathetic_power');
 P1e = Pevap; %0.8
 P2e = Pevap; %0.8
 
@@ -85,15 +88,19 @@ xdt1_end_power = exp_end_pwr;
 xdt2_end_power = XDT2_power_func(exp_end_pwr);
 
 % Evaporation Time
-Time_List =  25e3;[25]*1e3; 25;18;% [15000] for normal experiment
-evap_time_total = getScanParameter(Time_List,seqdata.scancycle,...
-    seqdata.randcyclelist,'evap_time','ms');   
+% Time_List =  25e3;[25]*1e3; 25;18;% [15000] for normal experiment
+% evap_time_total = getScanParameter(Time_List,seqdata.scancycle,...
+%     seqdata.randcyclelist,'evap_time','ms');   
+evap_time_total = getVar('xdt_evap1_time');
 
 % Exponetial time factor
-Tau_List = [3.5];%[5];
-exp_tau_frac = getScanParameter(Tau_List,seqdata.scancycle,...
-    seqdata.randcyclelist,'Evap_Tau_frac');
+% Tau_List = [3.5];%[5];
+% exp_tau_frac = getScanParameter(Tau_List,seqdata.scancycle,...
+%     seqdata.randcyclelist,'Evap_Tau_frac');
+exp_tau_frac = getVar('xdt_evap1_tau_fraction');
 exp_tau=evap_time_total/exp_tau_frac;
+
+exp_tau2 = evap_time_2/getVar('xdt_evap2_tau_fraction');
 
 % Power vector (load, hold, sympathetic, final)
 DT1_power = 1*[P1 P1 P1e xdt1_end_power];
@@ -322,23 +329,6 @@ setDigitalChannel(calctime(curtime,plug_turnoff_time),'Plug Shutter',0);%0:OFF; 
 dispLineStr('Turning off plug ',calctime(curtime,plug_turnoff_time));
 
 
-    
-% 
-% %%% TESTING NEW LOADING
-% curtime = xdt_load(curtime);
-% setDigitalChannel(calctime(curtime,0),'fast FB Switch',1); %switch Feshbach field on
-% setAnalogChannel(calctime(curtime,0),'FB current',0.0); %switch Feshbach field closer to on
-% setDigitalChannel(calctime(curtime,0),'FB Integrator OFF',0); %switch Feshbach integrator on            
-% % Ramp up FB Current
-%  AnalogFunc(calctime(curtime,0),'Transport FF',...
-%     @(t,tt,y1,y2)(ramp_func(t,tt,y1,y2)),...
-%     50,50, 20,0);
-% curtime = AnalogFunc(calctime(curtime,0),'FB current',...
-%     @(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),...
-%     50,50, 5,0);
-
-%%% TESTING NEW LOADING
-
 %% Turn Off Voltage on Transport and Shim Supply 
 
 ScopeTriggerPulse(calctime(curtime,0),'Transport Supply Off');
@@ -355,7 +345,6 @@ if ( seqdata.flags.xdt_Rb_21uwave_sweep_field)
     
     init_ramp_fields = 1; % Ramp field to starting value?
     do_F2_blowaway = 1 ; % Remove remaining F=2 atoms after transfer?
-
 
     %%%%%%%%%%%%%%%%%%%%%%%%
     % Program the SRS
@@ -1342,17 +1331,16 @@ if ( seqdata.flags.CDT_evap == 1 && seqdata.flags.xdt_evap2stage)
     
     %%%%%%%%%%%%%%%% DO THE SECOND EVAP STAGE %%%%%%%%%%%%%%%%%%%%%
     evap_exp_ramp = @(t,tt,tau,y2,y1) ...
-        (y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));    
-    
+        (y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));   
 
     % Ramp down the optical powers
     AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
         @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
-        evap_time_2,evap_time_2,exp_tau,pend);
-curtime = AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+        evap_time_2,evap_time_2,exp_tau2,pend);
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         @(t,tt,y1,tau,y2)(evap_exp_ramp(t,tt,tau,y2,y1)),...
-        evap_time_2,evap_time_2,exp_tau,pend);
-    
+        evap_time_2,evap_time_2,exp_tau2,pend);
+    curtime = calctime(curtime,evap_time_2);    
 end
 
 %% CDT evap 2 high field

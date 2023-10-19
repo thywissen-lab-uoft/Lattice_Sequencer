@@ -5889,7 +5889,32 @@ end
 % % setAnalogChannel(calctime(curtime,0),57,6.9,1); % Current in mA
 % setDigitalChannel(curtime,'15/16 Switch',1);
 
-setAnalogChannel(curtime,'K Repump AM',0.55);0.45; % K MOT repump power
+% setAnalogChannel(curtime,'K Repump AM',0.55);0.45; % K MOT repump power
+% setDigitalChannel(curtime,'High Field Shutter',0);0.45; % K MOT repump power
+
+% setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',1); % Set 
+% setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',0); % inverted logic
+
+setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',0);
+
+setAnalogChannel(calctime(curtime,0),'Z Shim',0,1); % Set 
+% setAnalogChannel(calctime(curtime,0),'Y Shim',0,1); % Set 
+% setAnalogChannel(calctime(curtime,0),'Z Shim',0,1); % Set 
+
+setAnalogChannel(calctime(curtime,50),'Z Shim',1,1); %3
+% setAnalogChannel(calctime(curtime,100),'Z Shim',0,3); %3
+% setAnalogChannel(calctime(curtime,100),'Y Shim',0,4); %4
+
+setAnalogChannel(calctime(curtime,100),'Z Shim',0,1); % Set 
+% setAnalogChannel(calctime(curtime,200),'Y Shim',0,1); % Set 
+% setAnalogChannel(calctime(curtime,200),'Z Shim',0,1); % Set 
+
+DigitalPulse(calctime(curtime,0),'ScopeTrigger',10,1);
+
+
+% 
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.4);
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); 
 
 %     
 timeout = curtime;

@@ -42,7 +42,7 @@ rb_op_detuning_set(2) = -3;     % for 2->3
 
 % rb_op_detuning = rb_op_detuning_set(seqdata.flags.Rb_Probe_Order);
 % 
-rb_op_detuning_list = [-20];-20;
+rb_op_detuning_list = [50];-20;
 rb_op_detuning = getScanParameter(rb_op_detuning_list,...
     seqdata.scancycle,seqdata.randcyclelist,'rb_op_detuning','MHz');
 
@@ -130,12 +130,12 @@ if (seqdata.atomtype == 3 || seqdata.atomtype == 4)
     %offset detuning ... should be close to the MOT detuning
 %     setAnalogChannel(calctime(curtime,-5),'Rb Beat Note FF',0.18,1);
 %     setDigitalChannel(calctime(curtime,-0.5),50,1);
-    setAnalogChannel(calctime(curtime,0.0),'Rb Beat Note FM',6590+rb_op_detuning);
+    setAnalogChannel(calctime(curtime,0.0),'Rb Beat Note FM',6590-20);
     
     
     
-    op_trap_detuning = 50;
-    f_osc = calcOffsetLockFreq(op_trap_detuning,'Probe22');
+    op_trap_detuning = rb_op_detuning;50;
+    f_osc = calcOffsetLockFreq(op_trap_detuning,'Probe22'); 
     DDS_id = 3;    
     DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,.01);  
     

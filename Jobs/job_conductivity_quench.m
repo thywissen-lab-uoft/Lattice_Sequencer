@@ -5,15 +5,15 @@ function J=job_conductivity_quench
         field = var;
         defVar('conductivity_FB_field',field,'G');
        
-        freq = 54;
-        defVar('conductivity_mod_freq',freq,'Hz');    
-        
-        defVar('Evap_End_Power',0.075,'W');
-
-        t0 = 50;
-        T = 1e3/freq;
-        tvec = round(t0 + linspace(0,3*T,30),1);
-        defVar('conductivity_mod_time',tvec,'ms');      % Modulation Time
+%         freq = 54;
+%         defVar('conductivity_mod_freq',freq,'Hz');    
+%         
+%         defVar('Evap_End_Power',0.075,'W');
+% 
+%         t0 = 50;
+%         T = 1e3/freq;
+%         tvec = round(t0 + linspace(0,3*T,30),1);
+%         defVar('conductivity_mod_time',tvec,'ms');      % Modulation Time
     end
 
 % This function evaluates at the end of each cycle
@@ -36,7 +36,7 @@ function J=job_conductivity_quench
 %%
 
 var_list = [170 175 180 185 190 195 196 197 198 199 200];
-var_list = var_list(randperm(numel(var_list)));
+var_list = [170 var_list(randperm(numel(var_list)))];
 clear J
 for ii = 1:length(var_list)
     x = var_list(ii);
@@ -50,9 +50,9 @@ for ii = 1:length(var_list)
 %     if B>=200.5
 %         npt.ScanCyclesRequested = 1:41;
 %     else
-        npt.ScanCyclesRequested = 1:30;
+        npt.ScanCyclesRequested = 1:40;
 %     end
-    npt.JobName             = [num2str(ii) ' 2.5Er Modulate ' num2str(x)];
+    npt.JobName             = [num2str(ii) ' 2.5Er 2V 2V Quench ' num2str(x)];
     npt.SaveDirName         = npt.JobName;    
     J(ii) = sequencer_job(npt);
 end

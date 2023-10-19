@@ -15,6 +15,7 @@ if seqdata.flags.MOT_CMOT==1
     cMOT_time = max([getVar('cmot_rb_ramp_time') ...
         getVar('cmot_k_ramp_time')]);
 
+    ScopeTriggerPulse(calctime(curtime,0),'CMOT');
     %%%%%%%%%%%%%%%% Set CMOT Shims %%%%%%%%%%%%%%%%    
 %     yshim_comp = 0.84;
 %     xshim_comp = 0.25;
@@ -210,7 +211,7 @@ end
 
 %% Fluoresnce image
 if seqdata.flags.image_type == 1
-   curtime = MOT_fluorescence_image(curtime);
+%    curtime = MOT_fluorescence_image(curtime);
 end
 %% Reset GM Shutters
 % CF : Should this be done inside the GM code?

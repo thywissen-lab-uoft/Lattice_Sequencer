@@ -278,7 +278,7 @@ if seqdata.flags.transport
     
     %Turn Shims to Science cell zero values
     % These can always be set to plug shims because we have separate
-    % control of MOT and science chamber shims.
+    % control of MOT and science chamber shims
     setAnalogChannel(calctime(curtime,1000),'X Shim',0,3); %3
     setAnalogChannel(calctime(curtime,1000),'Z Shim',0,3); %3
     setAnalogChannel(calctime(curtime,1000),'Y Shim',0,4); %4
@@ -358,9 +358,9 @@ end
 % Perform fluoresence imaging. Comes after transport in case you want to do
 % a there and back measurement.
 
-% if seqdata.flags.image_type == 1
-%    curtime = MOT_fluorescence_image(curtime);
-% end
+if seqdata.flags.image_type == 1
+   curtime = MOT_fluorescence_image(curtime);
+end
 
 %% Magnetic Trap
 
@@ -662,6 +662,8 @@ setDigitalChannel(calctime(curtime,0),'Raman Shutter',0);
 setAnalogChannel(calctime(curtime,0),'X Shim',0,1);
 setAnalogChannel(calctime(curtime,0),'Y Shim',0,1);
 setAnalogChannel(calctime(curtime,0),'Z Shim',0,1);   
+
+setDigitalChannel(calctime(curtime,10),'Bipolar Shim Relay',0);
 
 setAnalogChannel(curtime,'15/16 GS',0); 
 

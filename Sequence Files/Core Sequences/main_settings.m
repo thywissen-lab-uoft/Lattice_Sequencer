@@ -53,7 +53,7 @@ seqdata.flags.misc_program4pass             = 1; % Update four-pass frequency
 seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
 seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[2],'V');1.5;1.7;2.06;
+defVar('objective_piezo',[2.25],'V');1.5;1.7;2.06;
 % 0.1V = 700 nm, larger means further away from chamber
 % 1 V= 7 um
 % 10 V = 70 um
@@ -203,13 +203,13 @@ seqdata.flags.mt_plug_ramp_end              = 0;
 defVar('RF1A_time_scale',[0.6],'arb');1.2;0.6;      % RF1A timescale
 defVar('RF1B_time_scale',[1],'arb');[0.8];   % RF1B timescale
 defVar('RF1A_finalfreq',[16],'MHz');8;16;         % RF1A Ending Frequency
-defVar('RF1B_finalfreq',[4],'MHz');[1];[0.8];        % RF1B Ending Frequency
+defVar('RF1B_finalfreq',[4],'MHz');[1];[0.8];        % RF1B Ending Frequency %this is currently not used
 
 %%% MT HOLD %%%    
+seqdata.flags.mt_ramp_down_end              = 0;
+seqdata.flags.mt_lifetime                   = 0;
 defVar('mt_ramp_grad_time',100,'ms');
 defVar('mt_ramp_grad_value',[10],'A');
-seqdata.flags.mt_ramp_down_end = 0;
-seqdata.flags.mt_lifetime = 0;
 defVar('mt_hold_time',[0:500:10000]);
 
 %% Optical Dipole Trap
@@ -243,26 +243,93 @@ seqdata.flags.xdt_kill_Rb_after_evap        = 0;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_after_evap        = 0;    % optical remove 7/2 K after (untested)
 
 % XDT High Field Experiments
-seqdata.flags.xdt_evap2stage                = 0; %Perform K evap at low field
-seqdata.flags.xdt_evap2_HF                  = 0; %Perform K evap at high field (set rep. or attr. in file)
+seqdata.flags.xdt_evap2stage                = 0;    % Perform K evap at low field
+seqdata.flags.xdt_evap2_HF                  = 0;    % Perform K evap at high field (set rep. or attr. in file)
 seqdata.flags.xdt_high_field_a              = 0;
 
 % 
-seqdata.flags.xdt_ramp_power_end        = 1;    % Ramp dipole back up after evaporation before any further physics 
+seqdata.flags.xdt_ramp_power_end            = 0;    % Ramp dipole back up after evaporation before any further physics 
 
 
-defVar('Evap_End_Power',0.120,'W');
+defVar('xdt_load_power',1.0,'W');
+defVar('xdt_sympathetic_power',0.800,'W');
+
+% Stage 1 Evaporation (K+Rb)
+defVar('xdt_evap1_power',0.12,'W');0.078;
+defVar('xdt_evap1_time',25e3,'ms');
+defVar('xdt_evap1_tau_fraction',3.5,'arb');
+
+% Stage 2 Evaporation (K+K)
+defVar('xdt_evap2_power',0.080,'W');
+defVar('xdt_evap2_time',10e3,'ms');
+defVar('xdt_evap2_tau_fraction',3.5','arb')
 %% Optical Lattice
 
 % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
 seqdata.flags.lattice                       = 0; 
-
-
 seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate
-
 defVar('lattice_depth_load',2.5,'Er');
 defVar('lattice_pin_depth',60,'Er');
 defVar('lattice_pin_time', 0.2, 'ms');
+
+% These are the lattice flags sorted roughly chronologically. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Lattice Ramps and Waveplates
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+seqdata.flags.lattice_rotate_waveplate_1    = 1;    % First waveplate rotation for 90%
+seqdata.flags.lattice_lattice_ramp_1        = 1;    % Load the lattices
+
+seqdata.flags.do_lattice_am_spec            = 0;    % Amplitude modulation spectroscopy             
+
+seqdata.flags.lattice_rotate_waveplate_2    = 1;    % Second waveplate rotation 95% 
+seqdata.flags.lattice_lattice_ramp_2        = 0;    % Secondary lattice ramp for fluorescence imaging
+seqdata.flags.lattice_lattice_ramp_3        = 1;    % Secondary lattice ramp for fluorescence imaging
+seqdata.flags.lattice_pin                   = 0;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Other
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+seqdata.flags.lattice_PA                    = 0;
+seqdata.flags.lattice_hold_at_end           = 0;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Conductivity
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% These flags are associated with the conducitivity experiment
+seqdata.flags.lattice_conductivity          = 0;    % old sequence
+seqdata.flags.lattice_conductivity_new      = 1;   % New sequence created July 25th, 2023
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% RF/uWave Spectroscopy
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+seqdata.flags.lattice_uWave_spec            = 0;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Plane Selection, Raman Transfers, and Fluorescence Imaging
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+seqdata.flags.lattice_do_optical_pumping    = 1;    % (1426) keep : optical pumping in lattice  
+seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
+
+% Actual fluorsence image flags - NO LONGER USED
+seqdata.flags.Raman_transfers               = 0;
+
+% Note:
+% It is sometimes helpful to run the fluorence imaging code as other things
+% such as :
+% - alignment of EIT/FPUMP beams
+% - Raman spectroscopy (to show Raman is working)
+% - uWave spectroscopy (to find two photon frequency/field)
+
+% New Standard Fluoresnce Image Flags
+seqdata.flags.lattice_ClearCCD_IxonTrigger  = 1;    % Add additional trigger to clear CCD
+seqdata.flags.lattice_fluor                 = 1;    % Do Fluoresnce imaging
+seqdata.flags.lattice_fluor_bkgd            = 0;    % 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% BandMapping
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+seqdata.flags.lattice_bandmap               = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LATTICE COURSE ALIGNMENT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -279,10 +346,9 @@ seqdata.flags.lattice_pulse_z_for_alignment = 0;
 %% Plane Selection
 
 
-%%
 %% Conductivity
 
-defVar('conductivity_snap_and_hold_time',[0],'ms');  
+defVar('conductivity_snap_and_hold_time',[[0:2:50] 55:5:120],'ms');  
 defVar('conductivity_FB_field',190,'G')
 defVar('conductivity_zshim',0,'A')
 defVar('conductivity_mod_freq',[70],'Hz')       % Modulation Frequency
@@ -294,6 +360,8 @@ defVar('conductivity_rel_mod_phase',0,'deg');   % Phase shift of sinusoidal mod 
 defVar('conductivity_ODT1_mod_amp',[2],'V');  % ODT1 Mod Depth   4V, 4V for X (DC) 4V, -1.7V for Y (DC);
 defVar('conductivity_ODT2_mod_amp',[2],'V');  % ODT2 Mod Depth
 
+defVar('scope_pos',-7);
+getVar('scope_pos');
 
 %% QGM Imaging
 
@@ -304,7 +372,7 @@ defVar('conductivity_ODT2_mod_amp',[2],'V');  % ODT2 Mod Depth
 % seqdata.scope_trigger = 'rf_spectroscopy';
 % seqdata.scope_trigger = 'Lattice_Mod';
 % seqdata.scope_trigger = 'FB_ramp';
-seqdata.scope_trigger = 'lattice_ramp_1';
+% seqdata.scope_trigger = 'lattice_ramp_1';
 % seqdata.scope_trigger = 'pulse lattice';
 % seqdata.scope_trigger = 'Raman Beams On';
 % seqdata.scope_trigger = 'PA_Pulse';
@@ -312,9 +380,11 @@ seqdata.scope_trigger = 'lattice_ramp_1';
 % seqdata.scope_trigger = 'lattice_off';
 % seqdata.scope_trigger = 'Camera triggers';
 % seqdata.scope_trigger = 'Start Transport';
-% seqdata.scope_trigger = 'TOF';
-% seqdata.scope_trigger = 'Molasses';
+seqdata.scope_trigger = 'TOF';
+% seqdata.scope_trigger = 'Optical pumping';
 % seqdata.scope_trigger = 'MOT Trigger';
+% seqdata.scope_trigger = 'CMOT';
+% seqdata.scope_trigger = 'Molasses';
 
 
 %% end time

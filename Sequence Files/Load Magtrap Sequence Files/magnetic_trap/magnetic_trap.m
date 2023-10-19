@@ -193,7 +193,7 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     
     defVar('RF1B_freq_0',getVar('RF1A_freq_3')*1.1,'MHz');
     defVar('RF1B_freq_1',7,'MHz');7;
-     defVar('RF1B_freq_2',[1],'MHz');1;
+    defVar('RF1B_freq_2',[1],'MHz');1;
     defVar('RF1B_freq_3',2,'MHz');2;
     defVar('RF1B_time_1',[6000],'ms');6000;2500;
     defVar('RF1B_time_2',[3000],'ms');3000;2000;

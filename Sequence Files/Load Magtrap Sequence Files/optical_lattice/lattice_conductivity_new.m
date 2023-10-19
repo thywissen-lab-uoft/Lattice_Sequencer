@@ -6,8 +6,8 @@ curtime = timein;
 setAnalogChannel(curtime,'Modulation Ramp',-10,1);      
 
 %% Flags
-seqdata.flags.conductivity_ODT1_mode            = 1; % 0:OFF, 1:SINE, 2:DC
-seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
+seqdata.flags.conductivity_ODT1_mode            = 0; % 0:OFF, 1:SINE, 2:DC
+seqdata.flags.conductivity_ODT2_mode            = 0; % 0:OFF, 1:SINE, 2:DC
 seqdata.flags.conductivity_ramp_FB              = 1; % Ramp FB field to resonance
 seqdata.flags.conductivity_ramp_QP              = 1; % Ramp QP reverse with FB (only works if ramp_FB is enabled)
 seqdata.flags.conductivity_rf_spec              = 0;

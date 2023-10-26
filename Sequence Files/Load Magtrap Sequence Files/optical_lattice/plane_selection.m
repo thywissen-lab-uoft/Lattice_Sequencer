@@ -246,9 +246,9 @@ switch opts.SelectMode
 
         % Define the SRS frequency
         if opts.dotilt
-            freq_offset_list = 1050 + [1220];
+            freq_offset_list = 1050 + [1600];
         else
-            freq_offset_list = [1395];[1700];1750;1050+600;520;
+            freq_offset_list = [1225];1750;1050+600;520;
         end
         
         %freq_amp_list = [30]; % 30 kHz is about 2 planes

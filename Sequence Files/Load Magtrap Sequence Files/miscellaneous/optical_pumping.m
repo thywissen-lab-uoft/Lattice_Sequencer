@@ -42,7 +42,7 @@ rb_op_detuning_set(2) = -3;     % for 2->3
 
 % rb_op_detuning = rb_op_detuning_set(seqdata.flags.Rb_Probe_Order);
 % 
-rb_op_detuning_list = [50];-20;
+rb_op_detuning_list = [30];[50];-20;
 rb_op_detuning = getScanParameter(rb_op_detuning_list,...
     seqdata.scancycle,seqdata.randcyclelist,'rb_op_detuning','MHz');
 

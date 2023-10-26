@@ -165,6 +165,7 @@ end
 if  seqdata.flags.mt_use_plug == 1       
     dispLineStr('Turning on the plug',curtime);
     plug_offset = -500; % -200
+    ScopeTriggerPulse(calctime(curtime,plug_offset),'Plug');
     setDigitalChannel(calctime(curtime,plug_offset),'Plug Shutter',1); %0: CLOSED; 1: OPEN
 end
 

@@ -11,10 +11,10 @@ global seqdata
     % Laser Beams
     fluor.EnableFPump           = 1;        % Use FPUMP beam DOESNT WORK ZIF LOW???
     fluor.EnableEITProbe        = 1;        % Use EIT Probe beams
-    fluor.EnableRaman           = 1;        % Use Raman Beams
+    fluor.EnableRaman           = 0;        % Use Raman Beams
     
     % Sets the total time of radiation (optical or otherwise)
-        pulse_list = [2000];
+        pulse_list = [2000]; % 
         
     pulse_time = getScanParameter(...
         pulse_list,seqdata.scancycle,seqdata.randcyclelist,...
@@ -89,7 +89,7 @@ end
 % you are imaging along the FPUMP axis
     
     B0 = 4;         % Quantization Field
-    B0_shift_list = [0.2];[0.19];[0.21];[.17];
+    B0_shift_list = [0.14];0.21;[0.15];[0.19];[0.21];[.17];
     
     % Quantization Field 
     B0_shift = getScanParameter(...
@@ -103,7 +103,7 @@ end
 % This code set the Fpump power regulation and the 4 pass frequency
 
     % Power that the Fpump beam regulates to
-    F_Pump_List = [1.1];1.1;    
+    F_Pump_List = [0.8];[1.1];1.1;    
     
     % Frequency of the FPUMP single pass (MHz)
     fluor.F_Pump_Frequency = 80;

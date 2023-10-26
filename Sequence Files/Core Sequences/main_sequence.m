@@ -372,7 +372,7 @@ end
 
 seqdata.flags.transport_save = 1;
 
-if seqdata.flags.transport_save
+if seqdata.flags.transport_save && seqdata.flags.transport
     opts = struct;
     opts.FileName = 'transport.mat';
     opts.StartTime = transport_start_time;

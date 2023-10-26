@@ -130,7 +130,7 @@ defVar('D1_DP_FM',222.5,'MHz');
 
 %% Imaging
 seqdata.flags.image_type                    = 0; % 0: absorption, 1 : MOT fluor  
-seqdata.flags.image_atomtype                = 2; % 0:Rb,1:K,2:K+Rb (double shutter), applies to fluor and absorption
+seqdata.flags.image_atomtype                = 1; % 0:Rb,1:K,2:K+Rb (double shutter), applies to fluor and absorption
 
 seqdata.flags.image_loc                     = 1; % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.image_direction               = 1; % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
@@ -148,7 +148,7 @@ seqdata.flags.High_Field_Imaging            = 0; % High field imaging (shouldn't
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[5],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[15],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[10],'ms');
@@ -218,23 +218,23 @@ seqdata.params.ODT_zeros = [-0.04,-0.04];
 
 % Dipole trap
 % 1: dipole trap loading, 2: dipole trap pulse, 3: pulse on dipole trap during evaporation
-seqdata.flags.xdt                           = 0;
+seqdata.flags.xdt                           = 1;
 % Dipole trap flags will be ignored if XDT is off
 
 % MT to XDT State Transfer
-seqdata.flags.xdt_Rb_21uwave_sweep_field    = 0;    % Field Sweep Rb 2-->1
+seqdata.flags.xdt_Rb_21uwave_sweep_field    = 1;    % Field Sweep Rb 2-->1
 seqdata.flags.xdt_Rb_21uwave_sweep_freq     = 0;    % uWave Frequency sweep Rb 2-->1
-seqdata.flags.xdt_K_p2n_rf_sweep_freq       = 0;    % RF Freq Sweep K +9-->-9  
+seqdata.flags.xdt_K_p2n_rf_sweep_freq       = 1;    % RF Freq Sweep K +9-->-9  
 
 % State Manipulation Before Optical Evaporation 
-seqdata.flags.xdt_d1op_start                = 0;    % D1 pump to purify
-seqdata.flags.xdt_rfmix_start               = 0;    % RF Mixing -9-->-9+-7    
+seqdata.flags.xdt_d1op_start                = 1;    % D1 pump to purify
+seqdata.flags.xdt_rfmix_start               = 1;    % RF Mixing -9-->-9+-7    
 seqdata.flags.xdt_kill_Rb_before_evap       = 0;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_before_evap       = 0;    % optical remove 7/2 K after (untested)
 
 % Optical Evaporation
 % 1: exp 2: fast linear 3: piecewise linear
-seqdata.flags.CDT_evap                      = 0;       
+seqdata.flags.CDT_evap                      = 1;       
 
 % State Manipulation After Stage 1 optical evaporation
 seqdata.flags.xdt_d1op_end                  = 0;    % D1 optical pumping
@@ -245,7 +245,7 @@ seqdata.flags.xdt_kill_K7_after_evap        = 0;    % optical remove 7/2 K after
 % XDT High Field Experiments
 seqdata.flags.xdt_evap2stage                = 0;    % Perform K evap at low field
 seqdata.flags.xdt_evap2_HF                  = 0;    % Perform K evap at high field (set rep. or attr. in file)
-seqdata.flags.xdt_high_field_a              = 0;
+seqdata.flags.xdt_high_field_a              = 1;
 
 % 
 seqdata.flags.xdt_ramp_power_end            = 0;    % Ramp dipole back up after evaporation before any further physics 
@@ -266,7 +266,7 @@ defVar('xdt_evap2_tau_fraction',3.5','arb')
 %% Optical Lattice
 
 % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
-seqdata.flags.lattice                       = 0; 
+seqdata.flags.lattice                       = 1; 
 seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate
 defVar('lattice_depth_load',2.5,'Er');
 defVar('lattice_pin_depth',60,'Er');
@@ -285,7 +285,7 @@ seqdata.flags.do_lattice_am_spec            = 0;    % Amplitude modulation spect
 seqdata.flags.lattice_rotate_waveplate_2    = 1;    % Second waveplate rotation 95% 
 seqdata.flags.lattice_lattice_ramp_2        = 0;    % Secondary lattice ramp for fluorescence imaging
 seqdata.flags.lattice_lattice_ramp_3        = 1;    % Secondary lattice ramp for fluorescence imaging
-seqdata.flags.lattice_pin                   = 0;
+seqdata.flags.lattice_pin                   = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -298,7 +298,7 @@ seqdata.flags.lattice_hold_at_end           = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % These flags are associated with the conducitivity experiment
 seqdata.flags.lattice_conductivity          = 0;    % old sequence
-seqdata.flags.lattice_conductivity_new      = 1;   % New sequence created July 25th, 2023
+seqdata.flags.lattice_conductivity_new      = 0;   % New sequence created July 25th, 2023
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy
@@ -309,7 +309,7 @@ seqdata.flags.lattice_uWave_spec            = 0;
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 seqdata.flags.lattice_do_optical_pumping    = 1;    % (1426) keep : optical pumping in lattice  
-seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
+seqdata.flags.do_plane_selection            = 0;    % Plane selection flag
 
 % Actual fluorsence image flags - NO LONGER USED
 seqdata.flags.Raman_transfers               = 0;
@@ -372,7 +372,7 @@ getVar('scope_pos');
 % seqdata.scope_trigger = 'rf_spectroscopy';
 % seqdata.scope_trigger = 'Lattice_Mod';
 % seqdata.scope_trigger = 'FB_ramp';
-% seqdata.scope_trigger = 'lattice_ramp_1';
+seqdata.scope_trigger = 'lattice_ramp_1';
 % seqdata.scope_trigger = 'pulse lattice';
 % seqdata.scope_trigger = 'Raman Beams On';
 % seqdata.scope_trigger = 'PA_Pulse';
@@ -380,11 +380,12 @@ getVar('scope_pos');
 % seqdata.scope_trigger = 'lattice_off';
 % seqdata.scope_trigger = 'Camera triggers';
 % seqdata.scope_trigger = 'Start Transport';
-seqdata.scope_trigger = 'TOF';
+% seqdata.scope_trigger = 'TOF';
 % seqdata.scope_trigger = 'Optical pumping';
 % seqdata.scope_trigger = 'MOT Trigger';
 % seqdata.scope_trigger = 'CMOT';
 % seqdata.scope_trigger = 'Molasses';
+% seqdata.scope_trigger = 'Plug';
 
 
 %% end time

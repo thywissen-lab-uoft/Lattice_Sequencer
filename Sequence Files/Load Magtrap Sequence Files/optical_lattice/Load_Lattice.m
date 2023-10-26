@@ -456,6 +456,57 @@ if (seqdata.flags.lattice_pin)
     % Wait a moment for PID to settle (just in case);
     curtime = calctime(curtime,2);    
 end
+%% Ramp FB back down to 20 G after pinning if high field ramps done in XDT
+if seqdata.flags.xdt_high_field_a 
+    %Wait  after pinning
+    curtime = calctime(curtime,50); 
+    
+    ramptime_all_list = 150;
+    ramptime_all = getScanParameter(ramptime_all_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'conductivity_field_down_ramptime','ms');        
+
+    % Define the ramp structure
+    ramp=struct;
+    ramp.shim_ramptime = ramptime_all;
+    ramp.shim_ramp_delay = 0; % ramp earlier than FB field if needed
+    ramp.xshim_final = seqdata.params.shim_zero(1); 
+    ramp.yshim_final = seqdata.params.shim_zero(2);
+    ramp.zshim_final = seqdata.params.shim_zero(3);
+    % FB coil 
+    ramp.fesh_ramptime = ramptime_all;
+    ramp.fesh_ramp_delay = 0;
+    ramp.fesh_final = 20; %22.6
+    ramp.settling_time = 50;  
+
+    if seqdata.flags.xdt_hf_ramp_QP_and_FB || seqdata.flags.xdt_hf_ramp_QP_gradient_cancel
+
+        QP_ramptime = ramptime_all;
+
+%             AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+%                  @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),QP_ramptime,QP_ramptime,0,1);
+
+        % Ramp Coil 15, but don't update curtime
+        AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),QP_ramptime,QP_ramptime,0,5);  
+
+        % Go back to "normal" configuration
+        % Turn off reverse QP switch
+        AnalogFuncTo(calctime(curtime,QP_ramptime),'Coil 15',...
+            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),10,10,0,1);  
+        AnalogFuncTo(calctime(curtime,QP_ramptime),'Transport FF',...
+                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),10,10,0);
+
+        setDigitalChannel(calctime(curtime,QP_ramptime+15),'Reverse QP Switch',0);
+
+        % Turn on 15/16 switch
+        setDigitalChannel(calctime(curtime,QP_ramptime+20),'15/16 Switch',1); %CHANGE THIS TO 15/16 GS VOLTAGE
+        setAnalogChannel(calctime(curtime,QP_ramptime+20),'15/16 GS',5.5); 
+    end
+               
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+        ScopeTriggerPulse(curtime,'FB_ramp');
+    
+end
 
 %% Optical Pumping
 % Optical pumping

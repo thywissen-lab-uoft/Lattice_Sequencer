@@ -434,8 +434,7 @@ if (seqdata.flags.lattice_conductivity_new == 1)
 end
 
 %% Pin Lattice
-% Currently unused
-
+%Do not use if lattice_conductivity_new is also pinning
 if (seqdata.flags.lattice_pin)
     dispLineStr('Pinning optical lattice',curtime);
     U_pin = getVar('lattice_pin_depth');
@@ -457,7 +456,7 @@ if (seqdata.flags.lattice_pin)
     curtime = calctime(curtime,2);    
 end
 %% Ramp FB back down to 20 G after pinning if high field ramps done in XDT
-if seqdata.flags.xdt_high_field_a 
+if seqdata.flags.xdt_high_field_a && ~seqdata.flags.High_Field_Imaging
     %Wait  after pinning
     curtime = calctime(curtime,50); 
     
@@ -1035,10 +1034,139 @@ if seqdata.flags.lattice_fluor
         %   seqdata.params.IxonTriggerTypes{end+1}='clear'
 
     end
+    
+    dispLineStr('Fluorescence image',curtime);  
     curtime = lattice_FL(curtime);
 end
 
+%% Stripe imaging
+% Do a stripe selection after imaging, and take an extra FL image - note
+% lattice depth is high the whole time
 
+if seqdata.flags.lattice_img_stripe
+    curtime = calctime(curtime,50);
+    
+    dT = 10;
+    %%%%%%%%%% Ramp Back to Pinning Depth %%%%%%%
+    
+    AnalogFuncTo(calctime(curtime,0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, 60); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, 60);
+    AnalogFuncTo(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, 60);        
+    % Wait for ramp to occur
+    curtime = calctime(curtime,dT);    
+    % Wait for ramp to settle
+    curtime = calctime(curtime,5);   
+    
+    %%%%%%% Optical pump after first image %%%%%%%%%
+    
+        % OP pulse length
+    op_time_list = [3];%3
+    optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle,...
+        seqdata.randcyclelist, 'latt_op_time','ms');
+    
+    % OP repump power
+    repump_power_list = [1];
+    repump_power =getScanParameter(repump_power_list, seqdata.scancycle,...
+        seqdata.randcyclelist, 'latt_op_repump_pwr');    
+    
+    % OP power
+    D1op_pwr_list = [1]; %min: 0, max:1 
+    D1op_pwr = getScanParameter(D1op_pwr_list, seqdata.scancycle,...
+        seqdata.randcyclelist, 'latt_D1op_pwr'); 
+    
+    % Close EIT Probe Shutter
+    setDigitalChannel(calctime(curtime,-20),'EIT Shutter',0);
+    
+    % Break the thermal stabilzation of AOMs by turning them off
+    setDigitalChannel(calctime(curtime,-10),'EIT Probe TTL',0);
+    setAnalogChannel(calctime(curtime,-10),'F Pump',-1);
+    setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
+    setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);    
+    setAnalogChannel(calctime(curtime,-10),'D1 OP AM',1); 
+
+    
+    % Open D1 shutter (FPUMP + OPT PUMP)
+    setDigitalChannel(calctime(curtime,-8),'D1 Shutter', 1);%1: turn on laser; 0: turn off laser
+        
+    % Open optical pumping AOMS (allow light) and regulate F-pump
+    setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
+    setAnalogChannel(calctime(curtime,0),'F Pump',repump_power);
+    setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
+    setDigitalChannel(calctime(curtime,0),'D1 OP TTL',1);   %1:on 
+    
+    %Optical pumping time
+curtime = calctime(curtime,optical_pump_time);
+    
+    % Turn off OP before F-pump so atoms repumped back to -9/2.
+    setDigitalChannel(calctime(curtime,0),'D1 OP TTL',0);
+
+    op_repump_extra_time_list = [3]; %additional time for which repump beams are on
+    % Close optical pumping AOMS (no light)
+    op_repump_extra_time = getScanParameter(op_repump_extra_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'lattice_OP_extra_repump_time','ms');    
+    
+    setDigitalChannel(calctime(curtime,op_repump_extra_time),'F Pump TTL',1);%1
+    setAnalogChannel(calctime(curtime,op_repump_extra_time),'F Pump',-1);%1
+    setDigitalChannel(calctime(curtime,op_repump_extra_time),'FPump Direct',1);
+    
+    % Close D1 shutter shutter
+    setDigitalChannel(calctime(curtime,5),'D1 Shutter', 0);%2
+    
+    %After optical pumping, turn on all AOMs for thermal stabilzation
+    
+    setDigitalChannel(calctime(curtime,10),'EIT Probe TTL',1);
+    setDigitalChannel(calctime(curtime,10),'F Pump TTL',0);
+%     setAnalogChannel(calctime(curtime,10),'D1 OP AM',10); 
+
+curtime =  setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);    
+
+curtime = calctime(curtime,50);    
+    
+    %%%%%%%%%%%% Do an additional plane selection with a tilt %%%%%%%%%%
+    stripe_opts = struct;
+    
+    stripe_opts.dotilt = 1;
+    
+    %default settings for single plane selection
+    stripe_opts.ramp_fields = 1; 
+    stripe_opts.fake_the_plane_selection_sweep = 0; 
+    stripe_opts.planeselect_doVertKill = 1;    
+    stripe_opts.planeselect_doMicrowaveBack = 0;   
+    stripe_opts.planeselect_doFinalRepumpPulse = 0;
+    stripe_opts.planeselect_again = 0;
+    stripe_opts.doProgram = 0;
+    dispLineStr('Additional stripe plane selection',curtime);      
+    curtime = plane_selection(curtime,stripe_opts);
+    
+    curtime = calctime(curtime,100);
+    
+    %%%%%%%%%%%% Ramp Back to Imaging Depth %%%%%%%%%%%%%
+    AnalogFuncTo(calctime(curtime,0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Ux); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Uy);
+    AnalogFuncTo(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Uz);   
+    
+    % Wait for ramp
+    curtime= calctime(curtime,dT);
+    curtime = calctime(curtime,5);
+    
+    
+    %%%%%%%% take an additional image of the selected stripe %%%%%%%%%%%
+    fluor_opts = struct;
+    
+    defVar('stripe_img_time',[1000],'ms');
+    
+    fluor_opts.PulseTime = getVar('stripe_img_time');
+    
+    dispLineStr('Stripe fluorescence image',curtime);
+    curtime = lattice_FL(curtime,fluor_opts);
+    
+end
 %% Fluorescence Imaging (Legacy code)
 
 

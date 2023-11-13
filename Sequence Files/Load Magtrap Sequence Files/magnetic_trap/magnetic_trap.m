@@ -16,7 +16,7 @@ if seqdata.flags.mt_compress_after_transport
 else    
     I_QP =    33;
     I_kitt =    4.0200;
-    V_QP =   24.8050;
+    V_QP =   getVar('RF1a_FF_V');24.8050;
     I_fesh =     0;    
 end
 

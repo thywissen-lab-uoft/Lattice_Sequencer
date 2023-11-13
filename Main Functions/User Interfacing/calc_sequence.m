@@ -24,6 +24,8 @@ disp('DDS...');
         t(2) = udp('192.168.1.156', 37829, 'LocalPort', 4630); % 4 Pass         
         t(3) = udp('192.168.1.157', 37829, 'LocalPort', 4631); % Rb Trap Offset Lock
         
+%                 t(4) = udp('192.168.1.154', 37829, 'LocalPort', 4628); % K Trap DDS Test
+
         % Set size of receiving buffer, if needed. 
         for i = 1:3 
             set(t(i), 'InputBufferSize', 30000);

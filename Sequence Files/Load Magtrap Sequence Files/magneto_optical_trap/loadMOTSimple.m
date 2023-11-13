@@ -30,7 +30,7 @@ addOutputParam('Rb_Repump_MOT_detuning',-156.947/2+80.5,'MHz');
 % K Trap Detuning
 K_Trap_MOT_detuning_list = 22;
 K_Trap_MOT_detuning = getScanParameter(K_Trap_MOT_detuning_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'K_Repump_MOT_detuning');        
+    seqdata.scancycle,seqdata.randcyclelist,'K_Trap_MOT_detuning');        
 
 % K Repump Detuning
 K_Repump_MOT_detuning_list = 0;

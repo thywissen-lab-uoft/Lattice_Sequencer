@@ -5916,19 +5916,26 @@ end
 % setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.4);
 % setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); 
 
-setDigitalChannel(calctime(curtime,0),'K Probe/OP Shutter',0); % Open K Shtter with pre-trigger
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP Shutter',0); % Open K Shtter with pre-trigger
 %Now at k_op_offset time because there is no TTL (turns on pulse). 
-setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.4);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.4);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
 % CF : Why do the probe beams have a pre-trigger?; Seems odd to turn on
 % beams with the amplitude modulation call
-setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',0); 
-
-setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP Shutter',0); % Open shutter
-    setAnalogChannel(calctime(curtime,-5),'Rb Probe/OP AM',1); % Set 
-    setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',1); % inverted logic
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',0); 
+% 
+% setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP Shutter',0); % Open shutter
+%     setAnalogChannel(calctime(curtime,-5),'Rb Probe/OP AM',1); % Set 
+%     setDigitalChannel(calctime(curtime,-10),'Rb Probe/OP TTL',1); % inverted logic
     
-setDigitalChannel(calctime(curtime,0),'K Repump TTL',0); 
+% setDigitalChannel(calctime(curtime,0),'K Repump TTL',0);
+% setDigitalChannel(calctime(curtime,0),'K High Field Probe',0);
 %     
+
+setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);
+setAnalogChannel(calctime(curtime,0),'X Shim',0,1);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
+setAnalogChannel(calctime(curtime,0),'Y Shim',0,1);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
+setAnalogChannel(calctime(curtime,0),'Z Shim',0,3);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
+
 timeout = curtime;
 % SelectScopeTrigger('PA_Pulse');
 

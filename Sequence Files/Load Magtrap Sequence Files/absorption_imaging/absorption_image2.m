@@ -193,9 +193,19 @@ if (~flags.High_Field_Imaging)
         params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
         'K Probe/OP FM',190.0); %202.5 for 2G shim
     %SET trap AOM detuning to change probe
-    setAnalogChannel(calctime(curtime,params.timings.tof - ...
-        params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
-        'K Trap FM',k_OP_detuning); %40 for 2G shim
+%     setAnalogChannel(calctime(curtime,params.timings.tof -  ...
+%         params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
+%         'K Trap FM',k_OP_detuning); %40 for 2G shim
+    % 2023/11/02 : New addiing a ramp time to allow the injection lock to
+    % be happy
+    AnalogFuncTo(calctime(curtime,params.timings.tof - ...
+        params.timings.k_detuning_shift_time - params.timings.K_OP_time - 50),...
+        'K Trap FM',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),50,50,k_OP_detuning);
+    
+
+    
+%     dispLineStr('oppuping',calctime(curtime,params.timings.tof - ...
+%         params.timings.k_detuning_shift_time - params.timings.K_OP_time));
     %Set AM for Optical Pumping
     setAnalogChannel(calctime(curtime,params.timings.tof - ...
         params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
@@ -725,7 +735,7 @@ switch flags.image_atomtype
                                 sweep_time = rf_tof_pulse_length;
 
                                 rf_srs_opts = struct;
-                                rf_srs_opts.Address=30;                       
+                                rf_srs_opts.Address=29;                       
                                 rf_srs_opts.EnableBNC=1;                         % Enable SRS output 
                                 rf_srs_opts.PowerBNC = rf_tof_srs_power;                           
                                 rf_srs_opts.Frequency = rf_tof_freq;     
@@ -741,8 +751,11 @@ switch flags.image_atomtype
                                 % Set RF Source to SRS
                                 setDigitalChannel(calctime(curtime,-5),'RF Source',1);
                                 
+                                % Set RF Source to SRS 29
+                                setDigitalChannel(calctime(curtime,-5),'SRS Source post spec',1);
+                                
                                 % Set RF Source to SRS
-                                setDigitalChannel(calctime(curtime,-5),'SRS Source',1);                                
+                                setDigitalChannel(calctime(curtime,-5),'SRS Source',0);                                
 
                                 % Set SRS Direction to RF
                                 setDigitalChannel(calctime(curtime,-5),'K uWave Source',0);

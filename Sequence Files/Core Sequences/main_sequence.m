@@ -219,6 +219,13 @@ if seqdata.flags.MOT_prepare_for_MT
         setAnalogChannel(calctime(curtime,10),'K Repump AM',0.45);
 
         setAnalogChannel(calctime(curtime,10),'Rb Repump AM',0.9);
+        
+        % Set Double pass detuning back as well
+        % K Trap Detuning
+        setAnalogChannel(calctime(curtime,10),'K Trap FM',22);            
+        % K Repump Detuning
+        setAnalogChannel(calctime(curtime,10),'K Repump FM',0,2);
+      setAnalogChannel(calctime(curtime,10),'K Probe/OP FM',180);
     end
 end
 

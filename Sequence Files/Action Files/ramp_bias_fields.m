@@ -144,7 +144,10 @@ curtime = timein;
     if isfield(p,'QP_final')
 
             p.QP_FF = 23*(p.QP_final/30); % voltage FF on delta supply
-            
+            %Check for plane selection feed forward value
+            if isfield(p,'QP_FF_override')
+                p.QP_FF = p.QP_FF_override;
+            end
             if strcmp(p.QP_ramp_type,'Linear')
                 % Ramp up transport supply voltage
                 AnalogFuncTo(calctime(curtime,p.QP_FF_ramp_delay),18,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),p.QP_FF_ramptime,p.QP_FF_ramptime,p.QP_FF);

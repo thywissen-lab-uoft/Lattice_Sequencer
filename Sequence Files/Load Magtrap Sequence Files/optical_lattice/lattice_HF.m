@@ -17,7 +17,7 @@ curtime = timein;
     zshim = 0;
     
     % Get the calibrated magnetic field
-    Boff = 0.11;
+    Boff = 0.1238;
     B = HF_FeshValue_Initial+ Boff+ 2.35*zshim;       
   
     %% Flags
@@ -42,7 +42,7 @@ curtime = timein;
     spin_flip_7_5_wide                = 0;
     
     % Field and Lattice Ramp
-    field_ramp_2                      = 1;       % ramp field after raman before rf spectroscopy   
+    field_ramp_2                      = 0;       % ramp field after raman before rf spectroscopy   
     lattice_ramp_3                    = 0;       % between raman and rf spectroscopy
     
     % More RF Stuff (?)
@@ -54,8 +54,8 @@ curtime = timein;
     do_raman_spectroscopy_post_rf     = 0;        % Raman Spectroscopy
     
     % Feshbach field ramps
-    ramp_field_for_imaging_attractive = 0;       % Ramp field for imaging on attractive side
-    ramp_field_for_imaging_repulsive  = 1;       % Ramp field for imaging on repulsive side
+    ramp_field_for_imaging_attractive = 1;       % Ramp field for imaging on attractive side
+    ramp_field_for_imaging_repulsive  = 0;       % Ramp field for imaging on repulsive side
     
     % Other RF Manipulations
     shift_reg_at_HF                   = 0;
@@ -242,7 +242,7 @@ curtime = calctime(curtime, Raman_on_time+(raman_buffer_time)*2);
 
     if rf_97_flip_init
         clear('sweep');
-        Boff = 0.11;
+        Boff = 0.1238;
         B = HF_FeshValue_Initial+ Boff+ 2.35*zshim;
         rf_list =  [0.00] +...
             (BreitRabiK(B,9/2,-7/2) - BreitRabiK(B,9/2,-9/2))/6.6260755e-34/1E6;
@@ -1607,6 +1607,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
 
         % Turn on 15/16 switch
         setDigitalChannel(curtime,'15/16 Switch',1);
+        setAnalogChannel(curtime,'15/16 GS',5.5);
 
     seqdata.params.HF_probe_fb = HF_FeshValue_Final;    
     

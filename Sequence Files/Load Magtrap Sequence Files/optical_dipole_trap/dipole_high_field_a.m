@@ -88,7 +88,7 @@ ramp_field_2                                = 0;   % Ramp above feshbach (attrac
 flip_7_5_again                              = 0;   % 5 to 7 for science mixture
 rampToLowField2                             = 0;
 
-seqdata.flags.xdt_hf_ramp_field_3           = 1;    % Ramp field 
+seqdata.flags.xdt_hf_ramp_field_3           = 0;    % Ramp field 
 seqdata.flags.xdt_hf_79_spec2               = 0;    % 79 Spec
 seqdata.flags.xdt_hf_PA                     = 0;    % PA pulse
 

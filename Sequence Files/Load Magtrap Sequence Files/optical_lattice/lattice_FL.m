@@ -11,7 +11,7 @@ global seqdata
     % Laser Beams
     fluor.EnableFPump           = 1;        % Use FPUMP beam DOESNT WORK ZIF LOW???
     fluor.EnableEITProbe        = 1;        % Use EIT Probe beams
-    fluor.EnableRaman           = 0;        % Use Raman Beams
+    fluor.EnableRaman           = 1;        % Use Raman Beams
     
     % Sets the total time of radiation (optical or otherwise)
         pulse_list = [2000]; % 
@@ -46,7 +46,6 @@ global seqdata
    
     % Calculate Xposures
     fluor.DwellTime            = 600; % Wait Time beween shots for readout
-    fluor.IxonExposureTime     = (fluor.PulseTime-(fluor.NumberOfImages-1)*fluor.DwellTime)/fluor.NumberOfImages;  
 
   
 
@@ -71,7 +70,8 @@ if nargin == 2
     end
 end    
     
-    
+        fluor.IxonExposureTime     = (fluor.PulseTime-(fluor.NumberOfImages-1)*fluor.DwellTime)/fluor.NumberOfImages;  
+
 %% Edge cases
 % In case you run from here
 if nargin==0 || curtime == 0
@@ -89,7 +89,7 @@ end
 % you are imaging along the FPUMP axis
     
     B0 = 4;         % Quantization Field
-    B0_shift_list = [0.14];0.21;[0.15];[0.19];[0.21];[.17];
+    B0_shift_list = [0.21];0.2;[0.15];[0.19];[0.21];[.17];
     
     % Quantization Field 
     B0_shift = getScanParameter(...
@@ -197,22 +197,22 @@ raman_rel_pow_list = 0.5;[0.5];
     Raman1_ShiftFreq_List = [-100];[-80];        % kHz
         V20 = 1.36;   
 
-    r1 = linspace(0,1,10);
-    r2 = linspace(0,1,10);
-    [R1,R2]=meshgrid(r1,r2);
-    
-    R1 = V10*R1(:);
-    R2 = V20*R2(:);
-    
-    Raman1_Power = getScanParameter(R1,...
-        seqdata.scancycle,seqdata.randcyclelist,'Raman1_Power','V'); 
-        Raman2_Power = getScanParameter(R2,...
-        seqdata.scancycle,seqdata.randcyclelist,'Raman2_Power','V'); 
+%     r1 = linspace(0,1,10);
+%     r2 = linspace(0,1,10);
+%     [R1,R2]=meshgrid(r1,r2);
+%     
+%     R1 = V10*R1(:);
+%     R2 = V20*R2(:);
+%     
+%     Raman1_Power = getScanParameter(R1,...
+%         seqdata.scancycle,seqdata.randcyclelist,'Raman1_Power','V'); 
+%         Raman2_Power = getScanParameter(R2,...
+%         seqdata.scancycle,seqdata.randcyclelist,'Raman2_Power','V'); 
 
     Raman1_Freq_Shift = getScanParameter(Raman1_ShiftFreq_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman1_Freq_Shift','kHz');       
-%     Raman1_Power = getScanParameter(Raman1_Power_List,...
-%         seqdata.scancycle,seqdata.randcyclelist,'Raman1_Power','V'); 
+    Raman1_Power = getScanParameter(Raman1_Power_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'Raman1_Power','V'); 
     
     fluor.Raman1_EnableSweep = 0;
     fluor.Raman1_Power = Raman1_Power;
@@ -224,8 +224,8 @@ raman_rel_pow_list = 0.5;[0.5];
     
     Raman2_Freq_Shift = getScanParameter(Raman2_ShiftFreq_List,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman2_Freq_Shift','kHz');       
-%     Raman2_Power = getScanParameter(Raman2_Power_List,...
-%         seqdata.scancycle,seqdata.randcyclelist,'Raman2_Power','V'); 
+    Raman2_Power = getScanParameter(Raman2_Power_List,...
+        seqdata.scancycle,seqdata.randcyclelist,'Raman2_Power','V'); 
     
     fluor.Raman2_EnableSweep = 0;
     fluor.Raman2_Power = Raman2_Power;

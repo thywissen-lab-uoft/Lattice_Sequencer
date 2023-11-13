@@ -1,13 +1,13 @@
-function [curtime] = plane_selection(timein,opts)
+function [curtime] = plane_selection(timein,override)
 
  
  if nargin == 0
      timein = 10;
  end
  
-if nargin == 1
-    opts = struct;
-end
+
+opts = struct;
+
  
 
 global seqdata
@@ -16,7 +16,10 @@ global seqdata
 
 % Establish field gradeint with QP, FB, and shim fields for plane selection
 opts.ramp_fields = 1; 
+
+
 opts.dotilt     = 0; %tilt for stripe pattern
+
 
 % Do you want to fake the plane selection sweep?
 %0=No, 1=Yes, no plane selection but remove all atoms.
@@ -44,6 +47,17 @@ opts.SelectModeBack = 'SweepFreqHS1';       %Sweep SRS HS1 frequency backwards
 
 % Enanble/Disable the ACSynce
 opts.use_ACSync = 1;
+
+opts.doProgram = 1;
+
+
+if nargin == 2
+    fnames = fieldnames(override);
+    for kk=1:length(fnames)
+        opts.(fnames{kk}) = override.(fnames{kk});
+    end
+end    
+
 
 %% Prepare Switches for uWave Radiation
 
@@ -167,8 +181,12 @@ if opts.ramp_fields
         seqdata.randcyclelist,'qgm_plane_FB_shift','G');    
     Bfb = B0 - fb_shift;
     
+    
+    defVar('IQP_PS_shift', 0, 'A');
+    IQP_PS_shift = getVar('IQP_PS_shift');
+    
     % QP Field (in Amps)
-    IQP = 14*1.78; % 210 G/cm (not sure if calibrated)
+    IQP = 14*1.78 + IQP_PS_shift; % 210 G/cm (not sure if calibrated)
     
     % Shim Fields (in Amps)
     xshimdlist  = - 2.8050;
@@ -189,11 +207,16 @@ if opts.ramp_fields
     cz = 2.35;
     
     if opts.dotilt        
-        Breal     = 125.99; % actual field in gauss
+%         Breal     = 126.28; % actual field in gauss
         xshimtilt = 5;
         yshimtilt = -2.7;        
-        zshimtilt = -0.5*((cxy*xshimtilt)^2 + (cxy*yshimtilt)^2)/(Breal*cz);
-        zshimtilt = 0;
+%         zshimtilt = -0.5*((cxy*xshimtilt)^2 + (cxy*yshimtilt)^2)/(Breal*cz);
+        
+%         zshimtilt = 0;
+        
+        defVar('qgm_plane_tilt_dIz',[-0.206],'A');-0.215;
+        zshimtilt=getVar('qgm_plane_tilt_dIz');
+
     else
         xshimtilt = 0;
         yshimtilt = 0;
@@ -219,7 +242,8 @@ if opts.ramp_fields
     ramp.QP_ramptime        = 100;
     ramp.QP_ramp_delay      = 0;
     ramp.settling_time      = 300; %200   
-  
+    ramp.QP_FF_override           = 18;
+    
     % Extra Labeling
     addOutputParam('qgm_plane_Bfb',Bfb,'G');
     addOutputParam('qgm_plane_IQP',IQP,'A');
@@ -245,14 +269,19 @@ switch opts.SelectMode
         % freq_list=interp1([-3 0 3],[-200 -400 -500],xshimd);
 
         % Define the SRS frequency
-        if opts.dotilt
-            freq_offset_list = 1050 + [1600];
-        else
-            freq_offset_list = [1225];1750;1050+600;520;
-        end
+%         if opts.dotilt
+%             freq_offset_list = 1050 + [1600];
+%         else
+            freq_offset_list = [1545];
+%         end
         
-        %freq_amp_list = [30]; % 30 kHz is about 2 planes
-          freq_amp_list = [12]; % 12 kHz is about 1 plane       
+%         freq_amp_list = [30]; % 30 kHz is about 2 planes
+          freq_amp_list = [7]; % 12 kHz is about 1 plane   
+          
+        if opts.dotilt
+            freq_amp_list = [7]; % 12 kHz is about 1 plane       
+        end
+
         sweep_time_list = 2*freq_amp_list/10; % CF has no idea when this was calibrated
 
         defVar('qgm_plane_uwave_frequency_offset',freq_offset_list,'kHz');
@@ -260,6 +289,7 @@ switch opts.SelectMode
         defVar('qmg_plane_uwave_time',sweep_time_list,'ms')
         
         freq_offset = getVar('qgm_plane_uwave_frequency_offset');
+%         freq_offset = getVarOrdered('qgm_plane_uwave_frequency_offset');
         freq_amp = getVar('qgm_plane_uwave_amplitude');
         sweep_time = getVar('qmg_plane_uwave_time');        
         uWave_delta_freq = freq_amp*1e-3;        
@@ -328,7 +358,9 @@ switch opts.SelectMode
             setDigitalChannel(calctime(curtime,30),'ACync Master',0);
         end
 
-        programSRS(uWave_opts);                     % Program the SRS        
+        if opts.doProgram
+            programSRS(uWave_opts);                     % Program the SRS        
+        end
         curtime = calctime(curtime,30);             % Additional wait
 
     case 'SweepFieldLegacy'

@@ -53,7 +53,7 @@ seqdata.flags.misc_program4pass             = 1; % Update four-pass frequency
 seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
 seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[2.3],'V');2.25;1.5;1.7;2.06;
+defVar('objective_piezo',[2.4],'V');2.25;1.5;1.7;2.06;
 % 0.1V = 700 nm, larger means further away from chamber
 % 1 V= 7 um
 % 10 V = 70 um
@@ -148,7 +148,7 @@ seqdata.flags.High_Field_Imaging            = 0; % High field imaging (shouldn't
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[.1],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[10],'ms');
@@ -209,7 +209,7 @@ defVar('RF1B_finalfreq',[4],'MHz');[1];[0.8];        % RF1B Ending Frequency %th
 seqdata.flags.mt_ramp_down_end              = 0;
 seqdata.flags.mt_lifetime                   = 0;
 defVar('mt_ramp_grad_time',100,'ms');
-defVar('mt_ramp_grad_value',[10],'A');
+defVar('mt_ramp_grad_value',[16:4:32],'A');
 defVar('mt_hold_time',[0:500:10000]);
 
 %% Optical Dipole Trap
@@ -248,27 +248,27 @@ seqdata.flags.xdt_evap2_HF                  = 0;    % Perform K evap at high fie
 seqdata.flags.xdt_high_field_a              = 0;
 
 
-seqdata.flags.xdt_ramp_power_end            = 0;    % Ramp dipole back up after evaporation before any further physics 
+seqdata.flags.xdt_ramp_power_end            = 1;    % Ramp dipole back up after evaporation before any further physics 
 
 
 defVar('xdt_load_power',1.0,'W');
 defVar('xdt_sympathetic_power',0.800,'W');
 
 % Stage 1 Evaporation (K+Rb)
-defVar('xdt_evap1_power',0.12,'W');0.08;0.078;
+defVar('xdt_evap1_power',0.12,'W');0.085;0.08;0.078;
 defVar('xdt_evap1_time',25e3,'ms');
 defVar('xdt_evap1_tau_fraction',3.5,'arb');
 
 % Stage 2 Evaporation (K+K)
-defVar('xdt_evap2_power',0.080,'W');
+defVar('xdt_evap2_power',0.100,'W');
 defVar('xdt_evap2_time',10e3,'ms');
 defVar('xdt_evap2_tau_fraction',3.5','arb')
 %% Optical Lattice
 
 % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
-seqdata.flags.lattice                       = 0; 
+seqdata.flags.lattice                       = 1; 
 seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate
-defVar('lattice_depth_load',2.5,'Er');
+defVar('lattice_depth_load',2,'Er');
 defVar('lattice_pin_depth',60,'Er');
 defVar('lattice_pin_time', 0.2, 'ms');
 
@@ -324,7 +324,8 @@ seqdata.flags.Raman_transfers               = 0;
 % New Standard Fluoresnce Image Flags
 seqdata.flags.lattice_ClearCCD_IxonTrigger  = 1;    % Add additional trigger to clear CCD
 seqdata.flags.lattice_fluor                 = 1;    % Do Fluoresnce imaging
-seqdata.flags.lattice_fluor_bkgd            = 0;    % 
+seqdata.flags.lattice_fluor_bkgd            = 1;    % Take a background image with imaging light on, no atoms
+                                                    % MUST SET NUMKIN +1
 
 seqdata.flags.lattice_img_stripe            = 0;    % Plane select with tilt and take an additional imag of the stripe
 
@@ -353,8 +354,8 @@ seqdata.flags.lattice_pulse_z_for_alignment = 0;
 defVar('conductivity_snap_and_hold_time',[[0:2:50] 55:5:120],'ms');  
 defVar('conductivity_FB_field',209,'G')
 defVar('conductivity_zshim',0,'A')
-defVar('conductivity_mod_freq',[70],'Hz')       % Modulation Frequency
-defVar('conductivity_mod_time',[50],'ms');      % Modulation Time
+defVar('conductivity_mod_freq',[50],'Hz')       % Modulation Frequency
+defVar('conductivity_mod_time',[50:2.5:110],'ms');      % Modulation Time
 defVar('conductivity_mod_ramp_time',150,'ms');  % Ramp Time
 defVar('conductivity_rel_mod_phase',0,'deg');   % Phase shift of sinusoidal mod - should be 180 for mod along y
     

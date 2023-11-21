@@ -92,7 +92,7 @@ AnalogFunc(calctime(curtime,0),'Transport FF',...
 curtime = calctime(curtime,t_h2v);
 
 %% Transport to 153 mm
-dispLineStr('Transport to Crossover region',curtime);
+dispLineStr('Transport from 12 center to Crossover region at 153 mm',curtime);
 defVar('transport_stage1_time',[1000],'ms')
 t_init2cross = getVar('transport_stage1_time');
 z_init = 0;

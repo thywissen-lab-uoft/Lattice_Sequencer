@@ -602,12 +602,16 @@ end
 
 if seqdata.flags.lattice
     
-    if (isfield(seqdata.flags.lattice,'lattice_fluor') && ...
-            isfield(seqdata.flags.lattice,'lattice_fluor_bkgd') && ...
-            seqdata.flags.lattice.lattice_fluor && ...
-            seqdata.flags.lattice.lattice_fluor_bkgd)
-        disp('Running the fluorence imaging code again to take background light');    
-        curtime = lattice_FL(curtime);  
+    if (isfield(seqdata.flags,'lattice_fluor') && ...
+            isfield(seqdata.flags,'lattice_fluor_bkgd') && ...
+            seqdata.flags.lattice_fluor && ...
+            seqdata.flags.lattice_fluor_bkgd)
+        disp('Running the fluorence imaging code again to take background light');
+        
+        fluor_opts.doInitialFieldRamp = 0;
+        fluor_opts.doInitialFieldRamp2 = 0;
+%         curtime = calctime(curtime,500);
+        curtime = lattice_FL(curtime, fluor_opts);  
     end
 end
 

@@ -343,6 +343,8 @@ end
 % - Checking for adiabaticity of gradient ramps
 
 if seqdata.flags.mt_ramp_down_end 
+        dispLineStr('Ramp down gradient',curtime);    
+
     tr1 = getVar('mt_ramp_grad_time');
     i1 = getVar('mt_ramp_grad_value');
     
@@ -367,7 +369,13 @@ if seqdata.flags.mt_ramp_down_end
     AnalogFuncTo(calctime(curtime,0),'Coil 16',...
         @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2),...
         tr1,tr1,i1);  
-    % Ramp the XYZ shims
+    
+    V_QP = i1 * 23/30;        
+    AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+        @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2),...
+        tr1,tr1,V_QP);  
+    
+% %     % Ramp the XYZ shims
     AnalogFunc(calctime(curtime,0),'X Shim',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
         tr1,tr1,I_s(1),I_s(1)+dIx,3); 
@@ -377,6 +385,14 @@ if seqdata.flags.mt_ramp_down_end
     AnalogFunc(calctime(curtime,0),'Z Shim',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
         tr1,tr1,I_s(3),I_s(3)+dIz,3);  
+
+    % To center the QP at the geometric center of the QP coils
+%     AnalogFunc(calctime(curtime,0),'Z Shim',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+%         tr1,tr1,I_s(3),I_s(3) - .42,3);  
+%     AnalogFunc(calctime(curtime,0),'X Shim',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+%         tr1,tr1,I_s(1),I_s(1)+1.4,3); 
     curtime = calctime(curtime,tr1);    
        
     I_QP = getChannelValue(seqdata,'Coil 16',1);    
@@ -385,6 +401,9 @@ if seqdata.flags.mt_ramp_down_end
     I_s(2) = getChannelValue(seqdata,'Y Shim',1);
     I_s(3) = getChannelValue(seqdata,'Z Shim',1);
     I_shim = I_s;
+    
+    setDigitalChannel(calctime(curtime,0),'Plug Shutter',0);% 0:OFF; 1: ON
+    curtime = calctime(curtime,30);
 end
 
 

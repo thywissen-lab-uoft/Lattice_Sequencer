@@ -19,17 +19,17 @@ function J=job_conducivity_ac_shake
     function curtime = bob2(curtime,var)
         global seqdata;
         
-        field = 170;
-        defVar('conductivity_FB_field',field,'G');
+%         field = 170;
+%         defVar('conductivity_FB_field',field,'G');
        
         freq = var;
         defVar('conductivity_mod_freq',freq,'Hz');  
         
-        defVar('Evap_End_Power',0.075,'W');
+%         defVar('Evap_End_Power',0.075,'W');
         
         t0 = 50;
         T = 1e3/freq;
-        tvec = round(t0 + linspace(0,2*T,20),1);
+        tvec = round(t0 + linspace(0,3*T,25),1);
         defVar('conductivity_mod_time',tvec,'ms');      % Modulation Time
     end
 
@@ -67,9 +67,9 @@ for ii = 1:length(var_list)
 %     if B>=200.5
 %         npt.ScanCyclesRequested = 1:41;
 %     else
-        npt.ScanCyclesRequested = 1:20;
+        npt.ScanCyclesRequested = 1:25;
 %     end
-    npt.JobName             = [num2str(ii) ' 2.5Er Modulate ' num2str(x)];
+    npt.JobName             = [num2str(ii) ' 2.0Er Modulate ' num2str(x)];
     npt.SaveDirName         = npt.JobName;    
     J(ii) = sequencer_job(npt);
 end

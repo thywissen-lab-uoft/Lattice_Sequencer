@@ -51,7 +51,7 @@ global seqdata
 
     % Mangetic Field
     fluor.doInitialFieldRamp    = 1;        % Auto specify ramps       
-    fluor.doInitialFieldRamp2   = 0;        % Manuualy specify ramps
+    fluor.doInitialFieldRamp2   = 0;        % Manually specify ramps
     
         
     if ~isfield(seqdata,'flags')
@@ -89,7 +89,7 @@ end
 % you are imaging along the FPUMP axis
     
     B0 = 4;         % Quantization Field
-    B0_shift_list = [0.21];0.2;[0.15];[0.19];[0.21];[.17];
+    B0_shift_list = [0.21];
     
     % Quantization Field 
     B0_shift = getScanParameter(...

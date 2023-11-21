@@ -18,7 +18,7 @@ global seqdata
 opts.ramp_fields = 1; 
 
 
-opts.dotilt     = 0; %tilt for stripe pattern
+opts.dotilt     = 1; %tilt for stripe pattern
 
 
 % Do you want to fake the plane selection sweep?
@@ -176,23 +176,38 @@ if opts.ramp_fields
 
     % Fesbhach Field (in gauss)
     B0 = 128;    %old value 128G, 0.6G shift
-    fb_shift_list = [0.45];
+    fb_shift_list = [0.45];% OLD FOR 25 A
+
+    fb_shift_list = [0.45+0.63];[0.45];
+    
+    fb_shift_list = [0.45+0.63];[0.45];
+        
+fb_shift_list =[0.45+0.63]+2.35*1.256;
+    
     fb_shift = getScanParameter(fb_shift_list,seqdata.scancycle,...
         seqdata.randcyclelist,'qgm_plane_FB_shift','G');    
     Bfb = B0 - fb_shift;
     
     
-    defVar('IQP_PS_shift', 0, 'A');
+    defVar('IQP_PS_shift', [14], 'A');
     IQP_PS_shift = getVar('IQP_PS_shift');
+    
+    defVar('QP_FF_override', 28, 'V');18;
     
     % QP Field (in Amps)
     IQP = 14*1.78 + IQP_PS_shift; % 210 G/cm (not sure if calibrated)
     
-    % Shim Fields (in Amps)
-    xshimdlist  = - 2.8050;
-    yshimdlist  = - 0.1510;
-    zshimdlist  = -1;           
-        
+    % Shim Fields (in Amps) OLD FOR 25 AMP
+%     xshimdlist  = -2.8050;
+%     yshimdlist  = -0.1510;
+%     zshimdlist  = -1;         
+%     
+         
+    % Shim Fields (in Amps) NEW FOR 39 AMP QP --> 12mG per plane
+    xshimdlist  = -3.55;
+    yshimdlist  = -0.1510;
+    zshimdlist  = 0;
+    
     xshimd = getScanParameter(xshimdlist,seqdata.scancycle,...
         seqdata.randcyclelist,'qgm_plane_dIx','A');
     yshimd = getScanParameter(yshimdlist,seqdata.scancycle,...
@@ -207,16 +222,23 @@ if opts.ramp_fields
     cz = 2.35;
     
     if opts.dotilt        
-%         Breal     = 126.28; % actual field in gauss
-        xshimtilt = 5;
-        yshimtilt = -2.7;        
-%         zshimtilt = -0.5*((cxy*xshimtilt)^2 + (cxy*yshimtilt)^2)/(Breal*cz);
+%         xshimtilt = 5;
+%         yshimtilt = -2.7;             
+%         defVar('qgm_plane_tilt_dIz',[-0.206],'A');
+%         zshimtilt=getVar('qgm_plane_tilt_dIz');
         
-%         zshimtilt = 0;
+        defVar('qgm_plane_tilt_dIz',[-0.000],'A');
         
-        defVar('qgm_plane_tilt_dIz',[-0.206],'A');-0.215;
+        xshimtilt = 4.4;
+        yshimtilt = 0.3;             
+        
         zshimtilt=getVar('qgm_plane_tilt_dIz');
-
+        
+%         
+%         xshimtilt = 5;
+%         yshimtilt = -2.7;               
+%         defVar('qgm_plane_tilt_dIz',[-0.125],'A');
+%         zshimtilt=getVar('qgm_plane_tilt_dIz');
     else
         xshimtilt = 0;
         yshimtilt = 0;
@@ -242,7 +264,7 @@ if opts.ramp_fields
     ramp.QP_ramptime        = 100;
     ramp.QP_ramp_delay      = 0;
     ramp.settling_time      = 300; %200   
-    ramp.QP_FF_override           = 18;
+    ramp.QP_FF_override     = getVar('QP_FF_override');
     
     % Extra Labeling
     addOutputParam('qgm_plane_Bfb',Bfb,'G');
@@ -269,17 +291,17 @@ switch opts.SelectMode
         % freq_list=interp1([-3 0 3],[-200 -400 -500],xshimd);
 
         % Define the SRS frequency
-%         if opts.dotilt
-%             freq_offset_list = 1050 + [1600];
-%         else
-            freq_offset_list = [1545];
-%         end
-        
-%         freq_amp_list = [30]; % 30 kHz is about 2 planes
-          freq_amp_list = [7]; % 12 kHz is about 1 plane   
+
+        freq_offset_list = -715;
+            
+
+% freq_offset_list = freq_offset_list - 100*(yshimdlist+.1510);
+
+        freq_amp_list = [8]; % 30 kHz is about 2 planes
+%           freq_amp_list = [7]; % 12 kHz is about 1 plane   
           
         if opts.dotilt
-            freq_amp_list = [7]; % 12 kHz is about 1 plane       
+            freq_amp_list = [8]; % 12 kHz is about 1 plane       
         end
 
         sweep_time_list = 2*freq_amp_list/10; % CF has no idea when this was calibrated
@@ -294,12 +316,15 @@ switch opts.SelectMode
         sweep_time = getVar('qmg_plane_uwave_time');        
         uWave_delta_freq = freq_amp*1e-3;        
     
+        defVar('qgm_plane_uwave_power',[15],'dBm');
+
+        
        % Configure the SRS
         uWave_opts=struct;
         uWave_opts.Address      = 30;                       % SRS GPIB Addr
 %         uWave_opts.Address=29; % 4/4/2023
         uWave_opts.Frequency    = 1606.75+freq_offset*1E-3; % Frequency [MHz]
-        uWave_opts.Power        = 15;%15                    % Power [dBm]
+        uWave_opts.Power        = getVar('qgm_plane_uwave_power');%15                    % Power [dBm]
         uWave_opts.Enable       = 1;                        % Enable SRS output    
         uWave_opts.EnableSweep  = 1;                    
         uWave_opts.SweepRange   = uWave_delta_freq;         % Sweep Amplitude [MHz]
@@ -307,7 +332,7 @@ switch opts.SelectMode
         env_amp     = 1;              % Relative amplitude of the sweep (keep it at 1 for max)
         beta        = asech(0.005);   % Beta defines sharpness of HS1
         
-        addOutputParam('qgm_plane_uwave_power',uWave_opts.Power)
+%         addOutputParam('qgm_plane_uwave_power',uWave_opts.Power)
         addOutputParam('qgm_plane_uwave_frequency',uWave_opts.Frequency);            
         addOutputParam('qgm_plane_uwave_HS1_beta',beta);
         addOutputParam('qgm_plane_uwave_HS1_amp',env_amp);

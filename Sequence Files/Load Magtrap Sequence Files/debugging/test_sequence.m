@@ -5100,7 +5100,7 @@ end
 % 
 %     setDigitalChannel(calctime(curtime,-35),'ACync Master',1);
 %     % 
-%     setAnalogChannel(calctime(curtime,-5),57,00);
+%     setAnalogChannel(calctime(curtime,-5),57,0);
 %     % 
 %     % AnalogFuncTo(calctime(curtime,0),57,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2,2,10);
 %     % setAnalogChannel(calctime(curtime,10),57,-10);
@@ -5931,10 +5931,35 @@ end
 % setDigitalChannel(calctime(curtime,0),'K High Field Probe',0);
 %     
 
-setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);
-setAnalogChannel(calctime(curtime,0),'X Shim',0,1);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
-setAnalogChannel(calctime(curtime,0),'Y Shim',0,1);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
-setAnalogChannel(calctime(curtime,0),'Z Shim',0,3);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
+% setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);
+% setAnalogChannel(calctime(curtime,0),'X Shim',0,1);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
+% setAnalogChannel(calctime(curtime,0),'Y Shim',0,1);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
+% setAnalogChannel(calctime(curtime,0),'Z Shim',0,3);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
+
+setDigitalChannel(calctime(curtime,0),'ACync Master',0);
+
+curtime = calctime(curtime,100);
+sweep_time = 1.4;
+beta = asech(0.005);
+env_amp = 1;
+
+setDigitalChannel(calctime(curtime,0),'ACync Master',1);
+
+curtime = calctime(curtime,5);
+
+AnalogFunc(calctime(curtime,0),'uWave FM/AM',...
+            @(t,T,beta) tanh(2*beta*(t-0.5*sweep_time)/sweep_time),...
+            sweep_time,sweep_time,beta,1);
+        
+AnalogFunc(calctime(curtime,0),'uWave VVA',...
+        @(t,T,beta,A) A*sech(2*beta*(t-0.5*sweep_time)/sweep_time),...
+        sweep_time,sweep_time,beta,env_amp,2);
+
+curtime = calctime(curtime,sweep_time+20);
+    
+setDigitalChannel(calctime(curtime,0),'ACync Master',0);
+
+
 
 timeout = curtime;
 % SelectScopeTrigger('PA_Pulse');

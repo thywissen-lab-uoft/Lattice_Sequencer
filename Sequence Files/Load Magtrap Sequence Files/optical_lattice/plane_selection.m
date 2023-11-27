@@ -227,7 +227,7 @@ fb_shift_list =[0.45+0.63]+2.35*1.256;
         defVar('qgm_plane_tilt_dIz',[-0.012],'A');
         defVar('qgm_plane_tilt_dIz',[0.025],'A');
         
-        defVar('qgm_plane_tilt_dIz',0.011,'A');
+        defVar('qgm_plane_tilt_dIz',0.03,'A');
         
         if isfield(seqdata.flags,'qgm_stripe_feedback') && ...
             seqdata.flags.qgm_stripe_feedback && ...

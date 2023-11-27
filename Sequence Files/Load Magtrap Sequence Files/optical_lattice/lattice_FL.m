@@ -1,61 +1,6 @@
 function curtime = lattice_FL(curtime,override)
 global seqdata
 
-%% Flags
-
-    fluor=struct;
-
-    % uWave
-    fluor.EnableUWave           = 0;        % Use uWave freq sweep for n-->n
-    
-    % Laser Beams
-    fluor.EnableFPump           = 1;        % Use FPUMP beam DOESNT WORK ZIF LOW???
-    fluor.EnableEITProbe        = 1;        % Use EIT Probe beams
-    fluor.EnableRaman           = 1;        % Use Raman Beams
-    
-    % Sets the total time of radiation (optical or otherwise)
-        pulse_list = [2000]; % 
-        
-    pulse_time = getScanParameter(...
-        pulse_list,seqdata.scancycle,seqdata.randcyclelist,...
-        'qgm_pulse_time','ms');  
-    
-    fluor.PulseTime             = pulse_time;     % [ms]
-    
-    
-    % 1 ms is typical for Raman spectroscopy
-    % 1 ms is typical for uWave spectroscopy
-    % 2000 ms is typical for fluoresence imaging
-    
-    % FPUMP 1000Er, 83% transfer at 1 ms, 0.1 V
-    
-    % Camera
-    fluor.TriggerIxon          = 1;         % Trigger the ixon?
-    
-    % Camera Exposure
-    % The exposure time is set by how long the IxonTrigger is high if the
-    % camera is in "External Exposure" Mode.
-    % Warning : Dont make the exposure times longer than the total light time or else
-    % the camera will be exposing without fluoresence.
-    % Warning : After exposing the camera needs around 400 ms to read out
-    % the image before it can accept a new trigger.
-    
-    %Set NumKin on iXon GUI equal to NumberOfImages+1
-    fluor.NumberOfImages       = 1;     % Normal operation
-%     fluor.NumberOfImages       = 5;     % For hopping
-   
-    % Calculate Xposures
-    fluor.DwellTime            = 600; % Wait Time beween shots for readout
-
-  
-    fluor.TriggerTimes = [2000 2300 2600 2900 3200];
-    fluor.ObjectivePiezoShift =[0 .1 0 -.1 0];
-    
-    % Mangetic Field
-    fluor.doInitialFieldRamp    = 1;        % Auto specify ramps       
-    fluor.doInitialFieldRamp2   = 0;        % Manually specify ramps
-    
-        
     if ~isfield(seqdata,'flags')
        seqdata.flags = struct; 
     end
@@ -63,6 +8,79 @@ global seqdata
     if ~isfield(seqdata.flags,'misc_program4pass')
         seqdata.flags.misc_program4pass = 1;
     end
+    
+    if ~isfield(seqdata,'IxonMultiExposures')
+       seqdata.IxonMultiExposures=[]; 
+    end
+    
+    if ~isfield(seqdata,'IxonMultiPiezos')
+       seqdata.IxonMultiPiezos=[]; 
+    end
+
+
+%% Optical/uWave Radiation Flags + Pulse Time
+% This controls how radiation is applied during the imaging period.  Here,
+% the pulse time controls all pulse times for every radiation.
+%
+% Details of the settings are found later in the code.
+
+    fluor=struct;
+
+    % uWave
+    fluor.EnableUWave           = 0;        % Use uWave freq sweep for n-->n    
+    % Laser Beams
+    fluor.EnableFPump           = 1;        % Use FPUMP beam DOESNT WORK ZIF LOW???
+    fluor.EnableEITProbe        = 1;        % Use EIT Probe beams
+    fluor.EnableRaman           = 1;        % Use Raman Beams    
+    
+    % Sets the total time of radiation (optical or otherwise)
+    pulse_list = [3400]; %         
+    pulse_time = getScanParameter(...
+        pulse_list,seqdata.scancycle,seqdata.randcyclelist,...
+        'qgm_pulse_time','ms');      
+    fluor.PulseTime             = pulse_time;     % [ms]   
+    % 1 ms is typical for Raman spectroscopy
+    % 1 ms is typical for uWave spectroscopy
+    % 2000 ms is typical for fluoresence imaging    
+    % FPUMP 1000Er, 83% transfer at 1 ms, 0.1 V
+    
+%% Magnetic Field Flags
+% Flags for controlling the magnetic field during the fluorescence image.
+% Details of the magnetic field are found later.
+
+% Mangetic Field
+    fluor.doInitialFieldRamp    = 1;        % Auto specify ramps       
+    fluor.doInitialFieldRamp2   = 0;        % Manually specify ramps    
+    
+%% Ixon Camera Settings
+
+% Whether to trigger the ixon at all.
+    fluor.TriggerIxon          = 1;         % Trigger the ixon?
+    
+    
+% Frame Transfer Enabled, Trigger : External (mode 1)
+    fluor.IxonFrameTransferMode = 1;
+% The exposure time is set by the time between triggers. Here, the 
+% storage sensor is read out while the image sensor is exposed.  The
+% minimum exposure time is the readout time (~300 ms).  The camera is
+% always exposing itself after the first exposure.
+
+% Frame Transfer Disabled, Trigger : External Exposure(mode 7)
+%     fluor.IxonFrameTransferMode = 0;
+% The exposure time is set by how long the IxonTrigger is high. After 
+% exposing the camera needs around 400 ms to read out the image before it 
+% can accept a new trigger.
+
+if fluor.IxonFrameTransferMode
+    fluor.NumberOfImages       = 4;     % Normal operation     
+    fluor.ExposureTime         = [2000 500 500 500];
+    fluor.ObjectivePiezoShift  = [0 .15 -.15 0];        
+else
+    fluor.NumberOfImages       = 1;     % Normal operation     
+    fluor.DwellTime            = 600; % Wait Time beween shots for readout  
+    fluor.IxonExposureTime     = (fluor.PulseTime-(fluor.NumberOfImages-1)*fluor.DwellTime)/fluor.NumberOfImages;     
+end    
+
 %% Override flags if desired
 
 if nargin == 2
@@ -72,9 +90,8 @@ if nargin == 2
     end
 end    
     
-        fluor.IxonExposureTime     = (fluor.PulseTime-(fluor.NumberOfImages-1)*fluor.DwellTime)/fluor.NumberOfImages;  
-
-%% Edge cases
+    
+    %% Edge cases
 % In case you run from here
 if nargin==0 || curtime == 0
    curtime = 0; 
@@ -86,21 +103,53 @@ if nargin==0 || curtime == 0
     fluor.doInitialFieldRamp2 = 0;
     fluor.doInitialFieldRamp = 0;
 end
-%% Magnetic Field Settings
-% This sets the quantizing field along the fpump axis. It is assumed that
-% you are imaging along the FPUMP axis
-    
-    B0 = 4;         % Quantization Field
-    B0_shift_list = [0.21];
-    
-    % Quantization Field 
-    B0_shift = getScanParameter(...
-        B0_shift_list,seqdata.scancycle,seqdata.randcyclelist,...
-        'qgm_field_shift','G');  
-    
-    fluor.CenterField = B0 + B0_shift;
-    
-    addOutputParam('qgm_field',fluor.CenterField,'G');   
+%% Ixon Trigger and Programming
+
+    if fluor.TriggerIxon 
+        if fluor.IxonFrameTransferMode
+            dispLineStr('Triggering iXon Frame Transfer Mode',curtime);
+            tpre=-50;
+            DigitalPulse(calctime(curtime,tpre),...
+                    'iXon Trigger',10,1)       
+            disp(['Trigger : ' num2str(curtime2realtime(calctime(curtime,-tpre))) ' ms']);
+
+            seqdata.IxonMultiExposures(end+1) = NaN;
+            seqdata.IxonMultiPiezos(end+1) = NaN;
+
+            % In frame transfer mode a trigger ends the exposure
+            t0=0;
+            for kk=1:fluor.NumberOfImages
+                if seqdata.flags.misc_moveObjective
+                    vNew = getVarOrdered('objective_piezo')+fluor.ObjectivePiezoShift(kk);
+                    setAnalogChannel(calctime(curtime,t0),'objective Piezo Z',...
+                        vNew,1);
+                    seqdata.IxonMultiPiezos(end+1) = vNew;
+                else
+                    seqdata.IxonMultiPiezos(end+1) = NaN;
+                end 
+                
+                t0 = t0 + fluor.ExposureTime(kk);
+                disp(['Trigger : ' num2str(curtime2realtime(calctime(curtime,t0))) ' ms']);
+                DigitalPulse(calctime(curtime,t0),...
+                    'iXon Trigger',10,1); 
+                seqdata.IxonMultiExposures(end+1) = fluor.ExposureTime(kk);
+            end
+        else
+            dispLineStr('Triggering iXon External Exposure Mode',curtime);
+            tpre=-500;
+            DigitalPulse(calctime(curtime,tpre),...
+                    'iXon Trigger',10,1)    
+                
+            tlist = (opts.IxonExposureTime+opts.DwellTime)*[0:(fluor.NumberOfImages-1)];  
+            for kk=1:fluor.NumberOfImages
+                 DigitalPulse(calctime(curtime,tlist(kk)),...
+                       'iXon Trigger',fluor.IxonExposureTime,1);
+                seqdata.IxonMultiExposures(end+1) = fluor.IxonExposureTime;
+
+            end            
+        end 
+    end      
+
 %% EIT FPUMP Settings
 % This code set the Fpump power regulation and the 4 pass frequency
 
@@ -237,8 +286,7 @@ raman_rel_pow_list = 0.5;[0.5];
     raman_eom_freq = 1266.924;
 %% Raman Calcuation
 % Based on the Raman AOM frequencies, calculate the 2photon detuning of the
-% Raman transition.  Ideally this should match the EIT 2photon detuning
-    
+% Raman transition.  Ideally this should match the EIT 2photon detuning   
     
     raman_2photon_freq = (raman_eom_freq + fluor.Raman1_Frequency*1e-6) - ...
         fluor.Raman2_Frequency*1e-6;
@@ -248,8 +296,8 @@ raman_rel_pow_list = 0.5;[0.5];
     addOutputParam('qgm_raman1_freq',fluor.Raman1_Frequency,'MHz');
     addOutputParam('qgm_raman2_freq',fluor.Raman2_Frequency,'MHz');
     addOutputParam('qgm_raman_2photon_freq',raman_2photon_freq,'MHz');
-    addOutputParam('qgm_raman_2photon_detuning',raman_2photon_detuning,'kHz');
-    
+    addOutputParam('qgm_raman_2photon_detuning',raman_2photon_detuning,'kHz');  
+       
 %% Run Sub Function
      
     curtime = lattice_FL_helper(curtime,fluor);  

@@ -701,6 +701,11 @@ end
 %% Scope trigger selection
 SelectScopeTrigger(seqdata.scope_trigger);
 
+
+addOutputParam('qgm_MultiExposures',seqdata.IxonMultiExposures,'ms');    
+addOutputParam('qgm_MultiPiezos',seqdata.IxonMultiPiezos,'V');    
+
+
 %% Timeout
 timeout = curtime;
 

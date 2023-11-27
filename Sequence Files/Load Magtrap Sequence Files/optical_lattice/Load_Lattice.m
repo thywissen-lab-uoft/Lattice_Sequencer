@@ -1008,38 +1008,40 @@ end
 %% Fluorescence Imaging (current code)
 
 if seqdata.flags.lattice_fluor
+%     
+%     if seqdata.flags.lattice_ClearCCD_IxonTrigger        
+%         disp('Pre triggering the ixon to clear the CCD');        
+%         % The exposure time is set by how long the IxonTrigger is high if the
+%         % camera is in "External Exposure" Mode.
+% 
+%         % Give the iXon an extra trigger before fluoresence imaging in
+%         % order to help clear the CCD of charge (unsure if helpful)
+%         
+%         % Timing : Warning, the camera readout time is about 400 ms, dont
+%         % make triggers closer than that or else the camera will
+%         % malfunction
+%         tpre = -1000;   % how far in advance to trigger
+%         texp = 100;     % how long of an exposure to clear the CCD
+%         
+%         
+%         seqdata.flags.Ixon_FrameTransferMode = 1;
+%         if seqdata.flags.Ixon_FrameTransferMode 
+%             texp = 10;
+%             tpre = -100;
+%         end
+%         
+%         % Send the pretrriger
+%         DigitalPulse(calctime(curtime, tpre),'iXon Trigger',texp,1);  
+%         
+%         % Record information about the ixon triggers (helpful for image
+%         % analysis)
+%         %   seqdata.params.NumberIxonTriggers = seqdata.params.NumberIxonTriggers  +1
+%         %   seqdata.params.IxonTriggerTypes{end+1}='clear'
+%     end
     
-    if seqdata.flags.lattice_ClearCCD_IxonTrigger        
-        disp('Pre triggering the ixon to clear the CCD');        
-        % The exposure time is set by how long the IxonTrigger is high if the
-        % camera is in "External Exposure" Mode.
-
-        % Give the iXon an extra trigger before fluoresence imaging in
-        % order to help clear the CCD of charge (unsure if helpful)
-        
-        % Timing : Warning, the camera readout time is about 400 ms, dont
-        % make triggers closer than that or else the camera will
-        % malfunction
-        tpre = -1000;   % how far in advance to trigger
-        texp = 100;     % how long of an exposure to clear the CCD
-        
-        
-        seqdata.flags.Ixon_FrameTransferMode = 1;
-        if seqdata.flags.Ixon_FrameTransferMode 
-            texp = 10;
-            tpre = -100;
-        end
-        
-        % Send the pretrriger
-        DigitalPulse(calctime(curtime, tpre),'iXon Trigger',texp,1);  
-        
-        % Record information about the ixon triggers (helpful for image
-        % analysis)
-        %   seqdata.params.NumberIxonTriggers = seqdata.params.NumberIxonTriggers  +1
-        %   seqdata.params.IxonTriggerTypes{end+1}='clear'
-    end
+    dispLineStr('Fluorescence image',curtime);     
     
-    dispLineStr('Fluorescence image',curtime);  
+    curtime = lattice_FL_fieldramp(curtime);
     curtime = lattice_FL(curtime);
 end
 

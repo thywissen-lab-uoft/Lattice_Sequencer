@@ -20,7 +20,7 @@ function curtime = lattice_FL_helper(timein,opts)
 % to elimnate Z fields and to rotate them to be correct.
 %
 %
-% APPLY RSC, EIT, UWAVE, TRIGGER IXON
+% APPLY RSC, EIT, UWAVE,
 % With a quantization axis specified, the atomic states are manipulated
 % with application of RSC, EIT, and/or uWaves.  These can be pulsed or
 % frequency sweeps if one desires to measure the Rabi frequency. (We will
@@ -36,96 +36,6 @@ global seqdata;
 curtime = timein;
 
 pulse_time = opts.PulseTime;
-
-%% INTIAL MAGNETIC FIELD RAMP
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%% Magnetic Field Settings %%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% Additional Magnetic field offset
-X_Shim_Offset = 0;
-Y_Shim_Offset = 0;
-Z_Shim_Offset = 0.055;
-
-% Selection angle between X and Y shims
-theta_list = [62];
-theta = getScanParameter(theta_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'qgm_Bfield_angle','deg');
-
-% Convert the quantization magnetic field to frequency (|9,-9>->|7,-7>)
-df = opts.CenterField*2.4889; % MHz
-
-% Coefficients that convert from XY shim current (A) to frequency (MHz) 
-shim_calib = [2.4889*2, 0.983*2.4889*2]; % MHz/A
-
-% Field strength and angle into current
-X_Shim_Value = df*cosd(theta)/shim_calib(1);
-Y_Shim_Value = df*sind(theta)/shim_calib(2);
-%%
-% Ramp up gradient and Feshbach field  
-if opts.doInitialFieldRamp
-
-    % What the code should do :
-    % Turn off Feshbachbach Field (close switch as well)
-    % Turn off QP Field (should probably set FF to zero)
-    % Ramp the shims to the correct value
-
-    newramp = struct('ShimValues',seqdata.params.shim_zero + ...
-        [X_Shim_Value+X_Shim_Offset, ...
-        Y_Shim_Value+Y_Shim_Offset, ...
-        Z_Shim_Offset],...
-        'FeshValue',0.01,...
-        'QPValue',0,...
-        'SettlingTime',100);
-curtime = rampMagneticFields(calctime(curtime,0), newramp);
-end      
-
-%% Magnetic Field Ramp 2
-
-if opts.doInitialFieldRamp2
-    tShimRamp = 100;
-    tShimSettle = 10;
-    tFBRamp = 100;
-    tFBSettle = 50;
-    
-    Ix = X_Shim_Value + X_Shim_Offset + seqdata.params.shim_zero(1);
-    Iy = Y_Shim_Value + Y_Shim_Offset + seqdata.params.shim_zero(2);
-    Iz = Z_Shim_Offset + seqdata.params.shim_zero(3);    
-    
-    %Ramp shim fields
-    AnalogFuncTo(calctime(curtime,0),'X Shim',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        tShimRamp,tShimRamp,Ix,3);
-    AnalogFuncTo(calctime(curtime,0),'Y Shim',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        tShimRamp,tShimRamp,Iy,4);
-    AnalogFuncTo(calctime(curtime,0),'Z Shim',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        tShimRamp,tShimRamp,Iz,3);
-    curtime = calctime(curtime,tShimRamp);
-    
-    curtime = calctime(curtime,tShimSettle);
-    
-    % Turn off FB and any QP Field
-    
-    % Turn off FB Current
-    AnalogFuncTo(calctime(curtime,0),'FB current',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        tFBRamp,tFBRamp,0);
-    
-    % Turn off transport supply
-    AnalogFuncTo(calctime(curtime,0),'Transport FF',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        tFBRamp,tFBRamp,0);
-    
-    curtime = calctime(curtime,tFBRamp);    
-    curtime = calctime(curtime,tFBSettle); 
-end
-    
-%% Extra Settling Time
-
-curtime = calctime(curtime,100);
 
 %% uWave Settings
 
@@ -293,24 +203,10 @@ if opts.EnableRaman && pulse_time > 0
 
     % Turn on beams
     setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 1',1);
-    setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 2a',1);    
-   
+    setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 2a',1);       
     
 end
 
-%% Ixon Trigger and Programming
-
-    if (opts.TriggerIxon)   
-        tlist = (opts.IxonExposureTime+opts.DwellTime)*[0:(opts.NumberOfImages-1)];  
-        for kk=1:length(tlist)
-            
-%             if tlist(kk)>0
-            DigitalPulse(calctime(curtime,tlist(kk)),...
-                'iXon Trigger',opts.IxonExposureTime,1);
-%             end
-        end        
-    end     
-    
     
     
     

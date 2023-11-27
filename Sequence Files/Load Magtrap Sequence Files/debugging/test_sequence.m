@@ -5895,24 +5895,82 @@ end
 % setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',1); % Set 
 % setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',0); % inverted logic
 % 
-% setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',0);
+%setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',0);
 % 
 % setAnalogChannel(calctime(curtime,0),'Z Shim',0,1); % Set 
 % % setAnalogChannel(calctime(curtime,0),'Y Shim',0,1); % Set 
 % % setAnalogChannel(calctime(curtime,0),'Z Shim',0,1); % Set 
 % 
-% setAnalogChannel(calctime(curtime,50),'Z Shim',1,1); %3
+ setAnalogChannel(calctime(curtime,500),'Z Shim',0,1); %3
 % % setAnalogChannel(calctime(curtime,100),'Z Shim',0,3); %3
 % % setAnalogChannel(calctime(curtime,100),'Y Shim',0,4); %4
 % 
 % setAnalogChannel(calctime(curtime,100),'Z Shim',0,1); % Set 
 % % setAnalogChannel(calctime(curtime,200),'Y Shim',0,1); % Set 
 % % setAnalogChannel(calctime(curtime,200),'Z Shim',0,1); % Set 
-% 
-% DigitalPulse(calctime(curtime,0),'ScopeTrigger',10,1);
 
 
+%   % We have them on to keep them thermally stable
+%     setDigitalChannel(calctime(curtime,-50),'Raman TTL 1',0); % (1: ON, 0:OFF) Raman 1 ZASWA + Rigol Trigger
+%     setDigitalChannel(calctime(curtime,-50),'Raman TTL 2a',0);% (1: ON, 0:OFF) Raman 2 ZASWA
+%     setDigitalChannel(calctime(curtime,-50),'Raman TTL 3a',0);% (1: ON, 0:OFF) Raman 3 ZASWA
 % 
+%     % Make sure Raman shutter is closed
+%     setDigitalChannel(calctime(curtime,-50),'Raman Shutter',0);
+
+  
+% 
+%     % Turn on raman beam
+%      setDigitalChannel(curtime,'Raman TTL 1',1);  % Vertical Raman (1: ON, 0:OFF)
+%     setDigitalChannel(curtime,'Raman TTL 2a',1); % Horizontal Raman (1: ON, 0:OFF)    
+% 
+%     % Turn off beams
+%     setDigitalChannel(calctime(curtime,pulse_time),'Raman TTL 1',0);
+%     setDigitalChannel(calctime(curtime,pulse_time),'Raman TTL 2a',0);
+% 
+%     % Close Shutter
+%     setDigitalChannel(calctime(curtime,pulse_time),'Raman Shutter',0);    
+% 
+%     % Turn on beams
+%     setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 1',1);
+%     setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 2a',1);    
+   
+  % Open Shutter (1: ON, 0: OFF)
+    setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
+    curtime=calctime(curtime,1000);
+
+setDigitalChannel(calctime(curtime,0),'iXon Trigger',0);
+curtime=calctime(curtime,2000);
+
+setDigitalChannel(calctime(curtime,0),'iXon Trigger',0);
+
+
+% read img1
+DigitalPulse(calctime(curtime,0),'iXon Trigger',10,1);
+
+% read img2
+curtime=calctime(curtime,2500);
+DigitalPulse(calctime(curtime,0),'iXon Trigger',10,1);
+
+
+% read img3
+curtime=calctime(curtime,5000);
+DigitalPulse(calctime(curtime,0),'iXon Trigger',10,1);
+
+% read img4
+curtime=calctime(curtime,7000);
+DigitalPulse(calctime(curtime,0),'iXon Trigger',10,1);
+% curtime=calctime(curtime,7000);
+
+curtime=calctime(curtime,100);
+setDigitalChannel(calctime(curtime,0),'iXon Trigger',0);
+setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
+
+
+%
+% DigitalPulse(calctime(curtime,0),'iXon Trigger',10,1);
+% curtime=calctime(curtime,2000);
+
 % setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.4);
 % setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1); 
 
@@ -5935,29 +5993,33 @@ end
 % setAnalogChannel(calctime(curtime,0),'X Shim',0,1);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
 % setAnalogChannel(calctime(curtime,0),'Y Shim',0,1);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
 % setAnalogChannel(calctime(curtime,0),'Z Shim',0,3);%setAnalogChannel(calctime(curtime,-5),'K Probe/OP AM',k_op_am); %0.11
+% 
 
-setDigitalChannel(calctime(curtime,0),'ACync Master',0);
-
-curtime = calctime(curtime,100);
-sweep_time = 1.4;
-beta = asech(0.005);
-env_amp = 1;
-
-setDigitalChannel(calctime(curtime,0),'ACync Master',1);
-
-curtime = calctime(curtime,5);
-
-AnalogFunc(calctime(curtime,0),'uWave FM/AM',...
-            @(t,T,beta) tanh(2*beta*(t-0.5*sweep_time)/sweep_time),...
-            sweep_time,sweep_time,beta,1);
-        
-AnalogFunc(calctime(curtime,0),'uWave VVA',...
-        @(t,T,beta,A) A*sech(2*beta*(t-0.5*sweep_time)/sweep_time),...
-        sweep_time,sweep_time,beta,env_amp,2);
-
-curtime = calctime(curtime,sweep_time+20);
-    
-setDigitalChannel(calctime(curtime,0),'ACync Master',0);
+% AnalogFunc(calctime(curtime,0),'Z Shim',...
+%              @(t,T,beta) tanh(2*beta*(t-0.5*sweep_time)/sweep_time),...
+%             sweep_time,sweep_time,beta,1);
+% setDigitalChannel(calctime(curtime,0),'ACync Master',0);
+% 
+% curtime = calctime(curtime,100);
+% sweep_time = 1.4;
+% beta = asech(0.005);
+% env_amp = 1;
+% 
+% setDigitalChannel(calctime(curtime,0),'ACync Master',1);
+% 
+% curtime = calctime(curtime,5);
+% 
+% AnalogFunc(calctime(curtime,0),'uWave FM/AM',...
+%             @(t,T,beta) tanh(2*beta*(t-0.5*sweep_time)/sweep_time),...
+%             sweep_time,sweep_time,beta,1);
+%         
+% AnalogFunc(calctime(curtime,0),'uWave VVA',...
+%         @(t,T,beta,A) A*sech(2*beta*(t-0.5*sweep_time)/sweep_time),...
+%         sweep_time,sweep_time,beta,env_amp,2);
+% 
+% curtime = calctime(curtime,sweep_time+20);
+%     
+% setDigitalChannel(calctime(curtime,0),'ACync Master',0);
 
 
 

@@ -9,6 +9,9 @@ end
 
 global seqdata;
 
+
+seqdata.IxonGUIAnalayisHistoryDirectory = 'X:\IxonGUIAnalysisHistory';
+
 % Number of DDS scans is zero
 seqdata.numDDSsweeps = 0;
 
@@ -53,7 +56,7 @@ seqdata.flags.misc_program4pass             = 1; % Update four-pass frequency
 seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
 seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[2.4],'V');2.25;1.5;1.7;2.06;
+defVar('objective_piezo',[1.57],'V');
 % 0.1V = 700 nm, larger means further away from chamber
 % 1 V= 7 um
 % 10 V = 70 um
@@ -148,7 +151,7 @@ seqdata.flags.High_Field_Imaging            = 0; % High field imaging (shouldn't
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[.1],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[10],'ms');
@@ -248,7 +251,7 @@ seqdata.flags.xdt_evap2_HF                  = 0;    % Perform K evap at high fie
 seqdata.flags.xdt_high_field_a              = 0;
 
 
-seqdata.flags.xdt_ramp_power_end            = 1;    % Ramp dipole back up after evaporation before any further physics 
+seqdata.flags.xdt_ramp_power_end            = 0;    % Ramp dipole back up after evaporation before any further physics 
 
 
 defVar('xdt_load_power',1.0,'W');
@@ -260,7 +263,7 @@ defVar('xdt_evap1_time',25e3,'ms');
 defVar('xdt_evap1_tau_fraction',3.5,'arb');
 
 % Stage 2 Evaporation (K+K)
-defVar('xdt_evap2_power',0.100,'W');
+defVar('xdt_evap2_power',0.110,'W');
 defVar('xdt_evap2_time',10e3,'ms');
 defVar('xdt_evap2_tau_fraction',3.5','arb')
 %% Optical Lattice
@@ -310,7 +313,7 @@ seqdata.flags.lattice_uWave_spec            = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 seqdata.flags.lattice_do_optical_pumping    = 1;    % (1426) keep : optical pumping in lattice  
 seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
-
+seqdata.flags.qgm_stripe_feedback           = 0; % feedback on stripes EXPERIMENTAL
 % Actual fluorsence image flags - NO LONGER USED
 seqdata.flags.Raman_transfers               = 0;
 

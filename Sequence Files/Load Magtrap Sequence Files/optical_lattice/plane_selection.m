@@ -37,11 +37,9 @@ opts.planeselect_doFinalRepumpPulse = 0;
 %Repeat plane selection
 opts.planeselect_again = 0;
 
-
 % Choose the Selection Mode
 opts.SelectMode = 'SweepFreqHS1';          % Sweep SRS HS1 frequency
 opts.SelectModeBack = 'SweepFreqHS1';       %Sweep SRS HS1 frequency backwards
-
 % opts.SelectMode = 'SweepField';       % Not programmed yet 
 % opts.SelectMode = 'SweepFieldLegacy'; % old way
 
@@ -225,15 +223,167 @@ fb_shift_list =[0.45+0.63]+2.35*1.256;
 %         xshimtilt = 5;
 %         yshimtilt = -2.7;             
 %         defVar('qgm_plane_tilt_dIz',[-0.206],'A');
-%         zshimtilt=getVar('qgm_plane_tilt_dIz');
+%         zshimtilt=getVar('qgm_plane_tilt_dIz');        
+        defVar('qgm_plane_tilt_dIz',[-0.012],'A');
+        defVar('qgm_plane_tilt_dIz',[0.025],'A');
         
-        defVar('qgm_plane_tilt_dIz',[-0.000],'A');
+        defVar('qgm_plane_tilt_dIz',0.011,'A');
+        
+        if isfield(seqdata.flags,'qgm_stripe_feedback') && ...
+            seqdata.flags.qgm_stripe_feedback && ...
+            exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')      
+            try
+               names = dir([seqdata.IxonGUIAnalayisHistoryDirectory filesep '*.mat']);
+               names = {names.name};
+               names = flip(sort(names)); % Sort by most recent               
+               N = 10;               
+               % Get the most recent runs
+               names = [names(1:N)];               
+               tnow = datenum(now);
+                t=[];theta=[];L=[];phi=[];v=[];B=[];
+               for n = 1:length(names) 
+                  data = load(fullfile(seqdata.IxonGUIAnalayisHistoryDirectory,names{n}));
+                  data=data.gui_saveData;
+                  
+                  if isfield(data,'Stripe')
+                      t(end+1) = datenum(data.Date);
+                      v(end+1) = data.Params.qgm_plane_tilt_dIz;                      
+                      theta(end+1,1) = data.Stripe.theta;
+                      theta(end,2) = data.Stripe.theta_err;
+                      
+                      L(end+1,1) = data.Stripe.L;                      
+                      L(end,2) = data.Stripe.L_err;
+                      
+                      phi(end+1,1) = data.Stripe.phi; 
+                      phi(end,2) = data.Stripe.phi_err;    
+                      
+                      B(end+1,1) = data.Stripe.B; 
+                      B(end,2) = data.Stripe.B_err;    
+                  end
+               end               
+               dT = (tnow - t)*24*60*60;
+              phiset = 0.9 * (2*pi);
+
+               doDebug = 1;
+               if doDebug
+                  figure(1102); 
+                  subplot(221)
+                  errorbar(dT,phi(:,1),phi(:,2),'o');
+                  xlabel('time ago(s)');
+                      ylabel('phase (rad)');
+
+                  ylim(phiset+[-pi pi]);
+                  subplot(222)
+                  errorbar(dT,L(:,1),L(:,2),'o');
+                    xlabel('time ago(s)');
+                    ylabel('wavelength (px)');
+
+                  subplot(223)
+                  errorbar(dT,theta(:,1),theta(:,2),'o');   
+                xlabel('time ago(s)');
+                ylabel('angle (deg)');
+
+                  subplot(224)
+                  plot(dT,v,'o');  
+                    xlabel('time ago(s)');
+                    ylabel('current (A)');
+
+               end             
+               
+               % Modulus math to calculate -pi,pi phase error from phiset
+               phi_err = ((phi(:,1)-phiset)/(2*pi)-round((phi(:,1)-phiset)/(2*pi)))*2*pi;               
+               isGood = ones(size(phi,1),1);               
+               theta_bounds = [88.5 89.5];
+               L_bounds = [70 73];               
+               minB = 0.45;
+               
+               for kk=1:size(phi,1)                   
+                   % Ignore large phi data
+                   if phi(kk,2)>.35;isGood(kk) = 0;end                   
+                   % Ignore phi error close to +-pi/2
+                   if abs(phi_err(kk))>(.45*pi);isGood(kk) = 0;end                   
+                   
+                   % Ignore larger theta uncertainty that 0.5 deg
+                   if abs(theta(kk,2))>.5;isGood(kk) = 0;end   
+                  % Ignore theta outside of boundaries
+                   if theta(kk,1)<theta_bounds(1) || ...
+                           theta(kk,1)>theta_bounds(2)
+                       isGood(kk) = 0;                       
+                   end                    
+                                      
+                   % Ignore L uncertainty than 0.6 px
+                   if abs(L(kk,2))>.6;isGood(kk) = 0;end   
+                  % Ignore L outside of boundaries
+                   if abs(L(kk,1))<L_bounds(1) || ...
+                           abs(L(kk,1))>L_bounds(2)
+                       isGood(kk) = 0;                       
+                   end                     
+                   if B(kk,1)<minB; isGood(kk) = 0; end  
+               end                     
+                t_memory = 1800;
+%                 t_memory = inf;                    
+               isGood = isGood.*[dT<t_memory]';               
+               isGood=logical(isGood);
+               
+               % Remove fits with suspect noise
+                phi(~isGood,:)=[];
+                t(~isGood) =[];
+                theta(~isGood,:)=[];
+                L(~isGood,:) = [];
+                phi_err(~isGood) = [] ;
+                v(~isGood) = [];
+                B(~isGood,:)= [];
+                dT(~isGood) = [];
+                 
+                 if length(dT)>5
+                     beta = 0.9;                     
+                     err_avg = mean(phi_err)/(2*pi);
+                     err_this = phi_err(end)/(2*pi);                     
+                     err_eff = err_this*(1-beta)+err_avg*beta;                     
+                     dIz_old = v(end);                         
+                     kappa = 1e-3/0.14;                     
+                     dIz_new = dIz_old - kappa*err_eff;                     
+                     defVar('qgm_plane_tilt_dIz',dIz_new,'A');
+                     
+                     disp(err_avg);
+                     disp(err_eff);
+                     disp(dIz_new);
+                 end
+         
+                 
+                 
+% %     
+%                
+%                               
+%                 keyboard
+%                 t = readtable(ixon_gui_file);
+%                 phiset = 0.9;    
+%                 phiread = t.stripe__2pi_;                  
+%                 phiread_p = phiread+1;
+%                 phiread_n = phiread-1;
+%                 phiall =[phiread_n phiread phiread_p];
+%                 [val,ind] = min(abs(phiall-phiset));   
+%                 disp('hiall');
+%                 phiread=phiall(ind);
+%                 dIz_old = t.x;
+%                 m = 0.14;
+%                 dI = 1e-3*(phiset-phiread)/m;                
+%                 dIz_new = dIz_old+dI*0.5;
+%                 disp(phiset);
+%                 disp(phiread);
+%                 disp(dIz_old);
+%                 disp(dIz_new);                
+%                 if abs(phiset-phiread)>0.15 && abs(phiset-phiread)<0.8
+%                       defVar('qgm_plane_tilt_dIz',dIz_new,'A');
+%                 else
+%                       defVar('qgm_plane_tilt_dIz',dIz_old,'A');
+%                 end
+            end
+        end
         
         xshimtilt = 4.4;
-        yshimtilt = 0.3;             
-        
-        zshimtilt=getVar('qgm_plane_tilt_dIz');
-        
+        yshimtilt = 0.3;    
+        zshimtilt=getVar('qgm_plane_tilt_dIz');        
 %         
 %         xshimtilt = 5;
 %         yshimtilt = -2.7;               
@@ -292,7 +442,7 @@ switch opts.SelectMode
 
         % Define the SRS frequency
 
-        freq_offset_list = -715;
+        freq_offset_list = [-60];-200;-715;
             
 
 % freq_offset_list = freq_offset_list - 100*(yshimdlist+.1510);
@@ -316,6 +466,7 @@ switch opts.SelectMode
         sweep_time = getVar('qmg_plane_uwave_time');        
         uWave_delta_freq = freq_amp*1e-3;        
     
+        
         defVar('qgm_plane_uwave_power',[15],'dBm');
 
         

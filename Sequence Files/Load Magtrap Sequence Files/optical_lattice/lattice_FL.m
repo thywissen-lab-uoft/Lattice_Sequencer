@@ -48,7 +48,9 @@ global seqdata
     fluor.DwellTime            = 600; % Wait Time beween shots for readout
 
   
-
+    fluor.TriggerTimes = [2000 2300 2600 2900 3200];
+    fluor.ObjectivePiezoShift =[0 .1 0 -.1 0];
+    
     % Mangetic Field
     fluor.doInitialFieldRamp    = 1;        % Auto specify ramps       
     fluor.doInitialFieldRamp2   = 0;        % Manually specify ramps
@@ -103,7 +105,7 @@ end
 % This code set the Fpump power regulation and the 4 pass frequency
 
     % Power that the Fpump beam regulates to
-    F_Pump_List = [0.8];[1.1];1.1;    
+    F_Pump_List = [1.3];[1.1];1.1;    
     
     % Frequency of the FPUMP single pass (MHz)
     fluor.F_Pump_Frequency = 80;

@@ -272,14 +272,14 @@ fb_shift_list =[0.45+0.63]+2.35*1.256;
                   xlabel('time ago(s)');
                       ylabel('phase (rad)');
 
-                  ylim(phiset+[-pi pi]);
-                  subplot(222)
-                  errorbar(dT,L(:,1),L(:,2),'o');
-                    xlabel('time ago(s)');
-                    ylabel('wavelength (px)');
+                ylim(phiset+[-pi pi]);
+                subplot(222)
+                errorbar(dT,L(:,1),L(:,2),'o');
+                xlabel('time ago(s)');
+                ylabel('wavelength (px)');
 
-                  subplot(223)
-                  errorbar(dT,theta(:,1),theta(:,2),'o');   
+                subplot(223)
+                errorbar(dT,theta(:,1),theta(:,2),'o');   
                 xlabel('time ago(s)');
                 ylabel('angle (deg)');
 

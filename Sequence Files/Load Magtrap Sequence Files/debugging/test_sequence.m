@@ -5895,15 +5895,23 @@ end
 % setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',1); % Set 
 % setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',0); % inverted logic
 % 
-%setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',0);
+setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);
+% setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',1);
+
+t_del = 100;
+ScopeTriggerPulse(calctime(curtime,0),'Shim Pulse');
+SelectScopeTrigger('Shim Pulse');
 % 
-% setAnalogChannel(calctime(curtime,0),'Z Shim',0,1); % Set 
-% % setAnalogChannel(calctime(curtime,0),'Y Shim',0,1); % Set 
-% % setAnalogChannel(calctime(curtime,0),'Z Shim',0,1); % Set 
+  setAnalogChannel(calctime(curtime,0+t_del),'X Shim',1,1); % Set 
+  setAnalogChannel(calctime(curtime,0+t_del),'Y Shim',1,1); % Set 
+  setAnalogChannel(calctime(curtime,0+t_del),'Z Shim',1,1); % Set 
 % 
- setAnalogChannel(calctime(curtime,500),'Z Shim',0,1); %3
-% % setAnalogChannel(calctime(curtime,100),'Z Shim',0,3); %3
-% % setAnalogChannel(calctime(curtime,100),'Y Shim',0,4); %4
+  setAnalogChannel(calctime(curtime,500),'X Shim',0,3); %3
+  setAnalogChannel(calctime(curtime,500),'Y Shim',0,4); %3
+  setAnalogChannel(calctime(curtime,500),'Z Shim',0,3); %4
+%   
+  setDigitalChannel(calctime(curtime,500+t_del),'Bipolar Shim Relay',0);
+  setDigitalChannel(calctime(curtime,500+t_del),'Z shim bipolar relay',0);
 % 
 % setAnalogChannel(calctime(curtime,100),'Z Shim',0,1); % Set 
 % % setAnalogChannel(calctime(curtime,200),'Y Shim',0,1); % Set 
@@ -5934,40 +5942,40 @@ end
 %     % Turn on beams
 %     setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 1',1);
 %     setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 2a',1);    
-   
-  % Open Shutter (1: ON, 0: OFF)
-    setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
-    curtime=calctime(curtime,1000);
-
-setDigitalChannel(calctime(curtime,0),'iXon Trigger',0);
-curtime=calctime(curtime,2000);
-
-setDigitalChannel(calctime(curtime,0),'iXon Trigger',0);
-
-
-% read img1
-DigitalPulse(calctime(curtime,0),'iXon Trigger',10,1);
-
-% read img2
-curtime=calctime(curtime,2500);
-DigitalPulse(calctime(curtime,0),'iXon Trigger',10,1);
-
-
-% read img3
-curtime=calctime(curtime,5000);
-DigitalPulse(calctime(curtime,0),'iXon Trigger',10,1);
-
-% read img4
-curtime=calctime(curtime,7000);
-DigitalPulse(calctime(curtime,0),'iXon Trigger',10,1);
+%    
+%   % Open Shutter (1: ON, 0: OFF)
+%     setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
+%     curtime=calctime(curtime,1000);
+% 
+% setDigitalChannel(calctime(curtime,0),'iXon Trigger',0);
+% curtime=calctime(curtime,2000);
+% 
+% setDigitalChannel(calctime(curtime,0),'iXon Trigger',0);
+% 
+% 
+% % read img1
+% DigitalPulse(calctime(curtime,0),'iXon Trigger',10,1);
+% 
+% % read img2
+% curtime=calctime(curtime,2500);
+% DigitalPulse(calctime(curtime,0),'iXon Trigger',10,1);
+% 
+% 
+% % read img3
+% curtime=calctime(curtime,5000);
+% DigitalPulse(calctime(curtime,0),'iXon Trigger',10,1);
+% 
+% % read img4
 % curtime=calctime(curtime,7000);
-
-curtime=calctime(curtime,100);
-setDigitalChannel(calctime(curtime,0),'iXon Trigger',0);
-setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
-
-
-%
+% DigitalPulse(calctime(curtime,0),'iXon Trigger',10,1);
+% % curtime=calctime(curtime,7000);
+% 
+% curtime=calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),'iXon Trigger',0);
+% setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
+% 
+% 
+% %
 % DigitalPulse(calctime(curtime,0),'iXon Trigger',10,1);
 % curtime=calctime(curtime,2000);
 
@@ -6024,7 +6032,7 @@ setDigitalChannel(calctime(curtime,0),'Raman Shutter',1);
 
 
 timeout = curtime;
-% SelectScopeTrigger('PA_Pulse');
+
 
 
 

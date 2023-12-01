@@ -63,6 +63,9 @@ if doInitialFieldRamp
         'FeshValue',0.01,...
         'QPValue',0,...
         'SettlingTime',100);
+    
+%     setDigitalChannel(calctime(curtime,-200),'Z shim bipolar relay',1);
+    
 curtime = rampMagneticFields(calctime(curtime,0), newramp);
 end      
 

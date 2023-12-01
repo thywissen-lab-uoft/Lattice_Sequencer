@@ -5895,23 +5895,23 @@ end
 % setAnalogChannel(calctime(curtime,0),'Rb Probe/OP AM',1); % Set 
 % setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',0); % inverted logic
 % 
-setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);
-% setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',1);
-
-t_del = 100;
-ScopeTriggerPulse(calctime(curtime,0),'Shim Pulse');
-SelectScopeTrigger('Shim Pulse');
+% setDigitalChannel(calctime(curtime,0),'Bipolar Shim Relay',1);
+% % setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',1);
 % 
-  setAnalogChannel(calctime(curtime,0+t_del),'X Shim',1,1); % Set 
-  setAnalogChannel(calctime(curtime,0+t_del),'Y Shim',1,1); % Set 
-  setAnalogChannel(calctime(curtime,0+t_del),'Z Shim',1,1); % Set 
-% 
-  setAnalogChannel(calctime(curtime,500),'X Shim',0,3); %3
-  setAnalogChannel(calctime(curtime,500),'Y Shim',0,4); %3
-  setAnalogChannel(calctime(curtime,500),'Z Shim',0,3); %4
-%   
-  setDigitalChannel(calctime(curtime,500+t_del),'Bipolar Shim Relay',0);
-  setDigitalChannel(calctime(curtime,500+t_del),'Z shim bipolar relay',0);
+% t_del = 100;
+% ScopeTriggerPulse(calctime(curtime,0),'Shim Pulse');
+% SelectScopeTrigger('Shim Pulse');
+% % 
+%   setAnalogChannel(calctime(curtime,0+t_del),'X Shim',1,1); % Set 
+%   setAnalogChannel(calctime(curtime,0+t_del),'Y Shim',1,1); % Set 
+%   setAnalogChannel(calctime(curtime,0+t_del),'Z Shim',1,1); % Set 
+% % 
+%   setAnalogChannel(calctime(curtime,500),'X Shim',0,3); %3
+%   setAnalogChannel(calctime(curtime,500),'Y Shim',0,4); %3
+%   setAnalogChannel(calctime(curtime,500),'Z Shim',0,3); %4
+% %   
+%   setDigitalChannel(calctime(curtime,500+t_del),'Bipolar Shim Relay',0);
+%   setDigitalChannel(calctime(curtime,500+t_del),'Z shim bipolar relay',0);
 % 
 % setAnalogChannel(calctime(curtime,100),'Z Shim',0,1); % Set 
 % % setAnalogChannel(calctime(curtime,200),'Y Shim',0,1); % Set 
@@ -6028,6 +6028,10 @@ SelectScopeTrigger('Shim Pulse');
 % curtime = calctime(curtime,sweep_time+20);
 %     
 % setDigitalChannel(calctime(curtime,0),'ACync Master',0);
+
+AnalogFunc(calctime(curtime,0),'FB current',...
+        @(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),...
+        qp_ramp_down_time2+FB_time,qp_ramp_down_time2+FB_time, fesh_current,0);
 
 
 

@@ -34,7 +34,7 @@ global seqdata
     fluor.EnableRaman           = 1;        % Use Raman Beams    
     
     % Sets the total time of radiation (optical or otherwise)
-    pulse_list = [3400]; %         
+    pulse_list = [2000]; %         
     pulse_time = getScanParameter(...
         pulse_list,seqdata.scancycle,seqdata.randcyclelist,...
         'qgm_pulse_time','ms');      
@@ -72,9 +72,12 @@ global seqdata
 % can accept a new trigger.
 
 if fluor.IxonFrameTransferMode
-    fluor.NumberOfImages       = 4;     % Normal operation     
-    fluor.ExposureTime         = [2000 500 500 500];
-    fluor.ObjectivePiezoShift  = [0 .15 -.15 0];        
+%     fluor.NumberOfImages       = 4;     % Normal operation     
+%     fluor.ExposureTime         = [2000 500 500 500];
+%     fluor.ObjectivePiezoShift  = [0 .15 -.15 0];        
+    fluor.NumberOfImages       = 1;     % Normal operation     
+    fluor.ExposureTime         = [2000];
+    fluor.ObjectivePiezoShift  = [0];    
 else
     fluor.NumberOfImages       = 1;     % Normal operation     
     fluor.DwellTime            = 600; % Wait Time beween shots for readout  

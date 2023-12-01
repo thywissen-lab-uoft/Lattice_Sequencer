@@ -640,7 +640,12 @@ end
 
 if seqdata.flags.do_plane_selection
     dispLineStr('Plane Selection',curtime);      
+    
+   
+    
     curtime = plane_selection(curtime);
+    
+    
     
     % 2023/03/16 cf added to get rid of weird shadow on fluoresnce from the
     % kill beam, there is probalby some werid exposure/timing issue gonig
@@ -1065,6 +1070,7 @@ if seqdata.flags.lattice_img_stripe
     curtime = calctime(curtime,dT);    
     % Wait for ramp to settle
     curtime = calctime(curtime,5);   
+   
     
     %%%%%%% Optical pump after first image %%%%%%%%%
     
@@ -1170,6 +1176,8 @@ curtime = calctime(curtime,50);
     fluor_opts.PulseTime = getVar('stripe_img_time');
     
     dispLineStr('Stripe fluorescence image',curtime);
+    
+    curtime = lattice_FL_fieldramp(curtime);
     curtime = lattice_FL(curtime,fluor_opts);
     
 end

@@ -282,6 +282,7 @@ if seqdata.flags.transport
     
     %Close Science Cell Shim Relay for Plugged QP Evaporation
     setDigitalChannel(calctime(curtime,800),'Bipolar Shim Relay',1);
+    setDigitalChannel(calctime(curtime,800),'Z shim bipolar relay',1);
     
     %Turn Shims to Science cell zero values
     % These can always be set to plug shims because we have separate
@@ -675,6 +676,7 @@ setAnalogChannel(calctime(curtime,0),'Y Shim',0,1);
 setAnalogChannel(calctime(curtime,0),'Z Shim',0,1);   
 
 setDigitalChannel(calctime(curtime,10),'Bipolar Shim Relay',0);
+setDigitalChannel(calctime(curtime,10),'Z shim bipolar relay',0);
 
 setAnalogChannel(curtime,'15/16 GS',0); 
 

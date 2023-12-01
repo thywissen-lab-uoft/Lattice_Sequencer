@@ -151,7 +151,7 @@ seqdata.flags.High_Field_Imaging            = 0; % High field imaging (shouldn't
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[15],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[10],'ms');
@@ -269,7 +269,7 @@ defVar('xdt_evap2_tau_fraction',3.5','arb')
 %% Optical Lattice
 
 % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
-seqdata.flags.lattice                       = 0; 
+seqdata.flags.lattice                       = 1; 
 seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate
 defVar('lattice_depth_load',2,'Er');
 defVar('lattice_pin_depth',60,'Er');
@@ -382,7 +382,7 @@ getVar('scope_pos');
 % seqdata.scope_trigger = 'rf_spectroscopy';
 % seqdata.scope_trigger = 'Lattice_Mod';
 % seqdata.scope_trigger = 'FB_ramp';
-% seqdata.scope_trigger = 'lattice_ramp_1';
+seqdata.scope_trigger = 'lattice_ramp_1';
 % seqdata.scope_trigger = 'pulse lattice';
 % seqdata.scope_trigger = 'Raman Beams On';
 % seqdata.scope_trigger = 'PA_Pulse';
@@ -390,12 +390,12 @@ getVar('scope_pos');
 % seqdata.scope_trigger = 'lattice_off';
 % seqdata.scope_trigger = 'Camera triggers';
 % seqdata.scope_trigger = 'Start Transport';
-seqdata.scope_trigger = 'TOF';
+% seqdata.scope_trigger = 'TOF';
 % seqdata.scope_trigger = 'Optical pumping';
 % seqdata.scope_trigger = 'MOT Trigger';
 % seqdata.scope_trigger = 'CMOT';
 % seqdata.scope_trigger = 'Molasses';
-% seqdata.scope_trigger = 'Plug';
+seqdata.scope_trigger = 'Plane selection';
 
 
 %% end time

@@ -18,7 +18,7 @@ global seqdata
 opts.ramp_fields = 1; 
 
 
-opts.dotilt     = 1; %tilt for stripe pattern
+opts.dotilt     = 0; %tilt for stripe pattern
 
 
 % Do you want to fake the plane selection sweep?
@@ -227,7 +227,7 @@ fb_shift_list =[0.45+0.63]+2.35*1.256;
         defVar('qgm_plane_tilt_dIz',[-0.012],'A');
         defVar('qgm_plane_tilt_dIz',[0.025],'A');
         
-        defVar('qgm_plane_tilt_dIz',0.03,'A');
+        defVar('qgm_plane_tilt_dIz',0.02,'A');
         
         if isfield(seqdata.flags,'qgm_stripe_feedback') && ...
             seqdata.flags.qgm_stripe_feedback && ...
@@ -419,8 +419,11 @@ fb_shift_list =[0.45+0.63]+2.35*1.256;
     % Extra Labeling
     addOutputParam('qgm_plane_Bfb',Bfb,'G');
     addOutputParam('qgm_plane_IQP',IQP,'A');
+    
+%     setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',0);
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
+
 end
 
 %% Apply the uWaves
@@ -442,7 +445,7 @@ switch opts.SelectMode
 
         % Define the SRS frequency
 
-        freq_offset_list = [-60];-200;-715;
+        freq_offset_list = [-525];460;-200;-715;
             
 
 % freq_offset_list = freq_offset_list - 100*(yshimdlist+.1510);
@@ -523,6 +526,9 @@ switch opts.SelectMode
                 @(t,T,beta,A) A*sech(2*beta*(t-0.5*sweep_time)/sweep_time),...
                 sweep_time,sweep_time,beta,env_amp,2);
         end
+        
+        % Trigger the Scope
+    ScopeTriggerPulse(curtime,'Plane selection');
 
         curtime = calctime(curtime,sweep_time);                     % Wait for sweep
         setDigitalChannel(calctime(curtime,0),'K uWave TTL',0);     % Turn off the uWave

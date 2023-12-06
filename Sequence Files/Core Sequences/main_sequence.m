@@ -611,8 +611,19 @@ if seqdata.flags.lattice
         
         fluor_opts.doInitialFieldRamp = 0;
         fluor_opts.doInitialFieldRamp2 = 0;
-%         curtime = calctime(curtime,500);
-        curtime = lattice_FL(curtime, fluor_opts);  
+
+        fluor_opts.PulseTime =    [2000];
+        fluor_opts.ExposureTime = [2000];
+    
+curtime = lattice_FL(curtime, fluor_opts); 
+
+curtime = calctime(curtime,500);
+
+        fluor_opts.PulseTime =    [1000];
+        fluor_opts.ExposureTime = [1000];
+
+curtime = lattice_FL(curtime, fluor_opts); 
+
     end
 end
 

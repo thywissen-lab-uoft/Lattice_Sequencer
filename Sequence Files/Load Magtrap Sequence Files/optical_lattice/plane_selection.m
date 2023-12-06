@@ -190,7 +190,7 @@ fb_shift_list =[0.45+0.63]+2.35*1.256;
     defVar('IQP_PS_shift', [14], 'A');
     IQP_PS_shift = getVar('IQP_PS_shift');
     
-    defVar('QP_FF_override', 28, 'V');18;
+    defVar('QP_FF_override', 27, 'V');18;
     
     % QP Field (in Amps)
     IQP = 14*1.78 + IQP_PS_shift; % 210 G/cm (not sure if calibrated)
@@ -227,7 +227,7 @@ fb_shift_list =[0.45+0.63]+2.35*1.256;
         defVar('qgm_plane_tilt_dIz',[-0.012],'A');
         defVar('qgm_plane_tilt_dIz',[0.025],'A');
         
-        defVar('qgm_plane_tilt_dIz',0.02,'A');
+        defVar('qgm_plane_tilt_dIz',-0.008,'A');
         
         if isfield(seqdata.flags,'qgm_stripe_feedback') && ...
             seqdata.flags.qgm_stripe_feedback && ...
@@ -402,6 +402,8 @@ fb_shift_list =[0.45+0.63]+2.35*1.256;
     ramp.shim_ramptime = 100;
     ramp.shim_ramp_delay = -10;
     
+%     ramp.shim_ramp_type = '
+    
     % FB and QP values
     ramp.fesh_final         = Bfb; % in Gauss
     ramp.QP_final           = IQP; % in Amps?   
@@ -445,7 +447,7 @@ switch opts.SelectMode
 
         % Define the SRS frequency
 
-        freq_offset_list = [-525];460;-200;-715;
+        freq_offset_list = [-410];-450;460;-200;-715;
             
 
 % freq_offset_list = freq_offset_list - 100*(yshimdlist+.1510);

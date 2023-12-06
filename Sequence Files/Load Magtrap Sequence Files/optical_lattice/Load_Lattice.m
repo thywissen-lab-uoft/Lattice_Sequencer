@@ -650,7 +650,7 @@ if seqdata.flags.do_plane_selection
     % 2023/03/16 cf added to get rid of weird shadow on fluoresnce from the
     % kill beam, there is probalby some werid exposure/timing issue gonig
     % on that should be resolved.
-    curtime = calctime(curtime,100);
+%     curtime = calctime(curtime,100);
     
 end
 
@@ -1070,6 +1070,29 @@ if seqdata.flags.lattice_img_stripe
     curtime = calctime(curtime,dT);    
     % Wait for ramp to settle
     curtime = calctime(curtime,5);   
+    
+        %%%%%%%%%% Ramps to repopulate Z lattice %%%%%%%
+    seqdata.flags.lattice_repop_z = 0;  
+    if seqdata.flags.lattice_repop_z
+        
+    defVar('z_repop_ramptime',[10],'ms');
+    z_dT = getVar('z_repop_ramptime'); 
+    
+    defVar('z_repop_depth',[1],'ER');
+    z_depth = getVar('z_repop_depth');
+    
+    curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),z_dT, z_dT, z_depth);        
+   
+    
+    defVar('z_repop_time',[50],'ms');
+    % Wait for equillibrium
+    curtime = calctime(curtime,getVar('z_repop_time')); 
+    
+    curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, 60);
+        
+    end
    
     
     %%%%%%% Optical pump after first image %%%%%%%%%
@@ -1174,6 +1197,7 @@ curtime = calctime(curtime,50);
     defVar('stripe_img_time',[1000],'ms');
     
     fluor_opts.PulseTime = getVar('stripe_img_time');
+    fluor_opts.ExposureTime = getVar('stripe_img_time');
     
     dispLineStr('Stripe fluorescence image',curtime);
     

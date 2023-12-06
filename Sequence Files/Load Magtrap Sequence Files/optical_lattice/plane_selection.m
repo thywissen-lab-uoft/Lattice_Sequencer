@@ -163,43 +163,29 @@ end
 %% Magnetic Field Ramps
 opts.ramp_fields=1;
 if opts.ramp_fields
+    % Ramp the SHIMs, QP, and FB to the appropriate level  
+    dispLineStr('Ramping Fields', curtime);
+    clear('ramp');  
+    
     DigitalPulse(calctime(curtime,-100),...
         'LabJack Trigger Transport',10,1);      
     DigitalPulse(calctime(curtime,100),...
-        'LabJack Trigger Transport',10,1);
-    
-    % Ramp the SHIMs, QP, and FB to the appropriate level  
-    dispLineStr('Ramping Fields', curtime);
-    clear('ramp');           
-
+        'LabJack Trigger Transport',10,1);    
+         
     % Fesbhach Field (in gauss)
-    B0 = 128;    %old value 128G, 0.6G shift
-    fb_shift_list = [0.45];% OLD FOR 25 A
-
-    fb_shift_list = [0.45+0.63];[0.45];
-    
-    fb_shift_list = [0.45+0.63];[0.45];
-        
-fb_shift_list =[0.45+0.63]+2.35*1.256;
-    
+    B0 = 128;    %old value 128G, 0.6G shift        
+    fb_shift_list =[0.45+0.63]+2.35*1.256;
     fb_shift = getScanParameter(fb_shift_list,seqdata.scancycle,...
         seqdata.randcyclelist,'qgm_plane_FB_shift','G');    
-    Bfb = B0 - fb_shift;
+    Bfb = B0 - fb_shift;    
     
+    defVar('IQP_PS_shift', [14], 'A');    
+    defVar('QP_FF_override', 27, 'V');18;   
     
-    defVar('IQP_PS_shift', [14], 'A');
-    IQP_PS_shift = getVar('IQP_PS_shift');
-    
-    defVar('QP_FF_override', 27, 'V');18;
-    
+
     % QP Field (in Amps)
+    IQP_PS_shift = getVar('IQP_PS_shift');
     IQP = 14*1.78 + IQP_PS_shift; % 210 G/cm (not sure if calibrated)
-    
-    % Shim Fields (in Amps) OLD FOR 25 AMP
-%     xshimdlist  = -2.8050;
-%     yshimdlist  = -0.1510;
-%     zshimdlist  = -1;         
-%     
          
     % Shim Fields (in Amps) NEW FOR 39 AMP QP --> 12mG per plane
     xshimdlist  = -3.55;
@@ -216,19 +202,9 @@ fb_shift_list =[0.45+0.63]+2.35*1.256;
     % Shim Calibrations (unsure how correct
     % X/Y   : 1.983 G/A (from raman transfers)
     % Z     : 2.35 G/A  (from high field measurements)
-    cxy = 1.983;
-    cz = 2.35;
-    
-    if opts.dotilt        
-%         xshimtilt = 5;
-%         yshimtilt = -2.7;             
-%         defVar('qgm_plane_tilt_dIz',[-0.206],'A');
-%         zshimtilt=getVar('qgm_plane_tilt_dIz');        
-        defVar('qgm_plane_tilt_dIz',[-0.012],'A');
-        defVar('qgm_plane_tilt_dIz',[0.025],'A');
-        
-        defVar('qgm_plane_tilt_dIz',-0.008,'A');
-        
+
+    if opts.dotilt                
+        defVar('qgm_plane_tilt_dIz',-0.008,'A');        
         if isfield(seqdata.flags,'qgm_stripe_feedback') && ...
             seqdata.flags.qgm_stripe_feedback && ...
             exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')      
@@ -243,51 +219,43 @@ fb_shift_list =[0.45+0.63]+2.35*1.256;
                 t=[];theta=[];L=[];phi=[];v=[];B=[];
                for n = 1:length(names) 
                   data = load(fullfile(seqdata.IxonGUIAnalayisHistoryDirectory,names{n}));
-                  data=data.gui_saveData;
-                  
+                  data=data.gui_saveData;                  
                   if isfield(data,'Stripe')
                       t(end+1) = datenum(data.Date);
                       v(end+1) = data.Params.qgm_plane_tilt_dIz;                      
                       theta(end+1,1) = data.Stripe.theta;
-                      theta(end,2) = data.Stripe.theta_err;
-                      
+                      theta(end,2) = data.Stripe.theta_err;                      
                       L(end+1,1) = data.Stripe.L;                      
-                      L(end,2) = data.Stripe.L_err;
-                      
+                      L(end,2) = data.Stripe.L_err;                      
                       phi(end+1,1) = data.Stripe.phi; 
-                      phi(end,2) = data.Stripe.phi_err;    
-                      
+                      phi(end,2) = data.Stripe.phi_err;  
                       B(end+1,1) = data.Stripe.B; 
                       B(end,2) = data.Stripe.B_err;    
                   end
                end               
-               dT = (tnow - t)*24*60*60;
-              phiset = 0.9 * (2*pi);
+                dT = (tnow - t)*24*60*60;
+                phiset = 0.9 * (2*pi);
 
                doDebug = 1;
                if doDebug
-                  figure(1102); 
-                  subplot(221)
-                  errorbar(dT,phi(:,1),phi(:,2),'o');
-                  xlabel('time ago(s)');
-                      ylabel('phase (rad)');
-
-                ylim(phiset+[-pi pi]);
-                subplot(222)
-                errorbar(dT,L(:,1),L(:,2),'o');
-                xlabel('time ago(s)');
-                ylabel('wavelength (px)');
-
-                subplot(223)
-                errorbar(dT,theta(:,1),theta(:,2),'o');   
-                xlabel('time ago(s)');
-                ylabel('angle (deg)');
-
-                  subplot(224)
-                  plot(dT,v,'o');  
+                    figure(1102); 
+                    subplot(221)
+                    errorbar(dT,phi(:,1),phi(:,2),'o');
+                    xlabel('time ago(s)');
+                    ylabel('phase (rad)');
+                    ylim(phiset+[-pi pi]);
+                    subplot(222)
+                    errorbar(dT,L(:,1),L(:,2),'o');
+                    xlabel('time ago(s)');
+                    ylabel('wavelength (px)');
+                    subplot(223)
+                    errorbar(dT,theta(:,1),theta(:,2),'o');   
+                    xlabel('time ago(s)');
+                    ylabel('angle (deg)');
+                    subplot(224)
+                    plot(dT,v,'o');  
                     xlabel('time ago(s)');
                     ylabel('current (A)');
-
                end             
                
                % Modulus math to calculate -pi,pi phase error from phiset
@@ -301,16 +269,14 @@ fb_shift_list =[0.45+0.63]+2.35*1.256;
                    % Ignore large phi data
                    if phi(kk,2)>.35;isGood(kk) = 0;end                   
                    % Ignore phi error close to +-pi/2
-                   if abs(phi_err(kk))>(.45*pi);isGood(kk) = 0;end                   
-                   
+                   if abs(phi_err(kk))>(.45*pi);isGood(kk) = 0;end  
                    % Ignore larger theta uncertainty that 0.5 deg
                    if abs(theta(kk,2))>.5;isGood(kk) = 0;end   
                   % Ignore theta outside of boundaries
                    if theta(kk,1)<theta_bounds(1) || ...
                            theta(kk,1)>theta_bounds(2)
                        isGood(kk) = 0;                       
-                   end                    
-                                      
+                   end                                                          
                    % Ignore L uncertainty than 0.6 px
                    if abs(L(kk,2))>.6;isGood(kk) = 0;end   
                   % Ignore L outside of boundaries
@@ -321,7 +287,6 @@ fb_shift_list =[0.45+0.63]+2.35*1.256;
                    if B(kk,1)<minB; isGood(kk) = 0; end  
                end                     
                 t_memory = 1800;
-%                 t_memory = inf;                    
                isGood = isGood.*[dT<t_memory]';               
                isGood=logical(isGood);
                
@@ -348,47 +313,12 @@ fb_shift_list =[0.45+0.63]+2.35*1.256;
                      disp(err_avg);
                      disp(err_eff);
                      disp(dIz_new);
-                 end
-         
-                 
-                 
-% %     
-%                
-%                               
-%                 keyboard
-%                 t = readtable(ixon_gui_file);
-%                 phiset = 0.9;    
-%                 phiread = t.stripe__2pi_;                  
-%                 phiread_p = phiread+1;
-%                 phiread_n = phiread-1;
-%                 phiall =[phiread_n phiread phiread_p];
-%                 [val,ind] = min(abs(phiall-phiset));   
-%                 disp('hiall');
-%                 phiread=phiall(ind);
-%                 dIz_old = t.x;
-%                 m = 0.14;
-%                 dI = 1e-3*(phiset-phiread)/m;                
-%                 dIz_new = dIz_old+dI*0.5;
-%                 disp(phiset);
-%                 disp(phiread);
-%                 disp(dIz_old);
-%                 disp(dIz_new);                
-%                 if abs(phiset-phiread)>0.15 && abs(phiset-phiread)<0.8
-%                       defVar('qgm_plane_tilt_dIz',dIz_new,'A');
-%                 else
-%                       defVar('qgm_plane_tilt_dIz',dIz_old,'A');
-%                 end
+                 end  
             end
-        end
-        
+        end        
         xshimtilt = 4.4;
         yshimtilt = 0.3;    
         zshimtilt=getVar('qgm_plane_tilt_dIz');        
-%         
-%         xshimtilt = 5;
-%         yshimtilt = -2.7;               
-%         defVar('qgm_plane_tilt_dIz',[-0.125],'A');
-%         zshimtilt=getVar('qgm_plane_tilt_dIz');
     else
         xshimtilt = 0;
         yshimtilt = 0;
@@ -401,8 +331,6 @@ fb_shift_list =[0.45+0.63]+2.35*1.256;
     ramp.zshim_final = seqdata.params.shim_zero(3) + zshimd + zshimtilt;        
     ramp.shim_ramptime = 100;
     ramp.shim_ramp_delay = -10;
-    
-%     ramp.shim_ramp_type = '
     
     % FB and QP values
     ramp.fesh_final         = Bfb; % in Gauss
@@ -421,11 +349,8 @@ fb_shift_list =[0.45+0.63]+2.35*1.256;
     % Extra Labeling
     addOutputParam('qgm_plane_Bfb',Bfb,'G');
     addOutputParam('qgm_plane_IQP',IQP,'A');
-    
-%     setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',0);
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
-
 end
 
 %% Apply the uWaves
@@ -447,7 +372,7 @@ switch opts.SelectMode
 
         % Define the SRS frequency
 
-        freq_offset_list = [-410];-450;460;-200;-715;
+        freq_offset_list = [-350];-450;460;-200;-715;
             
 
 % freq_offset_list = freq_offset_list - 100*(yshimdlist+.1510);

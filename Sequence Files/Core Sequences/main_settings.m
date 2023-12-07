@@ -313,7 +313,7 @@ seqdata.flags.lattice_uWave_spec            = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 seqdata.flags.lattice_do_optical_pumping    = 1;    % (1426) keep : optical pumping in lattice  
 seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
-seqdata.flags.qgm_stripe_feedback           = 0; % feedback on stripes EXPERIMENTAL
+seqdata.flags.qgm_stripe_feedback           = 1; % feedback on stripes EXPERIMENTAL
 % Actual fluorsence image flags - NO LONGER USED
 seqdata.flags.Raman_transfers               = 0;
 
@@ -382,7 +382,7 @@ getVar('scope_pos');
 % seqdata.scope_trigger = 'rf_spectroscopy';
 % seqdata.scope_trigger = 'Lattice_Mod';
 % seqdata.scope_trigger = 'FB_ramp';
-seqdata.scope_trigger = 'lattice_ramp_1';
+% seqdata.scope_trigger = 'lattice_ramp_1';
 % seqdata.scope_trigger = 'pulse lattice';
 % seqdata.scope_trigger = 'Raman Beams On';
 % seqdata.scope_trigger = 'PA_Pulse';
@@ -395,7 +395,7 @@ seqdata.scope_trigger = 'lattice_ramp_1';
 % seqdata.scope_trigger = 'MOT Trigger';
 % seqdata.scope_trigger = 'CMOT';
 % seqdata.scope_trigger = 'Molasses';
-% seqdata.scope_trigger = 'Plane selection';
+seqdata.scope_trigger = 'Plane selection';
 
 
 %% end time

@@ -89,45 +89,58 @@ curtime = calctime(curtime,30);
 ScopeTriggerPulse(curtime,'Plane Select');
 
 %% Magnetic Field Ramps 2
-ramp_field_CF=0;
-doTriggerLabJack=0;
+ramp_field_CF=1;
 if ramp_field_CF
     
-    % FF Settings
-    defVar('qgm_pselect_FF',25,'V');
-    defVar('qgm_pselect_FF_ramp_time',20,'ms');
+    % Transport Feedforward Settings
+    defVar('qgm_pselect_FF',27,'V');
+    defVar('qgm_pselect_FF_ramp_time',135,'ms');
 
     % Timings
-    defVar('qgm_pselect_ramp_time',25,'ms')
-    defVar('qgm_pselect_settle_time',50,'ms');
+    defVar('qgm_pselect_ramp_time',150,'ms')
+    defVar('qgm_pselect_settle_time',100,'ms');
     
-    defVar('qgm_pselect_QP',24.92,'A');func_qp = 2;     % QP Settings
-    defVar('qgm_pselect_FB',128-0.45,'G');func_fb = 2;   % FB Settings
+    % QP Coils Current Settings
+    defVar('qgm_pselect_QP',38.9200+[0],'A');
+    func_qp = 2; % voltage function
+    
+    % Feshbach Coil Current Settings
+    defVar('qgm_pselect_FB',123.9684,'G');
+    func_fb = 2;   % voltage function  
     
     % Shim Setting
     func_x = 3; func_y = 4; func_z = 3;
-    dIx0 = - 2.8050;
-    dIy0 = - 0.1510;
-    dIz0 = -1;         
+    dIx0 = -3.55;
+    dIy0 = -0.1510;
+    dIz0 = 0;         
     
     Ix = dIx0 + seqdata.params.shim_zero(1);
     Iy = dIy0 + seqdata.params.shim_zero(2);
     Iz = dIz0 + seqdata.params.shim_zero(3);
+    
+    if opts.dotilt                
+        defVar('qgm_plane_tilt_dIz',-0.008,'A');        
+        if isfield(seqdata.flags,'qgm_stripe_feedback') && ...
+            seqdata.flags.qgm_stripe_feedback && ...
+            exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')      
+            Inew = stripe_feedback;     
+            defVar('qgm_plane_tilt_dIz',Inew,'A');
+        end        
+        xshimtilt = 4.4;
+        yshimtilt = 0.3;    
+        zshimtilt= getVar('qgm_plane_tilt_dIz');   
+        
+        Ix = Ix + xshimtilt;
+        Iy = Iy + yshimtilt;
+        Iz = Iz + zshimtilt;
+    end  
     
     Vff = getVar('qgm_pselect_FF');
     Tff = getVar('qgm_pselect_FF_ramp_time');
     IQP = getVar('qgm_pselect_QP');
     BFB = getVar('qgm_pselect_FB');
     Tr  = getVar('qgm_pselect_ramp_time');
-    Ts  = getVar('qgm_pselect_settle_time');
-
-    % Useful for looking at field stability
-    if doTriggerLabJack
-        DigitalPulse(calctime(curtime,-100),...
-            'LabJack Trigger Transport',10,1);      
-        DigitalPulse(calctime(curtime,100),...
-            'LabJack Trigger Transport',10,1);
-    end    
+    Ts  = getVar('qgm_pselect_settle_time'); 
     
     dispLineStr('Ramping Fields CF', curtime);
     val_FF = getChannelValue(seqdata,'Transport FF',1);
@@ -138,9 +151,14 @@ if ramp_field_CF
     val_Z = getChannelValue(seqdata,'Z Shim',1);
 
     % Ramp up QP Feedforward
+%     curtime =  AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+%         Tff, Tff, 4,2);
+    
+    % Ramp up together
     AnalogFuncTo(calctime(curtime,0),'Transport FF',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        Tff, Tff, Vff);    
+        Tff, Tff, Vff,2);    
     AnalogFuncTo(calctime(curtime,0),'Coil 16',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         Tr, Tr, IQP,func_qp);
@@ -161,7 +179,7 @@ if ramp_field_CF
 end
 
 %% Magnetic Field Ramps
-opts.ramp_fields=1;
+opts.ramp_fields=0;
 if opts.ramp_fields
     % Ramp the SHIMs, QP, and FB to the appropriate level  
     dispLineStr('Ramping Fields', curtime);
@@ -180,8 +198,7 @@ if opts.ramp_fields
     Bfb = B0 - fb_shift;    
     
     defVar('IQP_PS_shift', [14], 'A');    
-    defVar('QP_FF_override', 27, 'V');18;   
-    
+    defVar('QP_FF_override', 27, 'V');18;       
 
     % QP Field (in Amps)
     IQP_PS_shift = getVar('IQP_PS_shift');
@@ -267,17 +284,17 @@ switch opts.SelectMode
 
         % Define the SRS frequency
 
-        freq_offset_list = [-500];-450;460;-200;-715;
+        freq_offset_list = [-350];-450;460;-200;-715;
             
 
 % freq_offset_list = freq_offset_list - 100*(yshimdlist+.1510);
 
-        freq_amp_list = [8]; % 30 kHz is about 2 planes
-%           freq_amp_list = [7]; % 12 kHz is about 1 plane   
-          
-        if opts.dotilt
-            freq_amp_list = [8]; % 12 kHz is about 1 plane       
-        end
+        freq_amp_list = [12]; % 30 kHz is about 2 planes
+% %           freq_amp_list = [7]; % 12 kHz is about 1 plane   
+%           
+%         if opts.dotilt
+%             freq_amp_list = [8]; % 12 kHz is about 1 plane       
+%         end
 
         sweep_time_list = 2*freq_amp_list/10; % CF has no idea when this was calibrated
 

@@ -52,7 +52,7 @@ function J=job_conducivity_ac_shake
     end
 %%
 
-var_list = [45:1:75];
+var_list = [44:2:76];
 var_list = var_list(randperm(numel(var_list)));
 clear J
 for ii = 1:length(var_list)
@@ -69,7 +69,7 @@ for ii = 1:length(var_list)
 %     else
         npt.ScanCyclesRequested = 1:25;
 %     end
-    npt.JobName             = [num2str(ii) ' 2.0Er Modulate ' num2str(x)];
+    npt.JobName             = [num2str(ii) ' 2.5Er Modulate ' num2str(x)];
     npt.SaveDirName         = npt.JobName;    
     J(ii) = sequencer_job(npt);
 end

@@ -650,6 +650,7 @@ if seqdata.flags.xdt_K_p2n_rf_sweep_freq
     
     
     %Ramp FB if not done previously 
+    
      if fesh_value~=19.332
         clear('ramp');
         ramp=struct;
@@ -689,6 +690,8 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp);
     disp(['     Sweep Rate   (kHz/ms) : ' num2str(1E3*sweep_pars.delta_freq./sweep_pars.pulse_length)]);
 
     % Apply the RF
+    
+    
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars); 
 curtime = calctime(curtime,5);
 
@@ -878,6 +881,8 @@ if seqdata.flags.xdt_rfmix_start
 
     f1=sweep_pars.freq-sweep_pars.delta_freq/2;
     f2=sweep_pars.freq+sweep_pars.delta_freq/2;
+    
+ScopeTriggerPulse(curtime,'40k 97 mixing');
 
 
     T60=16.666; % 60 Hz period

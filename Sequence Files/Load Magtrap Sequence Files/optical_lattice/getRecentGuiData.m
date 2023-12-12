@@ -1,4 +1,4 @@
-function old_data = getRecentGuiData(N)
+    function old_data = getRecentGuiData(N)
 
 disp('Acquiring most recent GUI data');
 if nargin == 0
@@ -15,8 +15,10 @@ end
 names = dir([seqdata.IxonGUIAnalayisHistoryDirectory filesep '*.mat']);
 names = {names.name};
 names = flip(sort(names)); % Sort by most recent     
-names = [names(1:N)];              
 
+if length(names)>=N
+names = [names(1:N)];              
+end
 old_data = {};
     for n = 1:length(names) 
         warning off

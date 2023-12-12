@@ -52,7 +52,7 @@ if seqdata.flags.lattice_rotate_waveplate_1
     %Turn rotating waveplate to shift a little power to the lattice beams
     wp_Trot1 = 600; % Rotation time during XDT
     
-    P_RotWave_I = 0.8;
+    P_RotWave_I = 0.7;.8
     P_RotWave_II = 0.99;
     
     disp(['     Rotation Time 1 : ' num2str(wp_Trot1) ' ms']);
@@ -616,11 +616,15 @@ curtime =  setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);
 clear('ramp');
 
         % Ramp the bias fields
-newramp = struct('ShimValues',seqdata.params.shim_zero,...
-            'FeshValue',10,'QPValue',0,'SettlingTime',100);
-
+% newramp = struct('ShimValues',seqdata.params.shim_zero,...
+%             'FeshValue',10,'QPValue',0,'SettlingTime',100);
+newramp = struct('ShimValues',seqdata.params.shim_zero+[0 0 2],...
+            'FeshValue',0,'QPValue',0,'SettlingTime',100);
+        
     % Ramp fields for pumping
-curtime = rampMagneticFields(calctime(curtime,0), newramp);       
+    if ~seqdata.flags.do_plane_selection
+        curtime = rampMagneticFields(calctime(curtime,0), newramp);       
+    end
 
 curtime = calctime(curtime,50);    
 end
@@ -639,19 +643,8 @@ end
 % by applying a small shim field and measuring the "stripes"
 
 if seqdata.flags.do_plane_selection
-    dispLineStr('Plane Selection',curtime);      
-    
-   
-    
-    curtime = plane_selection(curtime);
-    
-    
-    
-    % 2023/03/16 cf added to get rid of weird shadow on fluoresnce from the
-    % kill beam, there is probalby some werid exposure/timing issue gonig
-    % on that should be resolved.
-%     curtime = calctime(curtime,100);
-    
+    dispLineStr('Plane Selection',curtime);     
+    curtime = plane_selection(curtime);      
 end
 
 %% Field Ramps BEFORE uWave/RF Spectroscopy

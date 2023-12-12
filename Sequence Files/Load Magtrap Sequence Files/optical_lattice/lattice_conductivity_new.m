@@ -8,8 +8,8 @@ setAnalogChannel(curtime,'Modulation Ramp',-10,1);
 %% Flags
 seqdata.flags.conductivity_ODT1_mode            = 1; % 0:OFF, 1:SINE, 2:DC
 seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
-seqdata.flags.conductivity_ramp_FB              = 0; % Ramp FB field to resonance
-seqdata.flags.conductivity_ramp_QP              = 0; % Ramp QP reverse with FB (only works if ramp_FB is enabled)
+seqdata.flags.conductivity_ramp_FB              = 1; % Ramp FB field to resonance
+seqdata.flags.conductivity_ramp_QP              = 1; % Ramp QP reverse with FB (only works if ramp_FB is enabled)
 seqdata.flags.conductivity_rf_spec              = 0;
 seqdata.flags.conductivity_enable_mod_ramp      = 1;
 seqdata.flags.conductivity_QPD_trigger          = 1; % Trigger QPD monitor LabJack/Scope

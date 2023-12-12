@@ -171,6 +171,10 @@ setDigitalChannel(calctime(curtime,0),'K High Field Probe',1);
 % Turn on MOT Shim Supply Relay
 setDigitalChannel(calctime(curtime,0),'Shim Relay',1);
 
+%Set the FB Source Relay and Rigol Trigger to be off initially
+setDigitalChannel(calctime(curtime,0),95,0);
+setDigitalChannel(calctime(curtime,0),96,0);
+
 % Turn off Rigol modulation
 addr_mod_xy = 9; % ch1 x mod, ch2 y mod
 addr_z = 5; %ch1 z lat, ch2 z mod  
@@ -612,17 +616,17 @@ if seqdata.flags.lattice
         fluor_opts.doInitialFieldRamp = 0;
         fluor_opts.doInitialFieldRamp2 = 0;
 
-        fluor_opts.PulseTime =    [2000];
-        fluor_opts.ExposureTime = [2000];
+%         fluor_opts.PulseTime =    [2000];
+%         fluor_opts.ExposureTime = [2000];
     
 curtime = lattice_FL(curtime, fluor_opts); 
 
-curtime = calctime(curtime,500);
-
-        fluor_opts.PulseTime =    [1000];
-        fluor_opts.ExposureTime = [1000];
-
-curtime = lattice_FL(curtime, fluor_opts); 
+% curtime = calctime(curtime,500);
+% 
+%         fluor_opts.PulseTime =    [1000];
+%         fluor_opts.ExposureTime = [1000];
+% 
+% curtime = lattice_FL(curtime, fluor_opts); 
 
     end
 end

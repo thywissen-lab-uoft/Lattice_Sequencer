@@ -124,7 +124,10 @@ if ramp_field_CF
             seqdata.flags.qgm_stripe_feedback && ...
             exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')      
             Inew = stripe_feedback;     
-            defVar('qgm_plane_tilt_dIz',Inew,'A');
+            
+            if ~isnan(Inew)
+                defVar('qgm_plane_tilt_dIz',Inew,'A');
+            end
         end        
         xshimtilt = 4.4;
         yshimtilt = 0.3;    
@@ -162,9 +165,23 @@ if ramp_field_CF
     AnalogFuncTo(calctime(curtime,0),'Coil 16',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         Tr, Tr, IQP,func_qp);
-    AnalogFuncTo(calctime(curtime,0),'FB Current',...
+    
+    doFBSourceSwitch = 0;
+    if exist('doFBSourceSwitch','var') && doFBSourceSwitch
+        AnalogFuncTo(calctime(curtime,-150),'FB Current',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        Tr, Tr, BFB,func_fb);  
+        10, 10, -0.1, 1);
+       
+        setDigitalChannel(calctime(curtime,-135),96,1); %Relay TTL
+        DigitalPulse(calctime(curtime,0),95,10,1); %Rigol Burst Mode Trigger
+       
+    else
+        DigitalPulse(calctime(curtime,0),95,10,1); %Rigol Burst Mode Trigger
+        AnalogFuncTo(calctime(curtime,0),'FB Current',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            Tr, Tr, BFB,func_fb); 
+    end
+    
     AnalogFuncTo(calctime(curtime,0),'X Shim',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         Tr, Tr, Ix,func_x);  
@@ -284,28 +301,32 @@ switch opts.SelectMode
 
         % Define the SRS frequency
 
-        freq_offset_list = [-350];-450;460;-200;-715;
+        freq_offset_list = [-330];-450;460;-200;-715;
             
 
 % freq_offset_list = freq_offset_list - 100*(yshimdlist+.1510);
 
-        freq_amp_list = [12]; % 30 kHz is about 2 planes
+        freq_amp_list = [10]; % 42 kHz / plane now?CF did a recent calculation to suggest this
 % %           freq_amp_list = [7]; % 12 kHz is about 1 plane   
 %           
 %         if opts.dotilt
 %             freq_amp_list = [8]; % 12 kHz is about 1 plane       
 %         end
 
-        sweep_time_list = 2*freq_amp_list/10; % CF has no idea when this was calibrated
+
+% CF : 2023/12/11 chagned from 2*freq_amp_list/10 to be freq_amp_list/10...
+% unclear what is the best, depends on transfer efficiecny and rabi
+% frequency
+        sweep_time_list = freq_amp_list/10; % CF has no idea when this was calibrated
 
         defVar('qgm_plane_uwave_frequency_offset',freq_offset_list,'kHz');
         defVar('qgm_plane_uwave_amplitude',freq_amp_list,'kHz');
-        defVar('qmg_plane_uwave_time',sweep_time_list,'ms')
+        defVar('qgm_plane_uwave_time',sweep_time_list,'ms')
         
         freq_offset = getVar('qgm_plane_uwave_frequency_offset');
 %         freq_offset = getVarOrdered('qgm_plane_uwave_frequency_offset');
         freq_amp = getVar('qgm_plane_uwave_amplitude');
-        sweep_time = getVar('qmg_plane_uwave_time');        
+        sweep_time = getVar('qgm_plane_uwave_time');        
         uWave_delta_freq = freq_amp*1e-3;        
     
         
@@ -934,9 +955,14 @@ if ramp_field_CF
     AnalogFuncTo(calctime(curtime,0),'Coil 16',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         Tr, Tr, val_16,func_qp);
-    AnalogFuncTo(calctime(curtime,0),'FB Current',...
+    
+    if exist('doFBSourceSwitch','var') && doFBSourceSwitch
+        setDigitalChannel(calctime(curtime,Tr+Ts+50),96,0); %Relay TTL
+    else
+        AnalogFuncTo(calctime(curtime,0),'FB Current',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        Tr, Tr, val_FB,func_fb);  
+        Tr, Tr, val_FB,func_fb); 
+    end
     AnalogFuncTo(calctime(curtime,0),'X Shim',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         Tr, Tr, val_X,func_x);  

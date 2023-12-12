@@ -6029,9 +6029,20 @@ end
 %     
 % setDigitalChannel(calctime(curtime,0),'ACync Master',0);
 
-AnalogFunc(calctime(curtime,0),'FB current',...
-        @(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),...
-        qp_ramp_down_time2+FB_time,qp_ramp_down_time2+FB_time, fesh_current,0);
+% AnalogFunc(calctime(curtime,0),'FB current',...
+%         @(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),...
+%         qp_ramp_down_time2+FB_time,qp_ramp_down_time2+FB_time, fesh_current,0);
+
+
+ setAnalogChannel(calctime(curtime,0),'FB current',-0.1,1);
+ curtime = calctime(curtime,100);
+ setDigitalChannel(calctime(curtime,0),96,1);
+ curtime = calctime(curtime,100);
+ DigitalPulse(calctime(curtime,0),95,10,1);
+ curtime = calctime(curtime,600);
+ curtime = calctime(curtime,50);
+ setDigitalChannel(calctime(curtime,0),96,0);
+ curtime = calctime(curtime,100);
 
 
 

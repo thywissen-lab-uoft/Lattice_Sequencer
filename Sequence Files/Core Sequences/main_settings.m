@@ -251,14 +251,14 @@ seqdata.flags.xdt_evap2_HF                  = 0;    % Perform K evap at high fie
 seqdata.flags.xdt_high_field_a              = 0;
 
 
-seqdata.flags.xdt_ramp_power_end            = 0;    % Ramp dipole back up after evaporation before any further physics 
+seqdata.flags.xdt_ramp_power_end            = 1;    % Ramp dipole back up after evaporation before any further physics 
 
 
 defVar('xdt_load_power',1.0,'W');
 defVar('xdt_sympathetic_power',0.800,'W');
 
 % Stage 1 Evaporation (K+Rb)
-defVar('xdt_evap1_power',0.12,'W');0.085;0.08;0.078;
+defVar('xdt_evap1_power',[0.12],'W');0.078;0.085;0.08;0.078;
 defVar('xdt_evap1_time',25e3,'ms');
 defVar('xdt_evap1_tau_fraction',3.5,'arb');
 
@@ -269,9 +269,9 @@ defVar('xdt_evap2_tau_fraction',3.5','arb')
 %% Optical Lattice
 
 % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
-seqdata.flags.lattice                       = 1; 
+seqdata.flags.lattice                       = 0; 
 seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate
-defVar('lattice_depth_load',2,'Er');
+defVar('lattice_depth_load',2.5,'Er');
 defVar('lattice_pin_depth',60,'Er');
 defVar('lattice_pin_time', 0.2, 'ms');
 
@@ -288,7 +288,7 @@ seqdata.flags.do_lattice_am_spec            = 0;    % Amplitude modulation spect
 seqdata.flags.lattice_rotate_waveplate_2    = 1;    % Second waveplate rotation 95% 
 seqdata.flags.lattice_lattice_ramp_2        = 0;    % Secondary lattice ramp for fluorescence imaging
 seqdata.flags.lattice_lattice_ramp_3        = 1;    % Secondary lattice ramp for fluorescence imaging
-seqdata.flags.lattice_pin                   = 1;
+seqdata.flags.lattice_pin                   = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -301,7 +301,7 @@ seqdata.flags.lattice_hold_at_end           = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % These flags are associated with the conducitivity experiment
 seqdata.flags.lattice_conductivity          = 0;    % old sequence
-seqdata.flags.lattice_conductivity_new      = 0;   % New sequence created July 25th, 2023
+seqdata.flags.lattice_conductivity_new      = 1;   % New sequence created July 25th, 2023
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy
@@ -330,7 +330,7 @@ seqdata.flags.lattice_fluor                 = 1;    % Do Fluoresnce imaging
 seqdata.flags.lattice_fluor_bkgd            = 1;    % Take a background image with imaging light on, no atoms
                                                     % MUST SET NUMKIN +1
 
-seqdata.flags.lattice_img_stripe            = 1;    % Plane select with tilt and take an additional imag of the stripe
+seqdata.flags.lattice_img_stripe            = 0;    % Plane select with tilt and take an additional imag of the stripe
 
 seqdata.IxonMultiExposures=[];
 seqdata.IxonMultiPiezos=[];
@@ -357,17 +357,17 @@ seqdata.flags.lattice_pulse_z_for_alignment = 0;
 
 %% Conductivity
 
-defVar('conductivity_snap_and_hold_time',[[0:2:50] 55:5:120],'ms');  
-defVar('conductivity_FB_field',209,'G')
+defVar('conductivity_snap_and_hold_time',[0],'ms');  
+defVar('conductivity_FB_field',195,'G')
 defVar('conductivity_zshim',0,'A')
 defVar('conductivity_mod_freq',[50],'Hz')       % Modulation Frequency
-defVar('conductivity_mod_time',[50:2.5:110],'ms');      % Modulation Time
+defVar('conductivity_mod_time',[100],'ms');      % Modulation Time
 defVar('conductivity_mod_ramp_time',150,'ms');  % Ramp Time
 defVar('conductivity_rel_mod_phase',0,'deg');   % Phase shift of sinusoidal mod - should be 180 for mod along y
     
 % Modulation amplitude not to exceed +-4V.
-defVar('conductivity_ODT1_mod_amp',[4],'V');  % ODT1 Mod Depth   4V, 4V for X (DC) 4V, -1.7V for Y (DC);
-defVar('conductivity_ODT2_mod_amp',[4],'V');  % ODT2 Mod Depth
+defVar('conductivity_ODT1_mod_amp',[2],'V');  % ODT1 Mod Depth   4V, 4V for X (DC) 4V, -1.7V for Y (DC);
+defVar('conductivity_ODT2_mod_amp',[2],'V');  % ODT2 Mod Depth
 
 defVar('scope_pos',-7);
 getVar('scope_pos');
@@ -395,9 +395,9 @@ getVar('scope_pos');
 % seqdata.scope_trigger = 'MOT Trigger';
 % seqdata.scope_trigger = 'CMOT';
 % seqdata.scope_trigger = 'Molasses';
-seqdata.scope_trigger = 'Plane selection';
+% seqdata.scope_trigger = 'Plane selection';
 
-
+seqdata.scope_trigger = '40k 97 mixing';
 %% end time
 
 timeout = curtime;

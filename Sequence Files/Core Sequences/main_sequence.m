@@ -495,15 +495,12 @@ if seqdata.flags.image_type == 0
         setAnalogChannel(calctime(curtime,0),i,0,1);
     end   
     
-    if ~seqdata.flags.High_Field_Imaging 
-        
+    if ~seqdata.flags.High_Field_Imaging         
         if ~seqdata.flags.image_levitate
             % Turn off QP Coils (analog control)    
             setAnalogChannel(calctime(curtime,0),'Coil 15',-1,1);            % C15
             curtime = setAnalogChannel(calctime(curtime,0),'Coil 16',0,1);  % C16
-            curtime = setAnalogChannel(curtime,'kitten',-1,1);               % Kitten    
-            
-          
+            curtime = setAnalogChannel(curtime,'kitten',-1,1);               % Kitten                          
         end
 
         % MOT/QCoil TTL (separate switch for coil 15 (TTL) and 16 (analog))
@@ -531,75 +528,56 @@ if seqdata.flags.image_type == 0
         % Read XDT Powers right before tof
         P1 = getChannelValue(seqdata,'dipoleTrap1',1);
         P2 = getChannelValue(seqdata,'dipoleTrap2',1);
-
         addOutputParam('xdt1_final_power',P1,'W');
         addOutputParam('xdt2_final_power',P2,'W');
-
         % Turn off AOMs 
         setDigitalChannel(calctime(curtime,0),'XDT TTL',1);     %add latt_times+50 for round-trip
-
         % XDT1 Power Req. Off
         setAnalogChannel(calctime(curtime,0),'dipoleTrap1',... 
             seqdata.params.ODT_zeros(1));                       %add latt_times+50 for round-trip
         % XDT2 Power Req. Off
         setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));    %add latt_times+50 for round-trip
         % I think this channel is unused now
-        setDigitalChannel(calctime(curtime,-1),'XDT Direct Control',1);
-       
+        setDigitalChannel(calctime(curtime,-1),'XDT Direct Control',1);       
     end          
-%         setDigitalChannel(calctime(curtime,0),'XDT TTL',1);     %add latt_times+50 for round-trip
+%   setDigitalChannel(calctime(curtime,0),'XDT TTL',1);     %add latt_times+50 for round-trip
 
     % Turn off lattices (if they haven't already turned off)
-    if seqdata.flags.lattice
-        
+    if seqdata.flags.lattice        
         % Set Analog Channels to zero lattice depth
         setAnalogChannel(calctime(curtime,0),'xLattice', ...
             seqdata.params.lattice_zero(1));
         setAnalogChannel(calctime(curtime,0),'yLattice', ...
             seqdata.params.lattice_zero(2));
         setAnalogChannel(calctime(curtime,0),'zLattice', ...
-            seqdata.params.lattice_zero(3));
-        
+            seqdata.params.lattice_zero(3));        
         %Turn off TTL and disable the integrator
         setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1); 
-        setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1);        
-        
-        
+        setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1);     
         % used for round trip measurements from lattice
-%         %  Ramp xLattice to the first value ("0Er")
-% %         
+%         %  Ramp xLattice to the first value ("0Er")% %         
 %         AnalogFuncTo(calctime(curtime,0),'xLattice',...
 %             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-%             latt_times(1), latt_times(1), seqdata.params.lattice_zero(1));
-% % 
-% %         % Ramp yLattice to the first value ("0Er")
-% % 
+%             latt_times(1), latt_times(1), seqdata.params.lattice_zero(1));% % 
+% %         % Ramp yLattice to the first value ("0Er")% % 
 %         AnalogFuncTo(calctime(curtime,0),'yLattice',...
 %             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-%             latt_times(1), latt_times(1), seqdata.params.lattice_zero(2));   
-% % 
-% %         % Ramp zLattice to the first value ("0Er")
-% % 
+%             latt_times(1), latt_times(1), seqdata.params.lattice_zero(2));   % % 
+% %         % Ramp zLattice to the first value ("0Er")% % 
 %         AnalogFuncTo(calctime(curtime,0),'zLattice',...
 %             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-%             latt_times(1), latt_times(1), seqdata.params.lattice_zero(3));   
-%             
+%             latt_times(1), latt_times(1), seqdata.params.lattice_zero(3));   %             
 % %         % Turn off TTL and disable the integrator
 %         setDigitalChannel(calctime(curtime,latt_times(1)),'yLatticeOFF',1); 
-%         setDigitalChannel(calctime(curtime,latt_times(1)),'Lattice Direct Control',1);  
-       
-    end 
-    
-    curtime = calctime(curtime,0);
-    
+%         setDigitalChannel(calctime(curtime,latt_times(1)),'Lattice Direct Control',1);         
+    end     
+    curtime = calctime(curtime,0);    
 end
 
 %% Absorption Imaging
 
-if seqdata.flags.image_type == 0
-    
-    ScopeTriggerPulse(calctime(curtime,0),'TOF');
-    
+if seqdata.flags.image_type == 0    
+    ScopeTriggerPulse(calctime(curtime,0),'TOF');    
     dispLineStr('Absorption Imaging.',curtime);
     curtime = absorption_image2(calctime(curtime,0.0));   
 end    
@@ -611,23 +589,17 @@ if seqdata.flags.lattice
             isfield(seqdata.flags,'lattice_fluor_bkgd') && ...
             seqdata.flags.lattice_fluor && ...
             seqdata.flags.lattice_fluor_bkgd)
-        disp('Running the fluorence imaging code again to take background light');
-        
+        disp('Running the fluorence imaging code again to take background light');        
         fluor_opts.doInitialFieldRamp = 0;
         fluor_opts.doInitialFieldRamp2 = 0;
 
 %         fluor_opts.PulseTime =    [2000];
-%         fluor_opts.ExposureTime = [2000];
-    
+%         fluor_opts.ExposureTime = [2000];    
 curtime = lattice_FL(curtime, fluor_opts); 
-
-% curtime = calctime(curtime,500);
-% 
+% curtime = calctime(curtime,500);% 
 %         fluor_opts.PulseTime =    [1000];
-%         fluor_opts.ExposureTime = [1000];
-% 
+%         fluor_opts.ExposureTime = [1000];% 
 % curtime = lattice_FL(curtime, fluor_opts); 
-
     end
 end
 

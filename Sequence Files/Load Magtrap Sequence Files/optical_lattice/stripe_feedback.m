@@ -24,7 +24,7 @@ timeNow = datenum(now);
 ind = 1;
 
 % Set point of phase
-phiSet = 0.9 * (2*pi);
+phiSet = 0.3 * (2*pi);
 
 % 2023/12/11 FROM CF READ ME.  I HAVE EDITED THE CODE TO USE PHIME WHICH
 % CALCULATES THE PHASE AT THE CENTER OF THE ATOMIC CLOUD (290,233).

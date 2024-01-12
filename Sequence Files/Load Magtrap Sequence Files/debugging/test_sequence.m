@@ -6035,15 +6035,15 @@ end
 
 
  setAnalogChannel(calctime(curtime,0),'FB current',-0.1,1);
- curtime = calctime(curtime,100);
- setDigitalChannel(calctime(curtime,0),96,1);
- curtime = calctime(curtime,100);
- DigitalPulse(calctime(curtime,0),95,10,1);
- curtime = calctime(curtime,600);
- curtime = calctime(curtime,50);
- setDigitalChannel(calctime(curtime,0),96,0);
- curtime = calctime(curtime,100);
-
+%  curtime = calctime(curtime,100);
+%  setDigitalChannel(calctime(curtime,0),96,1);
+%  curtime = calctime(curtime,100);
+%  DigitalPulse(calctime(curtime,0),95,10,1);
+%  curtime = calctime(curtime,600);
+%  curtime = calctime(curtime,50);
+%  setDigitalChannel(calctime(curtime,0),96,0);
+%  curtime = calctime(curtime,100);
+% 
 
 
 timeout = curtime;

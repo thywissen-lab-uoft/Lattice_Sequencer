@@ -52,7 +52,7 @@ function J=job_conducivity_ac_shake
     end
 %%
 
-var_list = [44:2:76];
+var_list = [20:10:120];
 var_list = var_list(randperm(numel(var_list)));
 clear J
 for ii = 1:length(var_list)

@@ -88,7 +88,7 @@ seqdata.digchannels(42).name = 'FB Integrator OFF'; % 0 = integrator enabled (DO
 seqdata.digchannels(43).name = 'Bipolar Shim Relay';% 1 = shims on, 0 = shims off | temporary?
 seqdata.digchannels(44).name = 'FB offset select';  % (disconnected) 1 = divide by 10 and add 6.6 V to 'FB current' voltage
 seqdata.digchannels(45).name = 'DMD AOM TTL';       % 1 on 0 off
-seqdata.digchannels(45).resetvalue = 1;
+% seqdata.digchannels(45).resetvalue = 1;
 seqdata.digchannels(46).name = 'Field sensor SR';   % Set/Reset of the field sensor inside thebucket (Minimag)
 seqdata.digchannels(47).name = 'High Field Shutter';% 0: OFF, 1: ON
 seqdata.digchannels(48).name = 'Rb Sci Repump';     % Rb repump in science chamber

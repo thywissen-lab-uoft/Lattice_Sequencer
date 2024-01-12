@@ -301,7 +301,7 @@ switch opts.SelectMode
 
         % Define the SRS frequency
 
-        freq_offset_list = [-330];-450;460;-200;-715;
+        freq_offset_list = [-220];-450;460;-200;-715;
             
 
 % freq_offset_list = freq_offset_list - 100*(yshimdlist+.1510);
@@ -388,7 +388,7 @@ switch opts.SelectMode
         end
         
         % Trigger the Scope
-    ScopeTriggerPulse(curtime,'Plane selection');
+        ScopeTriggerPulse(curtime,'Plane selection');
 
         curtime = calctime(curtime,sweep_time);                     % Wait for sweep
         setDigitalChannel(calctime(curtime,0),'K uWave TTL',0);     % Turn off the uWave

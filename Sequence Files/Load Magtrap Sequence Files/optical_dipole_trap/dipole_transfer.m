@@ -252,13 +252,13 @@ if seqdata.flags.xdt_qp_ramp_down2
     FB_time = getScanParameter(FB_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'FB_time');
     setDigitalChannel(calctime(curtime,-100-FB_time),'fast FB Switch',1); %switch Feshbach field on
-    setAnalogChannel(calctime(curtime,-95-FB_time),'FB current',0.0); %switch Feshbach field closer to on
+    setAnalogChannel(calctime(curtime,-95-FB_time),'FB current',0.05); %switch Feshbach field closer to on
     setDigitalChannel(calctime(curtime,-100-FB_time),'FB Integrator OFF',0); %switch Feshbach integrator on            
     
     % Ramp up FB Current
     AnalogFunc(calctime(curtime,0-FB_time),'FB current',...
         @(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),...
-        qp_ramp_down_time2+FB_time,qp_ramp_down_time2+FB_time, fesh_current,0);
+        qp_ramp_down_time2+FB_time,qp_ramp_down_time2+FB_time, fesh_current,0.05);
     fesh_current_val = fesh_current;    
 
     % Ramp down Feedforward voltage

@@ -6033,12 +6033,51 @@ end
 %         @(t,tt,y2,y1)(ramp_func(t,tt,y2,y1)),...
 %         qp_ramp_down_time2+FB_time,qp_ramp_down_time2+FB_time, fesh_current,0);
 
+% % Initialize Currents
+% setDigitalChannel(calctime(curtime,10),'Bipolar Shim Relay',0);
+% setDigitalChannel(calctime(curtime,10),'Z shim bipolar relay',0);
+% setAnalogChannel(calctime(curtime,10),'FB current',-0.1,1);
+% 
+% % Wait
+% curtime = calctime(curtime,100); 
+% setDigitalChannel(calctime(curtime,0),94,0);    % hold pid
+% curtime = calctime(curtime,100);                % wait
+% setDigitalChannel(calctime(curtime,0),'ScopeTrigger',1); % change set point
+% 
+% % Ramp To Zero Level FB in 100 ms
+% curtime = AnalogFuncTo(calctime(curtime,0),37,...
+%     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,0);
+% 
+%  % Ramp Up FB in 100 ms
+% curtime = AnalogFuncTo(calctime(curtime,0),37,...
+%     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,128);
+% 
+% % Wait 500 ms
+% % DigitalPulse(calctime(curtime,0),'ScopeTrigger',10,1);
+% curtime=calctime(curtime,300);
+% setDigitalChannel(calctime(curtime,0),94,1); % engage PID
+% curtime = calctime(curtime,700);
+% setDigitalChannel(calctime(curtime,0),94,0); % hold pID
+% curtime = calctime(curtime,10);             % wait for it
+% setDigitalChannel(calctime(curtime,0),'ScopeTrigger',0); % new set point
+% 
+% % DigitalPulse(calctime(curtime,0),'ScopeTrigger',10,1);
+% 
+%  % Ramp Down FB
+% curtime = AnalogFuncTo(calctime(curtime,0),37,...
+%     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,0);
+% 
+% % Ramp Down FB
+% curtime = AnalogFuncTo(calctime(curtime,0),37,...
+%     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,-0.1,1);
+% curtime = calctime(curtime,100);
+% setDigitalChannel(calctime(curtime,0),94,1); % rengage PID
 
- setAnalogChannel(calctime(curtime,0),'FB current',-0.1,1);
-%  curtime = calctime(curtime,100);
-%  setDigitalChannel(calctime(curtime,0),96,1);
-%  curtime = calctime(curtime,100);
-%  DigitalPulse(calctime(curtime,0),95,10,1);
+% c
+%   DigitalPulse(calctime(curtime,0), 'QPD Monitor Trigger',.1,1);
+
+%  curtime = calctime(curtime,1);
+%  
 %  curtime = calctime(curtime,600);
 %  curtime = calctime(curtime,50);
 %  setDigitalChannel(calctime(curtime,0),96,0);
@@ -6046,6 +6085,11 @@ end
 % 
 
 
+% curtime = calctime(curtime,1000);
+% setDigitalChannel(calctime(curtime,0),94,1); % hold pID
+
+
+setAnalogChannel(calctime(curtime,0),'K Repump AM',.55);
 timeout = curtime;
 
 

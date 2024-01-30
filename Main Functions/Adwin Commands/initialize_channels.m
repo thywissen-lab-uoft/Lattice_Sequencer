@@ -788,7 +788,7 @@ end
     %channel 57 (15/16 Gate Source) : Testing
     seqdata.analogchannels(57).name = '15/16 GS';
     seqdata.analogchannels(57).minvoltage = -.1;
-    seqdata.analogchannels(57).maxvoltage = 6.9;
+    seqdata.analogchannels(57).maxvoltage = 10;
     seqdata.analogchannels(57).defaultvoltagefunc = 1; 
     seqdata.analogchannels(57).voltagefunc{2} = @(a)(a);
 

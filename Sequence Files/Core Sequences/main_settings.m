@@ -133,7 +133,7 @@ defVar('D1_DP_FM',222.5,'MHz');
 
 %% Imaging
 seqdata.flags.image_type                    = 0; % 0: absorption, 1 : MOT fluor  
-seqdata.flags.image_atomtype                = 1; % 0:Rb,1:K,2:K+Rb (double shutter), applies to fluor and absorption
+seqdata.flags.image_atomtype                = 2; % 0:Rb,1:K,2:K+Rb (double shutter), applies to fluor and absorption
 
 seqdata.flags.image_loc                     = 1; % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.image_direction               = 1; % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
@@ -154,7 +154,7 @@ seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XD
 defVar('tof',[25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
-defVar('tof_krb_diff',[10],'ms');
+defVar('tof_krb_diff',[.1],'ms');
 %% Transport
 
 % For debugging: enable only certain coils during the transport
@@ -269,7 +269,7 @@ defVar('xdt_evap2_tau_fraction',3.5','arb')
 %% Optical Lattice
 
 % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
-seqdata.flags.lattice                       = 0; 
+seqdata.flags.lattice                       = 1; 
 seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate
 defVar('lattice_depth_load',2.5,'Er');
 defVar('lattice_pin_depth',60,'Er');
@@ -288,7 +288,8 @@ seqdata.flags.do_lattice_am_spec            = 0;    % Amplitude modulation spect
 seqdata.flags.lattice_rotate_waveplate_2    = 1;    % Second waveplate rotation 95% 
 seqdata.flags.lattice_lattice_ramp_2        = 0;    % Secondary lattice ramp for fluorescence imaging
 seqdata.flags.lattice_lattice_ramp_3        = 1;    % Secondary lattice ramp for fluorescence imaging
-seqdata.flags.lattice_pin                   = 0;
+seqdata.flags.lattice_pin                   = 1;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
@@ -301,7 +302,7 @@ seqdata.flags.lattice_hold_at_end           = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % These flags are associated with the conducitivity experiment
 seqdata.flags.lattice_conductivity          = 0;    % old sequence
-seqdata.flags.lattice_conductivity_new      = 1;   % New sequence created July 25th, 2023
+seqdata.flags.lattice_conductivity_new      = 0;   % New sequence created July 25th, 2023
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy
@@ -313,9 +314,10 @@ seqdata.flags.lattice_uWave_spec            = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 seqdata.flags.lattice_do_optical_pumping    = 1;    % (1426) keep : optical pumping in lattice  
 seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
-seqdata.flags.qgm_stripe_feedback           = 1; % feedback on stripes EXPERIMENTAL
+seqdata.flags.qgm_stripe_feedback           = 0; % feedback on stripes EXPERIMENTAL
 % Actual fluorsence image flags - NO LONGER USED
 seqdata.flags.Raman_transfers               = 0;
+seqdata.flags.qgm_stripe_feedback2 = 1;
 
 % Note:
 % It is sometimes helpful to run the fluorence imaging code as other things
@@ -358,16 +360,16 @@ seqdata.flags.lattice_pulse_z_for_alignment = 0;
 %% Conductivity
 
 defVar('conductivity_snap_and_hold_time',[0],'ms');  
-defVar('conductivity_FB_field',195,'G')
+defVar('conductivity_FB_field',198,'G')
 defVar('conductivity_zshim',0,'A')
 defVar('conductivity_mod_freq',[50],'Hz')       % Modulation Frequency
-defVar('conductivity_mod_time',[100],'ms');      % Modulation Time
+defVar('conductivity_mod_time',[50],'ms');      % Modulation Time
 defVar('conductivity_mod_ramp_time',150,'ms');  % Ramp Time
 defVar('conductivity_rel_mod_phase',0,'deg');   % Phase shift of sinusoidal mod - should be 180 for mod along y
     
 % Modulation amplitude not to exceed +-4V.
-defVar('conductivity_ODT1_mod_amp',[2],'V');  % ODT1 Mod Depth   4V, 4V for X (DC) 4V, -1.7V for Y (DC);
-defVar('conductivity_ODT2_mod_amp',[2],'V');  % ODT2 Mod Depth
+defVar('conductivity_ODT1_mod_amp',[4],'V');  % ODT1 Mod Depth   4V, 4V for X (DC) 4V, -1.7V for Y (DC);
+defVar('conductivity_ODT2_mod_amp',[4],'V');  % ODT2 Mod Depth
 
 defVar('scope_pos',-7);
 getVar('scope_pos');
@@ -382,7 +384,7 @@ getVar('scope_pos');
 % seqdata.scope_trigger = 'rf_spectroscopy';
 % seqdata.scope_trigger = 'Lattice_Mod';
 % seqdata.scope_trigger = 'FB_ramp';
-% seqdata.scope_trigger = 'lattice_ramp_1';
+seqdata.scope_trigger = 'lattice_ramp_1';
 % seqdata.scope_trigger = 'pulse lattice';
 % seqdata.scope_trigger = 'Raman Beams On';
 % seqdata.scope_trigger = 'PA_Pulse';
@@ -397,7 +399,8 @@ getVar('scope_pos');
 % seqdata.scope_trigger = 'Molasses';
 % seqdata.scope_trigger = 'Plane selection';
 
-seqdata.scope_trigger = '40k 97 mixing';
+% seqdata.scope_trigger = '40k 97 mixing';
+% seqdata.scope_trigger = 'Rampup ODT';
 %% end time
 
 timeout = curtime;

@@ -129,14 +129,14 @@ curtime = calctime(curtime,t_init2cross);
 %% Handoff from 153 to 155 mm
 dispLineStr('Transport Kitten Handoff',curtime);
 
-V0 = 5.5;
-VM = 2.7;
-VL = 2.1;
+V0 = 9;
+VM = 4;
+VL = 3.6;
 
 
 t_prep = 100;      % Time to prepare for switch over
 t_cross = 200;    % Crossover time
-t_prep2 = 50;    % Time to ramp up GS voltage all the way
+t_prep2 = 72;    % Time to ramp up GS voltage all the way
 
 
 % Calculate currents at the crossing region
@@ -156,6 +156,10 @@ AnalogFunc(calctime(curtime,0),'Coil 15',...
 AnalogFunc(calctime(curtime,0),'15/16 GS',...
     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
     t_prep, t_prep, 0,VL,1);  
+AnalogFunc(calctime(curtime,0),'kitten',...
+    @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+    t_prep, t_prep, ik_cross_i+1,ik_cross_i,func_k);      
+
 curtime = calctime(curtime,t_prep);
 %%%%%%% Perform the Handoff %%%%%%%
 disp(['ramping handoff ' num2str(curtime2realtime(curtime))]);
@@ -175,7 +179,7 @@ AnalogFunc(calctime(curtime,0),'Coil 14',...
 % Ramp Kitten
 AnalogFunc(calctime(curtime,0),'kitten',...
     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
-    t_cross, t_cross, ik_cross_i+1,ik_cross_f,func_k);       
+    t_cross, t_cross, ik_cross_i,ik_cross_f,func_k);       
 curtime = calctime(curtime,t_cross);
 
 %%%%%%% Allow for maximum current %%%%%%%

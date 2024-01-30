@@ -98,7 +98,7 @@ if ramp_field_CF
 
     % Timings
     defVar('qgm_pselect_ramp_time',150,'ms')
-    defVar('qgm_pselect_settle_time',100,'ms');
+    defVar('qgm_pselect_settle_time',250,'ms');
     
     % QP Coils Current Settings
     defVar('qgm_pselect_QP',38.9200+[0],'A');
@@ -117,9 +117,13 @@ if ramp_field_CF
     Ix = dIx0 + seqdata.params.shim_zero(1);
     Iy = dIy0 + seqdata.params.shim_zero(2);
     Iz = dIz0 + seqdata.params.shim_zero(3);
-    
+        
+     setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',0);
+
     if opts.dotilt                
-        defVar('qgm_plane_tilt_dIz',-0.008,'A');        
+        defVar('qgm_plane_tilt_dIz',-0.008,'A');  
+        defVar('qgm_plane_tilt_dIz',0.050,'A');        
+
         if isfield(seqdata.flags,'qgm_stripe_feedback') && ...
             seqdata.flags.qgm_stripe_feedback && ...
             exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')      
@@ -193,6 +197,10 @@ if ramp_field_CF
         Tr, Tr, Iz,func_z);  
     curtime = calctime(curtime,Tr);
     curtime = calctime(curtime,Ts);
+    
+    setDigitalChannel(calctime(curtime,0),94,1); % engage PID
+    curtime = calctime(curtime,100);
+
 end
 
 %% Magnetic Field Ramps
@@ -280,6 +288,8 @@ if opts.ramp_fields
     addOutputParam('qgm_plane_IQP',IQP,'A');
 
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
+
+
 end
 
 %% Apply the uWaves
@@ -301,12 +311,21 @@ switch opts.SelectMode
 
         % Define the SRS frequency
 
-        freq_offset_list = [-220];-450;460;-200;-715;
+        freq_offset_list = [-280];-450;460;-200;-715;
+        freq_offset_list = [80];
+        freq_offset_list = [525];
+        
+        
+        if isfield(seqdata.flags,'qgm_stripe_feedback2') && ...
+            seqdata.flags.qgm_stripe_feedback2 && ...
+            exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')      
             
+            % perform 
+        end   
 
 % freq_offset_list = freq_offset_list - 100*(yshimdlist+.1510);
 
-        freq_amp_list = [10]; % 42 kHz / plane now?CF did a recent calculation to suggest this
+        freq_amp_list = [9]; % 42 kHz / plane now?CF did a recent calculation to suggest this
 % %           freq_amp_list = [7]; % 12 kHz is about 1 plane   
 %           
 %         if opts.dotilt
@@ -951,6 +970,10 @@ end
 
 %%
 if ramp_field_CF
+     setDigitalChannel(calctime(curtime,0),94,0); % stop PID
+     curtime= calctime(curtime,20);
+     setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',1);
+    
     % Ramp up QP Feedforward
     AnalogFuncTo(calctime(curtime,0),'Coil 16',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...

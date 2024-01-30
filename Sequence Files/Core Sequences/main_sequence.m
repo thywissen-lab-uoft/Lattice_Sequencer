@@ -10,6 +10,8 @@ end
 global seqdata
 
 %% Flag Checks
+setDigitalChannel(calctime(curtime,0),94,0); % Disengage PID
+
 
 if (seqdata.flags.xdt ~= 0 || seqdata.flags.lattice ~= 0)
     seqdata.flags.QP_imaging = 0;

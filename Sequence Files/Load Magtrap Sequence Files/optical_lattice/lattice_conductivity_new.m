@@ -173,9 +173,9 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
 end
 %% Modulation
     
-if seqdata.flags.conductivity_QPD_trigger
-    DigitalPulse(calctime(curtime,-100),'QPD Monitor Trigger',50,1);
-end
+% if seqdata.flags.conductivity_QPD_trigger
+%     DigitalPulse(calctime(curtime,-100),'QPD Monitor Trigger',50,1);
+% end
 
 if seqdata.flags.conductivity_enable_mod_ramp    
     setDigitalChannel(curtime,'ODT Piezo Mod TTL',1);    
@@ -188,11 +188,12 @@ else
 end
 
 if seqdata.flags.conductivity_QPD_trigger
-    DigitalPulse(calctime(curtime,0),'QPD Monitor Trigger',5,1);
+    setDigitalChannel(calctime(curtime,0),'QPD Monitor Trigger',1);
 end
 
 % Wait for modulation to finish
 curtime = calctime(curtime,getVarOrdered('conductivity_mod_time'));
+setDigitalChannel(calctime(curtime,0),'QPD Monitor Trigger',0);
 
 % Stop Modulation - only affects AC modulation
 setDigitalChannel(curtime,'ODT Piezo Mod TTL',0);

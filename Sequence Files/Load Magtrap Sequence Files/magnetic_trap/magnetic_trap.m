@@ -56,9 +56,9 @@ if ( seqdata.flags.RF_evap_stages(1) == 1 )
     defVar('RF1A_freq_1',28,'MHz');28;28;
     defVar('RF1A_freq_2',20,'MHz');20;20;
     defVar('RF1A_freq_3',getVar('RF1A_finalfreq'),'MHz');
-    defVar('RF1A_time_1',14000,'ms');14000;6000;
-    defVar('RF1A_time_2',8000,'ms');8000;5500;
-    defVar('RF1A_time_3',4000,'ms');4000;4000;
+    defVar('RF1A_time_1',6000,'ms');14000;6000;
+    defVar('RF1A_time_2',5500,'ms');8000;5500;
+    defVar('RF1A_time_3',2000,'ms');4000;4000;
     defVar('RF1A_gain_0',-2.05,'arb');
     defVar('RF1A_gain_1',-2.05,'arb');
     defVar('RF1A_gain_2',-2.05,'arb');

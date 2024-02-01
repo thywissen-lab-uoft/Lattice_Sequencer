@@ -139,7 +139,7 @@ if ramp_field_CF
         
         Ix = Ix + xshimtilt;
         Iy = Iy + yshimtilt;
-        Iz = Iz + zshimtilt;
+        Iz = Iz + 0*zshimtilt;
     end  
     
     Vff = getVar('qgm_pselect_FF');
@@ -313,7 +313,7 @@ switch opts.SelectMode
 
         freq_offset_list = [-280];-450;460;-200;-715;
         freq_offset_list = [80];
-        freq_offset_list = [525];
+        freq_offset_list = [630];
         
         
         if isfield(seqdata.flags,'qgm_stripe_feedback2') && ...
@@ -325,13 +325,7 @@ switch opts.SelectMode
 
 % freq_offset_list = freq_offset_list - 100*(yshimdlist+.1510);
 
-        freq_amp_list = [9]; % 42 kHz / plane now?CF did a recent calculation to suggest this
-% %           freq_amp_list = [7]; % 12 kHz is about 1 plane   
-%           
-%         if opts.dotilt
-%             freq_amp_list = [8]; % 12 kHz is about 1 plane       
-%         end
-
+        freq_amp_list = [10]; % 42 kHz / plane now?CF did a recent calculation to suggest this
 
 % CF : 2023/12/11 chagned from 2*freq_amp_list/10 to be freq_amp_list/10...
 % unclear what is the best, depends on transfer efficiecny and rabi

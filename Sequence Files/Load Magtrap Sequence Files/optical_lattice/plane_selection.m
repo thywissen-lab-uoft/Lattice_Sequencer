@@ -877,7 +877,7 @@ if opts.planeselect_again
 end
 
 %% Ramp off Field
-if ramp_field_CF
+if opts.ramp_field_CF
      setDigitalChannel(calctime(curtime,0),94,0); % stop PID
      curtime= calctime(curtime,20);
      setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',1);

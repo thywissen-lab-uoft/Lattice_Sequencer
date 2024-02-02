@@ -104,24 +104,24 @@ npt.SaveDirName         = npt.JobName;
 Jsingle = sequencer_job(npt);
 
 %% Interleave Stripe, Single plane calibration, and ac shake
-clear J
-J = [Jstripe Jsingle];
-for kk=1:length(Jac)
-    J(end+1) = Jac(kk);
-    J(end+1) = Jstripe;
-    J(end+1) = Jsingle;
-end
+% clear J
+% J = [Jstripe Jsingle];
+% for kk=1:length(Jac)
+%     J(end+1) = Jac(kk);
+%     J(end+1) = Jstripe;
+%     J(end+1) = Jsingle;
+% end
  
 %% Interleave Stripe, Single plane calibration
-% clear J
-% 
-% N = 10; % Number of total repitions
-% J = [Jstripe];
-% Jsingle.ScanCyclesRequested = 1:10;
-% for kk=1:N
-%     J(end+1) = Jsingle;
-%     J(end+1) = Jstripe;
-% end
+clear J
+
+N = 10; % Number of total repitions
+J = [Jstripe];
+Jsingle.ScanCyclesRequested = 1:10;
+for kk=1:N
+    J(end+1) = Jsingle;
+    J(end+1) = Jstripe;
+end
 
 
 end

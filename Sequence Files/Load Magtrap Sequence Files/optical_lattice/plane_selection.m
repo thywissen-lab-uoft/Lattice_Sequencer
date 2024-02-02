@@ -9,35 +9,23 @@ opts = struct;
 %% Flags
 
 % Establish field gradeint with QP, FB, and shim fields for plane selection
-opts.ramp_fields    = 0;            % Antiquated field ramps
-opts.ramp_field_CF  = 1;            % New field ramps
-opts.dotilt         = 1;            % Tilt field for stripe pattern
+opts.ramp_fields    = 0;                    % Antiquated field ramps
+opts.ramp_field_CF  = 1;                    % New field ramps
+opts.dotilt         = 1;                    % Tilt field for stripe pattern
 
-opts.fake_the_plane_selection_sweep = 0;  % Whether or not to apply uwaves
+opts.fake_the_plane_selection_sweep = 0;    % Whether or not to apply uwaves
+opts.planeselect_doVertKill = 1;            % apply optical kill pulse
+opts.planeselect_doMicrowaveBack = 0;       % uwave transfer back to F=9/2 (uneeded?)
+opts.planeselect_doFinalRepumpPulse = 0;    % apply repump to kill leftover F=7/2 (uneeded?)
+opts.planeselect_again = 0;                 % Repeat plane selection (does this actually help?)
 
-% Pulse the vertical D2 kill beam to kill untransfered F=9/2
-opts.planeselect_doVertKill = 1;
-
-% Transfer back to -9/2 via uwave transfer
-opts.planeselect_doMicrowaveBack = 0;   
-
-% Pulse repump to remove leftover F=7/2
-opts.planeselect_doFinalRepumpPulse = 0;
-
-%Repeat plane selection
-opts.planeselect_again = 0;
-
-% Choose the Selection Mode
-opts.SelectMode = 'SweepFreqHS1';          % Sweep SRS HS1 frequency
+opts.SelectMode     = 'SweepFreqHS1';       % Sweep SRS HS1 frequency
 opts.SelectModeBack = 'SweepFreqHS1';       %Sweep SRS HS1 frequency backwards
-% opts.SelectMode = 'SweepField';       % Not programmed yet 
-% opts.SelectMode = 'SweepFieldLegacy'; % old way
 
-% Enanble/Disable the ACSynce
-opts.use_ACSync = 1;
+opts.use_ACSync = 1;                        % ACync 60 Hz
+opts.doProgram = 1;                         % Program the SRS?
 
-opts.doProgram = 1;
-
+%% Overides
 
 if nargin == 2
     fnames = fieldnames(override);

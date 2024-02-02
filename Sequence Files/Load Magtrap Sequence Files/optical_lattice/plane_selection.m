@@ -4,11 +4,9 @@ global seqdata
 if nargin == 0;timein = 10;end
 curtime = timein;
 
+%% Flags
 opts = struct; 
 
-%% Flags
-
-% Establish field gradeint with QP, FB, and shim fields for plane selection
 opts.ramp_fields    = 0;                    % Antiquated field ramps
 opts.ramp_field_CF  = 1;                    % New field ramps
 opts.dotilt         = 1;                    % Tilt field for stripe pattern
@@ -33,11 +31,9 @@ if nargin == 2
         opts.(fnames{kk}) = override.(fnames{kk});
     end
 end    
-
-
 %% Prepare Switches for uWave Radiation
 
-disp('Changing swithces so that uwave are on');
+disp('Changing switches so that uwave are on');
 
 % Make sure RF, Rb uWave, K uWave are all off for safety
 setDigitalChannel(calctime(curtime,0),'RF TTL',0);
@@ -78,7 +74,7 @@ if opts.ramp_field_CF
     defVar('qgm_pselect_settle_time',250,'ms');
     
     % QP Coils Current Settings
-    defVar('qgm_pselect_QP',38.9200+[0],'A');
+    defVar('qgm_pselect_QP',38.9200,'A');
     func_qp = 2; % voltage function
     
     % Feshbach Coil Current Settings
@@ -247,64 +243,37 @@ if opts.ramp_fields
     addOutputParam('qgm_plane_Bfb',Bfb,'G');
     addOutputParam('qgm_plane_IQP',IQP,'A');
 
-curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
-
-
+    curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
 end
 
 %% Apply the uWaves
 
-switch opts.SelectMode
-    case 'SweepFreq'
-        
+switch opts.SelectMode       
     case 'SweepFreqHS1'        
         %% Sweep Frequency 
         % This does an HS1 plane frequency sweep, this is only good for one
         % plane really.
         dispLineStr('HS1 Frequency Sweep',curtime);
 
-        % 2021/06/22 CF
-        % Use this when Xshimd=3, zshimd=-1 and you vary yshimd
-        % freq_list=interp1([-3 0.27 3],[100 -200 -500],yshimd);
-        % use this when yshimd=3, zshim3=-1 an dyou vary xshimd
-        % freq_list=interp1([-3 0 3],[-200 -400 -500],xshimd);
-
-        % Define the SRS frequency
-
-        freq_offset_list = [-280];-450;460;-200;-715;
-        freq_offset_list = [80];
-        freq_offset_list = [630];
-        
+        freq_offset_list = [-280];
+        freq_offset_list = [630];        
         
         if isfield(seqdata.flags,'qgm_stripe_feedback2') && ...
             seqdata.flags.qgm_stripe_feedback2 && ...
             exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')      
-            
-            % perform 
-        end   
-
-% freq_offset_list = freq_offset_list - 100*(yshimdlist+.1510);
+        end
 
         freq_amp_list = [10]; % 42 kHz / plane now?CF did a recent calculation to suggest this
 
-% CF : 2023/12/11 chagned from 2*freq_amp_list/10 to be freq_amp_list/10...
-% unclear what is the best, depends on transfer efficiecny and rabi
-% frequency
-        sweep_time_list = freq_amp_list/10; % CF has no idea when this was calibrated
-
+        sweep_time_list = freq_amp_list/10; 
         defVar('qgm_plane_uwave_frequency_offset',freq_offset_list,'kHz');
         defVar('qgm_plane_uwave_amplitude',freq_amp_list,'kHz');
         defVar('qgm_plane_uwave_time',sweep_time_list,'ms')
-        
-        freq_offset = getVar('qgm_plane_uwave_frequency_offset');
-%         freq_offset = getVarOrdered('qgm_plane_uwave_frequency_offset');
-        freq_amp = getVar('qgm_plane_uwave_amplitude');
-        sweep_time = getVar('qgm_plane_uwave_time');        
-        uWave_delta_freq = freq_amp*1e-3;        
-    
-        
         defVar('qgm_plane_uwave_power',[15],'dBm');
 
+        freq_offset = getVar('qgm_plane_uwave_frequency_offset');
+        freq_amp = getVar('qgm_plane_uwave_amplitude');
+        sweep_time = getVar('qgm_plane_uwave_time');   
         
        % Configure the SRS
         uWave_opts=struct;
@@ -314,12 +283,11 @@ switch opts.SelectMode
         uWave_opts.Power        = getVar('qgm_plane_uwave_power');%15                    % Power [dBm]
         uWave_opts.Enable       = 1;                        % Enable SRS output    
         uWave_opts.EnableSweep  = 1;                    
-        uWave_opts.SweepRange   = uWave_delta_freq;         % Sweep Amplitude [MHz]
+        uWave_opts.SweepRange   = 1e-3*freq_amp;         % Sweep Amplitude [MHz]
         
         env_amp     = 1;              % Relative amplitude of the sweep (keep it at 1 for max)
         beta        = asech(0.005);   % Beta defines sharpness of HS1
         
-%         addOutputParam('qgm_plane_uwave_power',uWave_opts.Power)
         addOutputParam('qgm_plane_uwave_frequency',uWave_opts.Frequency);            
         addOutputParam('qgm_plane_uwave_HS1_beta',beta);
         addOutputParam('qgm_plane_uwave_HS1_amp',env_amp);
@@ -327,11 +295,10 @@ switch opts.SelectMode
         disp(['     Freq         : ' num2str(uWave_opts.Frequency) ' MHz']);    
         disp(['     Freq Offset  : ' num2str(freq_offset) ' kHz']);    
         disp(['     Pulse Time   : ' num2str(sweep_time) ' ms']);
-        disp(['     Freq Amp     : ' num2str(uWave_delta_freq*1E3) ' kHz']);
+        disp(['     Freq Amp     : ' num2str(freq_amp) ' kHz']);
 
 
-        %%%% The uWave Sweep Code Begins Here %%%%
-        
+        %%%% The uWave Sweep Code Begins Here %%%%        
         setAnalogChannel(calctime(curtime,-20),'uWave VVA',0);      % Set uWave to low
         setAnalogChannel(calctime(curtime,-10),'uWave FM/AM',-1);   % Set initial modulation
 
@@ -339,12 +306,10 @@ switch opts.SelectMode
         if opts.use_ACSync
             setDigitalChannel(calctime(curtime,-5),'ACync Master',1);
         end
-
         % Turn on the uWave        
         if  ~opts.fake_the_plane_selection_sweep
             setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);  
         end
-
         % Ramp the SRS modulation using a TANH
         % At +-1V input for +- full deviation
         % The last argument means which votlage fucntion to use
@@ -368,7 +333,7 @@ switch opts.SelectMode
         setAnalogChannel(calctime(curtime,0),'uWave VVA',0);        % Turn off VVA        
         setAnalogChannel(calctime(curtime,10),'uWave FM/AM',-1);    % Reset the uWave deviation after a while
 
-%         Reset the ACync
+%       Reset the ACync
         if opts.use_ACSync
             setDigitalChannel(calctime(curtime,30),'ACync Master',0);
         end
@@ -490,11 +455,7 @@ switch opts.SelectMode
     % curtime = calctime(curtime,field_shift_time+5); %April 13th 2015, Reduce the post transfer settle time... since we will ramp the shim again anyway
 
 end
-%% 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Vertical Kill Beam Application
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%% Kill Pulse
 % Apply a vertical *upwards* D2 beam resonant with the 9/2 manifold to 
 % remove any atoms not transfered to the F=7/2 manifold.
 
@@ -560,13 +521,8 @@ if opts.planeselect_doVertKill==1
 end
 
 
-%% UWave Transfer Back to 9/2,-9/2
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% uWave Transfer back to |9/2,-9/2>
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-
-if opts.planeselect_doMicrowaveBack
-    
+%% uWave Transfer Back to 9/2,-9/2
+if opts.planeselect_doMicrowaveBack    
     switch opts.SelectModeBack
         case 'SweepFreqHS1'        
             %Sweep the frequency
@@ -763,10 +719,8 @@ if opts.planeselect_doMicrowaveBack
     end
 end
 
-%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Repump to kill F=7/2
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%% Repump Kill
+
 if opts.planeselect_doFinalRepumpPulse
     %Pulse on repump beam to try to remove any atoms left in F=7/2
     repump_pulse_time = 5;
@@ -922,7 +876,7 @@ if opts.planeselect_again
     
 end
 
-%%
+%% Ramp off Field
 if ramp_field_CF
      setDigitalChannel(calctime(curtime,0),94,0); % stop PID
      curtime= calctime(curtime,20);

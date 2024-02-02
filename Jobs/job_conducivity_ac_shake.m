@@ -30,7 +30,7 @@ pow = 0.085;
 for ii = 1:length(var_list)
     f = var_list(ii); 
     npt = struct;   
-    npt.SequenceFunctions   = {@main_settings,@(curtime) ac_conductivity(curtime,x),@main_sequence};
+    npt.SequenceFunctions   = {@main_settings,@(curtime) ac_conductivity(curtime,f,B,pow),@main_sequence};
 %     npt.CycleStartFcn       = @cycleStart;
 %     npt.CycleCompleteFcn    = @cycleComplete;
 %     npt.JobCompleteFcn      = @jobComplete;
@@ -56,6 +56,25 @@ clear Jstripe
     end
 
     function feedback_stripe
+        global seqdata
+        if ~isfield(seqdata,'IxonGUIAnalayisHistoryDirectory') || ...
+                ~exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')
+            warning('No feedback directory to run on');
+        return;    
+        end
+        % Get Recent Bin Stripe Data
+        L = 3;
+        olddata = getRecentGuiData(L); 
+        for l=1:L
+            BinStripes(l) = olddata{l}.BinStripe;
+        end
+
+        % Get the mod depths, phase, and Rsquare
+        phi     = [BinStripes.Phase];
+        alpha   = [BinStripes.ModDepth];
+        n0      = [BinStripes.FocusCenter];
+        r2      = [BinStripes.RSquareStripe];
+
         % wait a few seconds for stripe analysis to finish?
         % load in the 3 most recent stripe data
         % use this info to define a new frequency in a file

@@ -197,7 +197,7 @@ function updateJobText(obj)
             funcs=obj.SequencerJobs{kk}.SequenceFunctions;
             mystr =[];
             for ii = 1:length(funcs)
-                mystr = [mystr '@' func2str(funcs{ii}) ','];
+                mystr = [mystr func2str(funcs{ii}) ','];
             end
             mystr(end)=[];
 

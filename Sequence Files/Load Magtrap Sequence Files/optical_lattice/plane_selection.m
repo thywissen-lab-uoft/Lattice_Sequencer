@@ -1,29 +1,19 @@
 function [curtime] = plane_selection(timein,override)
-
- 
- if nargin == 0
-     timein = 10;
- end
- 
-
-opts = struct;
-
- 
-
 global seqdata
- curtime = timein;
+
+if nargin == 0;timein = 10;end
+curtime = timein;
+
+opts = struct; 
+
 %% Flags
 
 % Establish field gradeint with QP, FB, and shim fields for plane selection
-opts.ramp_fields = 1; 
+opts.ramp_fields    = 0;            % Antiquated field ramps
+opts.ramp_field_CF  = 1;            % New field ramps
+opts.dotilt         = 1;            % Tilt field for stripe pattern
 
-
-opts.dotilt     = 1; %tilt for stripe pattern
-
-
-% Do you want to fake the plane selection sweep?
-%0=No, 1=Yes, no plane selection but remove all atoms.
-opts.fake_the_plane_selection_sweep = 0; 
+opts.fake_the_plane_selection_sweep = 0;  % Whether or not to apply uwaves
 
 % Pulse the vertical D2 kill beam to kill untransfered F=9/2
 opts.planeselect_doVertKill = 1;
@@ -89,8 +79,7 @@ curtime = calctime(curtime,30);
 ScopeTriggerPulse(curtime,'Plane Select');
 
 %% Magnetic Field Ramps 2
-ramp_field_CF=1;
-if ramp_field_CF
+if opts.ramp_field_CF
     
     % Transport Feedforward Settings
     defVar('qgm_pselect_FF',27,'V');
@@ -118,8 +107,8 @@ if ramp_field_CF
     Iy = dIy0 + seqdata.params.shim_zero(2);
     Iz = dIz0 + seqdata.params.shim_zero(3);
         
-     setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',0);
-
+    % Turn off Z shim (this is for using the big shim for Z)
+    setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',0);
     if opts.dotilt                
         defVar('qgm_plane_tilt_dIz',-0.008,'A');  
         defVar('qgm_plane_tilt_dIz',0.050,'A');        
@@ -157,35 +146,19 @@ if ramp_field_CF
     val_Y = getChannelValue(seqdata,'Y Shim',1);
     val_Z = getChannelValue(seqdata,'Z Shim',1);
 
-    % Ramp up QP Feedforward
-%     curtime =  AnalogFuncTo(calctime(curtime,0),'Transport FF',...
-%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-%         Tff, Tff, 4,2);
-    
-    % Ramp up together
+    % Ramp up transport feedforward
     AnalogFuncTo(calctime(curtime,0),'Transport FF',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         Tff, Tff, Vff,2);    
+    % Ramp up QP current
     AnalogFuncTo(calctime(curtime,0),'Coil 16',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        Tr, Tr, IQP,func_qp);
-    
-    doFBSourceSwitch = 0;
-    if exist('doFBSourceSwitch','var') && doFBSourceSwitch
-        AnalogFuncTo(calctime(curtime,-150),'FB Current',...
+        Tr, Tr, IQP,func_qp);    
+    % Ramp up Feshbach current
+    AnalogFuncTo(calctime(curtime,0),'FB Current',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        10, 10, -0.1, 1);
-       
-        setDigitalChannel(calctime(curtime,-135),96,1); %Relay TTL
-        DigitalPulse(calctime(curtime,0),95,10,1); %Rigol Burst Mode Trigger
-       
-    else
-        DigitalPulse(calctime(curtime,0),95,10,1); %Rigol Burst Mode Trigger
-        AnalogFuncTo(calctime(curtime,0),'FB Current',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-            Tr, Tr, BFB,func_fb); 
-    end
-    
+        Tr, Tr, BFB,func_fb); 
+    % Ramp shims
     AnalogFuncTo(calctime(curtime,0),'X Shim',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         Tr, Tr, Ix,func_x);  
@@ -195,16 +168,15 @@ if ramp_field_CF
     AnalogFuncTo(calctime(curtime,0),'Z Shim',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         Tr, Tr, Iz,func_z);  
+    % Wait for all ramps
     curtime = calctime(curtime,Tr);
-    curtime = calctime(curtime,Ts);
-    
-    setDigitalChannel(calctime(curtime,0),94,1); % engage PID
-    curtime = calctime(curtime,100);
 
+    curtime = calctime(curtime,Ts);                     % Settling time 
+    setDigitalChannel(calctime(curtime,0),94,1);        % Engage big shim PID
+    curtime = calctime(curtime,100);                    % Wait for big shim PID
 end
 
 %% Magnetic Field Ramps
-opts.ramp_fields=0;
 if opts.ramp_fields
     % Ramp the SHIMs, QP, and FB to the appropriate level  
     dispLineStr('Ramping Fields', curtime);
@@ -993,8 +965,7 @@ if ramp_field_CF
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         Tff+20, Tff+20, val_FF); 
     curtime = calctime(curtime,Tr);
-    curtime = calctime(curtime,Ts);
-     
+    curtime = calctime(curtime,Ts);     
 end
      
 end

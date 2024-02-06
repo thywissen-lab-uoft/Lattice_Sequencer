@@ -90,6 +90,13 @@ if opts.ramp_field_CF
     Ix = dIx0 + seqdata.params.shim_zero(1);
     Iy = dIy0 + seqdata.params.shim_zero(2);
     Iz = dIz0 + seqdata.params.shim_zero(3);
+    
+            
+    if isfield(seqdata.flags,'qgm_stripe_feedback2') && ...
+        seqdata.flags.qgm_stripe_feedback2 && ...
+        exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')             
+         opts.dotilt = seqdata.flags.plane_selection.dotilt;
+    end
         
     % Turn off Z shim (this is for using the big shim for Z)
     setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',0);
@@ -256,14 +263,23 @@ switch opts.SelectMode
         dispLineStr('HS1 Frequency Sweep',curtime);
 
         freq_offset_list = [-280];
-        freq_offset_list = [630];        
+        freq_offset_list = [527];          
         
         if isfield(seqdata.flags,'qgm_stripe_feedback2') && ...
             seqdata.flags.qgm_stripe_feedback2 && ...
-            exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')      
+            exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')             
+            freq_offset_list = getVar('f_offset');
+        end
+        
+        if ~opts.dotilt
+            freq_offset_list = freq_offset_list-10;
         end
 
         freq_amp_list = [10]; % 42 kHz / plane now?CF did a recent calculation to suggest this
+        
+         if ~opts.dotilt
+            freq_amp_list = [15]; % 42 kHz / plane now?CF did a recent calculation to suggest this
+        end
 
         sweep_time_list = freq_amp_list/10; 
         defVar('qgm_plane_uwave_frequency_offset',freq_offset_list,'kHz');

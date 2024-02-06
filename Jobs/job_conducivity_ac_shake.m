@@ -11,8 +11,12 @@ function J=job_conducivity_ac_shake
         % Define field, frequency, and evaporation depth
         defVar('conductivity_FB_field',field,'G');       
         defVar('conductivity_mod_freq',freq,'Hz');          
-        defVar('Evap_End_Power',evap_depth,'W');
+        defVar('xdt_evap1_power',evap_depth,'W');
         
+        d = load('f_offset.mat');
+        f_offset = d.f_offset;        
+        defVar('f_offset',f_offset,'kHz');
+
         % Modulation time vector
         t0 = 50;
         T = 1e3/freq;
@@ -47,12 +51,16 @@ clear Jstripe
     function curtime = stripe(curtime,field,evap_depth)
         global seqdata
         defVar('conductivity_FB_field',field,'G');       
-        defVar('Evap_End_Power',evap_depth,'G');       
+        defVar('xdt_evap1_power',evap_depth,'G');       
 
         seqdata.flags.conductivity_ODT1_mode = 0; 
         seqdata.flags.conductivity_ODT2_mode = 0; 
         seqdata.flags.plane_selection.dotilt = 1;
         defVar('conductivity_mod_time',0,'ms');   
+        
+        d = load('f_offset.mat');
+        f_offset = d.f_offset;        
+        defVar('f_offset',f_offset,'kHz');
     end
 
     function feedback_stripe
@@ -65,15 +73,42 @@ clear Jstripe
         % Get Recent Bin Stripe Data
         L = 3;
         olddata = getRecentGuiData(L); 
+        freqs = zeros(3,1);
         for l=1:L
             BinStripes(l) = olddata{l}.BinStripe;
+            freqs(l) = olddata{l}.Params.qgm_plane_uwave_frequency_offset;
         end
-
+        
+%         freqs = [Params.qgm_plane_uwave_frequency_offset];
+        fold = median(freqs);
+        
         % Get the mod depths, phase, and Rsquare
         phi     = [BinStripes.Phase];
         alpha   = [BinStripes.ModDepth];
         n0      = [BinStripes.FocusCenter];
         r2      = [BinStripes.RSquareStripe];
+        L       = [BinStripes.Lambda];
+        
+        
+        inds = [alpha>=0.8].*[r2>0.85];
+        inds = logical(inds);
+        
+        [~, ind] = sort(alpha,'descend');
+        inds = inds(ind);
+        
+        if sum(inds)>0
+            nSet = 85;            
+            Lbar = mean(L(inds));
+            n0bar = median(n0(inds));            
+            disp('hi ben');
+            dN = n0bar - nSet;
+            m = 2.285/100; % planes/kHz            
+            df = -(dN/Lbar)/m;            
+            fnew = fold + df; 
+            f_offset = round(fnew);
+            save('f_offset.mat','f_offset');
+        end
+        
 
         % wait a few seconds for stripe analysis to finish?
         % load in the 3 most recent stripe data
@@ -89,35 +124,39 @@ npt.SequenceFunctions   = {...
     @(curtime)stripe(curtime,B,pow),...
     @main_sequence};
 npt.JobCompleteFcn      = @feedback_stripe;
-npt.ScanCyclesRequested = 1:3;
+npt.ScanCyclesRequested = 1:2;
 npt.JobName             = ['stripe ' ...
     num2str(B) 'G,' num2str(1e3*pow) ' mW'];
 npt.SaveDirName         = npt.JobName;    
 Jstripe = sequencer_job(npt);
 
-%% Stripe Phase Job
+%% Normal Plane Select Job
 
-    function curtime = start_conductivity(curtime,field,evap_depth)
+    function curtime = normal_ps(curtime,field,evap_depth)
         global seqdata
         defVar('conductivity_FB_field',field,'G');       
-        defVar('Evap_End_Power',evap_depth,'G');       
+        defVar('xdt_evap1_power',evap_depth,'G');       
 
         seqdata.flags.conductivity_ODT1_mode = 0; 
         seqdata.flags.conductivity_ODT2_mode = 0; 
         seqdata.flags.plane_selection.dotilt = 0;
         defVar('conductivity_mod_time',0,'ms');   
+        
+        d = load('f_offset.mat');
+        f_offset = d.f_offset;        
+        defVar('f_offset',f_offset,'kHz');
     end
 
 B = 195;
-pow = 0.085;
+pow = 0.1;
 
 npt = struct;
 npt.SequenceFunctions   = {...
     @main_settings,...
-    @(curtime)start_conductivity(curtime,B,pow),...
+    @(curtime)normal_ps(curtime,B,pow),...
     @main_sequence};
-npt.JobCompleteFcn      = @feedback_stripe;
-npt.ScanCyclesRequested = 1:3;
+% npt.JobCompleteFcn      = @feedback_stripe;
+npt.ScanCyclesRequested = 1:2;
 npt.JobName             = ['calibrate ' num2str(B) 'G,' num2str(1e3*pow) ' mW'];
 npt.SaveDirName         = npt.JobName;    
 Jsingle = sequencer_job(npt);
@@ -134,12 +173,14 @@ Jsingle = sequencer_job(npt);
 %% Interleave Stripe, Single plane calibration
 clear J
 
-N = 10; % Number of total repitions
+N = 200; % Number of total repitions
 J = [Jstripe];
-Jsingle.ScanCyclesRequested = 1:10;
+Jsingle.ScanCyclesRequested = 1:1;
 for kk=1:N
-    J(end+1) = Jsingle;
-    J(end+1) = Jstripe;
+    J(end+1) = copy(Jsingle);
+    J(end+1) = copy(Jstripe);
+%     J(end+1) = Jsingle;
+%     J(end+1) = Jstripe;
 end
 
 

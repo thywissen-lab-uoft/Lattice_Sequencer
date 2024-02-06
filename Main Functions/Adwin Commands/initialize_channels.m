@@ -152,7 +152,7 @@ seqdata.digchannels(90).name = 'Channel 90';        % unused
 seqdata.digchannels(91).name = 'Channel 91';        % unused
 seqdata.digchannels(92).name = 'Channel 92';        % unused
 seqdata.digchannels(93).name = 'Channel 93';        % unused
-seqdata.digchannels(94).name = 'Channel 94';        % unused
+seqdata.digchannels(94).name = 'Big Shim PID Engage'; % 0: PID off, 1: PID on 
 seqdata.digchannels(95).name = 'Channel 95';        % unused
 seqdata.digchannels(96).name = 'Channel 96';        % unused
 %% Analag Channels

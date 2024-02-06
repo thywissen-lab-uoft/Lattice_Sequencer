@@ -1,4 +1,6 @@
-classdef sequencer_job < handle
+% classdef sequencer_job < handle
+classdef sequencer_job < matlab.mixin.Copyable
+
 % sequencer_job This class contains jobs to run on the adwin.  A single job can have
 % multiple scandincides, but only refers to a single set of sequence file.
 % This is essentially a glorified struct

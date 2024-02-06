@@ -318,6 +318,8 @@ seqdata.flags.qgm_stripe_feedback           = 0; % feedback on stripes EXPERIMEN
 % Actual fluorsence image flags - NO LONGER USED
 seqdata.flags.Raman_transfers               = 0;
 seqdata.flags.qgm_stripe_feedback2 = 1;
+seqdata.flags.plane_selection.dotilt = 0;
+defVar('f_offset',500,'kHz');
 
 % Note:
 % It is sometimes helpful to run the fluorence imaging code as other things

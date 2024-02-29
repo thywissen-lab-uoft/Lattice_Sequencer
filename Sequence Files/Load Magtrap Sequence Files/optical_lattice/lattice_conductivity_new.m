@@ -6,8 +6,8 @@ curtime = timein;
 setAnalogChannel(curtime,'Modulation Ramp',-10,1);      
 
 %% Flags
-seqdata.flags.conductivity_ODT1_mode            = 1; % 0:OFF, 1:SINE, 2:DC
-seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
+% seqdata.flags.conductivity_ODT1_mode            = 1; % 0:OFF, 1:SINE, 2:DC
+% seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
 seqdata.flags.conductivity_ramp_FB              = 1; % Ramp FB field to resonance
 seqdata.flags.conductivity_ramp_QP              = 1; % Ramp QP reverse with FB (only works if ramp_FB is enabled)
 seqdata.flags.conductivity_rf_spec              = 0;
@@ -21,6 +21,9 @@ seqdata.flags.conductivity_dopin                = 1; % Pin after modulation
 % VISA Address of Rigol
 rigol_address = 12;           
 
+% Set ODT 1 mod amp such that modulation is along x lattice
+defVar('conductivity_ODT1_mod_amp',...
+    round(getVar('conductivity_ODT2_mod_amp')/1.34,3),'V');
 
 %% Calculate Timings and Phase
 
@@ -46,7 +49,7 @@ switch seqdata.flags.conductivity_ODT1_mode
         ch1_on=struct;
         ch1_on.FREQUENCY=getVar('conductivity_mod_freq');
         ch1_on.OFFSET = 0;
-        ch1_on.AMPLITUDE = abs(getVar('conductivity_ODT1_mod_amp'))*2;
+        ch1_on.AMPLITUDE = round(abs(getVar('conductivity_ODT1_mod_amp'))*2,3);
         ch1_on.AMPLITUDE_UNIT='VPP';   % Unit of modulation (Volts PP)
         ch1_on.FUNC = 'SIN';
         ch1_on.BURST_PHASE = 0;
@@ -62,8 +65,9 @@ switch seqdata.flags.conductivity_ODT1_mode
     case 2
         ch1_on = struct;
         ch1_on.STATE='ON';
-%         ch1_on.DC = ['1,1,' num2str(getVar('conductivity_ODT1_mod_amp'))];  
-        ch1_on.DC = ['1,1,' num2str(getVarOrdered('conductivity_ODT1_mod_amp'))];  
+        ch1_on.DC = ['1,1,' num2str(round(getVar('conductivity_ODT1_mod_amp'),3))];  
+%       ch1_on.DC = ['1,1,' num2str(getVarOrdered('conductivity_ODT1_mod_amp'))];
+
 
         programRigol(rigol_address,ch1_on,[]);
 end
@@ -77,7 +81,7 @@ switch seqdata.flags.conductivity_ODT2_mode
         ch2_on=struct;
         ch2_on.FREQUENCY=getVar('conductivity_mod_freq');
         ch2_on.OFFSET = 0;
-        ch2_on.AMPLITUDE = abs(getVar('conductivity_ODT2_mod_amp'))*2;
+        ch2_on.AMPLITUDE = round(abs(getVar('conductivity_ODT2_mod_amp'))*2,3);
         ch2_on.AMPLITUDE_UNIT='VPP';   % Unit of modulation (Volts PP)
         ch2_on.FUNC = 'SIN';
         ch2_on.BURST_PHASE = getVar('conductivity_rel_mod_phase');
@@ -93,8 +97,8 @@ switch seqdata.flags.conductivity_ODT2_mode
     case 2
         ch2_on = struct;
         ch2_on.STATE='ON';
-%         ch2_on.DC = ['1,1,' num2str(getVar('conductivity_ODT2_mod_amp'))];  
-        ch2_on.DC = ['1,1,' num2str(getVarOrdered('conductivity_ODT2_mod_amp'))];  
+        ch2_on.DC = ['1,1,' num2str(round(getVar('conductivity_ODT2_mod_amp'),3))];  
+%         ch2_on.DC = ['1,1,' num2str(round(getVarOrdered('conductivity_ODT2_mod_amp'),3))];  
 
         programRigol(rigol_address,[],ch2_on);
 end
@@ -158,9 +162,7 @@ if seqdata.flags.conductivity_ramp_FB
         ramp.fesh_ramptime = ramptime_all;
         ramp.fesh_ramp_delay = 0;
         ramp.fesh_final = Bfb; %22.6
-        ramp.settling_time = 50;      
-       
-
+        ramp.settling_time = 50;  
         
         
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
@@ -178,6 +180,7 @@ end
 % end
 
 if seqdata.flags.conductivity_enable_mod_ramp    
+    DigitalPulse(curtime,'QPD Monitor Trigger',10,1);    
     setDigitalChannel(curtime,'ODT Piezo Mod TTL',1);    
     curtime = AnalogFunc(calctime(curtime,0),'Modulation Ramp',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...

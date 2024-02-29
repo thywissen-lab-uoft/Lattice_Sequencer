@@ -52,7 +52,7 @@ if seqdata.flags.lattice_rotate_waveplate_1
     %Turn rotating waveplate to shift a little power to the lattice beams
     wp_Trot1 = 600; % Rotation time during XDT
     
-    P_RotWave_I = 0.7;.8
+    P_RotWave_I = 0.7;.8;
     P_RotWave_II = 0.99;
     
     disp(['     Rotation Time 1 : ' num2str(wp_Trot1) ' ms']);
@@ -70,6 +70,9 @@ end
 if seqdata.flags.lattice_lattice_ramp_1    
     dispLineStr('Defining initial lattice and DMD ramps.',curtime);
     ScopeTriggerPulse(curtime,'lattice_ramp_1');
+    
+    % First QPD trigger has it takes data
+    DigitalPulse(calctime(curtime,-100),'QPD Monitor Trigger',10,1);    
 
     % Lattice depth and ramp times
     L0=seqdata.params.lattice_zero;  
@@ -163,8 +166,8 @@ if seqdata.flags.lattice_lattice_ramp_1
             
             %Select the lattice direction to load
 %             direction = 'X';
-            direction = 'Y';
-%             direction = 'Z';
+%             direction = 'Y';
+            direction = 'Z';
             switch direction
                 case 'X'
                   latt_depth=...
@@ -291,6 +294,9 @@ if seqdata.flags.lattice_lattice_ramp_1
     
     % First ramp from zero value to first value
     T0=0;
+    
+    % QPD Trighger when beginning to ramp up
+    DigitalPulse(calctime(curtime,0),'QPD Monitor Trigger',10,1);    
 
     % Ramp xLattice to the first value ("0Er")
     setAnalogChannel(calctime(curtime,T0-20),'xLattice',L0(1));
@@ -401,7 +407,6 @@ if seqdata.flags.lattice_lattice_ramp_1
     end
     curtime=calctime(curtime,T_load_tot);   
     
-    DigitalPulse(curtime,'QPD Monitor Trigger',10,1);    
     disp([' end loading : ' num2str(curtime2realtime(curtime)) ' ms']);
 end
 

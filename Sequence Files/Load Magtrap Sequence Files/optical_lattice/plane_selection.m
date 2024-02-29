@@ -100,26 +100,32 @@ if opts.ramp_field_CF
         
     % Turn off Z shim (this is for using the big shim for Z)
     setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',0);
-    if opts.dotilt                
-        defVar('qgm_plane_tilt_dIz',-0.008,'A');  
-        defVar('qgm_plane_tilt_dIz',0.050,'A');        
-
-        if isfield(seqdata.flags,'qgm_stripe_feedback') && ...
-            seqdata.flags.qgm_stripe_feedback && ...
-            exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')      
-            Inew = stripe_feedback;     
-            
-            if ~isnan(Inew)
-                defVar('qgm_plane_tilt_dIz',Inew,'A');
-            end
-        end        
-        xshimtilt = 4.4;
-        yshimtilt = 0.3;    
-        zshimtilt= getVar('qgm_plane_tilt_dIz');   
+    if opts.dotilt           
+        defVar('qgm_plane_tilt_dIx',[0.85],'A');0.85;
+        defVar('qgm_plane_tilt_dIy',[0.13],'A');0.149;
+        defVar('qgm_plane_tilt_dIz',0.0,'A');0;      
+        Ix = seqdata.params.shim_zero(1) + getVar('qgm_plane_tilt_dIx');
+        Iy = seqdata.params.shim_zero(2) + getVar('qgm_plane_tilt_dIy');
+        Iz = seqdata.params.shim_zero(3) + getVar('qgm_plane_tilt_dIz');  
+    else
+        Ix = Ix;
+        Iy = Iy;
+        Iz = Iz;    
+        defVar('qgm_plane_notilt_dIx',-3.65,'A');
+        defVar('qgm_plane_notilt_dIy',0.13,'A');        
+         
         
-        Ix = Ix + xshimtilt;
-        Iy = Iy + yshimtilt;
-        Iz = Iz + 0*zshimtilt;
+        defVar('qgm_plane_notilt_dIx',[-3.73],'A');        
+        x = [0.85 -2.65];
+        y = [0.13 -0.03];               
+        defVar('qgm_plane_notilt_dIy',interp1(x,y,getVar('qgm_plane_notilt_dIx'),'linear','extrap'),'A');
+        
+
+        
+        defVar('qgm_plane_notilt_dIz',0.0,'A');0;      
+        Ix = seqdata.params.shim_zero(1) + getVar('qgm_plane_notilt_dIx');
+        Iy = seqdata.params.shim_zero(2) + getVar('qgm_plane_notilt_dIy');
+        Iz = seqdata.params.shim_zero(3) + getVar('qgm_plane_notilt_dIz');  
     end  
     
     Vff = getVar('qgm_pselect_FF');
@@ -191,8 +197,12 @@ if opts.ramp_fields
     % QP Field (in Amps)
     IQP_PS_shift = getVar('IQP_PS_shift');
     IQP = 14*1.78 + IQP_PS_shift; % 210 G/cm (not sure if calibrated)
+    
+    % Shim Calibrations (unsure how correct
+    % X/Y   : 1.983 G/A (from raman transfers)
+    % Z     : 2.35 G/A  (from high field measurements)
          
-    % Shim Fields (in Amps) NEW FOR 39 AMP QP --> 12mG per plane
+    % Shim Fields (in Amps) NEW FOR 39 AMP QP
     xshimdlist  = -3.55;
     yshimdlist  = -0.1510;
     zshimdlist  = 0;
@@ -202,33 +212,37 @@ if opts.ramp_fields
     yshimd = getScanParameter(yshimdlist,seqdata.scancycle,...
         seqdata.randcyclelist,'qgm_plane_dIy','A');    
     zshimd = getScanParameter(zshimdlist,seqdata.scancycle,...
-        seqdata.randcyclelist,'qgm_plane_dIz','A');        
-    
-    % Shim Calibrations (unsure how correct
-    % X/Y   : 1.983 G/A (from raman transfers)
-    % Z     : 2.35 G/A  (from high field measurements)
+        seqdata.randcyclelist,'qgm_plane_dIz','A');  
 
     if opts.dotilt                
-        defVar('qgm_plane_tilt_dIz',-0.008,'A');        
-        if isfield(seqdata.flags,'qgm_stripe_feedback') && ...
-            seqdata.flags.qgm_stripe_feedback && ...
-            exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')      
-            Inew = stripe_feedback;     
-            defVar('qgm_plane_tilt_dIz',Inew,'A');
-        end        
-        xshimtilt = 4.4;
-        yshimtilt = 0.3;    
-        zshimtilt= getVar('qgm_plane_tilt_dIz');        
-    else
+        
+%         defVar('qgm_plane_tilt_dIz',-0.008,'A');        
+%         if isfield(seqdata.flags,'qgm_stripe_feedback') && ...
+%             seqdata.flags.qgm_stripe_feedback && ...
+%             exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')      
+%             Inew = stripe_feedback;     
+%             defVar('qgm_plane_tilt_dIz',Inew,'A');
+%         end      
+%         zshimtilt= getVar('qgm_plane_tilt_dIz');        
+%         xshimtilt = 4.4;
+%         yshimtilt = 0.3;    
+%         zshimtilt = 0;     
+
+
+%         disp('hi')
+    else   
         xshimtilt = 0;
         yshimtilt = 0;
         zshimtilt = 0;
+        ramp.xshim_final = seqdata.params.shim_zero(1) + xshimd + xshimtilt;
+        ramp.yshim_final = seqdata.params.shim_zero(2) + yshimd + yshimtilt;
+        ramp.zshim_final = seqdata.params.shim_zero(3) + zshimd + zshimtilt;   
     end  
 
     % Shim Ramp
-    ramp.xshim_final = seqdata.params.shim_zero(1) + xshimd + xshimtilt;
-    ramp.yshim_final = seqdata.params.shim_zero(2) + yshimd + yshimtilt;
-    ramp.zshim_final = seqdata.params.shim_zero(3) + zshimd + zshimtilt;        
+%     ramp.xshim_final = seqdata.params.shim_zero(1) + xshimd + xshimtilt;
+%     ramp.yshim_final = seqdata.params.shim_zero(2) + yshimd + yshimtilt;
+%     ramp.zshim_final = seqdata.params.shim_zero(3) + zshimd + zshimtilt;        
     ramp.shim_ramptime = 100;
     ramp.shim_ramp_delay = -10;
     
@@ -261,25 +275,39 @@ switch opts.SelectMode
         % This does an HS1 plane frequency sweep, this is only good for one
         % plane really.
         dispLineStr('HS1 Frequency Sweep',curtime);
+%         df = interp1([0 -4],[0 -100],getVar('qgm_plane_tilt_dIx')-0.85,'linear','extrap');
+%         freq_offset_list = 360 + df;
 
-        freq_offset_list = [-280];
-        freq_offset_list = [527];          
+%         freq_offset_list = 450;        
+%         freq_offset_list = 350;
+%         freq_offset_list = 550+[-40:10:40];
+
         
+        if ~opts.dotilt
+            freq_offset_list = [200];200;170;
+%             freq_offset_list = 450;580;
+            freq_amp_list = [10];15;
+        else
+            freq_offset_list = 180;240;590;
+            freq_amp_list = [8]; % 43.8 kHz / plane
+        end
+% freq_offset_list = 430;
+          
         if isfield(seqdata.flags,'qgm_stripe_feedback2') && ...
             seqdata.flags.qgm_stripe_feedback2 && ...
             exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')             
-            freq_offset_list = getVar('f_offset');
+            f_offset = getVar('f_offset');
+            freq_offset_list = freq_offset_list + f_offset;
+            
+            if ~opts.dotilt
+                f_amplitude = getVar('f_amplitude');
+                freq_amp_list = f_amplitude;
+            else
+                freq_amp_list = [8];
+            end
+            
         end
         
-        if ~opts.dotilt
-            freq_offset_list = freq_offset_list-10;
-        end
-
-        freq_amp_list = [10]; % 42 kHz / plane now?CF did a recent calculation to suggest this
-        
-         if ~opts.dotilt
-            freq_amp_list = [15]; % 42 kHz / plane now?CF did a recent calculation to suggest this
-        end
 
         sweep_time_list = freq_amp_list/10; 
         defVar('qgm_plane_uwave_frequency_offset',freq_offset_list,'kHz');

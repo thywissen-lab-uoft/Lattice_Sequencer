@@ -56,7 +56,7 @@ seqdata.flags.misc_program4pass             = 1; % Update four-pass frequency
 seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
 seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[1.95],'V');
+defVar('objective_piezo',[1.98],'V');
 % 0.1V = 700 nm, larger means further away from chamber
 % 1 V= 7 um
 % 10 V = 70 um
@@ -258,7 +258,7 @@ defVar('xdt_load_power',1.0,'W');
 defVar('xdt_sympathetic_power',0.800,'W');
 
 % Stage 1 Evaporation (K+Rb)
-defVar('xdt_evap1_power',[0.120],'W');0.078;0.085;0.08;0.078;
+defVar('xdt_evap1_power',[0.110],'W');0.078;0.085;0.08;0.078;
 defVar('xdt_evap1_time',25e3,'ms');
 defVar('xdt_evap1_tau_fraction',3.5,'arb');
 
@@ -269,7 +269,7 @@ defVar('xdt_evap2_tau_fraction',3.5','arb')
 %% Optical Lattice
 
 % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
-seqdata.flags.lattice                       = 1; 
+seqdata.flags.lattice                       = 0; 
 seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate
 defVar('lattice_depth_load',2.5,'Er');
 defVar('lattice_pin_depth',60,'Er');
@@ -288,7 +288,7 @@ seqdata.flags.do_lattice_am_spec            = 0;    % Amplitude modulation spect
 seqdata.flags.lattice_rotate_waveplate_2    = 1;    % Second waveplate rotation 95% 
 seqdata.flags.lattice_lattice_ramp_2        = 0;    % Secondary lattice ramp for fluorescence imaging
 seqdata.flags.lattice_lattice_ramp_3        = 1;    % Secondary lattice ramp for fluorescence imaging
-seqdata.flags.lattice_pin                   = 1;
+seqdata.flags.lattice_pin                   = 0;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -302,7 +302,7 @@ seqdata.flags.lattice_hold_at_end           = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % These flags are associated with the conducitivity experiment
 seqdata.flags.lattice_conductivity          = 0;    % old sequence
-seqdata.flags.lattice_conductivity_new      = 0;   % New sequence created July 25th, 2023
+seqdata.flags.lattice_conductivity_new      = 1;   % New sequence created July 25th, 2023
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy
@@ -317,9 +317,10 @@ seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
 seqdata.flags.qgm_stripe_feedback           = 0; % feedback on stripes EXPERIMENTAL
 % Actual fluorsence image flags - NO LONGER USED
 seqdata.flags.Raman_transfers               = 0;
-seqdata.flags.qgm_stripe_feedback2 = 1;
+seqdata.flags.qgm_stripe_feedback2 = 0;
 seqdata.flags.plane_selection.dotilt = 0;
 defVar('f_offset',500,'kHz');
+defVar('f_amplitude',15,'kHz');
 
 % Note:
 % It is sometimes helpful to run the fluorence imaging code as other things
@@ -361,17 +362,20 @@ seqdata.flags.lattice_pulse_z_for_alignment = 0;
 
 %% Conductivity
 
+seqdata.flags.conductivity_ODT1_mode            = 0; % 0:OFF, 1:SINE, 2:DC
+seqdata.flags.conductivity_ODT2_mode            = 0; % 0:OFF, 1:SINE, 2:DC
+
 defVar('conductivity_snap_and_hold_time',[0],'ms');  
-defVar('conductivity_FB_field',198,'G')
+defVar('conductivity_FB_field',201,'G')
 defVar('conductivity_zshim',0,'A')
-defVar('conductivity_mod_freq',[50],'Hz')       % Modulation Frequency
+defVar('conductivity_mod_freq',[55],'Hz')       % Modulation Frequency
 defVar('conductivity_mod_time',[50],'ms');      % Modulation Time
 defVar('conductivity_mod_ramp_time',150,'ms');  % Ramp Time
 defVar('conductivity_rel_mod_phase',0,'deg');   % Phase shift of sinusoidal mod - should be 180 for mod along y
     
 % Modulation amplitude not to exceed +-4V.
-defVar('conductivity_ODT1_mod_amp',[4],'V');  % ODT1 Mod Depth   4V, 4V for X (DC) 4V, -1.7V for Y (DC);
-defVar('conductivity_ODT2_mod_amp',[4],'V');  % ODT2 Mod Depth
+defVar('conductivity_ODT1_mod_amp',0,'V');  % ODT1 Mod Depth   4V, 4V for X (DC) 4V, -1.7V for Y (DC);
+defVar('conductivity_ODT2_mod_amp',4,'V');  % ODT2 Mod Depth
 
 defVar('scope_pos',-7);
 getVar('scope_pos');

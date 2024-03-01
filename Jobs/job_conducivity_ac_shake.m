@@ -10,7 +10,8 @@ function J=job_conducivity_ac_shake
         global seqdata;        
         seqdata.flags.conductivity_ODT1_mode            = 1; % 0:OFF, 1:SINE, 2:DC
         seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
-        seqdata.flags.plane_selection.dotilt = 0;
+        seqdata.flags.plane_selection.dotilt            = 0;
+        seqdata.flags.conductivity_mod_direction        = 1; % 1:X-direction 2:Y-direction
 
         seqdata.flags.qgm_stripe_feedback2 = 1;
         % Define field, frequency, and evaporation depth

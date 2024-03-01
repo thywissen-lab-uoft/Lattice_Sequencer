@@ -847,7 +847,7 @@ if seqdata.flags.xdt_rfmix_start
     %Do RF Sweep
     clear('sweep');
 
-    rf_k_sweep_freqs = [6.005];[5.995];
+    rf_k_sweep_freqs = [5.991];[5.995];
     % With delta_freq =0.1;
     % 3.01 --> (-7,-5) (a little -9)
     % 3.07 --> (-1,+1,+3); 
@@ -1366,7 +1366,7 @@ if seqdata.flags.xdt_ramp_power_end
     xdt_rampup_power = getScanParameter(xdt_rampup_power_list,seqdata.scancycle,...
     seqdata.randcyclelist,'xdt_rampup_power', 'mW');
     
-    dip_1 = xdt_rampup_power; 0.02; seqdata.params.ODT_zeros(1);; .15; %1.5
+    dip_1 = xdt_rampup_power; 0.02; seqdata.params.ODT_zeros(1); .15; %1.5
     dip_2 = xdt_rampup_power; .15; %1.5
     dip_ramptime = 100; %1000
     dip_rampstart = 0;

@@ -258,7 +258,7 @@ defVar('xdt_load_power',1.0,'W');
 defVar('xdt_sympathetic_power',0.800,'W');
 
 % Stage 1 Evaporation (K+Rb)
-defVar('xdt_evap1_power',[0.110],'W');0.078;0.085;0.08;0.078;
+defVar('xdt_evap1_power',[0.065],'W');0.078;0.085;0.08;0.078;
 defVar('xdt_evap1_time',25e3,'ms');
 defVar('xdt_evap1_tau_fraction',3.5,'arb');
 
@@ -364,18 +364,28 @@ seqdata.flags.lattice_pulse_z_for_alignment = 0;
 
 seqdata.flags.conductivity_ODT1_mode            = 0; % 0:OFF, 1:SINE, 2:DC
 seqdata.flags.conductivity_ODT2_mode            = 0; % 0:OFF, 1:SINE, 2:DC
+seqdata.flags.conductivity_mod_direction        = 1; % 1:X-direction 2:Y-direction
 
-defVar('conductivity_snap_and_hold_time',[0],'ms');  
+defVar('conductivity_snap_and_hold_time',[0],'ms');
 defVar('conductivity_FB_field',201,'G')
 defVar('conductivity_zshim',0,'A')
 defVar('conductivity_mod_freq',[55],'Hz')       % Modulation Frequency
 defVar('conductivity_mod_time',[50],'ms');      % Modulation Time
 defVar('conductivity_mod_ramp_time',150,'ms');  % Ramp Time
-defVar('conductivity_rel_mod_phase',0,'deg');   % Phase shift of sinusoidal mod - should be 180 for mod along y
     
 % Modulation amplitude not to exceed +-4V.
-defVar('conductivity_ODT1_mod_amp',0,'V');  % ODT1 Mod Depth   4V, 4V for X (DC) 4V, -1.7V for Y (DC);
-defVar('conductivity_ODT2_mod_amp',4,'V');  % ODT2 Mod Depth
+if seqdata.flags.conductivity_mod_direction == 1
+    %For x-direction modulation only adjust ODT2 amp
+    defVar('conductivity_ODT1_mod_amp',0,'V');  % ODT1 Mod Depth   
+    defVar('conductivity_ODT2_mod_amp',4,'V');  % ODT2 Mod Depth
+    defVar('conductivity_rel_mod_phase',0,'deg');   % Phase shift of sinusoidal mod - should be 0 for mod along x
+elseif seqdata.flags.conductivity_mod_direction == 2
+    %For y-direction modulation only adjust ODT1 amp
+    defVar('conductivity_ODT1_mod_amp',4,'V');  % ODT1 Mod Depth  
+    defVar('conductivity_ODT2_mod_amp',0,'V');  % ODT2 Mod Depth
+    defVar('conductivity_rel_mod_phase',180,'deg');   % Phase shift of sinusoidal mod - should be 180 for mod along y
+end
+    
 
 defVar('scope_pos',-7);
 getVar('scope_pos');

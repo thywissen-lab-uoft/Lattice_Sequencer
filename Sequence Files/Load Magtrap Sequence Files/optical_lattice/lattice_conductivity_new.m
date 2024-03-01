@@ -21,9 +21,15 @@ seqdata.flags.conductivity_dopin                = 1; % Pin after modulation
 % VISA Address of Rigol
 rigol_address = 12;           
 
-% Set ODT 1 mod amp such that modulation is along x lattice
-defVar('conductivity_ODT1_mod_amp',...
-    round(getVar('conductivity_ODT2_mod_amp')/1.34,3),'V');
+if seqdata.flags.conductivity_mod_direction == 1
+    % Set ODT 1 mod amp such that modulation is along x lattice
+    defVar('conductivity_ODT1_mod_amp',...
+        round(getVar('conductivity_ODT2_mod_amp')/1.34,3),'V');
+elseif seqdata.flags.conductivity_mod_direction == 2
+     % Set ODT 2 mod amp such that modulation is along y lattice
+    defVar('conductivity_ODT2_mod_amp',...
+        round(getVar('conductivity_ODT1_mod_amp')/(-2.05),3),'V');
+end
 
 %% Calculate Timings and Phase
 

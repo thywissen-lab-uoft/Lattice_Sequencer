@@ -97,6 +97,8 @@ if opts.ramp_field_CF
         exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')             
          opts.dotilt = seqdata.flags.plane_selection.dotilt;
     end
+    
+    
         
     % Turn off Z shim (this is for using the big shim for Z)
     setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',0);
@@ -107,7 +109,10 @@ if opts.ramp_field_CF
         Ix = seqdata.params.shim_zero(1) + getVar('qgm_plane_tilt_dIx');
         Iy = seqdata.params.shim_zero(2) + getVar('qgm_plane_tilt_dIy');
         Iz = seqdata.params.shim_zero(3) + getVar('qgm_plane_tilt_dIz');  
+        disp('tilting');
     else
+        disp('no tilt');
+
         Ix = Ix;
         Iy = Iy;
         Iz = Iz;    
@@ -169,7 +174,7 @@ if opts.ramp_field_CF
     curtime = calctime(curtime,Tr);
 
     curtime = calctime(curtime,Ts);                     % Settling time 
-    setDigitalChannel(calctime(curtime,0),94,1);        % Engage big shim PID
+    setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage',1);        % Engage big shim PID
     curtime = calctime(curtime,100);                    % Wait for big shim PID
 end
 
@@ -284,11 +289,11 @@ switch opts.SelectMode
 
         
         if ~opts.dotilt
-            freq_offset_list = [200];200;170;
+            freq_offset_list = 200;200;170;
 %             freq_offset_list = 450;580;
-            freq_amp_list = [10];15;
+            freq_amp_list = [15];10;15;
         else
-            freq_offset_list = 180;240;590;
+            freq_offset_list = 130;230;240;590;
             freq_amp_list = [8]; % 43.8 kHz / plane
         end
 % freq_offset_list = 430;

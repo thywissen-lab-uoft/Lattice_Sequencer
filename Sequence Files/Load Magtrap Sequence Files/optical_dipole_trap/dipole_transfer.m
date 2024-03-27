@@ -847,7 +847,7 @@ if seqdata.flags.xdt_rfmix_start
     %Do RF Sweep
     clear('sweep');
 
-    rf_k_sweep_freqs = [5.991];[5.995];
+    rf_k_sweep_freqs = [5.996];[5.995];
     % With delta_freq =0.1;
     % 3.01 --> (-7,-5) (a little -9)
     % 3.07 --> (-1,+1,+3); 

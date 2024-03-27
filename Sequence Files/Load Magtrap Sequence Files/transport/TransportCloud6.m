@@ -1,5 +1,5 @@
 
-function timeout = TransportCloud5(timein)
+function timeout = TransportCloud6(timein)
 % TransportCloud2.m
 %
 % Author : C. Fujiwara
@@ -79,7 +79,7 @@ func_16 = 5;
 func_k = 4;
 
 %% Ramp 12a and 12b from end Horizontal to beggining vertical
-VT = 11;16;
+VT = 16;
 AnalogFunc(calctime(curtime,0),'Coil 12a',...
     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
     t_h2v, t_h2v, i12a_hf,i12a_vi,func_12a);
@@ -96,7 +96,7 @@ dispLineStr('Transport from 12 center to Crossover region at 153 mm',curtime);
 defVar('transport_stage1_time',[1000],'ms')
 t_init2cross = getVar('transport_stage1_time');
 z_init = 0;
-z_cross_i = 0.153;
+z_cross_i = 0.155;
 z_cross_f = 0.155;
 
 AnalogFunc(calctime(curtime,0),'Coil 12a',...
@@ -118,88 +118,97 @@ AnalogFunc(calctime(curtime,0),'Coil 16',...
     @(t,tt,y1,y2) z2i16(ramp_minjerk(t,tt,y1,y2)), ...
     t_init2cross, t_init2cross, z_init,z_cross_i,func_16);  
 
-%Ramp up the FF for when Coil 16 ramps up
-VH = 16;
-FF_start_time = 591;
-FF_ramp_time = t_init2cross-FF_start_time;
-
-AnalogFunc(calctime(curtime,FF_start_time),'Transport FF',...
-    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-    FF_ramp_time, FF_ramp_time, VT,VH);
-
-
 % Kitten doesn't regulate during this time, so have it request a bit more
 % than what it needs to and it will rail its output
-
-dkI = 5;
 AnalogFunc(calctime(curtime,0),'kitten',...
-    @(t,tt,y1,y2) dkI+z2ik(ramp_minjerk(t,tt,y1,y2)), ...
+    @(t,tt,y1,y2) 0.1+z2ik(ramp_minjerk(t,tt,y1,y2)), ...
     t_init2cross, t_init2cross, z_init,z_cross_i,func_k);  
 
+
+ic = 2.5;
+v0 = 2.5;
+vh = 9;
+
+b = (vh - v0)/ic^2;
+
+i15togs = @(i15) [i15>-ic].*[i15<=0].*[b*i15.^2] + ...
+    [i15<=-ic].*(vh-v0)+v0;
+
+
+AnalogFunc(calctime(curtime,0),'15/16 GS',...
+    @(t,tt,y1,y2) i15togs(z2i15(ramp_minjerk(t,tt,y1,y2))), ...
+    t_init2cross, t_init2cross, z_init,z_cross_i,1);  
+
+
+% AnalogFunc(calctime(curtime,0),'15/16 GS',...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     t_cross, t_cross, VL,VM,1);   
+
+
 curtime = calctime(curtime,t_init2cross);
-
-%% Handoff from 153 to 155 mm
-dispLineStr('Transport Kitten Handoff',curtime);
-
-V0 = 9;
-VM = 4;
-VL = 3.6;
-
-
-t_prep = 100;      % Time to prepare for switch over
-t_cross = 200;    % Crossover time
-t_prep2 = 72;    % Time to ramp up GS voltage all the way
-
-
-% Calculate currents at the crossing region
-i14_cross_i = z2i14(z_cross_i);i14_cross_f = z2i14(z_cross_f);
-ik_cross_i = z2ik(z_cross_i);ik_cross_f = z2ik(z_cross_f);
-i16_cross_i = z2i16(z_cross_i);i16_cross_f = z2i16(z_cross_f);
-
-
-%%%%%% Prepare for handoff %%%%%
-disp(['preparing handoff start ' num2str(curtime2realtime(curtime))]);
-
-% Ramp Coil 15 to negative to make sure it is off
-AnalogFunc(calctime(curtime,0),'Coil 15',...
-    @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
-    t_prep, t_prep, 0,-1,func_15);  
-% Ramp 15/16 GS to right below where the current begins regulating
-AnalogFunc(calctime(curtime,0),'15/16 GS',...
-    @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
-    t_prep, t_prep, 0,VL,1);  
-AnalogFunc(calctime(curtime,0),'kitten',...
-    @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
-    t_prep, t_prep, ik_cross_i+dkI,ik_cross_i,func_k);      
-
-curtime = calctime(curtime,t_prep);
-%%%%%%% Perform the Handoff %%%%%%%
-disp(['ramping handoff ' num2str(curtime2realtime(curtime))]);
-
-% Ramp GS of 15/16 to allow current through
-AnalogFunc(calctime(curtime,0),'15/16 GS',...
-    @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
-    t_cross, t_cross, VL,VM,1);   
-% Ramp Coil 16
-AnalogFunc(calctime(curtime,0),'Coil 16',...
-    @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
-    t_cross, t_cross, i16_cross_i,i16_cross_f,func_16);  
-% Ramp Coil 14
-AnalogFunc(calctime(curtime,0),'Coil 14',...
-    @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
-    t_cross, t_cross, i14_cross_i,i14_cross_f,func_14); 
-% Ramp Kitten
-AnalogFunc(calctime(curtime,0),'kitten',...
-    @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
-    t_cross, t_cross, ik_cross_i,ik_cross_f,func_k);       
-curtime = calctime(curtime,t_cross);
-
-%%%%%%% Allow for maximum current %%%%%%%
-disp(['ramping gs to max ' num2str(curtime2realtime(curtime))]);
-
-AnalogFunc(calctime(curtime,0),'15/16 GS',...
-            @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
-            t_prep2, t_prep2, VM,V0,1); 
+% 
+% %% Handoff from 153 to 155 mm
+% dispLineStr('Transport Kitten Handoff',curtime);
+% 
+% V0 = 9;
+% VM = 4;
+% VL = 3.6;
+% 
+% 
+% t_prep = 100;      % Time to prepare for switch over
+% t_cross = 200;    % Crossover time
+% t_prep2 = 72;    % Time to ramp up GS voltage all the way
+% 
+% 
+% % Calculate currents at the crossing region
+% i14_cross_i = z2i14(z_cross_i);i14_cross_f = z2i14(z_cross_f);
+% ik_cross_i = z2ik(z_cross_i);ik_cross_f = z2ik(z_cross_f);
+% i16_cross_i = z2i16(z_cross_i);i16_cross_f = z2i16(z_cross_f);
+% 
+% 
+% %%%%%% Prepare for handoff %%%%%
+% disp(['preparing handoff start ' num2str(curtime2realtime(curtime))]);
+% 
+% % Ramp Coil 15 to negative to make sure it is off
+% AnalogFunc(calctime(curtime,0),'Coil 15',...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     t_prep, t_prep, 0,-1,func_15);  
+% % Ramp 15/16 GS to right below where the current begins regulating
+% AnalogFunc(calctime(curtime,0),'15/16 GS',...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     t_prep, t_prep, 0,VL,1);  
+% AnalogFunc(calctime(curtime,0),'kitten',...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     t_prep, t_prep, ik_cross_i+1,ik_cross_i,func_k);      
+% 
+% curtime = calctime(curtime,t_prep);
+% %%%%%%% Perform the Handoff %%%%%%%
+% disp(['ramping handoff ' num2str(curtime2realtime(curtime))]);
+% 
+% % Ramp GS of 15/16 to allow current through
+% AnalogFunc(calctime(curtime,0),'15/16 GS',...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     t_cross, t_cross, VL,VM,1);   
+% % Ramp Coil 16
+% AnalogFunc(calctime(curtime,0),'Coil 16',...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     t_cross, t_cross, i16_cross_i,i16_cross_f,func_16);  
+% % Ramp Coil 14
+% AnalogFunc(calctime(curtime,0),'Coil 14',...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     t_cross, t_cross, i14_cross_i,i14_cross_f,func_14); 
+% % Ramp Kitten
+% AnalogFunc(calctime(curtime,0),'kitten',...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     t_cross, t_cross, ik_cross_i,ik_cross_f,func_k);       
+% curtime = calctime(curtime,t_cross);
+% 
+% %%%%%%% Allow for maximum current %%%%%%%
+% disp(['ramping gs to max ' num2str(curtime2realtime(curtime))]);
+% 
+% AnalogFunc(calctime(curtime,0),'15/16 GS',...
+%             @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%             t_prep2, t_prep2, VM,V0,1); 
 
 
 %% Ramp to End of Transport
@@ -218,6 +227,13 @@ AnalogFunc(calctime(curtime,0),'kitten',...
 AnalogFunc(calctime(curtime,0),'Coil 16',...
     @(t,tt,y1,y2) z2i16(ramp_minjerk(t,tt,y1,y2)), ...
     t_cross2end, t_cross2end, z_cross_f,zMatch,func_16); 
+
+
+AnalogFunc(calctime(curtime,0),'15/16 GS',...
+    @(t,tt,y1,y2) i15togs(z2i15(ramp_minjerk(t,tt,y1,y2))), ...
+    t_cross2end, t_cross2end, z_cross_f,zMatch,1);  
+
+
 % curtime =  AnalogFunc(calctime(curtime,0),'15/16 GS',...
 %     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
 %     t_cross2end, t_cross2end, VM,V0,1); 
@@ -264,7 +280,7 @@ RF1a_V = getVar('RF1a_FF_V');
 
 AnalogFunc(calctime(curtime,0),'Transport FF',...
     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-    t_2RF1A, t_2RF1A, VH,RF1a_V);    
+    t_2RF1A, t_2RF1A, VT,RF1a_V);    
     curtime = calctime(curtime,t_2RF1A);
 end
 %%

@@ -5711,7 +5711,7 @@ end
 %     setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0);
 %     setDigitalChannel(calctime(curtime,0),'XDT TTL',0);
 
-    curtime = calctime(curtime,10);
+%     curtime = calctime(curtime,10);
 % 
 % % OFF Channel settings
 % 
@@ -6092,13 +6092,66 @@ end
 % setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.14);
 % setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1);
 
-wp_Trot1 = 600;
+% wp_Trot1 = 600;
+% 
+% AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
+%         @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
+%         wp_Trot1,wp_Trot1,0);  
+%     
+   
 
-AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
-        @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
-        wp_Trot1,wp_Trot1,0);  
-    
-    
+%% Test 15/16 GS PCB
+% V0 = 9;
+% VM = 4;
+% VL = 3.6;
+% 
+% 
+% t_prep = 100;      % Time to prepare for switch over
+% t_cross = 200;    % Crossover time
+% t_prep2 = 72;    % Time to ramp up GS voltage all the way
+
+% Ramp 15/16 GS to right below where the current begins regulating
+% AnalogFunc(calctime(curtime,0),'15/16 GS',...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     t_prep, t_prep, 0,VL,1); 
+% 
+% curtime = calctime(curtime,t_prep);
+% 
+% AnalogFunc(calctime(curtime,0),'15/16 GS',...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     t_cross, t_cross, VL,VM,1); 
+% 
+% curtime = calctime(curtime,t_cross);
+% 
+% AnalogFunc(calctime(curtime,0),'15/16 GS',...
+%             @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%             t_prep2, t_prep2, VM,V0,1); 
+%         
+% curtime = calctime(curtime,2000); 
+% 
+% AnalogFunc(calctime(curtime,0),'15/16 GS',...
+%             @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%             t_prep2, t_prep2, V0,0,1); 
+
+
+
+%% Calibrate the Hbridge Current Sensors
+
+curtime = calctime(curtime,100);
+
+ramp_time = 500;
+hold_time = 2000;
+VV = -0.4;
+
+AnalogFunc(calctime(curtime,0),'Coil 12b',...
+    @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+    ramp_time, ramp_time, 0,VV,1);
+
+curtime = calctime(curtime,hold_time);
+
+AnalogFunc(calctime(curtime,0),'Coil 12b',...
+    @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+    ramp_time, ramp_time, VV,0,1);
 
 
 timeout = curtime;

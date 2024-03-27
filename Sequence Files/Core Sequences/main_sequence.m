@@ -343,6 +343,11 @@ if seqdata.flags.transport
 
     if doCF
         curtime = TransportCloud5(curtime);
+%                 curtime = TransportCloud6(curtime);
+    else
+        defVar('RF1a_FF_V',[22.5],'V');
+        RF1a_V = getVar('RF1a_FF_V');
+
     end
 
 

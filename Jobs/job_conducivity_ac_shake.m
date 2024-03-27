@@ -23,7 +23,7 @@ function J=job_conducivity_ac_shake
         defVar('f_amplitude',uwave_freq_amp,'kHz');
 %getVar('conductivity_ODT2_mod_amp')
         d = load('f_offset.mat');
-        f_offset = d.f_offset;        
+        f_offset = d.f_offset - 20;        
         defVar('f_offset',f_offset,'kHz');
 
         % Modulation time vector
@@ -37,14 +37,14 @@ clear Jac
 
 
 
-B = 201;
+B = 190;
 pow = 0.057;   
 % mod_strength=2;
 mod_ramp_time = 50;
 uwave_freq_amp = 45;
 
 % var_list = [20:20:300];[5 10 25 50 150 300 600];
-var_list = [20 30 40:5:80 90 100 110 120 145];
+var_list = [20 30 40:5:80 90 100 110 120 140];
 var_list = var_list(randperm(numel(var_list)));
 
 
@@ -53,10 +53,12 @@ for ii = 1:length(var_list)
     f = var_list(ii);
     
     if f < 20
-        mod_strength = 2;
-    elseif f >= 20 && f <= 120
-        mod_strength = (2.182e-4)*(f-24.8)^2 + 2.009;
-    elseif f > 120
+        mod_strength = 0.8;
+    elseif f >= 20 && f <= 56
+        mod_strength = -0.0168*f + 1.015;
+    elseif f > 56 && f <=135
+        mod_strength = (1.597e-4)*(f+53.085)^2 - 1.827;
+    elseif f > 135
         mod_strength = 4;
     end
     
@@ -122,7 +124,7 @@ clear Jstripe
 
         % Get High qualtiy data
         if sum(inds)>0
-            nSet = 90;  
+            nSet = 95;  
             
             % Get data that is high quality
             Lm = L(inds);
@@ -188,7 +190,7 @@ Jstripe = sequencer_job(npt);
         seqdata.flags.qgm_stripe_feedback2 = 1;
     end
 
-B = 201;
+B = 190;
 pow = 0.057;
 uwave_freq_amp = 15;
 
@@ -227,8 +229,9 @@ Jsingle = sequencer_job(npt);
 %% Interleave Stripe, Single plane calibration
 clear J
 
-% J = [Jstripe];
-J = [copy(Jac(1))];
+J = copy(Jsingle);
+J(end+1) = copy(Jstripe);
+J(end+1) = [copy(Jac(1))];
 for kk=2:length(Jac)
     J(end+1) = copy(Jstripe);
     if kk == round(length(Jac)/2)

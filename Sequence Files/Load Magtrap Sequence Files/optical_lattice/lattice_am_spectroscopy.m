@@ -9,7 +9,7 @@ end
     dispLineStr('Amplitude Modulation Spectroscopy',curtime)
     
 %% AM Spec Parameters
-    AM_spec_direction = 'Z';
+    AM_spec_direction = 'Y';
     AM_spec_latt_depth = 200;
     addOutputParam('AM_spec_depth',AM_spec_latt_depth);
 
@@ -19,7 +19,7 @@ end
 
 %     mod_freq = paramGet('AM_spec_freq'); 
     
-    defVar('AM_spec_freq',[220:2:240]*1e3,'Hz'); 
+    defVar('AM_spec_freq',[234 235 236 237 238 239]*1e3,'Hz'); 
 
     mod_freq = getVar('AM_spec_freq'); 
 
@@ -118,7 +118,7 @@ curtime = calctime (curtime,50);
             % Shift for frequency dependence
             mod_amp = mod_amp+d_amp;
             
-            mod_amp = mod_amp*.25;
+            mod_amp = mod_amp*.5;
             
             ch_on.AMPLITUDE = mod_amp;
             % Program the Rigols for modulation

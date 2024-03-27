@@ -56,7 +56,7 @@ seqdata.flags.misc_program4pass             = 1; % Update four-pass frequency
 seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
 seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[1.98],'V');
+defVar('objective_piezo',[1.96],'V');
 % 0.1V = 700 nm, larger means further away from chamber
 % 1 V= 7 um
 % 10 V = 70 um
@@ -258,7 +258,7 @@ defVar('xdt_load_power',1.0,'W');
 defVar('xdt_sympathetic_power',0.800,'W');
 
 % Stage 1 Evaporation (K+Rb)
-defVar('xdt_evap1_power',[0.065],'W');0.078;0.085;0.08;0.078;
+defVar('xdt_evap1_power',[0.110],'W');0.078;0.085;0.08;0.078;
 defVar('xdt_evap1_time',25e3,'ms');
 defVar('xdt_evap1_tau_fraction',3.5,'arb');
 
@@ -269,7 +269,7 @@ defVar('xdt_evap2_tau_fraction',3.5','arb')
 %% Optical Lattice
 
 % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
-seqdata.flags.lattice                       = 0; 
+seqdata.flags.lattice                       = 1; 
 seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate
 defVar('lattice_depth_load',2.5,'Er');
 defVar('lattice_pin_depth',60,'Er');
@@ -317,9 +317,9 @@ seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
 seqdata.flags.qgm_stripe_feedback           = 0; % feedback on stripes EXPERIMENTAL
 % Actual fluorsence image flags - NO LONGER USED
 seqdata.flags.Raman_transfers               = 0;
-seqdata.flags.qgm_stripe_feedback2 = 0;
-seqdata.flags.plane_selection.dotilt = 0;
-defVar('f_offset',500,'kHz');
+seqdata.flags.qgm_stripe_feedback2 = 1;
+seqdata.flags.plane_selection.dotilt = 1;
+defVar('f_offset',0,'kHz');
 defVar('f_amplitude',15,'kHz');
 
 % Note:
@@ -367,11 +367,11 @@ seqdata.flags.conductivity_ODT2_mode            = 0; % 0:OFF, 1:SINE, 2:DC
 seqdata.flags.conductivity_mod_direction        = 1; % 1:X-direction 2:Y-direction
 
 defVar('conductivity_snap_and_hold_time',[0],'ms');
-defVar('conductivity_FB_field',201,'G')
+defVar('conductivity_FB_field',190,'G')
 defVar('conductivity_zshim',0,'A')
 defVar('conductivity_mod_freq',[55],'Hz')       % Modulation Frequency
 defVar('conductivity_mod_time',[50],'ms');      % Modulation Time
-defVar('conductivity_mod_ramp_time',150,'ms');  % Ramp Time
+defVar('conductivity_mod_ramp_time',50,'ms');  % Ramp Time
     
 % Modulation amplitude not to exceed +-4V.
 if seqdata.flags.conductivity_mod_direction == 1

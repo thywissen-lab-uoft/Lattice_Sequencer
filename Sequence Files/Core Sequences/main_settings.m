@@ -317,8 +317,10 @@ seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
 seqdata.flags.qgm_stripe_feedback           = 0; % feedback on stripes EXPERIMENTAL
 % Actual fluorsence image flags - NO LONGER USED
 seqdata.flags.Raman_transfers               = 0;
-seqdata.flags.qgm_stripe_feedback2 = 1;
-seqdata.flags.plane_selection.dotilt = 1;
+
+seqdata.flags.qgm_stripe_feedback2          = 0;
+seqdata.flags.plane_selection.dotilt        = 1;
+
 defVar('f_offset',0,'kHz');
 defVar('f_amplitude',15,'kHz');
 

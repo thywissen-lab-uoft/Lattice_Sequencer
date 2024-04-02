@@ -7,7 +7,6 @@ curtime = timein;
 %% Flags
 opts = struct; 
 
-opts.ramp_fields    = 0;                    % Antiquated field ramps
 opts.ramp_field_CF  = 1;                    % New field ramps
 opts.dotilt         = 0;                    % Tilt field for stripe pattern
 
@@ -178,99 +177,6 @@ if opts.ramp_field_CF
     curtime = calctime(curtime,100);                    % Wait for big shim PID
 end
 
-%% Magnetic Field Ramps
-if opts.ramp_fields
-    % Ramp the SHIMs, QP, and FB to the appropriate level  
-    dispLineStr('Ramping Fields', curtime);
-    clear('ramp');  
-    
-    DigitalPulse(calctime(curtime,-100),...
-        'LabJack Trigger Transport',10,1);      
-    DigitalPulse(calctime(curtime,100),...
-        'LabJack Trigger Transport',10,1);    
-         
-    % Fesbhach Field (in gauss)
-    B0 = 128;    %old value 128G, 0.6G shift        
-    fb_shift_list =[0.45+0.63]+2.35*1.256;
-    fb_shift = getScanParameter(fb_shift_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'qgm_plane_FB_shift','G');    
-    Bfb = B0 - fb_shift;    
-    
-    defVar('IQP_PS_shift', [14], 'A');    
-    defVar('QP_FF_override', 27, 'V');18;       
-
-    % QP Field (in Amps)
-    IQP_PS_shift = getVar('IQP_PS_shift');
-    IQP = 14*1.78 + IQP_PS_shift; % 210 G/cm (not sure if calibrated)
-    
-    % Shim Calibrations (unsure how correct
-    % X/Y   : 1.983 G/A (from raman transfers)
-    % Z     : 2.35 G/A  (from high field measurements)
-         
-    % Shim Fields (in Amps) NEW FOR 39 AMP QP
-    xshimdlist  = -3.55;
-    yshimdlist  = -0.1510;
-    zshimdlist  = 0;
-    
-    xshimd = getScanParameter(xshimdlist,seqdata.scancycle,...
-        seqdata.randcyclelist,'qgm_plane_dIx','A');
-    yshimd = getScanParameter(yshimdlist,seqdata.scancycle,...
-        seqdata.randcyclelist,'qgm_plane_dIy','A');    
-    zshimd = getScanParameter(zshimdlist,seqdata.scancycle,...
-        seqdata.randcyclelist,'qgm_plane_dIz','A');  
-
-    if opts.dotilt                
-        
-%         defVar('qgm_plane_tilt_dIz',-0.008,'A');        
-%         if isfield(seqdata.flags,'qgm_stripe_feedback') && ...
-%             seqdata.flags.qgm_stripe_feedback && ...
-%             exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')      
-%             Inew = stripe_feedback;     
-%             defVar('qgm_plane_tilt_dIz',Inew,'A');
-%         end      
-%         zshimtilt= getVar('qgm_plane_tilt_dIz');        
-%         xshimtilt = 4.4;
-%         yshimtilt = 0.3;    
-%         zshimtilt = 0;     
-
-
-%         disp('hi')
-    else   
-        xshimtilt = 0;
-        yshimtilt = 0;
-        zshimtilt = 0;
-        ramp.xshim_final = seqdata.params.shim_zero(1) + xshimd + xshimtilt;
-        ramp.yshim_final = seqdata.params.shim_zero(2) + yshimd + yshimtilt;
-        ramp.zshim_final = seqdata.params.shim_zero(3) + zshimd + zshimtilt;   
-    end  
-
-    % Shim Ramp
-%     ramp.xshim_final = seqdata.params.shim_zero(1) + xshimd + xshimtilt;
-%     ramp.yshim_final = seqdata.params.shim_zero(2) + yshimd + yshimtilt;
-%     ramp.zshim_final = seqdata.params.shim_zero(3) + zshimd + zshimtilt;        
-    ramp.shim_ramptime = 100;
-    ramp.shim_ramp_delay = -10;
-    
-    % FB and QP values
-    ramp.fesh_final         = Bfb; % in Gauss
-    ramp.QP_final           = IQP; % in Amps?   
-
-    % FB Timings
-    ramp.fesh_ramptime      = 100;
-    ramp.fesh_ramp_delay    = 0;
-
-    % QP timings
-    ramp.QP_ramptime        = 100;
-    ramp.QP_ramp_delay      = 0;
-    ramp.settling_time      = 300; %200   
-    ramp.QP_FF_override     = getVar('QP_FF_override');
-    
-    % Extra Labeling
-    addOutputParam('qgm_plane_Bfb',Bfb,'G');
-    addOutputParam('qgm_plane_IQP',IQP,'A');
-
-    curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
-end
 
 %% Apply the uWaves
 

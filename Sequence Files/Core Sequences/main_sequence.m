@@ -177,6 +177,11 @@ setDigitalChannel(calctime(curtime,0),'Shim Relay',1);
 setDigitalChannel(calctime(curtime,0),95,0);
 setDigitalChannel(calctime(curtime,0),96,0);
 
+%Pulse Sci Shim PSUs digital I/O to turn output on (this is done in order
+%to combat the DP811 Shim PSU's randomly turning their output off on a 
+%weekly basis)
+DigitalPulse(calctime(curtime,0),'Sci shim PSU DIO',10,1);
+
 % Turn off Rigol modulation
 addr_mod_xy = 9; % ch1 x mod, ch2 y mod
 addr_z = 5; %ch1 z lat, ch2 z mod  

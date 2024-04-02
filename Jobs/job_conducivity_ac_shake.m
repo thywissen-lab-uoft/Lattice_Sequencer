@@ -35,8 +35,6 @@ function J=job_conducivity_ac_shake
 
 clear Jac
 
-
-
 B = 190;
 pow = 0.057;   
 % mod_strength=2;
@@ -49,18 +47,29 @@ var_list = var_list(randperm(numel(var_list)));
 
 
 for ii = 1:length(var_list)
+    f = var_list(ii);    
+    % Modulation Amplitude Calibration    
+    x0 = 52;
+    y0 = 0.3744;
+    aL = [6.24e-4 -9.08e-7 8.57e-10 -3.27e-13];
+    aH = [6.93e-4 -9.96e-8 1.34e-11 -7.17e-16];    
+    if f<=x0
+        a=aL;
+    else
+        a=aH;
+    end       
+    mod_strength = y0 + a(1)*(f-x0)^2 + a(2)*(f-x0)^4 + a(3)*(f-x0)^6 + a(4)*(f-x0)^8; 
+    mod_strength = min([mod_strength 4]);
 
-    f = var_list(ii);
-    
-    if f < 20
-        mod_strength = 0.8;
-    elseif f >= 20 && f <= 56
-        mod_strength = -0.0168*f + 1.015;
-    elseif f > 56 && f <=135
-        mod_strength = (1.597e-4)*(f+53.085)^2 - 1.827;
-    elseif f > 135
-        mod_strength = 4;
-    end
+%     if f < 20
+%         mod_strength = 0.8;
+%     elseif f >= 20 && f <= 56
+%         mod_strength = -0.0168*f + 1.015;
+%     elseif f > 56 && f <=135
+%         mod_strength = (1.597e-4)*(f+53.085)^2 - 1.827;
+%     elseif f > 135
+%         mod_strength = 4;
+%     end
     
     npt = struct;   
     npt.SequenceFunctions   = {@main_settings,@(curtime) ac_conductivity(curtime,f,B,pow,mod_strength,mod_ramp_time,uwave_freq_amp),@main_sequence};
@@ -124,7 +133,7 @@ clear Jstripe
 
         % Get High qualtiy data
         if sum(inds)>0
-            nSet = 95;  
+            nSet = 93;  
             
             % Get data that is high quality
             Lm = L(inds);
@@ -230,6 +239,8 @@ Jsingle = sequencer_job(npt);
 clear J
 
 J = copy(Jsingle);
+% J(end+1) = copy(Jsingle);
+
 J(end+1) = copy(Jstripe);
 J(end+1) = [copy(Jac(1))];
 for kk=2:length(Jac)

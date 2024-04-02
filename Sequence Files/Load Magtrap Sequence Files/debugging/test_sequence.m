@@ -6137,26 +6137,30 @@ end
 
 %% Calibrate the Hbridge Current Sensors
 
-curtime = calctime(curtime,100);
+% curtime = calctime(curtime,100);
+% 
+% ramp_time = 500;
+% hold_time = 2000;
+% VV = -0.4;
+% 
+% AnalogFunc(calctime(curtime,0),'Coil 12b',...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     ramp_time, ramp_time, 0,VV,1);
+% 
+% curtime = calctime(curtime,hold_time);
+% 
+% AnalogFunc(calctime(curtime,0),'Coil 12b',...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     ramp_time, ramp_time, VV,0,1);
+% 
+% 
+% timeout = curtime;
 
-ramp_time = 500;
-hold_time = 2000;
-VV = -0.4;
+%% 
 
-AnalogFunc(calctime(curtime,0),'Coil 12b',...
-    @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
-    ramp_time, ramp_time, 0,VV,1);
-
-curtime = calctime(curtime,hold_time);
-
-AnalogFunc(calctime(curtime,0),'Coil 12b',...
-    @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
-    ramp_time, ramp_time, VV,0,1);
-
+DigitalPulse(calctime(curtime,0),'Sci shim PSU DIO',10,1);
+setAnalogChannel(calctime(curtime,0),'uWave FM/AM',-1);
 
 timeout = curtime;
-
-
-
 
 

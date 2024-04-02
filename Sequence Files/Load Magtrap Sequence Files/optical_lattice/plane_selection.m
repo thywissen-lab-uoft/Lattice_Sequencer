@@ -9,7 +9,7 @@ opts = struct;
 
 opts.ramp_fields    = 0;                    % Antiquated field ramps
 opts.ramp_field_CF  = 1;                    % New field ramps
-opts.dotilt         = 1;                    % Tilt field for stripe pattern
+opts.dotilt         = 0;                    % Tilt field for stripe pattern
 
 opts.fake_the_plane_selection_sweep = 0;    % Whether or not to apply uwaves
 opts.planeselect_doVertKill = 1;            % apply optical kill pulse
@@ -289,11 +289,11 @@ switch opts.SelectMode
 
         
         if ~opts.dotilt
-            freq_offset_list = 200;200;170;
+            freq_offset_list = 150;200;170;
 %             freq_offset_list = 450;580;
             freq_amp_list = [15];10;15;
         else
-            freq_offset_list = 130;230;240;590;
+            freq_offset_list = 170;230;240;590;
             freq_amp_list = [8]; % 43.8 kHz / plane
         end
 % freq_offset_list = 430;

@@ -197,7 +197,6 @@ switch opts.SelectMode
             freq_offset_list = 100;170;230;240;590;
             freq_amp_list = [8]; % 43.8 kHz / plane
         end
-% freq_offset_list = 430;
           
         if isfield(seqdata.flags,'qgm_stripe_feedback2') && ...
             seqdata.flags.qgm_stripe_feedback2 && ...

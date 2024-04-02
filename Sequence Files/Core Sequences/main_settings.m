@@ -319,6 +319,7 @@ seqdata.flags.Raman_transfers               = 0;
 
 seqdata.flags.qgm_stripe_feedback2          = 0;
 seqdata.flags.plane_selection.dotilt        = 1;
+seqdata.flags.plane_selection.useFeedback = 1;
 
 defVar('f_offset',0,'kHz');
 defVar('f_amplitude',15,'kHz');

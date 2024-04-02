@@ -10,11 +10,12 @@ function J=job_conducivity_ac_shake
         global seqdata;        
         seqdata.flags.conductivity_ODT1_mode            = 1; % 0:OFF, 1:SINE, 2:DC
         seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
-        seqdata.flags.conductivity_mod_direction        = 1; % 1:X-direction 2:Y-direction
-        
+        seqdata.flags.conductivity_mod_direction        = 1; % 1:X-direction 2:Y-direction        
         seqdata.flags.plane_selection.dotilt            = 0;
-        seqdata.flags.qgm_stripe_feedback2 = 1;
         
+        seqdata.flags.qgm_stripe_feedback2 = 1;
+        seqdata.flags.plane_selection.useFeedback = 1;
+
         % Define field, frequency, and evaporation depth
         defVar('conductivity_FB_field',field,'G');       
         defVar('conductivity_mod_freq',freq,'Hz');          
@@ -22,7 +23,6 @@ function J=job_conducivity_ac_shake
         defVar('conductivity_ODT2_mod_amp',mod_strength,'V');  % ODT2 Mod Depth
         defVar('conductivity_mod_ramp_time',mod_ramp_time,'ms');
         defVar('f_amplitude',uwave_freq_amp,'kHz');
-%getVar('conductivity_ODT2_mod_amp')
         d = load('f_offset.mat');
         f_offset = d.f_offset - 20;        
         defVar('f_offset',f_offset,'kHz');
@@ -88,6 +88,8 @@ clear Jstripe
         f_offset = d.f_offset;        
         defVar('f_offset',f_offset,'kHz');
         seqdata.flags.qgm_stripe_feedback2 = 1;
+        seqdata.flags.plane_selection.useFeedback = 1;
+
     end
 
     function feedback_stripe
@@ -172,6 +174,8 @@ Jstripe = sequencer_job(npt);
         f_offset = d.f_offset;        
         defVar('f_offset',f_offset,'kHz');
         seqdata.flags.qgm_stripe_feedback2 = 1;
+        seqdata.flags.plane_selection.useFeedback = 1;
+
     end
 %% Normal Plane Select Job 
 

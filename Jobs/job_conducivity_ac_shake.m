@@ -133,7 +133,7 @@ clear Jstripe
 
         % Get High qualtiy data
         if sum(inds)>0
-            nSet = 93;  
+            nSet = 94;  
             
             % Get data that is high quality
             Lm = L(inds);

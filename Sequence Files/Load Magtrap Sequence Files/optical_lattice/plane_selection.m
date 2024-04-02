@@ -293,7 +293,7 @@ switch opts.SelectMode
 %             freq_offset_list = 450;580;
             freq_amp_list = [15];10;15;
         else
-            freq_offset_list = 170;230;240;590;
+            freq_offset_list = 100;170;230;240;590;
             freq_amp_list = [8]; % 43.8 kHz / plane
         end
 % freq_offset_list = 430;
@@ -302,15 +302,13 @@ switch opts.SelectMode
             seqdata.flags.qgm_stripe_feedback2 && ...
             exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')             
             f_offset = getVar('f_offset');
-            freq_offset_list = freq_offset_list + f_offset;
-            
+            freq_offset_list = freq_offset_list + f_offset;            
             if ~opts.dotilt
                 f_amplitude = getVar('f_amplitude');
                 freq_amp_list = f_amplitude;
             else
                 freq_amp_list = [8];
-            end
-            
+            end            
         end
         
 

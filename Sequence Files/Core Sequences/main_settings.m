@@ -258,7 +258,7 @@ defVar('xdt_load_power',1.0,'W');
 defVar('xdt_sympathetic_power',0.800,'W');
 
 % Stage 1 Evaporation (K+Rb)
-defVar('xdt_evap1_power',[0.065],'W');0.078;0.085;0.08;0.078;
+defVar('xdt_evap1_power',[0.110],'W');0.078;0.085;0.08;0.078;
 defVar('xdt_evap1_time',25e3,'ms');
 defVar('xdt_evap1_tau_fraction',3.5,'arb');
 
@@ -269,7 +269,7 @@ defVar('xdt_evap2_tau_fraction',3.5','arb')
 %% Optical Lattice
 
 % set to 2 to ramp to deep lattice at the end; 3, variable lattice off & XDT off time
-seqdata.flags.lattice                       = 0; 
+seqdata.flags.lattice                       = 1; 
 seqdata.flags.lattice_reset_waveplate       = 1; % Reset lattice waveplate
 defVar('lattice_depth_load',2.5,'Er');
 defVar('lattice_pin_depth',60,'Er');

@@ -13,8 +13,8 @@ function J=job_conducivity_ac_shake
         seqdata.flags.conductivity_mod_direction        = 1; % 1:X-direction 2:Y-direction        
         seqdata.flags.plane_selection.dotilt            = 0;
         
-        seqdata.flags.qgm_stripe_feedback2 = 1;
-        seqdata.flags.plane_selection.useFeedback = 1;
+%         seqdata.flags.qgm_stripe_feedback2 = 1;
+%         seqdata.flags.plane_selection.useFeedback = 1;
 
         % Define field, frequency, and evaporation depth
         defVar('conductivity_FB_field',field,'G');       
@@ -22,7 +22,12 @@ function J=job_conducivity_ac_shake
         defVar('xdt_evap1_power',evap_depth,'W');
         defVar('conductivity_ODT2_mod_amp',mod_strength,'V');  % ODT2 Mod Depth
         defVar('conductivity_mod_ramp_time',mod_ramp_time,'ms');
-        defVar('f_amplitude',uwave_freq_amp,'kHz');
+        
+        defVar('qgm_plane_uwave_frequency_amplitude_notilt',uwave_freq_amp,'kHz');
+
+%         defVar('f_amplitude',uwave_freq_amp,'kHz');
+        
+        
         d = load('f_offset.mat');
         f_offset = d.f_offset - 20;        
         defVar('f_offset',f_offset,'kHz');
@@ -79,17 +84,22 @@ clear Jstripe
 
     function curtime = stripe(curtime,evap_depth)
         global seqdata
+        
+        % optical Evaporation
+        defVar('xdt_evap1_power',evap_depth,'G');    
+        
+        % Conductivity Settings
         seqdata.flags.conductivity_ODT1_mode            = 0; % 0:OFF, 1:SINE, 2:DC
         seqdata.flags.conductivity_ODT2_mode            = 0; % 0:OFF, 1:SINE, 2:DC       
-        defVar('xdt_evap1_power',evap_depth,'G');    
-        seqdata.flags.plane_selection.dotilt = 1;
         defVar('conductivity_mod_time',50,'ms');  
+
+        % Plane Selection
+        seqdata.flags.plane_selection.dotilt = 1;
         d = load('f_offset.mat');
         f_offset = d.f_offset;        
-        defVar('f_offset',f_offset,'kHz');
-        seqdata.flags.qgm_stripe_feedback2 = 1;
-        seqdata.flags.plane_selection.useFeedback = 1;
-
+        defVar('f_offset',f_offset,'kHz');        
+%         seqdata.flags.qgm_stripe_feedback2 = 1;
+%         seqdata.flags.plane_selection.useFeedback = 1;
     end
 
     function feedback_stripe
@@ -123,13 +133,15 @@ clear Jstripe
 
         % Get High qualtiy data
         if sum(inds)>0
-            nSet = 94;              
+            nSet = 80;              
             % Get data that is high quality
             Lm = L(inds);
             n0m = n0(inds);
             fold = median(freqs(inds));
             % Restrict ourselves to data with focus position +- 18
-            binds = logical((n0m>(nSet+30)) + (n0m<(nSet-30)));   
+            dN = 18;
+%             dN = 30;
+            binds = logical((n0m>(nSet+dN)) + (n0m<(nSet-dN)));   
             inds = ~binds;            
             Lbar = mean(Lm(inds));
             n0bar = mean(n0m(inds));            
@@ -163,18 +175,25 @@ Jstripe = sequencer_job(npt);
 
     function curtime = normal_ps(curtime,field,pow,uwave_freq_amp)
         global seqdata        
-        defVar('conductivity_FB_field',field,'G');       
+        
+        % Optical evaporation
         defVar('xdt_evap1_power',pow,'G');  
-        defVar('f_amplitude',uwave_freq_amp,'kHz');
+        
+        % Conductivity Settings
         seqdata.flags.conductivity_ODT1_mode = 0; 
         seqdata.flags.conductivity_ODT2_mode = 0; 
-        seqdata.flags.plane_selection.dotilt = 0;
         defVar('conductivity_mod_time',50,'ms');   
+        defVar('conductivity_FB_field',field,'G');       
+
+        % Plane Selection settings
+        seqdata.flags.plane_selection.dotilt = 0;
+        defVar('qgm_plane_uwave_frequency_amplitude_notilt',uwave_freq_amp,'kHz');
         d = load('f_offset.mat');
         f_offset = d.f_offset;        
         defVar('f_offset',f_offset,'kHz');
-        seqdata.flags.qgm_stripe_feedback2 = 1;
-        seqdata.flags.plane_selection.useFeedback = 1;
+%         seqdata.flags.qgm_stripe_feedback2 = 1;
+%         seqdata.flags.plane_selection.useFeedback = 1;
+%         defVar('f_amplitude',uwave_freq_amp,'kHz');
 
     end
 %% Normal Plane Select Job 
@@ -210,5 +229,15 @@ for kk=2:length(Jac)
     end
     J(end+1) = copy(Jac(kk));
 end
+
+%% Stripe Set
+clear J
+n = 10;
+J = copy(Jstripe);
+for kk=2:n
+    J(end+1)= copy(Jstripe);
+end
+
+
 end
 

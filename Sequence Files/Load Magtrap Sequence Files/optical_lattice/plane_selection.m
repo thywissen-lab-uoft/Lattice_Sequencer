@@ -309,8 +309,7 @@ switch opts.SelectMode
             else
                 freq_amp_list = [8];
             end            
-        end
-        
+        end        
 
         sweep_time_list = freq_amp_list/10; 
         defVar('qgm_plane_uwave_frequency_offset',freq_offset_list,'kHz');

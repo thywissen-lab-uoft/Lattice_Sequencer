@@ -8,7 +8,7 @@ curtime = timein;
 opts = struct; 
 
 opts.ramp_field_CF  = 1;                    % New field ramps
-opts.dotilt         = 0;                    % Tilt field for stripe pattern
+opts.dotilt = seqdata.flags.plane_selection.dotilt;
 
 opts.fake_the_plane_selection_sweep = 0;    % Whether or not to apply uwaves
 opts.planeselect_doVertKill = 1;            % apply optical kill pulse
@@ -90,12 +90,7 @@ if opts.ramp_field_CF
     Iy = dIy0 + seqdata.params.shim_zero(2);
     Iz = dIz0 + seqdata.params.shim_zero(3);
     
-            
-    if isfield(seqdata.flags,'qgm_stripe_feedback2') && ...
-        seqdata.flags.qgm_stripe_feedback2 && ...
-        exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')             
-         opts.dotilt = seqdata.flags.plane_selection.dotilt;
-    end
+       
     
     
         

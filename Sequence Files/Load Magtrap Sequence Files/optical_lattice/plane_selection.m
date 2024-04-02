@@ -9,12 +9,17 @@ opts = struct;
 
 opts.ramp_field_CF  = 1;                    % New field ramps
 opts.dotilt = seqdata.flags.plane_selection.dotilt;
+opts.useFeedback = seqdata.flags.plane_selection.useFeedback;
+
 
 opts.fake_the_plane_selection_sweep = 0;    % Whether or not to apply uwaves
 opts.planeselect_doVertKill = 1;            % apply optical kill pulse
 opts.planeselect_doMicrowaveBack = 0;       % uwave transfer back to F=9/2 (uneeded?)
 opts.planeselect_doFinalRepumpPulse = 0;    % apply repump to kill leftover F=7/2 (uneeded?)
 opts.planeselect_again = 0;                 % Repeat plane selection (does this actually help?)
+
+
+
 
 opts.SelectMode     = 'SweepFreqHS1';       % Sweep SRS HS1 frequency
 opts.SelectModeBack = 'SweepFreqHS1';       %Sweep SRS HS1 frequency backwards
@@ -88,11 +93,8 @@ if opts.ramp_field_CF
     
     Ix = dIx0 + seqdata.params.shim_zero(1);
     Iy = dIy0 + seqdata.params.shim_zero(2);
-    Iz = dIz0 + seqdata.params.shim_zero(3);
-    
-       
-    
-    
+    Iz = dIz0 + seqdata.params.shim_zero(3);  
+          
         
     % Turn off Z shim (this is for using the big shim for Z)
     setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',0);
@@ -182,20 +184,18 @@ switch opts.SelectMode
         % plane really.
         dispLineStr('HS1 Frequency Sweep',curtime);
 %         df = interp1([0 -4],[0 -100],getVar('qgm_plane_tilt_dIx')-0.85,'linear','extrap');
-%         freq_offset_list = 360 + df;
-
-%         freq_offset_list = 450;        
-%         freq_offset_list = 350;
-%         freq_offset_list = 550+[-40:10:40];
-
         
         if ~opts.dotilt
             freq_offset_list = 150;200;170;
-%             freq_offset_list = 450;580;
             freq_amp_list = [15];10;15;
         else
             freq_offset_list = 100;170;230;240;590;
             freq_amp_list = [8]; % 43.8 kHz / plane
+        end        
+      
+        if opts.useFeedback
+            f_offset = getVar('f_offset');
+            freq_offset_list = freq_offset_list + f_offset;  
         end
           
         if isfield(seqdata.flags,'qgm_stripe_feedback2') && ...

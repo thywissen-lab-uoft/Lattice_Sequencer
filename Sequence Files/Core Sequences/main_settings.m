@@ -313,14 +313,31 @@ seqdata.flags.lattice_uWave_spec            = 0;
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 seqdata.flags.lattice_do_optical_pumping    = 1;    % (1426) keep : optical pumping in lattice  
-seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
 % Actual fluorsence image flags - NO LONGER USED
 seqdata.flags.Raman_transfers               = 0;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Plane Selection
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
 seqdata.flags.qgm_stripe_feedback2          = 0;
+seqdata.flags.plane_selection.useFeedback   = 1;
 seqdata.flags.plane_selection.dotilt        = 1;
-seqdata.flags.plane_selection.useFeedback = 1;
 
+
+if ~seqdata.flags.plane_selection.dotilt
+    freq_offset_list = 150;
+    freq_amp_list = [15];
+else
+    freq_offset_list = 100;
+    freq_amp_list = [8]; % 43.8 kHz / plane
+end
+defVar('qgm_plane_uwave_power',[15],'dBm');
+defVar('qgm_plane_uwave_frequency_offset',freq_offset_list,'kHz');
+defVar('qgm_plane_uwave_amplitude',freq_amp_list,'kHz');
+defVar('qgm_plane_uwave_time',freq_amp_list/10,'ms')
+
+        
 defVar('f_offset',0,'kHz');
 defVar('f_amplitude',15,'kHz');
 

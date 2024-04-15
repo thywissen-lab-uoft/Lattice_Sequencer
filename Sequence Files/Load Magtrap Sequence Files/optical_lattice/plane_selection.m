@@ -247,11 +247,7 @@ switch opts.SelectMode
         freq_amp = getVar('qgm_plane_uwave_amplitude');
         sweep_time = getVar('qgm_plane_uwave_time');   
         power = getVar('qgm_plane_uwave_power');
-        
-        if opts.useFeedback
-            f_offset = getVar('f_offset');
-            freq_offset = freq_offset + f_offset;  
-        end
+
         
        % Configure the SRS
         uWave_opts=struct;

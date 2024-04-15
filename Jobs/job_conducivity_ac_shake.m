@@ -33,7 +33,7 @@ function J=job_conducivity_ac_shake
         defVar('f_offset',f_offset,'kHz');
 
         % Modulation time vector
-        t0 = 50;
+        t0 = 50; 
         T = 1e3/freq;
         tvec = round(t0 + linspace(0,2*T,30),1);
         defVar('conductivity_mod_time',tvec,'ms');      
@@ -44,21 +44,21 @@ clear Jac
 B = 190;
 pow = 0.057;   
 % mod_strength=2;
-mod_ramp_time = 50;
+mod_ramp_time = 150;
 uwave_freq_amp = 45;
 
 % var_list = [20:20:300];[5 10 25 50 150 300 600];
-var_list = [20 30 40:5:80 90 100 110 120 140];
+var_list = [20 30 40:5:80 90 100 62 57 52 67];
 var_list = var_list(randperm(numel(var_list)));
 
 
 for ii = 1:length(var_list)
     f = var_list(ii);    
     % Modulation Amplitude Calibration    
-    x0 = 52;
-    y0 = 0.3744;
-    aL = [6.24e-4 -9.08e-7 8.57e-10 -3.27e-13];
-    aH = [6.93e-4 -9.96e-8 1.34e-11 -7.17e-16];    
+    x0 = 53;
+    y0 = 0.4777;
+    aL = [1.88e-3 -3.16e-6 3.02e-9 -1.1e-12];
+    aH = [2.03e-3 -4.53e-7 6.44e-11 -3.56e-15];    
     if f<=x0
         a=aL;
     else
@@ -133,14 +133,14 @@ clear Jstripe
 
         % Get High qualtiy data
         if sum(inds)>0
-            nSet = 80;              
+            nSet = 90;              
             % Get data that is high quality
             Lm = L(inds);
             n0m = n0(inds);
-            fold = median(freqs(inds));
+            fold = mean(freqs(inds));
             % Restrict ourselves to data with focus position +- 18
             dN = 18;
-%             dN = 30;
+            dN = 30;
             binds = logical((n0m>(nSet+dN)) + (n0m<(nSet-dN)));   
             inds = ~binds;            
             Lbar = mean(Lm(inds));
@@ -148,7 +148,7 @@ clear Jstripe
             dN = n0bar - nSet;
             m = 2.285/100; % planes/kHz            
             df = -(dN/Lbar)/m;            
-            fnew = fold + df*0.9; 
+            fnew = fold + df*0.8; 
             f_offset = round(fnew);
             save('f_offset.mat','f_offset');
             disp(fnew)
@@ -231,12 +231,13 @@ for kk=2:length(Jac)
 end
 
 %% Stripe Set
-clear J
-n = 10;
-J = copy(Jstripe);
-for kk=2:n
-    J(end+1)= copy(Jstripe);
-end
+% clear J
+% n = 100;
+% J = copy(Jstripe);
+% for kk=2:n
+%     J(end+1)= copy(Jstripe);
+% %     J(end+1) = copy(Jsingle);
+% end
 
 
 end

@@ -10,6 +10,7 @@ setAnalogChannel(curtime,'Modulation Ramp',-10,1);
 % seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
 seqdata.flags.conductivity_ramp_FB              = 1; % Ramp FB field to resonance
 seqdata.flags.conductivity_ramp_QP              = 1; % Ramp QP reverse with FB (only works if ramp_FB is enabled)
+seqdata.flags.conductivity_FB_heating           = 1; % Ramp closer to resonance to induce heating for T control
 seqdata.flags.conductivity_rf_spec              = 0;
 seqdata.flags.conductivity_enable_mod_ramp      = 1;
 seqdata.flags.conductivity_QPD_trigger          = 1; % Trigger QPD monitor LabJack/Scope
@@ -34,8 +35,9 @@ end
 %% Calculate Timings and Phase
 
 if seqdata.flags.conductivity_enable_mod_ramp
-    total_mod_time = getVar('conductivity_mod_ramp_time') + ...
-        getVarOrdered('conductivity_mod_time');
+    cond_mod_time = getVarOrdered('conductivity_mod_time');
+    cond_mod_ramp_time = getVar('conductivity_mod_ramp_time');
+    total_mod_time = cond_mod_ramp_time + cond_mod_time;
 else
     total_mod_time = getVarOrdered('conductivity_mod_time');
 end
@@ -174,11 +176,39 @@ if seqdata.flags.conductivity_ramp_FB
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
         ScopeTriggerPulse(curtime,'FB_ramp');
 
-        seqdata.params.HF_fb = Bfb;
+        seqdata.params.HF_fb = Bfb;    
         
-        % wait for things to thermalize ??
-        curtime = calctime(curtime,200);        
+        % FB Heating
+        if seqdata.flags.conductivity_FB_heating
+            
+            FB_heat_field = getVar('FB_heating_field');
+            FB_heat_holdtime = getVar('FB_heating_holdtime');
+            
+            heat_ramp_time = 50;
+            
+            %Ramp closer to resonance (say 200G)
+            curtime = AnalogFuncTo(calctime(curtime,0),'FB current',...
+                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),heat_ramp_time,heat_ramp_time,FB_heat_field);
+
+            %Hold for some amount of time
+            curtime = calctime(curtime,FB_heat_holdtime);
+            
+            %Ramp back down to science field
+            curtime = AnalogFuncTo(calctime(curtime,0),'FB current',...
+                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),heat_ramp_time,heat_ramp_time,Bfb);
+
+            % wait for things to thermalize ??
+            curtime = calctime(curtime,200);
+        else
+            % wait for things to thermalize ??
+            curtime = calctime(curtime,200);
+            
+        end
+        
+        
 end
+
+
 %% Modulation
     
 % if seqdata.flags.conductivity_QPD_trigger
@@ -201,7 +231,7 @@ if seqdata.flags.conductivity_QPD_trigger
 end
 
 % Wait for modulation to finish
-curtime = calctime(curtime,getVarOrdered('conductivity_mod_time'));
+curtime = calctime(curtime,cond_mod_time);
 setDigitalChannel(calctime(curtime,0),'QPD Monitor Trigger',0);
 
 % Stop Modulation - only affects AC modulation

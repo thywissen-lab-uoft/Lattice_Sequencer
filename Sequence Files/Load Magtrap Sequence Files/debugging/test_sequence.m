@@ -6092,11 +6092,11 @@ end
 % setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.14);
 % setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1);
 
-% wp_Trot1 = 600;
-% 
-% AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
-%         @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
-%         wp_Trot1,wp_Trot1,0);  
+wp_Trot1 = 600;
+
+AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
+        @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
+        wp_Trot1,wp_Trot1,0);  
 %     
    
 
@@ -6158,8 +6158,8 @@ end
 
 %% 
 
-DigitalPulse(calctime(curtime,0),'Sci shim PSU DIO',10,1);
-setAnalogChannel(calctime(curtime,0),'uWave FM/AM',-1);
+% DigitalPulse(calctime(curtime,0),'Sci shim PSU DIO',10,1);
+% setAnalogChannel(calctime(curtime,0),'uWave FM/AM',-1);
 
 timeout = curtime;
 

@@ -962,7 +962,7 @@ if seqdata.flags.lattice_lattice_ramp_3
         
     % Lattice Depth Request
     defVar('lattice_FI_depth_X',[1050],'Er');1050;
-    defVar('lattice_FI_depth_Y',[1000],'Er');1000;
+    defVar('lattice_FI_depth_Y',[900],'Er');1000;
     defVar('lattice_FI_depth_Z',[1150],'Er');1150;    
 
    % Perform the rest of the lattice ramps

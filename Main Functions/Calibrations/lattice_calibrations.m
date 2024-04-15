@@ -53,10 +53,10 @@ latt_calib(1).P_threshold = x_p_threshold;
 
 %% Y Lattice
 % % Y Lattice calibration
-y_p_threshold = 0.1274;
+y_p_threshold = 0.1289;0.1274;
 y_m1 = 86.983;
 y_b1 = - 9.713;
-y_m2 = 2.021;
+y_m2 = 2.938; 2.021;
 y_b2 = 1.11;
 
 % y_ErPerW = 382;

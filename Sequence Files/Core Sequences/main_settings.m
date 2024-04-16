@@ -269,7 +269,8 @@ defVar('xdt_evap2_tau_fraction',3.5','arb')
 %% Waveplate Rotation 1
 
 % Reset XDT/XYLattice waveplate at end of sequence
-seqdata.flags.waveplate_reset       = 1; 
+% seqdata.flags.waveplate_reset       = 1; commented out since WE ALWAYS
+% SHOULD RESET?
 
 % This rotation occurs at the end of optical evaporation
 

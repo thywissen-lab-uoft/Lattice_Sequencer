@@ -115,7 +115,7 @@ setAnalogChannel(calctime(curtime,0),'zLattice',-10,1);%-0.1,1);
 setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);
 setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1);% Added 2014-03-06 in order to avoid integrator wind-up
 
-%set rotating waveplate back to full dipole power
+%set rotating waveplate back to zero volts which is the default setting
 AnalogFuncTo(calctime(curtime,0),'latticeWaveplate',...
     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2500,2500,0,1);
 
@@ -449,9 +449,14 @@ if seqdata.flags.rotate_waveplate_1
     disp(['     Power         : ' num2str(100*value) '%']);
 
     % Ideally this should be a min jerk in POWER for 
+%     AnalogFunc(calctime(curtime,td),'latticeWaveplate',...
+%         @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
+%         tr,tr,value);        
+    
+    P0 = 0.0158257; % power level at 0V (this is a bad way);
     AnalogFunc(calctime(curtime,td),'latticeWaveplate',...
-        @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
-        tr,tr,value);    
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+        tr,tr,P0,value,4);    
 end
 
 %% Load Optical lattice
@@ -645,15 +650,7 @@ curtime = lattice_FL(curtime, fluor_opts);
     end
 end
 
-%% Post-sequence: rotate diople trap waveplate to default value
-if (seqdata.flags.waveplate_reset == 1)
-    %Rotate waveplate to divert all power to dipole traps.
-    P_RotWave = 0;
-    AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
-        @(t,tt,Pmin,Pmax) ...
-        (0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),...
-        200,200,P_RotWave,0); 
-end
+
 
 %% Demag pulse
 if seqdata.flags.misc_ramp_fesh_between_cycles
@@ -708,6 +705,9 @@ setDigitalChannel(calctime(curtime,10),'Bipolar Shim Relay',0);
 setDigitalChannel(calctime(curtime,10),'Z shim bipolar relay',0);
 
 setAnalogChannel(curtime,'15/16 GS',0); 
+
+ AnalogFuncTo(calctime(curtime,0),'latticeWaveplate',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2500,2500,0,1);
 
 %% Load MOT
 % Load the MOT

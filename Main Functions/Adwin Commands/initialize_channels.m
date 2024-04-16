@@ -630,6 +630,7 @@ end
         %   lattice AOMS (all reflected from PBS to dipole beams)
         %   argument is the desired transmission expressed in [0,1]
         seqdata.analogchannels(41).voltagefunc{3} = @(a)(0.5*asind(sqrt(a))/9.36); 
+        seqdata.analogchannels(41).voltagefunc{4} = @(P_lattice_norm)((2/pi)*4.873*asin(sqrt(P_lattice_norm))-0.3913); 
 
     %channel 42 (Objective Piezo Z control)
     seqdata.analogchannels(42).name = 'objective Piezo Z';

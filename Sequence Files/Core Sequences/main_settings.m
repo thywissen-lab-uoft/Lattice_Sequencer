@@ -258,7 +258,7 @@ defVar('xdt_load_power',1.0,'W');
 defVar('xdt_sympathetic_power',0.800,'W');
 
 % Stage 1 Evaporation (K+Rb)
-defVar('xdt_evap1_power',[0.065],'W');0.078;0.085;0.08;0.078;
+defVar('xdt_evap1_power',[0.110],'W');0.078;0.085;0.08;0.078;
 defVar('xdt_evap1_time',25e3,'ms');
 defVar('xdt_evap1_tau_fraction',3.5,'arb');
 
@@ -281,6 +281,12 @@ defVar('lattice_pin_time', 0.2, 'ms');
 % Lattice Ramps and Waveplates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 seqdata.flags.lattice_rotate_waveplate_1    = 1;    % First waveplate rotation for 90%
+defVar('lattice_rotate_waveplate1_duration',600,'ms');
+defVar('lattice_rotate_waveplate1_delay',-700,'ms');
+defVar('lattice_rotate_waveplate1_value',0.7,'normalized power');
+
+
+
 seqdata.flags.lattice_lattice_ramp_1        = 1;    % Load the lattices
 
 seqdata.flags.do_lattice_am_spec            = 0;    % Amplitude modulation spectroscopy             
@@ -302,7 +308,7 @@ seqdata.flags.lattice_hold_at_end           = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % These flags are associated with the conducitivity experiment
 seqdata.flags.lattice_conductivity          = 0;    % old sequence
-seqdata.flags.lattice_conductivity_new      = 1;   % New sequence created July 25th, 2023
+seqdata.flags.lattice_conductivity_new      = 0;   % New sequence created July 25th, 2023
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy

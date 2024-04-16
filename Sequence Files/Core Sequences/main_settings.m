@@ -300,7 +300,7 @@ defVar('lattice_load_depthY',2.5,'Er');
 defVar('lattice_load_depthZ',2.5,'Er');
 
 % If you want to do a round trip
-seqdata.flags.lattice_load_1_round_trip   = 0;       % Load the lattices; (1: normal, 2:single lattice, 3: 
+seqdata.flags.lattice_load_1_round_trip   = 1;       % Load the lattices; (1: normal, 2:single lattice, 3: 
 defVar('lattice_ramp_1_holdtime',0,'ms');            % Hold time after loading before doing round trip
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % More Lattice Flags

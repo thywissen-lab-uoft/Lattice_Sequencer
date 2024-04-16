@@ -6100,16 +6100,23 @@ end
 
 
 
-curtime = calctime(curtime,100);
+% curtime = calctime(curtime,100);
 
 
-wpV = 0;
-setAnalogChannel(calctime(curtime,0),'latticeWaveplate',wpV,1);
+% wpV = 0;
+% setAnalogChannel(calctime(curtime,0),'latticeWaveplate',wpV,1);
 
 % curtime = AnalogFuncTo(calctime(curtime,0),'latticeWaveplate',...
 %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),100,100,wpV1,wpV2,1);
 %     
-   
+
+
+setAnalogChannel(calctime(curtime,0),'latticeWaveplate',0.05,4);
+curtime = lattice_load(curtime);
+seqdata.scope_trigger = 'lattice_ramp_1';
+SelectScopeTrigger(seqdata.scope_trigger);
+
+% setAnalogChannel(calctime(curtime,0),'latticeWaveplate',0,1);
 
 %% Test 15/16 GS PCB
 % V0 = 9;

@@ -440,14 +440,15 @@ end
 if seqdata.flags.rotate_waveplate_1
     dispLineStr('Rotating waveplate',curtime);
     
-    tr = getVar('lattice_rotate_waveplate1_duration');
-    td = getVar('lattice_rotate_waveplate1_delay');
-    value = getVar('lattice_rotate_waveplate1_value');
+    tr = getVar('rotate_waveplate1_duration');
+    td = getVar('rotate_waveplate1_delay');
+    value = getVar('rotate_waveplate1_value');
     
     disp(['     Rotation Time : ' num2str(tr) ' ms']);
     disp(['     Delay    Time : ' num2str(td) ' ms']);
     disp(['     Power         : ' num2str(100*value) '%']);
 
+    % Ideally this should be a min jerk in POWER for 
     AnalogFunc(calctime(curtime,td),'latticeWaveplate',...
         @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
         tr,tr,value);    

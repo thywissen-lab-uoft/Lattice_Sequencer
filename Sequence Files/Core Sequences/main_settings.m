@@ -278,14 +278,13 @@ seqdata.flags.waveplate_reset       = 1;
 % get by PID regulation
 
 seqdata.flags.rotate_waveplate_1    = 1;   
-defVar('lattice_rotate_waveplate1_duration',600,'ms'); % How smoothly to rotate
-defVar('lattice_rotate_waveplate1_delay',-700,'ms');   % How long before lattice loading 
+defVar('rotate_waveplate1_duration',600,'ms'); % How smoothly to rotate
+defVar('rotate_waveplate1_delay',-700,'ms');   % How long before lattice loading 
 
-defVar('lattice_rotate_waveplate1_value',0.7,'normalized power'); % Amount of power going to lattices
+defVar('rotate_waveplate1_value',0.7,'normalized power'); % Amount of power going to lattices
 
 
 %% Optical Lattice
-
 
 % These are the lattice flags sorted roughly chronologically. 
 
@@ -305,7 +304,7 @@ defVar('lattice_ramp_1_holdtime',0,'ms');            % Hold time after loading b
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % More Lattice Flags
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.lattice                       = 0; 
+seqdata.flags.lattice                       = 1; 
 defVar('lattice_pin_depth',60,'Er');
 defVar('lattice_pin_time', 0.2, 'ms');
 

@@ -26,6 +26,8 @@ end
 do_K_uwave_spectroscopy_old                 = 0;    % (3786) keep
 do_RF_spectroscopy                          = 0;    % (3952,4970)
 
+dip_endpower = 1.0*getChannelValue(seqdata,'dipoleTrap1',1,0);        
+
 %{
 %% Other parameters
 % To be consolidated and simplified.
@@ -866,7 +868,9 @@ end
 
 if seqdata.flags.lattice_rotate_waveplate_2
     wp_Trot2 = 150; 
-
+    P_RotWave_I = getVar('rotate_waveplate1_value');
+    P_RotWave_II = 0.99;
+    
     dispLineStr('Rotate waveplate again',curtime)    
         %Rotate waveplate again to divert the rest of the power to lattice beams
 curtime = AnalogFunc(calctime(curtime,0),41,...

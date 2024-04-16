@@ -26,6 +26,7 @@ end
 do_K_uwave_spectroscopy_old                 = 0;    % (3786) keep
 do_RF_spectroscopy                          = 0;    % (3952,4970)
 
+%{
 %% Other parameters
 % To be consolidated and simplified.
 
@@ -409,7 +410,7 @@ if seqdata.flags.lattice_lattice_ramp_1
     
     disp([' end loading : ' num2str(curtime2realtime(curtime)) ' ms']);
 end
-
+%}
 %% Ramp down HF used for loading lattice (this flag is in dipole transfer)
 
 if isfield(seqdata.flags,'xdt_ramp_up_FB_for_lattice') && seqdata.flags.xdt_ramp_up_FB_for_lattice

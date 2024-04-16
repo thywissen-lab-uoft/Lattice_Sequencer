@@ -429,6 +429,35 @@ if (seqdata.flags.lattice_pulse_for_alignment ~= 0)
         seqdata.flags.lattice_pulse_for_alignment);
 end
 
+%% Rotate Waveplate for initial lattice depth loading
+% CF think that the waveplate by default should send enough power to the
+% lattices in order to pin, so we ideally should NOT have this waveplate
+% rotation
+
+% Warning : This code intentionally does not update curtime, this is
+% becaues this wavpelate rotation should not interfere with the
+% experimental cycle (ideally, the PIDs should handle the regulation)
+if seqdata.flags.rotate_waveplate_1
+    dispLineStr('Rotating waveplate',curtime);
+    
+    tr = getVar('lattice_rotate_waveplate1_duration');
+    td = getVar('lattice_rotate_waveplate1_delay');
+    value = getVar('lattice_rotate_waveplate1_value');
+    
+    disp(['     Rotation Time : ' num2str(tr) ' ms']);
+    disp(['     Delay    Time : ' num2str(td) ' ms']);
+    disp(['     Power         : ' num2str(100*value) '%']);
+
+    AnalogFunc(calctime(curtime,td),'latticeWaveplate',...
+        @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
+        tr,tr,value);    
+end
+
+%% Load Optical lattice
+
+if seqdata.flags.lattice_load_1
+    curtime = lattice_load(curtime);
+end
 
 %% Optical Lattice
 
@@ -616,7 +645,7 @@ curtime = lattice_FL(curtime, fluor_opts);
 end
 
 %% Post-sequence: rotate diople trap waveplate to default value
-if (seqdata.flags.lattice_reset_waveplate == 1)
+if (seqdata.flags.waveplate_reset == 1)
     %Rotate waveplate to divert all power to dipole traps.
     P_RotWave = 0;
     AnalogFunc(calctime(curtime,0),'latticeWaveplate',...

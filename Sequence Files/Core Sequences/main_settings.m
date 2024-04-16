@@ -282,7 +282,7 @@ seqdata.flags.rotate_waveplate_1    = 1;
 defVar('rotate_waveplate1_duration',600,'ms'); % How smoothly to rotate
 defVar('rotate_waveplate1_delay',-700,'ms');   % How long before lattice loading 
 
-defVar('rotate_waveplate1_value',0.7,'normalized power'); % Amount of power going to lattices
+defVar('rotate_waveplate1_value',0.1,'normalized power'); % Amount of power going to lattices
 
 
 %% Optical Lattice

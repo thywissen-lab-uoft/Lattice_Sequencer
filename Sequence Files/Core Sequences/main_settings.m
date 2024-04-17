@@ -251,14 +251,11 @@ seqdata.flags.xdt_evap2_HF                  = 0;    % Perform K evap at high fie
 seqdata.flags.xdt_high_field_a              = 0;
 
 
-seqdata.flags.xdt_ramp_power_end            = 1;    % Ramp dipole back up after evaporation before any further physics 
-
-
 defVar('xdt_load_power',1.0,'W');
 defVar('xdt_sympathetic_power',0.800,'W');
 
 % Stage 1 Evaporation (K+Rb)
-defVar('xdt_evap1_power',[0.110],'W');0.078;0.085;0.08;0.078;
+defVar('xdt_evap1_power',[0.065],'W');0.078;0.085;0.08;0.078;
 defVar('xdt_evap1_time',25e3,'ms');
 defVar('xdt_evap1_tau_fraction',3.5,'arb');
 
@@ -266,6 +263,12 @@ defVar('xdt_evap1_tau_fraction',3.5,'arb');
 defVar('xdt_evap2_power',0.110,'W');
 defVar('xdt_evap2_time',10e3,'ms');
 defVar('xdt_evap2_tau_fraction',3.5','arb')
+
+% Ramp up of optical power at the end of optical evaporation
+seqdata.flags.xdt_ramp_power_end            = 1;    % Ramp dipole back up after evaporation before any further physics 
+defVar('xdt_evap_end_ramp_power', 0.250,'W');   % end optical power ramp
+defVar('xdt_evap_end_ramp_time',  100,'ms');    % time to perform ramp
+defVar('xdt_evap_end_ramp_hold',  [0:200:2600],'ms'); % time to wait after ramping
 %% Waveplate Rotation 1
 
 % Reset XDT/XYLattice waveplate at end of sequence
@@ -278,34 +281,37 @@ defVar('xdt_evap2_tau_fraction',3.5','arb')
 % pinning operation, this is ideal for the AOM diffraction efficiency to
 % get by PID regulation
 
-seqdata.flags.rotate_waveplate_1    = 1;   
+seqdata.flags.rotate_waveplate_1    = 0;   
 defVar('rotate_waveplate1_duration',600,'ms'); % How smoothly to rotate
 defVar('rotate_waveplate1_delay',-700,'ms');   % How long before lattice loading 
 
-defVar('rotate_waveplate1_value',0.1,'normalized power'); % Amount of power going to lattices
+defVar('rotate_waveplate1_value',0.05,'normalized power'); % Amount of power going to lattices
 
 
 %% Optical Lattice
 
 % These are the lattice flags sorted roughly chronologically. 
+seqdata.flags.lattice_load_1            = 0;    
+seqdata.flags.lattice                   = 0; 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Loading optical lattical
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load the lattices
-seqdata.flags.lattice_load_1            = 1;    
 defVar('lattice_load_time',300,'ms');
 defVar('lattice_load_depthX',2.5,'Er');
 defVar('lattice_load_depthY',2.5,'Er');
 defVar('lattice_load_depthZ',2.5,'Er');
 
 % If you want to do a round trip
-seqdata.flags.lattice_load_1_round_trip   = 1;       % Load the lattices; (1: normal, 2:single lattice, 3: 
+seqdata.flags.lattice_load_1_round_trip   = 0;       % Load the lattices; (1: normal, 2:single lattice, 3: 
 defVar('lattice_ramp_1_holdtime',0,'ms');            % Hold time after loading before doing round trip
+
+defVar('lattice_ramp_1_round_trip_equilibriation_time',[2000],'ms');            % Hold time after loading before doing round trip
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % More Lattice Flags
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.lattice                       = 1; 
 defVar('lattice_pin_depth',60,'Er');
 defVar('lattice_pin_time', 0.2, 'ms');
 

@@ -131,7 +131,7 @@ AnalogFunc(calctime(curtime,FF_start_time),'Transport FF',...
 % Kitten doesn't regulate during this time, so have it request a bit more
 % than what it needs to and it will rail its output
 
-dkI = 5;
+dkI = 4.5;
 AnalogFunc(calctime(curtime,0),'kitten',...
     @(t,tt,y1,y2) dkI+z2ik(ramp_minjerk(t,tt,y1,y2)), ...
     t_init2cross, t_init2cross, z_init,z_cross_i,func_k);  
@@ -143,7 +143,7 @@ dispLineStr('Transport Kitten Handoff',curtime);
 
 V0 = 9;
 VM = 4;
-VL = 3.6;
+VL = 3.4;
 
 
 t_prep = 100;      % Time to prepare for switch over

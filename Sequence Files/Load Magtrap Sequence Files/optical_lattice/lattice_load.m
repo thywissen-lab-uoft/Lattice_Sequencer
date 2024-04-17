@@ -111,6 +111,9 @@ if seqdata.flags.lattice_load_1_round_trip == 1
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % INSERT XDT AND DMD RAMPS WHICH WE DO NOT DO RIGHT NOW
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    tW = getVar('lattice_ramp_1_round_trip_equilibriation_time');
+    % Wait to equiblibriate
+    curtime = calctime(curtime,tW);
 end
 
 %% Ending

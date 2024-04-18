@@ -253,12 +253,18 @@ defVar('xdt_sympathetic_power',0.800,'W');
 
 % Optical Evaporation
 % 1: exp 2: fast linear 3: piecewise linear
-seqdata.flags.CDT_evap                      = 1;       
+seqdata.flags.CDT_evap                      = 1;  % rename to stage 1     
 % Stage 1 Evaporation (K+Rb)
-defVar('xdt_evap1_power',[0.065],'W');0.078;0.085;0.08;0.078;
+defVar('xdt_evap1_power',[0.065],'W');
 defVar('xdt_evap1_time',25e3,'ms');
 defVar('xdt_evap1_tau_fraction',3.5,'arb');
 
+% ramp ODT power after stage 1
+% ramp FB after stage 1
+% whether or not to use qp reverse
+% qe reverse value
+
+% add stage 2 flag
 % Stage 2 Evaporation (K+K)
 defVar('xdt_evap2_power',0.110,'W');
 defVar('xdt_evap2_time',10e3,'ms');

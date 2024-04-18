@@ -1363,35 +1363,19 @@ if seqdata.flags.xdt_ramp_power_end
 
     Pr = getVar('xdt_evap_end_ramp_power');
     tr = getVar('xdt_evap_end_ramp_time');   
-    th = getVar('xdt_evap_end_ramp_hold');
     
+    % Ramp ODTs
     AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         tr,tr,Pr);
     AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         tr,tr,Pr);
-  curtime = calctime(curtime,tr);
-  curtime = calctime(curtime,th);
-% 
-
-%     
-%     xdt_rampup_power_list = 0.12;[0.12:0.01:0.25];    
-%     xdt_rampup_power = getScanParameter(xdt_rampup_power_list,seqdata.scancycle,...
-%     seqdata.randcyclelist,'xdt_rampup_power', 'mW');
-%     dip_1 = xdt_rampup_power; 0.02; seqdata.params.ODT_zeros(1); .15; %1.5
-%     dip_2 = xdt_rampup_power; .15; %1.5
-%     dip_ramptime = 100; %1000
-%     dip_waittime = 100;
-%     AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
-%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_1);
-%     AnalogFuncTo(calctime(curtime,0),...
-%         'dipoleTrap2',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), dip_ramptime,dip_ramptime,dip_2);
-% curtime = calctime(curtime,dip_ramptime);
-%     curtime = calctime(curtime,dip_waittime);
-% 
-%     defVar('odt_extra_hold',[2300 2600]);
-%     curtime = calctime(curtime,getVar('odt_extra_hold'));
+    curtime = calctime(curtime,tr);
+  
+    % Hold after ramping
+    th = getVar('xdt_evap_end_ramp_hold');
+    curtime = calctime(curtime,th);
 end
 
 

@@ -151,7 +151,7 @@ seqdata.flags.High_Field_Imaging            = 0; % High field imaging (shouldn't
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[15],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[.1],'ms');
@@ -266,10 +266,12 @@ defVar('xdt_evap2_tau_fraction',3.5','arb')
 
 % Ramp up of optical power at the end of optical evaporation
 seqdata.flags.xdt_ramp_power_end            = 1;    % Ramp dipole back up after evaporation before any further physics 
-defVar('xdt_evap_end_ramp_power', 0.250,'W');   % end optical power ramp
-defVar('xdt_evap_end_ramp_time',  100,'ms');    % time to perform ramp
-defVar('xdt_evap_end_ramp_hold',  [0:200:2600],'ms'); % time to wait after ramping
+defVar('xdt_evap_end_ramp_power', 0.120,'W');   % end optical power ramp
+defVar('xdt_evap_end_ramp_time',  [250],'ms');    % time to perform ramp
+defVar('xdt_evap_end_ramp_hold',  [250],'ms'); % time to wait after ramping
 %% Waveplate Rotation 1
+
+seqdata.flags.rotate_waveplate_1   = 1;   
 
 % Reset XDT/XYLattice waveplate at end of sequence
 % seqdata.flags.waveplate_reset       = 1; commented out since WE ALWAYS
@@ -281,18 +283,16 @@ defVar('xdt_evap_end_ramp_hold',  [0:200:2600],'ms'); % time to wait after rampi
 % pinning operation, this is ideal for the AOM diffraction efficiency to
 % get by PID regulation
 
-seqdata.flags.rotate_waveplate_1    = 0;   
+
 defVar('rotate_waveplate1_duration',600,'ms'); % How smoothly to rotate
 defVar('rotate_waveplate1_delay',-700,'ms');   % How long before lattice loading 
-
 defVar('rotate_waveplate1_value',0.05,'normalized power'); % Amount of power going to lattices
 
 
-%% Optical Lattice
+%% Optical Lattice Loading
 
 % These are the lattice flags sorted roughly chronologically. 
-seqdata.flags.lattice_load_1            = 0;    
-seqdata.flags.lattice                   = 0; 
+seqdata.flags.lattice_load_1            = 1;    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Loading optical lattical
@@ -303,11 +303,21 @@ defVar('lattice_load_depthX',2.5,'Er');
 defVar('lattice_load_depthY',2.5,'Er');
 defVar('lattice_load_depthZ',2.5,'Er');
 
+% Turn off XDTs after ramping loading lattice
+seqdata.flags.lattice_load_xdt_off        = 0;      
+defVar('lattice_load_xdt_off_time',[500],'ms');           
+
+% Hold time after loading lattice
+defVar('lattice_ramp_1_holdtime',[0],'ms');
+
 % If you want to do a round trip
 seqdata.flags.lattice_load_1_round_trip   = 0;       % Load the lattices; (1: normal, 2:single lattice, 3: 
-defVar('lattice_ramp_1_holdtime',0,'ms');            % Hold time after loading before doing round trip
-
 defVar('lattice_ramp_1_round_trip_equilibriation_time',[2000],'ms');            % Hold time after loading before doing round trip
+
+
+
+%% Optical Lattice
+seqdata.flags.lattice                   = 1; 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % More Lattice Flags
@@ -316,9 +326,9 @@ defVar('lattice_pin_depth',60,'Er');
 defVar('lattice_pin_time', 0.2, 'ms');
 
 seqdata.flags.do_lattice_am_spec            = 0;    % Amplitude modulation spectroscopy    
-seqdata.flags.lattice_rotate_waveplate_2    = 1;    % Second waveplate rotation 95% 
+seqdata.flags.lattice_rotate_waveplate_2    = 0;    % Second waveplate rotation 95% 
 seqdata.flags.lattice_lattice_ramp_2        = 0;    % Secondary lattice ramp for fluorescence imaging
-seqdata.flags.lattice_lattice_ramp_3        = 1;    % Secondary lattice ramp for fluorescence imaging
+seqdata.flags.lattice_lattice_ramp_3        = 0;    % Secondary lattice ramp for fluorescence imaging
 seqdata.flags.lattice_pin                   = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -342,15 +352,14 @@ seqdata.flags.lattice_uWave_spec            = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-seqdata.flags.lattice_do_optical_pumping    = 1;    % (1426) keep : optical pumping in lattice  
+seqdata.flags.lattice_do_optical_pumping    = 0;    % (1426) keep : optical pumping in lattice  
 % Actual fluorsence image flags - NO LONGER USED
 seqdata.flags.Raman_transfers               = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
-% seqdata.flags.qgm_stripe_feedback2          = 0;
+seqdata.flags.do_plane_selection            = 0;    % Plane selection flag
 seqdata.flags.plane_selection.useFeedback   = 1;
 seqdata.flags.plane_selection.dotilt        = 0;
 
@@ -383,7 +392,7 @@ defVar('f_offset',f_offset,'kHz');
 
 % New Standard Fluoresnce Image Flags
 seqdata.flags.lattice_ClearCCD_IxonTrigger  = 0;    % Add additional trigger to clear CCD
-seqdata.flags.lattice_fluor                 = 1;    % Do Fluoresnce imaging
+seqdata.flags.lattice_fluor                 = 0;    % Do Fluoresnce imaging
 seqdata.flags.lattice_fluor_bkgd            = 1;    % Take a background image with imaging light on, no atoms
                                                     % MUST SET NUMKIN +1
 

@@ -67,13 +67,34 @@ AnalogFuncTo(calctime(curtime,0),'zLattice',...
 % Advance time
 curtime = calctime(curtime,tL);   
 
+%% Mabye turn off XDTs
 
+if seqdata.flags.lattice_load_xdt_off
+    tr = getVar('lattice_load_xdt_off_time');   
+    
+    % Ramp ODTs
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tr,tr,seqdata.params.ODT_zeros(1));
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tr,tr,seqdata.params.ODT_zeros(2));
+    curtime = calctime(curtime,tr);
+    
+    % Make sure its off
+    setDigitalChannel(calctime(curtime,0),'XDT TTL',1);   
+end
+
+
+%% Hold after loading
+% Hold time after loading 
+tH = getVar('lattice_ramp_1_holdtime');
+curtime=calctime(curtime,tH);       
+    
 %% Unramp Lattices
 if seqdata.flags.lattice_load_1_round_trip == 1
     
-    % Hold time after loading for round trip analysis   
-    tH = getVar('lattice_ramp_1_holdtime');
-    curtime=calctime(curtime,tH);       
+
 
      % Ramp the lattices to the desired value    
     tL = getVar('lattice_load_time');

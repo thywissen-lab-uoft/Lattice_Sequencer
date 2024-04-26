@@ -32,8 +32,8 @@ seqdata.flags.xdt_ramp2sympathetic      = 1;
 exp_end_pwr=getVar('xdt_evap1_power');
 
 % Stage 2 (K+K) Evaporation
-pend=getVar('xdt_evap2_power');
-evap_time_2=getVar('xdt_evap2_time');
+% pend=getVar('xdt_evap2_power');
+% evap_time_2=getVar('xdt_evap2_time');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
@@ -75,7 +75,7 @@ evap_time_total = getVar('xdt_evap1_time');
 exp_tau_frac = getVar('xdt_evap1_tau_fraction');
 exp_tau=evap_time_total/exp_tau_frac;
 
-exp_tau2 = evap_time_2/getVar('xdt_evap2_tau_fraction');
+% exp_tau2 = evap_time_2/getVar('xdt_evap2_tau_fraction');
 
 % Power vector (load, hold, sympathetic, final)
 DT1_power = 1*[P1 P1 P1e xdt1_end_power];
@@ -2025,6 +2025,7 @@ if seqdata.flags.xdt_unlevitate_evap
     curtime = calctime(curtime,100);
 end
 %}
+
 
 %% XDT Hold
 

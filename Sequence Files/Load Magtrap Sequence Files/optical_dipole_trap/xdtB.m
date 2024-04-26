@@ -9,20 +9,18 @@ curtime = timein;
 % Ramp up Feshbach and levitation field
 
 if seqdata.flags.xdtB_ramp_up_field
-    
+    % High Field ramp up sub function
 end
 
 
-%% High Field Manipulation
-% High Field Manipulations before evaporation
-
+%% Pre Evaporation
 if seqdata.flags.xdtB_pre_evap
-    
+    % xdtB pre_evap function
 end
 
 %% Optical Evaporation
 if seqdata.flags.xdtB_evap
-    
+    % xdtB evaporation    
 end
 %% High Field Manipulation
 if seqdata.flags.xdtB_post_evap

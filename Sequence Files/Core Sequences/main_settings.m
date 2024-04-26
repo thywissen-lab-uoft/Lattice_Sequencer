@@ -297,7 +297,7 @@ seqdata.flags.xdt_high_field_a              = 0;
 
 %% Waveplate Rotation 1
 
-seqdata.flags.rotate_waveplate_1   = 1;   
+seqdata.flags.rotate_waveplate_1   = 0;   
 
 % Reset XDT/XYLattice waveplate at end of sequence
 % seqdata.flags.waveplate_reset       = 1; commented out since WE ALWAYS
@@ -318,7 +318,7 @@ defVar('rotate_waveplate1_value',0.05,'normalized power'); % Amount of power goi
 %% Optical Lattice Loading
 
 % These are the lattice flags sorted roughly chronologically. 
-seqdata.flags.lattice_load_1            = 1;    
+seqdata.flags.lattice_load_1            = 0;    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Loading optical lattical
@@ -343,7 +343,7 @@ defVar('lattice_ramp_1_round_trip_equilibriation_time',[2000],'ms');            
 
 
 %% Optical Lattice
-seqdata.flags.lattice                   = 1; 
+seqdata.flags.lattice                   = 0; 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % More Lattice Flags

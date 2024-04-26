@@ -1,5 +1,8 @@
 function [timeout,I_QP,V_QP,P_dip,I_shim] =  dipole_transfer(timein, I_QP, V_QP,I_shim)
 
+
+P_dip = [];
+
 curtime = timein;
 global seqdata;
 
@@ -28,19 +31,10 @@ seqdata.flags.xdt_ramp2sympathetic      = 1;
 % Stage 1 (Rb+K) Evaporation
 exp_end_pwr=getVar('xdt_evap1_power');
 
-% Stage 2 Low Field (K+K) evaporation
-% pend_list = [0.1]; 0.08; 0.06;
-% pend = getScanParameter(pend_list,seqdata.scancycle,...
-%     seqdata.randcyclelist,'pend_evap2','W');
-
 % Stage 2 (K+K) Evaporation
 pend=getVar('xdt_evap2_power');
-
-% evap_time_2_list =  [10000];
-% evap_time_2 = getScanParameter(evap_time_2_list,seqdata.scancycle,...
-%     seqdata.randcyclelist,'evap_time_2','ms');
-
 evap_time_2=getVar('xdt_evap2_time');
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %After Evaporation (unless CDT_evap = 0)
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -64,39 +58,20 @@ seqdata.flags.xdt_ramp_up_FB_for_lattice    = 0;    %Ramp FB up at the end of ev
 % circularly symmetric trap at end of evaporation.
 XDT2_power_func = @(x) x;
 
-% Initial XDT power
-% P12_list = [.8];
-% P12 = getScanParameter(P12_list,seqdata.scancycle,...
-%     seqdata.randcyclelist,'XDT_initial_power','W');
-  
-
-% P_dip=0;
-% % Sympathetic cooling powers
-% Pevap_list = 0.8;[.8];
-% Pevap = getScanParameter(Pevap_list,...
-%     seqdata.scancycle,seqdata.randcyclelist,'XDT_Pevap','W');
-
 P12 = getVar('xdt_load_power');
 P1 = P12;P2 = P12;     
 
 Pevap = getVar('xdt_sympathetic_power');
-P1e = Pevap; %0.8
-P2e = Pevap; %0.8
+P1e = Pevap;P2e = Pevap;
 
 % Final optical power
 xdt1_end_power = exp_end_pwr;    
 xdt2_end_power = XDT2_power_func(exp_end_pwr);
 
 % Evaporation Time
-% Time_List =  25e3;[25]*1e3; 25;18;% [15000] for normal experiment
-% evap_time_total = getScanParameter(Time_List,seqdata.scancycle,...
-%     seqdata.randcyclelist,'evap_time','ms');   
 evap_time_total = getVar('xdt_evap1_time');
 
 % Exponetial time factor
-% Tau_List = [3.5];%[5];
-% exp_tau_frac = getScanParameter(Tau_List,seqdata.scancycle,...
-%     seqdata.randcyclelist,'Evap_Tau_frac');
 exp_tau_frac = getVar('xdt_evap1_tau_fraction');
 exp_tau=evap_time_total/exp_tau_frac;
 
@@ -113,6 +88,14 @@ dCz_list = [-.0025];
 dCz = getScanParameter(dCz_list,seqdata.scancycle,...
     seqdata.randcyclelist,'dCz','arb.');  
 
+%% Load the Dipole Trap from the Magnetic Trap
+
+% CF Testing
+if seqdata.flags.xdt_load
+    [curtime, I_QP, V_QP,I_shim] = xdt_load(curtime, I_QP, V_QP,I_shim);
+end
+
+%{
 
 %% Dipole trap initial ramp on
 
@@ -336,7 +319,15 @@ ScopeTriggerPulse(calctime(curtime,0),'Transport Supply Off');
 setDigitalChannel(calctime(curtime,0),'Coil 16 TTL',1);
 %Turn Coil 15 FET off
 setAnalogChannel(calctime(curtime,0),'Coil 15',0,1);
+%}
+   
+%% Pre-evaporation 
 
+if seqdata.flags.xdt_pre_evap
+    [curtime, I_QP, V_QP,I_shim] = xdt_pre_evap(curtime, I_QP, V_QP,I_shim);
+end
+
+%{
 %% Rb uWave 1 SWEEP FESHBACH FIELD
 
 %Pre-ramp the field to 20G for transfer
@@ -918,8 +909,17 @@ end
 %     sweep=[1 f1 f2 dT];    % Sweep data;
 %     seqdata.DDSsweeps(seqdata.numDDSsweeps,:)=sweep;
 % curtime = calctime(curtime,10);
-%% Ramp Magnetic Fields before Optical Evaporation
-% Ramp the FB field. This typically is already done by the spin manulations
+
+%}
+
+%% Evaporation Stage 1
+if seqdata.flags.xdt_evap_stage_1
+    [curtime, I_QP, V_QP,I_shim] = xdt_evap_stage_1(curtime, I_QP, V_QP,I_shim);
+end
+%%
+
+%{
+%% Ramp the FB field. This typically is already done by the spin manulations
 % so it is unclear if this code is necessary
 
 if seqdata.flags.xdt_ramp_FB_before_evap
@@ -1326,9 +1326,11 @@ if seqdata.flags.xdt_tilt_evap
     % Wait a second
     curtime = calctime(curtime,10);
 end
-
+%}
 
 %% CDT evap 2
+
+%{
 % Stage 2 (K only) optical evaporation at low field
 
 if ( seqdata.flags.CDT_evap == 1 && seqdata.flags.xdt_evap2stage)
@@ -1347,15 +1349,22 @@ if ( seqdata.flags.CDT_evap == 1 && seqdata.flags.xdt_evap2stage)
         evap_time_2,evap_time_2,exp_tau2,pend);
     curtime = calctime(curtime,evap_time_2);    
 end
-
+%}
 %% CDT evap 2 high field
 % Stage 2 (K only) optical evaporation at low field
-
+%{
 if (seqdata.flags.xdt_evap2_HF && seqdata.flags.xdt_evap2stage == 0)
     curtime = dipole_high_field_evap2(curtime);
 end
+%}
 
+%% Post Evap Stage 1
+if seqdata.flags.xdt_post_evap_stage1
+   curtime = xdt_post_evap_stage_1(curtime); 
+end
 %% Ramp Dipole After Evap
+
+%{
 % Compress XDT after Stage 2 optical evaporation
 
 if seqdata.flags.xdt_ramp_power_end 
@@ -2015,7 +2024,7 @@ if seqdata.flags.xdt_unlevitate_evap
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,0,1); 
     curtime = calctime(curtime,100);
 end
-
+%}
 
 %% XDT Hold
 

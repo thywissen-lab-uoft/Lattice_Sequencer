@@ -216,64 +216,51 @@ defVar('mt_ramp_grad_value',[16:4:32],'A');
 defVar('mt_hold_time',[0:500:10000]);
 
 %% Optical Dipole Trap
+seqdata.flags.xdt                           = 1;    % Master Flag (overrides all other flags)
+
+% XDT Power request zeros
 seqdata.params.ODT_zeros = [-0.04,-0.04];
-
-% Master XDT flag.  This will override all other XDT flags
-seqdata.flags.xdt                           = 1;
-
-% Main XDT flags.  These control the individual stages (not used yet)
-seqdata.flags.xdt_load                      = 1;
-seqdata.flags.xdt_pre_evap                  = 1;
-seqdata.flags.xdt_evap                      = 1;
-seqdata.flags.xdt_post_evap                 = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % XDT Loading Flags and Settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+seqdata.flags.xdt_load                      = 1;    % Master Flag
 defVar('xdt_load_power',1.0,'W');
 defVar('xdt_load_time',75,'ms');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % XDT Pre Evaporation Flags and Settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+seqdata.flags.xdt_pre_evap                  = 1;    % Master Flag
+
+% Subflags
 seqdata.flags.xdt_Rb_21uwave_sweep_field    = 1;    % Field Sweep Rb 2-->1
 seqdata.flags.xdt_Rb_21uwave_sweep_freq     = 0;    % uWave Frequency sweep Rb 2-->1
 seqdata.flags.xdt_K_p2n_rf_sweep_freq       = 1;    % RF Freq Sweep K +9-->-9  
-
-% State Manipulation Before Optical Evaporation 
 seqdata.flags.xdt_d1op_start                = 1;    % D1 pump to purify
 seqdata.flags.xdt_rfmix_start               = 1;    % RF Mixing -9-->-9+-7    
 seqdata.flags.xdt_kill_Rb_before_evap       = 0;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_before_evap       = 0;    % optical remove 7/2 K after (untested)
 
-defVar('xdt_sympathetic_power',0.800,'W');
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% XDT Evaporation Flags and Settings
+% XDT Evaporation Stage 1 (Rb + K) Flags and Settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+seqdata.flags.xdt_evap_stage_1                      = 1;    % Master Flag
 
-% Optical Evaporation
-% 1: exp 2: fast linear 3: piecewise linear
-seqdata.flags.CDT_evap                      = 1;  % rename to stage 1     
-% Stage 1 Evaporation (K+Rb)
+defVar('xdt_sympathetic_power',0.800,'W');          % Ramp to Sympathetic evaporation
+seqdata.flags.CDT_evap                      = 1; % 1: exp 2: fast linear 3: piecewise linear  
 defVar('xdt_evap1_power',[0.065],'W');
 defVar('xdt_evap1_time',25e3,'ms');
 defVar('xdt_evap1_tau_fraction',3.5,'arb');
 
-% ramp ODT power after stage 1
-% ramp FB after stage 1
-% whether or not to use qp reverse
-% qe reverse value
-
-% add stage 2 flag
-% Stage 2 Evaporation (K+K)
-defVar('xdt_evap2_power',0.110,'W');
-defVar('xdt_evap2_time',10e3,'ms');
-defVar('xdt_evap2_tau_fraction',3.5','arb')
+seqdata.flags.xdt_evap_stage_1_ramp_power_end = 1; % Not used yet
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Post Evaporation XDT Flags and Settings
+% XDT Post Evaporation Stage 1 Flags and Settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+seqdata.flags.xdt_post_evap_stage1           = 1;    % Master Flag
+
 % State Manipulation After Stage 1 optical evaporation
 seqdata.flags.xdt_d1op_end                  = 0;    % D1 optical pumping
 seqdata.flags.xdt_rfmix_end                 = 0;    % RF Mixing -9-->-9+-7
@@ -286,6 +273,25 @@ defVar('xdt_evap_end_ramp_power', 0.120,'W');   % end optical power ramp
 defVar('xdt_evap_end_ramp_time',  [250],'ms');    % time to perform ramp
 defVar('xdt_evap_end_ramp_hold',  [250],'ms'); % time to wait after ramping
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% XDT Evaporation Stage 2 (K + K) Flags and Settings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+seqdata.flags.xdt_evap_stage_2              = 1;    % Master Flag
+
+% ramp up power flag
+% power value, time value
+
+% ramp up FB field flag
+% ramp up levitation field flag
+% FB field value, QP field value, ramp time
+
+% possible state manipulation at high field (eventually perhaps may want to
+% do mixing above FB resonance)
+
+defVar('xdt_evap2_power',0.110,'W');
+defVar('xdt_evap2_time',10e3,'ms');
+defVar('xdt_evap2_tau_fraction',3.5','arb')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % XDT Other (CF Unclear) Flags and Settings

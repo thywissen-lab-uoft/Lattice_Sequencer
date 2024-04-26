@@ -417,9 +417,8 @@ end
 if ( seqdata.flags.xdt == 1 )
     dispLineStr('Caling dipole_transfer.m',curtime);   
     [curtime, I_QP, V_QP, P_dip, I_shim] = ...
-        dipole_transfer(curtime, I_QP, V_QP, I_shim);    
+        dipole_transfer(curtime, I_QP, V_QP, I_shim);       
     
-    %
 end
 
 %% Pulse lattice after releasing from trap

@@ -1,5 +1,18 @@
-function [timeout] = xdt_load(timein)
+function [timeout, I_QP, V_QP,I_shim] = xdt_load(timein, I_QP, V_QP,I_shim)
+%% xdt_load.m
+% Author : C Fujiwara
+%
+% This code loads the dipole trap from the magnetic trap.  The loading is
+% done in two stages.  In the first stage, the magnetic field gradient is
+% ramped down to relax the trap, while the optical powers are turned up.
+%
+% In the second stage the magnetic field gradient is ramped completely off
+% while the feshbach field is increaesd to maintain the quantization axis.
+% The optical powers are also ramped to their final values.
+%
+% After the optical trap has been loaded, the plug beam is turned off.
 
+%%
 curtime = timein;
 global seqdata;
 
@@ -15,7 +28,10 @@ ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 %% XDT Powers
 
 P_load = getVar('xdt_load_power');  
-tL = getVar('xdt_load_time');
+dipole_ramp_up_time = getVar('xdt_load_time');
+
+DT2_power(2)= P_load;
+DT1_power(2) = P_load; 
 
 % Plug Shim Z Slope delta
 dCz_list = [-.0025];
@@ -32,11 +48,11 @@ setDigitalChannel(calctime(curtime,-10),'XDT TTL',0);
 % Ramp dipole 1 trap on
 AnalogFunc(calctime(curtime,0),...
     'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-    tL,tL,seqdata.params.ODT_zeros(1),P_load);
+    dipole_ramp_up_time,dipole_ramp_up_time,seqdata.params.ODT_zeros(1),P_load);
 % Ramp dipole 2 trap on
 AnalogFunc(calctime(curtime,0),...
     'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-    tL,tL,seqdata.params.ODT_zeros(2),P_load);
+    dipole_ramp_up_time,dipole_ramp_up_time,seqdata.params.ODT_zeros(2),P_load);
     
 %% Ramp the QP Down    
 % Ramp QP currents down to release the magnetic trap. A very small residual
@@ -114,9 +130,9 @@ if seqdata.flags.xdt_qp_ramp_down1
         qp_ramp_down_time1,qp_ramp_down_time1,QP_ramp_end1);
 
     % Some extra advances in time (WHAT IS THIS FOR?)
-    if (dipole_ramp_start_time+dipole_ramp_up_time)>(qp_ramp_down_time1)
+    if (dipole_ramp_up_time)>(qp_ramp_down_time1)
         curtime =   calctime(curtime,...
-            (dipole_ramp_start_time+dipole_ramp_up_time)-(qp_ramp_down_time1));
+            (dipole_ramp_up_time)-(qp_ramp_down_time1));
     end
 
     I_QP  = QP_ramp_end1; 
@@ -224,7 +240,6 @@ plug_turnoff_time = getScanParameter(plug_turnoff_time_list,...
 setDigitalChannel(calctime(curtime,plug_turnoff_time),'Plug Shutter',0);%0:OFF; 1:ON; -200
 dispLineStr('Turning off plug ',calctime(curtime,plug_turnoff_time));
 
-
 %% Turn Off Voltage on Transport and Shim Supply 
 
 ScopeTriggerPulse(calctime(curtime,0),'Transport Supply Off');
@@ -234,7 +249,7 @@ setDigitalChannel(calctime(curtime,0),'Coil 16 TTL',1);
 setAnalogChannel(calctime(curtime,0),'Coil 15',0,1);
 
 
-%%
+%% Exit
 
 timeout = curtime;
 end

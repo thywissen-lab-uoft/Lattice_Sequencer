@@ -231,6 +231,7 @@ seqdata.flags.xdt_post_evap                 = 1;
 % XDT Loading Flags and Settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 defVar('xdt_load_power',1.0,'W');
+defVar('xdt_load_time',75,'ms');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % XDT Pre Evaporation Flags and Settings

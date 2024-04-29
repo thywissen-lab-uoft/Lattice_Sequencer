@@ -270,9 +270,6 @@ defVar('xdt_evap_end_ramp_hold',  [250],'ms');
 
 seqdata.flags.xdt_post_evap_stage1           = 0;    % Master Flag
 
-% Ramp up of optical power at the end of optical evaporation
-
-
 % State Manipulation After Stage 1 optical evaporation
 seqdata.flags.xdt_d1op_end                  = 0;    % D1 optical pumping
 seqdata.flags.xdt_rfmix_end                 = 0;    % RF Mixing -9-->-9+-7

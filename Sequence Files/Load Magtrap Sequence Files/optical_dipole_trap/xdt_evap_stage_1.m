@@ -3,6 +3,7 @@ function [curtime, I_QP, V_QP,I_shim] = xdt_evap_stage_1(timein, I_QP, V_QP,I_sh
 curtime = timein;
 global seqdata;
 
+
  %% Ramp to Sympathetic Cooling Regime
 % Ramp the optical powers to their sympathetic values
 

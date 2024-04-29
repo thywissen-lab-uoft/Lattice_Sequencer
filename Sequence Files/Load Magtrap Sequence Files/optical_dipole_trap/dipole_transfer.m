@@ -12,7 +12,9 @@ global seqdata;
 %%%%%%%%%%%%%%%%%%%%%%%%%%    
 seqdata.flags.xdt_qp_ramp_down1         = 1;
 seqdata.flags.xdt_qp_ramp_down2         = 1;
-ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
+seqdata.flags.xdt_ramp2sympathetic      = 1;  
+
+% ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 %ramp_func = @(t,tt,y2,y1)(minimum_jerk(t,tt,y2-y1)+y1); 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -25,11 +27,10 @@ seqdata.flags.xdt_unlevitate_evap       = 0; % Unclear what this is for
 
 % Dipole trap asymmetry (useful for making a symmetric trap for lattice + QGM)
 seqdata.params.xdt_p2p1_ratio           = 1; % ratio of ODT2:ODT1 power
-seqdata.flags.xdt_ramp2sympathetic      = 1;  
 
 
 % Stage 1 (Rb+K) Evaporation
-exp_end_pwr=getVar('xdt_evap1_power');
+% exp_end_pwr=getVar('xdt_evap1_power');
 
 % Stage 2 (K+K) Evaporation
 % pend=getVar('xdt_evap2_power');
@@ -52,7 +53,7 @@ seqdata.flags.xdt_ramp_up_FB_for_lattice    = 0;    %Ramp FB up at the end of ev
 
     
 %% XDT Powers
-
+%{
 %%%%% Specify the XDT2 power relative to XDT1 %%%%%%%%%%%%%%%%%%%%%%%%%
 % Power function of XDT1 relative to XDT2. Useful for making
 % circularly symmetric trap at end of evaporation.
@@ -87,7 +88,7 @@ DT2_power = 1*[P2 P2 P2e xdt2_end_power];
 dCz_list = [-.0025];
 dCz = getScanParameter(dCz_list,seqdata.scancycle,...
     seqdata.randcyclelist,'dCz','arb.');  
-
+%}
 %% Load the Dipole Trap from the Magnetic Trap
 
 % CF Testing

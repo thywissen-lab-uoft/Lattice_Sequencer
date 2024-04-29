@@ -22,6 +22,9 @@ ScopeTriggerPulse(curtime,'xdt load');
 
 seqdata.flags.xdt_qp_ramp_down1         = 1;
 seqdata.flags.xdt_qp_ramp_down2         = 1;
+seqdata.flags.xdt_plug_off              = 1;
+
+
 ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 %ramp_func = @(t,tt,y2,y1)(minimum_jerk(t,tt,y2-y1)+y1); 
     
@@ -233,13 +236,13 @@ V_QP = vSet_ramp;
 
 %% Plug Turn off
 % Turn off the plug beam now that the QP coils are off
-
-plug_turnoff_time_list =[0]; -200;
-plug_turnoff_time = getScanParameter(plug_turnoff_time_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'plug_turnoff_time');
-setDigitalChannel(calctime(curtime,plug_turnoff_time),'Plug Shutter',0);%0:OFF; 1:ON; -200
-dispLineStr('Turning off plug ',calctime(curtime,plug_turnoff_time));
-
+if seqdata.flags.xdt_plug_off
+    plug_turnoff_time_list =[0]; -200;
+    plug_turnoff_time = getScanParameter(plug_turnoff_time_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'plug_turnoff_time');
+    setDigitalChannel(calctime(curtime,plug_turnoff_time),'Plug Shutter',0);%0:OFF; 1:ON; -200
+    dispLineStr('Turning off plug ',calctime(curtime,plug_turnoff_time));
+end
 %% Turn Off Voltage on Transport and Shim Supply 
 
 ScopeTriggerPulse(calctime(curtime,0),'Transport Supply Off');

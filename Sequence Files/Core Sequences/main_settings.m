@@ -133,7 +133,7 @@ defVar('D1_DP_FM',222.5,'MHz');
 
 %% Imaging
 seqdata.flags.image_type                    = 0; % 0: absorption, 1 : MOT fluor  
-seqdata.flags.image_atomtype                = 1; % 0:Rb,1:K,2:K+Rb (double shutter), applies to fluor and absorption
+seqdata.flags.image_atomtype                = 0; % 0:Rb,1:K,2:K+Rb (double shutter), applies to fluor and absorption
 
 seqdata.flags.image_loc                     = 1; % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.image_direction               = 1; % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
@@ -219,13 +219,13 @@ defVar('mt_hold_time',[0:500:10000]);
 seqdata.params.ODT_zeros = [-0.04,-0.04];
 
 % Master XDT flag.  This will override all other XDT flags
-seqdata.flags.xdt                           = 1;
+seqdata.flags.xdt                           = 0;
 
 % Main XDT flags.  These control the individual stages (not used yet)
-seqdata.flags.xdt_load                      = 1;
-seqdata.flags.xdt_pre_evap                  = 1;
-seqdata.flags.xdt_evap                      = 1;
-seqdata.flags.xdt_post_evap                 = 1;
+seqdata.flags.xdt_load                      = 0
+seqdata.flags.xdt_pre_evap                  = 0;
+seqdata.flags.xdt_evap                      = 0;
+seqdata.flags.xdt_post_evap                 = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % XDT Loading Flags and Settings
@@ -236,13 +236,13 @@ defVar('xdt_load_time',75,'ms');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % XDT Pre Evaporation Flags and Settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdt_Rb_21uwave_sweep_field    = 1;    % Field Sweep Rb 2-->1
+seqdata.flags.xdt_Rb_21uwave_sweep_field    = 0;    % Field Sweep Rb 2-->1
 seqdata.flags.xdt_Rb_21uwave_sweep_freq     = 0;    % uWave Frequency sweep Rb 2-->1
-seqdata.flags.xdt_K_p2n_rf_sweep_freq       = 1;    % RF Freq Sweep K +9-->-9  
+seqdata.flags.xdt_K_p2n_rf_sweep_freq       = 0;    % RF Freq Sweep K +9-->-9  
 
 % State Manipulation Before Optical Evaporation 
-seqdata.flags.xdt_d1op_start                = 1;    % D1 pump to purify
-seqdata.flags.xdt_rfmix_start               = 1;    % RF Mixing -9-->-9+-7    
+seqdata.flags.xdt_d1op_start                = 0;    % D1 pump to purify
+seqdata.flags.xdt_rfmix_start               = 0;    % RF Mixing -9-->-9+-7    
 seqdata.flags.xdt_kill_Rb_before_evap       = 0;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_before_evap       = 0;    % optical remove 7/2 K after (untested)
 
@@ -254,7 +254,7 @@ defVar('xdt_sympathetic_power',0.800,'W');
 
 % Optical Evaporation
 % 1: exp 2: fast linear 3: piecewise linear
-seqdata.flags.CDT_evap                      = 1;  % rename to stage 1     
+seqdata.flags.CDT_evap                      = 0;  % rename to stage 1     
 % Stage 1 Evaporation (K+Rb)
 defVar('xdt_evap1_power',[0.065],'W');
 defVar('xdt_evap1_time',25e3,'ms');
@@ -281,7 +281,7 @@ seqdata.flags.xdt_kill_Rb_after_evap        = 0;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_after_evap        = 0;    % optical remove 7/2 K after (untested)
 
 % Ramp up of optical power at the end of optical evaporation
-seqdata.flags.xdt_ramp_power_end            = 1;    % Ramp dipole back up after evaporation before any further physics 
+seqdata.flags.xdt_ramp_power_end            = 0;    % Ramp dipole back up after evaporation before any further physics 
 defVar('xdt_evap_end_ramp_power', 0.120,'W');   % end optical power ramp
 defVar('xdt_evap_end_ramp_time',  [250],'ms');    % time to perform ramp
 defVar('xdt_evap_end_ramp_hold',  [250],'ms'); % time to wait after ramping

@@ -6102,7 +6102,10 @@ end
 
 % curtime = calctime(curtime,100);
 
-
+% seqdata.digchannels(09).name = 'K Probe/OP TTL';    % 0: OFF; 1: ON
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1);
+%  'K Probe/OP AM';
+ setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',7,1);7
 % wpV = 0;
 % setAnalogChannel(calctime(curtime,0),'latticeWaveplate',wpV,1);
 
@@ -6110,11 +6113,17 @@ end
 %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),100,100,wpV1,wpV2,1);
 %     
 
+setDigitalChannel(calctime(curtime,0),...
+            'Kill TTL',1);
+        
+setDigitalChannel(calctime(curtime,0),...
+            27,0); % High field AOM
 
-setAnalogChannel(calctime(curtime,0),'latticeWaveplate',0.05,4);
-curtime = lattice_load(curtime);
-seqdata.scope_trigger = 'lattice_ramp_1';
-SelectScopeTrigger(seqdata.scope_trigger);
+
+% setAnalogChannel(calctime(curtime,0),'latticeWaveplate',0.05,4);
+% curtime = lattice_load(curtime);
+% seqdata.scope_trigger = 'lattice_ramp_1';
+% SelectScopeTrigger(seqdata.scope_trigger);
 
 % setAnalogChannel(calctime(curtime,0),'latticeWaveplate',0,1);
 

@@ -5,7 +5,6 @@ global seqdata;
 
 ScopeTriggerPulse(curtime,'xdt load');
 %% Rb uWave 1 SWEEP FESHBACH FIELD
-
 %Pre-ramp the field to 20G for transfer
 if ( seqdata.flags.xdt_Rb_21uwave_sweep_field)      
     dispLineStr('uWave Rb 2-->1',curtime);    
@@ -174,7 +173,6 @@ end
 %% Rb uWave transfer 3 - Sweep the uWave to transfer Rb
 % This section of code transfer the Rb cloud from the |2,2> to the |1,1>
 % state using a uWave frequency sweep.
-
 if ( seqdata.flags.xdt_Rb_21uwave_sweep_freq)
     % Ramp the field to the desired value
     dispLineStr('Field Ramp for RF/uWave Transfer',curtime);        
@@ -306,7 +304,6 @@ end
      
 %% 40K RF Sweep Init
 %Sweep 40K to |9/2,-9/2> before optical evaporation   
-
 if seqdata.flags.xdt_K_p2n_rf_sweep_freq
     dispLineStr('RF K Sweep 9-->-9',curtime);   
     
@@ -363,7 +360,6 @@ curtime = calctime(curtime,5);
 end
 
 %% Kill F=7/2 in ODT before evap
-
 if (seqdata.flags.xdt_kill_K7_before_evap)
     
     % optical pumping pulse length
@@ -393,11 +389,8 @@ curtime = calctime(curtime,10);
     %turn repump back down
     setAnalogChannel(calctime(curtime,0),'K Repump AM',0.0);
 end
-
-
     
 %% D1 Optical Pumping in ODT before evap!
-
 if (seqdata.flags.xdt_d1op_start==1)
     dispLineStr('D1 Optical Pumping pre op evap',curtime);  
 
@@ -488,7 +481,6 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
 end
 
 %% Spin mixture after Optical Pumping
-
 if seqdata.flags.xdt_rfmix_start
     dispLineStr('RF K Sweeps for -7,-9 mixture.',curtime);  
 

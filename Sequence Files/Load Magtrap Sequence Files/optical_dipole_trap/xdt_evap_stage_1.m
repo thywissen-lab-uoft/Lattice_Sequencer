@@ -9,21 +9,19 @@ global seqdata;
 if seqdata.flags.CDT_evap ==1 && seqdata.flags.xdt_ramp2sympathetic
     % Pre ramp powers to sympathtetic cooling regime
     dispLineStr('Ramp to sympathetic regime',curtime);
-
-    % Powers to ramp to 
-    dipole_preramp_time = 500;    
-    Ps = getVar('xdt_sympathetic_power');
-    disp(['     Ramp Time (ms) : ' num2str(dipole_preramp_time)]);      
+    % Powers to ramp to
+    Ps = getVar('xdt_evap_sympathetic_power');
+    % Duration of ramp
+    tr = getVar('xdt_evap_sympathetic_ramp_time');
+    disp(['     Ramp Time (ms) : ' num2str(tr)]);      
     disp(['     XDT 1 (W)      : ' num2str(Ps)]);
     disp(['     XDT 2 (W)      : ' num2str(Ps)]); 
-
     % Ramp optical power requests to sympathetic regime
     AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        dipole_preramp_time,dipole_preramp_time,Ps);
-curtime =   AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-        dipole_preramp_time,dipole_preramp_time,Ps);
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),tr,tr,Ps);
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),tr,tr,Ps);
+    curtime = calctime(curtime,tr);
 end
 %% CDT evap
 % Perform the first stage of optical evaporation

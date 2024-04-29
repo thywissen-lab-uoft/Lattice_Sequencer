@@ -243,31 +243,35 @@ seqdata.flags.xdt_kill_Rb_before_evap       = 0;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_before_evap       = 0;    % optical remove 7/2 K after (untested)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% XDT Evaporation Stage 1 (Rb + K) Flags and Settings
+% XDT Evaporation (Rb + K) Flags and Settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 seqdata.flags.xdt_evap_stage_1               = 1;    % Master Flag
 
+% Sympathetic Power Ramp
 seqdata.flags.xdt_ramp2sympathetic           = 1;  
-defVar('xdt_sympathetic_power',0.800,'W');
+defVar('xdt_evap_sympathetic_power',0.800,'W');     % Sympathetic power
+defVar('xdt_evap_sympathetic_ramp_time',500,'ms');  % Sympathetic ramp time
 
-seqdata.flags.CDT_evap                          = 1; 
+% Optical evaporation
+seqdata.flags.CDT_evap                       = 1; 
 defVar('xdt_evap1_power',[0.110],'W');
 defVar('xdt_evap1_time',25e3,'ms');
 defVar('xdt_evap1_tau_fraction',3.5,'arb');
 
-seqdata.flags.xdt_evap_stage_1_ramp_power_end = 1; % Not used yet
+% Power Ramp (useful to halt evaporation)
+seqdata.flags.xdt_ramp_power_end            = 0;   
+defVar('xdt_evap_end_ramp_power', 0.120,'W');   
+defVar('xdt_evap_end_ramp_time',  [250],'ms');  
+defVar('xdt_evap_end_ramp_hold',  [250],'ms'); 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% XDT Post Evaporation Stage 1 Flags and Settings
+% XDT Post Evaporation Flags and Settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 seqdata.flags.xdt_post_evap_stage1           = 0;    % Master Flag
 
 % Ramp up of optical power at the end of optical evaporation
-seqdata.flags.xdt_ramp_power_end            = 0;    % Ramp dipole back up after evaporation before any further physics 
-defVar('xdt_evap_end_ramp_power', 0.120,'W');   % end optical power ramp
-defVar('xdt_evap_end_ramp_time',  [250],'ms');    % time to perform ramp
-defVar('xdt_evap_end_ramp_hold',  [250],'ms'); % time to wait after ramping
+
 
 % State Manipulation After Stage 1 optical evaporation
 seqdata.flags.xdt_d1op_end                  = 0;    % D1 optical pumping

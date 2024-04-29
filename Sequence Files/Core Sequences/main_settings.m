@@ -224,14 +224,14 @@ seqdata.params.ODT_zeros = [-0.04,-0.04];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % XDT Loading Flags and Settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdt_load                      = 1;    % Master Flag
+seqdata.flags.xdt_load                      = 1;    % Master Sub Flag
 defVar('xdt_load_power',1.0,'W');
 defVar('xdt_load_time',75,'ms');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % XDT Pre Evaporation Flags and Settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdt_pre_evap                  = 1;    % Master Flag
+seqdata.flags.xdt_pre_evap                  = 1;    % Master Sub Flag
 
 % Subflags
 seqdata.flags.xdt_Rb_21uwave_sweep_field    = 1;    % Field Sweep Rb 2-->1
@@ -245,7 +245,7 @@ seqdata.flags.xdt_kill_K7_before_evap       = 0;    % optical remove 7/2 K after
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % XDT Evaporation (Rb + K) Flags and Settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdt_evap_stage_1               = 1;    % Master Flag
+seqdata.flags.xdt_evap_stage_1               = 1;    % Master Sub Flag
 
 % Sympathetic Power Ramp
 seqdata.flags.xdt_ramp2sympathetic           = 1;  
@@ -254,85 +254,37 @@ defVar('xdt_evap_sympathetic_ramp_time',500,'ms');  % Sympathetic ramp time
 
 % Optical evaporation
 seqdata.flags.CDT_evap                       = 1; 
-defVar('xdt_evap1_power',[0.110],'W');
+defVar('xdt_evap1_power',[0.120],'W');
 defVar('xdt_evap1_time',25e3,'ms');
 defVar('xdt_evap1_tau_fraction',3.5,'arb');
 
 % Power Ramp (useful to halt evaporation)
-seqdata.flags.xdt_ramp_power_end            = 0;   
-defVar('xdt_evap_end_ramp_power', 0.120,'W');   
-defVar('xdt_evap_end_ramp_time',  [250],'ms');  
-defVar('xdt_evap_end_ramp_hold',  [250],'ms'); 
+seqdata.flags.xdt_ramp_power_end            = 1;   
+defVar('xdt_evap_end_ramp_power', 0.250,'W');  .11;
+defVar('xdt_evap_end_ramp_time',  [500],'ms');  
+defVar('xdt_evap_end_ramp_hold',  [0],'ms'); 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % XDT Post Evaporation Flags and Settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-seqdata.flags.xdt_post_evap_stage1           = 0;    % Master Flag
+seqdata.flags.xdt_post_evap_stage1           = 0;    % Master Sub Flag
 
 % State Manipulation After Stage 1 optical evaporation
 seqdata.flags.xdt_d1op_end                  = 0;    % D1 optical pumping
 seqdata.flags.xdt_rfmix_end                 = 0;    % RF Mixing -9-->-9+-7
 seqdata.flags.xdt_kill_Rb_after_evap        = 0;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_after_evap        = 0;    % optical remove 7/2 K after (untested)
-seqdata.flags.xdt_evap_stage_2              = 0;    % Master Flag
+seqdata.flags.xdt_uWave_K_Spectroscopy      = 0;
+
+% Other Stuff
 seqdata.flags.xdt_k_rf_rabi_oscillation     = 0;    % RF rabi oscillations after evap
 seqdata.flags.xdt_ramp_QP_FB_and_back       = 0;    % Ramp up and down FB and QP to test field gradients
-seqdata.flags.xdt_uWave_K_Spectroscopy      = 0;
 seqdata.flags.xdt_ramp_up_FB_for_lattice    = 0;    %Ramp FB up at the end of evap  
-seqdata.flags.xdt_unlevitate_evap           = 0; % Unclear what this is for
+seqdata.flags.xdt_unlevitate_evap           = 0;    % Unclear what this is for
 seqdata.flags.xdt_do_dipole_trap_kick       = 0;    % Kick the dipole trap, inducing coherent oscillations for temperature measurement
 seqdata.flags.xdt_do_hold_end               = 0;
 seqdata.flags.xdt_am_modulate               = 0;    % 1: ODT1, 2:ODT2
-
-
-
-
-
-%% Optical Dipole Trap B STAGE (Secondary)
-
-seqdata.flags.xdtB                  = 0;         % Master Flag
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% XDT B High Field On Flags and Settings
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdtB_high_field_on    = 0;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% XDT B Pre Evaporation Flags and Settings
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdtB_pre_evap         = 0;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% XDT B Evaporation Flags and Settings
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.falgs.xdtB_evap             = 0;
-defVar('xdtB_evap_power',0.110,'W');
-defVar('xdtB_evap_time',10e3,'ms');
-defVar('xdtB_evap_tau_fraction',3.5','arb')
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% XDT B Post Evaporation Flags and Settings
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdtB_post_evap        = 0;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% XDT B High Field Off Flags and Settings
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdtB_high_field_off  = 0;
-
-
-
-% ramp up power flag
-% power value, time value
-
-% ramp up FB field flag
-% ramp up levitation field flag
-% FB field value, QP field value, ramp time
-
-% possible state manipulation at high field (eventually perhaps may want to
-% do mixing above FB resonance)
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % XDT Other (CF Unclear) Flags and Settings
@@ -341,6 +293,47 @@ seqdata.flags.xdtB_high_field_off  = 0;
 seqdata.flags.xdt_evap2stage                = 0;    % Perform K evap at low field
 seqdata.flags.xdt_evap2_HF                  = 0;    % Perform K evap at high field (set rep. or attr. in file)
 seqdata.flags.xdt_high_field_a              = 0;
+
+%% Optical Dipole Trap B
+
+seqdata.flags.xdtB                          = 0;         % Master Flag
+
+% Levitation
+seqdata.flags.xdtB_levitate                 = 1;
+defVar('xdtB_levitate_value',0.09,'V');
+defVar('xdtB_levitate_ramptime',100,'ms');
+
+% Feshbach
+seqdata.flags.xdtB_feshbach                 = 0;
+defVar('xdtB_feshbach_field',195,'G');
+defVar('xdtB_feshbach_ramptime',500,'ms');
+
+% Hopping the Resonance
+seqdata.flags.xdtB_feshbach_hop             = 0;
+seqdata.flags.xdtB_rf_mix_feshbach          = 0;
+
+% Evaporation
+seqdata.flags.xdtB_evap                     = 0;
+defVar('xdtB_evap_power',0.110,'W');
+defVar('xdtB_evap_time',10e3,'ms');
+defVar('xdtB_evap_tau_fraction',3.5','arb')
+
+% Ramp up optical power to halt evaporation
+seqdata.flags.xdtB_ramp_power_end           = 0;
+defVar('xdtB_evap_end_ramp_power', 0.120,'W');   
+defVar('xdtB_evap_end_ramp_time',  [250],'ms');  
+
+% Unhop Resonance
+seqdata.flags.xdtB_feshbach_unhop           = 0;
+
+% Feshbach
+seqdata.flags.xdtB_feshbach_off             = 0;
+defVar('xdtB_feshbach_off_field',20,'G');
+defVar('xdtB_feshbach_off_ramptime',100,'ms');
+
+% Unlevitate
+seqdata.flags.xdtB_levitate_off             = 1;
+defVar('xdtB_levitate_off_ramptime',100,'ms');
 
 %% Waveplate Rotation 1
 

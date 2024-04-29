@@ -251,7 +251,7 @@ seqdata.flags.xdt_evap2_HF                  = 0;    % Perform K evap at high fie
 seqdata.flags.xdt_high_field_a              = 0;
 
 
-seqdata.flags.xdt_ramp_power_end            = 1;    % Ramp dipole back up after evaporation before any further physics 
+seqdata.flags.xdt_ramp_power_end            = 0;    % Ramp dipole back up after evaporation before any further physics 
 
 
 defVar('xdt_load_power',1.0,'W');

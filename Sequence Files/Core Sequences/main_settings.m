@@ -263,26 +263,30 @@ seqdata.flags.xdt_evap_stage_1_ramp_power_end = 1; % Not used yet
 
 seqdata.flags.xdt_post_evap_stage1           = 0;    % Master Flag
 
+% Ramp up of optical power at the end of optical evaporation
+seqdata.flags.xdt_ramp_power_end            = 0;    % Ramp dipole back up after evaporation before any further physics 
+defVar('xdt_evap_end_ramp_power', 0.120,'W');   % end optical power ramp
+defVar('xdt_evap_end_ramp_time',  [250],'ms');    % time to perform ramp
+defVar('xdt_evap_end_ramp_hold',  [250],'ms'); % time to wait after ramping
+
 % State Manipulation After Stage 1 optical evaporation
 seqdata.flags.xdt_d1op_end                  = 0;    % D1 optical pumping
 seqdata.flags.xdt_rfmix_end                 = 0;    % RF Mixing -9-->-9+-7
 seqdata.flags.xdt_kill_Rb_after_evap        = 0;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_after_evap        = 0;    % optical remove 7/2 K after (untested)
 seqdata.flags.xdt_evap_stage_2              = 0;    % Master Flag
-
-% Post Spectroscopy
-seqdata.flags.xdt_k_rf_rabi_oscillation = 0;    % RF rabi oscillations after evap
-seqdata.flags.xdt_ramp_QP_FB_and_back   = 0;    % Ramp up and down FB and QP to test field gradients
-seqdata.flags.xdt_uWave_K_Spectroscopy  = 0;
+seqdata.flags.xdt_k_rf_rabi_oscillation     = 0;    % RF rabi oscillations after evap
+seqdata.flags.xdt_ramp_QP_FB_and_back       = 0;    % Ramp up and down FB and QP to test field gradients
+seqdata.flags.xdt_uWave_K_Spectroscopy      = 0;
 seqdata.flags.xdt_ramp_up_FB_for_lattice    = 0;    %Ramp FB up at the end of evap  
+seqdata.flags.xdt_unlevitate_evap           = 0; % Unclear what this is for
+seqdata.flags.xdt_do_dipole_trap_kick       = 0;    % Kick the dipole trap, inducing coherent oscillations for temperature measurement
+seqdata.flags.xdt_do_hold_end               = 0;
+seqdata.flags.xdt_am_modulate               = 0;    % 1: ODT1, 2:ODT2
 
 
 
-% Ramp up of optical power at the end of optical evaporation
-seqdata.flags.xdt_ramp_power_end            = 0;    % Ramp dipole back up after evaporation before any further physics 
-defVar('xdt_evap_end_ramp_power', 0.120,'W');   % end optical power ramp
-defVar('xdt_evap_end_ramp_time',  [250],'ms');    % time to perform ramp
-defVar('xdt_evap_end_ramp_hold',  [250],'ms'); % time to wait after ramping
+
 
 %% Optical Dipole Trap B STAGE (Secondary)
 

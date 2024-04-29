@@ -415,9 +415,10 @@ end
 %% Dipole Trap
 
 if ( seqdata.flags.xdt == 1 )
-    dispLineStr('Caling dipole_transfer.m',curtime);   
-    [curtime, I_QP, V_QP, P_dip, I_shim] = ...
-        dipole_transfer(curtime, I_QP, V_QP, I_shim); 
+%     dispLineStr('Caling dipole_transfer.m',curtime);   
+%     [curtime, I_QP, V_QP, P_dip, I_shim] = ...
+%         dipole_transfer(curtime, I_QP, V_QP, I_shim); 
+ [curtime,I_QP,V_QP,P_dip,I_shim] =  xdt(curtime, I_QP, V_QP,I_shim);
 end
 
 %% Dipole Trap Stage 2

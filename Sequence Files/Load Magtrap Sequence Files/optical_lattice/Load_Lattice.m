@@ -1458,7 +1458,7 @@ end
 %% Lattice Band Map
 
 % Turn off of lattices
- if (seqdata.flags.lattice_bandmap)
+ if (seqdata.flags.lattice_off_bandmap)
      curtime = calctime(curtime,15);
      
     % Scope Trigger for bandmap

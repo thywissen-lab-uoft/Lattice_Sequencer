@@ -142,13 +142,13 @@ curtime = calctime(curtime,t_init2cross);
 dispLineStr('Transport Kitten Handoff',curtime);
 
 V0 = 9;
-VM = 4;
+VM = 3.95;
 VL = 3.4;
 
 
 t_prep = 100;      % Time to prepare for switch over
 t_cross = 200;    % Crossover time
-t_prep2 = 72;    % Time to ramp up GS voltage all the way
+t_prep2 = 100;72;    % Time to ramp up GS voltage all the way
 
 
 % Calculate currents at the crossing region

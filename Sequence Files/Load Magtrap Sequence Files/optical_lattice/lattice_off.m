@@ -5,6 +5,49 @@ curtime = timein;
 %% Magnetic Field ramps for HF imaging
 
 %% Magnetic Field Ramps for LF imaging
+%% Turn off feshbach field
+
+if seqdata.flags.lattice_off_feshbach_off   
+    tr = getVar('xdtB_feshbach_off_ramptime');
+    fesh = getVar('xdtB_feshbach_off_field');        
+
+    % Define the ramp structure
+    ramp=struct;
+    ramp.shim_ramptime      = tr;
+    ramp.shim_ramp_delay    = 0;
+    ramp.xshim_final        = seqdata.params.shim_zero(1); 
+    ramp.yshim_final        = seqdata.params.shim_zero(2);
+    ramp.zshim_final        = seqdata.params.shim_zero(3);
+    ramp.fesh_ramptime      = tr;
+    ramp.fesh_ramp_delay    = 0;
+    ramp.fesh_final         = fesh;
+    ramp.settling_time      = 0; 
+    curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain 
+end
+
+%%
+if seqdata.flags.lattice_off_levitate_off  
+    tr = getVar('xdtB_levitate_off_ramptime');
+    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,0,1);               
+
+curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+                 5,5,0); 
+        % Go back to "normal" configuration
+        curtime = calctime(curtime,10);
+        % Turn off reverse QP switch
+        setDigitalChannel(curtime,'Reverse QP Switch',0);
+        curtime = calctime(curtime,10);
+        % Turn on 15/16 switch
+        curtime = AnalogFuncTo(calctime(curtime,0),'15/16 GS',...
+             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+                 10,10,9,1);              
+        curtime = calctime(curtime,50);
+        
+%         curtime = calctime(curtime,1000);
+end
+
 
 %% Band Mapping
 

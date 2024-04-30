@@ -319,7 +319,7 @@ seqdata.flags.xdtB_rf_mix_feshbach          = 0;
 
 % Evaporation
 seqdata.flags.xdtB_evap                     = 1;
-defVar('xdtB_evap_power',[0.095],'W');
+defVar('xdtB_evap_power',[0.085],'W');
 defVar('xdtB_evap_time',[5000],'ms');
 defVar('xdtB_evap_tau_fraction',3.5','arb')
 
@@ -332,12 +332,12 @@ defVar('xdtB_evap_end_ramp_time',  [250],'ms');
 seqdata.flags.xdtB_feshbach_unhop           = 0;
 
 % Feshbach
-seqdata.flags.xdtB_feshbach_off             = 1;
+seqdata.flags.xdtB_feshbach_off             = 0;
 defVar('xdtB_feshbach_off_field',20,'G');
 defVar('xdtB_feshbach_off_ramptime',100,'ms');
 
 % Unlevitate
-seqdata.flags.xdtB_levitate_off             = 1;
+seqdata.flags.xdtB_levitate_off             = 0;
 defVar('xdtB_levitate_off_ramptime',100,'ms');
 
 %% Waveplate Rotation 1
@@ -379,7 +379,7 @@ seqdata.flags.lattice_load_xdt_off        = 0;
 defVar('lattice_load_xdt_off_time',[500],'ms');           
 
 % Hold time after loading lattice
-defVar('lattice_load_holdtime',[0]+[0],'ms');
+defVar('lattice_load_holdtime',[0],'ms');
 
 % If you want to do a round trip
 seqdata.flags.lattice_load_1_round_trip   = 0;       % Load the lattices; (1: normal, 2:single lattice, 3: 
@@ -521,12 +521,12 @@ end
 % Magnetic field
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Ramp magnetic fields before performing 
-seqdata.flags.lattice_off_feshbach_off          = 0;
+seqdata.flags.lattice_off_feshbach_off          = 1;
 defVar('lattice_off_feshbach_off_field',20,'G');
 defVar('lattice_off_feshbach_off_ramptime',100,'ms');
 
 % Unlevitate
-seqdata.flags.lattice_off_levitate_off          = 0;
+seqdata.flags.lattice_off_levitate_off          = 1;
 defVar('lattice_off_levitate_off_ramptime',100,'ms');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

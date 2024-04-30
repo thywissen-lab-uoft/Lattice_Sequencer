@@ -406,7 +406,6 @@ seqdata.flags.lattice_pin                   = 0;
 % Other
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 seqdata.flags.lattice_PA                    = 0;
-seqdata.flags.lattice_hold_at_end           = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Conductivity

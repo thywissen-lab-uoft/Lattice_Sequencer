@@ -1445,16 +1445,6 @@ if seqdata.flags.High_Field_Imaging
    curtime = lattice_HF(curtime);
 end
 
-%% Lattice Hold
-
-if seqdata.flags.lattice_hold_at_end
-    dispLineStr('Holding lattice at End',curtime);
-    wait_time_list = [0];
-    wait_time = getScanParameter(wait_time_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'lattice_hold_time','ms');   
-    curtime = calctime(curtime,wait_time);
-end
-
 %% Lattice Band Map
 
 % Turn off of lattices

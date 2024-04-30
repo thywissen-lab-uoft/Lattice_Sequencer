@@ -1479,38 +1479,29 @@ end
         'XDT TTL',1);   
     
     % Band Map time (ms)
-    bm_time=getVar('lattice_bm_time');
-%     bm_time_list = [3];
-%     bm_time = getScanParameter(bm_time_list,...
-%         seqdata.scancycle,seqdata.randcyclelist,'lattice_bm_time','ms'); %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
-
-    lat_rampdowntime =bm_time*1;        % how long to ramp (0: switch off)   %1ms
-       
+    bm_time=getVar('lattice_bm_time');       
     xlat_endpower=seqdata.params.lattice_zero(1);
     ylat_endpower=seqdata.params.lattice_zero(2);
     zlat_endpower=seqdata.params.lattice_zero(3);
-
-    if lat_rampdowntime > 0
-        dispLineStr('Band mapping',curtime);
-        
-        disp([' Band Map Time (ms) : ' num2str(lat_rampdowntime)])
+    if bm_time > 0
+        dispLineStr('Band mapping',curtime);        
+        disp([' Band Map Time (ms) : ' num2str(bm_time)])
         disp([' xLattice End (Er)  : ' num2str(xlat_endpower)])
         disp([' yLattice End (Er)  : ' num2str(ylat_endpower)])
         disp([' zLattice End (Er)  : ' num2str(zlat_endpower)])
 
         AnalogFuncTo(calctime(curtime,0),'xLattice',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-            lat_rampdowntime,lat_rampdowntime,xlat_endpower);
+            bm_time,bm_time,xlat_endpower);
         AnalogFuncTo(calctime(curtime,0),'yLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),lat_rampdowntime,...
-            lat_rampdowntime,ylat_endpower);
-curtime =   AnalogFuncTo(calctime(curtime,0),'zLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),lat_rampdowntime,...
-            lat_rampdowntime,zlat_endpower);
-    end   
-    
-    setDigitalChannel(calctime(curtime + 0.5,0),'yLatticeOFF',1); 
-    setDigitalChannel(calctime(curtime + 0.5,0),'Lattice Direct Control',1); 
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),bm_time,...
+            bm_time,ylat_endpower);
+        AnalogFuncTo(calctime(curtime,0),'zLattice',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),bm_time,...
+            bm_time,zlat_endpower);
+        curtime = calctime(curtime,bm_time);
+    end       
+    setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1); 
 end
 
 

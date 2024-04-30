@@ -379,12 +379,11 @@ seqdata.flags.lattice_load_xdt_off        = 0;
 defVar('lattice_load_xdt_off_time',[500],'ms');           
 
 % Hold time after loading lattice
-defVar('lattice_ramp_1_holdtime',[0],'ms');
+defVar('lattice_load_holdtime',[0:500:5000],'ms');
 
 % If you want to do a round trip
 seqdata.flags.lattice_load_1_round_trip   = 0;       % Load the lattices; (1: normal, 2:single lattice, 3: 
 defVar('lattice_ramp_1_round_trip_equilibriation_time',[2000],'ms');            % Hold time after loading before doing round trip
-
 
 
 %% Optical Lattice
@@ -485,7 +484,6 @@ seqdata.flags.lattice_pulse_for_alignment   = 0;
 seqdata.flags.lattice_pulse_z_for_alignment = 0; 
 
 
-
 %% Conductivity
 
 seqdata.flags.conductivity_ODT1_mode            = 0; % 0:OFF, 1:SINE, 2:DC
@@ -518,6 +516,7 @@ end
     
 %% How to turn off the lattices for TOF imaging
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Magnetic field
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -534,6 +533,11 @@ defVar('lattice_off_levitate_off_ramptime',100,'ms');
 % BandMapping
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 seqdata.flags.lattice_off_bandmap               = 1;
+defVar('lattice_bm_time',3,'ms');
+
+% bm_time_list = [3];
+%     bm_time = getScanParameter(bm_time_list,...
+%         seqdata.scancycle,seqdata.randcyclelist,'lattice_bm_time','ms'); %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
 
 % seqdata.flags.lattice_off bandmap time
 

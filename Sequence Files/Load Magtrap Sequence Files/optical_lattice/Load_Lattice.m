@@ -1439,6 +1439,11 @@ curtime = do_horizontal_plane_selection(curtime, ...
     dispLineStr('do_horizontal_plane_selection execution finished at',curtime);
 end
 
+
+%% Turn off lattice
+
+% curtime = lattice_off(curtime);
+
 %% High Field transfers + Imaging
 
 if seqdata.flags.High_Field_Imaging
@@ -1447,9 +1452,10 @@ end
 
 %% Lattice Band Map
 
+
 % Turn off of lattices
  if (seqdata.flags.lattice_off_bandmap)
-     curtime = calctime(curtime,15);
+    curtime = calctime(curtime,15);
      
     % Scope Trigger for bandmap
     ScopeTriggerPulse(curtime,'lattice_off');     
@@ -1462,7 +1468,6 @@ end
     dip2_endpower = seqdata.params.ODT_zeros(2);
     disp([' Ramp Start (ms) : ' num2str(dip_rampstart) ]);
     disp([' Ramp Time  (ms) : ' num2str(dip_ramptime) ]);
-    disp([' End Power   (W) : ' num2str(dip_endpower)]);
    
     AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
@@ -1474,9 +1479,10 @@ end
         'XDT TTL',1);   
     
     % Band Map time (ms)
-    bm_time_list = [3];
-    bm_time = getScanParameter(bm_time_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'lattice_bm_time','ms'); %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
+    bm_time=getVar('lattice_bm_time');
+%     bm_time_list = [3];
+%     bm_time = getScanParameter(bm_time_list,...
+%         seqdata.scancycle,seqdata.randcyclelist,'lattice_bm_time','ms'); %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
 
     lat_rampdowntime =bm_time*1;        % how long to ramp (0: switch off)   %1ms
        

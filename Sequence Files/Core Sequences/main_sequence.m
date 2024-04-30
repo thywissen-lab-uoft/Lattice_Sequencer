@@ -474,9 +474,7 @@ end
 %% Optical Lattice
 
 if ( seqdata.flags.lattice ~= 0 )
-    curtime = Load_Lattice(curtime);
-    
-    
+    curtime = Load_Lattice(curtime); 
 end
 
 %% Pulse Z Lattice after ramping up other lattices to align

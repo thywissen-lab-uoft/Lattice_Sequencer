@@ -260,7 +260,7 @@ defVar('xdt_evap1_tau_fraction',3.5,'arb');
 
 % Power Ramp (useful to halt evaporation)
 seqdata.flags.xdt_ramp_power_end            = 1;   
-defVar('xdt_evap_end_ramp_power', 0.200,'W');  .11;
+defVar('xdt_evap_end_ramp_power', [.17],'W');  .11;
 defVar('xdt_evap_end_ramp_time',  [500],'ms');  
 defVar('xdt_evap_end_ramp_hold',  [0],'ms'); 
 
@@ -300,13 +300,18 @@ seqdata.flags.xdtB                          = 1;         % Master Flag
 
 % Levitation
 seqdata.flags.xdtB_levitate                 = 1;
-defVar('xdtB_levitate_value',0.09,'V');
+defVar('xdtB_levitate_value',[.07],'V');.09;
 defVar('xdtB_levitate_ramptime',100,'ms');
 
 % Feshbach
 seqdata.flags.xdtB_feshbach                 = 1;
-defVar('xdtB_feshbach_field',195,'G');
+defVar('xdtB_feshbach_field',190,'G');
 defVar('xdtB_feshbach_ramptime',500,'ms');
+
+% Feshbach
+seqdata.flags.xdtB_feshbach_fine            = 1;
+defVar('xdtB_feshbach_fine_field',195,'G');
+defVar('xdtB_feshbach_fine_ramptime',100,'ms');
 
 % Hopping the Resonance
 seqdata.flags.xdtB_feshbach_hop             = 0;
@@ -314,8 +319,8 @@ seqdata.flags.xdtB_rf_mix_feshbach          = 0;
 
 % Evaporation
 seqdata.flags.xdtB_evap                     = 1;
-defVar('xdtB_evap_power',[0.065:.005:.120],'W');
-defVar('xdtB_evap_time',5e3,'ms');
+defVar('xdtB_evap_power',[0.095],'W');
+defVar('xdtB_evap_time',[5000],'ms');
 defVar('xdtB_evap_tau_fraction',3.5','arb')
 
 % Ramp up optical power to halt evaporation

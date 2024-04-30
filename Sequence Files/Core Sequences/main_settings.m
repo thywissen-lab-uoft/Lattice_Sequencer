@@ -151,7 +151,7 @@ seqdata.flags.High_Field_Imaging            = 0; % High field imaging (shouldn't
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[15],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[20],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[.1],'ms');
@@ -379,7 +379,7 @@ seqdata.flags.lattice_load_xdt_off        = 0;
 defVar('lattice_load_xdt_off_time',[500],'ms');           
 
 % Hold time after loading lattice
-defVar('lattice_load_holdtime',[0:500:5000],'ms');
+defVar('lattice_load_holdtime',[0]+[0],'ms');
 
 % If you want to do a round trip
 seqdata.flags.lattice_load_1_round_trip   = 0;       % Load the lattices; (1: normal, 2:single lattice, 3: 
@@ -532,14 +532,18 @@ defVar('lattice_off_levitate_off_ramptime',100,'ms');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BandMapping
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.lattice_off_bandmap               = 1;
-defVar('lattice_bm_time',3,'ms');
 
-% bm_time_list = [3];
-%     bm_time = getScanParameter(bm_time_list,...
-%         seqdata.scancycle,seqdata.randcyclelist,'lattice_bm_time','ms'); %Whether to down a rampdown for bandmapping (1) or snap off (0) - number is also time for rampdown
 
-% seqdata.flags.lattice_off bandmap time
+seqdata.flags.lattice_off_bandmap                           = 1;
+defVar('lattice_bm_time',[.5],'ms');
+
+seqdata.flags.lattice_off_bandmap_xdt_off_simultaneous     = 1;         % Turn off XDT at same time as lattice?
+if seqdata.flags.lattice_off_bandmap_xdt_off_simultaneous
+    defVar('lattice_bm_xdt_ramptime',getVar('lattice_bm_time'),'ms');   % Simultaneous means same bm_time
+else
+    defVar('lattice_bm_xdt_ramptime',5,'ms');                           % Ramp time is asynchronous with lattice
+    defVar('lattice_bm_xdt_waittime',[10],'ms');                        % Wait time before lattice off
+end
 
 %% QGM Imaging
 

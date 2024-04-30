@@ -1440,9 +1440,6 @@ curtime = do_horizontal_plane_selection(curtime, ...
 end
 
 
-%% Turn off lattice
-
-% curtime = lattice_off(curtime);
 
 %% High Field transfers + Imaging
 
@@ -1450,60 +1447,9 @@ if seqdata.flags.High_Field_Imaging
    curtime = lattice_HF(curtime);
 end
 
-%% Lattice Band Map
 
-
-% Turn off of lattices
- if (seqdata.flags.lattice_off_bandmap)
-    curtime = calctime(curtime,15);
-     
-    % Scope Trigger for bandmap
-    ScopeTriggerPulse(curtime,'lattice_off');     
-     
-    % Ramp off the XDTs before the lattices    
-    dispLineStr('Ramping down XDTs',curtime);
-    dip_rampstart = -15;
-    dip_ramptime = 5;
-    dip1_endpower = seqdata.params.ODT_zeros(1);
-    dip2_endpower = seqdata.params.ODT_zeros(2);
-    disp([' Ramp Start (ms) : ' num2str(dip_rampstart) ]);
-    disp([' Ramp Time  (ms) : ' num2str(dip_ramptime) ]);
-   
-    AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap1',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        dip_ramptime,dip_ramptime,dip1_endpower);
-    AnalogFuncTo(calctime(curtime,dip_rampstart),'dipoleTrap2',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        dip_ramptime,dip_ramptime,dip2_endpower);
-    setDigitalChannel(calctime(curtime,dip_rampstart+dip_ramptime),...
-        'XDT TTL',1);   
-    
-    % Band Map time (ms)
-    bm_time=getVar('lattice_bm_time');       
-    xlat_endpower=seqdata.params.lattice_zero(1);
-    ylat_endpower=seqdata.params.lattice_zero(2);
-    zlat_endpower=seqdata.params.lattice_zero(3);
-    if bm_time > 0
-        dispLineStr('Band mapping',curtime);        
-        disp([' Band Map Time (ms) : ' num2str(bm_time)])
-        disp([' xLattice End (Er)  : ' num2str(xlat_endpower)])
-        disp([' yLattice End (Er)  : ' num2str(ylat_endpower)])
-        disp([' zLattice End (Er)  : ' num2str(zlat_endpower)])
-
-        AnalogFuncTo(calctime(curtime,0),'xLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-            bm_time,bm_time,xlat_endpower);
-        AnalogFuncTo(calctime(curtime,0),'yLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),bm_time,...
-            bm_time,ylat_endpower);
-        AnalogFuncTo(calctime(curtime,0),'zLattice',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),bm_time,...
-            bm_time,zlat_endpower);
-        curtime = calctime(curtime,bm_time);
-    end       
-    setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1); 
-end
-
+%% Turn off lattice
+curtime = lattice_off(curtime);
 
 %% Output
 

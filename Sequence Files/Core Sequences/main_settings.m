@@ -342,7 +342,7 @@ defVar('xdtB_levitate_off_ramptime',100,'ms');
 
 %% Waveplate Rotation 1
 
-seqdata.flags.rotate_waveplate_1   = 0;   
+seqdata.flags.rotate_waveplate_1   = 1;   
 
 % Reset XDT/XYLattice waveplate at end of sequence
 % seqdata.flags.waveplate_reset       = 1; commented out since WE ALWAYS
@@ -363,7 +363,7 @@ defVar('rotate_waveplate1_value',0.05,'normalized power'); % Amount of power goi
 %% Optical Lattice Loading
 
 % These are the lattice flags sorted roughly chronologically. 
-seqdata.flags.lattice_load_1            = 0;    
+seqdata.flags.lattice_load_1            = 1;    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Loading optical lattical
@@ -388,7 +388,7 @@ defVar('lattice_ramp_1_round_trip_equilibriation_time',[2000],'ms');            
 
 
 %% Optical Lattice
-seqdata.flags.lattice                   = 0; 
+seqdata.flags.lattice                   = 1; 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % More Lattice Flags
@@ -472,10 +472,6 @@ seqdata.flags.lattice_img_stripe            = 0;    % Plane select with tilt and
 seqdata.IxonMultiExposures=[];
 seqdata.IxonMultiPiezos=[];
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% BandMapping
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.lattice_bandmap               = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LATTICE COURSE ALIGNMENT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -489,6 +485,26 @@ seqdata.flags.lattice_pulse_for_alignment   = 0;
 % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 seqdata.flags.lattice_pulse_z_for_alignment = 0; 
 
+%% How to turn off the lattices for TOF imaging
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Magnetic field
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Ramp magnetic fields before performing 
+seqdata.flags.lattice_off_feshbach_off          = 0;
+defVar('lattice_off_feshbach_off_field',20,'G');
+defVar('lattice_off_feshbach_off_ramptime',100,'ms');
+
+% Unlevitate
+seqdata.flags.lattice_off_levitate_off          = 0;
+defVar('lattice_off_levitate_off_ramptime',100,'ms');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% BandMapping
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+seqdata.flags.lattice_bandmap               = 1;
+
+% seqdata.flags.lattice_off bandmap time
 %% Plane Selection
 
 

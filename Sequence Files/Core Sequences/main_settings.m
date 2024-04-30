@@ -485,27 +485,6 @@ seqdata.flags.lattice_pulse_for_alignment   = 0;
 % 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
 seqdata.flags.lattice_pulse_z_for_alignment = 0; 
 
-%% How to turn off the lattices for TOF imaging
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Magnetic field
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Ramp magnetic fields before performing 
-seqdata.flags.lattice_off_feshbach_off          = 0;
-defVar('lattice_off_feshbach_off_field',20,'G');
-defVar('lattice_off_feshbach_off_ramptime',100,'ms');
-
-% Unlevitate
-seqdata.flags.lattice_off_levitate_off          = 0;
-defVar('lattice_off_levitate_off_ramptime',100,'ms');
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% BandMapping
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.lattice_bandmap               = 1;
-
-% seqdata.flags.lattice_off bandmap time
-%% Plane Selection
 
 
 %% Conductivity
@@ -538,11 +517,27 @@ elseif seqdata.flags.conductivity_mod_direction == 2
     defVar('conductivity_rel_mod_phase',180,'deg');   % Phase shift of sinusoidal mod - should be 180 for mod along y
 end
     
+%% How to turn off the lattices for TOF imaging
 
-defVar('scope_pos',-7);
-getVar('scope_pos');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Magnetic field
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Ramp magnetic fields before performing 
+seqdata.flags.lattice_off_feshbach_off          = 0;
+defVar('lattice_off_feshbach_off_field',20,'G');
+defVar('lattice_off_feshbach_off_ramptime',100,'ms');
 
-    
+% Unlevitate
+seqdata.flags.lattice_off_levitate_off          = 0;
+defVar('lattice_off_levitate_off_ramptime',100,'ms');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% BandMapping
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+seqdata.flags.lattice_bandmap               = 1;
+
+% seqdata.flags.lattice_off bandmap time
+
 %% QGM Imaging
 
 

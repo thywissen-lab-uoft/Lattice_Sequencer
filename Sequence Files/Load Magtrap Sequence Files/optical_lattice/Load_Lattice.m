@@ -842,12 +842,9 @@ curtime = calctime(curtime,100);
         ramp.settling_time = 200;
       
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
-    end
-    
+    end    
 end
  
-
-
 %% Plane selection
 % After loading the optical lattice, we want to elminate all atoms not in
 % the desired plane. This is done by performing the following operations :
@@ -879,8 +876,6 @@ if seqdata.flags.lattice_rotate_waveplate_2
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
         wp_Trot2,wp_Trot2,P_RotWave_I,1,4);    
 end
-
-
 
 %% Amplitude Modulation Spectroscopy of Lattice
 % This code applies amplitude modulation to XYZ optical lattices.  This is

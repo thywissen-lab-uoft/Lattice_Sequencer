@@ -466,7 +466,6 @@ if (seqdata.flags.lattice_pin)
     curtime = calctime(curtime,2);    
 end
 
-
 %% Ramp FB back down to 20 G after pinning if high field ramps done in XDT
 % CF : I believe this is decpreciated
 
@@ -896,7 +895,7 @@ end
 %% Ramp lattice after spectroscopy/plane selection
 
 if seqdata.flags.lattice_fluor_ramp
-    dispLineStr('Lattice Ramp 3',curtime)    
+    dispLineStr('Lattice Ramp for Fluorescence',curtime)    
     ScopeTriggerPulse(curtime,'lattice_ramp_3');    
     %  Ramp Time
     defVar('lattice_FI_ramptime',10,'ms');        

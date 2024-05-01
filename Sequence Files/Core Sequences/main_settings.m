@@ -333,12 +333,12 @@ defVar('xdtB_evap_end_ramp_time',  [250],'ms');
 seqdata.flags.xdtB_feshbach_unhop           = 0;
 
 % Feshbach
-seqdata.flags.xdtB_feshbach_off             = 1;
+seqdata.flags.xdtB_feshbach_off             = 0;
 defVar('xdtB_feshbach_off_field',20,'G');
 defVar('xdtB_feshbach_off_ramptime',100,'ms');
 
 % Unlevitate
-seqdata.flags.xdtB_levitate_off             = 1;
+seqdata.flags.xdtB_levitate_off             = 0;
 defVar('xdtB_levitate_off_ramptime',100,'ms');
 
 % piezo kick for vertical trap frequency
@@ -347,7 +347,6 @@ defVar('xdtB_piezo_vert_kick_amplitude',4,'V');
 defVar('xdtB_piezo_vert_kick_rampup_time',100,'ms');
 defVar('xdtB_piezo_vert_kick_rampoff_time',4,'ms');
 defVar('xdtB_piezo_vert_kick_holdtime', [5:.5:12],'ms');
-
 
 
 %% Waveplate Rotation 1
@@ -365,7 +364,7 @@ defVar('rotate_waveplate1_value',0.03,'normalized power'); % Amount of power goi
 %% Optical Lattice Loading
 
 % These are the lattice flags sorted roughly chronologically. 
-seqdata.flags.lattice_load_1            = 0;    
+seqdata.flags.lattice_load_1            = 1;    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Loading optical lattical
@@ -387,9 +386,8 @@ defVar('lattice_load_holdtime',[0],'ms');
 seqdata.flags.lattice_load_1_round_trip   = 0;       % Load the lattices; (1: normal, 2:single lattice, 3: 
 defVar('lattice_ramp_1_round_trip_equilibriation_time',[2000],'ms');            % Hold time after loading before doing round trip
 
-
 %% Optical Lattice
-seqdata.flags.lattice                   = 0; 
+seqdata.flags.lattice                   = 1; 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % More Lattice Flags
@@ -472,19 +470,6 @@ seqdata.IxonMultiExposures=[];
 seqdata.IxonMultiPiezos=[];
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% LATTICE COURSE ALIGNMENT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% If you have completely lost lattice alignment, use these flags to pulse
-% the lattices.  Good luck.
-
-% 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
-seqdata.flags.lattice_pulse_for_alignment   = 0; 
-
-% 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
-seqdata.flags.lattice_pulse_z_for_alignment = 0; 
-
-
 %% Conductivity
 
 seqdata.flags.conductivity_ODT1_mode            = 0; % 0:OFF, 1:SINE, 2:DC
@@ -515,19 +500,16 @@ elseif seqdata.flags.conductivity_mod_direction == 2
     defVar('conductivity_rel_mod_phase',180,'deg');   % Phase shift of sinusoidal mod - should be 180 for mod along y
 end
     
-%% How to turn off the lattices for TOF imaging
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Magnetic field
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Ramp magnetic fields before performing 
-seqdata.flags.lattice_off_feshbach_off          = 0;
+seqdata.flags.lattice_off_feshbach_off          = 1;
 defVar('lattice_off_feshbach_off_field',20,'G');
 defVar('lattice_off_feshbach_off_ramptime',100,'ms');
 
 % Unlevitate
-seqdata.flags.lattice_off_levitate_off          = 0;
+seqdata.flags.lattice_off_levitate_off          = 1;
 defVar('lattice_off_levitate_off_ramptime',100,'ms');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -545,6 +527,19 @@ else
     defVar('lattice_bm_xdt_ramptime',5,'ms');                           % Ramp time is asynchronous with lattice
     defVar('lattice_bm_xdt_waittime',[10],'ms');                        % Wait time before lattice off
 end
+
+%% Lattice Course Alignment
+% If you have completely lost lattice alignment, use these flags to pulse
+% the lattices.  Good luck.
+%
+% CF : I have no idea how this code works
+
+% 1: lattice diffraction, 2: hot cloud alignment, 3: dipole force curve
+seqdata.flags.lattice_pulse_for_alignment   = 0; 
+
+% 1: pulse z lattice after ramping up X&Y lattice beams (need to plug in a different BNC cable to z lattice ALPS)
+seqdata.flags.lattice_pulse_z_for_alignment = 0; 
+
 
 %% QGM Imaging
 

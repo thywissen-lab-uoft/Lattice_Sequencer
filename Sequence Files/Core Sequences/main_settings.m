@@ -361,7 +361,7 @@ defVar('rotate_waveplate1_duration',600,'ms'); % How smoothly to rotate
 defVar('rotate_waveplate1_delay',-700,'ms');   % How long before lattice loading 
 defVar('rotate_waveplate1_value',0.03,'normalized power'); % Amount of power going to lattices
 
-%% Optical Lattice Loading
+%% Load the Optical Lattice
 
 % These are the lattice flags sorted roughly chronologically. 
 seqdata.flags.lattice_load_1            = 1;    
@@ -386,6 +386,39 @@ defVar('lattice_load_holdtime',[0],'ms');
 seqdata.flags.lattice_load_1_round_trip   = 0;       % Load the lattices; (1: normal, 2:single lattice, 3: 
 defVar('lattice_ramp_1_round_trip_equilibriation_time',[2000],'ms');            % Hold time after loading before doing round trip
 
+%% Conductivity Experiment
+seqdata.flags.lattice_conductivity_new      = 0;   % New sequence created July 25th, 2023
+seqdata.flags.lattice_conductivity          = 0;    % old sequence
+
+% Conductivity Flags
+seqdata.flags.conductivity_ODT1_mode            = 0; % 0:OFF, 1:SINE, 2:DC
+seqdata.flags.conductivity_ODT2_mode            = 0; % 0:OFF, 1:SINE, 2:DC
+seqdata.flags.conductivity_mod_direction        = 1; % 1:X-direction 2:Y-direction
+
+defVar('conductivity_snap_and_hold_time',[0],'ms');
+defVar('conductivity_FB_field',190,'G')
+defVar('conductivity_zshim',0,'A')
+defVar('conductivity_mod_freq',[55],'Hz')       % Modulation Frequency
+defVar('conductivity_mod_time',[50],'ms');      % Modulation Time
+defVar('conductivity_mod_ramp_time',150,'ms');  % Ramp Time
+
+%Additional heating using FB ramp for Temp matching
+defVar('FB_heating_field', 201, 'G');
+defVar('FB_heating_holdtime',[750],'ms');
+    
+% Modulation amplitude not to exceed +-4V.
+if seqdata.flags.conductivity_mod_direction == 1
+    %For x-direction modulation only adjust ODT2 amp
+    defVar('conductivity_ODT1_mod_amp',0,'V');  % ODT1 Mod Depth   
+    defVar('conductivity_ODT2_mod_amp',4,'V');  % ODT2 Mod Depth
+    defVar('conductivity_rel_mod_phase',0,'deg');   % Phase shift of sinusoidal mod - should be 0 for mod along x
+elseif seqdata.flags.conductivity_mod_direction == 2
+    %For y-direction modulation only adjust ODT1 amp
+    defVar('conductivity_ODT1_mod_amp',4,'V');  % ODT1 Mod Depth  
+    defVar('conductivity_ODT2_mod_amp',0,'V');  % ODT2 Mod Depth
+    defVar('conductivity_rel_mod_phase',180,'deg');   % Phase shift of sinusoidal mod - should be 180 for mod along y
+end    
+
 %% Optical Lattice
 seqdata.flags.lattice                   = 1; 
 
@@ -405,12 +438,6 @@ seqdata.flags.lattice_pin                   = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 seqdata.flags.lattice_PA                    = 0;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Conductivity
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% These flags are associated with the conducitivity experiment
-seqdata.flags.lattice_conductivity          = 0;    % old sequence
-seqdata.flags.lattice_conductivity_new      = 0;   % New sequence created July 25th, 2023
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy
@@ -447,9 +474,6 @@ defVar('qgm_plane_uwave_frequency_amplitude_tilt',freq_offset_amplitude_tilt_lis
 d = load('f_offset.mat');
 f_offset = d.f_offset;        
 defVar('f_offset',f_offset,'kHz');
-% defVar('f_offset',0,'kHz');
-
-% defVar('f_amplitude',15,'kHz');
 
 % Note:
 % It is sometimes helpful to run the fluorence imaging code as other things
@@ -463,51 +487,19 @@ seqdata.flags.lattice_ClearCCD_IxonTrigger  = 0;    % Add additional trigger to 
 seqdata.flags.lattice_fluor                 = 0;    % Do Fluoresnce imaging
 seqdata.flags.lattice_fluor_bkgd            = 1;    % Take a background image with imaging light on, no atoms
                                                     % MUST SET NUMKIN +1
-
 seqdata.flags.lattice_img_stripe            = 0;    % Plane select with tilt and take an additional imag of the stripe
-
 seqdata.IxonMultiExposures=[];
 seqdata.IxonMultiPiezos=[];
+%% Optical Lattice : OLD HIGH FIELD EXPERIMENT
+seqdata.flags.lattice_HF_old                   = 0;
+ 
+%% Optical Lattice Turn off Procedure
+seqdata.flags.lattice_off                       = 1;    % Master Flag
 
-
-%% Conductivity
-
-seqdata.flags.conductivity_ODT1_mode            = 0; % 0:OFF, 1:SINE, 2:DC
-seqdata.flags.conductivity_ODT2_mode            = 0; % 0:OFF, 1:SINE, 2:DC
-seqdata.flags.conductivity_mod_direction        = 1; % 1:X-direction 2:Y-direction
-
-defVar('conductivity_snap_and_hold_time',[0],'ms');
-defVar('conductivity_FB_field',190,'G')
-defVar('conductivity_zshim',0,'A')
-defVar('conductivity_mod_freq',[55],'Hz')       % Modulation Frequency
-defVar('conductivity_mod_time',[50],'ms');      % Modulation Time
-defVar('conductivity_mod_ramp_time',150,'ms');  % Ramp Time
-
-%Additional heating using FB ramp for Temp matching
-defVar('FB_heating_field', 201, 'G');
-defVar('FB_heating_holdtime',[750],'ms');
-    
-% Modulation amplitude not to exceed +-4V.
-if seqdata.flags.conductivity_mod_direction == 1
-    %For x-direction modulation only adjust ODT2 amp
-    defVar('conductivity_ODT1_mod_amp',0,'V');  % ODT1 Mod Depth   
-    defVar('conductivity_ODT2_mod_amp',4,'V');  % ODT2 Mod Depth
-    defVar('conductivity_rel_mod_phase',0,'deg');   % Phase shift of sinusoidal mod - should be 0 for mod along x
-elseif seqdata.flags.conductivity_mod_direction == 2
-    %For y-direction modulation only adjust ODT1 amp
-    defVar('conductivity_ODT1_mod_amp',4,'V');  % ODT1 Mod Depth  
-    defVar('conductivity_ODT2_mod_amp',0,'V');  % ODT2 Mod Depth
-    defVar('conductivity_rel_mod_phase',180,'deg');   % Phase shift of sinusoidal mod - should be 180 for mod along y
-end
-    
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Magnetic field
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Ramp magnetic fields before performing 
 seqdata.flags.lattice_off_feshbach_off          = 1;
 defVar('lattice_off_feshbach_off_field',20,'G');
 defVar('lattice_off_feshbach_off_ramptime',100,'ms');
-
 % Unlevitate
 seqdata.flags.lattice_off_levitate_off          = 1;
 defVar('lattice_off_levitate_off_ramptime',100,'ms');
@@ -515,11 +507,8 @@ defVar('lattice_off_levitate_off_ramptime',100,'ms');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BandMapping
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 seqdata.flags.lattice_off_bandmap                           = 1;
 defVar('lattice_bm_time',[.5],'ms');
-
 seqdata.flags.lattice_off_bandmap_xdt_off_simultaneous     = 1;         % Turn off XDT at same time as lattice?
 if seqdata.flags.lattice_off_bandmap_xdt_off_simultaneous
     defVar('lattice_bm_xdt_ramptime',getVar('lattice_bm_time'),'ms');   % Simultaneous means same bm_time

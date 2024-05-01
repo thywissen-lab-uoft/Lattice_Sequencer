@@ -26,7 +26,6 @@ end
 do_K_uwave_spectroscopy_old                 = 0;    % (3786) keep
 do_RF_spectroscopy                          = 0;    % (3952,4970)
 
-dip_endpower = 1.0*getChannelValue(seqdata,'dipoleTrap1',1,0);        
 
 %{
 %% Other parameters
@@ -432,16 +431,8 @@ if isfield(seqdata.flags,'xdt_ramp_up_FB_for_lattice') && seqdata.flags.xdt_ramp
 curtime = ramp_bias_fields(calctime(curtime,0), ramp);    
 end    
 %}
-%% Conductivity Experiment
-
-if (seqdata.flags.lattice_conductivity == 1 )
-   curtime = lattice_conductivity(curtime);
-end
-
-if (seqdata.flags.lattice_conductivity_new == 1)
-   curtime = lattice_conductivity_new(curtime);   
-%    curtime = calctime(curtime,50);   
-end
+% %% Conductivity Experiment
+% 
 
 %% Pin Lattice
 %Do not use if lattice_conductivity_new is also pinning
@@ -1348,20 +1339,9 @@ curtime = do_horizontal_plane_selection(curtime, ...
 end
 
 
-
-%% High Field transfers + Imaging
-
-if seqdata.flags.High_Field_Imaging
-   curtime = lattice_HF(curtime);
-end
-
-
-%% Turn off lattice
-curtime = lattice_off(curtime);
-
 %% Output
 
-seqdata.times.lattice_end_time = curtime;
+% seqdata.times.lattice_end_time = curtime;
 
 timeout = curtime;
 

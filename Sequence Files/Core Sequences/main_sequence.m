@@ -474,10 +474,30 @@ if seqdata.flags.lattice_load_1
     curtime = lattice_load(curtime);
 end
 
+%% Optical Lattice : Conductivity Experiment
+% if (seqdata.flags.lattice_conductivity == 1 )
+%    curtime = lattice_conductivity(curtime);
+% end
+if (seqdata.flags.lattice_conductivity_new == 1)
+   curtime = lattice_conductivity_new(curtime);   
+end
+
 %% Optical Lattice
 
 if ( seqdata.flags.lattice ~= 0 )
     curtime = Load_Lattice(curtime); 
+end
+
+%% Optical Lattice : High Field (OLD CODE FROM P_WAVE EXPERIMENT)
+
+if seqdata.flags.lattice_HF_old
+   curtime = lattice_HF(curtime);
+end
+
+%% Optical Lattice : Turn off procedure
+
+if seqdata.flags.lattice_off  
+    curtime = lattice_off(curtime);
 end
 
 %% Pulse Z Lattice after ramping up other lattices to align
@@ -537,7 +557,6 @@ setDigitalChannel(calctime(curtime,getVar('tof')+25),'15/16 Switch',1);
 
 end
    
-
 %% Initiate Time of Flight in absorption image
 
 if seqdata.flags.image_type == 0

@@ -29,8 +29,7 @@ params = seqdata.params.HF_absorption_image;
 str=['High Field Absorption Imaging'];
 
 % K Probe Detuning 
-K_detuning = params.detunings.K.(flags.img_direction) ...
-  .(flags.negative_imaging_shim).(flags.condition);
+K_detuning = params.detunings.KTrap;
 
 %% Turn off magnetic fields long after TOF is complete
 %Turns off the FB, shims and QP coils 50 ms after TOF
@@ -72,51 +71,35 @@ setAnalogChannel(calctime(curtime,params.timings.tof-params.timings.k_detuning_s
 
 if (flags.Attractive)
     if seqdata.flags.lattice
-        HF_prob_freq9 = params.detunings.K.X.negative9.HF.attractive_lattice;
+        HF_prob_freq = params.detunings.attractive_lattice;
     else
-        HF_prob_freq9 =  params.detunings.K.X.negative9.HF.attractive_xdt;
+        HF_prob_freq =  params.detunings.attractive_xdt;
     end
 else
     if seqdata.flags.lattice
-        HF_prob_freq9 = params.detunings.K.X.negative9.HF.repulsive_lattice;
+        HF_prob_freq = params.detunings.repulsive_lattice;
     else
-        HF_prob_freq9 =  params.detunings.K.X.negative9.HF.repulsive_xdt;
+        HF_prob_freq =  params.detunings.repulsive_xdt;
     end
 end
-
-HF_prob_freq7 =  params.detunings.K.X.negative7.HF.normal;
 
 %% Program Rigol for the HF IMAGING AOM
 
 % Frequency of rigol is based on the relative shift
-freq1 = (120+HF_prob_freq7)*1E6;
-freq2 = (120+HF_prob_freq9)*1E6;
+freq = (120+HF_prob_freq)*1E6;
 
-% Power in -7 beam
-pow1_list = [0.9];%[0.8];
-pow1 = getScanParameter(pow1_list,seqdata.scancycle,seqdata.randcyclelist,...
-    'HF_prob_pwr1','V');
-
-% Power in -9 beam
-pow2_list = [0.9];[2.0];[1.2]; [0.01:0.04:1.2];[1.2];  %1.1      
-pow2 = getScanParameter(pow2_list,seqdata.scancycle,seqdata.randcyclelist,...
-    'HF_prob_pwr2','V');
-
-% Rigol Channel 1 (-7 HF high field imaging)
-ch1=struct;
-ch1.STATE='ON';
-ch1.AMPLITUDE=pow1;
-ch1.FREQUENCY=freq1;
+% Power in HF imaging beam  
+pow = params.powers.HF_probe;
 
 % Rigol Channel 2 (-9 HF high field imaging)
 ch2=struct;
 ch2.STATE='ON';
-ch2.AMPLITUDE=pow2;
-ch2.FREQUENCY=freq2;   
+ch2.AMPLITUDE=pow;
+ch2.FREQUENCY=freq;   
 
 % Rigol address # 
 addr=6;     
-programRigol(addr,ch1,ch2);     
+programRigol(addr,[],ch2);     
 
 %% Pre-Absorption Shutter Preperation
 
@@ -155,17 +138,10 @@ if flags.TakeDarkImage
     curtime = calctime(curtime,100);
 end
 
-%% Turn Probe and Repump off
-%Shouldn't the beams already be off at this point?
-curtime = calctime(curtime,100);
-%Probe
-turn_off_beam(curtime,4);
-%Repump
-turn_off_beam(curtime,2);
-
 %% Add parameters to output file and timeout of function
 addOutputParam('tof',params.timings.tof);
-addOutputParam('kdet',K_detuning);
+addOutputParam('ktrap_det',K_detuning);
+addOutputParam('kHF_img_det',HF_prob_freq);
 
 timeout=curtime;
 end

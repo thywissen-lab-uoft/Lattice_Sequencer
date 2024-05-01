@@ -186,7 +186,7 @@ if seqdata.flags.xdtB_feshbach_off
     curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain 
 end
 
-%%
+%% Turn off levitation field
 if seqdata.flags.xdtB_levitate_off  
     tr = getVar('xdtB_levitate_off_ramptime');
     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...

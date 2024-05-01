@@ -1,6 +1,7 @@
 function timeout = main_settings(timein)
 % main_settings.m
 
+%% Initialzie
 if nargin == 0 
     curtime = 0;
 else

@@ -641,24 +641,6 @@ newramp = struct('ShimValues',seqdata.params.shim_zero+[0 0 2],...
 curtime = calctime(curtime,50);    
 end
 
-%% Plane selection
-% After loading the optical lattice, we want to elminate all atoms not in
-% the desired plane. This is done by performing the following operations :
-%
-% (1) Ramp Field  : Apply a vertical gradient with the QP and FB coils
-% (2) uWave Sweep : Transfer one plane to the 7/2 manifold
-% (3) D2 Pulse    : Kill 9/2 atoms with resonant D2 light 
-% (4) uWave Sweep : Transfer 7/2 plane back to 9/2 manifold
-%
-% The direction of the field gradient can also be accurately measured with
-% by applying a small shim field and measuring the "stripes"
-%
-% CF : WHY HAVE PLANE SELECTION BEFORE THE SPECROTOPSCY? SHOULD BE RIGHT
-% BEFORE IMAGING?
-if seqdata.flags.do_plane_selection
-    dispLineStr('Plane Selection',curtime);     
-    curtime = plane_selection(curtime);      
-end
 
 %% Field Ramps BEFORE uWave/RF Spectroscopy
 % This code prepares the magnetic fields for uWave and RF spectroscopy
@@ -866,6 +848,24 @@ end
  
 
 
+%% Plane selection
+% After loading the optical lattice, we want to elminate all atoms not in
+% the desired plane. This is done by performing the following operations :
+%
+% (1) Ramp Field  : Apply a vertical gradient with the QP and FB coils
+% (2) uWave Sweep : Transfer one plane to the 7/2 manifold
+% (3) D2 Pulse    : Kill 9/2 atoms with resonant D2 light 
+% (4) uWave Sweep : Transfer 7/2 plane back to 9/2 manifold
+%
+% The direction of the field gradient can also be accurately measured with
+% by applying a small shim field and measuring the "stripes"
+%
+% CF : WHY HAVE PLANE SELECTION BEFORE THE SPECROTOPSCY? SHOULD BE RIGHT
+% BEFORE IMAGING?
+if seqdata.flags.do_plane_selection
+    dispLineStr('Plane Selection',curtime);     
+    curtime = plane_selection(curtime);      
+end
 
 %% Second Waveplate Rotation
 % Rotate waveplate to distribute more power to the lattice

@@ -4,7 +4,8 @@ function flags = check_HF_Image()
 
 global seqdata;
 
-FB_value = getChannelValue(seqdata,'FB current',1,0);
+seqdata.params.FB_imaging_value = getChannelValue(seqdata,'FB current',1,0);
+FB_value = seqdata.params.FB_imaging_value;
 
 if FB_value > 100 && FB_value < 202.15
     seqdata.flags.HF_Imaging = 1;

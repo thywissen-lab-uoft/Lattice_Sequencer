@@ -1,6 +1,6 @@
 % Absorption pulse function -- triggers cameras and pulses probe/repump
 % RHYS - It would be reasonable to call this as a method of an absorption image class.
-function do_abs_pulse2(curtime,params,power,flags)
+function do_abs_pulse2_old(curtime,params,power,flags)
 
 pulse_length = params.timings.pulse_length;
 

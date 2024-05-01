@@ -366,12 +366,13 @@ if seqdata.flags.conductivity_ramp_FB_off && ~seqdata.flags.xdt_high_field_a
             
             QP_ramptime = ramptime_all;
             
-%             AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-%                  @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),QP_ramptime,QP_ramptime,0,1);
+            AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),QP_ramptime,QP_ramptime,0,1);
              
             % Ramp Coil 15, but don't update curtime
-            AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),QP_ramptime,QP_ramptime,0,5);  
+%             AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+%                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),QP_ramptime,QP_ramptime,0,5);  
+            
              
             % Go back to "normal" configuration
             % Turn off reverse QP switch

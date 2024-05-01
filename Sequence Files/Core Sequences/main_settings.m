@@ -152,7 +152,7 @@ seqdata.flags.High_Field_Imaging            = 0; % High field imaging (shouldn't
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[15],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[.1],'ms');
@@ -325,7 +325,7 @@ defVar('xdtB_evap_time',[5000],'ms');
 defVar('xdtB_evap_tau_fraction',3.5','arb')
 
 % Ramp up optical power to halt evaporation
-seqdata.flags.xdtB_ramp_power_end           = 0;
+seqdata.flags.xdtB_ramp_power_end           = 1;
 defVar('xdtB_evap_end_ramp_power', 0.120,'W');   
 defVar('xdtB_evap_end_ramp_time',  [250],'ms');  
 
@@ -333,16 +333,16 @@ defVar('xdtB_evap_end_ramp_time',  [250],'ms');
 seqdata.flags.xdtB_feshbach_unhop           = 0;
 
 % Feshbach
-seqdata.flags.xdtB_feshbach_off             = 1;
+seqdata.flags.xdtB_feshbach_off             = 0;
 defVar('xdtB_feshbach_off_field',20,'G');
 defVar('xdtB_feshbach_off_ramptime',100,'ms');
 
 % Unlevitate
-seqdata.flags.xdtB_levitate_off             = 1;
+seqdata.flags.xdtB_levitate_off             = 0;
 defVar('xdtB_levitate_off_ramptime',100,'ms');
 
 % piezo kick for vertical trap frequency
-seqdata.flags.xdtB_piezo_vert_kick          = 1;
+seqdata.flags.xdtB_piezo_vert_kick          = 0;
 defVar('xdtB_piezo_vert_kick_amplitude',4,'V');         
 defVar('xdtB_piezo_vert_kick_rampup_time',100,'ms');
 defVar('xdtB_piezo_vert_kick_rampoff_time',4,'ms');
@@ -351,20 +351,13 @@ defVar('xdtB_piezo_vert_kick_holdtime', [5:.5:12],'ms');
 
 
 %% Waveplate Rotation 1
-
-seqdata.flags.rotate_waveplate_1   = 0;   
-
-% Reset XDT/XYLattice waveplate at end of sequence
-% seqdata.flags.waveplate_reset       = 1; commented out since WE ALWAYS
-% SHOULD RESET?
-
 % This rotation occurs at the end of optical evaporation
 
 % Ideally we want just enough power to load the lattices and for any
 % pinning operation, this is ideal for the AOM diffraction efficiency to
 % get by PID regulation
 
-
+seqdata.flags.rotate_waveplate_1   = 1;   
 defVar('rotate_waveplate1_duration',600,'ms'); % How smoothly to rotate
 defVar('rotate_waveplate1_delay',-700,'ms');   % How long before lattice loading 
 defVar('rotate_waveplate1_value',0.05,'normalized power'); % Amount of power going to lattices
@@ -406,7 +399,7 @@ defVar('lattice_pin_depth',60,'Er');
 defVar('lattice_pin_time', 0.2, 'ms');
 
 seqdata.flags.do_lattice_am_spec            = 0;    % Amplitude modulation spectroscopy    
-seqdata.flags.lattice_rotate_waveplate_2    = 1;    % Second waveplate rotation 95% 
+seqdata.flags.lattice_rotate_waveplate_2    = 0;    % Second waveplate rotation 95% 
 seqdata.flags.lattice_fluor_ramp            = 0;    % Secondary lattice ramp for fluorescence imaging
 seqdata.flags.lattice_pin                   = 0;
 
@@ -420,7 +413,7 @@ seqdata.flags.lattice_PA                    = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % These flags are associated with the conducitivity experiment
 seqdata.flags.lattice_conductivity          = 0;    % old sequence
-seqdata.flags.lattice_conductivity_new      = 1;   % New sequence created July 25th, 2023
+seqdata.flags.lattice_conductivity_new      = 0;   % New sequence created July 25th, 2023
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy
@@ -530,12 +523,12 @@ end
 % Magnetic field
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Ramp magnetic fields before performing 
-seqdata.flags.lattice_off_feshbach_off          = 0;
+seqdata.flags.lattice_off_feshbach_off          = 1;
 defVar('lattice_off_feshbach_off_field',20,'G');
 defVar('lattice_off_feshbach_off_ramptime',100,'ms');
 
 % Unlevitate
-seqdata.flags.lattice_off_levitate_off          = 0;
+seqdata.flags.lattice_off_levitate_off          = 1;
 defVar('lattice_off_levitate_off_ramptime',100,'ms');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

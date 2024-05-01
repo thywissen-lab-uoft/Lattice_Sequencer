@@ -463,6 +463,7 @@ if (seqdata.flags.lattice_pin)
     % Wait a moment for PID to settle (just in case);
     curtime = calctime(curtime,2);    
 end
+
 %% Ramp FB back down to 20 G after pinning if high field ramps done in XDT
 if seqdata.flags.xdt_high_field_a && ~seqdata.flags.High_Field_Imaging
     %Wait  after pinning
@@ -517,7 +518,6 @@ end
 
 %% Optical Pumping
 % Optical pumping
-
 if (seqdata.flags.lattice_do_optical_pumping == 1)
     dispLineStr('Optical Pumping.',curtime);
 
@@ -637,7 +637,6 @@ newramp = struct('ShimValues',seqdata.params.shim_zero+[0 0 2],...
 curtime = calctime(curtime,50);    
 end
 
-
 %% Plane selection
 % After loading the optical lattice, we want to elminate all atoms not in
 % the desired plane. This is done by performing the following operations :
@@ -666,7 +665,6 @@ end
 
 %RHYS - Spectroscopy sections for calibration. Comments about lack of code
 %generality from dipole_transfer apply here too: clean and generalize!
-
 
 if ( do_K_uwave_spectroscopy_old || ...
         do_RF_spectroscopy || seqdata.flags.lattice_uWave_spec)

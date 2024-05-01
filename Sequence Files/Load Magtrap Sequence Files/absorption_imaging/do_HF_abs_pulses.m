@@ -14,7 +14,7 @@ function params = do_HF_abs_pulses(curtime,params,flags,tD)
     
     % Pulse the imaging beam again
     DigitalPulse(calctime(curtime,params.timings.time_diff_two_absorp_pulses...
-    +pulse_length+extra_wait_time),'K High Field Probe',pulse_length,0);                                                                                                              'K High Field Probe',pulse_length,0);                 
+    +pulse_length+extra_wait_time),'K High Field Probe',pulse_length,0);               
 
     mF1=-9/2;   % Lower energy spin state
     mF2=-7/2;   % Higher energy spin state

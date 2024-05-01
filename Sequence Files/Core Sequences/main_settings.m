@@ -341,6 +341,14 @@ defVar('xdtB_feshbach_off_ramptime',100,'ms');
 seqdata.flags.xdtB_levitate_off             = 1;
 defVar('xdtB_levitate_off_ramptime',100,'ms');
 
+% piezo kick for vertical trap frequency
+seqdata.flags.xdtB_piezo_vert_kick          = 0;
+defVar('xdtB_piezo_vert_kick_amplitude',4,'V');
+defVar('xdtB_piezo_vert_kick_rampup_time',100,'ms');
+defVar('xdtB_piezo_vert_kick_rampoff_time',4,'ms');
+defVar('xdtB_piezo_vert_kick_holdtime',[5:1:15],'ms');
+
+
 %% Waveplate Rotation 1
 
 seqdata.flags.rotate_waveplate_1   = 0;   

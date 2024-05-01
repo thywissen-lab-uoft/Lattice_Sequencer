@@ -207,6 +207,26 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
         curtime = calctime(curtime,50);
 end
 
+%% Piezo kick
+if seqdata.flags.xdtB_piezo_vert_kick
+    dispLineStr('Kicking the dipole trap',curtime);
+    
+    tr = getVar('xdtB_piezo_vert_kick_rampup_time');
+    V = getVar('xdtB_piezo_vert_kick_amplitude');
+    t_off = getVar('xdtB_piezo_vert_kick_rampoff_time');
+    th = getVar('xdtB_piezo_vert_kick_holdtime');
+
+    % Piezo Mirror to a Displaced Position
+    curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V);
+    
+    % Piezo Mirror to Original displacement
+    curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),t_off,t_off,0);
+    
+    % Wait for oscillations
+    curtime = calctime(curtime,th);  
+end
 %% The End
 
 timeout = curtime;

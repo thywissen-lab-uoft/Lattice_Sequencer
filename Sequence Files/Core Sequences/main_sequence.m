@@ -126,9 +126,12 @@ setDigitalChannel(curtime,'K uWave Source',0);
 CDT_piezo_X = 0;
 CDT_piezo_Y = 0;
 CDT_piezo_Z = 0;
-setAnalogChannel(curtime,'Piezo mirror X',CDT_piezo_X,1);
+% setAnalogChannel(curtime,'Piezo mirror X',CDT_piezo_X,1);
 setAnalogChannel(curtime,'Piezo mirror Y',CDT_piezo_Y,1);
 setAnalogChannel(curtime,'Piezo mirror Z',CDT_piezo_Z,1);
+
+
+setAnalogChannel(curtime,'XDT2 V Piezo',0,1);
 
 %Close science cell repump shutter
 setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',0); %1 = open, 0 = closed

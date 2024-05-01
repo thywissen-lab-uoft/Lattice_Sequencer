@@ -766,14 +766,21 @@ end
     xf=vva_spec(1,:);
     yf=sqrt(10.^(-vva_spec(2,:)*.1)/10^(-4.48*.1));yf(1)=0;
     seqdata.analogchannels(53).voltagefunc{2} = @(a) interp1(yf,xf,a,'pchip');
-
-
+% 
+% 
+%     %channel 54 (Piezo mirror controller, channel X)
+%     seqdata.analogchannels(54).name = 'Piezo mirror X';
+%     seqdata.analogchannels(54).minvoltage = -0.15;
+%     seqdata.analogchannels(54).maxvoltage = 10;
+%     seqdata.analogchannels(54).defaultvoltagefunc = 2; 
+%     seqdata.analogchannels(54).voltagefunc{2} = @(a)((a-0.7)/15.18);
+%     
+%     
     %channel 54 (Piezo mirror controller, channel X)
-    seqdata.analogchannels(54).name = 'Piezo mirror X';
-    seqdata.analogchannels(54).minvoltage = -0.15;
+    seqdata.analogchannels(54).name = 'XDT2 V Piezo';
+    seqdata.analogchannels(54).minvoltage = -0.1;
     seqdata.analogchannels(54).maxvoltage = 10;
-    seqdata.analogchannels(54).defaultvoltagefunc = 2; 
-    seqdata.analogchannels(54).voltagefunc{2} = @(a)((a-0.7)/15.18);
+    seqdata.analogchannels(54).defaultvoltagefunc = 1; 
 
     %channel 55 (Piezo mirror controller, channel Y)
     seqdata.analogchannels(55).name = 'Piezo mirror Y';

@@ -10,7 +10,7 @@ setAnalogChannel(curtime,'Modulation Ramp',-10,1);
 % seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
 seqdata.flags.conductivity_ramp_FB_on              = 0; 1;% Ramp FB field to resonance
 seqdata.flags.conductivity_ramp_QP_on              = 0;1; % Ramp QP reverse with FB (only works if ramp_FB is enabled)
-seqdata.flags.conductivity_FB_heating           = 0; 1;% Ramp closer to resonance to induce heating for T control
+seqdata.flags.conductivity_FB_heating               = 0; 1;% Ramp closer to resonance to induce heating for T control
 % seqdata.flags.conductivity_ramp_FB
 
 seqdata.flags.conductivity_ramp_FB_off              = 1; 1;% Ramp FB field to resonance

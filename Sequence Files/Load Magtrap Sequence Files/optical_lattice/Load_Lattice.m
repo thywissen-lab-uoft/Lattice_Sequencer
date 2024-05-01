@@ -26,7 +26,7 @@ end
 do_K_uwave_spectroscopy_old                 = 0;    % (3786) keep
 do_RF_spectroscopy                          = 0;    % (3952,4970)
 
-
+%% OLD LOADING CODE
 %{
 %% Other parameters
 % To be consolidated and simplified.
@@ -412,27 +412,6 @@ if seqdata.flags.lattice_lattice_ramp_1
     disp([' end loading : ' num2str(curtime2realtime(curtime)) ' ms']);
 end
 %}
-%% Ramp down HF used for loading lattice (this flag is in dipole transfer)
-
-%{
-% CF : I beleive this is now depreciated
-if isfield(seqdata.flags,'xdt_ramp_up_FB_for_lattice') && seqdata.flags.xdt_ramp_up_FB_for_lattice
-    dispLineStr('Ramping FB field (not sure why?).',curtime);
-    seqdata.params.time_out_HF = curtime;
-    if (((seqdata.params.time_out_HF - seqdata.params.time_in_HF)*(seqdata.deltat/seqdata.timeunit))>3000)
-            error('CHECK TIME FESHBACH IS ON! MAY BE TOO LONG')
-    end    
-     clear('ramp');
-    % FB coil settings for spectroscopy
-    ramp.fesh_ramptime = 150;
-    ramp.fesh_ramp_delay = -0;
-    ramp.fesh_final = 20;%before 2017-1-6 100*1.08962; %22.6
-    ramp.settling_time = 100;
-curtime = ramp_bias_fields(calctime(curtime,0), ramp);    
-end    
-%}
-% %% Conductivity Experiment
-% 
 
 %% Pin Lattice
 %Do not use if lattice_conductivity_new is also pinning
@@ -457,61 +436,46 @@ if (seqdata.flags.lattice_pin)
     curtime = calctime(curtime,2);    
 end
 
-%% Ramp FB back down to 20 G after pinning if high field ramps done in XDT
-% CF : I believe this is decpreciated
-
-%{
-if seqdata.flags.xdt_high_field_a && ~seqdata.flags.High_Field_Imaging
-    %Wait  after pinning
-    curtime = calctime(curtime,50); 
-    
-    ramptime_all_list = 150;
-    ramptime_all = getScanParameter(ramptime_all_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'conductivity_field_down_ramptime','ms');        
+%% Turn off feshbach field
+if seqdata.flags.lattice_feshbach_off   
+    tr = getVar('lattice_feshbach_off_ramptime');
+    fesh = getVar('lattice_feshbach_off_field');        
 
     % Define the ramp structure
     ramp=struct;
-    ramp.shim_ramptime = ramptime_all;
-    ramp.shim_ramp_delay = 0; % ramp earlier than FB field if needed
-    ramp.xshim_final = seqdata.params.shim_zero(1); 
-    ramp.yshim_final = seqdata.params.shim_zero(2);
-    ramp.zshim_final = seqdata.params.shim_zero(3);
-    % FB coil 
-    ramp.fesh_ramptime = ramptime_all;
-    ramp.fesh_ramp_delay = 0;
-    ramp.fesh_final = 20; %22.6
-    ramp.settling_time = 50;  
-
-    if seqdata.flags.xdt_hf_ramp_QP_and_FB || seqdata.flags.xdt_hf_ramp_QP_gradient_cancel
-
-        QP_ramptime = ramptime_all;
-
-%             AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-%                  @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),QP_ramptime,QP_ramptime,0,1);
-
-        % Ramp Coil 15, but don't update curtime
-        AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),QP_ramptime,QP_ramptime,0,5);  
-
-        % Go back to "normal" configuration
-        % Turn off reverse QP switch
-        AnalogFuncTo(calctime(curtime,QP_ramptime),'Coil 15',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),10,10,0,1);  
-        AnalogFuncTo(calctime(curtime,QP_ramptime),'Transport FF',...
-                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),10,10,0);
-
-        setDigitalChannel(calctime(curtime,QP_ramptime+15),'Reverse QP Switch',0);
-
-        % Turn on 15/16 switch
-        setDigitalChannel(calctime(curtime,QP_ramptime+20),'15/16 Switch',1); %CHANGE THIS TO 15/16 GS VOLTAGE
-        setAnalogChannel(calctime(curtime,QP_ramptime+20),'15/16 GS',5.5); 
-    end
-               
-curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
-        ScopeTriggerPulse(curtime,'FB_ramp');
-    
+    ramp.shim_ramptime      = tr;
+    ramp.shim_ramp_delay    = 0;
+    ramp.xshim_final        = seqdata.params.shim_zero(1); 
+    ramp.yshim_final        = seqdata.params.shim_zero(2);
+    ramp.zshim_final        = seqdata.params.shim_zero(3);
+    ramp.fesh_ramptime      = tr;
+    ramp.fesh_ramp_delay    = 0;
+    ramp.fesh_final         = fesh;
+    ramp.settling_time      = 0; 
+    curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain 
 end
-%}
+
+%% Turn off levitation field
+if seqdata.flags.lattice_levitate_off  
+    tr = getVar('lattice_levitate_off_ramptime');
+    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,0,1);               
+
+curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+                 5,5,0); 
+        % Go back to "normal" configuration
+        curtime = calctime(curtime,10);
+        % Turn off reverse QP switch
+        setDigitalChannel(curtime,'Reverse QP Switch',0);
+        curtime = calctime(curtime,10);
+        % Turn on 15/16 switch
+        curtime = AnalogFuncTo(calctime(curtime,0),'15/16 GS',...
+             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+                 10,10,9,1);              
+        curtime = calctime(curtime,50);
+end
+
 %% Optical Pumping
 % Optical pumping
 if (seqdata.flags.lattice_do_optical_pumping == 1)
@@ -633,7 +597,6 @@ newramp = struct('ShimValues',seqdata.params.shim_zero+[0 0 2],...
 curtime = calctime(curtime,50);    
 end
 
-
 %% Field Ramps BEFORE uWave/RF Spectroscopy
 % This code prepares the magnetic fields for uWave and RF spectroscopy
 
@@ -747,7 +710,6 @@ if do_K_uwave_spectroscopy_old
    curtime = uwave_K_spec_lattice_old(curtime);
 end
     
-
 %% RF Spectroscopy
 
 if do_RF_spectroscopy
@@ -785,17 +747,7 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
     
 end
     
-
-    
 %% Field Ramps AFTER uWave/RF Spectroscopy
-
-% Shim values for zero field found via spectroscopy
-%          x_Bzero = 0.115; %0.03 minimizes field
-%          y_Bzero = -0.0925; %-0.075  -0.07 minimizes field
-%          z_Bzero = -0.145;% Z BIPOLAR PARAM, -0.075 minimizes the field
-%          (May 20th, 2013)
-
-
 if ( do_K_uwave_spectroscopy_old || ...
         do_RF_spectroscopy || seqdata.flags.lattice_uWave_spec...
         )

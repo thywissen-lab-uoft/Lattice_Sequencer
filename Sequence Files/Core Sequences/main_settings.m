@@ -57,7 +57,7 @@ seqdata.flags.misc_program4pass             = 1; % Update four-pass frequency
 seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
 seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[1.96],'V');
+defVar('objective_piezo',[1.98],'V');[1.96]
 % 0.1V = 700 nm, larger means further away from chamber
 % 1 V= 7 um
 % 10 V = 70 um
@@ -357,9 +357,10 @@ defVar('xdtB_piezo_vert_kick_holdtime', [5:.5:12],'ms');
 % get by PID regulation
 
 seqdata.flags.rotate_waveplate_1   = 1;   
-defVar('rotate_waveplate1_duration',600,'ms'); % How smoothly to rotate
-defVar('rotate_waveplate1_delay',-700,'ms');   % How long before lattice loading 
-defVar('rotate_waveplate1_value',0.03,'normalized power'); % Amount of power going to lattices
+defVar('rotate_waveplate1_duration',5000,'ms'); % How smoothly to rotate
+defVar('rotate_waveplate1_delay',-5500,'ms');   % How long before lattice loading 
+defVar('rotate_waveplate1_value',0.06,'normalized power'); % Amount of power going to lattices
+
 
 %% Load the Optical Lattice
 
@@ -420,24 +421,30 @@ elseif seqdata.flags.conductivity_mod_direction == 2
 end    
 
 %% Optical Lattice
-seqdata.flags.lattice                   = 1; 
+seqdata.flags.lattice                       = 1; 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% More Lattice Flags
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Pin 
+seqdata.flags.lattice_pin                   = 1;
 defVar('lattice_pin_depth',60,'Er');
 defVar('lattice_pin_time', 0.2, 'ms');
 
+% Ramp magnetic fields before performing 
+seqdata.flags.lattice_feshbach_off          = 1;
+defVar('lattice_feshbach_off_field',20,'G');
+defVar('lattice_feshbach_off_ramptime',100,'ms');
+
+% Unlevitate
+seqdata.flags.lattice_levitate_off          = 1;
+defVar('lattice_levitate_off_ramptime',100,'ms');
+
 seqdata.flags.do_lattice_am_spec            = 0;    % Amplitude modulation spectroscopy    
-seqdata.flags.lattice_rotate_waveplate_2    = 0;    % Second waveplate rotation 95% 
-seqdata.flags.lattice_fluor_ramp            = 0;    % Secondary lattice ramp for fluorescence imaging
-seqdata.flags.lattice_pin                   = 0;
+seqdata.flags.lattice_rotate_waveplate_2    = 1;    % Second waveplate rotation 95% 
+seqdata.flags.lattice_fluor_ramp            = 1;    % Secondary lattice ramp for fluorescence imaging
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 seqdata.flags.lattice_PA                    = 0;
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy
@@ -447,25 +454,25 @@ seqdata.flags.lattice_uWave_spec            = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection, Raman Transfers, and Fluorescence Imaging
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-seqdata.flags.lattice_do_optical_pumping    = 0;    % (1426) keep : optical pumping in lattice  
+seqdata.flags.lattice_do_optical_pumping    = 1;    % (1426) keep : optical pumping in lattice  
 % Actual fluorsence image flags - NO LONGER USED
 seqdata.flags.Raman_transfers               = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plane Selection
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-seqdata.flags.do_plane_selection            = 0;    % Plane selection flag
+seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
 seqdata.flags.plane_selection.useFeedback   = 1;
 seqdata.flags.plane_selection.dotilt        = 0;
 
 % Default Plane Selection No Tilt Settings
-freq_offset_notilt_list = [150];
+freq_offset_notilt_list = 540;
 freq_offset_amplitude_notilt_list = [15];
 defVar('qgm_plane_uwave_frequency_offset_notilt',freq_offset_notilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_notilt',freq_offset_amplitude_notilt_list,'kHz');
 
 % Default Plane Selection Tilt Settings
-freq_offset_tilt_list = 150;
+freq_offset_tilt_list =[300];
 freq_offset_amplitude_tilt_list = 8; 
 defVar('qgm_plane_uwave_frequency_offset_tilt',freq_offset_tilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_tilt',freq_offset_amplitude_tilt_list,'kHz');
@@ -484,7 +491,7 @@ defVar('f_offset',f_offset,'kHz');
 
 % New Standard Fluoresnce Image Flags
 seqdata.flags.lattice_ClearCCD_IxonTrigger  = 0;    % Add additional trigger to clear CCD
-seqdata.flags.lattice_fluor                 = 0;    % Do Fluoresnce imaging
+seqdata.flags.lattice_fluor                 = 1;    % Do Fluoresnce imaging
 seqdata.flags.lattice_fluor_bkgd            = 1;    % Take a background image with imaging light on, no atoms
                                                     % MUST SET NUMKIN +1
 seqdata.flags.lattice_img_stripe            = 0;    % Plane select with tilt and take an additional imag of the stripe
@@ -497,11 +504,11 @@ seqdata.flags.lattice_HF_old                   = 0;
 seqdata.flags.lattice_off                       = 1;    % Master Flag
 
 % Ramp magnetic fields before performing 
-seqdata.flags.lattice_off_feshbach_off          = 1;
+seqdata.flags.lattice_off_feshbach_off          = 0;
 defVar('lattice_off_feshbach_off_field',20,'G');
 defVar('lattice_off_feshbach_off_ramptime',100,'ms');
 % Unlevitate
-seqdata.flags.lattice_off_levitate_off          = 1;
+seqdata.flags.lattice_off_levitate_off          = 0;
 defVar('lattice_off_levitate_off_ramptime',100,'ms');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

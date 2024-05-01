@@ -28,21 +28,14 @@ seqdata.times.tof_end = calctime(curtime,seqdata.params.HF_absorption_image.timi
 flags = seqdata.flags.HF_absorption_image;
 params = seqdata.params.HF_absorption_image;
 
-% Display the imaging flags (conditions of imaging) (not used?)
-str=['High Field Absorption Imaging'];
-
-% K Probe Detuning 
-K_detuning = params.detunings.KTrap;
-
- 
-   
-
 %% Prepare detunings
 
 %K High Field Imaging
 % Set the detunings for the High Field imaging
 
 % Set Trap FM detuning for FB field
+K_detuning = params.detunings.KTrap;
+
 offset_list = [1.5];
     offset = getScanParameter(offset_list,...
         seqdata.scancycle,seqdata.randcyclelist,'HF_K_FM_offset','MHz');
@@ -86,8 +79,6 @@ programRigol(addr,[],ch2);
 
 %open shutter
 setDigitalChannel(calctime(curtime,-5 + params.timings.tof),'High Field Shutter',1);
-%Close shutter much later
-setDigitalChannel(calctime(curtime,500),'High Field Shutter',0);
 
 
 %% Take the absorption images
@@ -135,6 +126,10 @@ AnalogFuncTo(calctime(curtime,-100),'Coil 16',...
     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),ramp_time,ramp_time,0,1);    
 AnalogFuncTo(calctime(curtime,-100),'Coil 15',...
     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),ramp_time,ramp_time,0,1);  
+
+%% Close HF probe shutter
+%Close shutter 50 ms before taking dark image
+setDigitalChannel(calctime(curtime,200),'High Field Shutter',0);
 
 %% Dark Image
 

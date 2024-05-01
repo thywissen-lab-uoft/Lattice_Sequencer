@@ -895,22 +895,18 @@ end
 
 if seqdata.flags.lattice_lattice_ramp_3
     dispLineStr('Lattice Ramp 3',curtime)    
-    ScopeTriggerPulse(curtime,'lattice_ramp_3');
-
+    ScopeTriggerPulse(curtime,'lattice_ramp_3');    
     %  Ramp Time
-    defVar('lattice_FI_ramptime',10,'ms');
-        
+    defVar('lattice_FI_ramptime',10,'ms');        
     % Lattice Depth Request
     defVar('lattice_FI_depth_X',[1050],'Er');1050;
     defVar('lattice_FI_depth_Y',[900],'Er');1000;
-    defVar('lattice_FI_depth_Z',[1150],'Er');1150;    
-
+    defVar('lattice_FI_depth_Z',[1150],'Er');1150;  
    % Perform the rest of the lattice ramps
    dT = getVar('lattice_FI_ramptime');
    Ux = getVar('lattice_FI_depth_X');
    Uy = getVar('lattice_FI_depth_Y');
    Uz = getVar('lattice_FI_depth_Z');
-
    % Define Ramp Ups
     AnalogFuncTo(calctime(curtime,0),'xLattice',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Ux); 
@@ -920,16 +916,13 @@ if seqdata.flags.lattice_lattice_ramp_3
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Uz);    
     
     % Wait for ramp to occur
-    curtime = calctime(curtime,dT);
-    
+    curtime = calctime(curtime,dT);    
     % Wait for ramp to settle
-    curtime = calctime(curtime,5);
-     
+    curtime = calctime(curtime,5);     
     % Turn off dipole traps
     setAnalogChannel(calctime(curtime,0),'dipoleTrap1',0);
     setAnalogChannel(calctime(curtime,0),'dipoleTrap2',0);
     setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
-
     % Additional Wait Time
     curtime = calctime(curtime,10);    
 end

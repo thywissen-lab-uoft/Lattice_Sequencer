@@ -373,7 +373,7 @@ defVar('rotate_waveplate1_value',0.05,'normalized power'); % Amount of power goi
 %% Optical Lattice Loading
 
 % These are the lattice flags sorted roughly chronologically. 
-seqdata.flags.lattice_load_1            = 0;    
+seqdata.flags.lattice_load_1            = 1;    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Loading optical lattical
@@ -397,7 +397,7 @@ defVar('lattice_ramp_1_round_trip_equilibriation_time',[2000],'ms');            
 
 
 %% Optical Lattice
-seqdata.flags.lattice                   = 0; 
+seqdata.flags.lattice                   = 1; 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % More Lattice Flags
@@ -406,7 +406,7 @@ defVar('lattice_pin_depth',60,'Er');
 defVar('lattice_pin_time', 0.2, 'ms');
 
 seqdata.flags.do_lattice_am_spec            = 0;    % Amplitude modulation spectroscopy    
-seqdata.flags.lattice_rotate_waveplate_2    = 0;    % Second waveplate rotation 95% 
+seqdata.flags.lattice_rotate_waveplate_2    = 1;    % Second waveplate rotation 95% 
 seqdata.flags.lattice_fluor_ramp            = 0;    % Secondary lattice ramp for fluorescence imaging
 seqdata.flags.lattice_pin                   = 0;
 
@@ -420,7 +420,7 @@ seqdata.flags.lattice_PA                    = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % These flags are associated with the conducitivity experiment
 seqdata.flags.lattice_conductivity          = 0;    % old sequence
-seqdata.flags.lattice_conductivity_new      = 0;   % New sequence created July 25th, 2023
+seqdata.flags.lattice_conductivity_new      = 1;   % New sequence created July 25th, 2023
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RF/uWave Spectroscopy

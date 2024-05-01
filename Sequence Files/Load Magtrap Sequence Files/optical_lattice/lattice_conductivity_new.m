@@ -8,9 +8,15 @@ setAnalogChannel(curtime,'Modulation Ramp',-10,1);
 %% Flags
 % seqdata.flags.conductivity_ODT1_mode            = 1; % 0:OFF, 1:SINE, 2:DC
 % seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
-seqdata.flags.conductivity_ramp_FB              = 1; % Ramp FB field to resonance
-seqdata.flags.conductivity_ramp_QP              = 1; % Ramp QP reverse with FB (only works if ramp_FB is enabled)
-seqdata.flags.conductivity_FB_heating           = 1; % Ramp closer to resonance to induce heating for T control
+seqdata.flags.conductivity_ramp_FB_on              = 0; 1;% Ramp FB field to resonance
+seqdata.flags.conductivity_ramp_QP_on              = 0;1; % Ramp QP reverse with FB (only works if ramp_FB is enabled)
+seqdata.flags.conductivity_FB_heating           = 0; 1;% Ramp closer to resonance to induce heating for T control
+% seqdata.flags.conductivity_ramp_FB
+
+seqdata.flags.conductivity_ramp_FB_off              = 1; 1;% Ramp FB field to resonance
+seqdata.flags.conductivity_ramp_QP_off              = 1;1; % Ramp QP reverse with FB (only works if ramp
+
+
 seqdata.flags.conductivity_rf_spec              = 0;
 seqdata.flags.conductivity_enable_mod_ramp      = 1;
 seqdata.flags.conductivity_QPD_trigger          = 1; % Trigger QPD monitor LabJack/Scope
@@ -113,7 +119,7 @@ end
 
 %% Ramp FB field to s-wave resonance
    
-if seqdata.flags.conductivity_ramp_FB  
+if seqdata.flags.conductivity_ramp_FB_on  
     
         Bfb = getVar('conductivity_FB_field');
         zshim = getVar('conductivity_zshim');
@@ -127,7 +133,7 @@ if seqdata.flags.conductivity_ramp_FB
         ramptime_all = getScanParameter(ramptime_all_list,seqdata.scancycle,...
             seqdata.randcyclelist,'conductivity_field_ramptime','ms');
         
-        if seqdata.flags.conductivity_ramp_QP            
+        if seqdata.flags.conductivity_ramp_QP_on            
             defVar('conductivity_QP_reverse',[0.1],'A');            
             IQP = getVar('conductivity_QP_reverse');
             QP_ramptime = ramptime_all;            
@@ -338,7 +344,7 @@ end
  end
 %% Ramp FB field back down to 20 G
    
-if seqdata.flags.conductivity_ramp_FB && ~seqdata.flags.xdt_high_field_a
+if seqdata.flags.conductivity_ramp_FB_off && ~seqdata.flags.xdt_high_field_a
         ramptime_all_list = 150;
         ramptime_all = getScanParameter(ramptime_all_list,seqdata.scancycle,...
             seqdata.randcyclelist,'conductivity_field_down_ramptime','ms');        
@@ -356,7 +362,7 @@ if seqdata.flags.conductivity_ramp_FB && ~seqdata.flags.xdt_high_field_a
         ramp.fesh_final = 20; %22.6
         ramp.settling_time = 50;  
         
-        if seqdata.flags.conductivity_ramp_QP
+        if seqdata.flags.conductivity_ramp_QP_off
             
             QP_ramptime = ramptime_all;
             

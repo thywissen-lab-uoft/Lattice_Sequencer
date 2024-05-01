@@ -414,6 +414,8 @@ if seqdata.flags.lattice_lattice_ramp_1
 end
 %}
 %% Ramp down HF used for loading lattice (this flag is in dipole transfer)
+
+%{
 % CF : I beleive this is now depreciated
 if isfield(seqdata.flags,'xdt_ramp_up_FB_for_lattice') && seqdata.flags.xdt_ramp_up_FB_for_lattice
     dispLineStr('Ramping FB field (not sure why?).',curtime);
@@ -429,7 +431,7 @@ if isfield(seqdata.flags,'xdt_ramp_up_FB_for_lattice') && seqdata.flags.xdt_ramp
     ramp.settling_time = 100;
 curtime = ramp_bias_fields(calctime(curtime,0), ramp);    
 end    
-
+%}
 %% Conductivity Experiment
 
 if (seqdata.flags.lattice_conductivity == 1 )

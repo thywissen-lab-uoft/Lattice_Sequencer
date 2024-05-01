@@ -65,54 +65,6 @@ function params = Load_Absorption_Image_Parameters()
     params.detunings.Rb.Y.positive.in_trap = 0;
 %     Rubidium - MOT
     params.detunings.Rb.MOT.positive.normal  = 0 ;
-
-
-
-    
-    
-    %% HF imaging
-%     % Potassium -HF -Xcam : settting the DP HF imaging AOM freq
-%     kHFdet_shift_list = [-8];%195G
-%     kHFdet_shift_list = [-11:1:-4];
-%     kHFdet_shift = getScanParameter(kHFdet_shift_list,seqdata.scancycle,...
-%         seqdata.randcyclelist,'HF_kdet_shift','MHz');
-% 
-
-%     params.detunings.K.X.negative9.HF.normal = -7 -0.4;
-%    %195G:-1.5 206:-0.4
-   
-    params.detunings.K.X.negative9.HF.normal = [-8];%195G
-    params.detunings.K.X.negative9.HF.attractive = [-8.5];[-9]; %[-9] %for 207G 15ms TOF; [-8.5] for 207G 21 ms
-        
-    % Detunings
-    params.detunings.K.X.negative9.HF.repulsive_lattice = [-9];       % 15 ms tof, 195 G
-    params.detunings.K.X.negative9.HF.repulsive_xdt = [-8];             % 15 ms tof, 195 G
-    params.detunings.K.X.negative9.HF.attractive_lattice = [-8.5];    % 15 ms tof, 207 G
-    params.detunings.K.X.negative9.HF.attractive_xdt = [-8.5];          % 21 ms tof, 207 G
-
-    
-    
-    drf_list = [0];
-    d_rf = getScanParameter(drf_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'rf_tof_shiftshift','kHz');
-
-    % RF shifts
-    params.HF_rf_shift.repulsive_lattice = [57];        % 15 ms tof, 195 G, (zshim=0)
-%     params.HF_rf_shift.repulsive_xdt = 0; 0;52.5;[57];       % 21 ms tof, 195 G, (zshim=0)
-    params.HF_rf_shift.repulsive_xdt = 52.5;       % 15 ms tof, 195 G, no QP(zshim=0)
-
-    
-    params.HF_rf_shift.attractive_lattice = [62];45;    % 15 ms tof, 207 G, (zshim=0)
-    params.HF_rf_shift.attractive_xdt = [140];          % 21 ms tof, 207 G (zshim=0)
-%     params.HF_rf_shift.attractive_xdt = [125];        % 21 ms tof, 207G (zshim=3)
-    
-    
-    params.detunings.K.X.negative9.HF.SG = -4.5; %
-    
-%     params.detunings.K.X.negative7.HF.normal = 9.25 + 0.4; 
-    %201G:+0.2 %190G: -0.25 %180G: -2.53 %195G: 0 204.5G: 0.5 207G: 0.4
-    params.detunings.K.X.negative7.HF.normal = 9.25-0.6;
-    params.detunings.K.X.negative7.HF.SG = 12.5;
         
     %% Other detunings
     

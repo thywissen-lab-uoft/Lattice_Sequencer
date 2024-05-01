@@ -24,11 +24,6 @@ if strcmp(seqdata.flags.absorption_image.condition, 'in_trap')
   seqdata.params.absorption_image.timings.tof = -2;
 end
 
-% Disable the optical pumping during HF imaging
-if seqdata.flags.absorption_image.High_Field_Imaging==1
-  seqdata.flags.absorption_image.use_K_OP = 0;
-end
-
 % If 40K is definitely in a negative mF state, flip the quantizing shim
 if (...
     seqdata.flags.xdt && ...
@@ -92,65 +87,61 @@ end
 
 %This sets parameters for imaging in the science chamber under most circumstances
 if (strcmp(flags.img_direction,'X') || strcmp(flags.img_direction,'Y'))
-  if (~strcmp(flags.condition,'in_trap'))
-      
-    % Some warnings displayed: still relevant?
-    if (quant_timings.quant_handover_delay + ...
-            quant_timings.quant_handover_time > ...
-            params.timings.tof)
-      buildWarning('absorption_image',...
-          'Quantization shims are still ramping on during imaging pulse!',1)
-    end
-    
-    if (quant_timings.quant_handover_fesh_ramptime + ...
-            quant_timings.quant_handover_fesh_rampdelay + ...
-            quant_timings.quant_handover_delay > params.timings.tof)
-      buildWarning('absorption_image',...
-          'Quantization ''FB'' field is still ramping on during imaging pulse!')
-    end
+    if (~strcmp(flags.condition,'in_trap'))
 
-    % Actually execute the field ramps based on the parameters set prior.
-    if (~flags.High_Field_Imaging)
-        
-      % Time to beging ramping shims
-      quant_handover_start = calctime(seqdata.times.tof_start,...
-          quant_timings.quant_handover_delay);
+        % Some warnings displayed: still relevant?
+        if (quant_timings.quant_handover_delay + ...
+                quant_timings.quant_handover_time > ...
+                params.timings.tof)
+          buildWarning('absorption_image',...
+              'Quantization shims are still ramping on during imaging pulse!',1)
+        end
 
-      % Ramp shims to appropriate values
-      AnalogFuncTo(calctime(quant_handover_start,0),'X Shim',...
-          @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-          quant_timings.quant_handover_time,...
-          quant_timings.quant_handover_time,quant_shim_val(1),3);
-      AnalogFuncTo(calctime(quant_handover_start,0),'Y Shim',...
-          @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-          quant_timings.quant_handover_time,...
-          quant_timings.quant_handover_time,quant_shim_val(2),4);
-      AnalogFuncTo(calctime(quant_handover_start,0),'Z Shim',...
-          @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-          quant_timings.quant_handover_time,...
-          quant_timings.quant_handover_time,quant_shim_val(3),3);
+        if (quant_timings.quant_handover_fesh_ramptime + ...
+                quant_timings.quant_handover_fesh_rampdelay + ...
+                quant_timings.quant_handover_delay > params.timings.tof)
+          buildWarning('absorption_image',...
+              'Quantization ''FB'' field is still ramping on during imaging pulse!')
+        end
 
-      % Turn off FB Field
-      if (getChannelValue(seqdata,'FB current',1,0) > 0) && ...
-              (quant_timings.quant_handover_fesh_ramptime <= 0)
-        % hard shut off of FB field
-        setAnalogChannel(calctime(quant_handover_start,0),'FB current',-0.5,1);%0
-        setDigitalChannel(calctime(quant_handover_start,0),'fast FB Switch',0); %fast switch
-      elseif (getChannelValue(seqdata,'FB current',1,0) > 0) ...
-              && (quant_timings.quant_handover_fesh_ramptime > 0)
-        % ramp FB field
-        AnalogFuncTo(calctime(quant_handover_start,quant_timings.quant_handover_fesh_rampdelay),'FB current',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),quant_timings.quant_handover_fesh_ramptime,quant_timings.quant_handover_fesh_ramptime,0);
-        setDigitalChannel(calctime(quant_handover_start,quant_timings.quant_handover_time),'fast FB Switch',0); %fast switch
-      else
-        % FB field already off ... just to be sure
-        setAnalogChannel(calctime(quant_handover_start,0),'FB current',-0.5,1);%0
-        setDigitalChannel(calctime(quant_handover_start,quant_timings.quant_handover_time),'fast FB Switch',0);
-      end
-    end
-  elseif strcmp(flags.condition,'in_trap')
+          % Time to beging ramping shims
+          quant_handover_start = calctime(seqdata.times.tof_start,...
+              quant_timings.quant_handover_delay);
+
+          % Ramp shims to appropriate values
+          AnalogFuncTo(calctime(quant_handover_start,0),'X Shim',...
+              @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+              quant_timings.quant_handover_time,...
+              quant_timings.quant_handover_time,quant_shim_val(1),3);
+          AnalogFuncTo(calctime(quant_handover_start,0),'Y Shim',...
+              @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+              quant_timings.quant_handover_time,...
+              quant_timings.quant_handover_time,quant_shim_val(2),4);
+          AnalogFuncTo(calctime(quant_handover_start,0),'Z Shim',...
+              @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+              quant_timings.quant_handover_time,...
+              quant_timings.quant_handover_time,quant_shim_val(3),3);
+
+          % Turn off FB Field
+          if (getChannelValue(seqdata,'FB current',1,0) > 0) && ...
+                  (quant_timings.quant_handover_fesh_ramptime <= 0)
+            % hard shut off of FB field
+            setAnalogChannel(calctime(quant_handover_start,0),'FB current',-0.5,1);%0
+            setDigitalChannel(calctime(quant_handover_start,0),'fast FB Switch',0); %fast switch
+          elseif (getChannelValue(seqdata,'FB current',1,0) > 0) ...
+                  && (quant_timings.quant_handover_fesh_ramptime > 0)
+            % ramp FB field
+            AnalogFuncTo(calctime(quant_handover_start,quant_timings.quant_handover_fesh_rampdelay),'FB current',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),quant_timings.quant_handover_fesh_ramptime,quant_timings.quant_handover_fesh_ramptime,0);
+            setDigitalChannel(calctime(quant_handover_start,quant_timings.quant_handover_time),'fast FB Switch',0); %fast switch
+          else
+            % FB field already off ... just to be sure
+            setAnalogChannel(calctime(quant_handover_start,0),'FB current',-0.5,1);%0
+            setDigitalChannel(calctime(quant_handover_start,quant_timings.quant_handover_time),'fast FB Switch',0);
+          end
+    elseif strcmp(flags.condition,'in_trap')
       % For in-trap imaging, you don't touch the magnetic fields!
 
-  end
+    end
   
   % Turn off feshbach sometime after the time of flight
     clear('ramp');
@@ -165,201 +156,126 @@ if (strcmp(flags.img_direction,'X') || strcmp(flags.img_direction,'Y'))
     setAnalogChannel(calctime(curtime,params.timings.tof+50),'Y Shim',0,4);
     setAnalogChannel(calctime(curtime,params.timings.tof+50),'Z Shim',0,3);
     
-    
-    if flags.High_Field_Imaging
-        ramp_time = 100;
-        AnalogFuncTo(calctime(curtime,params.timings.tof+100),'Coil 16',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),ramp_time,ramp_time,0,1);    
-        AnalogFuncTo(calctime(curtime,params.timings.tof+100),'Coil 15',...
-            @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),ramp_time,ramp_time,0,1);   
-    end
 end
 %% Prepare detunings for optional optical pumping and repump pulses, which occur before the first image.
 
 %Before the actual imaging pulse, perform repump and/or optical
 %pumping.
-if (~flags.High_Field_Imaging)
-  if flags.use_K_repump
-    %Repump pulse: off slightly after optical pumping pulse - simulataneous with optical
-    %pumping
-    DigitalPulse(calctime(curtime,params.timings.tof - ...
-        params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
-        'K Repump TTL',params.timings.K_OP_time+0.2,0);
-  end
-  
-  if flags.use_K_OP
-    %set probe detuning
-    setAnalogChannel(calctime(curtime,params.timings.tof - ...
-        params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
-        'K Probe/OP FM',190.0); %202.5 for 2G shim
-    %SET trap AOM detuning to change probe
+
+if flags.use_K_repump
+%Repump pulse: off slightly after optical pumping pulse - simulataneous with optical
+%pumping
+DigitalPulse(calctime(curtime,params.timings.tof - ...
+    params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
+    'K Repump TTL',params.timings.K_OP_time+0.2,0);
+end
+
+if flags.use_K_OP
+%set probe detuning
+setAnalogChannel(calctime(curtime,params.timings.tof - ...
+    params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
+    'K Probe/OP FM',190.0); %202.5 for 2G shim
+%SET trap AOM detuning to change probe
 %     setAnalogChannel(calctime(curtime,params.timings.tof -  ...
 %         params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
 %         'K Trap FM',k_OP_detuning); %40 for 2G shim
-    % 2023/11/02 : New addiing a ramp time to allow the injection lock to
-    % be happy
-    AnalogFuncTo(calctime(curtime,params.timings.tof - ...
-        params.timings.k_detuning_shift_time - params.timings.K_OP_time - 50),...
-        'K Trap FM',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),50,50,k_OP_detuning);
-    
+% 2023/11/02 : New addiing a ramp time to allow the injection lock to
+% be happy
+AnalogFuncTo(calctime(curtime,params.timings.tof - ...
+    params.timings.k_detuning_shift_time - params.timings.K_OP_time - 50),...
+    'K Trap FM',@(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),50,50,k_OP_detuning);
 
-    
+
+
 %     dispLineStr('oppuping',calctime(curtime,params.timings.tof - ...
 %         params.timings.k_detuning_shift_time - params.timings.K_OP_time));
-    %Set AM for Optical Pumping
-    setAnalogChannel(calctime(curtime,params.timings.tof - ...
-        params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
-        'K Probe/OP AM',K_power);%0.65
-    %TTL
-    DigitalPulse(calctime(curtime,params.timings.tof - ...
-        params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
-        'K Probe/OP TTL',params.timings.K_OP_time,1); %0.3   
-        %Turn off AM
-     setAnalogChannel(calctime(curtime,params.timings.tof - ...
-         params.timings.k_detuning_shift_time),'K Probe/OP AM',0,1);   
-  end
+%Set AM for Optical Pumping
+setAnalogChannel(calctime(curtime,params.timings.tof - ...
+    params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
+    'K Probe/OP AM',K_power);%0.65
+%TTL
+DigitalPulse(calctime(curtime,params.timings.tof - ...
+    params.timings.k_detuning_shift_time - params.timings.K_OP_time),...
+    'K Probe/OP TTL',params.timings.K_OP_time,1); %0.3   
+    %Turn off AM
+ setAnalogChannel(calctime(curtime,params.timings.tof - ...
+     params.timings.k_detuning_shift_time),'K Probe/OP AM',0,1);   
 end
+
 
 
 %% Prepare detuning, repump, and probe for the actual image
-if(~flags.High_Field_Imaging)
-    % The probe beam detuning is set by two double passes
-    
-  % Set K probe FM
-  setAnalogChannel(calctime(curtime,...
-        params.timings.tof-params.timings.k_detuning_shift_time),...
-        'K Probe/OP FM',180);
-    
-  % Set K Trap FM 
-  setAnalogChannel(calctime(curtime,...
-        params.timings.tof-params.timings.k_detuning_shift_time),...
-        'K Trap FM',K_detuning);  
+
+% The probe beam detuning is set by two double passes
+
+% Set K probe FM
+setAnalogChannel(calctime(curtime,...
+    params.timings.tof-params.timings.k_detuning_shift_time),...
+    'K Probe/OP FM',180);
+
+% Set K Trap FM 
+setAnalogChannel(calctime(curtime,...
+    params.timings.tof-params.timings.k_detuning_shift_time),...
+    'K Trap FM',K_detuning);  
+
+% Set Rb Probe Detuning
+f_osc = calcOffsetLockFreq(Rb_detuning,'Probe32');
+DDS_id = 3;    
+DDS_sweep(curtime,DDS_id,f_osc*1e6,f_osc*1e6,1);    
+
+% Set K probe/OP power 
+setAnalogChannel(calctime(curtime,-1+params.timings.tof),...
+  'K Probe/OP AM',K_power); 
+
+% Set Rb probe/OP power
+setAnalogChannel(calctime(curtime,-5+params.timings.tof),...
+  'Rb Probe/OP AM',Rb_power);  
   
-  % Set Rb Probe Detuning
-    f_osc = calcOffsetLockFreq(Rb_detuning,'Probe32');
-    DDS_id = 3;    
-    DDS_sweep(curtime,DDS_id,f_osc*1e6,f_osc*1e6,1);    
 
-  % Set K probe/OP power 
-  setAnalogChannel(calctime(curtime,-1+params.timings.tof),...
-      'K Probe/OP AM',K_power); 
-
-  % Set Rb probe/OP power
-  setAnalogChannel(calctime(curtime,-5+params.timings.tof),...
-      'Rb Probe/OP AM',Rb_power);  
-  
-else
-  if strcmp(flags.image_atomtype, 'K')
-    %K High Field Imaging
-    % Set the detunings for the High Field imaging
-      
-    % Set Trap FM detuning for FB field
-    offset_list = [1.5];
-        offset = getScanParameter(offset_list,...
-            seqdata.scancycle,seqdata.randcyclelist,'HF_K_FM_offset','MHz');
-    
-    setAnalogChannel(calctime(curtime,params.timings.tof-params.timings.k_detuning_shift_time),...
-            'K Trap FM',K_detuning+(seqdata.params.HF_probe_fb-190)*0.675*2+offset);
-    
-    if (flags.HighField_Attractive)
-        if seqdata.flags.lattice
-            HF_prob_freq9 = params.detunings.K.X.negative9.HF.attractive_lattice;
-        else
-            HF_prob_freq9 =  params.detunings.K.X.negative9.HF.attractive_xdt;
-        end
-    else
-        if seqdata.flags.lattice
-            HF_prob_freq9 = params.detunings.K.X.negative9.HF.repulsive_lattice;
-        else
-            HF_prob_freq9 =  params.detunings.K.X.negative9.HF.repulsive_xdt;
-        end
-    end
-    
-    HF_prob_freq7 =  params.detunings.K.X.negative7.HF.normal;
-
-    % Frequency of rigol is based on the relative shift
-    freq1 = (120+HF_prob_freq7)*1E6;
-    freq2 = (120+HF_prob_freq9)*1E6;
-
-    % Power in -7 beam
-    pow1_list = [0.9];%[0.8];
-    pow1 = getScanParameter(pow1_list,seqdata.scancycle,seqdata.randcyclelist,...
-        'HF_prob_pwr1','V');
-
-    % Power in -9 beam
-    pow2_list = [0.9];[2.0];[1.2]; [0.01:0.04:1.2];[1.2];  %1.1      
-    pow2 = getScanParameter(pow2_list,seqdata.scancycle,seqdata.randcyclelist,...
-        'HF_prob_pwr2','V');
-
-    % Rigol Channel 1 (-7 HF high field imaging)
-    ch1=struct;
-    ch1.STATE='ON';
-    ch1.AMPLITUDE=pow1;
-    ch1.FREQUENCY=freq1;
-
-    % Rigol Channel 2 (-9 HF high field imaging)
-    ch2=struct;
-    ch2.STATE='ON';
-    ch2.AMPLITUDE=pow2;
-    ch2.FREQUENCY=freq2;   
-
-    % Rigol address # 
-    addr=6;     
-    programRigol(addr,ch1,ch2);     
-  end 
-  
-end
 
 %% Pre-Absorption Shutter Preperation
 
 %K - Open shutter for probe. 
 %RHYS - This is ok, just get rid of blue_image/D1_image and simplify.
-if ~(flags.High_Field_Imaging)
-    
-  % Open K shutter
-  if strcmp(flags.image_atomtype, 'K') || strcmp(flags.image_atomtype, 'KRb')
-      
+
+
+% Open K shutter
+if strcmp(flags.image_atomtype, 'K') || strcmp(flags.image_atomtype, 'KRb')
+
       % Open Probe Shutter in preparation
     setDigitalChannel(calctime(curtime, -5+params.timings.tof),'K Probe/OP shutter',1);
     if (flags.use_K_repump || flags.K_repump_during_image)        
-        
-%         k_repump_am_list = [0:.05:.8]; % 
-%         k_repump_am = getScanParameter(k_repump_am_list,...
-%         seqdata.scancycle,seqdata.randcyclelist,'k_repump_am','V?'); 
-        
-      %Open science cell K repump shutter
-      setDigitalChannel(calctime(curtime,-5+params.timings.tof),...
-          'K Sci Repump',1);             
 
-      %turn repump back up
-      setAnalogChannel(calctime(curtime,-5+params.timings.tof),...
-          'K Repump AM',.8);.8;
-      %repump TTL
-      setDigitalChannel(calctime(curtime,-5+params.timings.tof),...
-          'K Repump TTL',1);
-      %Frequency shift the repump
-      if strcmp(flags.negative_imaging_shim,'negative')
-        setAnalogChannel(calctime(curtime,-5+params.timings.tof),...
-            'K Repump FM',k_repump_shift,2);
-      else
-        setAnalogChannel(calctime(curtime,-5+params.timings.tof),...
-            'K Repump FM',k_repump_shift,2);
-      end
+          %k_repump_am_list = [0:.05:.8]; % 
+          %k_repump_am = getScanParameter(k_repump_am_list,...
+          %seqdata.scancycle,seqdata.randcyclelist,'k_repump_am','V?'); 
+
+          %Open science cell K repump shutter
+          setDigitalChannel(calctime(curtime,-5+params.timings.tof),...
+              'K Sci Repump',1);             
+
+          %turn repump back up
+          setAnalogChannel(calctime(curtime,-5+params.timings.tof),...
+              'K Repump AM',.8);.8;
+          %repump TTL
+          setDigitalChannel(calctime(curtime,-5+params.timings.tof),...
+              'K Repump TTL',1);
+          %Frequency shift the repump
+          if strcmp(flags.negative_imaging_shim,'negative')
+              setAnalogChannel(calctime(curtime,-5+params.timings.tof),...
+                'K Repump FM',k_repump_shift,2);
+          else
+              setAnalogChannel(calctime(curtime,-5+params.timings.tof),...
+                'K Repump FM',k_repump_shift,2);
+          end
     end
-  end
-  
-  % Open Rb shutter
-  if strcmp(flags.image_atomtype, 'Rb') || strcmp(flags.image_atomtype, 'KRb')
-    setDigitalChannel(calctime(curtime,-5+params.timings.tof),'Rb Probe/OP shutter',1); %-10
-  end
-  
-  
-elseif flags.High_Field_Imaging
-  %open shutter
-  setDigitalChannel(calctime(curtime,-5 + params.timings.tof),'High Field Shutter',1);
-  %Close shutter much later
-  setDigitalChannel(calctime(curtime,500),'High Field Shutter',0);
 end
+
+% Open Rb shutter
+if strcmp(flags.image_atomtype, 'Rb') || strcmp(flags.image_atomtype, 'KRb')
+    setDigitalChannel(calctime(curtime,-5+params.timings.tof),'Rb Probe/OP shutter',1); %-10
+end
+
 
 
 
@@ -382,7 +298,7 @@ if plug_check ==1
     setDigitalChannel(calctime(curtime,pulse_length+.5),'Plug Shutter',0);% 0:OFF; 1: ON
 end
 
-    tD_list = [-20];-20;
+tD_list = [-20];-20;
 tD=getScanParameter(tD_list,seqdata.scancycle,...
     seqdata.randcyclelist,'pixel_delay','us');
 
@@ -458,353 +374,18 @@ switch flags.image_atomtype
         setDigitalChannel(calctime(curtime,pulse_length),'Rb Sci Repump',0);
       end
     case 'K'
-        if ~(flags.High_Field_Imaging)
-            DigitalPulse(calctime(curtime,0),'K Probe/OP TTL',pulse_length,1);
-            
-            
-             % Open and close shutter
-             setDigitalChannel(calctime(curtime, -5),'K Probe/OP shutter',1);
-             setDigitalChannel(calctime(curtime, pulse_length+.5),'K Probe/OP shutter',0);
-            
-            % Turn AM on and off if need
-               setAnalogChannel(calctime(curtime,-.5),'K Probe/OP AM',K_power);
-              setAnalogChannel(calctime(curtime,pulse_length+.5),'K Probe/OP AM',0,1);
-        elseif flags.High_Field_Imaging
-            extra_wait_time = params.timings.wait_time;
-            % Pulse the imaging beam
-            DigitalPulse(calctime(curtime,extra_wait_time),'K High Field Probe',pulse_length,0);
-            if flags.Two_Imaging_Pulses==1 && flags.Spin_Flip_79_in_Tof == 0
-                % Pulse the imaging beam again
-                DigitalPulse(calctime(curtime,params.timings.time_diff_two_absorp_pulses+pulse_length+extra_wait_time),...
-                    'K High Field Probe',pulse_length,0);
-                if flags.Image_Both97
-                    % Switch RF source if imaging both
-                    buffer_time = 0.01;
-                    DigitalPulse(calctime(curtime,...
-                        params.timings.time_diff_two_absorp_pulses+pulse_length+extra_wait_time-buffer_time),...
-                    'HF freq source',pulse_length+buffer_time+buffer_time,0);               
-   
-                end
-            end
-            if flags.Two_Imaging_Pulses==1 && flags.Spin_Flip_79_in_Tof == 1
-                % Pulse the imaging beam again
-                DigitalPulse(calctime(curtime,params.timings.time_diff_two_absorp_pulses...
-                    +pulse_length+extra_wait_time),...                                                                                                                
-                    'K High Field Probe',pulse_length,0);
-                if flags.Image_Both97                   
-
-                    mF1=-9/2;   % Lower energy spin state
-                    mF2=-7/2;   % Higher energy spin state
-
-                    % Get the center frequency
-                    Boff = 0.11;
-                    B = seqdata.params.HF_probe_fb + Boff;
-                    
-                    
-                    if flags.HighField_Attractive
-                        if seqdata.flags.lattice
-                            rf_tof_shift = params.HF_rf_shift.attractive_lattice;
-                        else
-                            rf_tof_shift = params.HF_rf_shift.attractive_xdt;
-                        end
-                    else
-                        if seqdata.flags.lattice
-                            rf_tof_shift = params.HF_rf_shift.repulsive_lattice;
-                        else
-                            rf_tof_shift = params.HF_rf_shift.repulsive_xdt;
-                        end                      
-                        
-                    end
-                    addOutputParam('rf_tof_shift',rf_tof_shift,'kHz')                   
-                    
-                    rf_tof_freq =  rf_tof_shift*1e-3 +... 
-                        abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);   
-                    addOutputParam('rf_tof_freq',rf_tof_freq,'MHz');  
-
-                    if (rf_tof_freq < 1)
-                         error('Incorrect RF frequency calculation!! MATLAB IS STUPID! >:(')
-                    end
-
-                    % RF Frequency Sweep
-                    rf_tof_delta_freq_list = 40*1e-3; [40]*1e-3;[35]*1e-3;[20]*1e-3;[12]*1e-3;12; %20kHz for 15ms TOF
-                    rf_tof_delta_freq = getScanParameter(rf_tof_delta_freq_list,seqdata.scancycle,...
-                        seqdata.randcyclelist,'rf_tof_delta_freq','MHz');
-%                     delta_freq= 0.05; %0.02            
-%                     addOutputParam('rf_delta_freq_HF',delta_freq,'MHz');
-
-                    % RF Pulse Time
-                    rf_tof_pulse_length_list = [1];[1];%1
-                    rf_tof_pulse_length = getScanParameter(rf_tof_pulse_length_list,seqdata.scancycle,...
-                        seqdata.randcyclelist,'rf_tof_pulse_length','ms');
-                    
-                    % RF Gain Amplitude - only used for DDS
-                    rf_tof_gain_list = [9.9];[9];
-                    rf_tof_gain = getScanParameter(rf_tof_gain_list,seqdata.scancycle,...
-                        seqdata.randcyclelist,'rf_tof_gain','arb');
-
-                    % RF Gain Off
-                    rf_off_voltage=-10;-9.9;
-                    
-%                     sweep_type = 'DDS';
-%                     sweep_type = 'SRS_HS1';
-                    sweep_type = 'SRS_LINEAR';
-
-                    switch sweep_type
-                        case 'DDS'   
-                            rf_wait_time = 0.05;
-
-                            freq_list=rf_tof_freq+[...
-                                -0.5*rf_tof_delta_freq ...
-                                -0.5*rf_tof_delta_freq ...
-                                0.5*rf_tof_delta_freq ...
-                                0.5*rf_tof_delta_freq];    
-
-                            pulse_list=[0.1 rf_tof_pulse_length 0.1]; 
-
-                            % Display the sweep settings
-                            disp([' Freq Center    (MHz) : [' num2str(rf_tof_freq) ']']);
-                            disp([' Freq List    (MHz) : [' num2str(freq_list) ']']);
-                            disp([' Time List     (ms) : [' num2str(pulse_list) ']']);
-                            disp([' RF Gain Range  (V) : [' num2str(rf_off_voltage) ' ' num2str(rf_tof_gain) ']']);
-
-                            % Set RF gain to zero a little bit before
-                            setAnalogChannel(calctime(curtime,-40),'RF Gain',rf_off_voltage);   
-
-                            % Turn on RF
-                            setDigitalChannel(calctime(curtime,...
-                                rf_wait_time + pulse_length + extra_wait_time),'RF TTL',1);   
-
-                            % Set to RF
-        %                     setDigitalChannel(curtime,'RF/uWave Transfer',0);   
-
-                            do_ACync_rf = 0;
-                            if do_ACync_rf
-                                ACync_start_time = calctime(curtime,-30);
-                                ACync_end_time = calctime(curtime,sum(pulse_list)+30);
-                                setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
-                                setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
-                            end
-
-                            % Trigger pulse duration
-                            dTP=0.05;
-                            DDS_ID=1;
-
-                            % Initialize "Sweep", ramp up power        
-                            sweep=[DDS_ID 1E6*freq_list(1) 1E6*freq_list(2) pulse_list(1)];
-                            DigitalPulse(calctime(curtime,...
-                                rf_wait_time + pulse_length + extra_wait_time),'DDS ADWIN Trigger',dTP,1);               
-                            seqdata.numDDSsweeps=seqdata.numDDSsweeps+1;               
-                            seqdata.DDSsweeps(seqdata.numDDSsweeps,:)=sweep;               
-                            AnalogFuncTo(calctime(curtime,...
-                                rf_wait_time + pulse_length + extra_wait_time),'RF Gain',...
-                                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-                                pulse_list(1),pulse_list(1),rf_tof_gain); 
-        %                     setAnalogChannel(calctime(curtime,...
-        %                         rf_wait_time + pulse_length + extra_wait_time -1),'RF Gain',peak_voltage)
-
-                            % Primary Sweep, constant power            
-                            sweep=[DDS_ID 1E6*freq_list(2) 1E6*freq_list(3) pulse_list(2)];
-                            DigitalPulse(calctime(curtime,...
-                                rf_wait_time + pulse_length + extra_wait_time + pulse_list(1)),'DDS ADWIN Trigger',dTP,1);  
-                            seqdata.numDDSsweeps=seqdata.numDDSsweeps+1;               
-                            seqdata.DDSsweeps(seqdata.numDDSsweeps,:)=sweep;               
-        %                     curtime=calctime(curtime,pulse_list(2));
-        % 
-                            % Final "Sweep", ramp down power
-                            sweep=[DDS_ID 1E6*freq_list(3) 1E6*freq_list(4) pulse_list(3)];
-                            DigitalPulse(calctime(curtime,...
-                                rf_wait_time + pulse_length + extra_wait_time+pulse_list(1)+pulse_list(2)),'DDS ADWIN Trigger',dTP,1);               
-                            seqdata.numDDSsweeps=seqdata.numDDSsweeps+1;               
-                            seqdata.DDSsweeps(seqdata.numDDSsweeps,:)=sweep;               
-                            AnalogFuncTo(calctime(curtime,...
-                                rf_wait_time + pulse_length + extra_wait_time + ...
-                                pulse_list(1) + pulse_list(2)),'RF Gain',...
-                                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-                                pulse_list(3),pulse_list(3),rf_off_voltage); 
-
-        %                     setAnalogChannel(calctime(curtime,...
-        %                         rf_wait_time + pulse_length + extra_wait_time ...
-        %                         + rf_pulse_length +1),'RF Gain',off_voltage)
-
-                            % Turn off RF
-                            setDigitalChannel(calctime(curtime,...
-                              rf_wait_time + pulse_length + extra_wait_time + ...
-                              sum(pulse_list)),'RF TTL',0);               
+        
+        DigitalPulse(calctime(curtime,0),'K Probe/OP TTL',pulse_length,1);
 
 
+        % Open and close shutter
+        setDigitalChannel(calctime(curtime, -5),'K Probe/OP shutter',1);
+        setDigitalChannel(calctime(curtime, pulse_length+.5),'K Probe/OP shutter',0);
 
-                              % Switch RF source if imaging both
-        %                     buffer_time = 0.01;
-        %                     DigitalPulse(calctime(curtime,...
-        %                         params.timings.time_diff_two_absorp_pulses+pulse_length+extra_wait_time-buffer_time),...
-        %                     'HF freq source',pulse_length+buffer_time+buffer_time,0);   
-                        case 'SRS_HS1'
-                            
-                            if isfield(params,'isProgrammedSRS') && params.isProgrammedSRS == 0
-                                rf_wait_time = 0.00;   
-
-                                disp('HS1 SRS Sweep Pulse');  
-
-                                rf_tof_srs_power_list = [12];
-                                rf_tof_srs_power = getScanParameter(rf_tof_srs_power_list,seqdata.scancycle,...
-                                    seqdata.randcyclelist,'rf_tof_srs_power','dBm');
-
-                                sweep_time = rf_tof_pulse_length;
-
-                                rf_srs_opts = struct;
-                                rf_srs_opts.Address=30;                       
-                                rf_srs_opts.EnableBNC=1;                         % Enable SRS output 
-                                rf_srs_opts.PowerBNC = rf_tof_srs_power;                           
-                                rf_srs_opts.Frequency = rf_tof_freq;
-                                % Calculate the beta parameter
-                                beta=asech(0.005);   
-                                addOutputParam('rf_HS1_beta',beta);
-
-                                disp(['     Freq Center  : ' num2str(rf_tof_freq) ' MHz']);
-                                disp(['     Freq Delta   : ' num2str(rf_tof_delta_freq*1E3) ' kHz']);
-                                disp(['     Pulse Time   : ' num2str(rf_tof_pulse_length) ' ms']);
-                                disp(['     Beta         : ' num2str(beta)]);
-
-                                % Enable uwave frequency sweep
-                                rf_srs_opts.EnableSweep=1;                    
-                                rf_srs_opts.SweepRange=abs(rf_tof_delta_freq);  
-
-                                % Set RF Source to SRS
-                                setDigitalChannel(calctime(curtime,-5),'RF Source',1);
-                                
-                                % Set RF Source to SRS
-                                setDigitalChannel(calctime(curtime,-5),'SRS Source',1);
-                                
-
-                                % Set SRS Direction to RF
-                                setDigitalChannel(calctime(curtime,-5),'K uWave Source',0);
-
-                                % Set RF power to low
-                                setAnalogChannel(calctime(curtime,-5),'RF Gain',rf_off_voltage);
-
-                                % Set initial modulation
-                                setAnalogChannel(calctime(curtime,-5),'uWave FM/AM',1);
-
-                                % Turn on the RF
-                                setDigitalChannel(calctime(curtime,...
-                                    rf_wait_time + pulse_length + extra_wait_time),'RF TTL',1);    
-
-                                % Ramp the SRS modulation using linear
-                                % At +-1V input for +- full deviation
-                                % The last argument means which votlage fucntion to use
-                                AnalogFunc(calctime(curtime,...
-                                    rf_wait_time + pulse_length + extra_wait_time),'uWave FM/AM',...
-                                    @(t,T,beta) -tanh(2*beta*(t-0.5*sweep_time)/sweep_time),...
-                                    sweep_time,sweep_time,beta,1);
-
-                                % Sweep the linear VVA
-                                AnalogFunc(calctime(curtime,...
-                                    rf_wait_time + pulse_length + extra_wait_time),'RF Gain',...
-                                    @(t,T,beta) -10 + ...
-                                    20*sech(2*beta*(t-0.5*sweep_time)/sweep_time),...
-                                    sweep_time,sweep_time,beta);
-
-                                % Turn off the RF
-                                setDigitalChannel(calctime(curtime,...
-                                    rf_wait_time + pulse_length + extra_wait_time+rf_tof_pulse_length),'RF TTL',0); 
-
-                                % Turn off VVA
-                                setAnalogChannel(calctime(curtime,...
-                                    rf_wait_time + pulse_length + extra_wait_time+rf_tof_pulse_length),'RF Gain',rf_off_voltage);
-
-                                % Set RF Source to SRS
-                                setDigitalChannel(calctime(curtime,...
-                                    rf_wait_time + pulse_length + extra_wait_time+rf_tof_pulse_length+1),'RF Source',0);
-
-                                % Program the SRS
-                                programSRS_BNC(rf_srs_opts); 
-                                params.isProgrammedSRS = 1;
-                            end
-                            
-                        case 'SRS_LINEAR'
-                            
-                            if isfield(params,'isProgrammedSRS') && params.isProgrammedSRS == 0
-                                rf_wait_time = 0.00;   
-
-                                disp('LINEAR SRS Sweep Pulse');  
-
-                                rf_tof_srs_power_list = [12];
-                                rf_tof_srs_power = getScanParameter(rf_tof_srs_power_list,seqdata.scancycle,...
-                                    seqdata.randcyclelist,'rf_tof_srs_power','dBm');
-
-                                sweep_time = rf_tof_pulse_length;
-
-                                rf_srs_opts = struct;
-                                rf_srs_opts.Address=29;                       
-                                rf_srs_opts.EnableBNC=1;                         % Enable SRS output 
-                                rf_srs_opts.PowerBNC = rf_tof_srs_power;                           
-                                rf_srs_opts.Frequency = rf_tof_freq;     
-
-                                disp(['     Freq Center  : ' num2str(rf_tof_freq) ' MHz']);
-                                disp(['     Freq Delta   : ' num2str(rf_tof_delta_freq*1E3) ' kHz']);
-                                disp(['     Pulse Time   : ' num2str(rf_tof_pulse_length) ' ms']);
-
-                                % Enable uwave frequency sweep
-                                rf_srs_opts.EnableSweep=1;                    
-                                rf_srs_opts.SweepRange=abs(rf_tof_delta_freq);  
-
-                                % Set RF Source to SRS
-                                setDigitalChannel(calctime(curtime,-5),'RF Source',1);
-                                
-                                % Set RF Source to SRS 29
-                                setDigitalChannel(calctime(curtime,-5),'SRS Source post spec',1);
-                                
-                                % Set RF Source to SRS
-                                setDigitalChannel(calctime(curtime,-5),'SRS Source',0);                                
-
-                                % Set SRS Direction to RF
-                                setDigitalChannel(calctime(curtime,-5),'K uWave Source',0);
-
-                                % Set RF power to low
-                                setAnalogChannel(calctime(curtime,-5),'RF Gain',rf_off_voltage);
-
-                                % Set initial modulation
-                                setAnalogChannel(calctime(curtime,-5),'uWave FM/AM',1);
-
-                                % Turn on the RF
-                                setDigitalChannel(calctime(curtime,...
-                                    rf_wait_time + pulse_length + extra_wait_time),'RF TTL',1);    
-
-                                % At +-1V input for +- full deviation
-                                % The last argument means which votlage fucntion to use
-                                AnalogFunc(calctime(curtime,...
-                                    rf_wait_time + pulse_length + extra_wait_time),...
-                                    'uWave FM/AM',...
-                                    @(t,T) 1-2*t/T,...
-                                    sweep_time,sweep_time,1);
-                                
-                                setAnalogChannel(calctime(curtime,...
-                                    rf_wait_time + pulse_length + extra_wait_time),...
-                                    'RF Gain',10);
-
-                                % Turn off the RF
-                                setDigitalChannel(calctime(curtime,...
-                                    rf_wait_time + pulse_length + extra_wait_time+rf_tof_pulse_length),'RF TTL',0); 
-
-                                % Turn off VVA
-                                setAnalogChannel(calctime(curtime,...
-                                    rf_wait_time + pulse_length + extra_wait_time+rf_tof_pulse_length),'RF Gain',rf_off_voltage);
-
-                                % Set RF Source to SRS
-                                setDigitalChannel(calctime(curtime,...
-                                    rf_wait_time + pulse_length + extra_wait_time+rf_tof_pulse_length+1),'RF Source',0);
-
-                                % Program the SRS
-                                programSRS_BNC(rf_srs_opts); 
-                                params.isProgrammedSRS = 1;
-                            end
-
-                    end
-   
-                end
-            end
-    
-        end
+        % Turn AM on and off if need
+        setAnalogChannel(calctime(curtime,-.5),'K Probe/OP AM',K_power);
+        setAnalogChannel(calctime(curtime,pulse_length+.5),'K Probe/OP AM',0,1);
+        
         %Repump on during the image pulse
         if flags.K_repump_during_image
             DigitalPulse(curtime,'K Repump TTL',pulse_length,0);

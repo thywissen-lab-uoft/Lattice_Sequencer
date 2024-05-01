@@ -13,8 +13,11 @@ seqdata.times.tof_start = curtime; %Forms a list of useful time references.
 %Choose to take a dark image or not
 seqdata.flags.HF_absorption_image.TakeDarkImage = 1;
 
-%Load in the absorption imaging parameters.
+%Load in the absorption imaging parameters (detunings and timings)
 seqdata.params.HF_absorption_image = Load_HF_Absorption_Image_Parameters(); 
+
+%Set other Imaging parameters
+defVar('HF_probe_pwr',0.9,'V') %HF probe power 
 
 seqdata.times.tof_end = calctime(curtime,seqdata.params.HF_absorption_image.timings.tof); %Also append the time that the image is actually taken to the time list
 
@@ -25,35 +28,13 @@ seqdata.times.tof_end = calctime(curtime,seqdata.params.HF_absorption_image.timi
 flags = seqdata.flags.HF_absorption_image;
 params = seqdata.params.HF_absorption_image;
 
-% Display the imaging flags (conditions of imaging)
+% Display the imaging flags (conditions of imaging) (not used?)
 str=['High Field Absorption Imaging'];
 
 % K Probe Detuning 
 K_detuning = params.detunings.KTrap;
 
-%% Turn off magnetic fields long after TOF is complete
-%Turns off the FB, shims and QP coils 50 ms after TOF
-
-% Turn off feshbach sometime after the time of flight
-clear('ramp');
-ramp.fesh_ramptime = 100; 
-ramp.fesh_ramp_delay = 0;
-ramp.fesh_final = 0;
-ramp.settling_time = 10;
-ramp_bias_fields(calctime(curtime,params.timings.tof+50), ramp);
-
-% Turn off the shims sometime after the time of flight
-setAnalogChannel(calctime(curtime,params.timings.tof+50),'X Shim',0,3);
-setAnalogChannel(calctime(curtime,params.timings.tof+50),'Y Shim',0,4);
-setAnalogChannel(calctime(curtime,params.timings.tof+50),'Z Shim',0,3);
-
-% Turn off feshbach sometime after the time of flight (used to be 100ms after,
-% changed to 50 ms to match FB and shims)
-ramp_time = 100;
-AnalogFuncTo(calctime(curtime,params.timings.tof+50),'Coil 16',...
-    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),ramp_time,ramp_time,0,1);    
-AnalogFuncTo(calctime(curtime,params.timings.tof+50),'Coil 15',...
-    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),ramp_time,ramp_time,0,1);   
+ 
    
 
 %% Prepare detunings
@@ -89,7 +70,7 @@ end
 freq = (120+HF_prob_freq)*1E6;
 
 % Power in HF imaging beam  
-pow = params.powers.HF_probe;
+pow = getVar('HF_probe_pwr');
 
 % Rigol Channel 2 (-9 HF high field imaging)
 ch2=struct;
@@ -114,21 +95,46 @@ setDigitalChannel(calctime(curtime,500),'High Field Shutter',0);
 % Update curtime to the imaging time (add the tof).
 curtime = calctime(curtime,params.timings.tof);
 
+%Time Delay for the PixelFly camera
 tD_list = [-20];-20;
 tD=getScanParameter(tD_list,seqdata.scancycle,...
     seqdata.randcyclelist,'pixel_delay','us');
 
 % Take the first absorption image with atoms
-
 params.isProgrammedSRS = 0;
-params=do_HF_abs_pulses(curtime,params,flags,tD*1e-3);
+do_HF_abs_pulses(curtime,params,flags,tD*1e-3);
 
 % Wait 200 ms for all traces of atoms to be gone 
-% RHYS - could be shorter
+
 curtime = calctime(curtime,200); 
 
 % Take the second absorption image without atoms
+params.isProgrammedSRS = 1; %Prevents an error, SRS is programmed on the first set of images
 do_HF_abs_pulses(curtime,params,flags,tD*1e-3);
+
+
+%% Turn off magnetic fields long after TOF is complete
+%Turns off the FB, shims and QP coils 100ms after TOF
+
+% Turn off feshbach sometime after the time of flight
+clear('ramp');
+ramp.fesh_ramptime = 100; 
+ramp.fesh_ramp_delay = 0;
+ramp.fesh_final = 0;
+ramp.settling_time = 10;
+ramp_bias_fields(calctime(curtime,-100), ramp);
+
+% Turn off the shims sometime after the time of flight
+setAnalogChannel(calctime(curtime,-100),'X Shim',0,3);
+setAnalogChannel(calctime(curtime,-100),'Y Shim',0,4);
+setAnalogChannel(calctime(curtime,-100),'Z Shim',0,3);
+
+% Turn off feshbach sometime after the time of flight 
+ramp_time = 100;
+AnalogFuncTo(calctime(curtime,-100),'Coil 16',...
+    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),ramp_time,ramp_time,0,1);    
+AnalogFuncTo(calctime(curtime,-100),'Coil 15',...
+    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),ramp_time,ramp_time,0,1);  
 
 %% Dark Image
 

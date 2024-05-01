@@ -1,27 +1,20 @@
 % Absorption pulse function -- triggers cameras,pulses probes, and does RF
 % spin flip during TOF
-
 function params = do_HF_abs_pulses(curtime,params,flags,tD)
-
     global seqdata
 
+    %Trigger the pixelfly camera
     pulse_length = params.timings.pulse_length;
-
-    %This is where the cameras are triggered.
     ScopeTriggerPulse(curtime,'Camera triggers',pulse_length);
-
     DigitalPulse(calctime(curtime,tD),'PixelFly Trigger',pulse_length,1);
 
-
+    % Pulse the imaging beam for the first time
     extra_wait_time = params.timings.wait_time;
-    % Pulse the imaging beam
     DigitalPulse(calctime(curtime,extra_wait_time),'K High Field Probe',pulse_length,0);
-
-
+    
     % Pulse the imaging beam again
     DigitalPulse(calctime(curtime,params.timings.time_diff_two_absorp_pulses...
-    +pulse_length+extra_wait_time),...                                                                                                                
-    'K High Field Probe',pulse_length,0);                 
+    +pulse_length+extra_wait_time),'K High Field Probe',pulse_length,0);                                                                                                              'K High Field Probe',pulse_length,0);                 
 
     mF1=-9/2;   % Lower energy spin state
     mF2=-7/2;   % Higher energy spin state
@@ -44,8 +37,8 @@ function params = do_HF_abs_pulses(curtime,params,flags,tD)
         end                      
 
     end
-    addOutputParam('rf_tof_shift',rf_tof_shift,'kHz')                   
-
+    addOutputParam('rf_tof_shift',rf_tof_shift,'kHz') 
+    
     rf_tof_freq =  rf_tof_shift*1e-3 +... 
         abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);   
     addOutputParam('rf_tof_freq',rf_tof_freq,'MHz');  
@@ -58,8 +51,6 @@ function params = do_HF_abs_pulses(curtime,params,flags,tD)
     rf_tof_delta_freq_list = 40*1e-3; [40]*1e-3;[35]*1e-3;[20]*1e-3;[12]*1e-3;12; %20kHz for 15ms TOF
     rf_tof_delta_freq = getScanParameter(rf_tof_delta_freq_list,seqdata.scancycle,...
         seqdata.randcyclelist,'rf_tof_delta_freq','MHz');
-    %                     delta_freq= 0.05; %0.02            
-    %                     addOutputParam('rf_delta_freq_HF',delta_freq,'MHz');
 
     % RF Pulse Time
     rf_tof_pulse_length_list = [1];[1];%1
@@ -74,8 +65,8 @@ function params = do_HF_abs_pulses(curtime,params,flags,tD)
     % RF Gain Off
     rf_off_voltage=-10;-9.9;
 
-    %                     sweep_type = 'DDS';
-    %                     sweep_type = 'SRS_HS1';
+    %sweep_type = 'DDS';
+    %sweep_type = 'SRS_HS1';
     sweep_type = 'SRS_LINEAR';
 
     switch sweep_type
@@ -324,7 +315,6 @@ function params = do_HF_abs_pulses(curtime,params,flags,tD)
 
                 % Program the SRS
                 programSRS_BNC(rf_srs_opts); 
-                params.isProgrammedSRS = 1;
             end
 
     end

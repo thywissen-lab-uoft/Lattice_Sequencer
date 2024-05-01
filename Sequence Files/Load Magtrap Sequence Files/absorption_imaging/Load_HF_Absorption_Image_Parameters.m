@@ -33,9 +33,6 @@ function params = Load_HF_Absorption_Image_Parameters()
     params.HF_rf_shift.attractive_lattice = [62];    % 15 ms tof, 207 G, (zshim=0)
     params.HF_rf_shift.attractive_xdt = [140];          % 21 ms tof, 207 G (zshim=0)
 
-    %% HF Probe beam powers
-    defVar('HF_probe_pwr',0.9,'V')
-    params.powers.HF_probe = getVar('HF_probe_pwr');
     
     %% Timing parameters
     params.timings.tof = seqdata.params.tof;

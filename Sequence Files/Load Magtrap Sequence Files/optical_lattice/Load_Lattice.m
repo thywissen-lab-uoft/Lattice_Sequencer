@@ -870,25 +870,14 @@ end
 %% Second Waveplate Rotation
 % Rotate waveplate to distribute more power to the lattice
 
-if seqdata.flags.lattice_rotate_waveplate_2
-  
-    
+if seqdata.flags.lattice_rotate_waveplate_2 
     dispLineStr('Rotate waveplate again',curtime)    
-%     
-%       wp_Trot2 = 150; 
-%     P_RotWave_I = getVar('rotate_waveplate1_value');
-%     P_RotWave_II = 0.99;
-        %Rotate waveplate again to divert the rest of the power to lattice beams
-% curtime = AnalogFunc(calctime(curtime,0),41,...
-%         @(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),...
-%         wp_Trot2,wp_Trot2,P_RotWave_I,P_RotWave_II);     
-    
   % Ramp waveplate to divert all power to lattices
   wp_Trot2 = 150; 
     P_RotWave_I = getVar('rotate_waveplate1_value');
     curtime = AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-        wp_Trot2,wp_Trot2,P_RotWave_I,1,4);     
+        wp_Trot2,wp_Trot2,P_RotWave_I,1,4);    
 end
 
 

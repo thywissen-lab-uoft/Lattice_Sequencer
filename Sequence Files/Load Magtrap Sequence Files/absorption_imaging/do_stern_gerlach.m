@@ -24,7 +24,7 @@ function do_stern_gerlach(seqdata,flags,params)
   
 %% Ramp down the Feshbach field
   % Turn down the FB field (unless doing imaging at high field).
-  if (params.SG_fesh_ramptime >= 0 && ~flags.High_Field_Imaging)
+  if (params.SG_fesh_ramptime >= 0)
     % If the desired value is greater than 0, ramp to this value.
     if params.SG_fesh_val > 0
       % switch on and ramp to value

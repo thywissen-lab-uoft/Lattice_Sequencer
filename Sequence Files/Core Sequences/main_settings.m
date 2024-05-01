@@ -407,7 +407,7 @@ defVar('lattice_pin_time', 0.2, 'ms');
 
 seqdata.flags.do_lattice_am_spec            = 0;    % Amplitude modulation spectroscopy    
 seqdata.flags.lattice_rotate_waveplate_2    = 0;    % Second waveplate rotation 95% 
-seqdata.flags.lattice_lattice_ramp_3        = 0;    % Secondary lattice ramp for fluorescence imaging
+seqdata.flags.lattice_fluor_ramp            = 0;    % Secondary lattice ramp for fluorescence imaging
 seqdata.flags.lattice_pin                   = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

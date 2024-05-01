@@ -891,9 +891,25 @@ if seqdata.flags.lattice_rotate_waveplate_2
         wp_Trot2,wp_Trot2,P_RotWave_I,1,4);     
 end
 
+
+
+%% Amplitude Modulation Spectroscopy of Lattice
+% This code applies amplitude modulation to XYZ optical lattices.  This is
+% done by programming a Rigol generator that goes into the sum input of the
+% Newport regulation boxes.
+
+if seqdata.flags.do_lattice_am_spec
+   curtime = lattice_am_spectroscopy(curtime);
+end
+
+%% Vortex Pulse
+if seqdata.flags.lattice_PA
+    curtime = PA_pulse(curtime);
+end
+
 %% Ramp lattice after spectroscopy/plane selection
 
-if seqdata.flags.lattice_lattice_ramp_3
+if seqdata.flags.lattice_fluor_ramp
     dispLineStr('Lattice Ramp 3',curtime)    
     ScopeTriggerPulse(curtime,'lattice_ramp_3');    
     %  Ramp Time
@@ -927,19 +943,6 @@ if seqdata.flags.lattice_lattice_ramp_3
     curtime = calctime(curtime,10);    
 end
 
-%% Amplitude Modulation Spectroscopy of Lattice
-% This code applies amplitude modulation to XYZ optical lattices.  This is
-% done by programming a Rigol generator that goes into the sum input of the
-% Newport regulation boxes.
-
-if seqdata.flags.do_lattice_am_spec
-   curtime = lattice_am_spectroscopy(curtime);
-end
-
-%% Vortex Pulse
-if seqdata.flags.lattice_PA
-    curtime = PA_pulse(curtime);
-end
 
 %% Fluorescence Imaging (current code)
 

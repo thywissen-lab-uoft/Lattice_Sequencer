@@ -382,9 +382,7 @@ if seqdata.flags.conductivity_ramp_FB && ~seqdata.flags.xdt_high_field_a
         end
                
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
-        ScopeTriggerPulse(curtime,'FB_ramp');
-        
-        
+        ScopeTriggerPulse(curtime,'FB_ramp');  
 
 end
 

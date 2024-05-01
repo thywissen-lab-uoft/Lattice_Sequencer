@@ -414,7 +414,7 @@ if seqdata.flags.lattice_lattice_ramp_1
 end
 %}
 %% Ramp down HF used for loading lattice (this flag is in dipole transfer)
-
+% CF : I beleive this is now depreciated
 if isfield(seqdata.flags,'xdt_ramp_up_FB_for_lattice') && seqdata.flags.xdt_ramp_up_FB_for_lattice
     dispLineStr('Ramping FB field (not sure why?).',curtime);
     seqdata.params.time_out_HF = curtime;
@@ -464,10 +464,11 @@ if (seqdata.flags.lattice_pin)
     curtime = calctime(curtime,2);    
 end
 
-%% Ramp FB back down to 20 G after pinning if high field ramps done in XDT
-% CF : THIS IS DEPRECIATED NEST FLAGS LIKE THIS MAKE ME SAD, FLAG
-% DEPENDENCIES SHOULD BE IN MAIN_SETTINGS.
 
+%% Ramp FB back down to 20 G after pinning if high field ramps done in XDT
+% CF : I believe this is decpreciated
+
+%{
 if seqdata.flags.xdt_high_field_a && ~seqdata.flags.High_Field_Imaging
     %Wait  after pinning
     curtime = calctime(curtime,50); 
@@ -518,7 +519,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
         ScopeTriggerPulse(curtime,'FB_ramp');
     
 end
-
+%}
 %% Optical Pumping
 % Optical pumping
 if (seqdata.flags.lattice_do_optical_pumping == 1)

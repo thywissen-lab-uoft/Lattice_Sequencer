@@ -465,6 +465,9 @@ if (seqdata.flags.lattice_pin)
 end
 
 %% Ramp FB back down to 20 G after pinning if high field ramps done in XDT
+% CF : THIS IS DEPRECIATED NEST FLAGS LIKE THIS MAKE ME SAD, FLAG
+% DEPENDENCIES SHOULD BE IN MAIN_SETTINGS.
+
 if seqdata.flags.xdt_high_field_a && ~seqdata.flags.High_Field_Imaging
     %Wait  after pinning
     curtime = calctime(curtime,50); 
@@ -648,7 +651,9 @@ end
 %
 % The direction of the field gradient can also be accurately measured with
 % by applying a small shim field and measuring the "stripes"
-
+%
+% CF : WHY HAVE PLANE SELECTION BEFORE THE SPECROTOPSCY? SHOULD BE RIGHT
+% BEFORE IMAGING?
 if seqdata.flags.do_plane_selection
     dispLineStr('Plane Selection',curtime);     
     curtime = plane_selection(curtime);      
@@ -886,7 +891,8 @@ if seqdata.flags.lattice_rotate_waveplate_2
 end
 
 %% Ramp lattice after spectroscopy/plane selection
-
+% CF : WHAT IS THE POINT OF HAVING RAMP 2 AND RAMP 3?
+% % WE SHOULD JUST HAVE ONE RAMP AFTER PINNING RIGHT?
 if seqdata.flags.lattice_lattice_ramp_2
     dispLineStr('Lattice Ramp 2',curtime)    
     ScopeTriggerPulse(curtime,'lattice_ramp_2');
@@ -1217,6 +1223,7 @@ curtime = calctime(curtime,50);
 end
 %% Fluorescence Imaging (Legacy code)
 
+% CF: Let's just remove this now?!
 
 % Plane Selection (earlier)
 %   - Apply FB + vertical gradient for selection

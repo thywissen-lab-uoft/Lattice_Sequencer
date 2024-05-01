@@ -5,6 +5,7 @@ curtime = timein;
 %% Magnetic Field ramps for HF imaging
 
 %% Magnetic Field Ramps for LF imaging
+
 %% Turn off feshbach field
 
 if seqdata.flags.lattice_off_feshbach_off   

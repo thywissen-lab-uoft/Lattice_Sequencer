@@ -152,7 +152,7 @@ seqdata.flags.High_Field_Imaging            = 0; % High field imaging (shouldn't
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[15],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[.1],'ms');
@@ -333,12 +333,12 @@ defVar('xdtB_evap_end_ramp_time',  [250],'ms');
 seqdata.flags.xdtB_feshbach_unhop           = 0;
 
 % Feshbach
-seqdata.flags.xdtB_feshbach_off             = 0;
+seqdata.flags.xdtB_feshbach_off             = 1;
 defVar('xdtB_feshbach_off_field',20,'G');
 defVar('xdtB_feshbach_off_ramptime',100,'ms');
 
 % Unlevitate
-seqdata.flags.xdtB_levitate_off             = 0;
+seqdata.flags.xdtB_levitate_off             = 1;
 defVar('xdtB_levitate_off_ramptime',100,'ms');
 
 % piezo kick for vertical trap frequency
@@ -360,13 +360,12 @@ defVar('xdtB_piezo_vert_kick_holdtime', [5:.5:12],'ms');
 seqdata.flags.rotate_waveplate_1   = 1;   
 defVar('rotate_waveplate1_duration',600,'ms'); % How smoothly to rotate
 defVar('rotate_waveplate1_delay',-700,'ms');   % How long before lattice loading 
-defVar('rotate_waveplate1_value',0.05,'normalized power'); % Amount of power going to lattices
-
+defVar('rotate_waveplate1_value',0.03,'normalized power'); % Amount of power going to lattices
 
 %% Optical Lattice Loading
 
 % These are the lattice flags sorted roughly chronologically. 
-seqdata.flags.lattice_load_1            = 1;    
+seqdata.flags.lattice_load_1            = 0;    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Loading optical lattical
@@ -390,7 +389,7 @@ defVar('lattice_ramp_1_round_trip_equilibriation_time',[2000],'ms');            
 
 
 %% Optical Lattice
-seqdata.flags.lattice                   = 1; 
+seqdata.flags.lattice                   = 0; 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % More Lattice Flags
@@ -523,12 +522,12 @@ end
 % Magnetic field
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Ramp magnetic fields before performing 
-seqdata.flags.lattice_off_feshbach_off          = 1;
+seqdata.flags.lattice_off_feshbach_off          = 0;
 defVar('lattice_off_feshbach_off_field',20,'G');
 defVar('lattice_off_feshbach_off_ramptime',100,'ms');
 
 % Unlevitate
-seqdata.flags.lattice_off_levitate_off          = 1;
+seqdata.flags.lattice_off_levitate_off          = 0;
 defVar('lattice_off_levitate_off_ramptime',100,'ms');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

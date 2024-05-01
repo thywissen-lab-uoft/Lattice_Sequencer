@@ -482,57 +482,6 @@ end
 if (seqdata.flags.lattice_pulse_z_for_alignment == 1 )
     curtime = Pulse_Lattice(curtime,4);
 end
-
-%% Levitation gradient
-if seqdata.flags.image_levitate
-
-% QP Value to ramp to
-TOF_QP_List =  [0.2];.14;0.115; %set to levitate 
-TOF_QP = getScanParameter(TOF_QP_List,seqdata.scancycle,...
-seqdata.randcyclelist,'TOF_QPReverse','V');  
-
-
-% Turn off 15/16 switch
-setDigitalChannel(curtime,'15/16 Switch',0); 
-
-curtime = calctime(curtime,10);
-
-% Turn on reverse QP switch
-setDigitalChannel(curtime,'Reverse QP Switch',1);
-curtime = calctime(curtime,10);
-
-% Ramp up transport supply voltage
-QP_FFValue = 23*(TOF_QP/.125/30); % voltage FF on delta supply
-curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
-    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-    5,5,QP_FFValue);
-curtime = calctime(curtime,50);
-
-qp_ramp_time = 5;
-curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,TOF_QP,1);
-
-curtime = calctime(curtime,50);
-
-%Ramp back down after image
-AnalogFuncTo(calctime(curtime,getVar('tof')+5),'Coil 15',...
-         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),qp_ramp_time,qp_ramp_time,0,1);  
-
-AnalogFuncTo(calctime(curtime,getVar('tof')+5),'Transport FF',...
-     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-         5,5,0);        
-             
-% Go back to "normal" configuration
-%curtime = calctime(curtime,10);
-% Turn off reverse QP switch
-setDigitalChannel(calctime(curtime,getVar('tof')+15),'Reverse QP Switch',0);
-%curtime = calctime(curtime,10);
-
-% Turn on 15/16 switch
-setDigitalChannel(calctime(curtime,getVar('tof')+25),'15/16 Switch',1);
-
-
-end
    
 
 %% Initiate Time of Flight in absorption image
@@ -547,36 +496,8 @@ if seqdata.flags.image_type == 0
     for i = [7 9:17 22:24 20] 
         setAnalogChannel(calctime(curtime,0),i,0,1);
     end   
-    
-    if ~seqdata.flags.High_Field_Imaging         
-        if ~seqdata.flags.image_levitate
-            % Turn off QP Coils (analog control)    
-            setAnalogChannel(calctime(curtime,0),'Coil 15',-1,1);            % C15
-            curtime = setAnalogChannel(calctime(curtime,0),'Coil 16',0,1);  % C16
-            curtime = setAnalogChannel(curtime,'kitten',-1,1);               % Kitten                          
-        end
 
-        % MOT/QCoil TTL (separate switch for coil 15 (TTL) and 16 (analog))
-        qp_switch1_delay_time = 0;
-        if I_kitt == 0
-            %use fast switch
-            setDigitalChannel(curtime,'Coil 16 TTL',1); % Turn off Coil 16
-            setDigitalChannel(calctime(curtime,500),'Coil 16 TTL',0); % Turn on Coil 16
-        else
-            %Cannot use Coil 16 fast switch if atoms have not be transferred to
-            %imaging direction!
-        end
-        % Turn off 15/16 switch (10 ms later)
-        if ~seqdata.flags.image_stern_gerlach_F && ~seqdata.flags.image_stern_gerlach_mF
-            setDigitalChannel(calctime(curtime,qp_switch1_delay_time),'15/16 Switch',0);
-            setAnalogChannel(calctime(curtime,qp_switch1_delay_time),'15/16 GS',0);
-        end
-        
-    end
-    
-%     latt_times = [300];
-    
-    % Turn off XDT (if they aren't already off)
+    % Turn off XDT (if they aren't already off for safety)
     if seqdata.flags.xdt        
         % Read XDT Powers right before tof
         P1 = getChannelValue(seqdata,'dipoleTrap1',1);
@@ -584,18 +505,19 @@ if seqdata.flags.image_type == 0
         addOutputParam('xdt1_final_power',P1,'W');
         addOutputParam('xdt2_final_power',P2,'W');
         % Turn off AOMs 
-        setDigitalChannel(calctime(curtime,0),'XDT TTL',1);     %add latt_times+50 for round-trip
+        setDigitalChannel(calctime(curtime,0),'XDT TTL',1);     
         % XDT1 Power Req. Off
         setAnalogChannel(calctime(curtime,0),'dipoleTrap1',... 
-            seqdata.params.ODT_zeros(1));                       %add latt_times+50 for round-trip
+            seqdata.params.ODT_zeros(1));                      
         % XDT2 Power Req. Off
-        setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));    %add latt_times+50 for round-trip
+        setAnalogChannel(calctime(curtime,0),'dipoleTrap2',...
+            seqdata.params.ODT_zeros(2));  
         % I think this channel is unused now
         setDigitalChannel(calctime(curtime,-1),'XDT Direct Control',1);       
     end          
-%   setDigitalChannel(calctime(curtime,0),'XDT TTL',1);     %add latt_times+50 for round-trip
 
-    % Turn off lattices (if they haven't already turned off)
+
+    % Turn off lattices (if they haven't already turned off for safety)
     if seqdata.flags.lattice        
         % Set Analog Channels to zero lattice depth
         setAnalogChannel(calctime(curtime,0),'xLattice', ...
@@ -607,33 +529,56 @@ if seqdata.flags.image_type == 0
         %Turn off TTL and disable the integrator
         setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1); 
         setDigitalChannel(calctime(curtime,0),'Lattice Direct Control',1);     
-        % used for round trip measurements from lattice
-%         %  Ramp xLattice to the first value ("0Er")% %         
-%         AnalogFuncTo(calctime(curtime,0),'xLattice',...
-%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-%             latt_times(1), latt_times(1), seqdata.params.lattice_zero(1));% % 
-% %         % Ramp yLattice to the first value ("0Er")% % 
-%         AnalogFuncTo(calctime(curtime,0),'yLattice',...
-%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-%             latt_times(1), latt_times(1), seqdata.params.lattice_zero(2));   % % 
-% %         % Ramp zLattice to the first value ("0Er")% % 
-%         AnalogFuncTo(calctime(curtime,0),'zLattice',...
-%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-%             latt_times(1), latt_times(1), seqdata.params.lattice_zero(3));   %             
-% %         % Turn off TTL and disable the integrator
-%         setDigitalChannel(calctime(curtime,latt_times(1)),'yLatticeOFF',1); 
-%         setDigitalChannel(calctime(curtime,latt_times(1)),'Lattice Direct Control',1);         
     end     
-    curtime = calctime(curtime,0);    
+
 end
 
 %% Absorption Imaging
 
-if seqdata.flags.image_type == 0    
-    ScopeTriggerPulse(calctime(curtime,0),'TOF');    
-    dispLineStr('Absorption Imaging.',curtime);
-    curtime = absorption_image2(calctime(curtime,0.0));   
-end    
+% Check for High Field condition
+check_HF_Image();
+
+%Perform either HF or LF absorption imaging
+if isfield(seqdata.flags, 'HF_Imaging') && seqdata.flags.HF_Imaging
+    
+    if seqdata.flags.image_type == 0    
+        ScopeTriggerPulse(calctime(curtime,0),'TOF');    
+        dispLineStr('High Field Absorption Imaging.',curtime);
+        curtime = HF_absorption_image(calctime(curtime,0.0));   
+    end 
+    
+else
+    
+    %Turn off QP Coils if not doing HF imaging
+    setAnalogChannel(calctime(curtime,0),'Coil 15',-1,1);     % C15
+    setAnalogChannel(calctime(curtime,0),'Coil 16',0,1);      % C16
+    setAnalogChannel(calctime(curtime,0),'kitten',-1,1);      % Kitten
+    
+    % MOT/QCoil TTL (separate switch for coil 15 (TTL) and 16 (analog))
+    qp_switch1_delay_time = 0;
+    if I_kitt == 0
+        %use fast switch
+        setDigitalChannel(curtime,'Coil 16 TTL',1); % Turn off Coil 16
+        setDigitalChannel(calctime(curtime,500),'Coil 16 TTL',0); % Turn on Coil 16
+    else
+        %Cannot use Coil 16 fast switch if atoms have not be transferred to
+        %imaging direction!
+    end
+    
+    % Turn off 15/16 switch if doing SG imaging
+    if ~seqdata.flags.image_stern_gerlach_F && ~seqdata.flags.image_stern_gerlach_mF
+        setDigitalChannel(calctime(curtime,qp_switch1_delay_time),'15/16 Switch',0);
+        setAnalogChannel(calctime(curtime,qp_switch1_delay_time),'15/16 GS',0);
+    end
+    
+    %Perform Low Field Absorption Imaging
+    if seqdata.flags.image_type == 0    
+        ScopeTriggerPulse(calctime(curtime,0),'TOF');    
+        dispLineStr('Absorption Imaging.',curtime);
+        curtime = absorption_image2(calctime(curtime,0.0));   
+    end  
+    
+end
 %% Take Background Fluoresence Image
 
 if seqdata.flags.lattice
@@ -658,9 +603,9 @@ end
 
 
 
-%% Demag pulse
+%% Demag pulse (the demag sequence for HF_imaging is the same for no HF imaging, can remove flag check?)
 if seqdata.flags.misc_ramp_fesh_between_cycles
-    if seqdata.flags.High_Field_Imaging
+    if isfield(seqdata.flags, 'HF_Imaging') && seqdata.flags.HF_Imaging
     % This is meant to leave material near the atoms with the same
     % magnetization at the beginning of a new cycle, irrespective whether
     % some strong field was pulsed/snapped off or not during the cycle that
@@ -669,20 +614,18 @@ if seqdata.flags.misc_ramp_fesh_between_cycles
         fesh_ramptime = 100;
         fesh_final = 20;
         fesh_ontime = 1000;
-        setDigitalChannel(calctime(curtime,0),31,1);
-curtime = AnalogFunc(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),fesh_ramptime,fesh_ramptime,0,fesh_final);
+curtime = AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),fesh_ramptime,fesh_ramptime,0,fesh_final);
 curtime = calctime(curtime,fesh_ontime);
-curtime = AnalogFuncTo(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),fesh_ramptime,fesh_ramptime,0);
-curtime = setAnalogChannel(calctime(curtime,100),37,0);
+curtime = AnalogFuncTo(calctime(curtime,0),'FB current',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),fesh_ramptime,fesh_ramptime,0);
+curtime = setAnalogChannel(calctime(curtime,100),'FB current',0);
     else 
         fesh_ramptime = 100;
         fesh_final = 20;
         fesh_ontime = 1000;
-        setDigitalChannel(calctime(curtime,0),31,1);
-curtime = AnalogFunc(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),fesh_ramptime,fesh_ramptime,0,fesh_final);
+curtime = AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),fesh_ramptime,fesh_ramptime,0,fesh_final);
 curtime = calctime(curtime,fesh_ontime);
-curtime = AnalogFuncTo(calctime(curtime,0),37,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),fesh_ramptime,fesh_ramptime,0);
-curtime = setAnalogChannel(calctime(curtime,100),37,0);
+curtime = AnalogFuncTo(calctime(curtime,0),'FB current',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),fesh_ramptime,fesh_ramptime,0);
+curtime = setAnalogChannel(calctime(curtime,100),'FB current',0);
     end
 end
     

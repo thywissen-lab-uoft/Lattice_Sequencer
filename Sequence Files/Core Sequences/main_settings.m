@@ -144,8 +144,6 @@ seqdata.flags.image_levitate                = 0; % 2: apply a gradient during To
 seqdata.flags.image_iXon                    = 0; % (unused?) use iXon camera to take an absorption image (only vertical)
 seqdata.flags.image_F1_pulse                = 0; % (unused?) repump Rb F=1 before/during imaging (unused?)
 
-seqdata.flags.High_Field_Imaging            = 0; % High field imaging (shouldn't this be automatic?)
-
 %1= image out of QP, 0=image K out of XDT , 2 = obsolete, 
 %3 = make sure shim are off for D1 molasses (should be removed)
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?

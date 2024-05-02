@@ -365,7 +365,7 @@ defVar('rotate_waveplate1_value',0.06,'normalized power'); % Amount of power goi
 %% Load the Optical Lattice
 
 % These are the lattice flags sorted roughly chronologically. 
-seqdata.flags.lattice_load            = 0;    
+seqdata.flags.lattice_load            = 1;    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Loading optical lattical
@@ -422,7 +422,7 @@ elseif seqdata.flags.conductivity_mod_direction == 2
 end    
 
 %% Optical Lattice
-seqdata.flags.lattice                       = 0; 
+seqdata.flags.lattice                       = 1; 
 
 % Pin 
 seqdata.flags.lattice_pin                   = 1;
@@ -502,9 +502,12 @@ seqdata.IxonMultiPiezos=[];
 seqdata.flags.lattice_HF_old                   = 0;
  
 %% Optical Lattice Turn off Procedure
-seqdata.flags.lattice_off                       = 0;    % Master Flag
+seqdata.flags.lattice_off                       = 1;    % Master Flag
 
-% Ramp magnetic fields before performing 
+% Turning off lattice only matters if the lattice was on to begin with!
+if ~seqdata.flags.lattice_load;seqdata.flags.lattice_off  =0;end
+
+% Turn of feshbach field
 seqdata.flags.lattice_off_feshbach_off          = 0;
 defVar('lattice_off_feshbach_off_field',20,'G');
 defVar('lattice_off_feshbach_off_ramptime',100,'ms');
@@ -512,9 +515,7 @@ defVar('lattice_off_feshbach_off_ramptime',100,'ms');
 seqdata.flags.lattice_off_levitate_off          = 0;
 defVar('lattice_off_levitate_off_ramptime',100,'ms');
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BandMapping
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 seqdata.flags.lattice_off_bandmap                           = 1;
 defVar('lattice_bm_time',[.5],'ms');
 seqdata.flags.lattice_off_bandmap_xdt_off_simultaneous     = 1;         % Turn off XDT at same time as lattice?

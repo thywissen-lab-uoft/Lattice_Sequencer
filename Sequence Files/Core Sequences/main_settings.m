@@ -57,7 +57,7 @@ seqdata.flags.misc_program4pass             = 1; % Update four-pass frequency
 seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
 seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[1.98],'V');[1.96]
+defVar('objective_piezo',[1.75],'V');[1.96];
 % 0.1V = 700 nm, larger means further away from chamber
 % 1 V= 7 um
 % 10 V = 70 um
@@ -320,7 +320,7 @@ seqdata.flags.xdtB_rf_mix_feshbach          = 0;
 
 % Evaporation
 seqdata.flags.xdtB_evap                     = 1;
-defVar('xdtB_evap_power',[0.085],'W');
+defVar('xdtB_evap_power',[0.085],'W');.068;
 defVar('xdtB_evap_time',[5000],'ms');
 defVar('xdtB_evap_tau_fraction',3.5','arb')
 
@@ -333,12 +333,12 @@ defVar('xdtB_evap_end_ramp_time',  [250],'ms');
 seqdata.flags.xdtB_feshbach_unhop           = 0;
 
 % Feshbach
-seqdata.flags.xdtB_feshbach_off             = 0;
+seqdata.flags.xdtB_feshbach_off             = 1;
 defVar('xdtB_feshbach_off_field',20,'G');
 defVar('xdtB_feshbach_off_ramptime',100,'ms');
 
 % Unlevitate
-seqdata.flags.xdtB_levitate_off             = 0;
+seqdata.flags.xdtB_levitate_off             = 1;
 defVar('xdtB_levitate_off_ramptime',100,'ms');
 
 % piezo kick for vertical trap frequency
@@ -365,7 +365,7 @@ defVar('rotate_waveplate1_value',0.06,'normalized power'); % Amount of power goi
 %% Load the Optical Lattice
 
 % These are the lattice flags sorted roughly chronologically. 
-seqdata.flags.lattice_load_1            = 1;    
+seqdata.flags.lattice_load_1            = 0;    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Loading optical lattical
@@ -386,6 +386,7 @@ defVar('lattice_load_holdtime',[0],'ms');
 % If you want to do a round trip
 seqdata.flags.lattice_load_1_round_trip   = 0;       % Load the lattices; (1: normal, 2:single lattice, 3: 
 defVar('lattice_ramp_1_round_trip_equilibriation_time',[2000],'ms');            % Hold time after loading before doing round trip
+
 
 %% Conductivity Experiment
 seqdata.flags.lattice_conductivity_new      = 0;   % New sequence created July 25th, 2023
@@ -421,7 +422,7 @@ elseif seqdata.flags.conductivity_mod_direction == 2
 end    
 
 %% Optical Lattice
-seqdata.flags.lattice                       = 1; 
+seqdata.flags.lattice                       = 0; 
 
 % Pin 
 seqdata.flags.lattice_pin                   = 1;
@@ -466,7 +467,7 @@ seqdata.flags.plane_selection.useFeedback   = 1;
 seqdata.flags.plane_selection.dotilt        = 0;
 
 % Default Plane Selection No Tilt Settings
-freq_offset_notilt_list = 540;
+freq_offset_notilt_list = 530;
 freq_offset_amplitude_notilt_list = [15];
 defVar('qgm_plane_uwave_frequency_offset_notilt',freq_offset_notilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_notilt',freq_offset_amplitude_notilt_list,'kHz');
@@ -501,7 +502,7 @@ seqdata.IxonMultiPiezos=[];
 seqdata.flags.lattice_HF_old                   = 0;
  
 %% Optical Lattice Turn off Procedure
-seqdata.flags.lattice_off                       = 1;    % Master Flag
+seqdata.flags.lattice_off                       = 0;    % Master Flag
 
 % Ramp magnetic fields before performing 
 seqdata.flags.lattice_off_feshbach_off          = 0;

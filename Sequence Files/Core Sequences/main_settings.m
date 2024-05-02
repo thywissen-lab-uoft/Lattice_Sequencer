@@ -423,6 +423,7 @@ end
 
 %% Optical Lattice
 seqdata.flags.lattice                       = 1; 
+if ~seqdata.flags.lattice_load;seqdata.flags.lattice  =0;end
 
 % Pin 
 seqdata.flags.lattice_pin                   = 1;
@@ -500,10 +501,10 @@ seqdata.IxonMultiExposures=[];
 seqdata.IxonMultiPiezos=[];
 %% Optical Lattice : OLD HIGH FIELD EXPERIMENT
 seqdata.flags.lattice_HF_old                   = 0;
- 
+ if ~seqdata.flags.lattice_load;seqdata.flags.lattice_HF_old  =0;end
+
 %% Optical Lattice Turn off Procedure
 seqdata.flags.lattice_off                       = 1;    % Master Flag
-
 % Turning off lattice only matters if the lattice was on to begin with!
 if ~seqdata.flags.lattice_load;seqdata.flags.lattice_off  =0;end
 

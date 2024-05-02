@@ -92,7 +92,7 @@ tH = getVar('lattice_load_holdtime');
 curtime=calctime(curtime,tH);       
     
 %% Unramp Lattices
-if seqdata.flags.lattice_load_1_round_trip == 1   
+if seqdata.flags.lattice_load_round_trip == 1   
 
 
      % Ramp the lattices to the desired value    

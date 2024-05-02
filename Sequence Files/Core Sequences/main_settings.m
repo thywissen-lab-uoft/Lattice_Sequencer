@@ -365,7 +365,7 @@ defVar('rotate_waveplate1_value',0.06,'normalized power'); % Amount of power goi
 %% Load the Optical Lattice
 
 % These are the lattice flags sorted roughly chronologically. 
-seqdata.flags.lattice_load_1            = 0;    
+seqdata.flags.lattice_load            = 0;    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Loading optical lattical
@@ -384,7 +384,7 @@ defVar('lattice_load_xdt_off_time',[500],'ms');
 defVar('lattice_load_holdtime',[0],'ms');
 
 % If you want to do a round trip
-seqdata.flags.lattice_load_1_round_trip   = 0;       % Load the lattices; (1: normal, 2:single lattice, 3: 
+seqdata.flags.lattice_load_round_trip   = 0;       % Load the lattices; (1: normal, 2:single lattice, 3: 
 defVar('lattice_ramp_1_round_trip_equilibriation_time',[2000],'ms');            % Hold time after loading before doing round trip
 
 

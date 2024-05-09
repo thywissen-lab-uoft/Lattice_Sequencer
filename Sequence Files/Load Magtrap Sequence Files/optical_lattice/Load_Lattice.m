@@ -494,7 +494,7 @@ if (seqdata.flags.lattice_do_optical_pumping == 1)
     end
     
     % OP pulse length
-    op_time_list = [3];%3
+    op_time_list = [0.1 .2 .3 .4 .5];%3
     optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle,...
         seqdata.randcyclelist, 'latt_op_time','ms');
     
@@ -586,15 +586,127 @@ clear('ramp');
         % Ramp the bias fields
 % newramp = struct('ShimValues',seqdata.params.shim_zero,...
 %             'FeshValue',10,'QPValue',0,'SettlingTime',100);
-newramp = struct('ShimValues',seqdata.params.shim_zero+[0 0 2],...
-            'FeshValue',0,'QPValue',0,'SettlingTime',100);
-        
+newramp = struct('ShimValues',seqdata.params.shim_zero,...
+            'FeshValue',20,'QPValue',0,'SettlingTime',100);
+%         
     % Ramp fields for pumping
     if ~seqdata.flags.do_plane_selection
         curtime = rampMagneticFields(calctime(curtime,0), newramp);       
     end
 
 curtime = calctime(curtime,50);    
+end
+%% Optical Pumping (C Fujiwara)
+
+if (seqdata.flags.lattice_do_optical_pumping == 2)
+    dispLineStr('Optical Pumping.',curtime);
+
+    doRampField = 1;
+    if doRampField 
+        % Get original X,Y, and Z values    
+        
+        theta = 62.0;               % pump angle relative to XY shims
+        dB = 4;                     % Total desired field shift (Gauss?)
+        dBx = dB*cosd(theta);       % x shim field shift
+        dBy = dB*sind(theta);       % y shim field shfit
+        G2A_x = 2;                  % G/A x shim
+        G2A_y = 0.983*2;            % G/A y shim      
+        
+        dIx = dBx/G2A_x;            % X shim current
+        dIy = dBy/G2A_y;            % Y shim current
+        dIz = 0;                    % should be no current in Z shim
+
+        % Shim Current Vector
+        Isnew = seqdata.params.shim_zero + [dIx dIy dIz];        
+
+        %Ramp the magnetic fields so that we are spin-polarized.
+        newramp = struct('ShimValues',Isnew,...
+            'FeshValue',1e-4,'QPValue',0,'SettlingTime',100);                
+        % Ramp fields for pumping
+curtime = rampMagneticFields(calctime(curtime,0), newramp); 
+    end
+    
+    defVar('lattice_op_time',[1],'ms');'latt_op_time';1;
+    defVar('lattice_op_power',1,'norm');%[0,1] 'latt_D1op_pwr';
+    defVar('lattice_op_power_repump',[5],'V');% in V'latt_op_repump_pwr' ;
+%     defVar('lattice_D2_op_detuning', [21],'MHz');21;
+    
+    t_pump = getVar('lattice_op_time');
+    power = getVar('lattice_op_power');
+    power_repump = getVar('lattice_op_power_repump');
+%     D2_op_detuning = getVar('lattice_D2_op_detuning');
+    if t_pump>0
+
+        % Make sure EIT Probe Shutter is closed
+        setDigitalChannel(calctime(curtime,-20),'EIT Shutter',0);
+        
+%         setAnalogChannel(calctime(curtime,-20),...
+%             'K Repump FM',D2_op_detuning,2);
+        
+%         setDigitalChannel(calctime(curtime,-20),'K Repump TTL',1); % Turn off K Repump AOM
+
+        % Break the thermal stabilzation of AOMs by turning them off
+        setDigitalChannel(calctime(curtime,-10),'EIT Probe TTL',0);
+        setAnalogChannel(calctime(curtime,-10),'F Pump',-1);
+        setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
+        
+        setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);    
+        
+        
+        
+        % Get OP power ready
+        setAnalogChannel(calctime(curtime,-5),'D1 OP AM',power); 
+
+        % Open D1 shutter (FPUMP + OPT PUMP)
+        setDigitalChannel(calctime(curtime,-8),'D1 Shutter', 1);%1: turn on laser; 0: turn off laser
+
+        
+%         setDigitalChannel(calctime(curtime,-10),'K Repump Shutter',1); % Open the repumper shutter   
+%         setDigitalChannel(calctime(curtime,-10),'K Sci Repump',1); % Open the repumper shutter   
+
+        
+        % Open optical pumping AOMS (allow light) and regulate F-pump
+        setDigitalChannel(curtime,'FPump Direct',0);        % I forget
+        setAnalogChannel(curtime,'F Pump',power_repump);    % Fpump power req
+        setDigitalChannel(curtime,'F Pump TTL',0);          % Fpump on
+        setDigitalChannel(curtime,'D1 OP TTL',1);           % D1 pump on 
+%         setDigitalChannel(curtime,'K Repump TTL',0); % Turn on repumper
+
+        % Wait for pumping
+        curtime = calctime(curtime,t_pump);
+
+        % Turn off OP before F-pump so atoms repumped back to -9/2.
+        setDigitalChannel(calctime(curtime,0),'D1 OP TTL',0);
+
+        % Wait a little bit of extra time (should not be necessary)
+    %     curtime=calctime(curtime,1);
+
+        setDigitalChannel(curtime,'FPump Direct',1);        % Fpump integrator?
+        setAnalogChannel(curtime,'F Pump',-1);%1            % Fpump pow req off
+        setDigitalChannel(curtime,'F Pump TTL',1);          % Fpump off
+        
+%         setDigitalChannel(curtime,'K Repump TTL',1);        % Turn off repumper
+
+        % Close D1 shutter shutter
+        setDigitalChannel(curtime,'D1 Shutter', 0);%2
+%         setDigitalChannel(curtime,'K Repump Shutter',0); % close repump shutter
+%             setDigitalChannel(calctime(curtime,0),'K Sci Repump',0); % close repump shutter   
+
+        %After optical pumping, turn on all AOMs for thermal stabilzation
+        setDigitalChannel(calctime(curtime,10),'EIT Probe TTL',1);
+        setDigitalChannel(calctime(curtime,10),'F Pump TTL',0);
+        setAnalogChannel(calctime(curtime,10),'D1 OP AM',1); 
+        setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);    
+%         setDigitalChannel(calctime(curtime,10),'K Repump TTL',0); % Turn on repumper
+
+    end
+
+
+
+        % Ramp the bias fields
+    newramp = struct('ShimValues',seqdata.params.shim_zero,...
+        'FeshValue',20,'QPValue',0,'SettlingTime',100);
+    curtime = rampMagneticFields(calctime(curtime,0), newramp);       
 end
 
 %% Field Ramps BEFORE uWave/RF Spectroscopy
@@ -835,6 +947,10 @@ if seqdata.flags.lattice_PA
     curtime = PA_pulse(curtime);
 end
 
+%% Ramp magnetic field for fluorescnce imaging
+if seqdata.flags.lattice_fluor
+    curtime = lattice_FL_fieldramp(curtime);
+end
 %% Ramp lattice after spectroscopy/plane selection
 
 if seqdata.flags.lattice_fluor_ramp
@@ -871,11 +987,9 @@ if seqdata.flags.lattice_fluor_ramp
     curtime = calctime(curtime,10);    
 end
 
-
 %% Fluorescence Imaging (current code)
 
-if seqdata.flags.lattice_fluor
-%     
+if seqdata.flags.lattice_fluor%     
 %     if seqdata.flags.lattice_ClearCCD_IxonTrigger        
 %         disp('Pre triggering the ixon to clear the CCD');        
 %         % The exposure time is set by how long the IxonTrigger is high if the
@@ -906,10 +1020,10 @@ if seqdata.flags.lattice_fluor
 %         %   seqdata.params.IxonTriggerTypes{end+1}='clear'
 %     end
     
-    dispLineStr('Fluorescence image',curtime);     
-    
-    curtime = lattice_FL_fieldramp(curtime);
+    dispLineStr('Fluorescence image',curtime); 
+%     curtime = lattice_FL_fieldramp(curtime);
     curtime = lattice_FL(curtime);
+    curtime = calctime(curtime,15);
 end
 
 %% Stripe imaging

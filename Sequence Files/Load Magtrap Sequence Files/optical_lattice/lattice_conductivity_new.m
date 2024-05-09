@@ -8,13 +8,14 @@ setAnalogChannel(curtime,'Modulation Ramp',-10,1);
 %% Flags
 % seqdata.flags.conductivity_ODT1_mode            = 1; % 0:OFF, 1:SINE, 2:DC
 % seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
-seqdata.flags.conductivity_ramp_FB_on              = 0; 1;% Ramp FB field to resonance
-seqdata.flags.conductivity_ramp_QP_on              = 0;1; % Ramp QP reverse with FB (only works if ramp_FB is enabled)
-seqdata.flags.conductivity_FB_heating               = 0; 1;% Ramp closer to resonance to induce heating for T control
+seqdata.flags.conductivity_ramp_FB_on             = 0; 1;% Ramp FB field to resonance
+seqdata.flags.conductivity_ramp_QP_on             = 0; 1; % Ramp QP reverse with FB (only works if ramp_FB is enabled)
+seqdata.flags.conductivity_FB_heating             = 0; 1;% Ramp closer to resonance to induce heating for T control
 % seqdata.flags.conductivity_ramp_FB
 
-seqdata.flags.conductivity_ramp_FB_off              = 1; 1;% Ramp FB field to resonance
-seqdata.flags.conductivity_ramp_QP_off              = 1;1; % Ramp QP reverse with FB (only works if ramp
+seqdata.flags.conductivity_ramp_FB_off              = 0; 1;% Ramp FB field to resonance
+seqdata.flags.conductivity_ramp_QP_off              = 0;1; % Ramp QP reverse with FB (only works if ramp
+seqdata.flags.conductivity_dopin                    = 0; % Pin after modulation
 
 
 seqdata.flags.conductivity_rf_spec              = 0;
@@ -22,7 +23,6 @@ seqdata.flags.conductivity_enable_mod_ramp      = 1;
 seqdata.flags.conductivity_QPD_trigger          = 1; % Trigger QPD monitor LabJack/Scope
 seqdata.flags.conductivity_snap_off_XDT         = 0; % Quick ramp of ODTs while atoms are displaced
 seqdata.flags.conductivity_snap_and_hold        = 0; % Diabatically turn off mod for quench measurement
-seqdata.flags.conductivity_dopin                = 1; % Pin after modulation
 %% Modulation Settings
 
 % VISA Address of Rigol
@@ -117,6 +117,8 @@ switch seqdata.flags.conductivity_ODT2_mode
         programRigol(rigol_address,[],ch2_on);
 end
 
+
+
 %% Ramp FB field to s-wave resonance
    
 if seqdata.flags.conductivity_ramp_FB_on  
@@ -176,42 +178,31 @@ if seqdata.flags.conductivity_ramp_FB_on
         ramp.fesh_ramptime = ramptime_all;
         ramp.fesh_ramp_delay = 0;
         ramp.fesh_final = Bfb; %22.6
-        ramp.settling_time = 50;  
-        
+        ramp.settling_time = 50;          
         
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
         ScopeTriggerPulse(curtime,'FB_ramp');
-
         seqdata.params.HF_fb = Bfb;    
         
         % FB Heating
-        if seqdata.flags.conductivity_FB_heating
-            
+        if seqdata.flags.conductivity_FB_heating            
             FB_heat_field = getVar('FB_heating_field');
-            FB_heat_holdtime = getVar('FB_heating_holdtime');
-            
-            heat_ramp_time = 50;
-            
+            FB_heat_holdtime = getVar('FB_heating_holdtime');            
+            heat_ramp_time = 50;            
             %Ramp closer to resonance (say 200G)
             curtime = AnalogFuncTo(calctime(curtime,0),'FB current',...
                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),heat_ramp_time,heat_ramp_time,FB_heat_field);
-
             %Hold for some amount of time
-            curtime = calctime(curtime,FB_heat_holdtime);
-            
+            curtime = calctime(curtime,FB_heat_holdtime);            
             %Ramp back down to science field
             curtime = AnalogFuncTo(calctime(curtime,0),'FB current',...
                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),heat_ramp_time,heat_ramp_time,Bfb);
-
             % wait for things to thermalize ??
             curtime = calctime(curtime,200);
         else
             % wait for things to thermalize ??
-            curtime = calctime(curtime,200);
-            
-        end
-        
-        
+            curtime = calctime(curtime,200);            
+        end              
 end
 
 
@@ -390,7 +381,6 @@ if seqdata.flags.conductivity_ramp_FB_off && ~seqdata.flags.xdt_high_field_a
                
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
         ScopeTriggerPulse(curtime,'FB_ramp');  
-
 end
 
 

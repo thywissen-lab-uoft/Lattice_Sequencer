@@ -657,12 +657,12 @@ if seqdata.flags.lattice
             seqdata.flags.lattice_fluor && ...
             seqdata.flags.lattice_fluor_bkgd)
         disp('Running the fluorence imaging code again to take background light');        
-        fluor_opts.doInitialFieldRamp = 0;
-        fluor_opts.doInitialFieldRamp2 = 0;
+%         fluor_opts.doInitialFieldRamp = 0;
+%         fluor_opts.doInitialFieldRamp2 = 0;
 
 %         fluor_opts.PulseTime =    [2000];
 %         fluor_opts.ExposureTime = [2000];    
-curtime = lattice_FL(curtime, fluor_opts); 
+curtime = lattice_FL(curtime); 
 % curtime = calctime(curtime,500);% 
 %         fluor_opts.PulseTime =    [1000];
 %         fluor_opts.ExposureTime = [1000];% 

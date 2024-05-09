@@ -34,7 +34,7 @@ global seqdata
     fluor.EnableRaman           = 1;        % Use Raman Beams    
     
     % Sets the total time of radiation (optical or otherwise)
-    pulse_list = [2000]; %         
+    pulse_list = [4000]; %         
     pulse_time = getScanParameter(...
         pulse_list,seqdata.scancycle,seqdata.randcyclelist,...
         'qgm_pulse_time','ms');      
@@ -43,15 +43,7 @@ global seqdata
     % 1 ms is typical for uWave spectroscopy
     % 2000 ms is typical for fluoresence imaging    
     % FPUMP 1000Er, 83% transfer at 1 ms, 0.1 V
-    
-%% Magnetic Field Flags
-% Flags for controlling the magnetic field during the fluorescence image.
-% Details of the magnetic field are found later.
 
-% Mangetic Field
-    fluor.doInitialFieldRamp    = 1;        % Auto specify ramps       
-    fluor.doInitialFieldRamp2   = 0;        % Manually specify ramps    
-    
 %% Ixon Camera Settings
 
 % Whether to trigger the ixon at all.
@@ -59,12 +51,18 @@ global seqdata
     
     
 % Frame Transfer Enabled, Trigger : External (mode 1)
-    fluor.IxonFrameTransferMode = 1;
+fluor.IxonFrameTransferMode = 1;
 % The exposure time is set by the time between triggers. Here, the 
 % storage sensor is read out while the image sensor is exposed.  The
 % minimum exposure time is the readout time (~300 ms).  The camera is
 % always exposing itself after the first exposure.
-
+%
+% Example Run :
+% Trigger 1 : Wipe camera (finish exposure 1); start exposure 2
+% Trigger 2 : stop exposure 2; start exposure 3
+% Trigger 3 : stop exposure 3; start exposure 4
+% Trigger 4 : stop exposure 4;
+%
 % Frame Transfer Disabled, Trigger : External Exposure(mode 7)
 %     fluor.IxonFrameTransferMode = 0;
 % The exposure time is set by how long the IxonTrigger is high. After 
@@ -74,9 +72,15 @@ global seqdata
 if fluor.IxonFrameTransferMode
 %     fluor.NumberOfImages       = 4;     % Normal operation     
 %     fluor.ExposureTime         = [2000 500 500 500];
-%     fluor.ObjectivePiezoShift  = [0 .15 -.15 0];        
+%     fluor.ObjectivePiezoShift  = [0 .15 -.15 0];     
+
+%     fluor.NumberOfImages       = 1;     % Normal operation     
+%     fluor.ExposureTime         = [2000];
+    
     fluor.NumberOfImages       = 1;     % Normal operation     
     fluor.ExposureTime         = [2000];
+    
+    
     fluor.ObjectivePiezoShift  = [0];    
 else
     fluor.NumberOfImages       = 1;     % Normal operation     
@@ -99,12 +103,7 @@ end
 if nargin==0 || curtime == 0
    curtime = 0; 
    main_settings;
-   curtime = calctime(curtime,500);
-      
-   % If running code as a separate module, DO NOT change shims unless you 
-   % really mean to as they can overheat
-    fluor.doInitialFieldRamp2 = 0;
-    fluor.doInitialFieldRamp = 0;
+   curtime = calctime(curtime,500);   
 end
 %% Ixon Trigger and Programming
 
@@ -112,8 +111,9 @@ end
         if fluor.IxonFrameTransferMode
             dispLineStr('Triggering iXon Frame Transfer Mode',curtime);
             tpre=-50;
-            DigitalPulse(calctime(curtime,tpre),...
-                    'iXon Trigger',10,1)       
+            
+            % Initial trigger to start acsuitision
+            DigitalPulse(calctime(curtime,tpre),'iXon Trigger',10,1)       
             disp(['Trigger : ' num2str(curtime2realtime(calctime(curtime,-tpre))) ' ms']);
 
             seqdata.IxonMultiExposures(end+1) = NaN;
@@ -122,14 +122,14 @@ end
             % In frame transfer mode a trigger ends the exposure
             t0=0;
             for kk=1:fluor.NumberOfImages
-                if seqdata.flags.misc_moveObjective
-                    vNew = getVarOrdered('objective_piezo')+fluor.ObjectivePiezoShift(kk);
-                    setAnalogChannel(calctime(curtime,t0),'objective Piezo Z',...
-                        vNew,1);
-                    seqdata.IxonMultiPiezos(end+1) = vNew;
-                else
+%                 if seqdata.flags.misc_moveObjective
+%                     vNew = getVarOrdered('objective_piezo')+fluor.ObjectivePiezoShift(kk);
+%                     setAnalogChannel(calctime(curtime,t0),'objective Piezo Z',...
+%                         vNew,1);
+%                     seqdata.IxonMultiPiezos(end+1) = vNew;
+%                 else
                     seqdata.IxonMultiPiezos(end+1) = NaN;
-                end 
+%                 end 
                 
                 t0 = t0 + fluor.ExposureTime(kk);
                 disp(['Trigger : ' num2str(curtime2realtime(calctime(curtime,t0))) ' ms']);

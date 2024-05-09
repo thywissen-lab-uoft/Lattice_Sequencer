@@ -229,8 +229,10 @@ switch opts.SelectMode
             freq_amp = getVar('qgm_plane_uwave_frequency_amplitude_tilt');
         end   
         
+        defVar('qgm_plane_sweep_time_factor',[10],'arb');10;
+        
+        sweep_time = freq_amp/getVar('qgm_plane_sweep_time_factor');
         sweep_time = freq_amp/10;
-
         % If using feedback add an additional freqeuncy offset
         if opts.useFeedback
             freq_offset = freq_offset + getVar('f_offset');
@@ -438,22 +440,21 @@ if opts.planeselect_doVertKill==1
 
     %Resonant light pulse to remove any untransferred atoms from
     %F=9/2
-    kill_time_list = [5];2;
-    kill_time = getScanParameter(kill_time_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'kill_time','ms'); %10 
-    kill_detuning_list = [42];[42.7];%42.7
-    kill_detuning = getScanParameter(kill_detuning_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'kill_det');        
+    
+    defVar('qgm_kill_time',[5],'ms');5;
+    defVar('qgm_kill_detuning',36,'MHz');% 2024/05/07 35 MHz for 120 Er
+    defVar('qgm_kill_power',.1,'V');.02;
+    
+    kill_time = getVar('qgm_kill_time');    
+    kill_detuning=getVar('qgm_kill_detuning');
+    mod_amp =getVar('qgm_kill_power');
+
 
     %Kill SP AOM 
     mod_freq =  (120)*1E6;
-    mod_amp_list = [0.02]; 0.1;
-    mod_amp = getScanParameter(mod_amp_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'k_kill_power','V');
     mod_offset =0;
     str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
     addVISACommand(8, str);  %Device 8 is the new kill beam Rigol changed on July 10, 2021
-
     % Display update about
     disp(' D2 Kill pulse');
     disp(['     Kill Time       (ms) : ' num2str(kill_time)]); 
@@ -461,37 +462,29 @@ if opts.planeselect_doVertKill==1
     disp(['     Kill Amp         (V) : ' num2str(mod_amp)]); 
     disp(['     Kill Detuning  (MHz) : ' num2str(kill_detuning)]); 
 
-    % Offset time of pulse (why?)
-    pulse_offset_time = -5;       
 
     if kill_time>0
         % Set trap AOM detuning to change probe
-        setAnalogChannel(calctime(curtime,pulse_offset_time-50),...
-            'K Trap FM',kill_detuning); %54.5
-
+        setAnalogChannel(calctime(curtime,-50),'K Trap FM',kill_detuning); 
         % Turn off kill SP (0= off, 1=on)(we keep it on for thermal stability)
-        setDigitalChannel(calctime(curtime,pulse_offset_time-20),...
-            'Kill TTL',0);
-
+        setDigitalChannel(calctime(curtime,-20),'Kill TTL',0);
         % Open K Kill shutter (0=closed, 1=open)
-        setDigitalChannel(calctime(curtime,pulse_offset_time-5),...
-            'Downwards D2 Shutter',1);     
+        setDigitalChannel(calctime(curtime,-5),'Downwards D2 Shutter',1);           
+        setDigitalChannel(curtime,'Kill TTL',1);             % Kill on              
+        curtime = calctime(curtime,kill_time);               % Kill wait 
+        
+%         setAnalogChannel(calctime(curtime,0),'K Trap FM',kill_detuning+50); 
+%         curtime = AnalogFuncTo(calctime(curtime,0),'K Trap FM',...
+%             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)), ...
+%             50, 50, kill_detuning);
+    
 
-        % Pulse K Kill AOM
-        DigitalPulse(calctime(curtime,pulse_offset_time),'Kill TTL',...
-            kill_time,1);
-
-        % Close K Kill shutter
-        setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time+2),...
-            'Downwards D2 Shutter',0);
-
-        % Turn on kill SP (thermal stability)
-        setDigitalChannel(calctime(curtime,pulse_offset_time+kill_time+5),...
-            'Kill TTL',1);
-
-        % Advance Time
-        curtime=calctime(curtime,pulse_offset_time+kill_time+5);
+        setDigitalChannel(curtime,'Kill TTL',0);             % Kill off
+        setDigitalChannel(curtime,'Downwards D2 Shutter',0); % Close kill shutter      
+        % Turn on kill SP after closed shutter (thermal stability)
+        setDigitalChannel(calctime(curtime,15),'Kill TTL',1); % Kill on
     end
+    
 end
 
 

@@ -155,10 +155,27 @@ if seqdata.flags.xdtB_ramp_power_end
     th = getVar('xdt_evap_end_ramp_hold');
     curtime = calctime(curtime,th);
 end
-%% Ramp Power up
 
-if seqdata.flags.xdtB_ramp_power_end
-    % NEEDS TO BE WRITTEN FROM OLD CODE
+%% Turn on feshbach field
+
+if seqdata.flags.xdtB_feshbach_fine2   
+    tr = getVar('xdtB_feshbach_fine2_ramptime');
+    fesh = getVar('xdtB_feshbach_fine2_field');
+
+    % Define the ramp structure
+    ramp=struct;
+    ramp.shim_ramptime      = tr;
+    ramp.shim_ramp_delay    = 0;
+    ramp.xshim_final        = seqdata.params.shim_zero(1); 
+    ramp.yshim_final        = seqdata.params.shim_zero(2);
+    ramp.zshim_final        = seqdata.params.shim_zero(3);
+    ramp.fesh_ramptime      = tr;
+    ramp.fesh_ramp_delay    = 0;
+    ramp.fesh_final         = fesh; %22.6
+    ramp.settling_time      = 100;    
+
+    % Ramp FB with QP
+curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
 end
 
 %% Unhop the feshbach resonance

@@ -57,19 +57,14 @@ end
 
 %% D1 and EIT Shutter Open and Close
 
-if (opts.EnableFPump || opts.EnableEITProbe) && pulse_time > 0
-    
-        % Turn off optical pumping AOM
-    setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);   
-    
-    
+if (opts.EnableFPump || opts.EnableEITProbe) && pulse_time > 0    
+    % Turn off optical pumping AOM
+    setDigitalChannel(calctime(curtime,-10),'D1 OP TTL',0);      
     % Open Shutter
     setDigitalChannel(calctime(curtime,-5),'D1 Shutter',1);    
     if opts.EnableEITProbe
         setDigitalChannel(calctime(curtime,-5),'EIT Shutter',1);
-    end
-    
-
+    end  
     % Close Shutter
     setDigitalChannel(calctime(curtime,pulse_time+5),'D1 Shutter',0);    
     if opts.EnableEITProbe
@@ -84,18 +79,15 @@ end
 if opts.EnableFPump && pulse_time > 0
     % Turn off P Pump AOM and Regulation
     setAnalogChannel(calctime(curtime,-10),'F Pump',-1);
-    setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);
-    
+    setDigitalChannel(calctime(curtime,-10),'F Pump TTL',1);    
     % Turn on F Pump
     setAnalogChannel(calctime(curtime,0),'F Pump',opts.F_Pump_Power);
     setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
-    setDigitalChannel(calctime(curtime,0),'FPump Direct',0);
-    
+    setDigitalChannel(calctime(curtime,0),'FPump Direct',0);    
     % Turn off F Pump
     setAnalogChannel(calctime(curtime,pulse_time),'F Pump',-1);
     setDigitalChannel(calctime(curtime,pulse_time),'F Pump TTL',1);
-    setDigitalChannel(calctime(curtime,pulse_time),'FPump Direct',1);  
-    
+    setDigitalChannel(calctime(curtime,pulse_time),'FPump Direct',1);      
     % Turn it back on for thermal stability (not sure if very helpful)
     setAnalogChannel(calctime(curtime,pulse_time+20),'F Pump',9);
     setDigitalChannel(calctime(curtime,pulse_time+20),'F Pump TTL',0);    
@@ -103,51 +95,33 @@ end
 
 %% EIT Probe Settings
 
-if opts.EnableEITProbe && pulse_time > 0
-    
+if opts.EnableEITProbe && pulse_time > 0    
     if isfield(opts,'EIT1_Power')
        ch1 = struct;
         ch1.AMPLITUDE = opts.EIT1_Power;    
         InternalAddress = 11;    
         programRigol(InternalAddress,ch1,[])   
-    end
-    
+    end    
     if isfield(opts,'EIT2_Power')
         ch2 = struct;
         ch2.AMPLITUDE = opts.EIT2_Power;    
         InternalAddress = 10;    
         programRigol(InternalAddress,[],ch2)    
-    end
-    
-
-    
-%     
-%     probe_power_list = [10];
-%     probe_power = getScanParameter(probe_power_list,...
-%         seqdata.scancycle,seqdata.randcyclelist,'probe_power','V');
-%     setAnalogChannel(calctime(curtime,-100),58,probe_power);
-
-    
+    end      
     % Make sure EIT Probe is off
     setDigitalChannel(calctime(curtime,-10),'EIT Probe TTL',0);
-
     % Turn on Probe beams
     setDigitalChannel(calctime(curtime,0),'EIT Probe TTL',1);
-
     % Turn off Probe beams
-    setDigitalChannel(calctime(curtime,pulse_time),'EIT Probe TTL',0);
-    
+    setDigitalChannel(calctime(curtime,pulse_time),'EIT Probe TTL',0);    
     % Turn on probe beams after shutter closed for thermal stability
-    setDigitalChannel(calctime(curtime,pulse_time+20),'EIT Probe TTL',1);
-    
-
+    setDigitalChannel(calctime(curtime,pulse_time+20),'EIT Probe TTL',1);  
 end
     
 %% Raman Settings Pulse Sequence
 
 % Raman Settings
-if opts.EnableRaman
-    
+if opts.EnableRaman    
     ch1 = struct;
     ch1.STATE= 'ON';
     ch1.FREQUENCY = opts.Raman1_Frequency;
@@ -159,7 +133,6 @@ if opts.EnableRaman
         ch1.SWEEP_TIME = pulse_time;
         ch1.SWEEP_TRIGGER = 'EXT'; 
     end
-
     ch2 = struct;
     ch2.STATE= 'ON';
     ch2.FREQUENCY = opts.Raman2_Frequency;
@@ -170,8 +143,7 @@ if opts.EnableRaman
         ch2.SWEEP_FREQUENCY_SPAN = opts.Raman2_SweepRange; 
         ch2.SWEEP_TIME = pulse_time;
         ch2.SWEEP_TRIGGER = 'EXT'; 
-    end
-    
+    end    
     InternalAddress=1;    
     programRigol(InternalAddress,ch1,ch2)    
 end
@@ -183,28 +155,21 @@ if opts.EnableRaman && pulse_time > 0
     setDigitalChannel(calctime(curtime,-50),'Raman TTL 1',0); % (1: ON, 0:OFF) Raman 1 ZASWA + Rigol Trigger
     setDigitalChannel(calctime(curtime,-50),'Raman TTL 2a',0);% (1: ON, 0:OFF) Raman 2 ZASWA
     setDigitalChannel(calctime(curtime,-50),'Raman TTL 3a',0);% (1: ON, 0:OFF) Raman 3 ZASWA
-
     % Make sure Raman shutter is closed
     setDigitalChannel(calctime(curtime,-50),'Raman Shutter',0);
-
     % Open Shutter (1: ON, 0: OFF)
     setDigitalChannel(calctime(curtime,-10),'Raman Shutter',1);
-
     % Turn on raman beam
     setDigitalChannel(curtime,'Raman TTL 1',1);  % Vertical Raman (1: ON, 0:OFF)
     setDigitalChannel(curtime,'Raman TTL 2a',1); % Horizontal Raman (1: ON, 0:OFF)    
-
     % Turn off beams
     setDigitalChannel(calctime(curtime,pulse_time),'Raman TTL 1',0);
     setDigitalChannel(calctime(curtime,pulse_time),'Raman TTL 2a',0);
-
     % Close Shutter
-    setDigitalChannel(calctime(curtime,pulse_time),'Raman Shutter',0);    
-
+    setDigitalChannel(calctime(curtime,pulse_time),'Raman Shutter',0);   
     % Turn on beams
     setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 1',1);
-    setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 2a',1);       
-    
+    setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 2a',1); 
 end
 
     

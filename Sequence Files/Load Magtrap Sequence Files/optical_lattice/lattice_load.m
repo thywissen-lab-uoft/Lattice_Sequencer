@@ -67,11 +67,12 @@ AnalogFuncTo(calctime(curtime,0),'zLattice',...
 % Advance time
 curtime = calctime(curtime,tL);   
 
-%% Mabye turn off XDTs
+%% Turn of XDTs
+% When analyzing the properties of the lattice, it is sometimes useful to
+% turn the XDT off.  This is typically not used in the experimental cycle.
 
 if seqdata.flags.lattice_load_xdt_off
-    tr = getVar('lattice_load_xdt_off_time');   
-    
+    tr = getVar('lattice_load_xdt_off_time');       
     % Ramp ODTs
     AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
@@ -79,8 +80,7 @@ if seqdata.flags.lattice_load_xdt_off
     AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         tr,tr,seqdata.params.ODT_zeros(2));
-    curtime = calctime(curtime,tr);
-    
+    curtime = calctime(curtime,tr);    
     % Make sure its off
     setDigitalChannel(calctime(curtime,0),'XDT TTL',1);   
 end
@@ -91,7 +91,10 @@ end
 tH = getVar('lattice_load_holdtime');
 curtime=calctime(curtime,tH);    
 
-%% Ramp FB
+%% Ramp Feshbach Field After Loading lattice
+% After loading the lattice, ramp the feshbach field to a desired level for
+% experiments.  This code works best if the xdtB.m is called and already
+% ramps the feshbach field to a high field (and also the levitation field)
 if seqdata.flags.lattice_load_feshbach_ramp   
     tr = getVar('lattice_load_feshbach_time');
     fesh = getVar('lattice_load_feshbach_field');
@@ -109,7 +112,7 @@ if seqdata.flags.lattice_load_feshbach_ramp
     ramp.settling_time      = 100;    
 
     % Ramp FB with QP
-curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+    curtime= ramp_bias_fields(calctime(curtime,0), ramp);  
 end
     
 %% Unramp Lattices

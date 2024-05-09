@@ -14,7 +14,7 @@ global seqdata;
 % lattice_flags(timein);
 
 curtime = timein;
-lattices = {'xLattice','yLattice','zLattice'};
+% lattices = {'xLattice','yLattice','zLattice'};
 seqdata.params.xdt_p2p1_ratio = 1;
 
 if curtime==0
@@ -948,6 +948,7 @@ if seqdata.flags.lattice_PA
 end
 
 %% Ramp magnetic field for fluorescnce imaging
+% Ramp the magnetic field for fluorescence imaging
 if seqdata.flags.lattice_fluor
     curtime = lattice_FL_fieldramp(curtime);
 end

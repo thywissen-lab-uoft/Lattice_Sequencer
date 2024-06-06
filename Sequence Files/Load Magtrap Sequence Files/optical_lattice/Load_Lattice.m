@@ -476,6 +476,36 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
         curtime = calctime(curtime,50);
 end
 
+
+%% Pulse on dimple 
+
+
+if seqdata.flags.lattice_pulse_dimple
+
+    % % % Turn on raman beam
+    setDigitalChannel(curtime,'Raman TTL 1',0);  % Vertical Raman (1: ON, 0:OFF)
+    setDigitalChannel(curtime,'Raman TTL 2a',1); % Horizontal Raman (1: ON, 0:OFF)    
+
+    % Open Shutter
+    setDigitalChannel(curtime,'Raman Shutter',1);
+
+    defVar('Dimple_pulse_time',[1 10 100 1000 5000 7500 10000],'ms');
+
+    % Wait 
+    curtime = calctime(curtime,getVar('Dimple_pulse_time'));
+
+    % Close Shutter
+    setDigitalChannel(calctime(curtime,0),'Raman Shutter',0);
+    % curtime = setDigitalChannel(calctime(curtime,getVar('Dimple_pulse_time')),'Raman Shutter',0);
+
+    defVar('Dimple_Pico_1',0,'steps');
+    defVar('Dimple_Pico_2',0,'steps');
+
+    getVar('Dimple_Pico_1');
+    getVar('Dimple_Pico_2');
+
+end
+
 %% Optical Pumping
 % Optical pumping
 if (seqdata.flags.lattice_do_optical_pumping == 1)
@@ -494,7 +524,7 @@ if (seqdata.flags.lattice_do_optical_pumping == 1)
     end
     
     % OP pulse length
-    op_time_list = [0.1 .2 .3 .4 .5];%3
+    op_time_list = [1];%3
     optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle,...
         seqdata.randcyclelist, 'latt_op_time','ms');
     
@@ -765,7 +795,7 @@ if seqdata.flags.lattice_uWave_spec
      dispLineStr('uWave_K_Spectroscopy',curtime);
    
     % Frequency
-    freq_shift_list = [0]; % Offset in kHz
+    freq_shift_list = [15]; % Offset in kHz
     f0 = 1338.345;          % MHz % Normal frequency
     
 
@@ -777,7 +807,7 @@ if seqdata.flags.lattice_uWave_spec
     
     % Frequency Shift
     % Only used for sweep spectroscopy
-    uwave_delta_freq_list = 1000;[200];
+    uwave_delta_freq_list = 100;[200];
     uwave_delta_freq=getScanParameter(uwave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'uwave_delta_freq','kHz');
         
@@ -961,7 +991,7 @@ if seqdata.flags.lattice_fluor_ramp
     defVar('lattice_FI_ramptime',10,'ms');        
     % Lattice Depth Request
     defVar('lattice_FI_depth_X',[1050],'Er');1050;
-    defVar('lattice_FI_depth_Y',[900],'Er');1000;
+    defVar('lattice_FI_depth_Y',[900],'Er');900;
     defVar('lattice_FI_depth_Z',[1150],'Er');1150;  
    % Perform the rest of the lattice ramps
    dT = getVar('lattice_FI_ramptime');
@@ -1020,7 +1050,8 @@ if seqdata.flags.lattice_fluor%
 %         %   seqdata.params.NumberIxonTriggers = seqdata.params.NumberIxonTriggers  +1
 %         %   seqdata.params.IxonTriggerTypes{end+1}='clear'
 %     end
-    
+    ScopeTriggerPulse(calctime(curtime,0),'fluorescence');    
+
     dispLineStr('Fluorescence image',curtime); 
 %     curtime = lattice_FL_fieldramp(curtime);
     curtime = lattice_FL(curtime);

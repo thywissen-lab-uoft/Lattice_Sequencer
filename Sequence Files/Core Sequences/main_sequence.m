@@ -101,6 +101,11 @@ setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',1);  % 0:Anritsu, 1 =
 setDigitalChannel(calctime(curtime,0),'FB Integrator OFF',0);   % Integrator disabled
 setDigitalChannel(calctime(curtime,0),'FB offset select',0);    % No offset voltage
 
+% Set Dimple Dimple
+setDigitalChannel(curtime,'Dimple TTL',0);      % Dimple AOM on
+setDigitalChannel(curtime,'Dimple Shutter',1);  % Dimple Shutter OFF
+setAnalogChannel(curtime,'Dimple',1,1);  % Dimple Power Request High to
+
 %turn off dipole trap beams
 setAnalogChannel(calctime(curtime,0),'dipoleTrap1',seqdata.params.ODT_zeros(1));
 setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));
@@ -389,6 +394,21 @@ if seqdata.flags.image_type == 1
    curtime = MOT_fluorescence_image(curtime);
 end
 
+%% Turn on dimple
+% 
+% setDigitalChannel(curtime,'Dimple TTL',0);      % Dimple AOM on
+% setDigitalChannel(curtime,'Dimple Shutter',0);  % Dimple Shutter ON
+% 
+% defVar('dimple_power',[1.5],'V');
+% setAnalogChannel(curtime,'Dimple',getVar('dimple_power'),1);  % Dimple Power Request High to
+
+% % Turn on raman beam
+% setDigitalChannel(curtime,'Raman TTL 1',0);  % Vertical Raman (1: ON, 0:OFF)
+% setDigitalChannel(curtime,'Raman TTL 2a',1); % Horizontal Raman (1: ON, 0:OFF)    
+% 
+% % Open Shutter
+% setDigitalChannel(curtime,'Raman Shutter',1);   
+
 %% Magnetic Trap
 
 if seqdata.flags.mt
@@ -408,7 +428,7 @@ if seqdata.flags.transport_save && seqdata.flags.transport
         'Coil 3','Coil 4','Coil 5','Coil 6',...
         'Coil 7','Coil 8','Coil 9','Coil 10',...
         'Coil 11','Coil 12a','Coil 12b','Coil 13',...
-        'Coil 14','Coil 15','Coil 16','kitten','Transport FF'};
+        'Coil 14','Coil 15','Coil 16','kitten','Transport FF','15/16 GS'};
     opts.DigitalChannels = {'MOT TTL','Coil 16 TTL','15/16 Switch','Transport Relay',...
         'Kitten Relay','Reverse QP Switch','LabJack Trigger Transport'};
     opts.FileName = 'magnetic_transport.mat';
@@ -669,6 +689,19 @@ curtime = lattice_FL(curtime);
 % curtime = lattice_FL(curtime, fluor_opts); 
     end
 end
+
+%% Reset dimple
+
+setDigitalChannel(curtime,'Dimple TTL',0);      % Dimple AOM on
+setDigitalChannel(curtime,'Dimple Shutter',1);  % Dimple Shutter OFF
+setAnalogChannel(curtime,'Dimple',1,1);  % Dimple Power Request High to
+
+% Turn on raman beam
+setDigitalChannel(calctime(curtime,10),'Raman TTL 1',1);  % Vertical Raman (1: ON, 0:OFF)
+setDigitalChannel(calctime(curtime,10),'Raman TTL 2a',1); % Horizontal Raman (1: ON, 0:OFF)    
+
+% Close Shutter
+setDigitalChannel(curtime,'Raman Shutter',0);   
 
 
 

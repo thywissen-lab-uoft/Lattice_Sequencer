@@ -22,6 +22,9 @@ opts.planeselect_again = 0;                 % Repeat plane selection (does this 
 
 
 opts.SelectMode     = 'SweepFreqHS1';       % Sweep SRS HS1 frequency
+
+opts.SelectMode = 'SweepFreqSmoothLinear';
+
 opts.SelectModeBack = 'SweepFreqHS1';       %Sweep SRS HS1 frequency backwards
 
 opts.use_ACSync = 1;                        % ACync 60 Hz
@@ -177,7 +180,98 @@ end
 
 %% Apply the uWaves
 
-switch opts.SelectMode       
+switch opts.SelectMode      
+    case 'SweepFreqSmoothLinear'
+        dispLineStr('HS1 Frequency Sweep',curtime);
+        if ~opts.dotilt
+            freq_offset = getVar('qgm_plane_uwave_frequency_offset_notilt');
+            freq_amp = getVar('qgm_plane_uwave_frequency_amplitude_notilt');
+        else
+            freq_offset = getVar('qgm_plane_uwave_frequency_offset_tilt');
+            freq_amp = getVar('qgm_plane_uwave_frequency_amplitude_tilt');
+        end 
+        
+        sweep_time = freq_amp/10;
+        % If using feedback add an additional freqeuncy offset
+        if opts.useFeedback
+            freq_offset = freq_offset + getVar('f_offset');
+        end        
+        
+        % Define the actually used settings
+        defVar('qgm_plane_uwave_frequency_offset',freq_offset,'kHz');
+        defVar('qgm_plane_uwave_amplitude',freq_amp,'kHz');
+        defVar('qgm_plane_uwave_power',[15],'dBm');
+        defVar('qgm_plane_uwave_time',sweep_time,'ms')   
+
+        % Read in the actually used settings
+        freq_offset = getVar('qgm_plane_uwave_frequency_offset');
+        freq_amp = getVar('qgm_plane_uwave_amplitude');
+        sweep_time = getVar('qgm_plane_uwave_time');   
+        power = getVar('qgm_plane_uwave_power');
+
+        
+       % Configure the SRS
+        uWave_opts=struct;
+        uWave_opts.Address      = 30;                       % SRS GPIB Addr
+%         uWave_opts.Address=29; % 4/4/2023
+        uWave_opts.Frequency    = 1606.75+freq_offset*1E-3; % Frequency [MHz]
+        uWave_opts.Power        = power;%15                    % Power [dBm]
+        uWave_opts.Enable       = 1;                        % Enable SRS output    
+        uWave_opts.EnableSweep  = 1;                    
+        uWave_opts.SweepRange   = 1e-3*freq_amp;         % Sweep Amplitude [MHz]
+        
+        
+        addOutputParam('qgm_plane_uwave_frequency',uWave_opts.Frequency);  
+        
+        disp(['     Freq         : ' num2str(uWave_opts.Frequency) ' MHz']);    
+        disp(['     Freq Offset  : ' num2str(freq_offset) ' kHz']);    
+        disp(['     Pulse Time   : ' num2str(sweep_time) ' ms']);
+        disp(['     Freq Amp     : ' num2str(freq_amp) ' kHz']);
+
+
+        %%%% The uWave Sweep Code Begins Here %%%%        
+        setAnalogChannel(calctime(curtime,-20),'uWave VVA',0);      % Set uWave to low
+        setAnalogChannel(calctime(curtime,-10),'uWave FM/AM',-1);   % Set initial modulation
+
+        % Enable ACync
+        if opts.use_ACSync
+            setDigitalChannel(calctime(curtime,-5),'ACync Master',1);
+        end
+        % Turn on the uWave        
+        if  ~opts.fake_the_plane_selection_sweep
+            % Turn on TTL
+            setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);    
+        end
+         % Ramp up rabi frequency
+        curtime = AnalogFunc(calctime(curtime,0),'uWave VVA',...
+                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+                0.5,0.5,0,10,1);  
+        ScopeTriggerPulse(curtime,'Plane selection');
+
+        % Linearly ramp the frequency
+        curtime = AnalogFunc(calctime(curtime,0),'uWave FM/AM',...
+            @(t,T) -1+2*t/T,...
+            sweep_time,sweep_time,1);
+       % Ramp down rabi frequency
+        curtime = AnalogFunc(calctime(curtime,0),'uWave VVA',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+            0.5,0.5,10,0,1); 
+        
+        % Trigger the Scope
+        setDigitalChannel(calctime(curtime,0),'K uWave TTL',0);     % Turn off the uWave
+        setAnalogChannel(calctime(curtime,0),'uWave VVA',0);        % Turn off VVA        
+        setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);    % Reset the uWave deviation after a while
+
+%       Reset the ACync
+        if opts.use_ACSync
+            setDigitalChannel(calctime(curtime,30),'ACync Master',0);
+        end
+
+        if opts.doProgram
+            programSRS(uWave_opts);                     % Program the SRS        
+        end
+        curtime = calctime(curtime,30);             % Additional wait
+
     case 'SweepFreqHS1'        
         %% Sweep Frequency 
         % This does an HS1 plane frequency sweep, this is only good for one

@@ -244,6 +244,50 @@ if seqdata.flags.xdtB_piezo_vert_kick
     % Wait for oscillations
     curtime = calctime(curtime,th);  
 end
+
+%% Single Beam Check
+% After optical evaporation, turn off one of the trap so you can see the
+% position of the other ODT beam
+if seqdata.flags.xdtB_one_beam
+    dispLineStr('Turning off one of the dipole trap beams',curtime);
+    tr = 10;    
+    
+    P1 = getChannelValue(seqdata,'dipoleTrap1',1);
+    P2 = getChannelValue(seqdata,'dipoleTrap2',1);
+    
+    odt1_on = 0;
+    odt2_on = 1;
+    
+    % To mitigate gravitational sag, turn one ODT off but then increase the
+    % power in the other beam
+    
+    if odt2_on
+        % Comment out which beam you want to stay on    
+        AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            tr,tr,0);
+        AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            tr,tr,2*P2);
+        curtime = calctime(curtime,tr);
+    end
+    
+    if odt1_on
+        % Comment out which beam you want to stay on    
+        AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            tr,tr,2*P1);
+        AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            tr,tr,0);
+        curtime = calctime(curtime,tr);
+    end
+
+    
+    curtime = calctime(curtime,20);
+end
+
+
 %% The End
 
 timeout = curtime;

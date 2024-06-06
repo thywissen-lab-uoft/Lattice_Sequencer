@@ -17,7 +17,10 @@ function J=job_conducivity_ac_shake
 %         seqdata.flags.plane_selection.useFeedback = 1;
 
         % Define field, frequency, and evaporation depth
-        defVar('conductivity_FB_field',field,'G');       
+        defVar('conductivity_FB_field',field,'G');      
+        defVar('lattice_load_feshbach_field',field,'G');       
+
+        
         defVar('conductivity_mod_freq',freq,'Hz');          
         defVar('xdt_evap1_power',evap_depth,'W');
         defVar('conductivity_ODT2_mod_amp',mod_strength,'V');  % ODT2 Mod Depth
@@ -41,11 +44,11 @@ function J=job_conducivity_ac_shake
 %% AC Conductivity Job
 clear Jac
 
-B = 190;
-pow = 0.057;   
+B = 200.9;
+pow = 0.070;   
 % mod_strength=2;
 mod_ramp_time = 150;
-uwave_freq_amp = 45;
+uwave_freq_amp = 15;
 
 % var_list = [20:20:300];[5 10 25 50 150 300 600];
 var_list = [20 30 40:5:80 90 100 62 57 52 67];

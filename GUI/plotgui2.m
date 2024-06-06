@@ -654,7 +654,7 @@ function [X,Y,funcnum] = getAnalogValue(trc,funcnum)
     if ~isempty(vNaN)
         warning('Found NaN voltages.');
         X(vNaN)=[];
-        V(vNaN)=[];
+        V(vNaN)=[];        
     end
     
     if isempty(X) || isempty(V)

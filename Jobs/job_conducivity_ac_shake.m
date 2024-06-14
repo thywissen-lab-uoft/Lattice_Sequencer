@@ -4,105 +4,108 @@ function J=job_conducivity_ac_shake
     function jobComplete
     end
 
+
+
 %% AC conductivity job function
 
  function curtime = ac_conductivity(curtime,freq,field,evap_depth,mod_strength,mod_ramp_time,uwave_freq_amp)
         global seqdata;        
+        
+        % Optical Evaporation        
+        defVar('xdtB_evap_power',evap_depth,'W');
+
+        % Magnetic Field in Lattice
+        defVar('lattice_load_feshbach_field',field,'G');   
+        seqdata.flags.lattice_conductivity_new      = 1;    
+
+        % Conductivity       
         seqdata.flags.conductivity_ODT1_mode            = 1; % 0:OFF, 1:SINE, 2:DC
         seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
-        seqdata.flags.conductivity_mod_direction        = 1; % 1:X-direction 2:Y-direction        
-        seqdata.flags.plane_selection.dotilt            = 0;
-        
-%         seqdata.flags.qgm_stripe_feedback2 = 1;
-%         seqdata.flags.plane_selection.useFeedback = 1;
-
-        % Define field, frequency, and evaporation depth
-        defVar('conductivity_FB_field',field,'G');      
-        defVar('lattice_load_feshbach_field',field,'G');       
-
-        
-        defVar('conductivity_mod_freq',freq,'Hz');          
-        defVar('xdt_evap1_power',evap_depth,'W');
+        seqdata.flags.conductivity_mod_direction        = 1; % 1:X-direction 2:Y-direction 
+        defVar('conductivity_mod_freq',freq,'Hz');
         defVar('conductivity_ODT2_mod_amp',mod_strength,'V');  % ODT2 Mod Depth
-        defVar('conductivity_mod_ramp_time',mod_ramp_time,'ms');
+        defVar('conductivity_mod_ramp_time',mod_ramp_time,'ms');        
         
-        defVar('qgm_plane_uwave_frequency_amplitude_notilt',uwave_freq_amp,'kHz');
-
-%         defVar('f_amplitude',uwave_freq_amp,'kHz');
-        
-        
-        d = load('f_offset.mat');
-        f_offset = d.f_offset - 20;        
-        defVar('f_offset',f_offset,'kHz');
-
-        % Modulation time vector
-        t0 = 50; 
-        T = 1e3/freq;
+        % Modulation time
+        t0 = 50;T = 1e3/freq;
         tvec = round(t0 + linspace(0,2*T,30),1);
-        defVar('conductivity_mod_time',tvec,'ms');      
+        defVar('conductivity_mod_time',tvec,'ms');             
+        
+        % Plane Selection
+        seqdata.flags.plane_selection.dotilt            = 0;
+        defVar('qgm_plane_uwave_frequency_amplitude_notilt',uwave_freq_amp,'kHz');
+        d = load('f_offset.mat');
+        f_offset = d.f_offset - 0*20;        
+        defVar('f_offset',f_offset,'kHz'); 
  end
 %% AC Conductivity Job
 clear Jac
 
-B = 200.9;
-pow = 0.070;   
-% mod_strength=2;
-mod_ramp_time = 150;
+% Magnetic Field (G)
+B_conductivity = 200.8;
+% Optical Evaporation Power (W)
+power_conductivity = 0.077;   
+% Conductivity modulation ramp up time (ms)
+mod_ramp_time = 50;
+% Plane Selection Frequency amplitude (kHz);
 uwave_freq_amp = 15;
+% Modulation Frequencies
+freq_list = [20 30 40:5:80 90 100 62 57 52 67];
+% Randomize the modulation frequencies
+freq_list = freq_list(randperm(numel(freq_list)));
 
-% var_list = [20:20:300];[5 10 25 50 150 300 600];
-var_list = [20 30 40:5:80 90 100 62 57 52 67];
-var_list = var_list(randperm(numel(var_list)));
 
-
-for ii = 1:length(var_list)
-    f = var_list(ii);    
+for ii = 1:length(freq_list)
+    % Get the current modulation frequency
+    f = freq_list(ii);    
+    
     % Modulation Amplitude Calibration    
-    x0 = 53;
-    y0 = 0.4777;
-    aL = [1.88e-3 -3.16e-6 3.02e-9 -1.1e-12];
-    aH = [2.03e-3 -4.53e-7 6.44e-11 -3.56e-15];    
+    x0 = 50;
+    y0 = 0.9513;
+    aL = [7.87e-4 -9.73e-7 8.73e-10 -3.47e-13];
+    aH = [1.28e-3 -1.61e-7 1.56e-11 -7.28e-16];    
     if f<=x0
         a=aL;
     else
         a=aH;
-    end       
+    end        
     mod_strength = y0 + a(1)*(f-x0)^2 + a(2)*(f-x0)^4 + a(3)*(f-x0)^6 + a(4)*(f-x0)^8; 
     mod_strength = min([mod_strength 4]);
 
+    
     npt = struct;   
-    npt.SequenceFunctions   = {@main_settings,@(curtime) ac_conductivity(curtime,f,B,pow,mod_strength,mod_ramp_time,uwave_freq_amp),@main_sequence};
+    npt.SequenceFunctions   = {@main_settings,@(curtime) ...
+        ac_conductivity(curtime,f,B_conductivity,power_conductivity,mod_strength,mod_ramp_time,uwave_freq_amp),@main_sequence};
 %     npt.CycleStartFcn       = @cycleStart;
 %     npt.CycleCompleteFcn    = @cycleComplete;
 %     npt.JobCompleteFcn      = @jobComplete;
     npt.ScanCyclesRequested = 1:30;
     npt.JobName             = [num2str(ii) ' shake ' num2str(f) ' Hz,' ...
-        num2str(B) 'G,' num2str(1e3*pow) ' mW ' num2str(mod_strength) ' amp, ' num2str(mod_ramp_time) ' ms ramp, ', num2str(uwave_freq_amp), ' kHz uwave amp'];
+        num2str(B_conductivity) 'G,' num2str(1e3*power_conductivity) ' mW ' num2str(mod_strength) ' amp, ' ...
+        num2str(mod_ramp_time) ' ms ramp, ', num2str(uwave_freq_amp), ' kHz uwave amp'];
     npt.SaveDirName         = npt.JobName;    
     Jac(ii) = sequencer_job(npt);
 end
 
-%% Stripe Phase Job Function
+%% Stripe Job
 clear Jstripe
 
-    function curtime = stripe(curtime,evap_depth)
-        global seqdata
-        
+    function curtime = stripe(curtime,evap_depth,field)
+        global seqdata        
+ 
         % optical Evaporation
-        defVar('xdt_evap1_power',evap_depth,'G');    
+        defVar('xdtB_evap_power',evap_depth,'W');
+        % Magnetic Field in Lattice
+        defVar('lattice_load_feshbach_field',field,'G'); 
         
-        % Conductivity Settings
-        seqdata.flags.conductivity_ODT1_mode            = 0; % 0:OFF, 1:SINE, 2:DC
-        seqdata.flags.conductivity_ODT2_mode            = 0; % 0:OFF, 1:SINE, 2:DC       
-        defVar('conductivity_mod_time',50,'ms');  
-
-        % Plane Selection
+       % Do not run conductivity code
+        seqdata.flags.lattice_conductivity_new      = 0;    
+        
+        % Plane Selection, do tilt
         seqdata.flags.plane_selection.dotilt = 1;
         d = load('f_offset.mat');
         f_offset = d.f_offset;        
         defVar('f_offset',f_offset,'kHz');        
-%         seqdata.flags.qgm_stripe_feedback2 = 1;
-%         seqdata.flags.plane_selection.useFeedback = 1;
     end
 
     function feedback_stripe
@@ -136,7 +139,7 @@ clear Jstripe
 
         % Get High qualtiy data
         if sum(inds)>0
-            nSet = 90;              
+            nSet = 95;              
             % Get data that is high quality
             Lm = L(inds);
             n0m = n0(inds);
@@ -157,15 +160,18 @@ clear Jstripe
             disp(fnew)
         end
     end
-%% Stripe Phase Job
 
-% B = 195;
-pow = 0.110;
+
+% The magnetic field and evaporation depth should be the same as the
+% conductivityy
+B = B_conductivity;
+pow = 0.1;
+
 
 npt = struct;
 npt.SequenceFunctions   = {...
     @main_settings,...
-    @(curtime)stripe(curtime,pow),...
+    @(curtime)stripe(curtime,pow,B),...
     @main_sequence};
 npt.JobCompleteFcn      = @feedback_stripe;
 npt.ScanCyclesRequested = 1:3;
@@ -174,45 +180,38 @@ npt.JobName             = ['stripe ' ...
 npt.SaveDirName         = npt.JobName;    
 Jstripe = sequencer_job(npt);
 
-%% Normal Plane Select Job Function
+%% Normal Plane Selection
 
-    function curtime = normal_ps(curtime,field,pow,uwave_freq_amp)
+    function curtime = normal_ps(curtime,field,pow)
         global seqdata        
-        
-        % Optical evaporation
-        defVar('xdt_evap1_power',pow,'G');  
-        
-        % Conductivity Settings
-        seqdata.flags.conductivity_ODT1_mode = 0; 
-        seqdata.flags.conductivity_ODT2_mode = 0; 
-        defVar('conductivity_mod_time',50,'ms');   
-        defVar('conductivity_FB_field',field,'G');       
-
-        % Plane Selection settings
+         % Optical evaporation
+        defVar('xdtB_evap_power',pow,'W');        
+        % Magnetic Field in Lattice
+        defVar('lattice_load_feshbach_field',field,'G'); 
+        % Do not run conductivity code
+        seqdata.flags.lattice_conductivity_new      = 0;    
+        % No Tilt
         seqdata.flags.plane_selection.dotilt = 0;
-        defVar('qgm_plane_uwave_frequency_amplitude_notilt',uwave_freq_amp,'kHz');
+        % Single plane uwave sweep
+        defVar('qgm_plane_uwave_frequency_amplitude_notilt',15,'kHz');
         d = load('f_offset.mat');
         f_offset = d.f_offset;        
-        defVar('f_offset',f_offset,'kHz');
-%         seqdata.flags.qgm_stripe_feedback2 = 1;
-%         seqdata.flags.plane_selection.useFeedback = 1;
-%         defVar('f_amplitude',uwave_freq_amp,'kHz');
-
+        defVar('f_offset',f_offset,'kHz');        
     end
-%% Normal Plane Select Job 
 
-B = 190;
-pow = 0.057;
-uwave_freq_amp = 15;
+% The magnetic field and evaporation depth should be the same as the
+% conductivityy
+B = B_conductivity;
+pow = power_conductivity;
 
 npt = struct;
 npt.SequenceFunctions   = {...
     @main_settings,...
-    @(curtime)normal_ps(curtime,B,pow,uwave_freq_amp),...
+    @(curtime)normal_ps(curtime,B,pow),...
     @main_sequence};
 % npt.JobCompleteFcn      = @feedback_stripe;
 npt.ScanCyclesRequested = 1:20;
-npt.JobName             = ['calibrate ' num2str(B) 'G, ' num2str(1e3*pow) ' mW, ', num2str(uwave_freq_amp), ' kHz uwave amp'];
+npt.JobName             = ['calibrate ' num2str(B) 'G, ' num2str(1e3*pow) ' mW'];
 npt.SaveDirName         = npt.JobName;    
 Jsingle = sequencer_job(npt);
 
@@ -220,8 +219,6 @@ Jsingle = sequencer_job(npt);
 clear J
 
 J = copy(Jsingle);
-% J(end+1) = copy(Jsingle);
-
 J(end+1) = copy(Jstripe);
 J(end+1) = [copy(Jac(1))];
 for kk=2:length(Jac)
@@ -232,15 +229,6 @@ for kk=2:length(Jac)
     end
     J(end+1) = copy(Jac(kk));
 end
-
-%% Stripe Set
-% clear J
-% n = 100;
-% J = copy(Jstripe);
-% for kk=2:n
-%     J(end+1)= copy(Jstripe);
-% %     J(end+1) = copy(Jsingle);
-% end
 
 
 end

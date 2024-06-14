@@ -6240,41 +6240,46 @@ end
 % setDigitalChannel(calctime(curtime,0),'Rb uWave TTL',0);
 % setAnalogChannel(calctime(curtime,0),'K Trap FM',42.7); %54.5
 
+%%
 % setAnalogChannel(calctime(curtime,0),'xLattice',seqdata.params.lattice_zero(1));
 % setAnalogChannel(calctime(curtime,0),'yLattice',seqdata.params.lattice_zero(2));
 % setAnalogChannel(calctime(curtime,0),'zLattice',seqdata.params.lattice_zero(3));
 % 
-% Ux = 1100;
-% Uy = 1030;
-% Uz = 1150;
-% curtime = calctime(curtime,150);
-% % setDigitalChannel(calctime(curtime,0),'yLatticeOFF',0)
+% Ux = 60;
+% % Uy = 1030;
+% % Uz = 1150;
+curtime = calctime(curtime,150);
+
+% setDigitalChannel(calctime(curtime,0),'yLatticeOFF',0)
+
+
 P0 = 0.0158257; % power level at 0V (this is a bad way);
     AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
         150,150,1,P0,4); 
 curtime = calctime(curtime,150);
 
+% 
 % AnalogFuncTo(calctime(curtime,0),'xLattice',...
 %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),500, 500, Ux); 
-%     AnalogFuncTo(calctime(curtime,0),'yLattice',...
-%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),500, 500, Uy);
-%     AnalogFuncTo(calctime(curtime,0),'zLattice',...
-%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),500, 500, Uz);   
-% curtime = calctime(curtime,200);
-% 
+% %     AnalogFuncTo(calctime(curtime,0),'yLattice',...
+% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),500, 500, Uy);
+% %     AnalogFuncTo(calctime(curtime,0),'zLattice',...
+% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),500, 500, Uz);   
 % curtime = calctime(curtime,500);
-% 
+% % hold time
+% curtime = calctime(curtime,1500);
+% % 
 % AnalogFuncTo(calctime(curtime,0),'xLattice',...
 %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),500, 500, seqdata.params.lattice_zero(1)); 
-%     AnalogFuncTo(calctime(curtime,0),'yLattice',...
-%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),500, 500, seqdata.params.lattice_zero(2));
-%     AnalogFuncTo(calctime(curtime,0),'zLattice',...
-%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),500, 500, seqdata.params.lattice_zero(3)); 
+% %     AnalogFuncTo(calctime(curtime,0),'yLattice',...
+% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),500, 500, seqdata.params.lattice_zero(2));
+% %     AnalogFuncTo(calctime(curtime,0),'zLattice',...
+% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),500, 500, seqdata.params.lattice_zero(3)); 
 % curtime = calctime(curtime,500);
-% 
+% % 
 % setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);
-% 
+% % 
 % curtime = calctime(curtime,100);
 
 timeout = curtime;

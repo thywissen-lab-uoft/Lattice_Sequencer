@@ -115,6 +115,12 @@ end
         disp('Snapping off lattice');
     end       
     setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1); 
+ else
+    %Snap off lattice
+    setAnalogChannel(calctime(curtime,0),'xLattice',seqdata.params.lattice_zero(1));
+    setAnalogChannel(calctime(curtime,0),'yLattice',seqdata.params.lattice_zero(2));
+    setAnalogChannel(calctime(curtime,0),'zLattice',seqdata.params.lattice_zero(3));
+    setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1); 
 end
 
 %%

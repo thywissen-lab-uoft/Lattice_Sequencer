@@ -62,11 +62,14 @@ AnalogFuncTo(calctime(curtime,0),'zLattice',...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % INSERT XDT AND DMD RAMPS WHICH WE DO NOT DO RIGHT NOW
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+% if seqdata.flags.lattice_load_dimple 
+%     
+%     
+%     
+% end
 
 % Advance time
-curtime = calctime(curtime,tL);   
-
+curtime = calctime(curtime,tL);  
 %% Turn of XDTs
 % When analyzing the properties of the lattice, it is sometimes useful to
 % turn the XDT off.  This is typically not used in the experimental cycle.
@@ -113,8 +116,38 @@ if seqdata.flags.lattice_load_feshbach_ramp
 
     % Ramp FB with QP
     curtime= ramp_bias_fields(calctime(curtime,0), ramp);  
-end
     
+    % Hold after ramping up FB
+    tFBH = getVar('lattice_load_feshbach_holdtime');
+    curtime=calctime(curtime,tFBH);
+end
+
+%% Ramp lattices to science depth
+
+if seqdata.flags.lattice_sci_ramp
+    %Ramp the lattices to the desired value    
+    tS = getVar('lattice_sci_time');
+    
+    % Define individual lattices separately just in case
+    Ux = getVar('lattice_sci_depthX');
+    Uy = getVar('lattice_sci_depthY');
+    Uz = getVar('lattice_sci_depthZ');
+    
+    ScopeTriggerPulse(curtime,'lattice_sci_ramp');
+    AnalogFuncTo(calctime(curtime,0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tS,tS,Ux); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tS,tS,Uy);
+    AnalogFuncTo(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tS,tS,Uz);  
+
+    %Advance time
+    curtime = calctime(curtime,tS);  
+end
+   
 %% Unramp Lattices
 if seqdata.flags.lattice_load_round_trip == 1   
      % Ramp the lattices to the desired value    

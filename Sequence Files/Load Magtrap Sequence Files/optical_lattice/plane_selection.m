@@ -535,7 +535,7 @@ if opts.planeselect_doVertKill==1
     %Resonant light pulse to remove any untransferred atoms from
     %F=9/2
     
-    defVar('qgm_kill_time',[5],'ms');5;
+    defVar('qgm_kill_time',[10],'ms');5;
     defVar('qgm_kill_detuning',36,'MHz');% 2024/05/07 35 MHz for 120 Er
     defVar('qgm_kill_power',.1,'V');.02;
     

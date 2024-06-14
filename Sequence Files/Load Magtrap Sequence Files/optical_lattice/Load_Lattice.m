@@ -963,14 +963,7 @@ if seqdata.flags.lattice_rotate_waveplate_2
         wp_Trot2,wp_Trot2,P_RotWave_I,1,4);    
 end
 
-%% Amplitude Modulation Spectroscopy of Lattice
-% This code applies amplitude modulation to XYZ optical lattices.  This is
-% done by programming a Rigol generator that goes into the sum input of the
-% Newport regulation boxes.
 
-if seqdata.flags.do_lattice_am_spec
-   curtime = lattice_am_spectroscopy(curtime);
-end
 
 %% Vortex Pulse
 if seqdata.flags.lattice_PA
@@ -991,7 +984,7 @@ if seqdata.flags.lattice_fluor_ramp
     defVar('lattice_FI_ramptime',10,'ms');        
     % Lattice Depth Request
     defVar('lattice_FI_depth_X',[1050],'Er');1050;
-    defVar('lattice_FI_depth_Y',[900],'Er');900;
+    defVar('lattice_FI_depth_Y',[1040],'Er');1040;
     defVar('lattice_FI_depth_Z',[1150],'Er');1150;  
    % Perform the rest of the lattice ramps
    dT = getVar('lattice_FI_ramptime');
@@ -1016,6 +1009,15 @@ if seqdata.flags.lattice_fluor_ramp
     setDigitalChannel(calctime(curtime,0),'XDT TTL',1);
     % Additional Wait Time
     curtime = calctime(curtime,10);    
+end
+
+%% Amplitude Modulation Spectroscopy of Lattice
+% This code applies amplitude modulation to XYZ optical lattices.  This is
+% done by programming a Rigol generator that goes into the sum input of the
+% Newport regulation boxes.
+
+if seqdata.flags.do_lattice_am_spec
+   curtime = lattice_am_spectroscopy(curtime);
 end
 
 %% Fluorescence Imaging (current code)

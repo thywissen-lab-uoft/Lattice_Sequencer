@@ -59,6 +59,10 @@ if seqdata.flags.misc_lock_PA
     updatePALock(curtime);    
 end
 
+%% test
+
+% setAnalogChannel(calctime(curtime,0),'D1 DP FM',1);
+
 %% Set Objective Piezo Voltages
 % Update the objective piezo height
 

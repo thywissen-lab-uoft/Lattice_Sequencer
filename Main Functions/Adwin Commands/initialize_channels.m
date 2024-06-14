@@ -513,8 +513,13 @@ end
 %     seqdata.analogchannels(30).voltagefunc{2} = @(a)(1.41911-0.09634*a+8.43139*10^(-4)*a^2-1.57057*10^(-6)*a^3);%@(a)((a*1-136.96864)/19.37436);%@(a)((a*1-184.2)/79.972);
     seqdata.analogchannels(30).voltagefunc{2} = @(a)(-28.25805+0.22225*a-2.54054*10^(-4)*a.^2);
     
-     %channel 31 Unused
-    seqdata.analogchannels(31).name = 'Unused';
+     %channel 31 D1 Spec DP FM
+     % Goes to the FM modulation input of the ALPS3 Box which provides the
+     % 221 MHz signal for the D1 double pass in spectroscopy.
+     % Note that the actual frequency depends on the potentiometer and also
+     % the FM modulation.  The response of the modulation is VCO dependent
+     % as well.  
+    seqdata.analogchannels(31).name = 'D1 Spec DP FM';
     seqdata.analogchannels(31).minvoltage = -1;
     seqdata.analogchannels(31).maxvoltage = 10;
     seqdata.analogchannels(31).defaultvoltagefunc = 2;

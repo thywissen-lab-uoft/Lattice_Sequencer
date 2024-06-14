@@ -154,7 +154,7 @@ AnalogFunc(calctime(curtime,FF_start_time),'Transport FF',...
 % than what it needs to and it will rail its output
 
 % Kitten "overhead". Extra current to make sure Kitten is railed
-dkI = 3.5; % in AMPS
+dkI = 4.5; % in AMPS
 
 AnalogFunc(calctime(curtime,0),'kitten',...
     @(t,tt,y1,y2) dkI+z2ik(ramp_minjerk(t,tt,y1,y2)), ...
@@ -177,7 +177,7 @@ dispLineStr('Transport Kitten Handoff',curtime);
 
 %%%%%% 15/16 GS Ramp Parameters %%%%%
 % V_GS_LOW is the "low" GS voltage, supposed to be right below turn on
-V_GS_LOW = 3.6;3.6;3.6; 
+V_GS_LOW = 3.6; 
 T_RAMP_0_TO_L = 500;
 
 % V_GS_MED is the "medium" GS voltage.  This allows a small amount of current

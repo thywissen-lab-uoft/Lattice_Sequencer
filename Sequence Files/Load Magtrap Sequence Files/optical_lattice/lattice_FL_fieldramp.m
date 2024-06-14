@@ -10,7 +10,7 @@ global seqdata
 % you are imaging along the FPUMP axis
     
     B0 = 4;         % Quantization Field
-    B0_shift_list =[0.2];.21;
+    B0_shift_list =[0.18];.21;
     
     % Quantization Field 
     B0_shift = getScanParameter(...

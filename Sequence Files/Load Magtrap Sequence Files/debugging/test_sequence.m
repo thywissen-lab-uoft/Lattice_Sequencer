@@ -6253,11 +6253,11 @@ curtime = calctime(curtime,150);
 % setDigitalChannel(calctime(curtime,0),'yLatticeOFF',0)
 
 
-P0 = 0.0158257; % power level at 0V (this is a bad way);
-    AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-        150,150,1,P0,4); 
-curtime = calctime(curtime,150);
+% P0 = 0.0158257; % power level at 0V (this is a bad way);
+%     AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+%         150,150,1,P0,4); 
+% curtime = calctime(curtime,150);
 
 % 
 % AnalogFuncTo(calctime(curtime,0),'xLattice',...

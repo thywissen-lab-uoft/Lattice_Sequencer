@@ -59,10 +59,9 @@ if seqdata.flags.misc_lock_PA
     updatePALock(curtime);    
 end
 
-%% test
-
-% setAnalogChannel(calctime(curtime,0),'D1 DP FM',1);
-
+%% D1 Spec DP FM
+% Set the D1 Spec Double pass detuning to zero (the default)
+setAnalogChannel(calctime(curtime,0),'D1 Spec DP FM',0,3);
 %% Set Objective Piezo Voltages
 % Update the objective piezo height
 
@@ -785,6 +784,12 @@ curtime = setDigitalChannel(calctime(curtime,10),'Transport Relay',0);
 if seqdata.flags.misc_calibrate_PA == 1    
    curtime = PA_pulse(curtime,2);     
 end
+%% Reset Detuning of D1 Spec Double pass
+
+ AnalogFuncTo(calctime(curtime,0),'D1 Spec DP FM',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),1000,1000,0);
+    
+
     
 %% Scope trigger selection
 SelectScopeTrigger(seqdata.scope_trigger);

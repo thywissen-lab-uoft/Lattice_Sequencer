@@ -522,8 +522,13 @@ end
     seqdata.analogchannels(31).name = 'D1 Spec DP FM';
     seqdata.analogchannels(31).minvoltage = -1;
     seqdata.analogchannels(31).maxvoltage = 10;
-    seqdata.analogchannels(31).defaultvoltagefunc = 2;
-    seqdata.analogchannels(31).voltagefunc{2} = @(a)(a);
+    seqdata.analogchannels(31).defaultvoltagefunc = 3;    
+    % 2024.06.14 last calibrated the D1 DP 
+%    data = [0 1 2 3 4 4.25 5 6;
+%    165.56 177.5 190 203.4 217.63  221.32 232.36 246.06];    
+    seqdata.analogchannels(31).voltagefunc{2} = @(freq)(freq-164.0477)/(13.5305);
+    seqdata.analogchannels(31).voltagefunc{3} = @(freq_shift) seqdata.analogchannels(31).voltagefunc{2}(freq_shift+221.7);
+   
     
     %channel 32 (Ramp on modulation) VGA gain for conductivity
     seqdata.analogchannels(32).name = 'Modulation Ramp';

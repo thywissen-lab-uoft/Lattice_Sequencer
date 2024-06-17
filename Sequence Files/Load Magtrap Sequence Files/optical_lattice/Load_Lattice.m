@@ -732,7 +732,13 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
     end
 
 
-
+    df = getVar('qgm_EIT_detuning_shift');
+    % Change the EIT detuning after optical pumping. 
+    % WARNING : It will take a finite amount of time for the lock to follow
+    AnalogFuncTo(calctime(curtime,0),'D1 Spec DP FM',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),200,200,df);
+    
+    
         % Ramp the bias fields
     newramp = struct('ShimValues',seqdata.params.shim_zero,...
         'FeshValue',20,'QPValue',0,'SettlingTime',100);

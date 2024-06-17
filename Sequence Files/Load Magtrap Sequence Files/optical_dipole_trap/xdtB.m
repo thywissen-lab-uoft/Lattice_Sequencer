@@ -155,10 +155,27 @@ if seqdata.flags.xdtB_ramp_power_end
     th = getVar('xdt_evap_end_ramp_hold');
     curtime = calctime(curtime,th);
 end
-%% Ramp Power up
 
-if seqdata.flags.xdtB_ramp_power_end
-    % NEEDS TO BE WRITTEN FROM OLD CODE
+%% Turn on feshbach field
+
+if seqdata.flags.xdtB_feshbach_fine2   
+    tr = getVar('xdtB_feshbach_fine2_ramptime');
+    fesh = getVar('xdtB_feshbach_fine2_field');
+
+    % Define the ramp structure
+    ramp=struct;
+    ramp.shim_ramptime      = tr;
+    ramp.shim_ramp_delay    = 0;
+    ramp.xshim_final        = seqdata.params.shim_zero(1); 
+    ramp.yshim_final        = seqdata.params.shim_zero(2);
+    ramp.zshim_final        = seqdata.params.shim_zero(3);
+    ramp.fesh_ramptime      = tr;
+    ramp.fesh_ramp_delay    = 0;
+    ramp.fesh_final         = fesh; %22.6
+    ramp.settling_time      = 100;    
+
+    % Ramp FB with QP
+curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
 end
 
 %% Unhop the feshbach resonance
@@ -186,7 +203,7 @@ if seqdata.flags.xdtB_feshbach_off
     curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain 
 end
 
-%%
+%% Turn off levitation field
 if seqdata.flags.xdtB_levitate_off  
     tr = getVar('xdtB_levitate_off_ramptime');
     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
@@ -206,6 +223,70 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
                  10,10,9,1);              
         curtime = calctime(curtime,50);
 end
+
+%% Piezo kick
+if seqdata.flags.xdtB_piezo_vert_kick
+    dispLineStr('Kicking the dipole trap',curtime);
+    
+    tr = getVar('xdtB_piezo_vert_kick_rampup_time');
+    V = getVar('xdtB_piezo_vert_kick_amplitude');
+    t_off = getVar('xdtB_piezo_vert_kick_rampoff_time');
+    th = getVar('xdtB_piezo_vert_kick_holdtime');
+
+    % Piezo Mirror to a Displaced Position
+    curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V);
+    
+    % Piezo Mirror to Original displacement
+    curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),t_off,t_off,0);
+    
+    % Wait for oscillations
+    curtime = calctime(curtime,th);  
+end
+
+%% Single Beam Check
+% After optical evaporation, turn off one of the trap so you can see the
+% position of the other ODT beam
+if seqdata.flags.xdtB_one_beam
+    dispLineStr('Turning off one of the dipole trap beams',curtime);
+    tr = 10;    
+    
+    P1 = getChannelValue(seqdata,'dipoleTrap1',1);
+    P2 = getChannelValue(seqdata,'dipoleTrap2',1);
+    
+    odt1_on = 0;
+    odt2_on = 1;
+    
+    % To mitigate gravitational sag, turn one ODT off but then increase the
+    % power in the other beam
+    
+    if odt2_on
+        % Comment out which beam you want to stay on    
+        AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            tr,tr,0);
+        AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            tr,tr,2*P2);
+        curtime = calctime(curtime,tr);
+    end
+    
+    if odt1_on
+        % Comment out which beam you want to stay on    
+        AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            tr,tr,2*P1);
+        AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+            tr,tr,0);
+        curtime = calctime(curtime,tr);
+    end
+
+    
+    curtime = calctime(curtime,20);
+end
+
 
 %% The End
 

@@ -62,16 +62,20 @@ AnalogFuncTo(calctime(curtime,0),'zLattice',...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % INSERT XDT AND DMD RAMPS WHICH WE DO NOT DO RIGHT NOW
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+% if seqdata.flags.lattice_load_dimple 
+%     
+%     
+%     
+% end
 
 % Advance time
-curtime = calctime(curtime,tL);   
-
-%% Mabye turn off XDTs
+curtime = calctime(curtime,tL);  
+%% Turn of XDTs
+% When analyzing the properties of the lattice, it is sometimes useful to
+% turn the XDT off.  This is typically not used in the experimental cycle.
 
 if seqdata.flags.lattice_load_xdt_off
-    tr = getVar('lattice_load_xdt_off_time');   
-    
+    tr = getVar('lattice_load_xdt_off_time');       
     % Ramp ODTs
     AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
@@ -79,8 +83,7 @@ if seqdata.flags.lattice_load_xdt_off
     AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
         tr,tr,seqdata.params.ODT_zeros(2));
-    curtime = calctime(curtime,tr);
-    
+    curtime = calctime(curtime,tr);    
     % Make sure its off
     setDigitalChannel(calctime(curtime,0),'XDT TTL',1);   
 end
@@ -88,14 +91,65 @@ end
 
 %% Hold after loading
 % Hold time after loading 
-tH = getVar('lattice_ramp_1_holdtime');
-curtime=calctime(curtime,tH);       
+tH = getVar('lattice_load_holdtime');
+curtime=calctime(curtime,tH);    
+
+%% Ramp Feshbach Field After Loading lattice
+% After loading the lattice, ramp the feshbach field to a desired level for
+% experiments.  This code works best if the xdtB.m is called and already
+% ramps the feshbach field to a high field (and also the levitation field)
+if seqdata.flags.lattice_load_feshbach_ramp   
+    tr = getVar('lattice_load_feshbach_time');
+    fesh = getVar('lattice_load_feshbach_field');
+
+    % Define the ramp structure
+    ramp=struct;
+    ramp.shim_ramptime      = tr;
+    ramp.shim_ramp_delay    = 0;
+    ramp.xshim_final        = seqdata.params.shim_zero(1); 
+    ramp.yshim_final        = seqdata.params.shim_zero(2);
+    ramp.zshim_final        = seqdata.params.shim_zero(3);
+    ramp.fesh_ramptime      = tr;
+    ramp.fesh_ramp_delay    = 0;
+    ramp.fesh_final         = fesh; %22.6
+    ramp.settling_time      = 100;    
+
+    % Ramp FB with QP
+    curtime= ramp_bias_fields(calctime(curtime,0), ramp);  
     
+    % Hold after ramping up FB
+    tFBH = getVar('lattice_load_feshbach_holdtime');
+    curtime=calctime(curtime,tFBH);
+end
+
+%% Ramp lattices to science depth
+
+if seqdata.flags.lattice_sci_ramp
+    %Ramp the lattices to the desired value    
+    tS = getVar('lattice_sci_time');
+    
+    % Define individual lattices separately just in case
+    Ux = getVar('lattice_sci_depthX');
+    Uy = getVar('lattice_sci_depthY');
+    Uz = getVar('lattice_sci_depthZ');
+    
+    ScopeTriggerPulse(curtime,'lattice_sci_ramp');
+    AnalogFuncTo(calctime(curtime,0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tS,tS,Ux); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tS,tS,Uy);
+    AnalogFuncTo(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tS,tS,Uz);  
+
+    %Advance time
+    curtime = calctime(curtime,tS);  
+end
+   
 %% Unramp Lattices
-if seqdata.flags.lattice_load_1_round_trip == 1
-    
-
-
+if seqdata.flags.lattice_load_round_trip == 1   
      % Ramp the lattices to the desired value    
     tL = getVar('lattice_load_time');
     

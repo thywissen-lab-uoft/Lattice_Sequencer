@@ -34,7 +34,7 @@ global seqdata
     fluor.EnableRaman           = 1;        % Use Raman Beams    
     
     % Sets the total time of radiation (optical or otherwise)
-    pulse_list = [2000]; %         
+    pulse_list = [4000]; %         
     pulse_time = getScanParameter(...
         pulse_list,seqdata.scancycle,seqdata.randcyclelist,...
         'qgm_pulse_time','ms');      
@@ -43,28 +43,27 @@ global seqdata
     % 1 ms is typical for uWave spectroscopy
     % 2000 ms is typical for fluoresence imaging    
     % FPUMP 1000Er, 83% transfer at 1 ms, 0.1 V
-    
-%% Magnetic Field Flags
-% Flags for controlling the magnetic field during the fluorescence image.
-% Details of the magnetic field are found later.
+    % EIT Probe
 
-% Mangetic Field
-    fluor.doInitialFieldRamp    = 1;        % Auto specify ramps       
-    fluor.doInitialFieldRamp2   = 0;        % Manually specify ramps    
-    
 %% Ixon Camera Settings
 
 % Whether to trigger the ixon at all.
-    fluor.TriggerIxon          = 1;         % Trigger the ixon?
+fluor.TriggerIxon          = 1;         % Trigger the ixon?
     
     
 % Frame Transfer Enabled, Trigger : External (mode 1)
-    fluor.IxonFrameTransferMode = 1;
+fluor.IxonFrameTransferMode = 1;
 % The exposure time is set by the time between triggers. Here, the 
 % storage sensor is read out while the image sensor is exposed.  The
 % minimum exposure time is the readout time (~300 ms).  The camera is
 % always exposing itself after the first exposure.
-
+%
+% Example Run :
+% Trigger 1 : Wipe camera (finish exposure 1); start exposure 2
+% Trigger 2 : stop exposure 2; start exposure 3
+% Trigger 3 : stop exposure 3; start exposure 4
+% Trigger 4 : stop exposure 4;
+%
 % Frame Transfer Disabled, Trigger : External Exposure(mode 7)
 %     fluor.IxonFrameTransferMode = 0;
 % The exposure time is set by how long the IxonTrigger is high. After 
@@ -72,11 +71,18 @@ global seqdata
 % can accept a new trigger.
 
 if fluor.IxonFrameTransferMode
-%     fluor.NumberOfImages       = 4;     % Normal operation     
-%     fluor.ExposureTime         = [2000 500 500 500];
-%     fluor.ObjectivePiezoShift  = [0 .15 -.15 0];        
-    fluor.NumberOfImages       = 1;     % Normal operation     
-    fluor.ExposureTime         = [2000];
+    % Normal operation : 1 Image with 2 second exposure
+    fluor.NumberOfImages       = 1;     
+    fluor.ExposureTime         = 2000;
+%     
+
+%   Hopping measurement : 2 Images with equal exposure time
+% Sume of exposure times should equal the total light radiation time (pulse
+%_time)
+    fluor.NumberOfImages       = 2;        
+    fluor.ExposureTime         = [2000 2000];
+    
+    
     fluor.ObjectivePiezoShift  = [0];    
 else
     fluor.NumberOfImages       = 1;     % Normal operation     
@@ -99,12 +105,7 @@ end
 if nargin==0 || curtime == 0
    curtime = 0; 
    main_settings;
-   curtime = calctime(curtime,500);
-      
-   % If running code as a separate module, DO NOT change shims unless you 
-   % really mean to as they can overheat
-    fluor.doInitialFieldRamp2 = 0;
-    fluor.doInitialFieldRamp = 0;
+   curtime = calctime(curtime,500);   
 end
 %% Ixon Trigger and Programming
 
@@ -112,8 +113,9 @@ end
         if fluor.IxonFrameTransferMode
             dispLineStr('Triggering iXon Frame Transfer Mode',curtime);
             tpre=-50;
-            DigitalPulse(calctime(curtime,tpre),...
-                    'iXon Trigger',10,1)       
+            
+            % Initial trigger to start acsuitision
+            DigitalPulse(calctime(curtime,tpre),'iXon Trigger',10,1)       
             disp(['Trigger : ' num2str(curtime2realtime(calctime(curtime,-tpre))) ' ms']);
 
             seqdata.IxonMultiExposures(end+1) = NaN;
@@ -122,14 +124,14 @@ end
             % In frame transfer mode a trigger ends the exposure
             t0=0;
             for kk=1:fluor.NumberOfImages
-                if seqdata.flags.misc_moveObjective
-                    vNew = getVarOrdered('objective_piezo')+fluor.ObjectivePiezoShift(kk);
-                    setAnalogChannel(calctime(curtime,t0),'objective Piezo Z',...
-                        vNew,1);
-                    seqdata.IxonMultiPiezos(end+1) = vNew;
-                else
+%                 if seqdata.flags.misc_moveObjective
+%                     vNew = getVarOrdered('objective_piezo')+fluor.ObjectivePiezoShift(kk);
+%                     setAnalogChannel(calctime(curtime,t0),'objective Piezo Z',...
+%                         vNew,1);
+%                     seqdata.IxonMultiPiezos(end+1) = vNew;
+%                 else
                     seqdata.IxonMultiPiezos(end+1) = NaN;
-                end 
+%                 end 
                 
                 t0 = t0 + fluor.ExposureTime(kk);
                 disp(['Trigger : ' num2str(curtime2realtime(calctime(curtime,t0))) ' ms']);
@@ -157,7 +159,7 @@ end
 % This code set the Fpump power regulation and the 4 pass frequency
 
     % Power that the Fpump beam regulates to
-    F_Pump_List = [1];[1.1];1.1;    
+    F_Pump_List = [1.2];0.9;[1.2];  [1.1];  
     
     % Frequency of the FPUMP single pass (MHz)
     fluor.F_Pump_Frequency = 80;
@@ -172,15 +174,18 @@ end
     % Voltage corresponding to maximum AOM deflection
     EIT1_max_voltage = 1.1;
     EIT2_max_voltage = .850;
+    
+    defVar('qgm_EIT1_power',.8,'normalized');
+    defVar('qgm_EIT2_power',.8,'normalized');
 
     % Relative power choice (0 to 1)
-    EIT_probe_rel_pow_list =[1];
-    EIT_probe_rel_pow = getScanParameter(EIT_probe_rel_pow_list, ...
-        seqdata.scancycle,seqdata.randcyclelist,'qgm_eit_rel_pow','arb');
+%     EIT_probe_rel_pow_list =[.4:.05:1];
+%     EIT_probe_rel_pow = getScanParameter(EIT_probe_rel_pow_list, ...
+%         seqdata.scancycle,seqdata.randcyclelist,'qgm_eit_rel_pow','arb');
     
     % Voltage that gets written to Rigol
-    fluor.EIT1_Power = EIT1_max_voltage*EIT_probe_rel_pow;
-    fluor.EIT2_Power = EIT2_max_voltage*EIT_probe_rel_pow;
+    fluor.EIT1_Power = EIT1_max_voltage*getVar('qgm_EIT1_power');
+    fluor.EIT2_Power = EIT2_max_voltage*getVar('qgm_EIT2_power');
     
     % Frequency (MHz) that gets written to Rigol
     fluor.EIT1_Frequency = 80;
@@ -217,73 +222,54 @@ end
 % vary the field since the 4Pass AOM will only remain coupled for a finite
 % range of frequencies.
 
-    uWave_Freq_Shift_List = [0];    
+    uWave_Freq_Shift_List = [100];    
     uwave_freq_shift = getScanParameter(...
         uWave_Freq_Shift_List,seqdata.scancycle,seqdata.randcyclelist,...
-        'qgm_uWave_freq_shift','kHz');     
-    
-    uWave_SweepRange_list = [20];    
+        'qgm_uWave_freq_shift','kHz');         
+    uWave_SweepRange_list = 200;[20];    
     uWave_SweepRange = getScanParameter(...
         uWave_SweepRange_list,seqdata.scancycle,seqdata.randcyclelist,...
-        'qgm_uWave_SweepRange','kHz');     
-    
+        'qgm_uWave_SweepRange','kHz');         
     % Specify Frequency manually
-    fluor.uWave_Frequency = 1296.770 + uwave_freq_shift/1000;
-    
+    fluor.uWave_Frequency = 1296.770 + uwave_freq_shift/1000;    
     % Specifiy Frequency using 4pass
-%     fluor.uWave_Frequency = (4*DDSFreq)/1e6; 1296.829;
-    
-    
+%     fluor.uWave_Frequency = (4*DDSFreq)/1e6; 1296.829;  
     fluor.uWave_SweepRange = uWave_SweepRange;
-    fluor.uWave_Power = 15;
-    
+    fluor.uWave_Power = 15;    
     addOutputParam('qgm_uWave_Frequency',fluor.uWave_Frequency,'MHz');    
 
-%%
+%% Raman Powers Settings
+% 2024/06/01 Raman 1 is vertical, Raman 2 is horizontal (this can change by
+% rearranging fibers)
 
-raman_rel_pow_list = 0.5;[0.5];
-  raman_rel_pow = getScanParameter(raman_rel_pow_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'qgm_raman_rel_pow','arb');     
-    
-%% Raman 1 Settings      
-    V10 = 1.3;
-    Raman1_Power_List = V10*raman_rel_pow;V10*[1];
-    Raman1_ShiftFreq_List = [-100];[-80];        % kHz
-        V20 = 1.36;   
+% Maximum AOM deflection efficiency voltage on the Rigol (V)
+Raman1_V0 = 1.3;
+Raman2_V0 = 1.36;
 
-%     r1 = linspace(0,1,10);
-%     r2 = linspace(0,1,10);
-%     [R1,R2]=meshgrid(r1,r2);
-%     
-%     R1 = V10*R1(:);
-%     R2 = V20*R2(:);
-%     
-%     Raman1_Power = getScanParameter(R1,...
-%         seqdata.scancycle,seqdata.randcyclelist,'Raman1_Power','V'); 
-%         Raman2_Power = getScanParameter(R2,...
-%         seqdata.scancycle,seqdata.randcyclelist,'Raman2_Power','V'); 
+% Relative power to use during the experiment
+defVar('qgm_Raman1_power',0.4,'normalized');0.4;
+defVar('qgm_Raman2_power',0.4,'normalized');0.4;
 
-    Raman1_Freq_Shift = getScanParameter(Raman1_ShiftFreq_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'Raman1_Freq_Shift','kHz');       
-    Raman1_Power = getScanParameter(Raman1_Power_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'Raman1_Power','V'); 
-    
+% Detunings to modify the Raman condition (shouldn't this always be zero?)
+% CF : Since I believe Raman two photon should be the same as EIT two
+% photon
+defVar('qgm_Raman1_shift',[-110],'kHz');-110;
+defVar('qgm_Raman2_shift',0,'kHz');
+
+%Set the range of the frequency sweeps for Raman spectroscopy
+defVar('qgm_Raman1_sweepRange',[20],'kHz');
+defVar('qgm_Raman2_sweepRange',50,'kHz');
+
+%% Raman 1 Settings          
     fluor.Raman1_EnableSweep = 0;
-    fluor.Raman1_Power = Raman1_Power;
-    fluor.Raman1_Frequency = 110*1e6 + Raman1_Freq_Shift*1e3;    
-%% Raman 2 Settings
-    V20 = 1.36;   
-    Raman2_Power_List = V20*raman_rel_pow;V20*[1];
-    Raman2_ShiftFreq_List = [0];       % kHz
-    
-    Raman2_Freq_Shift = getScanParameter(Raman2_ShiftFreq_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'Raman2_Freq_Shift','kHz');       
-    Raman2_Power = getScanParameter(Raman2_Power_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'Raman2_Power','V'); 
-    
+    fluor.Raman1_Power = Raman1_V0*getVar('qgm_Raman1_power');
+    fluor.Raman1_Frequency = 110*1e6 + getVar('qgm_Raman1_shift')*1e3;
+    fluor.Raman1_SweepRange = getVar('qgm_Raman1_sweepRange')*1e3;
+%% Raman 2 Settings    
     fluor.Raman2_EnableSweep = 0;
-    fluor.Raman2_Power = Raman2_Power;
-    fluor.Raman2_Frequency = 80*1e6 + Raman2_Freq_Shift*1e3;        
+    fluor.Raman2_Power = Raman2_V0*getVar('qgm_Raman2_power');
+    fluor.Raman2_Frequency = 80*1e6 + getVar('qgm_Raman2_shift')*1e3;
+    fluor.Raman2_SweepRange = getVar('qgm_Raman2_sweepRange')*1e3;
  %% Raman EOM Settings 
     % Eventually the Raman EOM should be programmed 
     raman_eom_freq = 1266.924;

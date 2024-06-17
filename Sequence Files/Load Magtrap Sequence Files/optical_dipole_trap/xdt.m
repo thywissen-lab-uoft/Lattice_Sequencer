@@ -16,7 +16,7 @@ global seqdata;
 if seqdata.flags.xdt_load
     [curtime, I_QP, V_QP,I_shim] = xdt_load(curtime, I_QP, V_QP,I_shim);
 end
-
+% curtime = calctime(curtime,500);
 %% Pre-evaporation 
 
 if seqdata.flags.xdt_pre_evap

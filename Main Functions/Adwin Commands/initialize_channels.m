@@ -143,8 +143,8 @@ seqdata.digchannels(81).name = 'ODT Piezo Mod TTL';        % TTL for the piezo m
 seqdata.digchannels(82).name = 'QPD Monitor Trigger';      % To trigger LabJack/scope for monitoring QPDs (Added 2023.08.02)
 seqdata.digchannels(83).name = 'Z shim bipolar relay';        % temp
 seqdata.digchannels(84).name = 'Sci shim PSU DIO';  % Digital I/O for Sci shim PSUs, used to turn output on
-seqdata.digchannels(85).name = 'Channel 85';        % unused
-seqdata.digchannels(86).name = 'Channel 86';        % unused
+seqdata.digchannels(85).name = 'Dimple TTL';        % Dimple ZASWA 0:ON, 1:OFF (RF1)
+seqdata.digchannels(86).name = 'Dimple Shutter';    % Dimple shutter 0: ON 1: OFF
 seqdata.digchannels(87).name = 'Channel 87';        % unused
 seqdata.digchannels(88).name = 'Channel 88';        % unused
 seqdata.digchannels(89).name = 'Channel 89';        % unused
@@ -417,7 +417,7 @@ end
 %         (current>0).*(current*0.1334+0.1247) + ...
 %         (current<=0).*(current*0.10-0.10)); % 2023/06/29
     seqdata.analogchannels(21).voltagefunc{5} =@(current) ...
-        (current*0.1334+0.1247);  % 2023/06/29
+        (current*0.1334+0.1247-.015);  % 2023/06/29; updated zero level 2024/05/31 empircaly
     
     %channel 22 (1st vert--12a)
     seqdata.analogchannels(22).name = 'Coil 12a';
@@ -513,12 +513,22 @@ end
 %     seqdata.analogchannels(30).voltagefunc{2} = @(a)(1.41911-0.09634*a+8.43139*10^(-4)*a^2-1.57057*10^(-6)*a^3);%@(a)((a*1-136.96864)/19.37436);%@(a)((a*1-184.2)/79.972);
     seqdata.analogchannels(30).voltagefunc{2} = @(a)(-28.25805+0.22225*a-2.54054*10^(-4)*a.^2);
     
-     %channel 31 Unused
-    seqdata.analogchannels(31).name = 'Unused';
+     %channel 31 D1 Spec DP FM
+     % Goes to the FM modulation input of the ALPS3 Box which provides the
+     % 221 MHz signal for the D1 double pass in spectroscopy.
+     % Note that the actual frequency depends on the potentiometer and also
+     % the FM modulation.  The response of the modulation is VCO dependent
+     % as well.  
+    seqdata.analogchannels(31).name = 'D1 Spec DP FM';
     seqdata.analogchannels(31).minvoltage = -1;
     seqdata.analogchannels(31).maxvoltage = 10;
-    seqdata.analogchannels(31).defaultvoltagefunc = 2;
-    seqdata.analogchannels(31).voltagefunc{2} = @(a)(a);
+    seqdata.analogchannels(31).defaultvoltagefunc = 3;    
+    % 2024.06.14 last calibrated the D1 DP 
+%    data = [0 1 2 3 4 4.25 5 6;
+%    165.56 177.5 190 203.4 217.63  221.32 232.36 246.06];    
+    seqdata.analogchannels(31).voltagefunc{2} = @(freq)(freq-164.0477)/(13.5305);
+    seqdata.analogchannels(31).voltagefunc{3} = @(freq_shift) seqdata.analogchannels(31).voltagefunc{2}(freq_shift+221.7);
+   
     
     %channel 32 (Ramp on modulation) VGA gain for conductivity
     seqdata.analogchannels(32).name = 'Modulation Ramp';
@@ -746,10 +756,14 @@ end
     seqdata.analogchannels(51).minvoltage = -10;
     seqdata.analogchannels(51).maxvoltage = 10;
 
-    %channel 52 (Dimple Pwr)
-    seqdata.analogchannels(52).name = 'Dimple Pwr';
-    seqdata.analogchannels(52).minvoltage = -10;
+    %channel 52 (Dimple)
+    seqdata.analogchannels(52).name = 'Dimple';
+    seqdata.analogchannels(52).minvoltage = -1;
     seqdata.analogchannels(52).maxvoltage = 10;
+    seqdata.analogchannels(52).defaultvoltagefunc = 2; 
+    seqdata.analogchannels(52).voltagefunc{2} = ...
+        @(power_mW)(power_mW*1 + 0.01); % Optical power in mW to Voltage
+
 
     %channel 53 (VVA for Ramping uWave Power)
     seqdata.analogchannels(53).name = 'uWave VVA';
@@ -766,14 +780,21 @@ end
     xf=vva_spec(1,:);
     yf=sqrt(10.^(-vva_spec(2,:)*.1)/10^(-4.48*.1));yf(1)=0;
     seqdata.analogchannels(53).voltagefunc{2} = @(a) interp1(yf,xf,a,'pchip');
-
-
+% 
+% 
+%     %channel 54 (Piezo mirror controller, channel X)
+%     seqdata.analogchannels(54).name = 'Piezo mirror X';
+%     seqdata.analogchannels(54).minvoltage = -0.15;
+%     seqdata.analogchannels(54).maxvoltage = 10;
+%     seqdata.analogchannels(54).defaultvoltagefunc = 2; 
+%     seqdata.analogchannels(54).voltagefunc{2} = @(a)((a-0.7)/15.18);
+%     
+%     
     %channel 54 (Piezo mirror controller, channel X)
-    seqdata.analogchannels(54).name = 'Piezo mirror X';
-    seqdata.analogchannels(54).minvoltage = -0.15;
+    seqdata.analogchannels(54).name = 'XDT2 V Piezo';
+    seqdata.analogchannels(54).minvoltage = -0.1;
     seqdata.analogchannels(54).maxvoltage = 10;
-    seqdata.analogchannels(54).defaultvoltagefunc = 2; 
-    seqdata.analogchannels(54).voltagefunc{2} = @(a)((a-0.7)/15.18);
+    seqdata.analogchannels(54).defaultvoltagefunc = 1; 
 
     %channel 55 (Piezo mirror controller, channel Y)
     seqdata.analogchannels(55).name = 'Piezo mirror Y';

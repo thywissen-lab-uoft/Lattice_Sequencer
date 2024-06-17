@@ -10,13 +10,16 @@ function params = Load_Absorption_Image_Parameters()
     params.detunings.K.X.positive.QP_imaging = 20.5;21.5;
     params.detunings.K.X.positive.SG = 24.5;
     params.detunings.K.X.positive.short_tof = 24.5;
+    
+    % |9/2,-9/2> and |9/2,-7/2> atoms
     params.detunings.K.X.negative.normal = 30.6; %(32.6) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
     
-    % for mF stern gerlach
-%     params.detunings.K.X.negative.SG = 34.5; 
+    params.detunings.K.X.negative.SG = 34.5;      % for mF stern gerlach
+%     params.detunings.K.X.negative.SG = 34.5+kdet_shift;      % for mF stern gerlach
+
     
-    % for F stern gerlach
-    params.detunings.K.X.negative.SG = 35.5; 
+%     params.detunings.K.X.negative.SG = 35.5;     % for F stern gerlach
+
     
     % Lattice F Stern Gerlach, TOF = 15 ms
 %     params.detunings.K.X.negative.SG = 35.5;
@@ -32,7 +35,7 @@ function params = Load_Absorption_Image_Parameters()
     % Rubidium - X-cam
     
 %     
-    rbdet_shift_list = [0];
+    rbdet_shift_list = [9.5];
     rbdet_shift = getScanParameter(rbdet_shift_list,...
         seqdata.scancycle,seqdata.randcyclelist,'rbdet_shift','MHz');
     
@@ -56,7 +59,7 @@ function params = Load_Absorption_Image_Parameters()
     params.detunings.Rb.X.positive.normal = 10;    % |2,2> 2023/07/20
     params.detunings.Rb.X.positive.in_trap = 0;             % |2,2> Uncalibrated
     params.detunings.Rb.X.positive.QP_imaging = 9.5;10;         % QP imaging 15 ms tof |2,2> 2022/09/02
-    params.detunings.Rb.X.positive.SG = 0;                  % Uncalibrated
+    params.detunings.Rb.X.positive.SG = 9.5;                  % Uncalibrated
     params.detunings.Rb.X.negative.normal = 0;              % Uncalibrated
     params.detunings.Rb.X.negative.SG = 0;                  % Uncalibrated
     

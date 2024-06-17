@@ -8,15 +8,24 @@ setAnalogChannel(curtime,'Modulation Ramp',-10,1);
 %% Flags
 % seqdata.flags.conductivity_ODT1_mode            = 1; % 0:OFF, 1:SINE, 2:DC
 % seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
-seqdata.flags.conductivity_ramp_FB              = 1; % Ramp FB field to resonance
-seqdata.flags.conductivity_ramp_QP              = 1; % Ramp QP reverse with FB (only works if ramp_FB is enabled)
-seqdata.flags.conductivity_FB_heating           = 1; % Ramp closer to resonance to induce heating for T control
+
+
+% Feshbach flags : (2024/05) disabled as we do feshbach ramps elsewhere
+seqdata.flags.conductivity_ramp_FB_on             = 0; 1;% Ramp FB field to resonance
+seqdata.flags.conductivity_ramp_QP_on             = 0; 1; % Ramp QP reverse with FB (only works if ramp_FB is enabled)
+seqdata.flags.conductivity_FB_heating             = 0; 1;% Ramp closer to resonance to induce heating for T control
+seqdata.flags.conductivity_ramp_FB_off            = 0; 1;% Ramp FB field to resonance
+seqdata.flags.conductivity_ramp_QP_off            = 0;1; % Ramp QP reverse with FB (only works if ramp
+
+% Pin flag : (2024/05) disabled as we do this else where
+seqdata.flags.conductivity_dopin                    = 0; % Pin after modulation
+
+
 seqdata.flags.conductivity_rf_spec              = 0;
 seqdata.flags.conductivity_enable_mod_ramp      = 1;
 seqdata.flags.conductivity_QPD_trigger          = 1; % Trigger QPD monitor LabJack/Scope
 seqdata.flags.conductivity_snap_off_XDT         = 0; % Quick ramp of ODTs while atoms are displaced
 seqdata.flags.conductivity_snap_and_hold        = 0; % Diabatically turn off mod for quench measurement
-seqdata.flags.conductivity_dopin                = 1; % Pin after modulation
 %% Modulation Settings
 
 % VISA Address of Rigol
@@ -111,23 +120,20 @@ switch seqdata.flags.conductivity_ODT2_mode
         programRigol(rigol_address,[],ch2_on);
 end
 
-%% Ramp FB field to s-wave resonance
+%% Ramp FB field to s-wave resonance (NOT USED ANYMORE)
    
-if seqdata.flags.conductivity_ramp_FB  
-    
+if seqdata.flags.conductivity_ramp_FB_on      
         Bfb = getVar('conductivity_FB_field');
         zshim = getVar('conductivity_zshim');
         Bzshim = zshim*2.35;
-        Boff = 0.1238;
-        
+        Boff = 0.1238;        
         Breal = Bfb + Bzshim + Boff;
         addOutputParam('conductivity_FB_field_maybe_calibrated',Breal,'G');
-
         ramptime_all_list = 150;
         ramptime_all = getScanParameter(ramptime_all_list,seqdata.scancycle,...
             seqdata.randcyclelist,'conductivity_field_ramptime','ms');
         
-        if seqdata.flags.conductivity_ramp_QP            
+        if seqdata.flags.conductivity_ramp_QP_on            
             defVar('conductivity_QP_reverse',[0.1],'A');            
             IQP = getVar('conductivity_QP_reverse');
             QP_ramptime = ramptime_all;            
@@ -170,51 +176,36 @@ if seqdata.flags.conductivity_ramp_FB
         ramp.fesh_ramptime = ramptime_all;
         ramp.fesh_ramp_delay = 0;
         ramp.fesh_final = Bfb; %22.6
-        ramp.settling_time = 50;  
-        
+        ramp.settling_time = 50;          
         
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
         ScopeTriggerPulse(curtime,'FB_ramp');
-
         seqdata.params.HF_fb = Bfb;    
         
         % FB Heating
-        if seqdata.flags.conductivity_FB_heating
-            
+        if seqdata.flags.conductivity_FB_heating            
             FB_heat_field = getVar('FB_heating_field');
-            FB_heat_holdtime = getVar('FB_heating_holdtime');
-            
-            heat_ramp_time = 50;
-            
+            FB_heat_holdtime = getVar('FB_heating_holdtime');            
+            heat_ramp_time = 50;            
             %Ramp closer to resonance (say 200G)
             curtime = AnalogFuncTo(calctime(curtime,0),'FB current',...
                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),heat_ramp_time,heat_ramp_time,FB_heat_field);
-
             %Hold for some amount of time
-            curtime = calctime(curtime,FB_heat_holdtime);
-            
+            curtime = calctime(curtime,FB_heat_holdtime);            
             %Ramp back down to science field
             curtime = AnalogFuncTo(calctime(curtime,0),'FB current',...
                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),heat_ramp_time,heat_ramp_time,Bfb);
-
             % wait for things to thermalize ??
             curtime = calctime(curtime,200);
         else
             % wait for things to thermalize ??
-            curtime = calctime(curtime,200);
-            
-        end
-        
-        
+            curtime = calctime(curtime,200);            
+        end              
 end
 
 
 %% Modulation
     
-% if seqdata.flags.conductivity_QPD_trigger
-%     DigitalPulse(calctime(curtime,-100),'QPD Monitor Trigger',50,1);
-% end
-
 if seqdata.flags.conductivity_enable_mod_ramp    
     DigitalPulse(curtime,'QPD Monitor Trigger',10,1);    
     setDigitalChannel(curtime,'ODT Piezo Mod TTL',1);    
@@ -267,7 +258,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Modulation Ramp',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), piezo_diabat_ramp_time, piezo_diabat_ramp_time, -9.999,1); 
 curtime = calctime(curtime,getVarOrdered('conductivity_snap_and_hold_time'));
 end
-%% Pin atoms
+%% Pin atoms (NOT USED ANYMORE)
 % Ramp lattices to in atoms
 if seqdata.flags.conductivity_dopin    
     pin_time = 0.1;
@@ -289,7 +280,7 @@ if seqdata.flags.conductivity_dopin
     curtime = calctime(curtime,1);
 end  
 
-%% uWave Spectroscopy to Check field
+%% uWave Spectroscopy to Check field 
  if seqdata.flags.conductivity_rf_spec
      dispLineStr('RF Spec',curtime);
      
@@ -336,9 +327,10 @@ end
     end    
     curtime = calctime(curtime,10);   
  end
-%% Ramp FB field back down to 20 G
-   
-if seqdata.flags.conductivity_ramp_FB && ~seqdata.flags.xdt_high_field_a
+ 
+%% Ramp FB field back down to 20 G (NOT USED ANYMORE)
+  
+if seqdata.flags.conductivity_ramp_FB_off && ~seqdata.flags.xdt_high_field_a
         ramptime_all_list = 150;
         ramptime_all = getScanParameter(ramptime_all_list,seqdata.scancycle,...
             seqdata.randcyclelist,'conductivity_field_down_ramptime','ms');        
@@ -356,16 +348,17 @@ if seqdata.flags.conductivity_ramp_FB && ~seqdata.flags.xdt_high_field_a
         ramp.fesh_final = 20; %22.6
         ramp.settling_time = 50;  
         
-        if seqdata.flags.conductivity_ramp_QP
+        if seqdata.flags.conductivity_ramp_QP_off
             
             QP_ramptime = ramptime_all;
             
-%             AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-%                  @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),QP_ramptime,QP_ramptime,0,1);
+            AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),QP_ramptime,QP_ramptime,0,1);
              
             % Ramp Coil 15, but don't update curtime
-            AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),QP_ramptime,QP_ramptime,0,5);  
+%             AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+%                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),QP_ramptime,QP_ramptime,0,5);  
+            
              
             % Go back to "normal" configuration
             % Turn off reverse QP switch
@@ -382,10 +375,7 @@ if seqdata.flags.conductivity_ramp_FB && ~seqdata.flags.xdt_high_field_a
         end
                
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
-        ScopeTriggerPulse(curtime,'FB_ramp');
-        
-        
-
+        ScopeTriggerPulse(curtime,'FB_ramp');  
 end
 
 

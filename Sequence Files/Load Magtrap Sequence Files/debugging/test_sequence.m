@@ -5149,6 +5149,7 @@ end
 %     
 %     setAnalogChannel(calctime(curtime,0),'uWave VVA',10);
 
+    
 %% Test K kill
 k_kill = 0;
 if k_kill
@@ -6096,7 +6097,7 @@ end
 % 
 % AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
 %         @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
-%         wp_Trot1,wp_Trot1,0);  
+%         wp_Trot1,wp_Trot1,0.99);  
 
 
 
@@ -6104,20 +6105,49 @@ end
 
 % seqdata.digchannels(09).name = 'K Probe/OP TTL';    % 0: OFF; 1: ON
 % setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1);
-%  'K Probe/OP AM';
- setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',7,1);7
-% wpV = 0;
-% setAnalogChannel(calctime(curtime,0),'latticeWaveplate',wpV,1);
-
-% curtime = AnalogFuncTo(calctime(curtime,0),'latticeWaveplate',...
-%     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),100,100,wpV1,wpV2,1);
+% %  'K Probe/OP AM';
+%  setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',7,1);7
+% % wpV = 0;
+% % setAnalogChannel(calctime(curtime,0),'latticeWaveplate',wpV,1);
+% 
+% % curtime = AnalogFuncTo(calctime(curtime,0),'latticeWaveplate',...
+% %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),100,100,wpV1,wpV2,1);
+% %     
+% 
+% setDigitalChannel(calctime(curtime,0),...
+%             'Kill TTL',1);
+%         
+% setDigitalChannel(calctime(curtime,0),...
+%             27,0); % High field AOM
+%         curtime=calctime(curtime,1000);
+% 
+%         % Set uWave power (func1: V, fucn2: normalized)
+%         setAnalogChannel(calctime(curtime,-10),'uWave VVA',10,1);    
+%         %setAnalogChannel(calctime(curtime,-10),'uWave VVA',1,2);     %
+%         %func2: 0 : 0 rabi, 1 : max rabi
+% 
+%         % Set modulation to none (should be ignored regardless)
+%         setAnalogChannel(calctime(curtime,0),'uWave FM/AM',0);
+% 
+%  % Turn off all RF, Rb uWave, K uWave are all off for safety
+%     setDigitalChannel(calctime(curtime,-20),'RF TTL',0);
+%     setDigitalChannel(calctime(curtime,-20),'Rb uWave TTL',0);
+%     setDigitalChannel(calctime(curtime,-20),'K uWave TTL',0);
+% 
+%     % Switch antenna to uWaves (0: RF, 1: uWave)
+%     setDigitalChannel(calctime(curtime,-19),'RF/uWave Transfer',1); 
 %     
-
-setDigitalChannel(calctime(curtime,0),...
-            'Kill TTL',1);
-        
-setDigitalChannel(calctime(curtime,0),...
-            27,0); % High field AOM
+%     % Switch uWave source to the K sources (0: K, 1: Rb);
+%     setDigitalChannel(calctime(curtime,-19),'K/Rb uWave Transfer',0);
+% 
+%     % Switch to send SRS to uWave
+%     setDigitalChannel(calctime(curtime,-19),'K uWave Source',1);      
+%     
+%     % Select SRS To use
+%     % GPIB 30, GPIB 29, GPIB 28
+% 
+%     setDigitalChannel(calctime(curtime,-19),'SRS Source',1);  
+%         setDigitalChannel(calctime(curtime,0),'K uWave TTL',0);    
 
 
 % setAnalogChannel(calctime(curtime,0),'latticeWaveplate',0.05,4);
@@ -6187,6 +6217,70 @@ setDigitalChannel(calctime(curtime,0),...
 
 % DigitalPulse(calctime(curtime,0),'Sci shim PSU DIO',10,1);
 % setAnalogChannel(calctime(curtime,0),'uWave FM/AM',-1);
+%%
+
+% setDigitalChannel(curtime,'Dimple TTL',0);      % Dimple AOM off
+% % % setDigitalChannel(curtime,'Dimple Shutter',0);  % Dimple Shutter ON
+% % setDigitalChannel(curtime,'Dimple Shutter',1);  % Dimple Shutter OFF
+% % setAnalogChannel(curtime,'Dimple',.5,1);  % Dimple Power Request High to
+% 
+
+% % % setDigitalChannel(curtime,'Kill TTL',1);  % Dimple Shutter OFF
+% setAnalogChannel(curtime,'Dimple',.0,1);  % Dimple Power Request High to
+% 
+% curtime = calctime(curtime,10);
+% 
+% % % Turn on raman beam
+% setDigitalChannel(curtime,'Raman TTL 1',1);  % Vertical Raman (1: ON, 0:OFF)
+% setDigitalChannel(curtime,'Raman TTL 2a',0); % Horizontal Raman (1: ON, 0:OFF)    
+% % 
+% % % Open Shutter
+% setDigitalChannel(curtime,'Raman Shutter',0);   
+
+% setDigitalChannel(calctime(curtime,0),'Rb uWave TTL',0);
+% setAnalogChannel(calctime(curtime,0),'K Trap FM',42.7); %54.5
+
+%%
+% setAnalogChannel(calctime(curtime,0),'xLattice',seqdata.params.lattice_zero(1));
+% setAnalogChannel(calctime(curtime,0),'yLattice',seqdata.params.lattice_zero(2));
+% setAnalogChannel(calctime(curtime,0),'zLattice',seqdata.params.lattice_zero(3));
+% 
+% Ux = 60;
+% % Uy = 1030;
+% % Uz = 1150;
+curtime = calctime(curtime,150);
+
+% setDigitalChannel(calctime(curtime,0),'yLatticeOFF',0)
+
+
+% P0 = 0.0158257; % power level at 0V (this is a bad way);
+%     AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+%         150,150,1,P0,4); 
+% curtime = calctime(curtime,150);
+
+% 
+% AnalogFuncTo(calctime(curtime,0),'xLattice',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),500, 500, Ux); 
+% %     AnalogFuncTo(calctime(curtime,0),'yLattice',...
+% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),500, 500, Uy);
+% %     AnalogFuncTo(calctime(curtime,0),'zLattice',...
+% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),500, 500, Uz);   
+% curtime = calctime(curtime,500);
+% % hold time
+% curtime = calctime(curtime,1500);
+% % 
+% AnalogFuncTo(calctime(curtime,0),'xLattice',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),500, 500, seqdata.params.lattice_zero(1)); 
+% %     AnalogFuncTo(calctime(curtime,0),'yLattice',...
+% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),500, 500, seqdata.params.lattice_zero(2));
+% %     AnalogFuncTo(calctime(curtime,0),'zLattice',...
+% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),500, 500, seqdata.params.lattice_zero(3)); 
+% curtime = calctime(curtime,500);
+% % 
+% setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1);
+% % 
+% curtime = calctime(curtime,100);
 
 timeout = curtime;
 

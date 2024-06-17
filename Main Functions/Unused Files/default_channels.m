@@ -123,9 +123,9 @@ setAnalogChannel(curtime,'D1 FM',);%48
 setAnalogChannel(curtime,'D1 EOM',);%49
 setAnalogChannel(curtime,'K Repump FM',);%50
 setAnalogChannel(curtime,'F Pump',-1);%51
-setAnalogChannel(curtime,'Dimple Pwr',0);%52
+setAnalogChannel(curtime,'Dimple',0);%52
 setAnalogChannel(curtime,'uWave VVA',10);%53
-setAnalogChannel(curtime,'Piezo mirror X',0);%54
+% setAnalogChannel(curtime,'Piezo mirror X',0);%54
 setAnalogChannel(curtime,'Piezo mirror Y',0);%55
 setAnalogChannel(curtime,'Piezo mirror Z',0);%56
 setAnalogChannel(curtime,'a57',0);%57

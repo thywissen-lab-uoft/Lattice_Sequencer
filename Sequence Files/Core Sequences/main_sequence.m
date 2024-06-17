@@ -59,6 +59,9 @@ if seqdata.flags.misc_lock_PA
     updatePALock(curtime);    
 end
 
+%% D1 Spec DP FM
+% Set the D1 Spec Double pass detuning to zero (the default)
+setAnalogChannel(calctime(curtime,0),'D1 Spec DP FM',0,3);
 %% Set Objective Piezo Voltages
 % Update the objective piezo height
 
@@ -101,6 +104,11 @@ setDigitalChannel(calctime(curtime,0),'Rb Source Transfer',1);  % 0:Anritsu, 1 =
 setDigitalChannel(calctime(curtime,0),'FB Integrator OFF',0);   % Integrator disabled
 setDigitalChannel(calctime(curtime,0),'FB offset select',0);    % No offset voltage
 
+% Set Dimple Dimple
+setDigitalChannel(curtime,'Dimple TTL',0);      % Dimple AOM on
+setDigitalChannel(curtime,'Dimple Shutter',1);  % Dimple Shutter OFF
+setAnalogChannel(curtime,'Dimple',1,1);  % Dimple Power Request High to
+
 %turn off dipole trap beams
 setAnalogChannel(calctime(curtime,0),'dipoleTrap1',seqdata.params.ODT_zeros(1));
 setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));
@@ -126,9 +134,12 @@ setDigitalChannel(curtime,'K uWave Source',0);
 CDT_piezo_X = 0;
 CDT_piezo_Y = 0;
 CDT_piezo_Z = 0;
-setAnalogChannel(curtime,'Piezo mirror X',CDT_piezo_X,1);
+% setAnalogChannel(curtime,'Piezo mirror X',CDT_piezo_X,1);
 setAnalogChannel(curtime,'Piezo mirror Y',CDT_piezo_Y,1);
 setAnalogChannel(curtime,'Piezo mirror Z',CDT_piezo_Z,1);
+
+
+setAnalogChannel(curtime,'XDT2 V Piezo',0,1);
 
 %Close science cell repump shutter
 setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',0); %1 = open, 0 = closed
@@ -386,6 +397,21 @@ if seqdata.flags.image_type == 1
    curtime = MOT_fluorescence_image(curtime);
 end
 
+%% Turn on dimple
+% 
+% setDigitalChannel(curtime,'Dimple TTL',0);      % Dimple AOM on
+% setDigitalChannel(curtime,'Dimple Shutter',0);  % Dimple Shutter ON
+% 
+% defVar('dimple_power',[1.5],'V');
+% setAnalogChannel(curtime,'Dimple',getVar('dimple_power'),1);  % Dimple Power Request High to
+
+% % Turn on raman beam
+% setDigitalChannel(curtime,'Raman TTL 1',0);  % Vertical Raman (1: ON, 0:OFF)
+% setDigitalChannel(curtime,'Raman TTL 2a',1); % Horizontal Raman (1: ON, 0:OFF)    
+% 
+% % Open Shutter
+% setDigitalChannel(curtime,'Raman Shutter',1);   
+
 %% Magnetic Trap
 
 if seqdata.flags.mt
@@ -405,7 +431,7 @@ if seqdata.flags.transport_save && seqdata.flags.transport
         'Coil 3','Coil 4','Coil 5','Coil 6',...
         'Coil 7','Coil 8','Coil 9','Coil 10',...
         'Coil 11','Coil 12a','Coil 12b','Coil 13',...
-        'Coil 14','Coil 15','Coil 16','kitten','Transport FF'};
+        'Coil 14','Coil 15','Coil 16','kitten','Transport FF','15/16 GS'};
     opts.DigitalChannels = {'MOT TTL','Coil 16 TTL','15/16 Switch','Transport Relay',...
         'Kitten Relay','Reverse QP Switch','LabJack Trigger Transport'};
     opts.FileName = 'magnetic_transport.mat';
@@ -444,21 +470,13 @@ end
 % becaues this wavpelate rotation should not interfere with the
 % experimental cycle (ideally, the PIDs should handle the regulation)
 if seqdata.flags.rotate_waveplate_1
-    dispLineStr('Rotating waveplate',curtime);
-    
+    dispLineStr('Rotating waveplate',curtime);    
     tr = getVar('rotate_waveplate1_duration');
     td = getVar('rotate_waveplate1_delay');
-    value = getVar('rotate_waveplate1_value');
-    
+    value = getVar('rotate_waveplate1_value');    
     disp(['     Rotation Time : ' num2str(tr) ' ms']);
     disp(['     Delay    Time : ' num2str(td) ' ms']);
-    disp(['     Power         : ' num2str(100*value) '%']);
-
-    % Ideally this should be a min jerk in POWER for 
-%     AnalogFunc(calctime(curtime,td),'latticeWaveplate',...
-%         @(t,tt,Pmax)(0.5*asind(sqrt((Pmax)*(t/tt)))/9.36),...
-%         tr,tr,value);        
-    
+    disp(['     Power         : ' num2str(100*value) '%']);   
     P0 = 0.0158257; % power level at 0V (this is a bad way);
     AnalogFunc(calctime(curtime,td),'latticeWaveplate',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
@@ -467,14 +485,34 @@ end
 
 %% Load Optical lattice
 
-if seqdata.flags.lattice_load_1
+if seqdata.flags.lattice_load
     curtime = lattice_load(curtime);
+end
+
+%% Optical Lattice : Conductivity Experiment
+% if (seqdata.flags.lattice_conductivity == 1 )
+%    curtime = lattice_conductivity(curtime);
+% end
+if (seqdata.flags.lattice_conductivity_new == 1)
+   curtime = lattice_conductivity_new(curtime);   
 end
 
 %% Optical Lattice
 
 if ( seqdata.flags.lattice ~= 0 )
-    curtime = Load_Lattice(curtime);
+    curtime = Load_Lattice(curtime); 
+end
+
+%% Optical Lattice : High Field (OLD CODE FROM P_WAVE EXPERIMENT)
+
+if seqdata.flags.lattice_HF_old
+   curtime = lattice_HF(curtime);
+end
+
+%% Optical Lattice : Turn off procedure
+
+if seqdata.flags.lattice_off  
+    curtime = lattice_off(curtime);
 end
 
 %% Pulse Z Lattice after ramping up other lattices to align
@@ -483,7 +521,6 @@ if (seqdata.flags.lattice_pulse_z_for_alignment == 1 )
     curtime = Pulse_Lattice(curtime,4);
 end
    
-
 %% Initiate Time of Flight in absorption image
 
 if seqdata.flags.image_type == 0
@@ -588,18 +625,31 @@ if seqdata.flags.lattice
             seqdata.flags.lattice_fluor && ...
             seqdata.flags.lattice_fluor_bkgd)
         disp('Running the fluorence imaging code again to take background light');        
-        fluor_opts.doInitialFieldRamp = 0;
-        fluor_opts.doInitialFieldRamp2 = 0;
+%         fluor_opts.doInitialFieldRamp = 0;
+%         fluor_opts.doInitialFieldRamp2 = 0;
 
 %         fluor_opts.PulseTime =    [2000];
 %         fluor_opts.ExposureTime = [2000];    
-curtime = lattice_FL(curtime, fluor_opts); 
+curtime = lattice_FL(curtime); 
 % curtime = calctime(curtime,500);% 
 %         fluor_opts.PulseTime =    [1000];
 %         fluor_opts.ExposureTime = [1000];% 
 % curtime = lattice_FL(curtime, fluor_opts); 
     end
 end
+
+%% Reset dimple
+
+setDigitalChannel(curtime,'Dimple TTL',0);      % Dimple AOM on
+setDigitalChannel(curtime,'Dimple Shutter',1);  % Dimple Shutter OFF
+setAnalogChannel(curtime,'Dimple',1,1);  % Dimple Power Request High to
+
+% Turn on raman beam
+setDigitalChannel(calctime(curtime,10),'Raman TTL 1',1);  % Vertical Raman (1: ON, 0:OFF)
+setDigitalChannel(calctime(curtime,10),'Raman TTL 2a',1); % Horizontal Raman (1: ON, 0:OFF)    
+
+% Close Shutter
+setDigitalChannel(curtime,'Raman Shutter',0);   
 
 
 
@@ -677,6 +727,12 @@ curtime = setDigitalChannel(calctime(curtime,10),'Transport Relay',0);
 if seqdata.flags.misc_calibrate_PA == 1    
    curtime = PA_pulse(curtime,2);     
 end
+%% Reset Detuning of D1 Spec Double pass
+
+ AnalogFuncTo(calctime(curtime,0),'D1 Spec DP FM',...
+        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),1000,1000,0);
+    
+
     
 %% Scope trigger selection
 SelectScopeTrigger(seqdata.scope_trigger);

@@ -84,7 +84,7 @@ setDigitalChannel(curtime,'K uWave Source',0);
 CDT_piezo_X = 0;
 CDT_piezo_Y = 0;
 CDT_piezo_Z = 0;
-setAnalogChannel(curtime,'Piezo mirror X',CDT_piezo_X,1);
+% setAnalogChannel(curtime,'Piezo mirror X',CDT_piezo_X,1);
 setAnalogChannel(curtime,'Piezo mirror Y',CDT_piezo_Y,1);
 setAnalogChannel(curtime,'Piezo mirror Z',CDT_piezo_Z,1);
 

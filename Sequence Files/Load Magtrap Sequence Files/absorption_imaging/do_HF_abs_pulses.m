@@ -68,6 +68,8 @@ function params = do_HF_abs_pulses(curtime,params,flags,tD)
     %sweep_type = 'DDS';
     %sweep_type = 'SRS_HS1';
     sweep_type = 'SRS_LINEAR';
+    
+    dispLineStr('Programming HF Imaging RF Sweep',curtime);
 
     switch sweep_type
         case 'DDS'   
@@ -258,7 +260,6 @@ function params = do_HF_abs_pulses(curtime,params,flags,tD)
                 rf_srs_opts.EnableBNC=1;                         % Enable SRS output 
                 rf_srs_opts.PowerBNC = rf_tof_srs_power;                           
                 rf_srs_opts.Frequency = rf_tof_freq;     
-
                 disp(['     Freq Center  : ' num2str(rf_tof_freq) ' MHz']);
                 disp(['     Freq Delta   : ' num2str(rf_tof_delta_freq*1E3) ' kHz']);
                 disp(['     Pulse Time   : ' num2str(rf_tof_pulse_length) ' ms']);

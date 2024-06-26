@@ -18,7 +18,7 @@ function params = Load_HF_Absorption_Image_Parameters()
     
     % Detunings for HF Imaging AOM
     params.detunings.repulsive_lattice = [-9];       % 15 ms tof, 195 G
-    params.detunings.repulsive_xdt = [-8];             % 15 ms tof, 195 G
+    params.detunings.repulsive_xdt = [-7.9];  % 25 ms tof, 195 G
     params.detunings.attractive_lattice = [-8.5];    % 15 ms tof, 207 G
     params.detunings.attractive_xdt = [-8.5];          % 21 ms tof, 207 G
 
@@ -29,7 +29,7 @@ function params = Load_HF_Absorption_Image_Parameters()
 
     % RF shifts for spin flip in TOF
     params.HF_rf_shift.repulsive_lattice = [57];        % 15 ms tof, 195 G, (zshim=0)
-    params.HF_rf_shift.repulsive_xdt = 52.5;       % 15 ms tof, 195 G, no QP(zshim=0)
+    params.HF_rf_shift.repulsive_xdt = 200;       % 25 ms tof, 195 G, QP 0.07V(zshim=0)
     params.HF_rf_shift.attractive_lattice = [62];    % 15 ms tof, 207 G, (zshim=0)
     params.HF_rf_shift.attractive_xdt = [140];          % 21 ms tof, 207 G (zshim=0)
 

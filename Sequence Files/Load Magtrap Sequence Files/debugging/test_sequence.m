@@ -6252,12 +6252,12 @@ curtime = calctime(curtime,150);
 
 % setDigitalChannel(calctime(curtime,0),'yLatticeOFF',0)
 
-
-% P0 = 0.0158257; % power level at 0V (this is a bad way);
-%     AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
-%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-%         150,150,1,P0,4); 
-% curtime = calctime(curtime,150);
+% 
+P0 = 0.0158257; % power level at 0V (this is a bad way);
+    AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+        150,150,1,P0,4); 
+curtime = calctime(curtime,150);
 
 % 
 % AnalogFuncTo(calctime(curtime,0),'xLattice',...
@@ -6282,6 +6282,22 @@ curtime = calctime(curtime,150);
 % % 
 % curtime = calctime(curtime,100);
 
+% Turn on F Pump
+%     setAnalogChannel(calctime(curtime,0),'F Pump',1.2);
+%     setDigitalChannel(calctime(curtime,0),'F Pump TTL',0);
+%     setDigitalChannel(calctime(curtime,0),'FPump Direct',0);  
+    
+%      setDigitalChannel(curtime,'D1 OP TTL',1);           % D1 pump on 
+    
+%     setDigitalChannel(calctime(curtime,0),'Kill TTL',0);
+%     setDigitalChannel(calctime(curtime,0),'K High Field Probe',1);
+%     setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',0);
+%     
+%     setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.14)
+%     setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',0);
+
+
+% = 'Rb Probe/OP AM';
 timeout = curtime;
 
 

@@ -483,13 +483,13 @@ end
 if seqdata.flags.lattice_pulse_dimple
 
     % % % Turn on raman beam
-    setDigitalChannel(curtime,'Raman TTL 1',0);  % Vertical Raman (1: ON, 0:OFF)
-    setDigitalChannel(curtime,'Raman TTL 2a',1); % Horizontal Raman (1: ON, 0:OFF)    
+    setDigitalChannel(curtime,'Raman TTL 1',1);  % Vertical Raman (1: ON, 0:OFF)
+    setDigitalChannel(curtime,'Raman TTL 2a',0); % Horizontal Raman (1: ON, 0:OFF)    
 
     % Open Shutter
     setDigitalChannel(curtime,'Raman Shutter',1);
 
-    defVar('Dimple_pulse_time',[1 10 100 1000 5000 7500 10000],'ms');
+    defVar('Dimple_pulse_time',[50],'ms');
 
     % Wait 
     curtime = calctime(curtime,getVar('Dimple_pulse_time'));
@@ -504,6 +504,62 @@ if seqdata.flags.lattice_pulse_dimple
     getVar('Dimple_Pico_1');
     getVar('Dimple_Pico_2');
 
+end
+
+%% RF Spectroscopy before OP
+
+if seqdata.flags.lattice_RF_spec_pre_OP
+    
+    dispLineStr('Lattice RF transfer -9/2 to -7/2',curtime);
+    
+    % Get the Feshbach field
+    Bfesh   = getChannelValue(seqdata,'FB Current',1);   
+    % Get the shim field
+    Bzshim = (getChannelValue(seqdata,'Z Shim',1) - ...
+        seqdata.params.shim_zero(3))*2.35;
+    % Caclulate the total field
+    B = Bfesh + Bzshim + 0.11;
+    
+    % Calculate RF Frequency for desired transitions
+    mF1=-9/2;mF2=-7/2;   
+%     rf_list =  [-50:10:0]/1000 +...
+%         abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
+%     sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,...
+%         seqdata.randcyclelist,'lattice_rf_freq_pre_OP','MHz');
+    
+    defVar('lattice_rf_freq_shift',[-28],'kHz');
+    
+    sweep_pars.freq = getVar('lattice_rf_freq_shift')/1000 + ...
+        abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);    
+    
+    addOutputParam('lattice_rf_freq_pre_OP',sweep_pars.freq);
+    
+    defVar('lattice_rf_power',[-9]);
+
+    % Define the RF sweep parameters
+    sweep_pars.power =  getVar('lattice_rf_power');
+    delta_freq = -0.005; 
+    sweep_pars.delta_freq = delta_freq;
+    rf_pulse_length_list = [2];
+    sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'lattice_rf_pulse_length_pre_op');  % also is sweep length  0.5               
+
+    disp([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
+    disp([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
+    disp([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
+    disp([' RF Power        (V) : ' num2str(sweep_pars.power)]);
+
+    % Do the RF Sweep
+curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse
+
+% ACYnc usage
+do_ACync_rf = 0;
+    if do_ACync_rf
+        ACync_start_time = calctime(curtime,-80);
+        ACync_end_time = calctime(curtime,2*sweep_pars.pulse_length+50);
+        setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
+        setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
+    end
 end
 
 %% Optical Pumping
@@ -657,7 +713,7 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
     end
     
     defVar('lattice_op_time',[1],'ms');'latt_op_time';1;
-    defVar('lattice_op_power',1,'norm');%[0,1] 'latt_D1op_pwr';
+    defVar('lattice_op_power',[1],'norm');%[0,1] 'latt_D1op_pwr';
     defVar('lattice_op_power_repump',[5],'V');% in V'latt_op_repump_pwr' ;
 %     defVar('lattice_D2_op_detuning', [21],'MHz');21;
     
@@ -732,11 +788,11 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
     end
 
 
-    df = getVar('qgm_EIT_detuning_shift');
-    % Change the EIT detuning after optical pumping. 
-    % WARNING : It will take a finite amount of time for the lock to follow
-    AnalogFuncTo(calctime(curtime,0),'D1 Spec DP FM',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),200,200,df);
+%     df = getVar('qgm_EIT_detuning_shift');
+%     % Change the EIT detuning after optical pumping. 
+%     % WARNING : It will take a finite amount of time for the lock to follow
+%     AnalogFuncTo(calctime(curtime,0),'D1 Spec DP FM',...
+%         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),200,200,df);
     
     
         % Ramp the bias fields
@@ -801,7 +857,7 @@ if seqdata.flags.lattice_uWave_spec
      dispLineStr('uWave_K_Spectroscopy',curtime);
    
     % Frequency
-    freq_shift_list = [15]; % Offset in kHz
+    freq_shift_list = [200];[15]; % Offset in kHz
     f0 = 1338.345;          % MHz % Normal frequency
     
 
@@ -813,7 +869,7 @@ if seqdata.flags.lattice_uWave_spec
     
     % Frequency Shift
     % Only used for sweep spectroscopy
-    uwave_delta_freq_list = 100;[200];
+    uwave_delta_freq_list = 500;[200];
     uwave_delta_freq=getScanParameter(uwave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'uwave_delta_freq','kHz');
         

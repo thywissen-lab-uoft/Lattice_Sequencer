@@ -441,7 +441,7 @@ if seqdata.flags.xdt_rfmix_start
 
     %Do RF Sweep
     clear('sweep');
-    rf_k_sweep_freqs = [5.996];[5.995];
+    rf_k_sweep_freqs = [5.995];[5.995];
     % With delta_freq =0.1;
     % 3.01 --> (-7,-5) (a little -9)
     % 3.07 --> (-1,+1,+3); 
@@ -461,7 +461,7 @@ if seqdata.flags.xdt_rfmix_start
     sweep_pars.pulse_length = getScanParameter(pulse_length_list,...
         seqdata.scancycle,seqdata.randcyclelist,'rf_k_sweep_time_pre_evap');
 
-    n_sweeps_mix_list=[11];
+    n_sweeps_mix_list=[17];11
     n_sweeps_mix = getScanParameter(n_sweeps_mix_list,...
         seqdata.scancycle,seqdata.randcyclelist,'n_sweeps_mix');  % also is sweep length  0.5               
 

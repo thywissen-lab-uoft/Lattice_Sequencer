@@ -572,7 +572,7 @@ end
 
 %% Absorption Imaging
 
-% Check for High Field condition
+% Check for High Field condition by looking at FB channel value
 check_HF_Image();
 
 %Perform either HF or LF absorption imaging

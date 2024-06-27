@@ -681,7 +681,7 @@ function [X,Y,funcnum] = getAnalogValue(trc,funcnum)
                 % Find zeroes
                 p1 = fzero(@(x) real(f(x))-v1,0);
                 p2 = fzero(@(x) real(f(x))-v2,10);
-
+                
                 % Evaluate function over the found paramter domain
                 pVec=linspace(p1,p2,1E3);
                 vVec=f(pVec);

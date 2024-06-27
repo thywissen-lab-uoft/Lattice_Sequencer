@@ -527,7 +527,7 @@ if seqdata.flags.lattice_RF_spec_pre_OP
 %     sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,...
 %         seqdata.randcyclelist,'lattice_rf_freq_pre_OP','MHz');
     
-    defVar('lattice_rf_freq_shift',[-28],'kHz');
+    defVar('lattice_rf_freq_shift',[-27],'kHz');-28;
     
     sweep_pars.freq = getVar('lattice_rf_freq_shift')/1000 + ...
         abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);    
@@ -540,7 +540,7 @@ if seqdata.flags.lattice_RF_spec_pre_OP
     sweep_pars.power =  getVar('lattice_rf_power');
     delta_freq = -0.005; 
     sweep_pars.delta_freq = delta_freq;
-    rf_pulse_length_list = [2];
+    rf_pulse_length_list = [1];
     sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,...
         seqdata.scancycle,seqdata.randcyclelist,'lattice_rf_pulse_length_pre_op');  % also is sweep length  0.5               
 
@@ -686,7 +686,11 @@ end
 
 if (seqdata.flags.lattice_do_optical_pumping == 2)
     dispLineStr('Optical Pumping.',curtime);
-
+    
+    % Hold before optical pumping
+    t_hold_preOP = getVar('lattice_pin_waittime');
+    curtime = calctime(curtime,t_hold_preOP);
+    
     doRampField = 1;
     if doRampField 
         % Get original X,Y, and Z values    
@@ -798,7 +802,11 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
         % Ramp the bias fields
     newramp = struct('ShimValues',seqdata.params.shim_zero,...
         'FeshValue',20,'QPValue',0,'SettlingTime',100);
-    curtime = rampMagneticFields(calctime(curtime,0), newramp);       
+    curtime = rampMagneticFields(calctime(curtime,0), newramp);
+    
+%     % Hold after optical pumping
+%     t_hold_OP = getVar('lattice_pin_waittime');
+%     curtime = calctime(curtime,t_hold_OP);
 end
 
 %% Field Ramps BEFORE uWave/RF Spectroscopy

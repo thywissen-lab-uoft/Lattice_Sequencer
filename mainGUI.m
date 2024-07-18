@@ -270,6 +270,10 @@ bDefault.Position(1:2)=bBrowse.Position(1:2) + [bBrowse.Position(3)+2 0];
         d.SequencerWatcher.updateSequenceFileText(defaultSequence);
     end
 
+
+
+% matlab.desktop.editor.getActive
+
 % Button for file selection of the sequenece file
 cdata=imresize(imread(['GUI/images' filesep 'folder_up.jpg']),[20 20]);
 bDirUp=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...

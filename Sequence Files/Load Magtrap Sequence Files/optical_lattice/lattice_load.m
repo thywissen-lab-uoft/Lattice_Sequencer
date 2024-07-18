@@ -112,7 +112,7 @@ if seqdata.flags.lattice_load_feshbach_ramp
     ramp.fesh_ramptime      = tr;
     ramp.fesh_ramp_delay    = 0;
     ramp.fesh_final         = fesh; %22.6
-    ramp.settling_time      = 100;    
+    ramp.settling_time      = 20;    
 
     % Ramp FB with QP
     curtime= ramp_bias_fields(calctime(curtime,0), ramp);  

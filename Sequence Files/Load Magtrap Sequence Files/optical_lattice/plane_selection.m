@@ -8,12 +8,15 @@ curtime = timein;
 opts = struct; 
 
 opts.ramp_field_CF  = 1;                    % New field ramps
-opts.dotilt = seqdata.flags.plane_selection.dotilt;
-opts.useFeedback = seqdata.flags.plane_selection.useFeedback;
+opts.dotilt = seqdata.flags.plane_selection_dotilt;
+opts.useFeedback = seqdata.flags.plane_selection_useFeedback;
 
+opts.planeselect_doVertKill = seqdata.flags.plane_selection_doKill;            % apply optical kill pulse
+
+
+opts.douWave= seqdata.flags.plane_selection_douWave;
 
 opts.fake_the_plane_selection_sweep = 0;    % Whether or not to apply uwaves
-opts.planeselect_doVertKill = 1;            % apply optical kill pulse
 opts.planeselect_doMicrowaveBack = 0;       % uwave transfer back to F=9/2 (uneeded?)
 opts.planeselect_doFinalRepumpPulse = 0;    % apply repump to kill leftover F=7/2 (uneeded?)
 opts.planeselect_again = 0;                 % Repeat plane selection (does this actually help?)
@@ -535,9 +538,7 @@ if opts.planeselect_doVertKill==1
     %Resonant light pulse to remove any untransferred atoms from
     %F=9/2
     
-    defVar('qgm_kill_time',[10],'ms');5;
-    defVar('qgm_kill_detuning',36,'MHz');% 2024/05/07 35 MHz for 120 Er
-    defVar('qgm_kill_power',.1,'V');.02;
+
     
     kill_time = getVar('qgm_kill_time');    
     kill_detuning=getVar('qgm_kill_detuning');

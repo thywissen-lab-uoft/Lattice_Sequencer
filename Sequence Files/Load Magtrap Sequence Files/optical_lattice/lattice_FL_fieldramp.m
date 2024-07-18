@@ -10,7 +10,7 @@ global seqdata
 % you are imaging along the FPUMP axis
     
     B0 = 4;         % Quantization Field
-    B0_shift_list =[0.19];.21;
+    B0_shift_list =[0.20];.21;
     
     % Quantization Field 
     B0_shift = getScanParameter(...
@@ -21,7 +21,7 @@ global seqdata
     
     addOutputParam('qgm_field',CenterField,'G');   
     
-%% INTIAL MAGNETIC FIELD RAMP
+%% INITIAL MAGNETIC FIELD RAMP
 % Should probably move to a different subfunction
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

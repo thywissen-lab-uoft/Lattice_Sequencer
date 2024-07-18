@@ -277,6 +277,8 @@ if seqdata.flags.xdtB_ramp_power_end
     curtime = calctime(curtime,th);
 end
 
+
+
 %% Secondary Feshbach Ramp after evaporation
 
 if seqdata.flags.xdtB_feshbach_fine2   
@@ -309,6 +311,54 @@ if seqdata.flags.xdtB_levitate_fine2
     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,HF_QP,1); 
 end
+
+%% Re-create a spin mixture after high-field evaporation
+if seqdata.flags.xdtB_rf_mix_post_evap
+    
+    dispLineStr('High Field K 9-7 Mixing after XDTB evap.',curtime);  
+    
+    % Get the Feshbach field
+    Bfesh   = getChannelValue(seqdata,'FB Current',1);   
+    % Get the shim field
+    Bzshim = (getChannelValue(seqdata,'Z Shim',1) - ...
+        seqdata.params.shim_zero(3))*2.35;
+    % Caclulate the total field
+    B = Bfesh + Bzshim + 0.11;
+    
+    % Calculate RF Frequency for desired transitions
+    mF1=-9/2;mF2=-7/2;   
+    rf_list =  [0] +...
+        abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);        
+    
+    sweep_pars = struct;
+    sweep_pars.freq = getScanParameter(rf_list,seqdata.scancycle,...
+        seqdata.randcyclelist,'xdtB_rf_mix_freq','MHz');
+    
+    defVar('xdtB_rf_mix_post_evap_power',[-7.8],'V');
+    defVar('xdtB_rf_mix_post_evap_sweep_num',21,'sweeps');
+
+    % Define the RF sweep parameters
+    sweep_pars.power =  getVar('xdtB_rf_mix_post_evap_power');
+    delta_freq = 0.1;
+    sweep_pars.delta_freq = delta_freq;
+    rf_pulse_length_list = .5;
+    sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  
+
+    disp([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
+    disp([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
+    disp([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
+    disp([' RF Power        (V) : ' num2str(sweep_pars.power)]);
+    
+    n_sweeps_mix=getVar('xdtB_rf_mix_post_evap_sweep_num');
+    % Perform any additional sweeps
+    for kk=1:n_sweeps_mix
+         curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
+         curtime = calctime(curtime,2);
+    end        
+    
+end
+
 
 %% RF Spin Flip HF
 

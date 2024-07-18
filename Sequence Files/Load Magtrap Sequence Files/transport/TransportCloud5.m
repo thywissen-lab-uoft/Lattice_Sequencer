@@ -4,9 +4,6 @@ function timeout = TransportCloud5(timein)
 %
 % Author : C. Fujiwara
 % Date : 2023/09/28
-%
-
-
 
 curtime = timein;
 
@@ -141,7 +138,7 @@ AnalogFunc(calctime(curtime,0),'Coil 16',...
 
 %% Transport FF During Transport
 %Ramp up the FF for when Coil 16 ramps up
-VH = 16;16;
+VH = 15;16;16;
 VT = v0;
 FF_start_time = 591;
 FF_ramp_time = t_init2cross-FF_start_time;
@@ -177,13 +174,13 @@ dispLineStr('Transport Kitten Handoff',curtime);
 
 %%%%%% 15/16 GS Ramp Parameters %%%%%
 % V_GS_LOW is the "low" GS voltage, supposed to be right below turn on
-V_GS_LOW = 3.6; 
+V_GS_LOW = 3.7; 
 T_RAMP_0_TO_L = 500;
 
 % V_GS_MED is the "medium" GS voltage.  This allows a small amount of current
 % through 15/16 FET
-V_GS_MED = 4.6;
-T_RAMP_L_TO_M = 300;
+V_GS_MED = 6;
+T_RAMP_L_TO_M = 150;300;
 
 % V_GS_HIGH is the "high" GS voltage.  This allows maximal current through
 % 15/16 FET

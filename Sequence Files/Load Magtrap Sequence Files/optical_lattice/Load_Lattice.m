@@ -476,7 +476,6 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
         curtime = calctime(curtime,50);
 end
 
-
 %% Pulse on dimple 
 
 
@@ -688,8 +687,8 @@ if (seqdata.flags.lattice_do_optical_pumping == 2)
     dispLineStr('Optical Pumping.',curtime);
     
     % Hold before optical pumping
-    t_hold_preOP = getVar('lattice_pin_waittime');
-    curtime = calctime(curtime,t_hold_preOP);
+%     t_hold_preOP = getVar('lattice_pin_waittime');
+%     curtime = calctime(curtime,t_hold_preOP);
     
     doRampField = 1;
     if doRampField 

@@ -371,10 +371,21 @@ end
     
     %channel 18 (This is the Feed Forward) // delta-supply back-plate
     seqdata.analogchannels(18).name = 'Transport FF';
-    seqdata.analogchannels(18).minvoltage = -1;
-    seqdata.analogchannels(18).maxvoltage = 10;
+    seqdata.analogchannels(18).minvoltage = -.1;
+    seqdata.analogchannels(18).maxvoltage = 5.1;
     seqdata.analogchannels(18).defaultvoltagefunc = 2;
     seqdata.analogchannels(18).voltagefunc{2} = @(a)(a/6.6+0); %@(a)(a/6.0+0);
+    
+    % Master/follower series PSU 2024/07/17
+    % v adwin; v psu 1, v psu 2;.
+    data = [0 0.5 1.0 1.5 2 2.5 3 3.5 4 4.5 5;
+        0 3.3 6.6 9.9 13.2 16.5 19.8 23.1 26.4 29.7 33;
+        0 3 6 9 12 15 18 21.1 24.1 27.1 30.1];
+%     y = sum(data(2:3,:));x = data(1,:);
+    % Don't fit it just use an approximate scaling factor
+    seqdata.analogchannels(18).voltagefunc{2} = @(V_PSU) + V_PSU/12.62;
+    
+    
     %Slope error = 3.85E-4
     %Intercept error = 0.0123
     
@@ -641,7 +652,7 @@ end
         %   argument is the desired transmission expressed in [0,1]
         seqdata.analogchannels(41).voltagefunc{3} = @(a)(0.5*asind(sqrt(a))/9.36); 
         seqdata.analogchannels(41).voltagefunc{4} = @(P_lattice_norm) ((2/pi)*4.873*asin(sqrt(P_lattice_norm))-0.3913).*(P_lattice_norm <= 1)...
-                                                                        + (4.4817+(1e-5*(P_lattice_norm-1))).*(P_lattice_norm > 1); 
+                                                                        + (4.4817+(1e-5*(P_lattice_norm-1))).*(P_lattice_norm > 1); %Prevents imaginary values from being sent to the adwin and the plotter
 
     %channel 42 (Objective Piezo Z control)
     seqdata.analogchannels(42).name = 'objective Piezo Z';

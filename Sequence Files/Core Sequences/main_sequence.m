@@ -358,8 +358,8 @@ if seqdata.flags.transport
     end
 
     if doCF
-        curtime = TransportCloud5(curtime);
-%                 curtime = TransportCloud6(curtime);
+%         curtime = TransportCloud5(curtimee);
+         curtime = TransportCloud6_diode(curtime);
     else
         defVar('RF1a_FF_V',[22.5],'V');
         RF1a_V = getVar('RF1a_FF_V');

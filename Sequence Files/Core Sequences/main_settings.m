@@ -150,7 +150,7 @@ seqdata.flags.image_F1_pulse                = 0; % (unused?) repump Rb F=1 befor
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[5],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[.1],'ms');
@@ -215,7 +215,7 @@ defVar('mt_ramp_grad_value',[32],'A');
 defVar('mt_hold_time',[500]);
 
 %% Optical Dipole Trap
-seqdata.flags.xdt                           = 1;    % Master Flag (overrides all other flags)
+seqdata.flags.xdt                           = 0;    % Master Flag (overrides all other flags)
 
 % XDT Power request zeros
 seqdata.params.ODT_zeros = [-0.04,-0.04];
@@ -297,7 +297,7 @@ seqdata.flags.xdt_high_field_a              = 0;
 
 %% Optical Dipole Trap B
 
-seqdata.flags.xdtB                          = 1;         % Master Flag
+seqdata.flags.xdtB                          = 0;         % Master Flag
 
 % Levitation
 seqdata.flags.xdtB_levitate                 = 1;
@@ -390,7 +390,7 @@ defVar('rotate_waveplate1_value',0.3,'normalized power');.1; % Amount of power g
 %% Load the Optical Lattice
 
 % These are the lattice flags sorted roughly chronologically. 
-seqdata.flags.lattice_load            = 1;    
+seqdata.flags.lattice_load            = 0;    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Loading optical lattical

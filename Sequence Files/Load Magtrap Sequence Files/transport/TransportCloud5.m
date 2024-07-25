@@ -111,7 +111,7 @@ curtime = calctime(curtime,t_h2v);
 
 %% Transport to 153 mm
 dispLineStr('Transport from 12ab to Crossover region at 153 mm',curtime);
-defVar('transport_stage1_time',[1000],'ms')
+defVar('transport_stage1_time',[1000],'ms');%used to be 1000 07/25
 t_init2cross = getVar('transport_stage1_time');
 z_init = 0;
 z_cross_i = 0.153;

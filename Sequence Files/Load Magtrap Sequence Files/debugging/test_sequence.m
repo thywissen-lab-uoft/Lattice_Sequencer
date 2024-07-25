@@ -6295,7 +6295,7 @@ curtime = calctime(curtime,150);
 %     
 %     setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.14)
 %     setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',0);
-    setAnalogChannel(calctime(curtime,0),'Transport FF',0,1);
+%     setAnalogChannel(calctime(curtime,0),'Transport FF',0.1,1);
     
 
 % = 'Rb Probe/OP AM';

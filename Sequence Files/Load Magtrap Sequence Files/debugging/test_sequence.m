@@ -6295,10 +6295,16 @@ curtime = calctime(curtime,150);
 %     
 %     setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0.14)
 %     setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',0);
-%     setAnalogChannel(calctime(curtime,0),'Transport FF',0.1,1);
-    
+    setAnalogChannel(calctime(curtime,0),'Transport FF',10);
 
+%         setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',0);
+%         setAnalogChannel(calctime(curtime,0),'Rb Repump AM',0);
+    
 % = 'Rb Probe/OP AM';
+
+setDigitalChannel(curtime,'K Probe/OP TTL',1);
+
+ setAnalogChannel(curtime,'K Probe/OP AM',1)
 timeout = curtime;
 
 

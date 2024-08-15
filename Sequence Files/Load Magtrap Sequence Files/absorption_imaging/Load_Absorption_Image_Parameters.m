@@ -35,7 +35,7 @@ function params = Load_Absorption_Image_Parameters()
     % Rubidium - X-cam
     
 %     
-    rbdet_shift_list = [9.5];
+    rbdet_shift_list = [20];
     rbdet_shift = getScanParameter(rbdet_shift_list,...
         seqdata.scancycle,seqdata.randcyclelist,'rbdet_shift','MHz');
     
@@ -57,7 +57,7 @@ function params = Load_Absorption_Image_Parameters()
 
     % Rubidium XCAM
     params.detunings.Rb.X.positive.normal = 10;    % |2,2> 2023/07/20
-    params.detunings.Rb.X.positive.in_trap = 0;             % |2,2> Uncalibrated
+    params.detunings.Rb.X.positive.in_trap = 0+rbdet_shift;             % |2,2> Uncalibrated
     params.detunings.Rb.X.positive.QP_imaging = 9.5;10;         % QP imaging 15 ms tof |2,2> 2022/09/02
     params.detunings.Rb.X.positive.SG = 9.5;                  % Uncalibrated
     params.detunings.Rb.X.negative.normal = 0;              % Uncalibrated

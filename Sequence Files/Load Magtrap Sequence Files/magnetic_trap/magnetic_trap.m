@@ -17,7 +17,12 @@ else
     I_QP =    33;
     I_kitt =    4.0200;
     V_QP =   getVar('RF1a_FF_V');24.8050;
-    I_fesh =     0;    
+    I_fesh =     0;
+    % Get the plug shim values
+    I0=seqdata.params.plug_shims;
+    Ix=I0(1);Iy=I0(2);Iz=I0(3);
+    % Record the starting shim values
+    I_shim = [Ix Iy Iz];
 end
 
 %% Ramp shims for magnetic trap

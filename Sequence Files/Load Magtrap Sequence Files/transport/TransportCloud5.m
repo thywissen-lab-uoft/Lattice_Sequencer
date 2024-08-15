@@ -278,7 +278,7 @@ curtime = calctime(curtime,t_cross2end);
 I_RF1A_k=2.907;
 I_RF1A_16 = 31.91;
 t_2RF1A = 300;
-defVar('RF1a_FF_V',[21.5],'V');22.5;
+defVar('RF1a_FF_V',[21.5],'V');21.5;22.5;
 RF1a_V = getVar('RF1a_FF_V');
     
 AnalogFunc(calctime(curtime,0),'Coil 14',...

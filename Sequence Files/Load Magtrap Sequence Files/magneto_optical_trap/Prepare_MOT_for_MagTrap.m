@@ -161,10 +161,14 @@ if seqdata.flags.MOT_Mol == 1
         SRSfreq,SRSpower,rf_on));
 
     % K D1 GM double pass (single photon detuning) - shift from 70 MHz
+    
+    
+    
     D1_freq_list = [0];
     D1_freq = getScanParameter(D1_freq_list,seqdata.scancycle,...
         seqdata.randcyclelist,'D1_freq');
 
+    D1_freq = getVar('mol_kd1_single_photon_detuning_shift');
     % K D1 GM Double pass - modulation depth
     mod_amp_list = [1.3];
     mod_amp = getScanParameter(mod_amp_list,seqdata.scancycle,...
@@ -184,6 +188,8 @@ if seqdata.flags.MOT_Mol == 1
     molasses_time_list = [8];
     molasses_time =getScanParameter(molasses_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'molasses_time'); 
+    
+    molasses_time = getVar('mol_kd1_time');
 
     %%%%%%%%%%%% advance time during molasses  %%%%%%%%%%%%
     curtime = calctime(curtime,molasses_time);

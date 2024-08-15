@@ -19,8 +19,8 @@ global seqdata;
 setDigitalChannel(calctime(curtime,0),'K D1 GM Shutter',0);
 setDigitalChannel(calctime(curtime,0),'K D1 GM Shutter 2',1);
 
-loadK = 1;
-loadRb = 0;
+loadK = 0;
+loadRb = 1;
 
 % MOT Load
 
@@ -489,7 +489,11 @@ if loadMT
     MTholds = [10];
     MThold =getScanParameter(MTholds,seqdata.scancycle,seqdata.randcyclelist,'MThold'); 
     curtime = calctime(curtime,MThold);    
-
+else
+%     % Set the shims away from pumping values back to "zero" field
+    setAnalogChannel(calctime(curtime,0),'X MOT Shim',0.2,2); % 0.15
+    setAnalogChannel(calctime(curtime,0),'Y MOT Shim',2.0,2); % 0.15
+    setAnalogChannel(calctime(curtime,0),'Z MOT Shim',0.9,2); % 0.0   
 end
 
 %% Time of flight
@@ -511,6 +515,7 @@ setAnalogChannel(calctime(curtime,0),'MOT Coil',0,1);
 % levitateGradient= getScanParameter(levitateGradient,seqdata.scancycle,seqdata.randcyclelist,'levitateGradient');  %in MHZ
 % setAnalogChannel(calctime(curtime,0),'MOT Coil',levitateGradient,3); 
 
+
 % Turn off the D2 beams, if they arent off already
 setDigitalChannel(calctime(curtime,0),'K Trap TTL',1); 
 setDigitalChannel(calctime(curtime,0),'K Repump TTL',1); 
@@ -519,7 +524,7 @@ setDigitalChannel(calctime(curtime,0),'Rb Trap TTL',1);
 %%%%%%%%%%%% Perform the time of flight %%%%%%%%%%%%
 
 % Set the time of flight
-tof_list = [1:1:15];
+tof_list = [10];
 tof =getScanParameter(tof_list,seqdata.scancycle,seqdata.randcyclelist,'tof_time'); 
 
 % Increment the time (ie. perform the time of flight)
@@ -571,7 +576,7 @@ setDigitalChannel(calctime(curtime,10),15,0);
 % Wait for second image trigger
 curtime = calctime(curtime,3000);
 
-% Camera Trigger (2) : Light only
+% % Camera Trigger (2) : Light only
 setDigitalChannel(calctime(curtime,0),15,1);
 setDigitalChannel(calctime(curtime,10),15,0);
  

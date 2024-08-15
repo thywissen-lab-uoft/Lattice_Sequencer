@@ -358,8 +358,9 @@ if seqdata.flags.transport
     end
 
     if doCF
-%         curtime = TransportCloud5(curtimee);
-         curtime = TransportCloud6_diode(curtime);
+%         curtime = TransportCloud5(curtime);
+%          curtime = TransportCloud6_diode(curtime);
+         curtime = TransportCloud7_diode_fast(curtime);
     else
         defVar('RF1a_FF_V',[22.5],'V');
         RF1a_V = getVar('RF1a_FF_V');
@@ -711,6 +712,12 @@ setAnalogChannel(curtime,'15/16 GS',0);
 %% Load MOT
 % Load the MOT
 dispLineStr('Load the MOT',curtime);
+
+% trigger_offset=0;
+% trigger_length = 50;
+% DigitalPulse(calctime(curtime,trigger_offset-trigger_length),...
+%     'LabJack Trigger Transport',trigger_length,1);     
+
 loadMOTSimple(curtime,0);
 
 % Wait some additional time

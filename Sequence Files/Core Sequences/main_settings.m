@@ -1,7 +1,7 @@
 function timeout = main_settings(timein)
 % main_settings.m
 
-%% Initialzie
+%% Initialize
 if nargin == 0 
     curtime = 0;
 else
@@ -124,7 +124,7 @@ defVar('mol_kd1_single_photon_detuning_shift',0,'MHz');
 defVar('mol_kd1_trap_power_start',1.3,'V');
 defVar('mol_kd1_trap_power_end',1.3,'V');
 defVar('mol_kd1_two_photon_detuning',0,'MHz');
-defVar('mol_kd1_sideband_power',[8],'dBm');
+defVar('mol_kd1_sideband_power',[-10],'dBm');
 defVar('mol_kd1_time',8,'ms');
 
 seqdata.params.Mol_shim = [];
@@ -134,7 +134,7 @@ defVar('D1_DP_FM',222.5,'MHz');
 
 %% Imaging
 seqdata.flags.image_type                    = 0; % 0: absorption, 1 : MOT fluor  
-seqdata.flags.image_atomtype                = 1; % 0:Rb,1:K,2:K+Rb (double shutter), applies to fluor and absorption
+seqdata.flags.image_atomtype                = 2; % 0:Rb,1:K,2:K+Rb (double shutter), applies to fluor and absorption
 
 seqdata.flags.image_loc                     = 1; % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.image_direction               = 1; % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
@@ -189,7 +189,7 @@ seqdata.flags.mt_ramp_to_plugs_shims        = 1;
 % Use stage1  = 2 to evaporate fast for transport benchmarking 
 %[stage1, decomp/transport, stage1b] 
 %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
-seqdata.flags.RF_evap_stages                = [1, 1, 1];
+seqdata.flags.RF_evap_stages                = [1, 1, 0];
 
 % Turn on plug beam during RF1B
 seqdata.flags.mt_use_plug                   = 1;
@@ -662,7 +662,7 @@ seqdata.flags.lattice_pulse_z_for_alignment = 0;
 % seqdata.scope_trigger = 'rf_spectroscopy';
 % seqdata.scope_trigger = 'Lattice_Mod';
 % seqdata.scope_trigger = 'FB_ramp';
-seqdata.scope_trigger = 'lattice_ramp_1';
+% seqdata.scope_trigger = 'lattice_ramp_1';
 % seqdata.scope_trigger = 'lattice_sci_ramp';
 % seqdata.scope_trigger = 'pulse lattice';
 % seqdata.scope_trigger = 'Raman Beams On';
@@ -671,7 +671,7 @@ seqdata.scope_trigger = 'lattice_ramp_1';
 % seqdata.scope_trigger = 'lattice_off';
 % seqdata.scope_trigger = 'Camera triggers';
 % seqdata.scope_trigger = 'Start Transport';
-% seqdata.scope_trigger = 'TOF';
+seqdata.scope_trigger = 'TOF';
 % seqdata.scope_trigger = 'Optical pumping';
 % seqdata.scope_trigger = 'MOT Trigger';
 % seqdata.scope_trigger = 'CMOT';

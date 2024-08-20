@@ -153,7 +153,7 @@ seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XD
 defVar('tof',[5],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
-defVar('tof_krb_diff',[.1],'ms');
+defVar('tof_krb_diff',[10],'ms');
 %% Transport
 
 % For debugging: enable only certain coils during the transport
@@ -168,6 +168,12 @@ defVar('tof_krb_diff',[.1],'ms');
 
 % Enable magnetic transport
 seqdata.flags.transport                     = 1;
+
+
+defVar('transport_H_time_1',400,'ms');
+defVar('transport_H_time_2',1000,'ms');
+defVar('transport_H_time_3',500,'ms');
+defVar('transport_H_time_hold_end',0,'ms');
 
 %0: min jerk curves, 1: slow down in middle section curves, 2: none
 seqdata.flags.transport_hor_type            = 1;
@@ -189,7 +195,7 @@ seqdata.flags.mt_ramp_to_plugs_shims        = 1;
 % Use stage1  = 2 to evaporate fast for transport benchmarking 
 %[stage1, decomp/transport, stage1b] 
 %Currently seems that [1,1,0]>[1,0,0] for K imaging, vice-versa for Rb.
-seqdata.flags.RF_evap_stages                = [1, 1, 0];
+seqdata.flags.RF_evap_stages                = [1, 1, 1];
 
 % Turn on plug beam during RF1B
 seqdata.flags.mt_use_plug                   = 1;
@@ -203,6 +209,9 @@ seqdata.flags.mt_kill_K_after_evap          = 0;
 seqdata.flags.mt_plug_ramp_end              = 0;
 
 defVar('RF1A_time_scale',[0.6],'arb');1.2;0.6;      % RF1A timescale
+
+defVar('RF1A_hold_time',0,'ms'); % Hold time after RF1A
+
 defVar('RF1B_time_scale',[1],'arb');[0.8];   % RF1B timescale
 defVar('RF1A_finalfreq',[16],'MHz');8;16;         % RF1A Ending Frequency
 defVar('RF1B_finalfreq',[4],'MHz');[1];[0.8];        % RF1B Ending Frequency %this is currently not used

@@ -114,6 +114,9 @@ if ( seqdata.flags.RF_evap_stages(1) == 1 )
     % Record the starting shim values
     I_shim = [Ix Iy Iz];
     %%%%
+    
+    t1a_hold = getVar('RF1A_hold_time');
+    curtime = calctime(curtime,t1a_hold);
 end
     
 %% RF1A Alternate : Fast RF for transport benchmark

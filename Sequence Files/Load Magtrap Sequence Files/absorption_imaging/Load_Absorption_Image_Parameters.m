@@ -7,7 +7,7 @@ function params = Load_Absorption_Image_Parameters()
         seqdata.scancycle,seqdata.randcyclelist,'kdet_shift','MHz');
     params.detunings.K.X.positive.normal = 22.2;
     params.detunings.K.X.positive.in_trap = 23.5;
-    params.detunings.K.X.positive.QP_imaging = 20.5;21.5;
+    params.detunings.K.X.positive.QP_imaging = 21.5;
     params.detunings.K.X.positive.SG = 24.5;
     params.detunings.K.X.positive.short_tof = 24.5;
     

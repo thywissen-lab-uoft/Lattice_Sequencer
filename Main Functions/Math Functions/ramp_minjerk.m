@@ -22,7 +22,7 @@ end
 out = y1 + (10*(y2-y1)/tt^3)*t.^3 - (15*(y2-y1)/tt^4)*t.^4 + (6*(y2-y1)/tt^5)*t.^5;
 
 if sum(isnan(out))~=0
-    error('Minimum Jerk Returns NAN value');
+    error('Minimum Jerk Returns NAN value');    
 end
 
 

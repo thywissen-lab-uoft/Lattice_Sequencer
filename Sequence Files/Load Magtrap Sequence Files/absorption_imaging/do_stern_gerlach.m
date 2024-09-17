@@ -56,7 +56,7 @@ function do_stern_gerlach(seqdata,flags,params)
   DigitalPulse(calctime(seqdata.times.tof_start,params.SG_wait_TOF), 'Coil 16 TTL', params.SG_QP_pulsetime, 0); % fast QP
   DigitalPulse(calctime(seqdata.times.tof_start,params.SG_wait_TOF), '15/16 Switch', params.SG_QP_pulsetime, 1); % 15/16 switch
   % Ramp down transport supply voltage
-  AnalogFuncTo(calctime(seqdata.times.tof_start,params.SG_wait_TOF+params.SG_QP_pulsetime-params.SG_QP_ramptime),'Transport FF',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),params.SG_QP_ramptime,params.SG_QP_ramptime,-0.2,1);
+  AnalogFuncTo(calctime(seqdata.times.tof_start,params.SG_wait_TOF+params.SG_QP_pulsetime-params.SG_QP_ramptime),'Transport FF',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),params.SG_QP_ramptime,params.SG_QP_ramptime,-0.1,1);
   % Ramp down QP
   AnalogFuncTo(calctime(seqdata.times.tof_start,params.SG_wait_TOF+params.SG_QP_pulsetime-params.SG_QP_ramptime),'Coil 16',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),params.SG_QP_ramptime,params.SG_QP_ramptime,0,1); 
   % Record QP value for later "shutoff"

@@ -41,6 +41,20 @@ if nargin == 2
         opts.(fnames{kk}) = override.(fnames{kk});
     end
 end    
+
+%% Trigger labjack
+
+    trigger_offset = -200;
+    trigger_length = 50;
+    
+    if strcmp(seqdata.labjack_trigger,'Plane selection')
+        DigitalPulse(calctime(curtime,trigger_offset-trigger_length),...
+            'LabJack Trigger Transport',trigger_length,1);      
+        DigitalPulse(calctime(curtime,1000),...
+            'LabJack Trigger Transport',trigger_length,1);
+    end
+    
+    
 %% Prepare Switches for uWave Radiation
 
 disp('Changing switches so that uwave are on');
@@ -76,7 +90,7 @@ ScopeTriggerPulse(curtime,'Plane Select');
 if opts.ramp_field_CF
     
     % Transport Feedforward Settings
-    defVar('qgm_pselect_FF',27,'V');
+    defVar('qgm_pselect_FF',56.5,'V');27;
     defVar('qgm_pselect_FF_ramp_time',135,'ms');
 
     % Timings
@@ -84,10 +98,12 @@ if opts.ramp_field_CF
     defVar('qgm_pselect_settle_time',250,'ms');
     
     % QP Coils Current Settings
-    defVar('qgm_pselect_QP',38.9200,'A');
+%     defVar('qgm_pselect_QP',38.9200,'A');
+    defVar('qgm_pselect_QP',78,'A');
     func_qp = 2; % voltage function
     
     % Feshbach Coil Current Settings
+%     defVar('qgm_pselect_FB',123.9684,'G');
     defVar('qgm_pselect_FB',123.9684,'G');
     func_fb = 2;   % voltage function  
     
@@ -118,13 +134,21 @@ if opts.ramp_field_CF
         Ix = Ix;
         Iy = Iy;
         Iz = Iz;    
-        defVar('qgm_plane_notilt_dIx',-3.65,'A');
-        defVar('qgm_plane_notilt_dIy',0.13,'A');        
-         
+%         defVar('qgm_plane_notilt_dIx',-3.65,'A');
+%         defVar('qgm_plane_notilt_dIy',0.13,'A');      
         
-        defVar('qgm_plane_notilt_dIx',[-3.73],'A');        
-        x = [0.85 -2.65];
-        y = [0.13 -0.03];               
+%         defVar('qgm_plane_notilt_dIx',-4.5,'A');
+%         defVar('qgm_plane_notilt_dIy',[-0.55],'A');  
+%          
+        
+%         defVar('qgm_plane_notilt_dIx',[-3.73],'A');        
+%         x = [0.85 -2.65];
+%         y = [0.13 -0.03];               
+%         defVar('qgm_plane_notilt_dIy',interp1(x,y,getVar('qgm_plane_notilt_dIx'),'linear','extrap'),'A');
+
+        defVar('qgm_plane_notilt_dIx',[-1.7],'A');        
+        x = [-3 -4.5];
+        y = [-0.5 -0.55];               
         defVar('qgm_plane_notilt_dIy',interp1(x,y,getVar('qgm_plane_notilt_dIx'),'linear','extrap'),'A');
         
 

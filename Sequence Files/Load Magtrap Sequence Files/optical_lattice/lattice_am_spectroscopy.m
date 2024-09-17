@@ -9,7 +9,7 @@ end
     dispLineStr('Amplitude Modulation Spectroscopy',curtime)
     
 %% AM Spec Parameters
-    AM_spec_direction = 'X';
+    AM_spec_direction = 'Z';
     AM_spec_latt_depth = 100;
     addOutputParam('AM_spec_depth',AM_spec_latt_depth);
 
@@ -19,7 +19,7 @@ end
 
 %     mod_freq = paramGet('AM_spec_freq'); 
     
-    defVar('AM_spec_freq',[179]*1e3,'Hz'); 
+    defVar('AM_spec_freq',[154.1]*1e3,'Hz');%107.5:5:192.5; 
 
     mod_freq = getVar('AM_spec_freq'); 
 

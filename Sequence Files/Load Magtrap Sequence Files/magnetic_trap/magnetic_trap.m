@@ -57,13 +57,15 @@ if ( seqdata.flags.RF_evap_stages(1) == 1 )
     start_freq = 42;            % Beginning RF1A frequnecy 42 MHz 
     
 
-    defVar('RF1A_freq_0',42,'MHz');42;36;
+    defVar('RF1A_freq_0',[42],'MHz');42;36;
     defVar('RF1A_freq_1',28,'MHz');28;28;
     defVar('RF1A_freq_2',20,'MHz');20;20;
     defVar('RF1A_freq_3',getVar('RF1A_finalfreq'),'MHz');
-    defVar('RF1A_time_1',6000,'ms');14000;6000;
-    defVar('RF1A_time_2',5500,'ms');8000;5500;
-    defVar('RF1A_time_3',2000,'ms');4000;4000;
+    
+    defVar('RF1A_time_1',[6000],'ms');6000;
+    defVar('RF1A_time_2',5500,'ms');5500;
+    defVar('RF1A_time_3',2000,'ms');2000;
+    
     defVar('RF1A_gain_0',-2.05,'arb');
     defVar('RF1A_gain_1',-2.05,'arb');
     defVar('RF1A_gain_2',-2.05,'arb');
@@ -186,36 +188,7 @@ end
 %% Evaporation Stage 1b
 
 if ( seqdata.flags.RF_evap_stages(3) == 1 )    
-    dispLineStr('RF1B begins.',curtime);  
-    
-    % Define RF1B parameters (frequency, gain, timescale, gradient, etc)
-    sweep_times_1b = [6000 3000 2]*getVar('RF1B_time_scale');     
-    evap_end_gradient_factor_list = [1];.9; %0.75
-    evap_end_gradient_factor = getScanParameter(evap_end_gradient_factor_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'evap_end_gradient_factor');    
-    currs_1b = [1 1 evap_end_gradient_factor evap_end_gradient_factor]*I_QP;
-    freqs_1b = [freqs_1(end)/MHz*1.1 7  getVar('RF1B_finalfreq') 2]*MHz;  
-    rf_1b_gain_list = [-2];
-    rf_1b_gain = getScanParameter(rf_1b_gain_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'RF1B_gain','V');    
-    gains = ones(1,length(freqs_1b))*rf_1b_gain;
-    
-    defVar('RF1B_freq_0',getVar('RF1A_freq_3')*1.1,'MHz');
-    defVar('RF1B_freq_1',7,'MHz');7;
-    defVar('RF1B_freq_2',[1],'MHz');1;
-    defVar('RF1B_freq_3',2,'MHz');2;
-    defVar('RF1B_time_1',[6000],'ms');6000;2500;
-    defVar('RF1B_time_2',[3000],'ms');3000;2000;
-    defVar('RF1B_time_3',2,'ms');2;
-    defVar('RF1B_gain_0',-2,'arb');-2;0;
-    defVar('RF1B_gain_1',-2,'arb');-2;0;
-    defVar('RF1B_gain_2',-2,'arb');-2;0;
-    defVar('RF1B_gain_3',-2,'arb');-2;0;
-    defVar('RF1B_current_0',I_QP,'A');
-    defVar('RF1B_current_1',I_QP,'A');
-    defVar('RF1B_current_2',I_QP,'A');
-    defVar('RF1B_current_3',I_QP,'A');
-    
+    dispLineStr('RF1B begins.',curtime);    
 
     freqs_1b = [...
           getVar('RF1B_freq_0') ... 
@@ -262,26 +235,19 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
 
     dispLineStr('RF1B ends.',curtime);    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    ramp_after_1B = 0;
-    if ramp_after_1B
-        % This is useful if you want to check the plug_shim_slopes
-        % (lowering the field gradient should keep the MT field zero
-        % constant if the plug shim slopes are appropriate)
-        dispLineStr('Ramp QP after RF1B',curtime);       
-
-        [curtime, I_QP, I_kitt, V_QP, I_fesh] = ...
-            ramp_QP_after_transfer_test(curtime, ...
-            seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
-    end
+%     ramp_after_1B = 0;
+%     if ramp_after_1B
+%         % This is useful if you want to check the plug_shim_slopes
+%         % (lowering the field gradient should keep the MT field zero
+%         % constant if the plug shim slopes are appropriate)
+%         dispLineStr('Ramp QP after RF1B',curtime);       
+% 
+%         [curtime, I_QP, I_kitt, V_QP, I_fesh] = ...
+%             ramp_QP_after_transfer_test(curtime, ...
+%             seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
+%     end
 
     
-end
-%% MT Lifetime
-if seqdata.flags.mt_lifetime == 1    
-%     setDigitalChannel(calctime(curtime,0),'Plug Shutter',0);% 0:OFF; 1: ON
-
-    th = getVar('mt_hold_time');
-    curtime = calctime(curtime,th);
 end
 
 %% Kill Rb after evap
@@ -351,7 +317,7 @@ end
 % - Checking for adiabaticity of gradient ramps
 
 if seqdata.flags.mt_ramp_down_end 
-        dispLineStr('Ramp down gradient',curtime);    
+    dispLineStr('Ramp down gradient',curtime);    
 
     tr1 = getVar('mt_ramp_grad_time');
     i1 = getVar('mt_ramp_grad_value');
@@ -362,13 +328,11 @@ if seqdata.flags.mt_ramp_down_end
     I_s(2) = getChannelValue(seqdata,'Y Shim',1);
     I_s(3) = getChannelValue(seqdata,'Z Shim',1);
     dI_QP = i1 - I_QP;    
-    
-    % Calculate the change in shim currents    
-    Cx = -0.0507; % "XSHIM (induces motion along Y lattice dir)    
-    defVar('Cy',0.0037);0.0037;
-    Cy = getVar('Cy');
-    defVar('Cz',0.015);0.014;
-    Cz = getVar('Cz');
+
+    Cx = getVar('mt_shim_slope_x');
+    Cy = getVar('mt_shim_slope_y');
+    Cz = getVar('mt_shim_slope_z');
+
     dIx=dI_QP*Cx;
     dIy=dI_QP*Cy;
     dIz=dI_QP*Cz;   
@@ -394,13 +358,7 @@ if seqdata.flags.mt_ramp_down_end
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
         tr1,tr1,I_s(3),I_s(3)+dIz,3);  
 
-    % To center the QP at the geometric center of the QP coils
-%     AnalogFunc(calctime(curtime,0),'Z Shim',...
-%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-%         tr1,tr1,I_s(3),I_s(3) - .42,3);  
-%     AnalogFunc(calctime(curtime,0),'X Shim',...
-%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-%         tr1,tr1,I_s(1),I_s(1)+1.4,3); 
+
     curtime = calctime(curtime,tr1);    
        
     I_QP = getChannelValue(seqdata,'Coil 16',1);    
@@ -410,10 +368,128 @@ if seqdata.flags.mt_ramp_down_end
     I_s(3) = getChannelValue(seqdata,'Z Shim',1);
     I_shim = I_s;
     
-    setDigitalChannel(calctime(curtime,0),'Plug Shutter',0);% 0:OFF; 1: ON
+%     setDigitalChannel(calctime(curtime,0),'Plug Shutter',0);% 0:OFF; 1: ON
     curtime = calctime(curtime,30);
+    
+    
+    seqdata.flags.mt_xdt_load2=0;
+    seqdata.flags.mt_xdt_load2_qp_off=0;
+
+    if seqdata.flags.mt_xdt_load2
+
+        p1 = getVar('xdt1_load_power');  
+        p2 = getVar('xdt2_load_power'); 
+        t_xdt = getVar('xdt_load_time');
+        defVar('xdt_load_wait_time',200,'ms');
+        t_xdt_hold = getVar('xdt_load_wait_time');    
+
+        % Turn on XDT AOMs
+        setDigitalChannel(calctime(curtime,-1),'XDT TTL',0);  
+        % Ramp ODT1
+        AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+            t_xdt,t_xdt,p1);     
+        % Ramp ODT2
+        AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+            t_xdt,t_xdt,p2);    
+        curtime = calctime(curtime,t_xdt);    
+        curtime=calctime(curtime,t_xdt_hold);  
+        
+        if seqdata.flags.mt_xdt_load2_qp_off
+
+                i2 = 0;
+                I_s = [0 0 0];
+                I_s(1) = getChannelValue(seqdata,'X Shim',1);
+                I_s(2) = getChannelValue(seqdata,'Y Shim',1);
+                I_s(3) = getChannelValue(seqdata,'Z Shim',1);
+                dI_QP = i2 - i1;    
+
+                Cx = getVar('mt_shim_slope_x');
+                Cy = getVar('mt_shim_slope_y');
+                Cz = getVar('mt_shim_slope_z');
+
+                dIx=dI_QP*Cx;
+                dIy=dI_QP*Cy;
+                dIz=dI_QP*Cz;   
+
+                % Ramp the QP Current
+                AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+                    @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2),...
+                    tr1,tr1,i2);  
+
+                % Ramp the XYZ shims
+                AnalogFunc(calctime(curtime,0),'X Shim',...
+                    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+                    tr1,tr1,I_s(1),I_s(1)+dIx,3); 
+                AnalogFunc(calctime(curtime,0),'Y Shim',...
+                    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+                    tr1,tr1,I_s(2),I_s(2)+dIy,4); 
+                AnalogFunc(calctime(curtime,0),'Z Shim',...
+                    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+                    tr1,tr1,I_s(3),I_s(3)+dIz,3);  
+
+                curtime = calctime(curtime,tr1);    
+
+                I_QP = getChannelValue(seqdata,'Coil 16',1);    
+                I_s = [0 0 0];
+                I_s(1) = getChannelValue(seqdata,'X Shim',1);
+                I_s(2) = getChannelValue(seqdata,'Y Shim',1);
+                I_s(3) = getChannelValue(seqdata,'Z Shim',1);
+                I_shim = I_s;
+
+            %     setDigitalChannel(calctime(curtime,0),'Plug Shutter',0);% 0:OFF; 1: ON
+                curtime = calctime(curtime,30);
+
+
+                 curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+                     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2),...
+                     1,1,0); 
+        end
+    end
+
+
+
 end
 
+%% Load 2
+
+
+%% Ramp  Gradient
+% Ramp down the gradient at the end of RF evaporation.  This is useful to
+% measure the geometric trap center of the coils
+
+if seqdata.flags.mt_ramp_end 
+    dispLineStr('Ramp down gradient',curtime);    
+
+    tr1 = 100;
+    defVar('mt_qp_current_ramp',[26],'A');
+    i1 = getVar('mt_qp_current_ramp'); 
+        
+    % Ramp the QP Current
+    AnalogFuncTo(calctime(curtime,0),'Coil 16',...
+        @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2),...
+        tr1,tr1,i1);     
+    
+    V_QP = i1 * 23/30;        
+    AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+        @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2),...
+        tr1,tr1,V_QP);  
+    curtime = calctime(curtime,tr1);           
+    I_QP = getChannelValue(seqdata,'Coil 16',1);   
+    setDigitalChannel(calctime(curtime,0),'Plug Shutter',0);% 0:OFF; 1: ON
+
+    curtime = calctime(curtime,50);    
+end
+
+
+%% MT Lifetime
+if seqdata.flags.mt_lifetime == 1    
+%     setDigitalChannel(calctime(curtime,0),'Plug Shutter',0);% 0:OFF; 1: ON
+
+    th = getVar('mt_hold_time');
+    curtime = calctime(curtime,th);
+end
 
 
 %% Post QP Evap Tasks

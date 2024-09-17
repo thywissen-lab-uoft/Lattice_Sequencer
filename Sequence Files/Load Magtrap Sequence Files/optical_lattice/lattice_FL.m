@@ -27,7 +27,7 @@ global seqdata
     fluor=struct;
 
     % uWave
-    fluor.EnableUWave           = 0;        % Use uWave freq sweep for n-->n    
+    fluor.EnableUWave           = 0;        % Use uWave freq sweep for n-->n  (happens before cooling light turns on)  
     % Laser Beams
     fluor.EnableFPump           = 1;        % Use FPUMP beam DOESNT WORK ZIF LOW???
     fluor.EnableEITProbe        = 1;        % Use EIT Probe beams
@@ -43,7 +43,8 @@ global seqdata
     % 1 ms is typical for uWave spectroscopy
     % 2000 ms is typical for fluoresence imaging    
     % FPUMP 1000Er, 83% transfer at 1 ms, 0.1 V
-    % EIT Probe
+    % EIT Probe 1 , 45% transfer at 0.1 ms, 0.05 rel power
+    % EIT Probe 2 , 60% transfer at 0.1 ms, 0.1 rel power
 
 %% Ixon Camera Settings
 
@@ -78,7 +79,7 @@ if fluor.IxonFrameTransferMode
 
 %   Hopping measurement : 2 Images with equal exposure time
 % Sume of exposure times should equal the total light radiation time (pulse
-%_time)
+% %_time)
     fluor.NumberOfImages       = 2;        
     fluor.ExposureTime         = [2000 2000];
     
@@ -159,7 +160,7 @@ end
 % This code set the Fpump power regulation and the 4 pass frequency
 
     % Power that the Fpump beam regulates to
-    F_Pump_List = [0.9];
+    F_Pump_List = [0.7];[0.9];
     
     % Frequency of the FPUMP single pass (MHz)
     fluor.F_Pump_Frequency = 80;
@@ -175,8 +176,8 @@ end
     EIT1_max_voltage = 1.1;
     EIT2_max_voltage = .850;
     
-    defVar('qgm_EIT1_power',.8,'normalized');
-    defVar('qgm_EIT2_power',.8,'normalized');
+    defVar('qgm_EIT1_power',.8,'normalized');0.8;
+    defVar('qgm_EIT2_power',.8,'normalized');0.8;
 
     % Relative power choice (0 to 1)
 %     EIT_probe_rel_pow_list =[.4:.05:1];
@@ -253,11 +254,11 @@ defVar('qgm_Raman2_power',0.4,'normalized');0.4;
 % Detunings to modify the Raman condition (shouldn't this always be zero?)
 % CF : Since I believe Raman two photon should be the same as EIT two
 % photon
-defVar('qgm_Raman1_shift',[-110],'kHz');-110;
+defVar('qgm_Raman1_shift',[-80],'kHz');-110;
 defVar('qgm_Raman2_shift',0,'kHz');
 
 %Set the range of the frequency sweeps for Raman spectroscopy
-defVar('qgm_Raman1_sweepRange',[20],'kHz');
+defVar('qgm_Raman1_sweepRange',[50],'kHz');
 defVar('qgm_Raman2_sweepRange',50,'kHz');
 
 %% Raman 1 Settings          

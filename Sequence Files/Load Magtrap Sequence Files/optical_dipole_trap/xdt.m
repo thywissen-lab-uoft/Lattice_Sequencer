@@ -15,6 +15,7 @@ global seqdata;
 %% Load the Dipole Trap from the Magnetic Trap
 if seqdata.flags.xdt_load
     [curtime, I_QP, V_QP,I_shim] = xdt_load(curtime, I_QP, V_QP,I_shim);
+    
 end
 % curtime = calctime(curtime,500);
 %% Pre-evaporation 

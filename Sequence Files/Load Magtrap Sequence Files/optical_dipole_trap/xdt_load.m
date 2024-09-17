@@ -16,7 +16,7 @@ function [timeout, I_QP, V_QP,I_shim] = xdt_load(timein, I_QP, V_QP,I_shim)
 curtime = timein;
 global seqdata;
 
-ScopeTriggerPulse(curtime,'xdt load');
+ScopeTriggerPulse(curtime,'xdt_load');
 
 %% Flags
 
@@ -24,20 +24,21 @@ seqdata.flags.xdt_qp_ramp_down1         = 1;
 seqdata.flags.xdt_qp_ramp_down2         = 1;
 seqdata.flags.xdt_plug_off              = 1;
 
-
 ramp_func = @(t,tt,y2,y1)(y1+(y2-y1)*t/tt); %try linear versus min jerk
 %ramp_func = @(t,tt,y2,y1)(minimum_jerk(t,tt,y2-y1)+y1); 
     
 %% XDT Powers
 
-P_load = getVar('xdt_load_power');  
+P1_load = getVar('xdt1_load_power');  
+P2_load = getVar('xdt2_load_power');  
+
 dipole_ramp_up_time = getVar('xdt_load_time');
 
-DT2_power(2)= P_load;
-DT1_power(2) = P_load; 
+DT2_power(2)=  P2_load;
+DT1_power(2) = P1_load; 
 
 % Plug Shim Z Slope delta
-dCz_list = [-.0025];
+dCz_list = [-0.005];-.002;[-.0025];
 dCz = getScanParameter(dCz_list,seqdata.scancycle,...
     seqdata.randcyclelist,'dCz','arb.');  
 
@@ -51,11 +52,11 @@ setDigitalChannel(calctime(curtime,-10),'XDT TTL',0);
 % Ramp dipole 1 trap on
 AnalogFunc(calctime(curtime,0),...
     'dipoleTrap1',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-    dipole_ramp_up_time,dipole_ramp_up_time,seqdata.params.ODT_zeros(1),P_load);
+    dipole_ramp_up_time,dipole_ramp_up_time,seqdata.params.ODT_zeros(1),P1_load);
 % Ramp dipole 2 trap on
 AnalogFunc(calctime(curtime,0),...
     'dipoleTrap2',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-    dipole_ramp_up_time,dipole_ramp_up_time,seqdata.params.ODT_zeros(2),P_load);
+    dipole_ramp_up_time,dipole_ramp_up_time,seqdata.params.ODT_zeros(2),P2_load);
     
 %% Ramp the QP Down    
 % Ramp QP currents down to release the magnetic trap. A very small residual
@@ -250,6 +251,12 @@ ScopeTriggerPulse(calctime(curtime,0),'Transport Supply Off');
 setDigitalChannel(calctime(curtime,0),'Coil 16 TTL',1);
 %Turn Coil 15 FET off
 setAnalogChannel(calctime(curtime,0),'Coil 15',0,1);
+
+%% Extra Wait
+
+if ~seqdata.flags.xdt_pre_evap
+   curtime = calctime(curtime,100); 
+end
 
 
 %% Exit

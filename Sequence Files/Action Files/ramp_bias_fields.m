@@ -131,11 +131,12 @@ curtime = timein;
             setAnalogChannel(calctime(curtime,0.05),37,p.fesh_final,4);
         else
         end
-            if (p.fesh_final == 0 && p.use_fesh_switch == 1) %turn off Feshbach coils with fast switch
-                setDigitalChannel(calctime(curtime,p.fesh_off_delay),31,0);
-                buildWarning('ramp_bias_fields','Known issue with switching off FB field! Check current monitor!');
-            else
-            end
+        
+        if (p.fesh_final == 0 && p.use_fesh_switch == 1) %turn off Feshbach coils with fast switch
+            setDigitalChannel(calctime(curtime,p.fesh_off_delay),31,0);
+            buildWarning('ramp_bias_fields','Known issue with switching off FB field! Check current monitor!');
+        else
+        end
     end
     
     

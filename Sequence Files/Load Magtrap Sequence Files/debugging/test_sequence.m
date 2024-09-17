@@ -6253,10 +6253,10 @@ curtime = calctime(curtime,150);
 % setDigitalChannel(calctime(curtime,0),'yLatticeOFF',0)
 
 % 
-P0 = 0.0158257; % power level at 0V (this is a bad way);
-    AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-        150,150,1,P0,4); 
+% P0 = 0.0158257; % power level at 0V (this is a bad way);
+%     AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+%         150,150,1,P0,4); 
 % curtime = calctime(curtime,150);
 
 % 
@@ -6302,9 +6302,65 @@ P0 = 0.0158257; % power level at 0V (this is a bad way);
     
 % = 'Rb Probe/OP AM';
 
-% setDigitalChannel(curtime,'K Probe/OP TTL',1);
+% setDigitalChannel(curtime,'Rb uWave TTL',0);
+% setDigitalChannel(curtime,'K/Rb uWave Transfer',1);
+% setDigitalChannel(curtime,'RF/uWave Transfer',1);
+% setDigitalChannel(curtime,'K uWave TTL',0);
 
 %  setAnalogChannel(curtime,'K Probe/OP AM',1)
+
+%%
+
+%   tr = 200;
+%     fesh = 21;
+% curtime=calctime(curtime,1000);
+%     % Define the ramp structure
+%     ramp=struct;
+%     ramp.shim_ramptime      = tr;
+%     ramp.shim_ramp_delay    = 0;
+% %     ramp.xshim_final        = seqdata.params.shim_zero(1); 
+% % %     ramp.yshim_final        = seqdata.params.shim_zero(2);
+% %     ramp.zshim_final        = seqdata.params.shim_zero(3);
+%     ramp.fesh_ramptime      = tr;
+%     ramp.fesh_ramp_delay    = 0;
+%     ramp.fesh_final         = fesh; %22.6
+%     ramp.settling_time      = 5000;    
+% 
+%     % Ramp FB with QP
+% curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+% 
+%   tr = 200;
+%     fesh = 0;
+% 
+%     % Define the ramp structure
+%     ramp=struct;
+%     ramp.shim_ramptime      = tr;
+%     ramp.shim_ramp_delay    = 0;
+% %     ramp.xshim_final        = seqdata.params.shim_zero(1); 
+% %     ramp.yshim_final        = seqdata.params.shim_zero(2);
+% %     ramp.zshim_final        = seqdata.params.shim_zero(3);
+%     ramp.fesh_ramptime      = tr;
+%     ramp.fesh_ramp_delay    = 0;
+%     ramp.fesh_final         = fesh; %22.6
+%     ramp.settling_time      = 2000;    
+%     curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+% 
+%     
+
+setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',0);
+% 
+curtime = calctime(curtime,1000);
+% 
+tr = 200;
+% Vz = 0.5;
+% AnalogFuncTo(calctime(curtime,0),'Z Shim',...
+%                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),tr,tr,Vz,1);
+%             
+% curtime = calctime(curtime,3000);
+
+AnalogFuncTo(calctime(curtime,0),'Z Shim',...
+                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),tr,tr,0,1);
+
 timeout = curtime;
 
 

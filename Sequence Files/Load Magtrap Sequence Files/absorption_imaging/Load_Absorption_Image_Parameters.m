@@ -2,17 +2,17 @@ function params = Load_Absorption_Image_Parameters()
     global seqdata;
     %% Set imaging detunings
     % Potassium - X-cam
-    kdet_shift_list = [0];%[2];%-1
+    kdet_shift_list =[0];%[2];%-1
     kdet_shift = getScanParameter(kdet_shift_list,...
         seqdata.scancycle,seqdata.randcyclelist,'kdet_shift','MHz');
-    params.detunings.K.X.positive.normal = 22.2;
+    params.detunings.K.X.positive.normal = 22.7;
     params.detunings.K.X.positive.in_trap = 23.5;
     params.detunings.K.X.positive.QP_imaging = 21.5;
     params.detunings.K.X.positive.SG = 24.5;
     params.detunings.K.X.positive.short_tof = 24.5;
     
     % |9/2,-9/2> and |9/2,-7/2> atoms
-    params.detunings.K.X.negative.normal = 30.6; %(32.6) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
+    params.detunings.K.X.negative.normal = 33.1; %(32.6) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
     
     params.detunings.K.X.negative.SG = 34.5;      % for mF stern gerlach
 %     params.detunings.K.X.negative.SG = 34.5+kdet_shift;      % for mF stern gerlach
@@ -35,7 +35,7 @@ function params = Load_Absorption_Image_Parameters()
     % Rubidium - X-cam
     
 %     
-    rbdet_shift_list = [20];
+    rbdet_shift_list =[-5];
     rbdet_shift = getScanParameter(rbdet_shift_list,...
         seqdata.scancycle,seqdata.randcyclelist,'rbdet_shift','MHz');
     
@@ -116,7 +116,7 @@ function params = Load_Absorption_Image_Parameters()
     
     % F Stern Gerlach : |9,-9> vs |7,-7> low field (~20G) (15ms TOF)
     if seqdata.flags.image_stern_gerlach_F
-        params.SG.SG_QP_val = 1.78*5;
+        params.SG.SG_QP_val = 1.78*9;1.78*5;
         params.SG.SG_QP_pulsetime = 2; 
         params.SG.SG_QP_ramptime =1; 
     end
@@ -169,6 +169,7 @@ function params = Load_Absorption_Image_Parameters()
 
     %% Quantization field values
     % RHYS - Why not make these all the same magnitude?
+%     defVar('TOF_Z_shim',[-0.5:0.2:0.5]);
     params.quant_shim_val.X.positive = [0.00,2.45,0.00];
     params.quant_shim_val.X.negative = [0.00,-1.00,0.00];
     params.quant_shim_val.Y.positive = [2.45,0.00,0.00];

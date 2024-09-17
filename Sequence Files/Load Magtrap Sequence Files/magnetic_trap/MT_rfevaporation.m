@@ -14,7 +14,7 @@ function [curtime, I_QP, V_QP,I_shim] = MT_rfevaporation(timein, opts, I_QP, V_Q
 % opts.Freqs      - frequency points in Hz (N+1)
 % opts.QPCurrents - Current in the QP coils (N+1)
 
-if ~isequal(opts.QPCurrents(1),I_QP)
+if ~isequal(round(opts.QPCurrents(1),2),round(I_QP,2))
     error('The initial sweep current does not match the initial current');
 end
 

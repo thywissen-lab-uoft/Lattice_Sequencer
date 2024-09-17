@@ -174,7 +174,7 @@ setDigitalChannel(calctime(curtime,0),'FPump Direct',1);
 setAnalogChannel(calctime(curtime,0),'F Pump',9.99);
 
 %Plug beam
-setDigitalChannel(calctime(curtime,0),'Plug Shutter',0); %1: off, 0: on
+setDigitalChannel(calctime(curtime,0),'Plug Shutter',0); %0: off, 1: on
 setAnalogChannel(calctime(curtime,0),'Plug',getVar('plugTA_current')); % Current in mA
 
 %High-field imaging
@@ -309,9 +309,12 @@ if seqdata.flags.transport
     %Turn Shims to Science cell zero values
     % These can always be set to plug shims because we have separate
     % control of MOT and science chamber shims
-    setAnalogChannel(calctime(curtime,1000),'X Shim',0,3); %3
-    setAnalogChannel(calctime(curtime,1000),'Z Shim',0,3); %3
-    setAnalogChannel(calctime(curtime,1000),'Y Shim',0,4); %4
+%     setAnalogChannel(calctime(curtime,1000),'X Shim',0,3); %3
+%     setAnalogChannel(calctime(curtime,1000),'Z Shim',0,3); %3
+%     setAnalogChannel(calctime(curtime,1000),'Y Shim',0,4); %4
+    setAnalogChannel(calctime(curtime,1000),'X Shim',seqdata.params.plug_shims(1),3); %3
+    setAnalogChannel(calctime(curtime,1000),'Y Shim',seqdata.params.plug_shims(2),4); %4
+    setAnalogChannel(calctime(curtime,1000),'Z Shim',seqdata.params.plug_shims(3),3); %3
 
     % Scope trigger
     ScopeTriggerPulse(calctime(curtime,0),'Start Transport');
@@ -323,11 +326,14 @@ if seqdata.flags.transport
     
     transport_start_time = calctime(curtime,trigger_offset);
     addOutputParam('transport_start_time',transport_start_time,'ms');
-    DigitalPulse(calctime(curtime,trigger_offset-trigger_length),...
-        'LabJack Trigger Transport',trigger_length,1);      
-    DigitalPulse(calctime(curtime,1000),...
-        'LabJack Trigger Transport',trigger_length,1);
     
+    if strcmp(seqdata.labjack_trigger,'Transport')
+        DigitalPulse(calctime(curtime,trigger_offset-trigger_length),...
+            'LabJack Trigger Transport',trigger_length,1);      
+        DigitalPulse(calctime(curtime,1000),...
+            'LabJack Trigger Transport',trigger_length,1);
+    end
+%     
 % curtime = Transport_Cloud(curtime, seqdata.flags.transport_hor_type,...
 %         seqdata.flags.transport_ver_type, seqdata.flags.image_loc);
     
@@ -420,6 +426,11 @@ end
 
 if seqdata.flags.mt
     [curtime, I_QP, I_kitt, V_QP, I_fesh, I_shim] = magnetic_trap(curtime);
+end
+%% New XDT Load try
+
+if seqdata.flags.xdt_load2
+   curtime = xdt_load2(curtime); 
 end
 
 %% Save Transport and Part of RF
@@ -537,6 +548,8 @@ if seqdata.flags.image_type == 0
     for i = [7 9:17 22:24 20] 
         setAnalogChannel(calctime(curtime,0),i,0,1);
     end   
+    
+    setDigitalChannel(calctime(curtime,0),'XDT TTL',1);     
 
     % Turn off XDT (if they aren't already off for safety)
     if seqdata.flags.xdt        
@@ -665,14 +678,14 @@ if seqdata.flags.misc_ramp_fesh_between_cycles
     % some strong field was pulsed/snapped off or not during the cycle that
     % just ends. We do not have any positive observation that this helps,
     % but we leave it in just in case (total 1.3s extra).
-        fesh_ramptime = 100;
-        fesh_final = 20;
-        fesh_ontime = 1000;
+        fesh_ramptime = 100; %ms
+%         fesh_final = 20; % G
+        fesh_ontime = 1000; % ms
 curtime = AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),fesh_ramptime,fesh_ramptime,0,fesh_final);
 curtime = calctime(curtime,fesh_ontime);
 curtime = AnalogFuncTo(calctime(curtime,0),'FB current',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),fesh_ramptime,fesh_ramptime,0);
 curtime = setAnalogChannel(calctime(curtime,100),'FB current',0);
-    else 
+    else
         fesh_ramptime = 100;
         fesh_final = 20;
         fesh_ontime = 1000;
@@ -681,6 +694,63 @@ curtime = calctime(curtime,fesh_ontime);
 curtime = AnalogFuncTo(calctime(curtime,0),'FB current',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),fesh_ramptime,fesh_ramptime,0);
 curtime = setAnalogChannel(calctime(curtime,100),'FB current',0);
     end
+end
+
+%% Shim Reset Pulse
+seqdata.flags.misc_shim_reset_pulse=0;
+
+if seqdata.flags.misc_shim_reset_pulse
+    tramp = 20;
+    thold = 50;
+    Ix = [2 -2];
+    Iy = [-2 2];
+    Iz = [-2 2];    
+    
+    ScopeTriggerPulse(calctime(curtime,0),'Shim Pulse');
+
+      % Ramp shims to first value
+      AnalogFuncTo(curtime,'X Shim',...
+          @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+          tramp,tramp,Ix(1),3);
+      AnalogFuncTo(curtime,'Y Shim',...
+          @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+         tramp, tramp,Iy(1),4);
+      AnalogFuncTo(curtime,'Z Shim',...
+          @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+          tramp,tramp,Iz(1),3);          
+      curtime = calctime(curtime,tramp);
+      
+      % Wait
+      curtime = calctime(curtime,thold);
+      
+      % Ramp shims to second value
+        AnalogFuncTo(curtime,'X Shim',...
+          @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+          tramp,tramp,Ix(2),3);
+      AnalogFuncTo(curtime,'Y Shim',...
+          @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+         tramp, tramp,Iy(2),4);
+      AnalogFuncTo(curtime,'Z Shim',...
+          @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+          tramp,tramp,Iz(2),3);
+        curtime = calctime(curtime,tramp);
+      
+        % Wait
+          curtime = calctime(curtime,thold);
+          
+      % Ramp shims to off
+        AnalogFuncTo(curtime,'X Shim',...
+          @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+          tramp,tramp,0,3);
+      AnalogFuncTo(curtime,'Y Shim',...
+          @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+         tramp, tramp,0,4);
+      AnalogFuncTo(curtime,'Z Shim',...
+          @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+          tramp,tramp,0,3);
+      curtime=calctime(curtime,tramp);
+      curtime = calctime(curtime,thold);
+
 end
     
 %% Reset Channels
@@ -706,6 +776,10 @@ setAnalogChannel(calctime(curtime,0),'Z Shim',0,1);
 
 setDigitalChannel(calctime(curtime,10),'Bipolar Shim Relay',0);
 setDigitalChannel(calctime(curtime,10),'Z shim bipolar relay',0);
+
+%Reset FB integrator
+% curtime = DigitalPulse(calctime(curtime,0),'FB Integrator OFF',50,1);
+% setDigitalChannel(calctime(curtime,10),'FB Integrator OFF',1);
 
 setAnalogChannel(curtime,'15/16 GS',0); 
 

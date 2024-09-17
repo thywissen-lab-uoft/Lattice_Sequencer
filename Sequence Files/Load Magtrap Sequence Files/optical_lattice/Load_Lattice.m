@@ -481,27 +481,47 @@ end
 
 if seqdata.flags.lattice_pulse_dimple
 
-    % % % Turn on raman beam
-    setDigitalChannel(curtime,'Raman TTL 1',1);  % Vertical Raman (1: ON, 0:OFF)
-    setDigitalChannel(curtime,'Raman TTL 2a',0); % Horizontal Raman (1: ON, 0:OFF)    
+%     % % % Turn on raman beam
+%     setDigitalChannel(curtime,'Raman TTL 1',0);  % Vertical Raman (1: ON, 0:OFF)
+%     setDigitalChannel(curtime,'Raman TTL 2a',1); % Horizontal Raman (1: ON, 0:OFF)    
+% 
+%     % Open Shutter
+%     setDigitalChannel(curtime,'Raman Shutter',1);
+% 
+%     defVar('Dimple_pulse_time',[50],'ms');
+% 
+%     % Wait 
+%     curtime = calctime(curtime,getVar('Dimple_pulse_time'));
+% 
+%     % Close Shutter
+%     setDigitalChannel(calctime(curtime,0),'Raman Shutter',0);
+%     % curtime = setDigitalChannel(calctime(curtime,getVar('Dimple_pulse_time')),'Raman Shutter',0);
+% 
+%     defVar('Dimple_Pico_1',0,'steps');
+%     defVar('Dimple_Pico_2',0,'steps');
+% 
+%     getVar('Dimple_Pico_1');
+%     getVar('Dimple_Pico_2');
 
-    % Open Shutter
-    setDigitalChannel(curtime,'Raman Shutter',1);
+%Kill SP AOM 
+    mod_freq =  (120)*1E6;
+    mod_offset =0;
+    str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,2,mod_offset);
+    addVISACommand(8, str);  %Device 8 is the new kill beam Rigol changed on July 10, 2021
+    
+        % Set trap AOM detuning to change probe
+        setAnalogChannel(calctime(curtime,-50),'K Trap FM',0); 
+        % Turn off kill SP (0= off, 1=on)(we keep it on for thermal stability)
+        setDigitalChannel(calctime(curtime,-20),'Kill TTL',0);
+        % Open K Kill shutter (0=closed, 1=open)
+        setDigitalChannel(calctime(curtime,-5),'Downwards D2 Shutter',1);           
+        setDigitalChannel(curtime,'Kill TTL',1);             % Kill on              
+        curtime = calctime(curtime,10);               % Kill wait 
 
-    defVar('Dimple_pulse_time',[50],'ms');
-
-    % Wait 
-    curtime = calctime(curtime,getVar('Dimple_pulse_time'));
-
-    % Close Shutter
-    setDigitalChannel(calctime(curtime,0),'Raman Shutter',0);
-    % curtime = setDigitalChannel(calctime(curtime,getVar('Dimple_pulse_time')),'Raman Shutter',0);
-
-    defVar('Dimple_Pico_1',0,'steps');
-    defVar('Dimple_Pico_2',0,'steps');
-
-    getVar('Dimple_Pico_1');
-    getVar('Dimple_Pico_2');
+        setDigitalChannel(curtime,'Kill TTL',0);             % Kill off
+        setDigitalChannel(curtime,'Downwards D2 Shutter',0); % Close kill shutter      
+        % Turn on kill SP after closed shutter (thermal stability)
+        setDigitalChannel(calctime(curtime,15),'Kill TTL',1); % Kill on
 
 end
 
@@ -1054,7 +1074,7 @@ if seqdata.flags.lattice_fluor_ramp
     % Lattice Depth Request
     defVar('lattice_FI_depth_X',[1050],'Er');1050;
     defVar('lattice_FI_depth_Y',[1040],'Er');1040;
-    defVar('lattice_FI_depth_Z',[1150],'Er');1150;  
+    defVar('lattice_FI_depth_Z',[1000],'Er');1150;  
    % Perform the rest of the lattice ramps
    dT = getVar('lattice_FI_ramptime');
    Ux = getVar('lattice_FI_depth_X');

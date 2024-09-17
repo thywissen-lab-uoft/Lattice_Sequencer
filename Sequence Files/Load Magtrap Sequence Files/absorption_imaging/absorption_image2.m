@@ -21,7 +21,7 @@ seqdata.times.tof_end = calctime(curtime,seqdata.params.absorption_image.timings
 %% Override default values for parameters based on conditions
 % Set TOF to -2 ms for in trap image (ignore TOF time)
 if strcmp(seqdata.flags.absorption_image.condition, 'in_trap')
-  seqdata.params.absorption_image.timings.tof = -2;
+  seqdata.params.absorption_image.timings.tof = -10;
 end
 
 % If 40K is definitely in a negative mF state, flip the quantizing shim
@@ -141,7 +141,7 @@ if (strcmp(flags.img_direction,'X') || strcmp(flags.img_direction,'Y'))
           end
     elseif strcmp(flags.condition,'in_trap')
       % For in-trap imaging, you don't touch the magnetic fields!
-
+        setAnalogChannel(calctime(curtime,0),'FB current',-0.5,1);
     end
   
   % Turn off feshbach sometime after the time of flight

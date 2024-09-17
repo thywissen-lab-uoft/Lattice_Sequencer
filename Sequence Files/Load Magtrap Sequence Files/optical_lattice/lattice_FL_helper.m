@@ -52,7 +52,7 @@ if opts.EnableUWave && pulse_time > 0
     spec_pars.ENBR = 1;                              % Enable N Type
     spec_pars.GPIB = 30;                             % SRS GPIB Address    
 
-    K_uWave_Spectroscopy(curtime,spec_pars);    
+    K_uWave_Spectroscopy(curtime,spec_pars); %update curtime when using to align F pump
 end
 
 %% D1 and EIT Shutter Open and Close

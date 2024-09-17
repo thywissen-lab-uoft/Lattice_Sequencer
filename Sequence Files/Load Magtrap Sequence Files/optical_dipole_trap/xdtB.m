@@ -49,7 +49,10 @@ if seqdata.flags.xdtB_levitate
 end
 %% Turn on feshbach field
 
-if seqdata.flags.xdtB_feshbach   
+if seqdata.flags.xdtB_feshbach 
+    
+    ScopeTriggerPulse(curtime,'xdtB_FBramp');
+    
     tr = getVar('xdtB_feshbach_ramptime');
     fesh = getVar('xdtB_feshbach_field');
 
@@ -90,8 +93,8 @@ if seqdata.flags.xdtB_feshbach_fine
     % Ramp FB with QP
 curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
 end
-
-
+% Wait time for troubleshooting
+curtime = calctime(curtime,5000); %REMOVE ME
 %% Hop the feshbach resonance
 
 if seqdata.flags.xdtB_feshbach_hop
@@ -211,6 +214,8 @@ end
 %% Optical Evaporation
 
 if seqdata.flags.xdtB_evap    
+                dispLineStr('xdtB evap',curtime); 
+
      % Get Variables
     evap_time   = getVar('xdtB_evap_time');
     evap_tau    = getVar('xdtB_evap_time')/getVar('xdtB_evap_tau_fraction');
@@ -282,6 +287,8 @@ end
 %% Secondary Feshbach Ramp after evaporation
 
 if seqdata.flags.xdtB_feshbach_fine2   
+            dispLineStr('feshbach fine 2',curtime); 
+
     tr = getVar('xdtB_feshbach_fine2_ramptime');
     fesh = getVar('xdtB_feshbach_fine2_field');
 
@@ -304,6 +311,8 @@ end
 %% Levitation Adjustmen
 
 if seqdata.flags.xdtB_levitate_fine2
+        dispLineStr('levitate fine 2',curtime); 
+
     HF_QP = getVar('xdtB_levitate_fine2_value');
     tr = getVar('xdtB_levitate_fine2_ramptime');       
 
@@ -407,6 +416,8 @@ end
 %% Turn off feshbach field
 
 if seqdata.flags.xdtB_feshbach_off   
+        dispLineStr('Turning off the feshbach',curtime); 
+
     tr = getVar('xdtB_feshbach_off_ramptime');
     fesh = getVar('xdtB_feshbach_off_field');        
 

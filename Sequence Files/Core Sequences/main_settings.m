@@ -241,30 +241,35 @@ defVar('RF1B_time_scale',[1],'arb');[0.8];          % RF1B timescale
 
 % RF1B Frequenies
 defVar('RF1B_freq_0',getVar('RF1A_finalfreq')*1.1,'MHz');
-defVar('RF1B_freq_1',7,'MHz');7;
-defVar('RF1B_freq_2',[1.2],'MHz');1.2;1;
-defVar('RF1B_freq_3',2,'MHz');2;
+defVar('RF1B_freq_1',8,'MHz');7;
+defVar('RF1B_freq_2',[4],'MHz');
+defVar('RF1B_freq_3',[2],'MHz');1.2;1;
+defVar('RF1B_freq_4',[1.2],'MHz');
+defVar('RF1B_freq_5',[2],'MHz');2;
 
 % RF 1B Gains
 defVar('RF1B_gain_0',-2,'arb');
 defVar('RF1B_gain_1',-2,'arb');
 defVar('RF1B_gain_2',-2,'arb');
 defVar('RF1B_gain_3',-2,'arb');
+defVar('RF1B_gain_4',-2,'arb');
+defVar('RF1B_gain_5',-2,'arb');
     
 % RF1B Currents
 I_QP = 26.4;
 defVar('RF1B_current_0',I_QP,'A');
 defVar('RF1B_current_1',I_QP,'A');
 defVar('RF1B_current_2',I_QP,'A');
-defVar('RF1B_current_3',getVar('RF1B_current_2'),'A');   
+defVar('RF1B_current_3',I_QP,'A');
+defVar('RF1B_current_4',I_QP,'A');   
+defVar('RF1B_current_5',getVar('RF1B_current_4'),'A');   
     
 % RF1B Times
-defVar('RF1B_time_1',[6000],'ms');
-defVar('RF1B_time_2',[3000],'ms');
-defVar('RF1B_time_3',2,'ms');
-
-       
-defVar('RF1B_finalfreq',[4],'MHz');[1];[0.8];       % RF1B Ending Frequency %this is currently not used
+defVar('RF1B_time_1',[5400],'ms');
+defVar('RF1B_time_2',[2200],'ms');
+defVar('RF1B_time_3',[1000],'ms');
+defVar('RF1B_time_4',[400],'ms');
+defVar('RF1B_time_5',[2],'ms');
 
 
 
@@ -279,7 +284,7 @@ defVar('mt_ramp_grad_value',[14],'A');
 %%% MT HOLD %%%    
 
 seqdata.flags.mt_lifetime                   = 0;
-defVar('mt_hold_time',[0:500:3000],'ms');
+defVar('mt_hold_time',[0],'ms');
 
 
 %% XDT Load NEW : CORA IS DEVELOPING

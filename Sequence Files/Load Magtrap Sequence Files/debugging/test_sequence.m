@@ -6347,19 +6347,44 @@ curtime = calctime(curtime,150);
 % 
 %     
 
-setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',0);
+% setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',0);
+% % 
+% curtime = calctime(curtime,1000);
+% % 
+% tr = 200;
+% % Vz = 0.5;
+% % AnalogFuncTo(calctime(curtime,0),'Z Shim',...
+% %                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),tr,tr,Vz,1);
+% %             
+% % curtime = calctime(curtime,3000);
 % 
-curtime = calctime(curtime,1000);
-% 
-tr = 200;
-% Vz = 0.5;
 % AnalogFuncTo(calctime(curtime,0),'Z Shim',...
-%                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),tr,tr,Vz,1);
-%             
-% curtime = calctime(curtime,3000);
+%                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),tr,tr,0,1);
 
-AnalogFuncTo(calctime(curtime,0),'Z Shim',...
-                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),tr,tr,0,1);
+% MOT Gradient
+
+setAnalogChannel(calctime(curtime,0),'MOT Coil',10);  
+setAnalogChannel(calctime(curtime,0.0),'X MOT Shim',0.2,2);  0.2;
+setAnalogChannel(calctime(curtime,0.0),'Y MOT Shim',1.8,2); 2;
+setAnalogChannel(calctime(curtime,0.0),'Z MOT Shim',0.5,2); 0.9;
+
+curtime = calctime(curtime,500);
+
+Grad = 25;
+tr = 1000;
+AnalogFuncTo(calctime(curtime,0),'MOT Coil',...
+                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),tr,tr,Grad);
+            
+curtime = calctime(curtime,2000);
+
+curtime = AnalogFuncTo(calctime(curtime,0),'MOT Coil',...
+                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),tr,tr,10);
+
+setAnalogChannel(calctime(curtime,0.0),'X MOT Shim',0.2,2);  0.2;
+setAnalogChannel(calctime(curtime,0.0),'Y MOT Shim',2,2); 2;
+setAnalogChannel(calctime(curtime,0.0),'Z MOT Shim',0.9,2); 0.9;
+
+
 
 timeout = curtime;
 

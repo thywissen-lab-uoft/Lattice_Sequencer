@@ -16,7 +16,7 @@ curtime = timein;
 
 %% Optical pumping parameters
 % tmax=15;
-optime_list = [3.1];[3.1];[2];
+optime_list = [3];[3.1];[2];
 optime = getScanParameter(optime_list,...
     seqdata.scancycle,seqdata.randcyclelist,'optime','ms');
 

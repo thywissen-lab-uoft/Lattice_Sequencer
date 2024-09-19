@@ -65,7 +65,8 @@ seqdata.params.plug_shims_slopes = ...
 seqdata.params.shim_val = [0 0 0]; 
 
 % MOT Shim values during the MOT (and steady state)
-seqdata.params.MOT_shim =  [0.2 2.0 0.9]; % in Amps
+% defVar('X_MOT_shim',[0.05 0.65:0.1:0.95],'A');
+seqdata.params.MOT_shim = [0.2 1.6 0.5];[0.2 2.0 0.9]; % in Amps
 
 % MOT Shim Zero (for any optical molasses that needs B= 0 G; GM/Mol
 seqdata.params.MOT_shim_zero =  [0.15 0.15 0.00]; % in Amps
@@ -244,7 +245,7 @@ defVar('RF1B_freq_0',getVar('RF1A_finalfreq')*1.1,'MHz');
 defVar('RF1B_freq_1',8,'MHz');7;
 defVar('RF1B_freq_2',[4],'MHz');
 defVar('RF1B_freq_3',[2],'MHz');1.2;1;
-defVar('RF1B_freq_4',[1.2],'MHz');
+defVar('RF1B_freq_4',[1],'MHz');
 defVar('RF1B_freq_5',[2],'MHz');2;
 
 % RF 1B Gains
@@ -260,8 +261,8 @@ I_QP = 26.4;
 defVar('RF1B_current_0',I_QP,'A');
 defVar('RF1B_current_1',I_QP,'A');
 defVar('RF1B_current_2',I_QP,'A');
-defVar('RF1B_current_3',I_QP,'A');
-defVar('RF1B_current_4',I_QP,'A');   
+defVar('RF1B_current_3',16,'A');
+defVar('RF1B_current_4',10,'A');   
 defVar('RF1B_current_5',getVar('RF1B_current_4'),'A');   
     
 % RF1B Times
@@ -286,7 +287,7 @@ defVar('mt_ramp_grad_value',[14],'A');
 seqdata.flags.mt_lifetime                   = 0;
 defVar('mt_hold_time',[0],'ms');
 
-
+seqdata.flags.mt_xdt_load2=0;
 %% XDT Load NEW : CORA IS DEVELOPING
 
 seqdata.flags.xdt_load2                 = 0;
@@ -347,12 +348,12 @@ defVar('xdt_evap_sympathetic_ramp_time',500,'ms');  % Sympathetic ramp time
 
 % Optical evaporation
 seqdata.flags.CDT_evap                       = 0; 
-defVar('xdt_evap1_power',[0.12],'W');
+defVar('xdt_evap1_power',[0.25],'W');
 defVar('xdt_evap1_time',25e3,'ms');
 defVar('xdt_evap1_tau_fraction',3.5,'arb');
 
 % Power Ramp (useful to halt evaporation)
-seqdata.flags.xdt_ramp_power_end             = 1;   
+seqdata.flags.xdt_ramp_power_end             = 0;   
 defVar('xdt_evap_end_ramp_power', [.17],'W');  .17;
 defVar('xdt_evap_end_ramp_time',  [500],'ms');  
 defVar('xdt_evap_end_ramp_hold',  [0],'ms'); 
@@ -361,7 +362,7 @@ defVar('xdt_evap_end_ramp_hold',  [0],'ms');
 % XDT Post Evaporation Flags and Settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-seqdata.flags.xdt_post_evap_stage1           = 1;    % Master Sub Flag
+seqdata.flags.xdt_post_evap_stage1           = 0;    % Master Sub Flag
 
 % State Manipulation After Stage 1 optical evaporation
 seqdata.flags.xdt_d1op_end                  = 0;    % D1 optical pumping

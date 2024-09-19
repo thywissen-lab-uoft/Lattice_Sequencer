@@ -7,7 +7,6 @@ function timeout = absorption_image2(timein)
 global seqdata; 
 curtime = timein; 
 
-
 ScopeTriggerPulse(curtime,'Start TOF',0.2); %Trigger the scope right at the start of the TOF
 
 %Populate the relevant structures
@@ -21,7 +20,7 @@ seqdata.times.tof_end = calctime(curtime,seqdata.params.absorption_image.timings
 %% Override default values for parameters based on conditions
 % Set TOF to -2 ms for in trap image (ignore TOF time)
 if strcmp(seqdata.flags.absorption_image.condition, 'in_trap')
-  seqdata.params.absorption_image.timings.tof = -10;
+  seqdata.params.absorption_image.timings.tof = -10;-2;
 end
 
 % If 40K is definitely in a negative mF state, flip the quantizing shim

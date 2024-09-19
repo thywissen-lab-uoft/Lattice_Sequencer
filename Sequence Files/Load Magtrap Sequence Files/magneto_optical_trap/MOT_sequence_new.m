@@ -48,7 +48,7 @@ seqdata.numDDSsweeps = 0;
 % seqdata.params.shim_val = [0 0 0]; 
 
 % MOT Shim values during the MOT (and steady state)
-seqdata.params.MOT_shim =  [0.2 2.0 0.9]; % in Amps
+seqdata.params.MOT_shim = [0.2 1.6 0.5]; [0.2 2.0 0.9]; % in Amps
 
 % MOT Shim Zero (for any optical molasses that needs B= 0 G; GM/Mol
 seqdata.params.MOT_shim_zero =  [0.15 0.15 0.00]; % in Amps
@@ -87,20 +87,20 @@ defVar('MOT_controlled_load_time',10000,'ms');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOT to MT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.MOT_prepare_for_MT            = 1;
+seqdata.flags.MOT_prepare_for_MT            = 0;
 
-seqdata.flags.MOT_CMOT                      = 1; % Do the CMOT
-seqdata.flags.MOT_CMOT_detuning_ramp        = 2; % 0:no change, 1:linear ramp, 2:diabatic
-seqdata.flags.MOT_CMOT_power_ramp           = 2; % 0:no change, 1:linear ramp, 2:diabatic
+seqdata.flags.MOT_CMOT                      = 0; % Do the CMOT
+seqdata.flags.MOT_CMOT_detuning_ramp        = 0; % 0:no change, 1:linear ramp, 2:diabatic
+seqdata.flags.MOT_CMOT_power_ramp           = 0; % 0:no change, 1:linear ramp, 2:diabatic
 seqdata.flags.MOT_CMOT_grad_ramp            = 0; % 0:no change, 1:linear ramp, 2:diabatic
 
-seqdata.flags.MOT_Mol                       = 1; % Do the molasses
+seqdata.flags.MOT_Mol                       = 0; % Do the molasses
 seqdata.flags.MOT_Mol_KGM_power_ramp        = 0; % 0: no ramp, 1:linear ramp
 
-seqdata.flags.MOT_optical_pumping           = 1; % optical pumping for MT
+seqdata.flags.MOT_optical_pumping           = 0; % optical pumping for MT
 
 seqdata.flags.MOT_load_to_MT                = 0; % do not use
-seqdata.flags.loadMT                        = 1;
+seqdata.flags.loadMT                        = 0;
 
 
 defVar('k_mot_img_detuning',[-10],'MHz');%-10 GM
@@ -157,7 +157,7 @@ seqdata.flags.image_F1_pulse                = 0; % (unused?) repump Rb F=1 befor
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[15],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[0.25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 
 
@@ -287,6 +287,19 @@ if (seqdata.flags.MOT_load_at_start == 1)
     loadMOTSimple(curtime,1);   
     curtime = calctime(curtime,getVar('MOT_controlled_load_time'));
 end   
+
+rampGrad = 0;
+if rampGrad == 1
+    
+    defVar('grad_val',[10:2.5:25]);
+    Grad = getVar('grad_val');
+    tr = 1000;
+    AnalogFuncTo(calctime(curtime,0),'MOT Coil',...
+                    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),tr,tr,Grad);
+
+    curtime = calctime(curtime,2000);
+    
+end
 
 %% Prepare to Load into the Magnetic Trap
 % CF Why are these TTLs switched? Just use the shutter and go back to max

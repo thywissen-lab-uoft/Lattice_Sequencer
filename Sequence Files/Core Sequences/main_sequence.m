@@ -427,11 +427,11 @@ end
 if seqdata.flags.mt
     [curtime, I_QP, I_kitt, V_QP, I_fesh, I_shim] = magnetic_trap(curtime);
 end
-%% New XDT Load try
-
-if seqdata.flags.xdt_load2
-   curtime = xdt_load2(curtime); 
-end
+% %% New XDT Load try
+% 
+% if seqdata.flags.xdt_load2
+%    curtime = xdt_load2(curtime); 
+% end
 
 %% Save Transport and Part of RF
 
@@ -452,7 +452,10 @@ if seqdata.flags.transport_save && seqdata.flags.transport
     opts.FileName = 'magnetic_transport.mat';
     saveTraces(opts)
 end    
-
+%% XDT Load new
+if seqdata.flags.mt_2_xdt
+     curtime = MT_2_XDT(curtime);
+end
 %% Dipole Trap
 
 if ( seqdata.flags.xdt == 1 )
@@ -550,6 +553,9 @@ if seqdata.flags.image_type == 0
     end   
     
     setDigitalChannel(calctime(curtime,0),'XDT TTL',1);     
+    
+    setDigitalChannel(calctime(curtime,-2.5),'Plug Shutter',0);% 0:OFF; 1: ON
+        
 
     % Turn off XDT (if they aren't already off for safety)
     if seqdata.flags.xdt        
@@ -697,7 +703,7 @@ curtime = setAnalogChannel(calctime(curtime,100),'FB current',0);
 end
 
 %% Shim Reset Pulse
-seqdata.flags.misc_shim_reset_pulse=0;
+seqdata.flags.misc_shim_reset_pulse=1;
 
 if seqdata.flags.misc_shim_reset_pulse
     tramp = 20;

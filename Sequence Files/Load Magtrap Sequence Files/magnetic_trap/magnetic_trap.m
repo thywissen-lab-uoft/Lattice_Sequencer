@@ -407,6 +407,9 @@ if seqdata.flags.mt_ramp_down_end
         curtime = calctime(curtime,t_xdt);    
         curtime=calctime(curtime,t_xdt_hold);  
         
+     
+
+        
         if seqdata.flags.mt_xdt_load2_qp_off
 
                 i2 = 0;
@@ -428,7 +431,8 @@ if seqdata.flags.mt_ramp_down_end
                 AnalogFuncTo(calctime(curtime,0),'Coil 16',...
                     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2),...
                     tr1,tr1,i2);  
-
+                
+            
                 % Ramp the XYZ shims
                 AnalogFunc(calctime(curtime,0),'X Shim',...
                     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
@@ -460,84 +464,7 @@ if seqdata.flags.mt_ramp_down_end
     end
 
 
-
 end
-
-%% Load 2
-
-
-    if seqdata.flags.mt_xdt_load2
-
-        p1 = getVar('xdt1_load_power');  
-        p2 = getVar('xdt2_load_power'); 
-        t_xdt = getVar('xdt_load_time');
-        defVar('xdt_load_wait_time',[0],'ms');
-        t_xdt_hold = getVar('xdt_load_wait_time');    
-
-        % Turn on XDT AOMs
-        setDigitalChannel(calctime(curtime,-1),'XDT TTL',0);  
-        % Ramp ODT1
-        AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-            t_xdt,t_xdt,p1);     
-        % Ramp ODT2
-        AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-            t_xdt,t_xdt,p2);    
-        curtime = calctime(curtime,t_xdt);    
-        curtime=calctime(curtime,t_xdt_hold);  
-%         
-%         if seqdata.flags.mt_xdt_load2_qp_off
-% 
-%                 i2 = 0;
-%                 I_s = [0 0 0];
-%                 I_s(1) = getChannelValue(seqdata,'X Shim',1);
-%                 I_s(2) = getChannelValue(seqdata,'Y Shim',1);
-%                 I_s(3) = getChannelValue(seqdata,'Z Shim',1);
-%                 dI_QP = i2 - i1;    
-% 
-%                 Cx = getVar('mt_shim_slope_x');
-%                 Cy = getVar('mt_shim_slope_y');
-%                 Cz = getVar('mt_shim_slope_z');
-% 
-%                 dIx=dI_QP*Cx;
-%                 dIy=dI_QP*Cy;
-%                 dIz=dI_QP*Cz;   
-% 
-%                 % Ramp the QP Current
-%                 AnalogFuncTo(calctime(curtime,0),'Coil 16',...
-%                     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2),...
-%                     tr1,tr1,i2);  
-% 
-%                 % Ramp the XYZ shims
-%                 AnalogFunc(calctime(curtime,0),'X Shim',...
-%                     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-%                     tr1,tr1,I_s(1),I_s(1)+dIx,3); 
-%                 AnalogFunc(calctime(curtime,0),'Y Shim',...
-%                     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-%                     tr1,tr1,I_s(2),I_s(2)+dIy,4); 
-%                 AnalogFunc(calctime(curtime,0),'Z Shim',...
-%                     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-%                     tr1,tr1,I_s(3),I_s(3)+dIz,3);  
-% 
-%                 curtime = calctime(curtime,tr1);    
-% 
-%                 I_QP = getChannelValue(seqdata,'Coil 16',1);    
-%                 I_s = [0 0 0];
-%                 I_s(1) = getChannelValue(seqdata,'X Shim',1);
-%                 I_s(2) = getChannelValue(seqdata,'Y Shim',1);
-%                 I_s(3) = getChannelValue(seqdata,'Z Shim',1);
-%                 I_shim = I_s;
-% 
-%             %     setDigitalChannel(calctime(curtime,0),'Plug Shutter',0);% 0:OFF; 1: ON
-%                 curtime = calctime(curtime,30);
-% 
-% 
-%                  curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
-%                      @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2),...
-%                      1,1,0); 
-%         end
-    end
 
 
 %% Ramp  Gradient
@@ -576,24 +503,28 @@ if seqdata.flags.mt_lifetime == 1
     curtime = calctime(curtime,th);
 end
 
+%% MT Lifetime
+if seqdata.flags.image_insitu == 1    
+    curtime = calctime(curtime,10);
+end
 
 %% Post QP Evap Tasks
 
-if ( seqdata.flags.mt_use_plug == 1)       
-    hold_time_list = [0];
-    hold_time = getScanParameter(hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'hold_time_QPcoils');
-    curtime = calctime(curtime,hold_time);   
-    plug_offset = -2.5;%-2.5 for experiment, -10 to align for in trap image
-
-    % Turn off the plug here if you are doing RF1B TOF.
-    if (seqdata.flags.xdt ~= 1)
-        % Dipole transfer has its own code for turning off the plug after
-        % loading the XDTs
-        dispLineStr('Closing plug shutter',calctime(curtime,plug_offset));
-        setDigitalChannel(calctime(curtime,plug_offset),'Plug Shutter',0);% 0:OFF; 1: ON
-        ScopeTriggerPulse(calctime(curtime,0),'plug test');
-    end        
-end
+% if ( seqdata.flags.mt_use_plug == 1)       
+%     hold_time_list = [0];
+%     hold_time = getScanParameter(hold_time_list,seqdata.scancycle,seqdata.randcyclelist,'hold_time_QPcoils');
+%     curtime = calctime(curtime,hold_time);   
+%     plug_offset = -2.5;%-2.5 for experiment, -10 to align for in trap image
+% 
+%     % Turn off the plug here if you are doing RF1B TOF.
+%     if (seqdata.flags.xdt ~= 1)
+%         % Dipole transfer has its own code for turning off the plug after
+% %         loading the XDTs
+%         dispLineStr('Closing plug shutter',calctime(curtime,plug_offset));
+%         setDigitalChannel(calctime(curtime,plug_offset),'Plug Shutter',0);% 0:OFF; 1: ON
+%         ScopeTriggerPulse(calctime(curtime,0),'plug test');
+%     end        
+% end
 
 end
 

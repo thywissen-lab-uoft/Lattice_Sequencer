@@ -2,17 +2,17 @@ function params = Load_Absorption_Image_Parameters()
     global seqdata;
     %% Set imaging detunings
     % Potassium - X-cam
-    kdet_shift_list =[3:1:6];%[2];%-1
+    kdet_shift_list =[0];%[2];%-1
     kdet_shift = getScanParameter(kdet_shift_list,...
         seqdata.scancycle,seqdata.randcyclelist,'kdet_shift','MHz');
     params.detunings.K.X.positive.normal = 21.7;22.7;
-    params.detunings.K.X.positive.in_trap = 23.5;
+    params.detunings.K.X.positive.in_trap = 28;
     params.detunings.K.X.positive.QP_imaging = 21.5;
     params.detunings.K.X.positive.SG = 24.5;
     params.detunings.K.X.positive.short_tof = 24.5;
     
     % |9/2,-9/2> and |9/2,-7/2> atoms
-    params.detunings.K.X.negative.normal = 33.1; %(32.6) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
+    params.detunings.K.X.negative.normal = 33.1; %(33.1) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
     
     params.detunings.K.X.negative.SG = 34.5;      % for mF stern gerlach
 %     params.detunings.K.X.negative.SG = 34.5+kdet_shift;      % for mF stern gerlach
@@ -35,7 +35,7 @@ function params = Load_Absorption_Image_Parameters()
     % Rubidium - X-cam
     
 %     
-    rbdet_shift_list =[-5];
+    rbdet_shift_list =[0];
     rbdet_shift = getScanParameter(rbdet_shift_list,...
         seqdata.scancycle,seqdata.randcyclelist,'rbdet_shift','MHz');
     
@@ -57,7 +57,7 @@ function params = Load_Absorption_Image_Parameters()
 
     % Rubidium XCAM
     params.detunings.Rb.X.positive.normal = 10;    % |2,2> 2023/07/20
-    params.detunings.Rb.X.positive.in_trap = 0+rbdet_shift;             % |2,2> Uncalibrated
+    params.detunings.Rb.X.positive.in_trap = 26;             % |2,2> Uncalibrated
     params.detunings.Rb.X.positive.QP_imaging = 9.5;10;         % QP imaging 15 ms tof |2,2> 2022/09/02
     params.detunings.Rb.X.positive.SG = 9.5;                  % Uncalibrated
     params.detunings.Rb.X.negative.normal = 0;              % Uncalibrated

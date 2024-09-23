@@ -1,8 +1,8 @@
 function flags = Load_Absorption_Image_Flags()
 
-    %Standard flags.
-    flags.image_atomtype = 'K';%seqdata.flags.image_atomtype; %Atom species being imaged: 'K' or 'Rb'
-    flags.img_direction = 'X';%seqdata.flags.image_direction; %Which lattice direction the atoms are imaged in: 1 = x-cam, 2 = y-cam
+    %Default Imaging Flags.
+    flags.image_atomtype = 'K';% K, Rb, KRb, RbK
+    flags.img_direction = 'X'; % X or Y
     flags.condition = 'normal'; %'normal', 'in_trap', 'QP_imaging', 'SG', 'short_tof'
     flags.negative_imaging_shim = 'positive'; %0 = positive states 1 = negative states %Automatically set by K_RF_Sweep flag
     

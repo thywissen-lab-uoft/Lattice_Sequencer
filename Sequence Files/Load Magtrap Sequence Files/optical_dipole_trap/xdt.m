@@ -33,7 +33,7 @@ end
 if seqdata.flags.xdt_post_evap_stage1
    curtime = xdt_post_evap_stage_1(curtime); 
 end
-
+ curtime=calctime(curtime,10);
 %% The End!
 timeout = curtime;
 dispLineStr('Dipole Transfer complete',curtime);

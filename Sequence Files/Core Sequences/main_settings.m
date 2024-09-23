@@ -158,12 +158,12 @@ defVar('D1_DP_FM',222.5,'MHz');
 
 %% Imaging
 seqdata.flags.image_type                    = 0; % 0: absorption, 1 : MOT fluor  
-seqdata.flags.image_atomtype                = 2; % 0:Rb,1:K,2:K+Rb (double shutter), applies to fluor and absorption
+seqdata.flags.image_atomtype                = 1; % 0:Rb,1:K,2:K+Rb (double shutter), applies to fluor and absorption
 
 seqdata.flags.image_loc                     = 1; % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.image_direction               = 1; % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
 seqdata.flags.image_stern_gerlach_F         = 0; % 1: Do a gradient pulse at the beginning of ToF
-seqdata.flags.image_stern_gerlach_mF        = 0; % 1: Do a gradient pulse at the beginning of ToF
+seqdata.flags.image_stern_gerlach_mF        = 1; % 1: Do a gradient pulse at the beginning of ToF
         
 seqdata.flags.image_levitate                = 0; % 2: apply a gradient during ToF to levitate atoms (not yet tested)
 seqdata.flags.image_iXon                    = 0; % (unused?) use iXon camera to take an absorption image (only vertical)
@@ -174,7 +174,7 @@ seqdata.flags.image_F1_pulse                = 0; % (unused?) repump Rb F=1 befor
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[5],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[15],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[10],'ms');
@@ -245,7 +245,7 @@ defVar('RF1B_freq_0',getVar('RF1A_finalfreq')*1.1,'MHz');
 defVar('RF1B_freq_1',8,'MHz');7;
 defVar('RF1B_freq_2',[4],'MHz');
 defVar('RF1B_freq_3',[2],'MHz');1.2;1;
-defVar('RF1B_freq_4',[1],'MHz');
+defVar('RF1B_freq_4',[.2],'MHz');1;
 defVar('RF1B_freq_5',[2],'MHz');2;
 
 % RF 1B Gains
@@ -287,24 +287,28 @@ defVar('mt_ramp_grad_value',[14],'A');
 seqdata.flags.mt_lifetime                   = 0;
 defVar('mt_hold_time',[0],'ms');
 
-seqdata.flags.mt_xdt_load2=0;
+
 %% XDT Load NEW : CORA IS DEVELOPING
 
-seqdata.flags.xdt_load2                 = 0;
-seqdata.flags.xdt_load2_mt_decompress   = 0;
-seqdata.flags.xdt_load2_xdt_on          = 0;
+seqdata.flags.mt_2_xdt=1;
 
-
-seqdata.flags.xdt_load2_shim_snap       = 0;
-
-
-seqdata.flags.xdt_load2_mt_off          = 0;
-seqdata.flags.xdt_load2_plug_off        = 0;
-
-seqdata.flags.xdt_load2_fb_on           = 0;
+seqdata.flags.mt_2_xdt_spin_xfers=1;
+% 
+% seqdata.flags.xdt_load2                 = 0;
+% seqdata.flags.xdt_load2_mt_decompress   = 0;
+% seqdata.flags.xdt_load2_xdt_on          = 0;
+% 
+% 
+% seqdata.flags.xdt_load2_shim_snap       = 0;
+% 
+% 
+% seqdata.flags.xdt_load2_mt_off          = 0;
+% seqdata.flags.xdt_load2_plug_off        = 0;
+% 
+% seqdata.flags.xdt_load2_fb_on           = 0;
 
 %% Optical Dipole Trap
-seqdata.flags.xdt                           = 0;    % Master Flag (overrides all other flags)
+seqdata.flags.xdt                           = 1;    % Master Flag (overrides all other flags)
 
 % XDT Power request zeros
 seqdata.params.ODT_zeros = [-0.04,-0.04];
@@ -339,7 +343,7 @@ seqdata.flags.xdt_kill_K7_before_evap       = 0;    % optical remove 7/2 K after
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % XDT Evaporation (Rb + K) Flags and Settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-seqdata.flags.xdt_evap_stage_1               = 0;    % Master Sub Flag
+seqdata.flags.xdt_evap_stage_1               = 1;    % Master Sub Flag
 
 % Sympathetic Power Ramp
 seqdata.flags.xdt_ramp2sympathetic           = 0;
@@ -348,7 +352,7 @@ defVar('xdt_evap_sympathetic_ramp_time',500,'ms');  % Sympathetic ramp time
 
 % Optical evaporation
 seqdata.flags.CDT_evap                       = 0; 
-defVar('xdt_evap1_power',[0.25],'W');
+defVar('xdt_evap1_power',[0.125],'W');
 defVar('xdt_evap1_time',25e3,'ms');
 defVar('xdt_evap1_tau_fraction',3.5,'arb');
 

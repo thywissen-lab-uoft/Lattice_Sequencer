@@ -1,4 +1,4 @@
-function programSRS(settings)
+function programSRS_Rb2(settings)
 % programSRS.m
 %
 % Author      : C Fujiwara
@@ -54,16 +54,6 @@ disp(['     Sweep Range  : ' num2str(settings.SweepRange) ' MHz']);
     % 4 : Noise
     % 5 : External
 % FDEV(?) Set(query) the modulation range (this is an amplitude)
-% TYPE(?) Set (query) the modulation type
-%   0 : AM
-%   1 : FM
-%   2 : phase
-%   3 : Sweep
-%   4 : Pulse
-%   5 : Blank
-%   6 : IQ
-
-% ADEP (?) Set (query) the modulation depth as percenteage [0,100]
 
 % ENBH(?) Enable(query) the frequency doubled output
 % ENBL(?) Enable(query) the low frequency output
@@ -88,8 +78,7 @@ disp(['     Sweep Range  : ' num2str(settings.SweepRange) ' MHz']);
 %   11 : Rear DC Offset
 %   12 : Clock Offset
 
-% 
-cmd=sprintf('FREQ %fMHz; AMPR %gdBm; MODL %g; MFNC %g; FDEV %gMHz; DISP 2; ENBR %g; FREQ?',...
+cmd=sprintf('FREQ %fMHz; AMPH %gdBm; MODL %g; MFNC %g; FDEV %gMHz; DISP 2; ENBH %g; FREQ?',...
     settings.Frequency,...
     settings.Power,...
     settings.EnableSweep,...
@@ -97,15 +86,6 @@ cmd=sprintf('FREQ %fMHz; AMPR %gdBm; MODL %g; MFNC %g; FDEV %gMHz; DISP 2; ENBR 
     settings.SweepRange,...
     settings.Enable);
 
-% AM modulation
-% cmd=sprintf('FREQ %fMHz; AMPR %gdBm; MODL %g; MFNC %g; FDEV %gMHz; DISP 2; ENBR %g; TYPE 0; ADEP 100;FREQ?',...
-%     settings.Frequency,...
-%     settings.Power,...
-%     settings.EnableSweep,...
-%     5, ...      % Modulating function is always external [-1V,1V]
-%     settings.SweepRange,...
-%     settings.Enable);
-% cmd
 addGPIBCommand(settings.Address,cmd,'Mode','Append');
 end
 

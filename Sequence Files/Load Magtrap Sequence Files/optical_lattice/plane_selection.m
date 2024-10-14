@@ -24,7 +24,7 @@ opts.planeselect_again = 0;                 % Repeat plane selection (does this 
 
 
 
-opts.SelectMode     = 'SweepFreqHS1';       % Sweep SRS HS1 frequency
+% opts.SelectMode     = 'SweepFreqHS1';       % Sweep SRS HS1 frequency
 
 opts.SelectMode = 'SweepFreqSmoothLinear';
 
@@ -90,7 +90,7 @@ ScopeTriggerPulse(curtime,'Plane Select');
 if opts.ramp_field_CF
     
     % Transport Feedforward Settings
-    defVar('qgm_pselect_FF',56.5,'V');27;
+    defVar('qgm_pselect_FF',56.5,'V');56.5;
     defVar('qgm_pselect_FF_ramp_time',135,'ms');
 
     % Timings
@@ -109,20 +109,20 @@ if opts.ramp_field_CF
     
     % Shim Setting
     func_x = 3; func_y = 4; func_z = 3;
-    dIx0 = -3.55;
-    dIy0 = -0.1510;
-    dIz0 = 0;         
-    
-    Ix = dIx0 + seqdata.params.shim_zero(1);
-    Iy = dIy0 + seqdata.params.shim_zero(2);
-    Iz = dIz0 + seqdata.params.shim_zero(3);  
+%     dIx0 = -3.55;
+%     dIy0 = -0.1510;
+%     dIz0 = 0;         
+%     
+%     Ix = dIx0 + seqdata.params.shim_zero(1);
+%     Iy = dIy0 + seqdata.params.shim_zero(2);
+%     Iz = dIz0 + seqdata.params.shim_zero(3);  
           
         
     % Turn off Z shim (this is for using the big shim for Z)
     setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',0);
     if opts.dotilt           
-        defVar('qgm_plane_tilt_dIx',[0.85],'A');0.85;
-        defVar('qgm_plane_tilt_dIy',[0.13],'A');0.149;
+        defVar('qgm_plane_tilt_dIx',[-1.8],'A');-1.85;
+        defVar('qgm_plane_tilt_dIy',[3.9],'A');2;
         defVar('qgm_plane_tilt_dIz',0.0,'A');0;      
         Ix = seqdata.params.shim_zero(1) + getVar('qgm_plane_tilt_dIx');
         Iy = seqdata.params.shim_zero(2) + getVar('qgm_plane_tilt_dIy');
@@ -131,27 +131,11 @@ if opts.ramp_field_CF
     else
         disp('no tilt');
 
-        Ix = Ix;
-        Iy = Iy;
-        Iz = Iz;    
-%         defVar('qgm_plane_notilt_dIx',-3.65,'A');
-%         defVar('qgm_plane_notilt_dIy',0.13,'A');      
-        
-%         defVar('qgm_plane_notilt_dIx',-4.5,'A');
-%         defVar('qgm_plane_notilt_dIy',[-0.55],'A');  
-%          
-        
-%         defVar('qgm_plane_notilt_dIx',[-3.73],'A');        
-%         x = [0.85 -2.65];
-%         y = [0.13 -0.03];               
-%         defVar('qgm_plane_notilt_dIy',interp1(x,y,getVar('qgm_plane_notilt_dIx'),'linear','extrap'),'A');
-
+        % Sept 2024 calibration
         defVar('qgm_plane_notilt_dIx',[-1.7],'A');        
         x = [-3 -4.5];
         y = [-0.5 -0.55];               
-        defVar('qgm_plane_notilt_dIy',interp1(x,y,getVar('qgm_plane_notilt_dIx'),'linear','extrap'),'A');
-        
-
+        defVar('qgm_plane_notilt_dIy',interp1(x,y,getVar('qgm_plane_notilt_dIx'),'linear','extrap'),'A');   
         
         defVar('qgm_plane_notilt_dIz',0.0,'A');0;      
         Ix = seqdata.params.shim_zero(1) + getVar('qgm_plane_notilt_dIx');
@@ -209,9 +193,9 @@ end
 
 switch opts.SelectMode      
     case 'SweepFreqSmoothLinear'
-        dispLineStr('HS1 Frequency Sweep',curtime);
+        dispLineStr('Smooth Linear Frequency Sweep',curtime);
         if ~opts.dotilt
-            freq_offset = getVar('qgm_plane_uwave_frequency_offset_notilt');
+            freq_offset = getVarOrdered('qgm_plane_uwave_frequency_offset_notilt');
             freq_amp = getVar('qgm_plane_uwave_frequency_amplitude_notilt');
         else
             freq_offset = getVar('qgm_plane_uwave_frequency_offset_tilt');
@@ -224,10 +208,14 @@ switch opts.SelectMode
             freq_offset = freq_offset + getVar('f_offset');
         end        
         
+        sweep_time=2;
+        
+        uwave_ramp_on_time = 0.1;
+        uwave_ramp_off_time = 0.1;
         % Define the actually used settings
         defVar('qgm_plane_uwave_frequency_offset',freq_offset,'kHz');
         defVar('qgm_plane_uwave_amplitude',freq_amp,'kHz');
-        defVar('qgm_plane_uwave_power',[15],'dBm');
+        defVar('qgm_plane_uwave_power',[5],'dBm');15;
         defVar('qgm_plane_uwave_time',sweep_time,'ms')   
 
         % Read in the actually used settings
@@ -240,7 +228,6 @@ switch opts.SelectMode
        % Configure the SRS
         uWave_opts=struct;
         uWave_opts.Address      = 30;                       % SRS GPIB Addr
-%         uWave_opts.Address=29; % 4/4/2023
         uWave_opts.Frequency    = 1606.75+freq_offset*1E-3; % Frequency [MHz]
         uWave_opts.Power        = power;%15                    % Power [dBm]
         uWave_opts.Enable       = 1;                        % Enable SRS output    
@@ -272,7 +259,7 @@ switch opts.SelectMode
          % Ramp up rabi frequency
         curtime = AnalogFunc(calctime(curtime,0),'uWave VVA',...
                 @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-                0.5,0.5,0,10,1);  
+                uwave_ramp_on_time,uwave_ramp_on_time,0,10,1);  
         ScopeTriggerPulse(curtime,'Plane selection');
 
         % Linearly ramp the frequency
@@ -282,7 +269,7 @@ switch opts.SelectMode
        % Ramp down rabi frequency
         curtime = AnalogFunc(calctime(curtime,0),'uWave VVA',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-            0.5,0.5,10,0,1); 
+            uwave_ramp_off_time,uwave_ramp_off_time,10,0,1); 
         
         % Trigger the Scope
         setDigitalChannel(calctime(curtime,0),'K uWave TTL',0);     % Turn off the uWave
@@ -305,42 +292,6 @@ switch opts.SelectMode
         % plane really.
         dispLineStr('HS1 Frequency Sweep',curtime);
         
-        %{
-%         df = interp1([0 -4],[0 -100],getVar('qgm_plane_tilt_dIx')-0.85,'linear','extrap');
-        
-%         if ~opts.dotilt
-%             freq_offset_list = 150;200;170;
-%             freq_amp_list = [15];10;15;
-%         else
-%             freq_offset_list = 100;170;230;240;590;
-%             freq_amp_list = [8]; % 43.8 kHz / plane
-%         end        
-%       
-%         if opts.useFeedback
-%             f_offset = getVar('f_offset');
-%             freq_offset_list = freq_offset_list + f_offset;  
-%         end
-%           
-%         if isfield(seqdata.flags,'qgm_stripe_feedback2') && ...
-%             seqdata.flags.qgm_stripe_feedback2 && ...
-%             exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')             
-%             f_offset = getVar('f_offset');
-%             freq_offset_list = freq_offset_list + f_offset;            
-%             if ~opts.dotilt
-%                 f_amplitude = getVar('f_amplitude');
-%                 freq_amp_list = f_amplitude;
-%             else
-%                 freq_amp_list = [8];
-%             end            
-%         end       
-        
-        %   sweep_time_list = freq_amp_list/10; 
-%         defVar('qgm_plane_uwave_frequency_offset',freq_offset_list,'kHz');
-%         defVar('qgm_plane_uwave_amplitude',freq_amp_list,'kHz');
-%         defVar('qgm_plane_uwave_time',sweep_time_list,'ms')
-
- %}
-       
         % Read in frequency and amplitude for tilt or no tilt
         if ~opts.dotilt
             freq_offset = getVar('qgm_plane_uwave_frequency_offset_notilt');
@@ -349,12 +300,7 @@ switch opts.SelectMode
             freq_offset = getVar('qgm_plane_uwave_frequency_offset_tilt');
             freq_amp = getVar('qgm_plane_uwave_frequency_amplitude_tilt');
         end   
-        
-        defVar('qgm_plane_sweep_time_factor',[10],'arb');10;
-        
-        sweep_time = freq_amp/getVar('qgm_plane_sweep_time_factor');
-        sweep_time = freq_amp/10;
-        % If using feedback add an additional freqeuncy offset
+
         if opts.useFeedback
             freq_offset = freq_offset + getVar('f_offset');
         end        
@@ -362,8 +308,8 @@ switch opts.SelectMode
         % Define the actually used settings
         defVar('qgm_plane_uwave_frequency_offset',freq_offset,'kHz');
         defVar('qgm_plane_uwave_amplitude',freq_amp,'kHz');
-        defVar('qgm_plane_uwave_power',[15],'dBm');
-        defVar('qgm_plane_uwave_time',sweep_time,'ms')   
+        defVar('qgm_plane_uwave_power',[5],'dBm');15;% NEED TO MEASURE SATURATED POWER
+        defVar('qgm_plane_uwave_time',16.6,'ms')   
 
         % Read in the actually used settings
         freq_offset = getVar('qgm_plane_uwave_frequency_offset');

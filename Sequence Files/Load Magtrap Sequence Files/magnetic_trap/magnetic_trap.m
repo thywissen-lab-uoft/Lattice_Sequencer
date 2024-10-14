@@ -242,7 +242,9 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     [curtime, I_QP, V_QP, I_shim] = MT_rfevaporation(curtime, RF1Bopts, I_QP, V_QP);
     
     % Turn off the RF
-    setDigitalChannel(curtime,'RF TTL',0);% rf TTL
+     if ~seqdata.flags.mt_rf_shield
+        setDigitalChannel(curtime,'RF TTL',0);% rf TTL
+     end
 
     dispLineStr('RF1B ends.',curtime);    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -497,7 +499,7 @@ end
 
 %% MT Lifetime
 if seqdata.flags.mt_lifetime == 1    
-%     setDigitalChannel(calctime(curtime,0),'Plug Shutter',0);% 0:OFF; 1: ON
+    % setDigitalChannel(calctime(curtime,0),'Plug Shutter',0);% 0:OFF; 1: ON
 
     th = getVar('mt_hold_time');
     curtime = calctime(curtime,th);
@@ -507,6 +509,7 @@ end
 if seqdata.flags.image_insitu == 1    
     curtime = calctime(curtime,10);
 end
+   % setDigitalChannel(curtime,'RF TTL',0);% rf TTL
 
 %% Post QP Evap Tasks
 

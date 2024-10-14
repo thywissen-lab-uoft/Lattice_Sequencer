@@ -82,6 +82,7 @@ end
 %% Initialize Voltage levels
 % CF: All of these should be put into some separate reset code
 setAnalogChannel(curtime,'15/16 GS',0); 
+setAnalogChannel(curtime,'Coil 15 Small',-0.002); %Set
 
 %Initialize modulation ramp to off.
 setAnalogChannel(calctime(curtime,0),'Modulation Ramp',-10,1);
@@ -452,10 +453,8 @@ if seqdata.flags.transport_save && seqdata.flags.transport
     opts.FileName = 'magnetic_transport.mat';
     saveTraces(opts)
 end    
-%% XDT Load new
-if seqdata.flags.mt_2_xdt
-     curtime = MT_2_XDT(curtime);
-end
+
+
 %% Dipole Trap
 
 if ( seqdata.flags.xdt == 1 )
@@ -543,6 +542,10 @@ end
 
 if seqdata.flags.image_type == 0
     dispLineStr('Turning off coils and traps.',curtime);   
+    
+    % Make sure RF is off
+    setDigitalChannel(curtime,'RF TTL',0);% rf TTL
+
     
     % Turn off the MOT (shouldnt it already be off?)
     setAnalogChannel(curtime,'MOT Coil',0,1);

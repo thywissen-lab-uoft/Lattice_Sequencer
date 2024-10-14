@@ -39,6 +39,8 @@ end
 
 %% Digital Channels
 
+
+
 % digital channel names
 seqdata.digchannels(01).name = 'K D1 GM Shutter';   % 1: ON, 0: OFF
 seqdata.digchannels(02).name = 'K Trap Shutter';    % 1: ON, 0: OFF
@@ -52,7 +54,7 @@ seqdata.digchannels(09).name = 'K Probe/OP TTL';    % 0: OFF; 1: ON
 seqdata.digchannels(10).name = 'Plug Shutter';      % 1: ON; 0: OFF
 seqdata.digchannels(11).name = 'UV LED';            % (CF : obsolete?) No Longer Used, UV TTL
 seqdata.digchannels(12).name = 'ScopeTrigger';
-seqdata.digchannels(14).name = 'Rb uWave TTL';      % 0 is off
+seqdata.digchannels(14).name = 'Rb uWave TTL';      % 0 is off; ZSWA63-DR+; V1
 seqdata.digchannels(15).name = 'MOT Camera Trigger';    % 0 is off
 seqdata.digchannels(16).name = 'MOT TTL';           % 0 is on, 1 is off: What does this do? Why is it ever off?
 seqdata.digchannels(17).name = 'RF/uWave Transfer'; % 0 is RF, 1 is uWaves
@@ -145,7 +147,7 @@ seqdata.digchannels(83).name = 'Z shim bipolar relay';        % temp
 seqdata.digchannels(84).name = 'Sci shim PSU DIO';  % Digital I/O for Sci shim PSUs, used to turn output on
 seqdata.digchannels(85).name = 'Dimple TTL';        % Dimple ZASWA 0:ON, 1:OFF (RF1)
 seqdata.digchannels(86).name = 'Dimple Shutter';    % Dimple shutter 0: ON 1: OFF
-seqdata.digchannels(87).name = 'Channel 87';        % unused
+seqdata.digchannels(87).name = 'Rb uWave SRS TTL';        % Rb uWave SRS source 1: ON;  ZSWA63-DR+; V2
 seqdata.digchannels(88).name = 'Channel 88';        % unused
 seqdata.digchannels(89).name = 'Channel 89';        % unused
 seqdata.digchannels(90).name = 'Channel 90';        % unused
@@ -243,6 +245,9 @@ end
     seqdata.analogchannels(5).voltagefunc{4} = @(a)((-5.04+0.0829*(134-(a-K_trap_freq_offset)/2))*11.83-30.8)/6.03; %switched to a new box 2020-02-05
     seqdata.analogchannels(5).voltagefunc{5} = @(a)(a);
     
+    % 2020/02/04 AOM freq to adwin V
+        seqdata.analogchannels(5).voltagefunc{6} = @(freq_aom)(freq_aom-94.82)/6.03;
+
     
     %Push channel
     seqdata.analogchannels(6).name = 'Raman VVA';
@@ -522,7 +527,7 @@ end
     seqdata.analogchannels(30).maxvoltage = 10;
     seqdata.analogchannels(30).defaultvoltagefunc = 2;
 %     seqdata.analogchannels(30).voltagefunc{2} = @(a)(1.41911-0.09634*a+8.43139*10^(-4)*a^2-1.57057*10^(-6)*a^3);%@(a)((a*1-136.96864)/19.37436);%@(a)((a*1-184.2)/79.972);
-    seqdata.analogchannels(30).voltagefunc{2} = @(a)(-28.25805+0.22225*a-2.54054*10^(-4)*a.^2);
+    seqdata.analogchannels(30).voltagefunc{2} = @(freq)(-28.25805+0.22225*freq-2.54054*10^(-4)*freq.^2);
     
      %channel 31 D1 Spec DP FM
      % Goes to the FM modulation input of the ALPS3 Box which provides the
@@ -557,6 +562,7 @@ end
     seqdata.analogchannels(33).voltagefunc{2} = @(a)(a);%
 
     %channel 34 (Rb Offset frequency)
+    % OBSOLETE AND NO LONGER USED
     seqdata.analogchannels(34).name = 'Rb Beat Note FM';
     seqdata.analogchannels(34).minvoltage = 0;
     seqdata.analogchannels(34).maxvoltage = 10;
@@ -565,12 +571,14 @@ end
     Rb_Trap_Frequency_Offset = 7; %9 Frequency offset for all Rb trap/probe beams in MHz.
     seqdata.analogchannels(34).voltagefunc{2} = @(a)((a*1-4418.47 + Rb_Trap_Frequency_Offset)/541.355);
 
-    %channel 35 (Rb Offset FF)
-    seqdata.analogchannels(35).name = 'Rb Beat Note FF';
+    %channel 35 (Coil 15 Small)
+    % OBSOLETE AND NO LONGER USED
+    % This used to be for the Rb Beat Note FF
+    seqdata.analogchannels(35).name = 'Coil 15 Small';
     seqdata.analogchannels(35).minvoltage = -10;
     seqdata.analogchannels(35).maxvoltage = 10;
     seqdata.analogchannels(35).defaultvoltagefunc = 2;
-    seqdata.analogchannels(35).voltagefunc{2} = @(a)((-a*0.00401));
+    seqdata.analogchannels(35).voltagefunc{2} = @(amps) amps/0.192+0.329;
 
     %channel 36 (Rb Probe/OP AOM AM control)
     seqdata.analogchannels(36).name = 'Rb Probe/OP AM';
@@ -779,7 +787,7 @@ end
 
     %channel 53 (VVA for Ramping uWave Power)
     seqdata.analogchannels(53).name = 'uWave VVA';
-    seqdata.analogchannels(53).minvoltage = -1;
+    seqdata.analogchannels(53).minvoltage = -0.1;
     seqdata.analogchannels(53).maxvoltage = 10;
     seqdata.analogchannels(53).defaultvoltagefunc = 1; 
     seqdata.analogchannels(53).voltagefunc{1} = @(a) a; 
@@ -790,9 +798,33 @@ end
     vva_spec=[0 1 1.5 2 3 4 6 8 10;
         41.94 41.83 33.91 23.06 15.69 12.46 8.9 6.5 4.48];
     xf=vva_spec(1,:);
-    yf=sqrt(10.^(-vva_spec(2,:)*.1)/10^(-4.48*.1));yf(1)=0;
+    yf=sqrt(10.^(-vva_spec(2,:)*.1)/10^(-4.48*.1));yf(1)=0;    
+    
+    
     seqdata.analogchannels(53).voltagefunc{2} = @(a) interp1(yf,xf,a,'pchip');
 % 
+    
+    %2024/10/07 calibration
+    t0=20;
+    tr=100;
+    t=[20 25.2 30 34.8 39.2 44.8 50 61.2 66 69.6 74.4 81.2 85.6 89.2 92 95.2 97.2 98.8 100.4 102.0 103.2 104];
+    vreq = 10*(1-(t-t0)/tr);
+    vmeasure=[13.5 12.9 12.3 11.7 11.1 10.3 9.7 8.1 7.3 7.1 6.1 5.3 4.3 3.5 2.9 2.3 1.9 1.7 1.38 1.18 .86 .78];
+    vmeasure_norm=(vmeasure-min(vmeasure))/(max(vmeasure)-min(vmeasure));
+    
+    vmeasure_norm(end+1)=1;
+    vreq(end+1)=10;
+    
+    pp=polyfit(vreq,vmeasure_norm,2);
+    x0=(-pp(2)+sqrt(pp(2)^2-4*pp(1)*pp(3)))/(2*pp(1)); % x-intercept
+    
+    vv=linspace(x0,11,1e3);
+    yy=polyval(pp,vv);
+    
+    seqdata.analogchannels(53).voltagefunc{3} = @(v_norm) interp1(yy,vv,v_norm);
+  
+    
+
 % 
 %     %channel 54 (Piezo mirror controller, channel X)
 %     seqdata.analogchannels(54).name = 'Piezo mirror X';

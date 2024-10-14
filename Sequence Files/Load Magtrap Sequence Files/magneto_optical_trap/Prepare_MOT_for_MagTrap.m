@@ -155,7 +155,8 @@ if seqdata.flags.MOT_Mol == 1
     SRSpower = getVar('mol_kd1_sideband_power');
 
     % Set the two-photon detuning (SRS)
-    SRSAddress = 27; rf_on = 1; SRSfreq = 1285.8+getVar('mol_kd1_two_photon_detuning');%1285.8
+    SRSAddress = 28;30;27; 
+    rf_on = 1; SRSfreq = 1285.8+getVar('mol_kd1_two_photon_detuning');%1285.8
     addGPIBCommand(SRSAddress,...
         sprintf('FREQ %fMHz; AMPR %gdBm; MODL 0; DISP 2; ENBR %g; FREQ?',...
         SRSfreq,SRSpower,rf_on));

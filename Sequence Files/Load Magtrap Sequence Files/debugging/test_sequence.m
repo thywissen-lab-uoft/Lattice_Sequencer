@@ -6363,29 +6363,155 @@ curtime = calctime(curtime,150);
 
 % MOT Gradient
 
-setAnalogChannel(calctime(curtime,0),'MOT Coil',10);  
-setAnalogChannel(calctime(curtime,0.0),'X MOT Shim',0.2,2);  0.2;
-setAnalogChannel(calctime(curtime,0.0),'Y MOT Shim',1.8,2); 2;
-setAnalogChannel(calctime(curtime,0.0),'Z MOT Shim',0.5,2); 0.9;
+% setAnalogChannel(calctime(curtime,0),'MOT Coil',10);  
+% setAnalogChannel(calctime(curtime,0.0),'X MOT Shim',0.2,2);  0.2;
+% setAnalogChannel(calctime(curtime,0.0),'Y MOT Shim',1.8,2); 2;
+% setAnalogChannel(calctime(curtime,0.0),'Z MOT Shim',0.5,2); 0.9;
+% 
+% curtime = calctime(curtime,500);
+% 
+% Grad = 25;
+% tr = 1000;
+% AnalogFuncTo(calctime(curtime,0),'MOT Coil',...
+%                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),tr,tr,Grad);
+%             
+% curtime = calctime(curtime,2000);
+% 
+% curtime = AnalogFuncTo(calctime(curtime,0),'MOT Coil',...
+%                 @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),tr,tr,10);
+% 
+% setAnalogChannel(calctime(curtime,0.0),'X MOT Shim',0.2,2);  0.2;
+% setAnalogChannel(calctime(curtime,0.0),'Y MOT Shim',2,2); 2;
+% setAnalogChannel(calctime(curtime,0.0),'Z MOT Shim',0.9,2); 0.9;
 
-curtime = calctime(curtime,500);
+% setDigitalChannel(calctime(curtime,0),'K uWave TTL',-0);
+% setAnalogChannel(calctime(curtime,0),'uWave VVA',0);
+% seqdata.digchannels(39).name = 'K uWave TTL';       % 0 off, 1 on
 
-Grad = 25;
-tr = 1000;
-AnalogFuncTo(calctime(curtime,0),'MOT Coil',...
-                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),tr,tr,Grad);
-            
-curtime = calctime(curtime,2000);
+% setDigitalChannel(curtime,'K High Field Probe',0);
+% setAnalogChannel(calctime(curtime,0),'uWave VVA',0);
+% 
+    %channel 35 (Rb Offset FF)
+    % OBSOLETE AND NO LONGER USED
+%     seqdata.analogchannels(35).name = 'Rb Beat Note FF';
+%     seqdata.analogchannels(35).minvoltage = -10;
+%     seqdata.analogchannels(35).maxvoltage = 10;
+% %     seqdata.analogchannels(35).defaultvoltagefunc = 2;
+% %     seqdata.analogchannels(35).voltagefunc{2} = @(a)((-a*0.00401));
+% 
+% curtime=calctime(curtime,500);
+% % setAnalogChannel(curtime,35,1,1);
+% % setAnalogChannel(curtime, 'Coil 15 Small',3,1);
+% % setAnalogChannel(curtime, 'Transport FF',2);
+% % setDigitalChannel(curtime,'Reverse QP Switch',1);
+% % setAnalogChannel(curtime,33,0,1);
+% % % 
+% setAnalogChannel(curtime,'K Trap FM',6.5,1);
 
-curtime = AnalogFuncTo(calctime(curtime,0),'MOT Coil',...
-                @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),tr,tr,10);
+%% AC Sync uWave testing
 
-setAnalogChannel(calctime(curtime,0.0),'X MOT Shim',0.2,2);  0.2;
-setAnalogChannel(calctime(curtime,0.0),'Y MOT Shim',2,2); 2;
-setAnalogChannel(calctime(curtime,0.0),'Z MOT Shim',0.9,2); 0.9;
+% curtime = calctime(curtime,50);
+% 
+%     uWave_freq = defVar('uWave_freq',1600,'MHz');   
+%     uwave_delta_freq=defVar('uwave_delta_freq',.02,'MHz'); % 0.2 MHz   
+%     uwave_time=defVar('uWave_time',[1],'ms');
+%     uwave_power=defVar('uwave_power',5,'dBm'); 
+%         
+%         % uWave transfer
+%     settings=struct;
+%     settings.Address       = 30;
+%     settings.Frequency     = uWave_freq;               % Center Frequency (MHz);
+%     settings.Power         = uwave_power;              % Power (dBm);
+%     settings.Enable        = 1;
+%     settings.EnableSweep   = 1;                        % Whether to sweep the frequency
+%     settings.SweepRange    = (uwave_delta_freq/2);     % Sweep Amplitude in MHz   
+%     
+%     programSRS(settings); 
+% 
+% % Turn off all RF, Rb uWave, K uWave are all off for safety
+%     setDigitalChannel(calctime(curtime,-20),'RF TTL',0);
+%     setDigitalChannel(calctime(curtime,-20),'Rb uWave TTL',0);
+%     setDigitalChannel(calctime(curtime,-20),'K uWave TTL',0);
+%     
+% %     % Switch antenna to uWaves (0: RF, 1: uWave)
+%     setDigitalChannel(calctime(curtime,-19),'RF/uWave Transfer',1);     
+%     % Switch uWave source to the K sources (0: K, 1: Rb);
+%     setDigitalChannel(calctime(curtime,-19),'K/Rb uWave Transfer',0);    
+%     
+%      % Set initial modulation (in case of frequency sweep)
+%     setAnalogChannel(calctime(curtime,-20),'uWave FM/AM',-1);    
+%     % Set VVA to Low
+%     setAnalogChannel(calctime(curtime,-10),'uWave VVA',0,1);     
+%     
+%     % Enable ACync
+%     use_ACSync = 0;
+%     if use_ACSync
+%         setDigitalChannel(calctime(curtime,-5),'ACync Master',1);
+%     end
+% %     
+% %     
+% tvva1=.5;
+% tvva2 = .5;
+% tdel=0;
+%     setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);  % Turn on the uWave  
+%     
+%     setDigitalChannel(calctime(curtime+tdel,0),'ScopeTrigger',1);
+%     setDigitalChannel(calctime(curtime+tdel,1),'ScopeTrigger',0);
+% 
+% curtime = AnalogFunc(calctime(curtime,0),'uWave VVA',... % VVA ramp up
+%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tvva1,tvva1,0,10,1);   
+%         
+% %             curtime = AnalogFunc(calctime(curtime,0),'uWave VVA',... % VVA ramp up
+% %             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),tvva1,tvva1,1e-3,0.99,3);   
+%         
+% % curtime = calctime(curtime,tvva);
+% 
+% curtime = AnalogFunc(calctime(curtime,0),'uWave FM/AM',...% Sweep Freq
+%         @(t,T) -1+2*t/T,uwave_time,uwave_time); 
+%     
+% % setAnalogChannel(calctime(curtime,0),'uWave VVA',10,1);
+% % setAnalogChannel(calctime(curtime,0),'uWave FM/AM',1,1);
+% 
+% curtime = AnalogFunc(calctime(curtime,0),'uWave VVA',... % VVA ramp down
+%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tvva2,tvva2,10,0,1);     
+% 
+%     setDigitalChannel(calctime(curtime,0),'K uWave TTL',0);  % Turn off the uWave
+%     
+% 
+%     % Reset the uWave deviation after a while
+%     
+%     if use_ACSync
+%         setDigitalChannel(calctime(curtime,30),'ACync Master',0);
+%     end
+% 
+% %     
+% %     setDigitalChannel(calctime(curtime,0),'K uWave TTL',0);  % Turn off the uWave
+% % setAnalogChannel(calctime(curtime,10),'uWave VVA',0,1);    
+% 
 
+%% Feshbach testing
+curtime=calctime(curtime,50);
+Tr=100;
+% % 
+    setDigitalChannel(calctime(curtime,0),'ScopeTrigger',1); 
+    setDigitalChannel(calctime(curtime,20),'ScopeTrigger',0); 
+    curtime=calctime(curtime,500);
+%     setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);  
 
+i0=124;
+% i0=0;
 
+  curtime=AnalogFunc(calctime(curtime,0),'FB Current',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Tr, Tr,0, i0,2); 
+    setDigitalChannel(calctime(curtime,0),'ScopeTrigger',1); 
+    curtime=calctime(curtime,5000);
+    setDigitalChannel(calctime(curtime,0),'ScopeTrigger',0); 
+% 
+      curtime=AnalogFunc(calctime(curtime,0),'FB Current',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Tr, Tr,i0, 0,2); 
+    
 timeout = curtime;
 
 

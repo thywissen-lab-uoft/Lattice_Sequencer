@@ -35,17 +35,32 @@ if seqdata.flags.xdtB_levitate
     setDigitalChannel(curtime,'Reverse QP Switch',1);
     curtime = calctime(curtime,10);
 
-    % Ramp up transport supply voltage
-    QP_FFValue = 23*(HF_QP/.125/30); % voltage FF on delta supply
+
+    
+%     % Ramp up transport supply voltage
+%     QP_FFValue = 23*(HF_QP/.125/30); % voltage FF on delta supply
+%     tFF = 100;
+%     AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+%         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+%         tFF,tFF,QP_FFValue);
+%     curtime = calctime(curtime,tFF);
+%     
+%     % Ramp Coil 15
+%     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,HF_QP,1); 
+    
+    
+    % Ramp up transport supply voltage For levitation, need only 2V
+    QP_FFValue = 4; 
     tFF = 100;
     AnalogFuncTo(calctime(curtime,0),'Transport FF',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
         tFF,tFF,QP_FFValue);
-    curtime = calctime(curtime,tFF);
-
+    curtime = calctime(curtime,tFF);    
     % Ramp Coil 15
-    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,HF_QP,1); 
+    I_QP_rev = defVar('xdtB_levitate_current',0.2,'A');
+    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15 Small',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,I_QP_rev,2); 
 end
 %% Turn on feshbach field
 
@@ -94,7 +109,7 @@ if seqdata.flags.xdtB_feshbach_fine
 curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
 end
 % Wait time for troubleshooting
-curtime = calctime(curtime,5000); %REMOVE ME
+% curtime = calctime(curtime,5000); %REMOVE ME
 %% Hop the feshbach resonance
 
 if seqdata.flags.xdtB_feshbach_hop
@@ -308,7 +323,7 @@ if seqdata.flags.xdtB_feshbach_fine2
 curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
 end
 
-%% Levitation Adjustmen
+%% Levitation Adjustment
 
 if seqdata.flags.xdtB_levitate_fine2
         dispLineStr('levitate fine 2',curtime); 
@@ -435,8 +450,12 @@ if seqdata.flags.xdtB_feshbach_off
     
     if seqdata.flags.xdtB_levitate_off  
         trQP = getVar('xdtB_levitate_off_ramptime');
-        AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),trQP,trQP,0,1);              
+%         AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),trQP,trQP,0,1);
+        
+        AnalogFuncTo(calctime(curtime,0),'Coil 15 Small',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),trQP,trQP,0,2);
+        
     end    
     curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain 
     

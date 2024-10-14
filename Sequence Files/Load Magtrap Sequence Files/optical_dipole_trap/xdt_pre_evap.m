@@ -211,22 +211,22 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     % Reset the uWave deviation after a while
     setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);  
     
-    % Pulse F=2 to kill untransfered Rb
-    if do_F2_blowaway
-        disp('Blowing the F=2 away');
-        %wait a bit before pulse
-        setAnalogChannel(calctime(curtime,-10),4,0.0); % set amplitude   0.7
-        AnalogFuncTo(calctime(curtime,-15),34,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,6590-237); % Ramp Rb trap laser to resonance   237
-        AnalogFuncTo(calctime(curtime,-15),35,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,1.2,1); % Ramp FF to Rb trap beat-lock 
-        setDigitalChannel(calctime(curtime,-10),25,1); % open Rb probe shutter
-        setDigitalChannel(calctime(curtime,-10),24,1); % disable AOM rf (TTL), just to be sure
-        RbF2_kill_time_list =[1]; 3;
-        pulse_time = getScanParameter(RbF2_kill_time_list,seqdata.scancycle,seqdata.randcyclelist,'RbF2_kill_time');
-curtime = DigitalPulse(calctime(curtime,0),24,pulse_time,0); % pulse beam with TTL   15
-        setDigitalChannel(calctime(curtime,0),25,0); % close shutter
-        
-        disp(['     Pulse Time (ms) : ' num2str(pulse_time)]);
-    end 
+    % Pulse F=2 to kill untransfered Rb (OUT OF DATE - NEEDS TO BE UPDATED)
+%     if do_F2_blowaway
+%         disp('Blowing the F=2 away');
+%         %wait a bit before pulse
+%         setAnalogChannel(calctime(curtime,-10),4,0.0); % set amplitude   0.7
+%         AnalogFuncTo(calctime(curtime,-15),34,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,6590-237); % Ramp Rb trap laser to resonance   237
+% %         AnalogFuncTo(calctime(curtime,-15),35,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,1.2,1); % Ramp FF to Rb trap beat-lock 
+%         setDigitalChannel(calctime(curtime,-10),25,1); % open Rb probe shutter
+%         setDigitalChannel(calctime(curtime,-10),24,1); % disable AOM rf (TTL), just to be sure
+%         RbF2_kill_time_list =[1]; 3;
+%         pulse_time = getScanParameter(RbF2_kill_time_list,seqdata.scancycle,seqdata.randcyclelist,'RbF2_kill_time');
+% curtime = DigitalPulse(calctime(curtime,0),24,pulse_time,0); % pulse beam with TTL   15
+%         setDigitalChannel(calctime(curtime,0),25,0); % close shutter
+%         
+%         disp(['     Pulse Time (ms) : ' num2str(pulse_time)]);
+%     end 
     
     % Extra wait a little bit
     time_list = [0];
@@ -248,7 +248,7 @@ if seqdata.flags.xdt_Rb_2_kill
     DDS_id = 3;    
     DDS_sweep(calctime(curtime,-15),DDS_id,f_osc*1e6,f_osc*1e6,1);   
 
-    AnalogFuncTo(calctime(curtime,-15),35,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,1.2,1); % Ramp FF to Rb trap beat-lock 
+%     AnalogFuncTo(calctime(curtime,-15),35,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,1.2,1); % Ramp FF to Rb trap beat-lock 
     setDigitalChannel(calctime(curtime,-10),25,1); % open Rb probe shutter
     setDigitalChannel(calctime(curtime,-10),24,1); % disable AOM rf (TTL), just to be sure
     RbF2_kill_time_list =[2]; 3;

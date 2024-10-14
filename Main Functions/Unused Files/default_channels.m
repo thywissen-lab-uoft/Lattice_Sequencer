@@ -106,7 +106,7 @@ setAnalogChannel(curtime,31,0);%31
 setAnalogChannel(curtime,'Modulation Ramp',0.1);%32
 setAnalogChannel(curtime,'Plug Beam',);%33
 setAnalogChannel(curtime,'Rb Beat Note FM',);%34
-setAnalogChannel(curtime,'Rb Beat Note FF',);%35
+% setAnalogChannel(curtime,'Rb Beat Note FF',);%35
 setAnalogChannel(curtime,'Rb Probe/OP AM',);%36
 setAnalogChannel(curtime,'FB current',);%37
 setAnalogChannel(curtime,'dipoleTrap2',0,1);%38

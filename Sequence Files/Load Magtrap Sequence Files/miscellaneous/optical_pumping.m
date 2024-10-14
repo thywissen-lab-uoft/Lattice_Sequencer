@@ -207,7 +207,7 @@ end
 %set Rb trap laser back
 if (seqdata.atomtype == 3 || seqdata.atomtype == 4)
     %offset pizeo FF
-    setAnalogChannel(calctime(curtime,4.0),35,0); 
+%     setAnalogChannel(calctime(curtime,4.0),35,0); 
     %offset detuning
     setAnalogChannel(calctime(curtime,4.0),'Rb Beat Note FM',6590+25);
 end

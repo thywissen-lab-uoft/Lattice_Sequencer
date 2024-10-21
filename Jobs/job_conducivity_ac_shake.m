@@ -169,7 +169,8 @@ clear Jstripe
             Lbar = mean(Lm(inds));
             n0bar = mean(n0m(inds));            
             dN = n0bar - nSet;
-            m = 2.285/100; % planes/kHz            
+%             m = 2.285/100; % planes/kHz  
+            m = 1.25/100; % planes/kHz (10.16.2024, higher QP gradient)
             df = -(dN/Lbar)/m;            
             fnew = fold + df*0.8; 
             f_offset = round(fnew);

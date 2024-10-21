@@ -158,7 +158,7 @@ defVar('D1_DP_FM',222.5,'MHz');
 
 %% Imaging
 seqdata.flags.image_type                    = 0; % 0: absorption, 1 : MOT fluor  
-seqdata.flags.image_atomtype                = 2; % 0:Rb,1:K,2:K+Rb (double shutter), applies to fluor and absorption
+seqdata.flags.image_atomtype                = 1; % 0:Rb,1:K,2:K+Rb (double shutter), applies to fluor and absorption
 
 seqdata.flags.image_loc                     = 1; % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.image_direction               = 1; % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
@@ -174,7 +174,7 @@ seqdata.flags.image_F1_pulse                = 0; % (unused?) repump Rb F=1 befor
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[15],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[.1],'ms');
@@ -348,13 +348,14 @@ defVar('xdt_evap_sympathetic_ramp_time',[500],'ms');  % Sympathetic ramp time
 
 % Optical evaporation
 seqdata.flags.CDT_evap                       = 1; 
-defVar('xdt_evap1_power',[0.14],'W');
+defVar('xdt_evap1_power',[0.14],'W');0.14;
 defVar('xdt_evap1_time',25e3,'ms');
 defVar('xdt_evap1_tau_fraction',3.5,'arb');
 
 % Power Ramp (useful to halt evaporation)
 seqdata.flags.xdt_ramp_power_end             = 1;   
-defVar('xdt_evap_end_ramp_power', [.17],'W');  .17;
+defVar('xdt_evap_end_ramp_power', [.17],'W');  0.17;.12;
+defVar('xdt_evap_end_ramp_power2', [.17],'W');
 defVar('xdt_evap_end_ramp_time',  [500],'ms');  
 defVar('xdt_evap_end_ramp_hold',  [0],'ms'); 
 
@@ -364,12 +365,12 @@ defVar('xdt_evap_end_ramp_hold',  [0],'ms');
 % XDT Post Evaporation Flags and Settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-seqdata.flags.xdt_post_evap_stage1           = 1;    % Master Sub Flag
+seqdata.flags.xdt_post_evap_stage1           = 0;    % Master Sub Flag
 
 % State Manipulation After Stage 1 optical evaporation
 seqdata.flags.xdt_d1op_end                  = 0;    % D1 optical pumping
 seqdata.flags.xdt_rfmix_end                 = 0;    % RF Mixing -9-->-9+-7
-seqdata.flags.xdt_kill_Rb_after_evap        = 0;    % optically remove Rb
+seqdata.flags.xdt_kill_Rb_after_evap        = 1;    % optically remove Rb
 seqdata.flags.xdt_kill_K7_after_evap        = 0;    % optical remove 7/2 K after (untested)
 seqdata.flags.xdt_uWave_K_Spectroscopy      = 0;
 
@@ -415,7 +416,7 @@ seqdata.flags.xdtB_rf_mix                   = 1;
 
 % Evaporation
 seqdata.flags.xdtB_evap                     = 1;
-defVar('xdtB_evap_power',[.066],'W');0.077;.085;
+defVar('xdtB_evap_power',[.08],'W');0.077;.085;
 defVar('xdtB_evap_time',[5000],'ms');
 defVar('xdtB_evap_tau_fraction',3.5','arb')
 
@@ -423,7 +424,8 @@ seqdata.flags.xdtB_evap_levitate_compensate            = 0;
 
 % Ramp up optical power to halt evaporation
 seqdata.flags.xdtB_ramp_power_end           = 1;
-defVar('xdtB_evap_end_ramp_power', [0.17],'W');   0.12;
+defVar('xdtB_evap_end_ramp_power', [0.12],'W');
+defVar('xdtB_evap_end_ramp_power2', [0.12],'W'); 0.12;
 defVar('xdtB_evap_end_ramp_time',  [250],'ms');  
 
 % Feshbach
@@ -446,12 +448,12 @@ seqdata.flags.xdtB_post_RF_97                = 0;
 seqdata.flags.xdtB_feshbach_unhop           = 0;
 
 % Feshbach
-seqdata.flags.xdtB_feshbach_off             = 0;
+seqdata.flags.xdtB_feshbach_off             = 1;
 defVar('xdtB_feshbach_off_field',20,'G');
 defVar('xdtB_feshbach_off_ramptime',100,'ms');100;
 
 % Unlevitate
-seqdata.flags.xdtB_levitate_off             = 0;
+seqdata.flags.xdtB_levitate_off             = 1;
 defVar('xdtB_levitate_off_ramptime',100,'ms');100;
 
 % piezo kick for vertical trap frequency
@@ -477,15 +479,15 @@ defVar('xdtB_evap_end2_ramp_time',  [250],'ms');
 % pinning operation, this is ideal for the AOM diffraction efficiency to
 % get by PID regulation
 
-seqdata.flags.rotate_waveplate_1   = 0;   
+seqdata.flags.rotate_waveplate_1   = 1;   
 defVar('rotate_waveplate1_duration',5000,'ms'); % How smoothly to rotate
 defVar('rotate_waveplate1_delay',-5500,'ms');   % How long before lattice loading 
-defVar('rotate_waveplate1_value',0.3,'normalized power');.1; % Amount of power going to lattices
+defVar('rotate_waveplate1_value',0.3,'normalized power');.3; % Amount of power going to lattices
 
 %% Load the Optical Lattice
 
 % These are the lattice flags sorted roughly chronologically. 
-seqdata.flags.lattice_load            = 1;    
+seqdata.flags.lattice_load            = 0;    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Loading optical lattical
@@ -504,22 +506,22 @@ seqdata.flags.lattice_load_xdt_off        = 0;
 defVar('lattice_load_xdt_off_time',[500],'ms');           
 
 % Hold time after loading lattice
-defVar('lattice_load_holdtime',[250],'ms');
+defVar('lattice_load_holdtime',[0],'ms');250;
 % defVar('lattice_load_holdtime',1000-getVar('lattice_load_time'),'ms');         
 
 % Adjust feshbach field after loading
 seqdata.flags.lattice_load_feshbach_ramp  = 0;
-defVar('lattice_load_feshbach_time',5,'ms'); %ramp time
-defVar('lattice_load_feshbach_field',201.1,'G');
+defVar('lattice_load_feshbach_time',100,'ms');5; %ramp time
+defVar('lattice_load_feshbach_field',201,'G');201.1;
 defVar('lattice_load_feshbach_holdtime',[0],'ms'); % Hold time after ramping feshbach
 
 % Ramp the lattices to science depth after loading 
 seqdata.flags.lattice_sci_ramp        = 0;
 
 defVar('lattice_sci_time',[500],'ms');500;
-defVar('lattice_sci_depthX',[2.5],'Er');2.5;
-defVar('lattice_sci_depthY',[2.5],'Er');2.5;
-defVar('lattice_sci_depthZ',[2.5],'Er');2.5;
+defVar('lattice_sci_depthX',[100],'Er');2.5;
+defVar('lattice_sci_depthY',[100],'Er');2.5;
+defVar('lattice_sci_depthZ',[100],'Er');2.5;
 
 % If you want to do a round trip
 seqdata.flags.lattice_load_round_trip   = 0;       
@@ -530,16 +532,16 @@ seqdata.flags.lattice_conductivity_new      = 0;   % New sequence created July 2
 seqdata.flags.lattice_conductivity          = 0;    % old sequence
 
 % Conductivity Flags
-seqdata.flags.conductivity_ODT1_mode            = 1; % 0:OFF, 1:SINE, 2:DC
-seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
+seqdata.flags.conductivity_ODT1_mode            = 2; % 0:OFF, 1:SINE, 2:DC
+seqdata.flags.conductivity_ODT2_mode            = 2; % 0:OFF, 1:SINE, 2:DC
 seqdata.flags.conductivity_mod_direction        = 1; % 1:X-direction 2:Y-direction
 
 defVar('conductivity_snap_and_hold_time',[0],'ms');
-defVar('conductivity_FB_field',201.1,'G')
+defVar('conductivity_FB_field',201,'G');201.1;
 defVar('conductivity_zshim',0,'A')
-defVar('conductivity_mod_freq',[55],'Hz')       % Modulation Frequency
+defVar('conductivity_mod_freq',[55],'Hz')       %w Modulation Frequency
 defVar('conductivity_mod_time',[50],'ms');      % Modulation Time
-defVar('conductivity_mod_ramp_time',50,'ms');  % Ramp Time
+defVar('conductivity_mod_ramp_time',300,'ms');50;  % Ramp Time
 
 %Additional heating using FB ramp for Temp matching
 defVar('FB_heating_field', 201, 'G');
@@ -549,29 +551,29 @@ defVar('FB_heating_holdtime',[750],'ms');
 if seqdata.flags.conductivity_mod_direction == 1
     %For x-direction modulation only adjust ODT2 amp
     defVar('conductivity_ODT1_mod_amp',0,'V');  % ODT1 Mod Depth   
-    defVar('conductivity_ODT2_mod_amp',0.9,'V');  % ODT2 Mod Depth
+    defVar('conductivity_ODT2_mod_amp',2,'V');0.9;  % ODT2 Mod Depth
     defVar('conductivity_rel_mod_phase',0,'deg');   % Phase shift of sinusoidal mod - should be 0 for mod along x
 elseif seqdata.flags.conductivity_mod_direction == 2
     %For y-direction modulation only adjust ODT1 amp
-    defVar('conductivity_ODT1_mod_amp',4,'V');  % ODT1 Mod Depth  
+    defVar('conductivity_ODT1_mod_amp',2,'V');4;  % ODT1 Mod Depth  
     defVar('conductivity_ODT2_mod_amp',0,'V');  % ODT2 Mod Depth
     defVar('conductivity_rel_mod_phase',180,'deg');   % Phase shift of sinusoidal mod - should be 180 for mod along y
 end    
 
 %% Optical Lattice
-seqdata.flags.lattice                       = 1; 
+seqdata.flags.lattice                       = 0; 
 if ~seqdata.flags.lattice_load;seqdata.flags.lattice  =0;end
 
 % Pin 
 seqdata.flags.lattice_pin                   = 1;
-defVar('lattice_pin_depth',[70],'Er');60;
+defVar('lattice_pin_depth',[70],'Er');70;
 defVar('lattice_pin_time', [.2], 'ms');0.2;
 
 % Turn off feshbach/levitation after pinning
-seqdata.flags.lattice_feshbach_off          = 1;
+seqdata.flags.lattice_feshbach_off          = 0;
 defVar('lattice_feshbach_off_field',20,'G');
 defVar('lattice_feshbach_off_ramptime',100,'ms');
-seqdata.flags.lattice_levitate_off          = 1;
+seqdata.flags.lattice_levitate_off          = 0;
 defVar('lattice_levitate_off_ramptime',100,'ms');
 
 % Pulse dimple beam after pinning
@@ -631,7 +633,7 @@ defVar('qgm_kill_power',[1.5],'V');.01;.02;
 
     
     
-seqdata.flags.plane_selection_useFeedback   = 1;
+seqdata.flags.plane_selection_useFeedback   = 0;
 seqdata.flags.plane_selection_dotilt        = 0;
 
 % pselect_ramp_fields;
@@ -641,14 +643,14 @@ seqdata.flags.plane_selection_dotilt        = 0;
 
 
 % Default Plane Selection No Tilt Settingss
-freq_offset_notilt_list = [-4365];
-freq_offset_amplitude_notilt_list = [25];15; [15];
+freq_offset_notilt_list = [-4500];[-4365];
+freq_offset_amplitude_notilt_list = [300];15; [15];
 defVar('qgm_plane_uwave_frequency_offset_notilt',freq_offset_notilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_notilt',freq_offset_amplitude_notilt_list,'kHz');
 
 % Default Plane Selection Tilt Settings
-freq_offset_tilt_list =[-4500]; 510; 
-freq_offset_amplitude_tilt_list = [5]; 
+freq_offset_tilt_list =[-4700]; 510; 
+freq_offset_amplitude_tilt_list = [10]; 
 defVar('qgm_plane_uwave_frequency_offset_tilt',freq_offset_tilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_tilt',freq_offset_amplitude_tilt_list,'kHz');
 
@@ -755,9 +757,9 @@ seqdata.flags.lattice_pulse_z_for_alignment = 0;
 % Choose which scope trigger to use.
 
 % seqdata.scope_trigger = 'rf_spectroscopy';
-% seqdata.scope_trigger = 'Lattice_Mod';
+seqdata.scope_trigger = 'Lattice_Mod';
 % seqdata.scope_trigger = 'FB_ramp';
-seqdata.scope_trigger = 'lattice_ramp_1';
+% seqdata.scope_trigger = 'lattice_ramp_1';
 % seqdata.scope_trigger = 'lattice_sci_ramp';
 % seqdata.scope_trigger = 'pulse lattice';
 % seqdata.scope_trigger = 'Raman Beams On';

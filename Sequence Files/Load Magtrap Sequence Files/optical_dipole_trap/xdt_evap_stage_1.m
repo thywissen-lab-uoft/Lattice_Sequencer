@@ -65,6 +65,7 @@ if seqdata.flags.xdt_ramp_power_end
     dispLineStr('Ramping XDT Power Back Up',curtime); 
 
     Pr = getVar('xdt_evap_end_ramp_power');
+    Pr2 = getVar('xdt_evap_end_ramp_power2');
     tr = getVar('xdt_evap_end_ramp_time');   
     
     % Ramp ODTs
@@ -73,7 +74,7 @@ if seqdata.flags.xdt_ramp_power_end
         tr,tr,Pr);
     AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        tr,tr,Pr);
+        tr,tr,Pr2);
     curtime = calctime(curtime,tr);
   
     % Hold after ramping

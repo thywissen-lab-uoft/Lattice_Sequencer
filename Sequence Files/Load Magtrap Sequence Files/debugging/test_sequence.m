@@ -6490,28 +6490,33 @@ curtime = calctime(curtime,150);
 % 
 
 %% Feshbach testing
-curtime=calctime(curtime,50);
-Tr=100;
-% % 
-    setDigitalChannel(calctime(curtime,0),'ScopeTrigger',1); 
-    setDigitalChannel(calctime(curtime,20),'ScopeTrigger',0); 
-    curtime=calctime(curtime,500);
-%     setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);  
-
-i0=124;
-% i0=0;
-
-  curtime=AnalogFunc(calctime(curtime,0),'FB Current',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        Tr, Tr,0, i0,2); 
-    setDigitalChannel(calctime(curtime,0),'ScopeTrigger',1); 
-    curtime=calctime(curtime,5000);
-    setDigitalChannel(calctime(curtime,0),'ScopeTrigger',0); 
+% curtime=calctime(curtime,50);
+% Tr=100;
+% % % 
+%     setDigitalChannel(calctime(curtime,0),'ScopeTrigger',1); 
+%     setDigitalChannel(calctime(curtime,20),'ScopeTrigger',0); 
+%     curtime=calctime(curtime,500);
+% %     setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);  
 % 
-      curtime=AnalogFunc(calctime(curtime,0),'FB Current',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        Tr, Tr,i0, 0,2); 
-    
+% i0=124;
+% % i0=0;
+% 
+%   curtime=AnalogFunc(calctime(curtime,0),'FB Current',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+%         Tr, Tr,0, i0,2); 
+%     setDigitalChannel(calctime(curtime,0),'ScopeTrigger',1); 
+%     curtime=calctime(curtime,5000);
+%     setDigitalChannel(calctime(curtime,0),'ScopeTrigger',0); 
+% % 
+%       curtime=AnalogFunc(calctime(curtime,0),'FB Current',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+%         Tr, Tr,i0, 0,2); 
+%     
+
+%%
+
+setAnalogChannel(curtime,'K Trap AM',)
+
 timeout = curtime;
 
 

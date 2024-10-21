@@ -688,7 +688,7 @@ if seqdata.flags.misc_ramp_fesh_between_cycles
     % just ends. We do not have any positive observation that this helps,
     % but we leave it in just in case (total 1.3s extra).
         fesh_ramptime = 100; %ms
-%         fesh_final = 20; % G
+        fesh_final = 20; % G
         fesh_ontime = 1000; % ms
 curtime = AnalogFunc(calctime(curtime,0),'FB current',@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),fesh_ramptime,fesh_ramptime,0,fesh_final);
 curtime = calctime(curtime,fesh_ontime);

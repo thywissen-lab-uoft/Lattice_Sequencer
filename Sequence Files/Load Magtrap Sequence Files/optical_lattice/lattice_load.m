@@ -70,7 +70,7 @@ AnalogFuncTo(calctime(curtime,0),'zLattice',...
 
 % Advance time
 curtime = calctime(curtime,tL);  
-%% Turn of XDTs
+%% Turn off XDTs
 % When analyzing the properties of the lattice, it is sometimes useful to
 % turn the XDT off.  This is typically not used in the experimental cycle.
 

@@ -34,31 +34,33 @@ function J=job_conducivity_ac_shake
         t0 = 50;T = 1e3/freq; 
         t_start = T*ceil((t0+mod_ramp_time)/T);
 %         tvec = round(t0 + linspace(0,2*T,30),1);
-        tvec = round(t_start + [zeros(1,3) 0.25*ones(1,3) 0.5*ones(1,3) 0.75*ones(1,3) ones(1,3)]*T, 1) - mod_ramp_time;
+%         tvec = round(t_start + [zeros(1,3) 0.25*ones(1,3) 0.5*ones(1,3) 0.75*ones(1,3) ones(1,3)]*T, 1) - mod_ramp_time;
+        tvec = round(t_start + ones(2,1).*[0:0.25:2]*T, 1) - mod_ramp_time;
+        tvec = tvec(:);
         defVar('conductivity_mod_time',tvec,'ms');             
         
         % Plane Selection
         seqdata.flags.plane_selection_dotilt        = 0;
         defVar('qgm_plane_uwave_frequency_amplitude_notilt',uwave_freq_amp,'kHz');
         d = load('f_offset.mat');
-        f_offset = d.f_offset - 1*20;        
+        f_offset = d.f_offset;% - 1*20;        
         defVar('f_offset',f_offset,'kHz'); 
  end
 %% AC Conductivity Job
 clear Jac
 
 % Magnetic Field (G)
-B_conductivity = 200.8;
+B_conductivity = 201.1;
 % Optical Evaporation Power (W)
-power_conductivity = 0.049; 
+power_conductivity = 0.066; 
 %Evaporation Levitation Voltage
-lev_conductivity = 0.1475;
+lev_conductivity = 0.11;
 % Conductivity modulation ramp up time (ms)
 mod_ramp_time = 50;
 % Plane Selection Frequency amplitude (kHz);
-uwave_freq_amp = 40;
+uwave_freq_amp = 30;
 % Modulation Frequencies
-freq_list = 57+[-30 -20 -15 -10 -5 0 5 10 15 20 30];
+freq_list = 57+[-30 -20 -15 -10 -5 -2.5 0 2.5 5 10 15 20 30];
 % Randomize the modulation frequencies
 freq_list = freq_list(randperm(numel(freq_list)));
 
@@ -75,10 +77,16 @@ for ii = 1:length(freq_list)
 %     aH = [1.41e-3 -2.08e-7 2.47e-11 -1.3e-15];   
 
     %0.65um amplitude response
+%     x0 = 50;
+%     y0 = 0.9513;
+%     aL = [7.87e-4 -9.73e-7 8.73e-10 -3.47e-13];
+%     aH = [1.28e-3 -1.61e-7 1.56e-11 -7.28e-16]; 
+
+    %0.65um amplitude response
     x0 = 50;
-    y0 = 0.9513;
-    aL = [7.87e-4 -9.73e-7 8.73e-10 -3.47e-13];
-    aH = [1.28e-3 -1.61e-7 1.56e-11 -7.28e-16]; 
+    y0 = 1.2841;
+    aL = [1.06e-3 -1.31e-6 1.18e-9 -4.68e-13];
+    aH = [1.73e-3 -2.17e-7 2.09e-11 -9.72e-16]; 
     
     if f<=x0
         a=aL;
@@ -95,7 +103,7 @@ for ii = 1:length(freq_list)
 %     npt.CycleStartFcn       = @cycleStart;
 %     npt.CycleCompleteFcn    = @cycleComplete;
 %     npt.JobCompleteFcn      = @jobComplete;
-    npt.ScanCyclesRequested = 1:15;
+    npt.ScanCyclesRequested = 1:18;
     npt.JobName             = [num2str(ii) ' shake ' num2str(f) ' Hz,' ...
         num2str(B_conductivity) 'G,' num2str(1e3*power_conductivity) ' mW ' num2str(mod_strength) ' amp, ' ...
         num2str(mod_ramp_time) ' ms ramp, ', num2str(uwave_freq_amp), ' kHz uwave amp'];
@@ -115,6 +123,7 @@ clear Jstripe
         defVar('lattice_load_feshbach_field',field,'G'); 
         %Levitation voltage value during xdtB
         defVar('xdtB_levitate_value',levitate_value,'V');
+        
        % Do not run conductivity code
         seqdata.flags.lattice_conductivity_new      = 0;    
         
@@ -137,7 +146,7 @@ clear Jstripe
         olddata = getRecentGuiData(L); 
         freqs = zeros(3,1);
         for l=1:L
-            BinStripes(l) = olddata{l}.BinStripe;
+            BinStripes(l) = olddata{l}.BinStripe(1);
             freqs(l) = olddata{l}.Params.f_offset;
         end
                 
@@ -156,7 +165,7 @@ clear Jstripe
 
         % Get High qualtiy data
         if sum(inds)>0
-            nSet = 82;              
+            nSet = 98;              
             % Get data that is high quality
             Lm = L(inds);
             n0m = n0(inds);
@@ -167,7 +176,7 @@ clear Jstripe
             binds = logical((n0m>(nSet+dN)) + (n0m<(nSet-dN)));   
             inds = ~binds;            
             Lbar = mean(Lm(inds));
-            n0bar = mean(n0m(inds));            
+            n0bar = median(n0m(inds));            
             dN = n0bar - nSet;
 %             m = 2.285/100; % planes/kHz  
             m = 1.25/100; % planes/kHz (10.16.2024, higher QP gradient)
@@ -183,8 +192,9 @@ clear Jstripe
 % The magnetic field and evaporation depth should be the same as the
 % conductivityy
 B = B_conductivity;
-pow = 0.08;power_conductivity;
-lev = 0.1475;
+pow = 0.1;power_conductivity;
+lev = lev_conductivity;
+
 
 npt = struct;
 npt.SequenceFunctions   = {...
@@ -206,12 +216,15 @@ Jstripe = sequencer_job(npt);
         defVar('xdtB_evap_power',pow,'W');        
         % Magnetic Field in Lattice
         defVar('lattice_load_feshbach_field',field,'G'); 
+        %Levitation voltage value during xdtB
+        defVar('xdtB_levitate_value',lev,'V');
+        
         % Do not run conductivity code
         seqdata.flags.lattice_conductivity_new      = 0;    
         % No Tilt
         seqdata.flags.plane_selection_dotilt        = 0;
         % Single plane uwave sweep
-        defVar('qgm_plane_uwave_frequency_amplitude_notilt',12,'kHz');
+        defVar('qgm_plane_uwave_frequency_amplitude_notilt',20,'kHz');
         d = load('f_offset.mat');
         f_offset = d.f_offset;        
         defVar('f_offset',f_offset,'kHz');        
@@ -221,12 +234,12 @@ Jstripe = sequencer_job(npt);
 % conductivityy
 B = B_conductivity;
 pow = power_conductivity;
-%Evaporation Levitation Voltage
-% lev_conductivity = 0.09;
+lev = lev_conductivity;
+
 npt = struct;
 npt.SequenceFunctions   = {...
     @main_settings,...
-    @(curtime)normal_ps(curtime,B,pow),...
+    @(curtime)normal_ps(curtime,B,pow,lev),...
     @main_sequence};
 % npt.JobCompleteFcn      = @feedback_stripe;
 npt.ScanCyclesRequested = 1:20;
@@ -237,17 +250,25 @@ Jsingle = sequencer_job(npt);
 %% Interleave Stripe, Single plane calibration
 clear J
 
-J = copy(Jsingle);
-J(end+1) = copy(Jstripe);
-J(end+1) = [copy(Jac(1))];
-for kk=2:length(Jac)
+J =  copy(Jsingle);
+
+for kk = 1:20
     J(end+1) = copy(Jstripe);
-    if kk == round(length(Jac)/2)
-        J(end+1) = copy(Jsingle);
-        J(end+1) = copy(Jstripe);
-    end
-    J(end+1) = copy(Jac(kk));
+    J(end+1) =  copy(Jsingle);
 end
+
+
+% J = copy(Jsingle);
+% J(end+1) = copy(Jstripe);
+% J(end+1) = [copy(Jac(1))];
+% for kk=2:length(Jac)
+%     J(end+1) = copy(Jstripe);
+%     if kk == round(length(Jac)/2)
+%         J(end+1) = copy(Jsingle);
+%         J(end+1) = copy(Jstripe);
+%     end
+%     J(end+1) = copy(Jac(kk));
+% end
 
 
 end

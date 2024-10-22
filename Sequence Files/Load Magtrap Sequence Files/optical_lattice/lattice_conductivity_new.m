@@ -22,10 +22,10 @@ seqdata.flags.conductivity_dopin                    = 0; % Pin after modulation
 
 
 seqdata.flags.conductivity_rf_spec              = 0;
-seqdata.flags.conductivity_enable_mod_ramp      = 1;
-seqdata.flags.conductivity_QPD_trigger          = 0; % Trigger QPD monitor LabJack/Scope
+seqdata.flags.conductivity_enable_mod_ramp      = 1; %This is the only flag here required for AC conductivity
+seqdata.flags.conductivity_QPD_trigger          = 1; % Trigger QPD monitor LabJack/Scope
 seqdata.flags.conductivity_snap_off_XDT         = 0; % Quick ramp of ODTs while atoms are displaced
-seqdata.flags.conductivity_snap_and_hold        = 1; % Diabatically turn off mod for quench measurement
+seqdata.flags.conductivity_snap_and_hold        = 0; % Diabatically turn off mod for quench measurement
 %% Modulation Settings
 
 % VISA Address of Rigol
@@ -34,12 +34,11 @@ rigol_address = 12;
 if seqdata.flags.conductivity_mod_direction == 1
     % Set ODT 1 mod amp such that modulation is along x lattice
     defVar('conductivity_ODT1_mod_amp',...
-        round(getVar('conductivity_ODT2_mod_amp')/1.34,3),'V');
-    
+        round(getVar('conductivity_ODT2_mod_amp')/1.28,3),'V'); %1.34;
 elseif seqdata.flags.conductivity_mod_direction == 2
      % Set ODT 2 mod amp such that modulation is along y lattice
     defVar('conductivity_ODT2_mod_amp',...
-        round(getVar('conductivity_ODT1_mod_amp')/(-2.05),3),'V');
+        round(getVar('conductivity_ODT1_mod_amp')/(-1.87),3),'V'); %2.05;
 end
 
 %% Calculate Timings and Phase

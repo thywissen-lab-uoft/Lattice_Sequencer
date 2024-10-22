@@ -433,7 +433,12 @@ if (seqdata.flags.lattice_pin)
         T_pin, T_pin, U_pin);   
     curtime = calctime(curtime,T_pin);    
     % Wait a moment for PID to settle (just in case);
-    curtime = calctime(curtime,2);    
+    curtime = calctime(curtime,2);  
+    if seqdata.flags.lattice_conductivity_new 
+        % Turn off modulation amplitude after atoms are pinned
+        curtime = AnalogFuncTo(calctime(curtime,0),'Modulation Ramp',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), 4, 4, -9.999,1);
+    end
 end
 
 %% Turn off feshbach field

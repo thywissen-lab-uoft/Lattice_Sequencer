@@ -31,4 +31,11 @@ function tExecute=makeControlFile
 
     save(filenamemat2,'vals','units','flags');            
     
+    %% Save Camera Control Files
+    
+    if isfield(seqdata,'CameraControl') && isfield(seqdata,'camera_control_file')
+        CameraControl = seqdata.CameraControl;
+        save(seqdata.camera_control_file,'-struct','CameraControl');            
+    end
+    
 end

@@ -1156,10 +1156,10 @@ if seqdata.flags.lattice_fluor%
     curtime = calctime(curtime,15);
 end
 
-%% Stripe imaging
+%% Stripe imaging OBSOLETE
 % Do a stripe selection after imaging, and take an extra FL image - note
 % lattice depth is high the whole time
-
+%{
 if seqdata.flags.lattice_img_stripe
     curtime = calctime(curtime,50);
     
@@ -1311,6 +1311,7 @@ curtime = calctime(curtime,50);
     curtime = lattice_FL(curtime,fluor_opts);
     
 end
+%}
 %% Fluorescence Imaging (Legacy code)
 
 % CF: Let's just remove this now?!

@@ -184,7 +184,14 @@ if opts.ramp_field_CF
     curtime = calctime(curtime,Tr);
 
     curtime = calctime(curtime,Ts);                     % Settling time 
-    setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage',1);        % Engage big shim PID
+    
+    if seqdata.flags.plane_selection_useBigShim
+        if seqdata.flags.plane_selection_dotilt == 1
+            setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage 2',1);  % Engage big shim PID for stripes
+        else
+            setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage',1); % Engage big shim PID for single plane
+        end
+    end
     curtime = calctime(curtime,100);                    % Wait for big shim PID
 end
 
@@ -910,7 +917,8 @@ end
 
 %% Ramp off Field
 if opts.ramp_field_CF
-     setDigitalChannel(calctime(curtime,0),94,0); % stop PID
+     setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage',0); % stop PID
+     setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage 2',0); %stop PID
      curtime= calctime(curtime,20);
      setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',1);
     

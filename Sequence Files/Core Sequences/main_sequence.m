@@ -68,8 +68,7 @@ setAnalogChannel(calctime(curtime,0),'D1 Spec DP FM',0,3);
 if seqdata.flags.misc_moveObjective
     setAnalogChannel(calctime(curtime,0),'objective Piezo Z',...
         getVarOrdered('objective_piezo'),1);
-end
-    
+end   
 
 
 %% Gray Molasses
@@ -831,10 +830,12 @@ end
 SelectScopeTrigger(seqdata.scope_trigger);
 
 
-addOutputParam('qgm_MultiExposures',seqdata.IxonMultiExposures,'ms');    
-addOutputParam('qgm_MultiPiezos',seqdata.IxonMultiPiezos,'V');    
+addOutputParam('qgm_MultiExposures',seqdata.CameraControl.IxonMultiExposures,'ms');    
+addOutputParam('qgm_MultiPiezos',seqdata.CameraControl.IxonMultiPiezos,'V');    
 
-curtime = calctime(curtime,5000);
+%%
+% WHY IS THIS HERE? 
+curtime = calctime(curtime,500);
 
 %% Timeout
 timeout = curtime;

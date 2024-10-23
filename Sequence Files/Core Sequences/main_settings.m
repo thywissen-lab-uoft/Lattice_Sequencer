@@ -10,6 +10,7 @@ end
 
 global seqdata;
 
+seqdata.CameraControl=struct;
 
 seqdata.IxonGUIAnalayisHistoryDirectory = 'X:\IxonGUIAnalysisHistory';
 
@@ -81,7 +82,7 @@ seqdata.flags.misc_program4pass             = 1; % Update four-pass frequency
 seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
 seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[6.55],'V');6.3;3.75;[1.65];
+defVar('objective_piezo',[6.45],'V');6.3;3.75;[1.65];
 % 0.1V = 700 nm, larger means further away from chamber
 % 1 V= 7 um
 % 10 V = 70 um
@@ -416,7 +417,7 @@ seqdata.flags.xdtB_rf_mix                   = 1;
 
 % Evaporation
 seqdata.flags.xdtB_evap                     = 1;
-defVar('xdtB_evap_power',[0.100],'W');0.066;.085;
+defVar('xdtB_evap_power',[0.1],'W');0.066;.085;
 defVar('xdtB_evap_time',[5000],'ms');
 defVar('xdtB_evap_tau_fraction',3.5','arb')
 
@@ -607,18 +608,12 @@ seqdata.flags.lattice_PA                    = 0;
 
 seqdata.flags.lattice_uWave_spec            = 0;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Plane Selection, Raman Transfers, and Fluorescence Imaging
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-% Actual fluorsence image flags - NO LONGER USED
-seqdata.flags.Raman_transfers               = 0;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Plane Selection
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%% Plane Selection
+
 seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
 
-
+seqdata.flags.plane_selection_useBigShim    = 1;
 % Apply uwave to shelve a particular plane
 seqdata.flags.plane_selection_douWave   = 1; % not used yet
 
@@ -632,7 +627,6 @@ defVar('qgm_kill_power',[1.5],'V');.01;.02;
 % defVar('qgm_kill_time',ss/getVar('qgm_kill_power'),'ms');10;5;
 
     
-    
 seqdata.flags.plane_selection_useFeedback   = 1;
 seqdata.flags.plane_selection_dotilt        = 1;
 
@@ -643,13 +637,13 @@ seqdata.flags.plane_selection_dotilt        = 1;
 
 
 % Default Plane Selection No Tilt Settingss
-freq_offset_notilt_list = [-4820];[-4540];[-4365];
+freq_offset_notilt_list = [-4730];[-4540];[-4365];
 freq_offset_amplitude_notilt_list = [30];15; [15];
 defVar('qgm_plane_uwave_frequency_offset_notilt',freq_offset_notilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_notilt',freq_offset_amplitude_notilt_list,'kHz');
 
 % Default Plane Selection Tilt Settings
-freq_offset_tilt_list = -4820 +[-250:50:250]; 510; 
+freq_offset_tilt_list = -5100;-4760; 510; 
 freq_offset_amplitude_tilt_list = [10]; 
 defVar('qgm_plane_uwave_frequency_offset_tilt',freq_offset_tilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_tilt',freq_offset_amplitude_tilt_list,'kHz');
@@ -667,9 +661,11 @@ defVar('f_offset',f_offset,'kHz');
 
 % f_offset=0;
 % save('f_offset.mat','f_offset');
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Fluorescence Selection
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%% Fluorescence Imaging
+
+% OLD OBSOLETE IMAGING FLAG
+seqdata.flags.Raman_transfers               = 0;
+
 % Note:
 % It is sometimes helpful to run the fluorence imaging code as other things
 % such as :
@@ -678,13 +674,25 @@ defVar('f_offset',f_offset,'kHz');
 % - uWave spectroscopy (to find two photon frequency/field)
 
 % New Standard Fluoresnce Image Flags
-seqdata.flags.lattice_ClearCCD_IxonTrigger  = 0;    % Add additional trigger to clear CCD (obsolete)
 seqdata.flags.lattice_fluor                 = 1;    % Do Fluoresnce imaging
-seqdata.flags.lattice_fluor_bkgd            = 1;    % Take a background image with imaging light on, no atoms
 
-seqdata.flags.lattice_img_stripe            = 0;    % (osolete) Plane select with tilt and take an additional imag of the stripe
-seqdata.IxonMultiExposures=[];
-seqdata.IxonMultiPiezos=[];
+% Background Image Mode
+% often, the vertial Raman beam adds a significant amount of background
+% light. We can remove most of this effect by taking a background image.
+% This is not ideal for photon counting, but the background light can be
+% the dominant form of light
+% 0 : Do not take a backgroud image
+% 1 : Take background images
+seqdata.flags.lattice_fluor_bkgd            = 1;    
+
+% Multi-Image Mode
+% The iXon camera can do multiple exposures; this configures it
+% 0 : basic : one image only
+% 1 : fidelity : two images; useful for checking hopping and fidelity
+% 2 : focusing : three images; useful for checking micscrope focusing
+seqdata.flags.lattice_fluor_multi_mode      = 0;    % 0: 1 image; 1: 2 shot for hopping; 2: 3 shot for focuing
+seqdata.CameraControl.IxonMultiExposures=[];
+seqdata.CameraControl.IxonMultiPiezos=[];
 
 defVar('qgm_filter_1',20,'step');40;
 getVar('qgm_filter_1');

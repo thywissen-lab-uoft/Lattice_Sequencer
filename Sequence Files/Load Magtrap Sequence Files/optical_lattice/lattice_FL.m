@@ -9,12 +9,12 @@ global seqdata
         seqdata.flags.misc_program4pass = 1;
     end
     
-    if ~isfield(seqdata,'IxonMultiExposures')
-       seqdata.IxonMultiExposures=[]; 
+    if ~isfield(seqdata.CameraControl,'IxonMultiExposures')
+       seqdata.CameraControl.IxonMultiExposures=[]; 
     end
     
-    if ~isfield(seqdata,'IxonMultiPiezos')
-       seqdata.IxonMultiPiezos=[]; 
+    if ~isfield(seqdata.CameraControl,'IxonMultiPiezos')
+       seqdata.CameraControl.IxonMultiPiezos=[]; 
     end
 
 
@@ -72,19 +72,32 @@ fluor.IxonFrameTransferMode = 1;
 % can accept a new trigger.
 
 if fluor.IxonFrameTransferMode
-    % Normal operation : 1 Image with 2 second exposure
-    fluor.NumberOfImages       = 1;     
-    fluor.ExposureTime         = 2000;
-%     
+    
+    
+    switch seqdata.flags.lattice_fluor_multi_mode
+        case 0
+            % Basic    : 1 Image
+            fluor.NumberOfImages       = 1;     
+            fluor.ExposureTime         = fluor.PulseTime;
+        case 1 
+            % Fidelity : 2 Images with equal exposure time
+            fluor.NumberOfImages       = 2;        
+            fluor.ExposureTime         = fluor.PulseTime*0.5*[1 1];  
+            fluor.ObjectivePiezoShiftTime  = zeros(1,fluor.NumberOfImages);
+            fluor.ObjectivePiezoShiftValue = zeros(1,fluor.NumberOfImages);    
+        case 2
+            % Focusing : 4 Images with equal exposure time
+            fluor.NumberOfImages           = 4;        
+            fluor.ObjectivePiezoShiftTime  = 100; % in ms
+            fluor.ObjectivePiezoShiftValue = [0 0.1 0.0 -0.1];    
+            fluor.ExposureTime         = ones(1,fluor.NumberOfImages)*fluor.PulseTime/fluor.NumberOfImages-fluor.ObjectivePiezoShiftTime; 
+            
 
-%   Hopping measurement : 2 Images with equal exposure time
-% Sume of exposure times should equal the total light radiation time (pulse
-% %_time)
-    fluor.NumberOfImages       = 2;        
-    fluor.ExposureTime         = [2000 2000];
-    
-    
-    fluor.ObjectivePiezoShift  = [0];    
+        otherwise
+            % Basic    : 1 Image
+            fluor.NumberOfImages       = 1;     
+            fluor.ExposureTime         = fluor.PulseTime;
+    end
 else
     fluor.NumberOfImages       = 1;     % Normal operation     
     fluor.DwellTime            = 600; % Wait Time beween shots for readout  
@@ -115,31 +128,49 @@ end
             dispLineStr('Triggering iXon Frame Transfer Mode',curtime);
             tpre=-50;
             
-            % Initial trigger to start acsuitision
+            % Initial trigger to start aqsuitision
             DigitalPulse(calctime(curtime,tpre),'iXon Trigger',10,1)       
             disp(['Trigger : ' num2str(curtime2realtime(calctime(curtime,-tpre))) ' ms']);
 
-            seqdata.IxonMultiExposures(end+1) = NaN;
-            seqdata.IxonMultiPiezos(end+1) = NaN;
+            seqdata.CameraControl.IxonMultiExposures(end+1) = NaN;
+            seqdata.CameraControl.IxonMultiPiezos(end+1) = NaN;
+            
+            if seqdata.flags.lattice_fluor_multi_mode== 2
+                V_piezo_init = getChannelValue(seqdata,'objective Piezo Z',1);    
+                dT_piezo = fluor.ObjectivePiezoShiftTime;
+                
+                AnalogFuncTo(calctime(curtime,-2*dT_piezo+tpre),'objective Piezo Z',...
+                    @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+                    dT_piezo,dT_piezo,V_piezo_init+fluor.ObjectivePiezoShiftValue(1));
+            end
 
             % In frame transfer mode a trigger ends the exposure
             t0=0;
-            for kk=1:fluor.NumberOfImages
-%                 if seqdata.flags.misc_moveObjective
-%                     vNew = getVarOrdered('objective_piezo')+fluor.ObjectivePiezoShift(kk);
-%                     setAnalogChannel(calctime(curtime,t0),'objective Piezo Z',...
-%                         vNew,1);
-%                     seqdata.IxonMultiPiezos(end+1) = vNew;
-%                 else
-                    seqdata.IxonMultiPiezos(end+1) = NaN;
-%                 end 
+            for kk=1:fluor.NumberOfImages                 
+                seqdata.CameraControl.IxonMultiPiezos(end+1) = getChannelValue(seqdata,'objective Piezo Z',1);
                 
                 t0 = t0 + fluor.ExposureTime(kk);
                 disp(['Trigger : ' num2str(curtime2realtime(calctime(curtime,t0))) ' ms']);
                 DigitalPulse(calctime(curtime,t0),...
                     'iXon Trigger',10,1); 
-                seqdata.IxonMultiExposures(end+1) = fluor.ExposureTime(kk);
-            end
+                seqdata.CameraControl.IxonMultiExposures(end+1) = fluor.ExposureTime(kk);
+                
+                % If multi-shot focusing, move the piezo the next value
+                % Note that the camera will be exposing during the focusing
+                % movement, this is inevitable in frame transfer mode
+                if seqdata.flags.lattice_fluor_multi_mode==2
+                    if  kk<fluor.NumberOfImages
+                        % Move to next value
+                        V_piezo_value = V_piezo_init+fluor.ObjectivePiezoShiftValue(kk+1);
+                    else
+                        % You're at the end. Move to the original value
+                        V_piezo_value = V_piezo_init;
+                    end
+                    AnalogFuncTo(calctime(curtime,t0),'objective Piezo Z',...
+                        @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+                        dT_piezo,dT_piezo,V_piezo_value); 
+                end    
+            end                
         else
             dispLineStr('Triggering iXon External Exposure Mode',curtime);
             tpre=-500;
@@ -150,7 +181,7 @@ end
             for kk=1:fluor.NumberOfImages
                  DigitalPulse(calctime(curtime,tlist(kk)),...
                        'iXon Trigger',fluor.IxonExposureTime,1);
-                seqdata.IxonMultiExposures(end+1) = fluor.IxonExposureTime;
+                seqdata.CameraControl.IxonMultiExposures(end+1) = fluor.IxonExposureTime;
 
             end            
         end 

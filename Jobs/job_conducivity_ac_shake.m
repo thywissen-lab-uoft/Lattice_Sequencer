@@ -154,10 +154,12 @@ clear Jstripe
         phi     = [BinStripes.Phase];
         alpha   = [BinStripes.ModDepth];
         n0      = [BinStripes.FocusCenter];
+%         n0     = [BinStripes.FocusCenterFit];
+        
         r2      = [BinStripes.RSquareStripe];
         L       = [BinStripes.Lambda];        
         
-        inds = [alpha>=0.8].*[r2>0.85];
+        inds = [alpha>=0.6].*[r2>0.85];
         inds = logical(inds);
         
         [~, ind] = sort(alpha,'descend');
@@ -165,23 +167,27 @@ clear Jstripe
 
         % Get High qualtiy data
         if sum(inds)>0
-            nSet = 98;              
+            nSet = 110;              
             % Get data that is high quality
             Lm = L(inds);
             n0m = n0(inds);
             fold = mean(freqs(inds));
-            % Restrict ourselves to data with focus position +- 18
-            dN = 18;
-            dN = 30;
+            % Restrict ourselves to data with focus position +- Lm/2
+%             dN = 18;
+            dN = round(Lm)/2;
             binds = logical((n0m>(nSet+dN)) + (n0m<(nSet-dN)));   
             inds = ~binds;            
             Lbar = mean(Lm(inds));
             n0bar = median(n0m(inds));            
             dN = n0bar - nSet;
 %             m = 2.285/100; % planes/kHz  
-            m = 1.25/100; % planes/kHz (10.16.2024, higher QP gradient)
-            df = -(dN/Lbar)/m;            
-            fnew = fold + df*0.8; 
+%             m = 1.25/100; % planes/kHz (10.22.2024, higher QP gradient)
+            m = 1/80; % planes/kHz (10.22.2024, higher QP gradient)
+            
+            dPlane = dN/Lbar;
+            df = -dPlane/m;
+            
+            fnew = fold + df*0.9; 
             f_offset = round(fnew);
             save('f_offset.mat','f_offset');
             disp(fnew)
@@ -208,6 +214,17 @@ npt.JobName             = ['stripe ' ...
 npt.SaveDirName         = npt.JobName;    
 Jstripe = sequencer_job(npt);
 
+
+npt2 = struct;
+npt2.SequenceFunctions   = {...
+    @main_settings,...
+    @(curtime)stripe(curtime,pow,B,lev),...
+    @main_sequence};
+npt2.ScanCyclesRequested = 1:10;
+npt2.JobName             = ['stripe no feedback ' ...
+    num2str(1e3*pow) ' mW'];
+npt2.SaveDirName         = npt2.JobName;    
+Jstripe_nofeedback = sequencer_job(npt2);
 %% Normal Plane Selection
 
     function curtime = normal_ps(curtime,field,pow,lev)
@@ -250,12 +267,17 @@ Jsingle = sequencer_job(npt);
 %% Interleave Stripe, Single plane calibration
 clear J
 
-J =  copy(Jsingle);
-
-for kk = 1:20
+J = copy(Jstripe);
+for kk = 1:100
     J(end+1) = copy(Jstripe);
-    J(end+1) =  copy(Jsingle);
+    J(end+1) =  copy(Jstripe_nofeedback);
 end
+
+% J =  copy(Jsingle);
+% for kk = 1:20
+%     J(end+1) = copy(Jstripe);
+%     J(end+1) =  copy(Jsingle);
+% end
 
 
 % J = copy(Jsingle);

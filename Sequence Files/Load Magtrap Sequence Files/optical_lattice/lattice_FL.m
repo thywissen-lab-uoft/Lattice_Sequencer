@@ -191,7 +191,7 @@ end
 % This code set the Fpump power regulation and the 4 pass frequency
 
     % Power that the Fpump beam regulates to
-    F_Pump_List = .8;[0.7];[0.9];
+    F_Pump_List = [0.85];.8;[0.7];[0.9];
     
     % Frequency of the FPUMP single pass (MHz)
     fluor.F_Pump_Frequency = 80;

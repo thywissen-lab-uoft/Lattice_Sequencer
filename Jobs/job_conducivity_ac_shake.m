@@ -33,10 +33,11 @@ function J=job_conducivity_ac_shake
         % Modulation time
         t0 = 50;T = 1e3/freq; 
         t_start = T*ceil((t0+mod_ramp_time)/T);
-%         tvec = round(t0 + linspace(0,2*T,30),1);
+%         tvec = round(t0 + linspace(0,2*T,18),1);
 %         tvec = round(t_start + [zeros(1,3) 0.25*ones(1,3) 0.5*ones(1,3) 0.75*ones(1,3) ones(1,3)]*T, 1) - mod_ramp_time;
-        tvec = round(t_start + ones(2,1).*[0:0.25:2]*T, 1) - mod_ramp_time;
+        tvec = round(t_start + [0:0.125:2]*T, 1) - mod_ramp_time;
         tvec = tvec(:);
+        tvec = tvec';
         defVar('conductivity_mod_time',tvec,'ms');             
         
         % Plane Selection
@@ -50,9 +51,9 @@ function J=job_conducivity_ac_shake
 clear Jac
 
 % Magnetic Field (G)
-B_conductivity = 201.1;
+B_conductivity = 201.3;
 % Optical Evaporation Power (W)
-power_conductivity = 0.066; 
+power_conductivity = 0.065; 
 %Evaporation Levitation Voltage
 lev_conductivity = 0.11;
 % Conductivity modulation ramp up time (ms)
@@ -60,7 +61,7 @@ mod_ramp_time = 50;
 % Plane Selection Frequency amplitude (kHz);
 uwave_freq_amp = 30;
 % Modulation Frequencies
-freq_list = 57+[-30 -20 -15 -10 -5 -2.5 0 2.5 5 10 15 20 30];
+freq_list = 55+[-30 -20 -10 0 10 20 30 45];
 % Randomize the modulation frequencies
 freq_list = freq_list(randperm(numel(freq_list)));
 
@@ -84,9 +85,9 @@ for ii = 1:length(freq_list)
 
     %0.65um amplitude response
     x0 = 50;
-    y0 = 1.2841;
-    aL = [1.06e-3 -1.31e-6 1.18e-9 -4.68e-13];
-    aH = [1.73e-3 -2.17e-7 2.09e-11 -9.72e-16]; 
+    y0 = 0.8352;
+    aL = [7.96e-4 -1.17e-6 1.21e-9 -5.22e-13];
+    aH = [1.00e-3 -1.05e-7 1.16e-11 -5.99e-16]; 
     
     if f<=x0
         a=aL;
@@ -103,7 +104,7 @@ for ii = 1:length(freq_list)
 %     npt.CycleStartFcn       = @cycleStart;
 %     npt.CycleCompleteFcn    = @cycleComplete;
 %     npt.JobCompleteFcn      = @jobComplete;
-    npt.ScanCyclesRequested = 1:18;
+    npt.ScanCyclesRequested = 1:17;
     npt.JobName             = [num2str(ii) ' shake ' num2str(f) ' Hz,' ...
         num2str(B_conductivity) 'G,' num2str(1e3*power_conductivity) ' mW ' num2str(mod_strength) ' amp, ' ...
         num2str(mod_ramp_time) ' ms ramp, ', num2str(uwave_freq_amp), ' kHz uwave amp'];
@@ -134,6 +135,60 @@ clear Jstripe
         defVar('f_offset',f_offset,'kHz');        
     end
 
+   function feedback_stripe_phase
+        global seqdata
+        if ~isfield(seqdata,'IxonGUIAnalayisHistoryDirectory') || ...
+                ~exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')
+            warning('No feedback directory to run on');
+        return;    
+        end
+        % Get Recent Bin Stripe Data
+        L = 3;
+        olddata = getRecentGuiData(L); 
+        freqs = zeros(3,1);
+        for l=1:L
+            BinStripes(l) = olddata{l}.BinStripe(1);
+            freqs(l) = olddata{l}.Params.f_offset;
+        end
+        
+        % Lattice site that you want to have a good phase - what does good
+        % phase mean?? CF : That the amplitude is positive + maximal.
+        nCenter = 117; 
+        
+        % Phase data [0,1] good at 0.5
+        phin_n = mod(2*pi*(nCenter./[BinStripes.Lambda])-[BinStripes.Phase],2*pi)/(2*pi);                
+        % modulation depth
+        alpha   = [BinStripes.ModDepth];               
+        % Rsquare value
+        r2      = [BinStripes.RSquareStripe];        
+        
+        % Define high quality data
+        inds = [alpha>=0.6].*[r2>0.85];
+        inds = logical(inds);
+        
+        % Only Keep quality data
+        phin_n=phin_n(inds);     
+        alpha=alpha(inds);
+        r2=r2(inds);
+        
+        % Get High qualtiy data
+        if sum(inds)>0
+            plane_error = median(phin_n-0.5); % Error in units of planes 
+            m = 1/86.8;                       % Planes/kHz
+            sgn = -1;                          % Feedback sign
+            df = sgn*plane_error/m;   
+            if abs(plane_error)>0.4
+               df = 0; 
+            end
+            fold = mean(freqs(inds));
+            fnew = fold + df;             
+            f_offset = round(fnew);
+            save('f_offset.mat','f_offset');
+            disp(fnew)
+        end
+   end
+
+
     function feedback_stripe
         global seqdata
         if ~isfield(seqdata,'IxonGUIAnalayisHistoryDirectory') || ...
@@ -154,7 +209,7 @@ clear Jstripe
         phi     = [BinStripes.Phase];
         alpha   = [BinStripes.ModDepth];
         n0      = [BinStripes.FocusCenter];
-%         n0     = [BinStripes.FocusCenterFit];
+         n0     = [BinStripes.FocusCenterFit];
         
         r2      = [BinStripes.RSquareStripe];
         L       = [BinStripes.Lambda];        
@@ -167,7 +222,7 @@ clear Jstripe
 
         % Get High qualtiy data
         if sum(inds)>0
-            nSet = 110;              
+            nSet = 98;              
             % Get data that is high quality
             Lm = L(inds);
             n0m = n0(inds);
@@ -182,7 +237,7 @@ clear Jstripe
             dN = n0bar - nSet;
 %             m = 2.285/100; % planes/kHz  
 %             m = 1.25/100; % planes/kHz (10.22.2024, higher QP gradient)
-            m = 1/80; % planes/kHz (10.22.2024, higher QP gradient)
+            m = 1/86.8; % planes/kHz (10.23.2024, higher QP gradient)
             
             dPlane = dN/Lbar;
             df = -dPlane/m;
@@ -207,7 +262,9 @@ npt.SequenceFunctions   = {...
     @main_settings,...
     @(curtime)stripe(curtime,pow,B,lev),...
     @main_sequence};
-npt.JobCompleteFcn      = @feedback_stripe;
+% npt.JobCompleteFcn      = @feedback_stripe;
+% npt.JobCompleteFcn      = @feedback_stripe_phase;
+
 npt.ScanCyclesRequested = 1:3;
 npt.JobName             = ['stripe ' ...
     num2str(1e3*pow) ' mW'];
@@ -215,16 +272,20 @@ npt.SaveDirName         = npt.JobName;
 Jstripe = sequencer_job(npt);
 
 
-npt2 = struct;
-npt2.SequenceFunctions   = {...
+npt = struct;
+npt.SequenceFunctions   = {...
     @main_settings,...
     @(curtime)stripe(curtime,pow,B,lev),...
     @main_sequence};
-npt2.ScanCyclesRequested = 1:10;
-npt2.JobName             = ['stripe no feedback ' ...
+% npt.JobCompleteFcn      = @feedback_stripe;
+% npt.JobCompleteFcn      = @feedback_stripe_phase;
+
+npt.ScanCyclesRequested = 1:20;
+npt.JobName             = ['stripe ' ...
     num2str(1e3*pow) ' mW'];
-npt2.SaveDirName         = npt2.JobName;    
-Jstripe_nofeedback = sequencer_job(npt2);
+npt.SaveDirName         = npt.JobName;    
+Jstripe_nofeedback = sequencer_job(npt);
+
 %% Normal Plane Selection
 
     function curtime = normal_ps(curtime,field,pow,lev)
@@ -241,7 +302,7 @@ Jstripe_nofeedback = sequencer_job(npt2);
         % No Tilt
         seqdata.flags.plane_selection_dotilt        = 0;
         % Single plane uwave sweep
-        defVar('qgm_plane_uwave_frequency_amplitude_notilt',20,'kHz');
+        defVar('qgm_plane_uwave_frequency_amplitude_notilt',30,'kHz');
         d = load('f_offset.mat');
         f_offset = d.f_offset;        
         defVar('f_offset',f_offset,'kHz');        
@@ -267,30 +328,33 @@ Jsingle = sequencer_job(npt);
 %% Interleave Stripe, Single plane calibration
 clear J
 
-J = copy(Jstripe);
-for kk = 1:100
-    J(end+1) = copy(Jstripe);
-    J(end+1) =  copy(Jstripe_nofeedback);
-end
+% J=copy(Jstripe_nofeedback);
+% 
+% %J = copy(Jstripe);
+% for kk = 1:10
+%     J(end+1) = copy(Jstripe);
+%     J(end+1) =  copy(Jstripe_nofeedback);
+% end
 
 % J =  copy(Jsingle);
-% for kk = 1:20
+% for kk = 1:4
 %     J(end+1) = copy(Jstripe);
 %     J(end+1) =  copy(Jsingle);
 % end
 
+%Sequence of jobs for AC conductivity
 
-% J = copy(Jsingle);
-% J(end+1) = copy(Jstripe);
-% J(end+1) = [copy(Jac(1))];
-% for kk=2:length(Jac)
-%     J(end+1) = copy(Jstripe);
+J = copy(Jsingle);
+J(end+1) = copy(Jstripe);
+J = [copy(Jac(1))];
+for kk=2:length(Jac)
+    J(end+1) = copy(Jstripe);
 %     if kk == round(length(Jac)/2)
 %         J(end+1) = copy(Jsingle);
 %         J(end+1) = copy(Jstripe);
 %     end
-%     J(end+1) = copy(Jac(kk));
-% end
+    J(end+1) = copy(Jac(kk));
+end
 
 
 end

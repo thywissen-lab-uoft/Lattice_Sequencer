@@ -16,7 +16,7 @@ opts.planeselect_doVertKill = seqdata.flags.plane_selection_doKill;            %
 
 opts.douWave= seqdata.flags.plane_selection_douWave;
 
-opts.fake_the_plane_selection_sweep = 0;    % Whether or not to apply uwaves
+opts.fake_the_plane_selection_sweep = ~opts.douWave;    % Whether or not to apply uwaves
 opts.planeselect_doMicrowaveBack = 0;       % uwave transfer back to F=9/2 (uneeded?)
 opts.planeselect_doFinalRepumpPulse = 0;    % apply repump to kill leftover F=7/2 (uneeded?)
 opts.planeselect_again = 0;                 % Repeat plane selection (does this actually help?)
@@ -235,7 +235,7 @@ switch opts.SelectMode
        % Configure the SRS
         uWave_opts=struct;
         uWave_opts.Address      = 30;                       % SRS GPIB Addr
-        uWave_opts.Frequency    = 1606.75+freq_offset*1E-3; % Frequency [MHz]
+        uWave_opts.Frequency    = 1606.75+(freq_offset-4980)*1E-3; % Frequency [MHz]
         uWave_opts.Power        = power;%15                    % Power [dBm]
         uWave_opts.Enable       = 1;                        % Enable SRS output    
         uWave_opts.EnableSweep  = 1;                    
@@ -268,6 +268,14 @@ switch opts.SelectMode
                 @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
                 uwave_ramp_on_time,uwave_ramp_on_time,0,10,1);  
         ScopeTriggerPulse(curtime,'Plane selection');
+        
+        if seqdata.flags.plane_selection_do_ring_select && ~opts.fake_the_plane_selection_sweep
+            duty = getVar('qgm_plane_selection_ring_duty_cycle');
+            t1 = sweep_time*(1-duty)/2;
+            t2 = t1 + duty*sweep_time;
+            setDigitalChannel(calctime(curtime,t1),'K uWave TTL',0);    
+            setDigitalChannel(calctime(curtime,t2),'K uWave TTL',1);    
+        end
 
         % Linearly ramp the frequency
         curtime = AnalogFunc(calctime(curtime,0),'uWave FM/AM',...
@@ -329,7 +337,7 @@ switch opts.SelectMode
         uWave_opts=struct;
         uWave_opts.Address      = 30;                       % SRS GPIB Addr
 %         uWave_opts.Address=29; % 4/4/2023
-        uWave_opts.Frequency    = 1606.75+freq_offset*1E-3; % Frequency [MHz]
+        uWave_opts.Frequency    = 1606.75+(freq_offset-4980)*1E-3; % Frequency [MHz]
         uWave_opts.Power        = power;%15                    % Power [dBm]
         uWave_opts.Enable       = 1;                        % Enable SRS output    
         uWave_opts.EnableSweep  = 1;                    

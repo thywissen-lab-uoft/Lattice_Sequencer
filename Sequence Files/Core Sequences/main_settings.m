@@ -417,7 +417,7 @@ seqdata.flags.xdtB_rf_mix                   = 1;
 
 % Evaporation
 seqdata.flags.xdtB_evap                     = 1;
-defVar('xdtB_evap_power',[0.1],'W');0.066;.085;
+defVar('xdtB_evap_power',[0.1],'W');0.065;.085;
 defVar('xdtB_evap_time',[5000],'ms');
 defVar('xdtB_evap_tau_fraction',3.5','arb')
 
@@ -440,7 +440,7 @@ defVar('xdtB_levitate_fine2_value',[.1475],'V');0.23;% 0.23 is value for levitat
 defVar('xdtB_levitate_fine2_ramptime',100,'ms');
 
 %Mix spins again after high field evap
-seqdata.flags.xdtB_rf_mix_post_evap          = 0;
+seqdata.flags.xdtB_rf_mix_post_evap          = 1;
 
 % 97 RF Spin Flip
 seqdata.flags.xdtB_post_RF_97                = 0;
@@ -552,7 +552,7 @@ defVar('FB_heating_holdtime',[750],'ms');
 if seqdata.flags.conductivity_mod_direction == 1
     %For x-direction modulation only adjust ODT2 amp
     defVar('conductivity_ODT1_mod_amp',0,'V');  % ODT1 Mod Depth   
-    defVar('conductivity_ODT2_mod_amp',[4],'V');0.9;  % ODT2 Mod Depth
+    defVar('conductivity_ODT2_mod_amp',[0.9],'V');0.9;  % ODT2 Mod Depth
     defVar('conductivity_rel_mod_phase',0,'deg');   % Phase shift of sinusoidal mod - should be 0 for mod along x
 elseif seqdata.flags.conductivity_mod_direction == 2
     %For y-direction modulation only adjust ODT1 amp
@@ -615,52 +615,51 @@ seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
 
 seqdata.flags.plane_selection_useBigShim    = 1;
 % Apply uwave to shelve a particular plane
-seqdata.flags.plane_selection_douWave   = 1; % not used yet
+seqdata.flags.plane_selection_douWave       = 1; 
 
 % Apply kill beam to kill unshelved planes
 seqdata.flags.plane_selection_doKill    = 1;
-defVar('qgm_kill_time',[0.5],'ms');10;5;
+defVar('qgm_kill_time',[.7],'ms');10;5;
 defVar('qgm_kill_detuning',[41],'MHz');41;36;% 2024/05/07 35 MHz for 120 Er; 2024/07/08 30 MHz 250 ER, 41 MHz 70 ER
 defVar('qgm_kill_power',[1.5],'V');.01;.02;
-
-% ss = 0.2;
-% defVar('qgm_kill_time',ss/getVar('qgm_kill_power'),'ms');10;5;
 
     
 seqdata.flags.plane_selection_useFeedback   = 1;
 seqdata.flags.plane_selection_dotilt        = 1;
 
-% pselect_ramp_fields;
-% pselect_dotilt;
-% pselect_dokill;
-% pselect_douwave;
+seqdata.flags.plane_selection_do_ring_select        = 0; % testing CF
+defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 
 
-% Default Plane Selection No Tilt Settingss
-freq_offset_notilt_list = [-4730];[-4540];[-4365];
+%2024/10/24 We think that we put on a 9.1 Gauss Bias field to induce the
+%tilt. Gradient is 86 kHz/plane vertical
+% Default Plane Selection No Tilt Settings
+% ==> 867 kHz difference between tilt and no tilt
+freq_offset_notilt_list = [270];
 freq_offset_amplitude_notilt_list = [30];15; [15];
 defVar('qgm_plane_uwave_frequency_offset_notilt',freq_offset_notilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_notilt',freq_offset_amplitude_notilt_list,'kHz');
 
 % Default Plane Selection Tilt Settings
-freq_offset_tilt_list = -5100;-4760; 510; 
-freq_offset_amplitude_tilt_list = [10]; 
+freq_offset_tilt_list = -200;149
+freq_offset_amplitude_tilt_list = [5]; 
 defVar('qgm_plane_uwave_frequency_offset_tilt',freq_offset_tilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_tilt',freq_offset_amplitude_tilt_list,'kHz');
 
 % Feedback offset defaults to 0
 d = load('f_offset.mat');
 f_offset = d.f_offset;
-%f_offset = 0; % use this line to set f_offset to zero
+
+ % use this line to set f_offset to zero
+reset_f_offset=0;
+
+if reset_f_offset
+    f_offset=0;
+save('f_offset.mat','f_offset');
+end
 
 defVar('f_offset',f_offset,'kHz');
 
-
-
-
-
-% f_offset=0;
-% save('f_offset.mat','f_offset');
 %% Fluorescence Imaging
 
 % OLD OBSOLETE IMAGING FLAG

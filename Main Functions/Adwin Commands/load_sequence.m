@@ -70,6 +70,13 @@ if adwin_connected
         end
     end
     
+    %% Save Camera Control Files
+    
+    if isfield(seqdata,'CameraControl') && isfield(seqdata,'camera_control_file')
+        CameraControl = seqdata.CameraControl;
+        save(seqdata.camera_control_file,'-struct','CameraControl');       
+        disp('Writing Camera Control File');
+    end    
 end
 
 %the sequence is loaded

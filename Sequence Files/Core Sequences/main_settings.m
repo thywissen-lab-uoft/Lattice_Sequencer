@@ -83,6 +83,23 @@ seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
 seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
 defVar('objective_piezo',[6.45],'V');6.3;3.75;[1.65];
+
+
+% Feedback offset defaults to 0
+ d = load('piezo_offset.mat');
+ piezo_offset = d.piezo_offset;
+ 
+reset_piezo_offset=0;
+if reset_piezo_offset
+    piezo_offset=0;
+    save('piezo_offset.mat','piezo_offset');
+end
+
+defVar('piezo_offset',piezo_offset,'V');
+seqdata.flags.misc_PiezoFeedback = 0;
+
+
+
 % 0.1V = 700 nm, larger means further away from chamber
 % 1 V= 7 um
 % 10 V = 70 um
@@ -631,20 +648,25 @@ seqdata.flags.plane_selection_do_ring_select        = 0; % testing CF
 defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 
 
+%tilt Plane Selection Tilt Settings
+% 2024/10/26 positive number moves dot feature to the right
+freq_offset_tilt_list = 300;
+freq_offset_amplitude_tilt_list = [5]; 
+defVar('qgm_plane_uwave_frequency_offset_tilt',freq_offset_tilt_list,'kHz');
+defVar('qgm_plane_uwave_frequency_amplitude_tilt',freq_offset_amplitude_tilt_list,'kHz');
+
 %2024/10/24 We think that we put on a 9.1 Gauss Bias field to induce the
 %tilt. Gradient is 86 kHz/plane vertical
 % Default Plane Selection No Tilt Settings
 % ==> 867 kHz difference between tilt and no tilt
-freq_offset_notilt_list = [270];
-freq_offset_amplitude_notilt_list = [30];15; [15];
+% But THIS ASSUMES X SHIM IS PARALLEL because of the small angle, there is
+% no apriori way to know the relationship
+% 2024/10/26 if stripe stabilized to [276 256]. want deltaf = 0
+%freq_offset_notilt_list = [300];
+freq_offset_notilt_list = freq_offset_tilt_list+[-30];
+freq_offset_amplitude_notilt_list = [30];
 defVar('qgm_plane_uwave_frequency_offset_notilt',freq_offset_notilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_notilt',freq_offset_amplitude_notilt_list,'kHz');
-
-% Default Plane Selection Tilt Settings
-freq_offset_tilt_list = -200;149
-freq_offset_amplitude_tilt_list = [5]; 
-defVar('qgm_plane_uwave_frequency_offset_tilt',freq_offset_tilt_list,'kHz');
-defVar('qgm_plane_uwave_frequency_amplitude_tilt',freq_offset_amplitude_tilt_list,'kHz');
 
 % Feedback offset defaults to 0
 d = load('f_offset.mat');
@@ -689,9 +711,10 @@ seqdata.flags.lattice_fluor_bkgd            = 1;
 % 0 : basic : one image only
 % 1 : fidelity : two images; useful for checking hopping and fidelity
 % 2 : focusing : three images; useful for checking micscrope focusing
-seqdata.flags.lattice_fluor_multi_mode      = 0;    % 0: 1 image; 1: 2 shot for hopping; 2: 3 shot for focuing
+seqdata.flags.lattice_fluor_multi_mode      = 0;    % 0: 1 image; 1: 2 shot for hopping; 2: multi-shot focusing
 seqdata.CameraControl.IxonMultiExposures=[];
 seqdata.CameraControl.IxonMultiPiezos=[];
+seqdata.CameraControl.IxonSaveDir=[];
 
 defVar('qgm_filter_1',20,'step');40;
 getVar('qgm_filter_1');

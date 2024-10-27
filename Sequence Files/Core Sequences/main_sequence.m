@@ -66,8 +66,17 @@ setAnalogChannel(calctime(curtime,0),'D1 Spec DP FM',0,3);
 % Update the objective piezo height
 
 if seqdata.flags.misc_moveObjective
+    
+    V=getVarOrdered('objective_piezo');
+    
+    if seqdata.flags.misc_PiezoFeedback
+       dV =getVar('piezo_offset');
+       V = V+dV;
+    end
+
+    
     setAnalogChannel(calctime(curtime,0),'objective Piezo Z',...
-        getVarOrdered('objective_piezo'),1);
+        V,1);
 end   
 
 

@@ -22,7 +22,8 @@ properties
     ScanCyclesCompleted     % array of scan cycle indices which have been complete so far
     ScanCycle               % which scan cycle will be run
     JobName                 % the name of the job
-    SaveDirName             % the name of the directory to save images
+    IxonSaveDirName         % the name of the directory to save images
+    PCOSaveDirName          % the name of the directory to save images
     ExecutionDates          % the dates at which each sequence in the job is run
     Status                  % the current status of the job
     CycleStartFcn           % user custom function to evalulate before sequence runs
@@ -48,7 +49,8 @@ function obj = sequencer_job(npt)
     obj.ScanCyclesCompleted = [];    
     obj.ScanCycle           = [];
     obj.ExecutionDates      = [];
-    obj.SaveDirName         = [];
+%     obj.IxonSaveDirName      = [];
+%     obj.PCOSaveDirName      = [];
     obj.CycleStartFcn       = [];
     obj.CycleCompleteFcn    = [];
     obj.JobCompleteFcn      = [];
@@ -65,11 +67,14 @@ function obj = sequencer_job(npt)
     if isfield(npt,'CycleCompleteFcn')
         obj.CycleCompleteFcn = @npt.CycleCompleteFcn; 
     end
-    
-    if isfield(npt,'SaveDirName')
-       obj.SaveDirName = npt.SaveDirName; 
-    end    
-
+%     
+%     if isfield(npt,'IxonSaveDirName')
+%        obj.IxonSaveDirName = npt.IxonSaveDirName; 
+%     end   
+%     
+%    if isfield(npt,'PCOSaveDirName')
+%        obj.PCOSaveDirName = npt.PCOSaveDirName; 
+%     end     
 end    
 
 % function that evaluates upon job completion
@@ -99,12 +104,12 @@ function CycleStartFcnWrapper(obj)
         obj.CycleStartFcn(); 
     end
     
-    if ~isempty(obj.SaveDirName)
-        SaveDir = obj.SaveDirName;
-        try
-            save(obj.CameraFile,'SaveDir');
-        end
-    end
+%     if ~isempty(obj.SaveDirName)
+%         SaveDir = obj.SaveDirName;
+%         try
+%             save(obj.CameraFile,'SaveDir');
+%         end
+%     end
 end
 
 end

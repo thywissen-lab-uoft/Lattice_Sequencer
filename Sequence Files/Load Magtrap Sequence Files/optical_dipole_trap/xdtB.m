@@ -505,7 +505,7 @@ if seqdata.flags.xdtB_piezo_vert_kick
     tr = getVar('xdtB_piezo_vert_kick_rampup_time');
     V = getVar('xdtB_piezo_vert_kick_amplitude');
     t_off = getVar('xdtB_piezo_vert_kick_rampoff_time');
-    th = getVar('xdtB_piezo_vert_kick_holdtime');
+    th = getVarOrdered('xdtB_piezo_vert_kick_holdtime');
 
     % Piezo Mirror to a Displaced Position
     curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...

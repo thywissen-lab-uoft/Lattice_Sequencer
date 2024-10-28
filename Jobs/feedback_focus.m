@@ -109,7 +109,7 @@ function feedback_focus(data)
 
             
         catch ME
-            keyboard
+%             keyboard
         end
 
 end

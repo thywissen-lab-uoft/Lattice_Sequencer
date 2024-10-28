@@ -192,7 +192,7 @@ seqdata.flags.image_F1_pulse                = 0; % (unused?) repump Rb F=1 befor
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[15],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[.1],'ms');
@@ -466,20 +466,20 @@ seqdata.flags.xdtB_post_RF_97                = 0;
 seqdata.flags.xdtB_feshbach_unhop           = 0;
 
 % Feshbach
-seqdata.flags.xdtB_feshbach_off             = 0;
+seqdata.flags.xdtB_feshbach_off             = 1;
 defVar('xdtB_feshbach_off_field',20,'G');
 defVar('xdtB_feshbach_off_ramptime',100,'ms');100;
 
 % Unlevitate
-seqdata.flags.xdtB_levitate_off             = 0;
+seqdata.flags.xdtB_levitate_off             = 1;
 defVar('xdtB_levitate_off_ramptime',100,'ms');100;
 
 % piezo kick for vertical trap frequency
-seqdata.flags.xdtB_piezo_vert_kick          = 0;
+seqdata.flags.xdtB_piezo_vert_kick          = 1;
 defVar('xdtB_piezo_vert_kick_amplitude',4,'V');         
 defVar('xdtB_piezo_vert_kick_rampup_time',100,'ms');
 defVar('xdtB_piezo_vert_kick_rampoff_time',4,'ms');
-defVar('xdtB_piezo_vert_kick_holdtime', [1],'ms');
+defVar('xdtB_piezo_vert_kick_holdtime', [20:0.5:30],'ms');
 
 % Turn off one of the dipole trap beams to measure its position
 seqdata.flags.xdtB_one_beam                 = 0;
@@ -505,7 +505,7 @@ defVar('rotate_waveplate1_value',0.3,'normalized power');.3; % Amount of power g
 %% Load the Optical Lattice
 
 % These are the lattice flags sorted roughly chronologically. 
-seqdata.flags.lattice_load            = 1;    
+seqdata.flags.lattice_load            = 0;    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Loading optical lattical
@@ -579,7 +579,7 @@ elseif seqdata.flags.conductivity_mod_direction == 2
 end    
 
 %% Optical Lattice
-seqdata.flags.lattice                       = 1; 
+seqdata.flags.lattice                       = 0; 
 if ~seqdata.flags.lattice_load;seqdata.flags.lattice  =0;end
 
 % Pin 
@@ -628,7 +628,7 @@ seqdata.flags.lattice_uWave_spec            = 0;
 
 %% Plane Selection
 
-seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
+seqdata.flags.do_plane_selection            = 0;    % Plane selection flag
 
 seqdata.flags.plane_selection_useBigShim    = 1;
 % Apply uwave to shelve a particular plane
@@ -650,8 +650,8 @@ defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 
 %tilt Plane Selection Tilt Settings
 % 2024/10/26 positive number moves dot feature to the right
-freq_offset_tilt_list = 0;
-freq_offset_amplitude_tilt_list = [5]; 
+freq_offset_tilt_list = 170;
+freq_offset_amplitude_tilt_list = [15]; % 15 kHz good 2024/10/27 CJF
 defVar('qgm_plane_uwave_frequency_offset_tilt',freq_offset_tilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_tilt',freq_offset_amplitude_tilt_list,'kHz');
 
@@ -661,9 +661,11 @@ defVar('qgm_plane_uwave_frequency_amplitude_tilt',freq_offset_amplitude_tilt_lis
 % ==> 867 kHz difference between tilt and no tilt
 % But THIS ASSUMES X SHIM IS PARALLEL because of the small angle, there is
 % no apriori way to know the relationship
-% 2024/10/26 if stripe stabilized to [276 256]. want deltaf = 0
+% 2024/10/26 if stripe stabilized to [276 256]. 
 %freq_offset_notilt_list = [300];
-freq_offset_notilt_list = freq_offset_tilt_list+[-140];
+
+freq_offset_notilt_list = freq_offset_tilt_list+100;% df=+100 with phase stab [276,256]
+
 freq_offset_amplitude_notilt_list = [35];
 defVar('qgm_plane_uwave_frequency_offset_notilt',freq_offset_notilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_notilt',freq_offset_amplitude_notilt_list,'kHz');

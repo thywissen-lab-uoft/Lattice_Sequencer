@@ -181,7 +181,7 @@ function feedback_stripe(data)
 
 
         catch ME
-            keyboard
+%             keyboard
         end
 end
 

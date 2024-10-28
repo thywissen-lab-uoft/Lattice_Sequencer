@@ -1,34 +1,24 @@
 function J=job_conducivity_ac_shake
    
-% This function evaluates at the end of the job
-    function jobComplete
-    end
-
-
-
-%% AC conductivity job function
-
+%% AC Sequnece Modifier
+% THIS CODE IS UGLY AND CONFUSING, NEEDS TO BE FIXED
  function curtime = ac_conductivity(curtime,freq,field,levitate_value,evap_depth,mod_strength,mod_ramp_time,uwave_freq_amp)
         global seqdata;        
         
         % Optical Evaporation        
         defVar('xdtB_evap_power',evap_depth,'W');
-
         % Magnetic Field in Lattice
-        defVar('lattice_load_feshbach_field',field,'G');  
-        
+        defVar('lattice_load_feshbach_field',field,'G'); 
         %Levitation voltage value during xdtB
-        defVar('xdtB_levitate_value',levitate_value,'V');
-        
-        seqdata.flags.lattice_conductivity_new      = 1;    
-
+        defVar('xdtB_levitate_value',levitate_value,'V');        
+        seqdata.flags.lattice_conductivity_new      = 1;  
         % Conductivity       
         seqdata.flags.conductivity_ODT1_mode            = 1; % 0:OFF, 1:SINE, 2:DC
         seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
         seqdata.flags.conductivity_mod_direction        = 1; % 1:X-direction 2:Y-direction 
         defVar('conductivity_mod_freq',freq,'Hz');
         defVar('conductivity_ODT2_mod_amp',mod_strength,'V');  % ODT2 Mod Depth
-        defVar('conductivity_mod_ramp_time',mod_ramp_time,'ms');        
+        defVar('conductivity_mod_ramp_time',mod_ramp_time,'ms');      
         
         % Modulation time
         t0 = 50;T = 1e3/freq; 
@@ -48,7 +38,7 @@ function J=job_conducivity_ac_shake
         defVar('f_offset',f_offset,'kHz'); 
  end
 %% AC Conductivity Job
-clear Jac
+clear J
 
 % Magnetic Field (G)
 B_conductivity = 201.3;
@@ -68,7 +58,10 @@ freq_list = freq_list(randperm(numel(freq_list)));
 
 for ii = 1:length(freq_list)
     % Get the current modulation frequency
-    f = freq_list(ii);    
+    f = freq_list(ii);   
+    
+    % AMPLITUDE RESPONSE CODE CAN BE CALCULATED MANUALLY NO NEED TO ALWAYS
+    % PUT IT IN. FC FIX THIS PLEASE
     
     % Modulation Amplitude Calibration    
     %0.85um amplitude response
@@ -109,8 +102,9 @@ for ii = 1:length(freq_list)
         num2str(B_conductivity) 'G,' num2str(1e3*power_conductivity) ' mW ' num2str(mod_strength) ' amp, ' ...
         num2str(mod_ramp_time) ' ms ramp, ', num2str(uwave_freq_amp), ' kHz uwave amp'];
     npt.SaveDirName         = npt.JobName;    
-    Jac(ii) = sequencer_job(npt);
+    J(ii) = sequencer_job(npt);
 end
+
 
 %% Stripe Job
 % clear Jstripe
@@ -273,7 +267,7 @@ end
 
 
 %% Normal Plane Selection
-
+%{
     function curtime = normal_ps(curtime,field,pow,lev)
         global seqdata        
          % Optical evaporation
@@ -327,20 +321,20 @@ clear J
 %     J(end+1) = copy(Jstripe);
 %     J(end+1) =  copy(Jsingle);
 % end
+%}
 
 %Sequence of jobs for AC conductivity
 
-J = copy(Jsingle);
-J(end+1) = copy(Jstripe);
-J = [copy(Jac(1))];
-for kk=2:length(Jac)
-    J(end+1) = copy(Jstripe);
+% J = copy(Jsingle);
+% J(end+1) = copy(Jstripe);
+% J = [copy(Jac(1))];
+% for kk=2:length(Jac)
+%     J(end+1) = copy(Jstripe);
 %     if kk == round(length(Jac)/2)
 %         J(end+1) = copy(Jsingle);
 %         J(end+1) = copy(Jstripe);
 %     end
-    J(end+1) = copy(Jac(kk));
-end
+%     J(end+1) = copy(Jac(kk));
 
 
 end

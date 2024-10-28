@@ -56,7 +56,7 @@ cc='w';w=700;h=350;
 
 % Initialize the figure graphics objects
 hF=figure('toolbar','none','Name',figName,'color',cc,'NumberTitle','off',...
-    'MenuBar','figure','resize','off','CloseRequestFcn',@closeFig,...
+    'MenuBar','figure','CloseRequestFcn',@closeFig,...
     'UserData','sequencer_gui');
 clf
 hF.Position(3:4)=[w h];
@@ -143,13 +143,21 @@ hpRun = uipanel('Parent',hpMain,'units','pixels','Title','run mode',...
 hpRun.Position(3:4)=[347 160];
 hpRun.Position(1:2)=[350 1];
 
+hF.SizeChangedFcn=@sequencer_resize;
+
+    function sequencer_resize(src,evt)
+        hpJobs.Position(4) = hpJobs.Parent.Position(4)-hpJobs.Position(2)-5;
+        tJobs.Position(4) = tJobs.Parent.Position(4)-tJobs.Position(2)-20;
+    end
+
 %% Jobs Panel Graphical Objects
 
 % Job Table
 tJobs = uitable('parent',hpJobs,'fontsize',8,'rowname',{});
-tJobs.ColumnName = {'id','status','n','name','sequence'};
-tJobs.ColumnWidth={60 60 40 170 345};
-tJobs.ColumnEditable=[false false false false false];
+tJobs.ColumnName = {'', 'status','cycles','name','sequence'};
+tJobs.ColumnWidth={20 60 40 170 345};
+tJobs.ColumnEditable=[true false false false false];
+tJobs.ColumnFormat = {'logical','char','char','char','char'};
 hme = 30;
 tJobs.Position = [1 hme hpMain.Position(3) hpJobs.Position(4)-(hme+15)];
 

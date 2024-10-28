@@ -202,9 +202,7 @@ function updateJobText(obj)
             mystr(end)=[];
 
             obj.TextBox.Data{kk,2} = obj.SequencerJobs{kk}.Status;
-            obj.TextBox.Data{kk,3} = ...
-                [num2str(length(obj.SequencerJobs{kk}.ScanCyclesCompleted)) ...
-                '/' num2str(length(obj.SequencerJobs{kk}.ScanCyclesRequested))];
+            obj.TextBox.Data{kk,3} = num2str(length(obj.SequencerJobs{kk}.ScanCyclesRequested));
             obj.TextBox.Data{kk,4} = obj.SequencerJobs{kk}.JobName;
             obj.TextBox.Data{kk,5} = mystr;                
         end

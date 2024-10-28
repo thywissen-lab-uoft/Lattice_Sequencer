@@ -87,7 +87,7 @@ function feedback_focus(data)
                 errorAll = V_best_offset(1)-X(1);
                 
                 error_P = errorAll(1);
-                gain_P = 0.5;
+                gain_P = 0.8;
                                 
                 % Integral Error
                 tau_I = 10; % tau in minutes                
@@ -98,8 +98,8 @@ function feedback_focus(data)
                 kappa = 1;
                 
                 d_piezo_offset = 1*kappa*error_T;
-                if abs(d_piezo_offset)>0.08
-                   d_piezo_offset = 0.08*sign(d_piezo_offset); 
+                if abs(d_piezo_offset)>0.05
+                   d_piezo_offset = 0.05*sign(d_piezo_offset); 
                 end
                 
                 old_piezo_offset = X(1);                

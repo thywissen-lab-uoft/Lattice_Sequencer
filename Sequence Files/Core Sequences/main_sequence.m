@@ -69,7 +69,7 @@ if seqdata.flags.misc_moveObjective
     
     V=getVarOrdered('objective_piezo');
     
-    if seqdata.flags.misc_PiezoFeedback
+    if seqdata.flags.misc_UsePiezoOffset
        dV =getVar('piezo_offset');
        V = V+dV;
     end

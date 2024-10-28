@@ -20,13 +20,12 @@ end
 %% Sequence Modifier Function
 
 function curtime = one_plane(curtime)
-        global seqdata         
-        defVar('xdtB_evap_power',npt.xdt_B_evap_power,'W');
-        defVar('lattice_load_feshbach_field',npt.lattice_load_feshbach_field,'G');         
-        seqdata.flags.lattice_conductivity_new      = 0; 
-        seqdata.flags.plane_selection_dotilt        = 0; 
-        seqdata.flags.lattice_fluor_multi_mode      = 0;  
-        seqdata.flags.misc_PiezoFeedback            = 0;
+    global seqdata         
+    defVar('xdtB_evap_power',npt.xdt_B_evap_power,'W');
+    defVar('lattice_load_feshbach_field',npt.lattice_load_feshbach_field,'G');         
+    seqdata.flags.lattice_conductivity_new      = 0; 
+    seqdata.flags.plane_selection_dotilt        = 0; 
+    seqdata.flags.lattice_fluor_multi_mode      = 0;  
 end
 
 %% Create Job File

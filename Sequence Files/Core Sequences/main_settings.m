@@ -96,7 +96,7 @@ if reset_piezo_offset
 end
 
 defVar('piezo_offset',piezo_offset,'V');
-seqdata.flags.misc_PiezoFeedback = 0;
+seqdata.flags.misc_UsePiezoOffset = 1;
 
 
 
@@ -650,7 +650,7 @@ defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 
 %tilt Plane Selection Tilt Settings
 % 2024/10/26 positive number moves dot feature to the right
-freq_offset_tilt_list = 300;
+freq_offset_tilt_list = 0;
 freq_offset_amplitude_tilt_list = [5]; 
 defVar('qgm_plane_uwave_frequency_offset_tilt',freq_offset_tilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_tilt',freq_offset_amplitude_tilt_list,'kHz');

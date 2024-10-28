@@ -1,4 +1,4 @@
-function J = job_stripe_feedback(npt)
+function J = job_single_plane_focus_feedback(npt)
 % Creates job file for feedback on stripes and focus
 
 if nargin==0
@@ -9,7 +9,7 @@ if nargin==0
 end
 
 if ~isfield(npt,'xdtB_evap_power')
-    npt.xdt_B_evap_power = 0.1;
+    npt.xdt_B_evap_power = 0.08;
 end
 
 if ~isfield(npt,'lattice_load_feshbach_field')
@@ -17,20 +17,18 @@ if ~isfield(npt,'lattice_load_feshbach_field')
 end
 
 if ~isfield(npt,'NumCycles')
-   npt.NumCycles=5; 
+   npt.NumCycles=3; 
 end
 
-field      = 201.1;
-evap_depth = 0.1;
 
 %% Sequence Modifier Function
     function curtime = stripe_seq(curtime)
         global seqdata         
-        defVar('xdtB_evap_power',evap_depth,'W');
-        defVar('lattice_load_feshbach_field',field,'G'); 
+        defVar('xdtB_evap_power',npt.xdt_B_evap_power,'W');
+        defVar('lattice_load_feshbach_field',npt.lattice_load_feshbach_field,'G'); 
         seqdata.flags.lattice_conductivity_new      = 0; 
-        seqdata.flags.plane_selection_dotilt        = 1;           
-        seqdata.flags.lattice_fluor_multi_mode      = 0; % 0: one image 2 :piezo multi shot
+        seqdata.flags.plane_selection_dotilt        = 0;           
+        seqdata.flags.lattice_fluor_multi_mode      = 2;
     end
 
 %% Cycle Complete Function
@@ -46,8 +44,7 @@ evap_depth = 0.1;
         return;    
         end              
         data = getRecentGuiData(30); 
-        feedback_stripe(data);        
-%       feedback_focus(data);
+        feedback_focus(data);
    end
 
 %% Create Job Object
@@ -58,9 +55,7 @@ out.SequenceFunctions   = {...
     @main_sequence};
 out.CycleCompleteFcn      = @cycle_complete_fcn_focus;
 out.ScanCyclesRequested   = 1:npt.NumCycles;
-out.JobName               = ['stripe and focus feedback'];
-out.JobName               = ['stripe feedback'];
-
+out.JobName               = ['focus feedback'];
 J = sequencer_job(out);
 
 end

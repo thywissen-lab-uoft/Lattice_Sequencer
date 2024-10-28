@@ -93,24 +93,18 @@ function feedback_focus(data)
                 tau_I = 10; % tau in minutes                
                 exp_weights = exp(-(timeAgo-timeAgo(1))/tau_I);                
                 error_I = sum(errorAll.*exp_weights)/sum(exp_weights);                
-                gain_I = 1-gain_P;
-                
-                error_T = error_P*gain_P+error_I*gain_I;
-                
-                   % how to convert plane data into frequency
+                gain_I = 1-gain_P;                
+                error_T = error_P*gain_P+error_I*gain_I;                
                 kappa = 1;
                 
                 d_piezo_offset = 1*kappa*error_T;
-                if abs(d_piezo_offset)>0.1
-                   d_piezo_offset = 0.1*sign(d_piezo_offset); 
+                if abs(d_piezo_offset)>0.08
+                   d_piezo_offset = 0.08*sign(d_piezo_offset); 
                 end
                 
-                old_piezo_offset = X(1);
-                
+                old_piezo_offset = X(1);                
                 piezo_offset=round(old_piezo_offset+d_piezo_offset,2);
-                save('piezo_offset.mat','piezo_offset');
-                              
-
+                save('piezo_offset.mat','piezo_offset');                             
             end
 
             

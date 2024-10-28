@@ -89,10 +89,8 @@ if fluor.IxonFrameTransferMode
             % Focusing : 4 Images with equal exposure time
             fluor.NumberOfImages           = 4;        
             fluor.ObjectivePiezoShiftTime  = 100; % in ms
-            fluor.ObjectivePiezoShiftValue = [0 0.1 0.0 -0.1];    
+            fluor.ObjectivePiezoShiftValue = [0 0.05 0.0 -0.05];    
             fluor.ExposureTime         = ones(1,fluor.NumberOfImages)*fluor.PulseTime/fluor.NumberOfImages-fluor.ObjectivePiezoShiftTime; 
-            
-
         otherwise
             % Basic    : 1 Image
             fluor.NumberOfImages       = 1;     

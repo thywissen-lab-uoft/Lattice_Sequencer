@@ -145,7 +145,7 @@ function feedback_stripe(data)
             xlabel(ax2,'time ago (min.)');
             
 
-              if doFeedback && ~bad_inds(1) && length(phi_plane_fb)>3
+              if doFeedback && ~bad_inds(1) && length(phi_plane_fb)>1
                 % Proportional Error
                 error_P = phi_plane_fb(1);
                 gain_P = 0.5;

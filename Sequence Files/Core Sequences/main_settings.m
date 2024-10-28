@@ -663,8 +663,8 @@ defVar('qgm_plane_uwave_frequency_amplitude_tilt',freq_offset_amplitude_tilt_lis
 % no apriori way to know the relationship
 % 2024/10/26 if stripe stabilized to [276 256]. want deltaf = 0
 %freq_offset_notilt_list = [300];
-freq_offset_notilt_list = freq_offset_tilt_list+[-30];
-freq_offset_amplitude_notilt_list = [30];
+freq_offset_notilt_list = freq_offset_tilt_list+[-140];
+freq_offset_amplitude_notilt_list = [35];
 defVar('qgm_plane_uwave_frequency_offset_notilt',freq_offset_notilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_notilt',freq_offset_amplitude_notilt_list,'kHz');
 

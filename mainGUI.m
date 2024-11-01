@@ -126,43 +126,39 @@ hpStatus.Position(3:4)=[360 65];
 hpStatus.Position(1:2)=[0 0];
 % hpStatus.Position(1:2)=[140 1];
 
-% run uipanel
-hpRun = uipanel('Parent',hpMain,'units','pixels','Title','job controller',...
-    'backgroundcolor',cc,'bordertype','line','BorderColor','k','borderwidth',1);
-hpRun.Position(3:4)=[350 140];
-hpRun.Position(1:2)=[0 hpStatus.Position(2)+hpStatus.Position(4)];
-% hpRun.Position(1:2)=[1 1];
 
 hpJobDetail=uitabgroup(hpMain,'units','pixels');
 hpJobDetail.Position(3:4)=[347 250];
-hpJobDetail.Position(1:2)=[1 hpRun.Position(2)+hpRun.Position(4)];
+hpJobDetail.Position(1:2)=[1 hpStatus.Position(2)+hpStatus.Position(4)];
 
 default_job_tab=uitab(hpJobDetail,'Title','default job','units','pixels');
 current_job_tab=uitab(hpJobDetail,'Title','current job','units','pixels');
 
-hpDefaultJob = uipanel('parent',default_job_tab,'backgroundcolor','w','units',...
-    'normalized','position',[0 0 1 1]);
+% hpDefaultJob = uipanel('parent',default_job_tab,'backgroundcolor','w','units',...
+%     'normalized','position',[0 0 1 1]);
 hpCurrentJob = uipanel('parent',current_job_tab,'backgroundcolor','w','units',...
     'normalized','position',[0 0 1 1]);
 
 % sequence uipanel
-hpSeq = uipanel('parent',hpMain,'units','pixels','backgroundcolor',cc,...
-    'bordertype','etchedin','title','sequence');
-hpSeq.Position(3:4)=[347 90];
-hpSeq.Position(1:2)=[1 hpJobDetail.Position(2)+hpJobDetail.Position(4)];
+% hpSeq = uipanel('parent',default_job_tab,'units','pixels','backgroundcolor',cc,...
+%     'bordertype','etchedin','title','sequence');
+hpSeq = uipanel('parent',default_job_tab,'units','pixels','backgroundcolor',cc);
+hpSeq.Position(3:4)=[347 120];
+% hpSeq.Position(1:2)=[1 hpJobDetail.Position(2)+hpJobDetail.Position(4)];
+hpSeq.Position(1:2)=[0 hpSeq.Parent.Position(4)-hpSeq.Position(4)];
+
+% run uipanel
+hpRun = uipanel('Parent',hpMain,'units','pixels','Title','job controller',...
+    'backgroundcolor',cc,'bordertype','line','BorderColor','k','borderwidth',1);
+hpRun.Position(3:4)=[350 140];
+hpRun.Position(1:2)=[0 hpJobDetail.Position(2)+hpJobDetail.Position(4)];
+% hpRun.Position(1:2)=[1 1];
 
  % Jobs uipanel
 hpJobs = uipanel('parent',hF,'units','pixels','backgroundcolor','w',...
     'title','job queue','bordertype','etchedin');
-hpJobs.Position(1:2) = [1 hpSeq.Position(2)+hpSeq.Position(4)];
+hpJobs.Position(1:2) = [1 hpRun.Position(2)+hpRun.Position(4)];
 hpJobs.Position(3:4)=[w 90];
-
-
-
-
-
-
-
 
 hF.SizeChangedFcn=@sequencer_resize;
 
@@ -491,18 +487,18 @@ tCycle.Position(2) = tStatus.Position(2);
 
 %% Wait Timer Graphical interface
 
-tWaitMode = uicontrol(hpRun,'style','text','string','wait mode : ',...
+tWaitMode = uicontrol(hpSeq,'style','text','string','wait mode : ',...
     'units','pixels','fontsize',7,'backgroundcolor','w','fontname','arial');
-tWaitMode.Position(1:2) = [5 110];
+tWaitMode.Position(1:2) = [5 70];
 tWaitMode.Position(3:4) = [50 10];
 
-menuWaitMode = uicontrol(hpRun,'style','popupmenu','string',{'none','intercycle','total'},...
+menuWaitMode = uicontrol(hpSeq,'style','popupmenu','string',{'none','intercycle','total'},...
     'units','pixels','fontsize',7,'value',2);
 menuWaitMode.Position(3:4)=[70 15];
 menuWaitMode.Position(1:2)=[tWaitMode.Position(1)+tWaitMode.Position(3) tWaitMode.Position(2)];
 
 % Table for storing value of wait time
-tblWait=uitable(hpRun,'RowName','','ColumnName','','Data',waitDefault,...
+tblWait=uitable(hpSeq,'RowName','','ColumnName','','Data',waitDefault,...
     'ColumnWidth',{30},'ColumnEditable',true,'ColumnFormat',{'numeric'},...
     'fontsize',8,'Enable','on');
 tblWait.Position(3:4)=tblWait.Extent(3:4);
@@ -510,17 +506,18 @@ tblWait.Position(4)=tblWait.Position(4);
 tblWait.Position(1:2)=[2+menuWaitMode.Position(1)+menuWaitMode.Position(3) menuWaitMode.Position(2)-5];
 
 % Wait Unit Label
-tWaitSec = uicontrol(hpRun,'style','text','string','sec.',...
+tWaitSec = uicontrol(hpSeq,'style','text','string','sec.',...
     'units','pixels','fontsize',7,'backgroundcolor','w','fontname','arial');
 tWaitSec.Position(1:2) = [tblWait.Position(1)+tblWait.Position(3) tWaitMode.Position(2)];
 tWaitSec.Position(3:4) = [20 10];
+%% Job Controller
 
 % Status String
 tCycleNumberLabel=uicontrol(hpRun,'style','text','string','cycle # :',...
     'backgroundcolor','w','fontsize',7,'units','pixels',...
     'horizontalalignment','left');
 tCycleNumberLabel.Position(3:4)=[45 10];
-tCycleNumberLabel.Position(1:2)=[5 tWaitMode.Position(2)-25];
+tCycleNumberLabel.Position(1:2)=[5 100];
 
 cycleTbl=uitable(hpRun,'RowName',{},'ColumnName',{},...
     'ColumnEditable',[true],'Data',[1],'units','pixels',...

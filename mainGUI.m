@@ -123,7 +123,7 @@ hpMain.OuterPosition=[0 1 w 600];
 % wait uipanel
 hpStatus = uipanel('Parent',hpMain,'units','pixels',...
     'backgroundcolor',cc,'bordertype','line','BorderColor','k','borderwidth',1);
-hpStatus.Position(3:4)=[250 70];
+hpStatus.Position(3:4)=[250 110];
 hpStatus.Position(1:2)=[0 0];
 
 
@@ -298,8 +298,6 @@ bDefault.Position(1:2)=bBrowse.Position(1:2) + [bBrowse.Position(3)+2 0];
         d.SequencerWatcher.updateSequenceFileText(defaultSequence);
     end
 
-
-
 % matlab.desktop.editor.getActive
 
 % Button for file selection of the sequenece file
@@ -408,6 +406,74 @@ bCmd.Position(1:2)=bCompileFull.Position(1:2)+[bCompileFull.Position(3)+2 0];
             warning(ME.message);
         end        
     end
+%% Sequencer Status Panel
+
+% Axis object for plotting the wait bar
+waitbarcolor=[106, 163, 241 ]/255;
+axWaitBar=axes('parent',hpStatus,'units','pixels','XTick',[],...
+    'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
+axWaitBar.Position(1:2)=[10 5];
+axWaitBar.Position(3:4)=[axWaitBar.Parent.Position(3)-2*axWaitBar.Position(1) 10];
+
+% Plot the wait bar
+pWaitBar = patch(axWaitBar,[0 0 0 0],[0 0 1 1],waitbarcolor);
+text(.5,1.05,'wait','fontsize',7,'horizontalalignment','center', ...
+    'verticalalignment','bottom','fontweight','bold');
+
+% String labels for time end points
+tWaitTime1 = text(0,0,'0.00 s','parent',axWaitBar,'fontsize',8,...
+    'horizontalalignment','left','units','pixels','verticalalignment','bottom');
+tWaitTime1.Position=[5 10];
+tWaitTime2 = text(0,0,'10.00 s','parent',axWaitBar,'fontsize',8,...
+    'horizontalalignment','right','units','pixels','verticalalignment','bottom');
+tWaitTime2.Position=[axWaitBar.Position(3) 10];
+
+% Adwin Progress bar
+adwinbarcolor=[0.67578 1 0.18359];
+axAdWinBar=axes('parent',hpStatus,'units','pixels','XTick',[],...
+    'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
+axAdWinBar.Position=[10 30 hpStatus.Position(3)-20 10];
+axAdWinBar.Position(2) = 30;
+% Plot the patch of color for the bar
+pAdWinBar = patch(axAdWinBar,[0 0 0 0],[0 0 1 1], adwinbarcolor);
+
+% Add some text labels for the current and end time
+tAdWinTime1 = text(0,0,'0.00 s','parent',axAdWinBar,'fontsize',8,...
+    'horizontalalignment','left','units','pixels','verticalalignment','bottom');
+tAdWinTime1.Position=[5 10];
+tAdWinTime2 = text(0,0,'30.00 s','parent',axAdWinBar,'fontsize',8,...
+    'horizontalalignment','right','units','pixels','verticalalignment','bottom');
+tAdWinTime2.Position=[axAdWinBar.Position(3) 10];
+
+% Add an overall label
+text(.5,1.05,'adwin','fontsize',7,'horizontalalignment','center', ...
+    'verticalalignment','bottom','fontweight','bold');
+
+% Status String
+tCycle=uicontrol(hpStatus,'style','text','string','cycle : ',...
+    'backgroundcolor','w','fontsize',7,'units','pixels',...
+    'visible','on','horizontalalignment','left');
+tCycle.Position(3:4)=[60 15];
+tCycle.Position(1) = 1;
+tCycle.Position(2) = hpStatus.Position(4)-15;
+
+
+% Status String
+tStatus=uicontrol(hpStatus,'style','text','string','idle',...
+    'backgroundcolor','w','fontsize',8,'units','pixels',...
+    'fontweight','bold','visible','on','horizontalalignment','center');
+tStatus.Position(3:4)=[axAdWinBar.Position(3) 15];
+tStatus.Position(1) = axAdWinBar.Position(1);
+tStatus.Position(2) = axAdWinBar.Position(2) + 50;
+tStatus.ForegroundColor=[0 128 0]/255;
+
+% Scan Var
+tScanVar=uicontrol(hpStatus,'style','text','string','No detected variable scanning with ParamDef/Get.',...
+    'backgroundcolor','w','fontsize',8,'units','pixels',...
+    'fontweight','normal','visible','on','horizontalalignment','center');
+tScanVar.Position(3:4)=[axAdWinBar.Position(3) 15];
+tScanVar.Position(1) = axAdWinBar.Position(1);
+tScanVar.Position(2) = tStatus.Position(2) - 15;
 
 %% Wait Timer Graphical interface
 
@@ -437,27 +503,6 @@ tblWait.Position(1:2)=[260 30];
 
 
 %% Run mode graphics and callbacks
-
-% Adwin Progress bar
-adwinbarcolor=[0.67578 1 0.18359];
-axAdWinBar=axes('parent',hpRun,'units','pixels','XTick',[],...
-    'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
-axAdWinBar.Position=[10 10 hpRun.Position(3)-20 10];
-axAdWinBar.Position(2) = 100;
-% Plot the patch of color for the bar
-pAdWinBar = patch(axAdWinBar,[0 0 0 0],[0 0 1 1], adwinbarcolor);
-
-% Add some text labels for the current and end time
-tAdWinTime1 = text(0,0,'0.00 s','parent',axAdWinBar,'fontsize',10,...
-    'horizontalalignment','left','units','pixels','verticalalignment','bottom');
-tAdWinTime1.Position=[5 10];
-tAdWinTime2 = text(0,0,'30.00 s','parent',axAdWinBar,'fontsize',10,...
-    'horizontalalignment','right','units','pixels','verticalalignment','bottom');
-tAdWinTime2.Position=[axAdWinBar.Position(3) 10];
-
-% Add an overall label
-text(.5,1.05,'adwin progress','fontsize',10,'horizontalalignment','center', ...
-    'verticalalignment','bottom','fontweight','bold');
 
 % Button to run the cycle
 bRunIter=uicontrol(hpRun,'style','pushbutton','String','Run Cycle',...
@@ -527,23 +572,6 @@ cRpt.Position(3:4)=[100 cRpt.Extent(4)];
 cRpt.Position(1:2)=[185 33];
 cRpt.Tooltip='Enable or disable automatic repitition of the sequence.';
 
-% Status String
-tStatus=uicontrol(hpRun,'style','text','string','idle',...
-    'backgroundcolor','w','fontsize',8,'units','pixels',...
-    'fontweight','bold','visible','on','horizontalalignment','center');
-tStatus.Position(3:4)=[axAdWinBar.Position(3) 15];
-tStatus.Position(1:2)=[bStop.Position(1)+bStop.Position(3) 1];
-tStatus.Position(1) = axAdWinBar.Position(1);
-tStatus.Position(2) = axAdWinBar.Position(2) - 15;
-tStatus.ForegroundColor=[0 128 0]/255;
-
-% Scan Var
-tScanVar=uicontrol(hpRun,'style','text','string','No detected variable scanning with ParamDef/Get.',...
-    'backgroundcolor','w','fontsize',8,'units','pixels',...
-    'fontweight','normal','visible','on','horizontalalignment','center');
-tScanVar.Position(3:4)=[axAdWinBar.Position(3) 15];
-tScanVar.Position(1) = axAdWinBar.Position(1);
-tScanVar.Position(2) = tStatus.Position(2) - 15;
 
 % Button to reseed random list
 ttStr=['Reseed random list of scan indeces.'];
@@ -585,6 +613,7 @@ bReset.Callback=@bResetCB;
     function CycleComplete(src,evt)        
         d=guidata(hF);
         d.SequencerListener.Enabled = 0;
+        d.CycleStr.String = '';
         if cRpt.Value
             disp('Repeating the sequence');
             cycleTbl.Data       = seqdata.scancycle;
@@ -684,6 +713,7 @@ handles.AdwinStr1 = tAdWinTime1;
 handles.AdwinStr2 = tAdWinTime2;
 handles.StatusStr = tStatus;
 handles.SequenceText = eSeq;
+handles.CycleStr= tCycle;
 
 
 data.cycleTbl = cycleTbl;
@@ -695,7 +725,7 @@ data.SequencerListener = listener(data.SequencerWatcher,...
 data.SequencerListener.Enabled = 0;
 data.JobTable = tJobs;
 data.SequenceText = eSeq;
-
+data.CycleStr = tCycle;
 
 
 guidata(hF,data);

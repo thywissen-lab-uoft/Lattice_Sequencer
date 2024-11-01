@@ -47,8 +47,12 @@ function this = sequencer_watcher(handles)
     this.WaitButtons=handles.WaitButtons;       
     this.AdwinTimer.TimerFcn = @this.updateAdwin;
     this.WaitTimer.TimerFcn = @this.updateWait;   
-    this.WaitButtons.SelectionChangedFcn = @(src,evt) this.chWaitMode(evt.NewValue.UserData);
-    this.WaitMode = this.WaitButtons.SelectedObject.UserData;
+    % this.WaitButtons.SelectionChangedFcn = @(src,evt) this.chWaitMode(evt.NewValue.UserData);
+    % this.WaitMode = this.WaitButtons.SelectedObject.UserData;
+
+    this.WaitMode = this.WaitButtons.Value;
+    this.WaitButtons.Callback = @this.chWaitMode;
+
     this.StatusStr = handles.StatusStr;           
     this.WaitTable.CellEditCallback = @(src,evt) this.chWaitTime(src,evt);
     this.RequestWaitTime=30;
@@ -67,7 +71,10 @@ end
 
 % callback for wait time table edit
 function chWaitTime(this,src,evt)
-    x = evt.NewData;
+  
+    % x=evt.Source.Value;
+    x= evt.NewData;
+
     if isnumeric(x) && x>=0 && ~isinf(x) && ~isnan(x)
         src.Data = x;
         this.RequestWaitTime = x;
@@ -78,17 +85,19 @@ function chWaitTime(this,src,evt)
 end
 
 % callback for wait mode change
-function chWaitMode(this,waitMode)     
-    ch=this.WaitButtons.Children;
-    for kk=1:length(ch)
-       if ch(kk).UserData == waitMode
-           ch(kk).Value = 1;
-       else
-           ch(kk).Value = 0;
-       end
-    end
-    this.WaitMode = waitMode;            
-    if waitMode == 0
+function chWaitMode(this,src,evt)   
+    WaitMode = evt.Source.Value;
+
+    % ch=this.WaitButtons.Children;
+    % for kk=1:length(ch)
+    %    if ch(kk).UserData == WaitMode
+    %        ch(kk).Value = 1;
+    %    else
+    %        ch(kk).Value = 0;
+    %    end
+    % end
+    this.WaitMode = WaitMode;            
+    if WaitMode == 1
        this.WaitTable.Enable = 'off';
        this.RequestWaitTime = 0;
     else
@@ -135,13 +144,15 @@ end
 function updateWait(this,src,evt)
     dT0 = this.RequestWaitTime;
     switch this.WaitMode
-        case 0
+        case 1
             dT = 0;
             dT0=0;
-        case 1
-            dT = (now - this.WaitStartTime)*24*60*60;
         case 2
+            dT = (now - this.WaitStartTime)*24*60*60;
+        case 3
             dT = (now - this.AdwinStartTime)*24*60*60;
+        otherwise
+            keyboard
     end            
     if dT>=dT0
         stop(src);       

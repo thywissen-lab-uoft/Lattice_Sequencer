@@ -22,6 +22,7 @@ properties
     TextBox             % text table to update job progress
     SequencerWatcher    % sequencer_watcher which watches the adwin
     doIterate           % boolean to continue running jobs
+    DefaultJob          % The default job to run
 end    
 events
    
@@ -36,6 +37,8 @@ function obj = job_handler(gui_handle)
     obj.TextBox = d.JobTable;
     obj.updateJobText;
     obj.SequencerWatcher = d.SequencerWatcher;
+    obj.DefaultJob = job_default;
+
 end   
 
 function start(obj,job)      
@@ -102,7 +105,7 @@ function JobCompleteFcn(obj)
     obj.SequencerWatcher.StatusStr.String = 'evaluating job end function';
     obj.SequencerWatcher.StatusStr.ForegroundColor = [220,88,42]/255;
     obj.CurrentJob.JobCompleteFcnWrapper;
-    obj.SequencerWatcher.StatusStr.String = 'idle';
+    obj.SequencerWatcher.StatusStr.String = 'sequencer idle';
     obj.SequencerWatcher.StatusStr.ForegroundColor = [0 128 0]/255;
     
     % Ending Stuff

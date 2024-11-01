@@ -116,37 +116,58 @@ handles = struct;
 
 % Main uipanel
 hpMain=uipanel('parent',hF,'units','pixels','backgroundcolor',cc,...
-    'bordertype','etchedin');
+    'bordertype','line','BorderColor','k','borderwidth',1);
 hpMain.OuterPosition=[0 0 hF.Position(3) hF.Position(4)];
-hpMain.OuterPosition=[0 hF.Position(4)-h w h];
+hpMain.OuterPosition=[0 1 w 600];
 
- % Jobs uipanel
-hpJobs = uipanel('parent',hF,'units','pixels','backgroundcolor','w',...
-    'title','job handler','bordertype','etchedin');
-hpJobs.Position = [1 160 w hF.Position(4)-160];
+% wait uipanel
+hpStatus = uipanel('Parent',hpMain,'units','pixels',...
+    'backgroundcolor',cc,'bordertype','line','BorderColor','k','borderwidth',1);
+hpStatus.Position(3:4)=[250 70];
+hpStatus.Position(1:2)=[0 0];
+
+
+% wait uipanel
+hpWait = uipanel('Parent',hpMain,'units','pixels',...
+    'backgroundcolor',cc,'bordertype','line','BorderColor','k','borderwidth',1);
+hpWait.Position(3:4)=[250 70];
+hpWait.Position(1:2)=[0 hpStatus.Position(2)+hpStatus.Position(4)];
+
+% run uipanel
+hpRun = uipanel('Parent',hpMain,'units','pixels','Title','run mode',...
+    'backgroundcolor',cc,'bordertype','line','BorderColor','k','borderwidth',1);
+hpRun.Position(3:4)=[347 160];
+hpRun.Position(1:2)=[1 hpWait.Position(2)+hpWait.Position(4)];
+
+% sequence uipanel
+hpCurrentJob = uipanel('parent',hpMain,'units','pixels','backgroundcolor',cc,...
+    'bordertype','etchedin','title','sequence');
+hpCurrentJob.Position(3:4)=[347 90];
+hpCurrentJob.Position(1:2)=[1 hpRun.Position(2)+hpRun.Position(4)];
 
 % sequence uipanel
 hpSeq = uipanel('parent',hpMain,'units','pixels','backgroundcolor',cc,...
     'bordertype','etchedin','title','sequence');
 hpSeq.Position(3:4)=[347 90];
-hpSeq.Position(1:2)=[1 71];
+hpSeq.Position(1:2)=[1 hpCurrentJob.Position(2)+hpCurrentJob.Position(4)];
 
-% wait uipanel
-hpWait = uipanel('Parent',hpMain,'units','pixels','Title','wait mode',...
-    'backgroundcolor',cc);
-hpWait.Position(3:4)=[347 70];
-hpWait.Position(1:2)=[1 1];
+ % Jobs uipanel
+hpJobs = uipanel('parent',hF,'units','pixels','backgroundcolor','w',...
+    'title','job queue','bordertype','etchedin');
+hpJobs.Position(1:2) = [1 hpSeq.Position(2)+hpCurrentJob.Position(4)];
+hpJobs.Position(3:4)=[w 90];
 
-% run uipanel
-hpRun = uipanel('Parent',hpMain,'units','pixels','Title','run mode',...
-    'backgroundcolor',cc);
-hpRun.Position(3:4)=[347 160];
-hpRun.Position(1:2)=[350 1];
+
+
+
+
+
+
 
 hF.SizeChangedFcn=@sequencer_resize;
 
     function sequencer_resize(src,evt)
-        hpJobs.Position(4) = hpJobs.Parent.Position(4)-hpJobs.Position(2)-5;
+        % hpJobs.Position(4) = hpJobs.Parent.Position(4)-hpJobs.Position(2)-5;
         tJobs.Position(4) = tJobs.Parent.Position(4)-tJobs.Position(2)-20;
     end
 
@@ -174,7 +195,7 @@ bHelp.Position(1:2)=[5 5];
     end
 
 % Button to run the cycle
-bRunJob=uicontrol(hpJobs,'style','pushbutton','String','Start',...
+bRunJob=uicontrol(hpJobs,'style','pushbutton','String','Start Queue',...
     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','callback',@startJobsCB);
 bRunJob.Position(3:4)=[40 20];
@@ -194,17 +215,16 @@ bStopJob.Position(3:4)=[40 20];
 bStopJob.Position(1:2)=[80 5];
 bStopJob.Tooltip='Stop jobs';
 
-
     function stopJobsCB(~,~)
         d=guidata(hF);
         d.JobHandler.stop;
     end
 
 % Button to run the cycle
-bClearJob=uicontrol(hpJobs,'style','pushbutton','String','Clear',...
+bClearJob=uicontrol(hpJobs,'style','pushbutton','String','remove all jobs',...
     'backgroundcolor',[173 216 230]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','callback',@clearJobsCB);
-bClearJob.Position(3:4)=[40 20];
+bClearJob.Position(3:4)=[80 20];
 bClearJob.Position(1:2)=[125 5];
 bClearJob.Tooltip='Clear jobs';
 
@@ -214,10 +234,10 @@ bClearJob.Tooltip='Clear jobs';
     end
 
 % Button to add a job
-bAddJob=uicontrol(hpJobs,'style','pushbutton','String','Add',...
+bAddJob=uicontrol(hpJobs,'style','pushbutton','String','Add Job',...
     'backgroundcolor',[205,133,63]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','callback',@addJobsCB);
-bAddJob.Position(3:4)=[40 20];
+bAddJob.Position(3:4)=[60 20];
 bAddJob.Position(1:2)=[170 5];
 bAddJob.Tooltip='Add jobs';
 
@@ -395,17 +415,17 @@ bCmd.Position(1:2)=bCompileFull.Position(1:2)+[bCompileFull.Position(3)+2 0];
 % button
 bgWait = uibuttongroup('Parent',hpWait,'units','pixels','backgroundcolor',cc,...
     'BorderType','none');
-bgWait.Position(3:4)=[347 20];
+bgWait.Position(3:4)=[347 17];
 bgWait.Position(1:2)=[1 30];
 
 % Create three radio buttons in the button group. The user data holds the
 % selected mode (0,1,2) --> (no wait, intercyle, target time)
 uicontrol(bgWait,'Style','radiobutton', 'String','none',...
-    'Position',[5 1 100 20],'Backgroundcolor',cc,'UserData',0,'value',0);  
+    'Position',[5 0 100 17],'Backgroundcolor',cc,'UserData',0,'value',0,'fontsize',8);  
 uicontrol(bgWait,'Style','radiobutton','String','intercycle',...
-    'Position',[50 1 100 20],'Backgroundcolor',cc,'UserData',1,'value',1);
+    'Position',[50 0 100 17],'Backgroundcolor',cc,'UserData',1,'value',1,'fontsize',8);
 uicontrol(bgWait,'Style','radiobutton','String','total',...
-    'Position',[120 1 100 20],'Backgroundcolor',cc,'UserData',2,'value',0);              
+    'Position',[120 0 100 17],'Backgroundcolor',cc,'UserData',2,'value',0,'fontsize',8);              
 
 % Table for storing value of wait time
 tblWait=uitable(hpWait,'RowName','','ColumnName','','Data',waitDefault,...
@@ -415,31 +435,6 @@ tblWait.Position(3:4)=tblWait.Extent(3:4);
 tblWait.Position(4)=tblWait.Position(4);
 tblWait.Position(1:2)=[260 30];
 
-% Seconds label for the wait time.
-tWait=uicontrol(hpWait,'style','text','string','seconds',...
-    'fontsize',8,'units','pixels','backgroundcolor',cc);
-tWait.Position(3:4)=tWait.Extent(3:4);
-tWait.Position(1)=tblWait.Position(1)+tblWait.Position(3)+2;
-tWait.Position(2)=tblWait.Position(2);
-
-% Axis object for plotting the wait bar
-waitbarcolor=[106, 163, 241 ]/255;
-axWaitBar=axes('parent',hpWait,'units','pixels','XTick',[],...
-    'YTick',[],'box','on','XLim',[0 1],'Ylim',[0 1]);
-axWaitBar.Position(1:2)=[10 5];
-axWaitBar.Position(3:4)=[bgWait.Position(3)-20 10];
-title('Wait Timer');
-
-% Plot the wait bar
-pWaitBar = patch(axWaitBar,[0 0 0 0],[0 0 1 1],waitbarcolor);
-
-% String labels for time end points
-tWaitTime1 = text(0,0,'0.00 s','parent',axWaitBar,'fontsize',10,...
-    'horizontalalignment','left','units','pixels','verticalalignment','bottom');
-tWaitTime1.Position=[5 10];
-tWaitTime2 = text(0,0,'10.00 s','parent',axWaitBar,'fontsize',10,...
-    'horizontalalignment','right','units','pixels','verticalalignment','bottom');
-tWaitTime2.Position=[axWaitBar.Position(3) 10];
 
 %% Run mode graphics and callbacks
 
@@ -468,14 +463,14 @@ text(.5,1.05,'adwin progress','fontsize',10,'horizontalalignment','center', ...
 bRunIter=uicontrol(hpRun,'style','pushbutton','String','Run Cycle',...
     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','Callback',{@bRunCB 0});
-bRunIter.Position(3:4)=[85 20];bRunIter.Position(1:2)=[5 30];
+bRunIter.Position(3:4)=[85 15];bRunIter.Position(1:2)=[5 30];
 bRunIter.Tooltip='Run the current sequence.';
 
 % Button to run the cycle
 bStartScan=uicontrol(hpRun,'style','pushbutton','String','Start Scan',...
     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold');
-bStartScan.Position(3:4)=[85 20];
+bStartScan.Position(3:4)=[85 15];
 bStartScan.Position(1:2)=[5 5];
 bStartScan.Callback={@bRunCB 1};
 bStartScan.Tooltip='Start the scan.';
@@ -484,7 +479,7 @@ bStartScan.Tooltip='Start the scan.';
 bContinue=uicontrol(hpRun,'style','pushbutton','String','Resume Scan',...
     'backgroundcolor',[173 216 230]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold');
-bContinue.Position(3:4)=[85 20];
+bContinue.Position(3:4)=[85 15];
 bContinue.Position(1:2)=[95 5];
 bContinue.Callback={@bRunCB 2};
 bContinue.Tooltip='resume the scan from current iteration.';
@@ -493,14 +488,14 @@ bContinue.Tooltip='resume the scan from current iteration.';
 bStop=uicontrol(hpRun,'style','pushbutton','String','Stop Scan',...
     'backgroundcolor',[255	218	107]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','callback',@bStopCB,'Tooltip','stop scan');
-bStop.Position(3:4)=[85 20];
+bStop.Position(3:4)=[85 15];
 bStop.Position(1:2)=[185 5];
 
 % Button to reset cycle number to one
 bResetCycleNum=uicontrol(hpRun,'style','pushbutton','String','reset cycle#',...
     'backgroundcolor',[238,232,170]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','callback',@bResetCycleNumCB);
-bResetCycleNum.Position(3:4)=[85 20];
+bResetCycleNum.Position(3:4)=[85 15];
 bResetCycleNum.Position(1:2)=[95 30];
 bResetCycleNum.Tooltip='Reset cycle number';
 

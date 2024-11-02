@@ -1,4 +1,4 @@
-function tExecute=runSequence(funcs,foo)
+function tExecute=runSequence(funcs,CycleStartFcn)
 global seqdata
 global adwinprocessnum
 
@@ -74,7 +74,7 @@ end
 %% Special Function
 
 if nargin == 2
-    foo();
+    CycleStartFcn();
 end
 
 %% Start the Adwin

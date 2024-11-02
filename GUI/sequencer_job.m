@@ -209,12 +209,6 @@ function CycleStartFcnWrapper(obj)
     if ~isempty(obj.CycleStartFcn)
         obj.CycleStartFcn(); 
     end
-%     if ~isempty(obj.SaveDirName)
-%         SaveDir = obj.SaveDirName;
-%         try
-%             save(obj.CameraFile,'SaveDir');
-%         end
-%     end
 end
 
 end

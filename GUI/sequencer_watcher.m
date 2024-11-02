@@ -26,6 +26,7 @@ end
 
 events
     CycleComplete
+    AdwinComplete    
 end
 
 methods
@@ -47,7 +48,7 @@ function this = sequencer_watcher(handles)
         'ExecutionMode','FixedSpacing', ...
         'Period',0.05,'name','WaitGraphicTimer',...
         'TimerFcn',@this.WaitTimerFcn);    
-    this.WaitTime           = 30;
+    this.WaitTime           = 5;
     this.WaitStr1           = handles.WaitStr1;
     this.WaitStr2           = handles.WaitStr2;    
     this.WaitBar            = handles.WaitBar;  
@@ -56,16 +57,11 @@ function this = sequencer_watcher(handles)
     this.StatusStr          = handles.StatusStr;           
     % this.SequenceText       = handles.SequenceText;
 end
-% 
-% % function that updates the sequence file text
-% function updateSequenceFileText(obj,SequenceFunctions)
-%     mystr =[];
-%     for kk = 1:length(SequenceFunctions)
-%         mystr = [mystr '@' func2str(SequenceFunctions{kk}) ','];
-%     end
-%     mystr(end)=[];
-%     obj.SequenceText.String=mystr;
-% end
+
+function [AdwinTimerRunning,WaitTimerRunning] = getSequencerStatus(obj)
+    AdwinTimerRunning = obj.AdwinGraphicTimer.Running;
+    WaitTimerRunning = obj.WaitGraphicTimer.Running;
+end
 
 % function upon cyclecomplete, mainly graphical, notifies the event
 function cycleComplete(this)
@@ -83,6 +79,7 @@ function updateAdwin(this,src,evt)
     dT0 = this.AdwinTime;
     if dT>=dT0
         stop(src);  
+        this.notify('AdwinComplete');
         this.AdwinBar.XData = [0 1 1 0];             
         this.AdwinStr1.String=[num2str(dT0,'%.2f') ' s'];
         this.AdwinStr2.String=[num2str(dT0,'%.2f') ' s']; 
@@ -92,7 +89,7 @@ function updateAdwin(this,src,evt)
             this.StatusStr.ForegroundColor = 'k';
             start(this.WaitGraphicTimer);
         else
-            this.cycleComplete;
+            this.cycleComplete();
         end
     else
         this.AdwinBar.XData = [0 1 1 0]*dT/dT0;             

@@ -18,13 +18,22 @@ classdef job_handler < handle
 properties        
     CurrentJob          % current active sequencer job
     SequencerJobs       % array of sequencer jobs to run
-    ListenerCycle       % listener object for adwin cycle complete
+    ListenerCycle       % listener object for when Cycle finishes
+    ListenerAdwin       % listener object for when Adwin finishes
     TextBox             % text table to update job progress
     SequencerWatcher    % sequencer_watcher which watches the adwin
     doIterate           % boolean to continue running jobs
     DefaultJob          % The default job to run
     JobTabs         
+    Cycle
+    TableJobCycle
+    TableJobOptions
+    doHoldCycle
+    doStopJobOnCycleComplete
+    doStopQueueOnJobComplete
+    doStartQueueOnDefaultJobCycleComplete
 end    
+
 events
    
 end
@@ -42,23 +51,44 @@ function obj = job_handler(gui_handle)
     J_default = job_default;
     J_default.MakeTableInterface(obj.JobTabs);
     obj.DefaultJob = J_default;
+
+    if isfield(d,'TableJobCycle')
+        obj.TableJobCycle=d.TableJobCycle;
+        obj.TableJobCycle.CellEditCallback=@obj.JobCycleCB;
+    end
+    if isfield(d,'TableJobOptions')
+        obj.TableJobOptions=d.TableJobOptions;
+        obj.TableJobOptions.CellEditCallback=@obj.JobOptionsCB;
+    end
+    obj.Cycle                                   = 1;
+    obj.doHoldCycle                             = 0;
+    obj.doStopJobOnCycleComplete                = 0;
+    obj.doStopQueueOnJobComplete                = 0;
+    obj.doStartQueueOnDefaultJobCycleComplete   = 0;
+end
+
+function JobOptionsCB(obj,src,evt)
+    obj.doHoldCycle = src.Data{1,1};
+    obj.doStopJobOnCycleComplete = src.Data{2,1};
+    obj.doStopQueueOnJobComplete = src.Data{3,1};
+    obj.doStartQueueOnDefaultJobCycleComplete = src.Data{4,1};
+end
+
+function JobCycleCB(obj,src,evt)   
+    n = evt.NewData;
+    if ~isnan(n) && isnumeric(n) && floor(n)==n && ~isinf(n) && n>0
+        obj.Cycle = round(n);
+    else
+        src.Data = evt.PreviousData;
+    end
 end
 
 function start(obj,job_type)     
-    if ~obj.isIdle
-       return; 
-    end  
+    if ~obj.isIdle;return;end 
+    if obj.SequencerWatcher.isRunning;return;end
+    if nargin == 1;job_type = 'default';end
 
-    % Check if sequencer is alrady running
-    if obj.SequencerWatcher.isRunning
-       warning('sequencer already running');              
-       return;
-    end
-
-    if nargin == 1
-        job_type = 'default';
-    end
-
+    % Get Job if you give it an index
     if isnumeric(job_type)
         job_index = job_type;
         if length(obj.SequencerJobs)>=job_index
@@ -66,6 +96,7 @@ function start(obj,job_type)
         end
     end
 
+    % Different behavior if the second argin is a string
     switch class(job_type)
         case 'sequencer_job'
             job = job_type;            
@@ -84,27 +115,25 @@ function start(obj,job_type)
     end
     
     % Update current job
-    obj.CurrentJob = job;
-    
-    cycles_left = job.CyclesRequested-job.CyclesCompleted;    
-    if cycles_left<=0
-        obj.JobCompleteFcn;
-        return;
-    end    
-    % Update the job
-    job.Status = 'running';
-    obj.updateJobText;
+    obj.CurrentJob = job; 
+    if job.CyclesCompleted>=job.CyclesRequested;obj.JobCompleteFcn;return;end   
+    obj.runCurrentJob();    
+end
 
- 
+function runCurrentJob(obj)
+    job=obj.CurrentJob;
+    job.Status = 'running';
+    obj.updateJobText; 
     global seqdata
     seqdata.scancycle = job.CyclesCompleted+1;
     seqdata.sequence_functions = job.SequenceFunctions;
-
     t=runSequence(job.SequenceFunctions,@job.CycleStartFcnWrapper);              
     job.ExecutionDates(end+1) = t;
     % Get ready to wait for job to finish
     obj.ListenerCycle=listener(obj.SequencerWatcher,'CycleComplete',...
         @(src, evt) obj.CycleCompleteFcn);
+    obj.ListenerAdwin=listener(obj.SequencerWatcher,'AdwinComplete',...
+        @(src, evt) obj.AdwinCompleteFcn);
     obj.doIterate   = true;
 end
 
@@ -134,45 +163,64 @@ function JobCompleteFcn(obj)
     end        
 end
 
-function CycleCompleteFcn(obj)    
-% Evaluates at the end of the cycle. This handles graphical calls and also
-% excutes any user defind functions in the sequencer_job
+% Evaluates when the Adwin is complete
+function AdwinCompleteFcn(obj)
+    delete(obj.ListenerAdwin);                      % Delete Listener
+    obj.CurrentJob.Status = 'AdwinComplete';
 
-    delete(obj.ListenerCycle);      % delete listerner   
-    job = obj.CurrentJob;           % get the current job
+    % Increment Cycles Completed
+    if ~obj.doHoldCycle
+        obj.CurrentJob.CyclesCompleted = obj.CurrentJob.CyclesCompleted+1;   
+    end    
+    obj.updateJobText;
+    obj.CurrentJob.CycleCompleteFcnWrapper;         % Evalvulate job.CycleCompleteFcn
 
-    % Increment cycles completed
-    job.CyclesCompleted = job.CyclesCompleted+1;           
-        
-    % Execute User function here        
-    obj.SequencerWatcher.StatusStr.String = 'evaluating job end function';
-    obj.SequencerWatcher.StatusStr.ForegroundColor = [220,88,42]/255;
-    obj.CurrentJob.Status = 'cycle end';
-    obj.updateJobText;
-    obj.CurrentJob.CycleCompleteFcnWrapper;       
-    obj.CurrentJob.Status = 'pending';
-    obj.updateJobText;
-    obj.SequencerWatcher.StatusStr.String = 'idle';
-    obj.SequencerWatcher.StatusStr.ForegroundColor = [0 128 0]/255;
-    
-    % Insert check on buttons
-    if ~obj.doIterate
-        obj.CurrentJob.Status='pending';
-        obj.CurrentJob = [];
-        obj.updateJobText;
-        return;
-    end        
-    
-  
-    cycles_left = job.CyclesRequested-job.CyclesCompleted;    
-    % No more cycles, run the job complete fcn
-    if isempty(cycles_left) || cycles_left<1
+    if obj.CurrentJob.CyclesCompleted>=obj.CurrentJob.CyclesRequested
+        obj.CurrentJob.isComplete = true;
+        obj.CurrentJob.Status = 'JobCompleteFcn';
         obj.JobCompleteFcn;
-    else
-        obj.start(job);        % Continue job    
+        obj.CurrentJob.Status = 'Finished';
     end
-    
+    obj.updateJobText;
 end
+
+% Evaluates when the Cycle (Adwin+Wait) is complete
+function CycleCompleteFcn(obj)    
+    delete(obj.ListenerCycle);          % delete Listener   
+    if obj.doStopJobOnCycleComplete
+        obj.stop();
+        return;
+    end
+    if (obj.doStopQueueOnJobComplete && obj.CurrentJob.isComplete)
+        obj.stop();
+        return;
+    end
+    if (obj.doStartQueueOnDefaultJobCycleComplete)
+        obj.start('queue');
+        return;
+    end
+    obj.start('default'); 
+end
+
+function addJobGUI(obj,startdir)
+    if nargin==1
+        startdir=pwd;
+    end
+    fstr='Add job files';
+    [file,~] = uigetfile('*.m',fstr,startdir);          
+    if ~file
+        return;
+    end            
+    try            
+        func=str2func(strrep(file,'.m',''));
+        J = func();            
+        obj.add(J);
+    catch ME            
+        warning(ME.message);
+    end
+end
+
+ 
 
 % Add job to list
 function add(obj,job)
@@ -192,13 +240,7 @@ function stop(obj)
 end   
 
 % Clear all jobs
-function clear(obj)
-    if ~isIdle(obj)
-       warning('Cannot clear jobs until idle. Stopping jobs instead.');
-       obj.stop;
-       return;
-    end
-    
+function clear(obj) 
     for kk=1:length(obj.SequencerJobs)
        delete(obj.SequencerJobs{kk}); 
     end
@@ -231,6 +273,7 @@ end
 % Check if job handler is idle
 function val = isIdle(obj)
     val = 1;
+
     for kk=1:length(obj.SequencerJobs)
         status = obj.SequencerJobs{kk}.Status;     
         

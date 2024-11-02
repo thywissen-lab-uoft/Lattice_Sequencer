@@ -4,9 +4,10 @@ function hF=mainGUI
 % here.
 %
 % Author      : CJ Fujiwara
-% Last Edited : 2023/02
+% Last Edited : 2024/11
 
 %% Find previous instance of gui
+% Open the GUI if it already exists
 figs = get(groot,'Children');
 for i = 1:length(figs)
     if isequal(figs(i).UserData,'sequencer_gui')       
@@ -15,37 +16,24 @@ for i = 1:length(figs)
        return;
     end
 end
-
 %% Initialize Things
 LatticeSequencerInitialize();
 global seqdata;
 global adwinprocessnum;
-
 data = struct;
-
 seqdata.doscan = 0;
 evalin('base','global seqdata')
 evalin('base','openvar(''seqdata'')')
 evalin('base','openvar(''seqdata.flags'')')
 evalin('base','openvar(''seqdata.params'')')
 evalin('base','openvar(''seqdata.variables'')')
-
-
 waitDefault=30;
-
-
-% defaultSequence='@main_settings,@main_sequence';
-
 defaultSequence={@main_settings,@main_sequence};
 seqdata.sequence_functions = defaultSequence;
-
 figName='Main GUI';
-
-if seqdata.debugMode
-    
+if seqdata.debugMode    
     figName=[figName ' DEBUG MODE'];
 end
-
 %% Initialize Primary Figure graphics
 
 disp('Opening Lattice Sequencer...');
@@ -62,7 +50,7 @@ hF.Position(3:4)=[w h];
 set(hF,'WindowStyle','docked');
 
 handles = struct;
-
+hF.SizeChangedFcn=@sequencer_resize;
 
 %% Close Figure Callback
  function closeFig(src,~)
@@ -94,8 +82,7 @@ handles = struct;
             delete(t.SequencerWatcher);
         catch ME
             warning(ME.message);
-        end
-        
+        end        
         try 
             delete(t.JobHandler)
         catch ME
@@ -116,64 +103,51 @@ handles = struct;
 % Main uipanel
 hpMain=uipanel('parent',hF,'units','pixels','backgroundcolor',cc,...
     'bordertype','line','BorderColor','k','borderwidth',1);
-% hpMain.OuterPosition=[0 0 hF.Position(3) hF.Position(4)];
 hpMain.Position=[0 1 350 600];
 
-% status uipanel
+% Panel : Timer Display and Status
 hpStatus = uipanel('Parent',hpMain,'units','pixels',...
     'backgroundcolor',cc,'bordertype','line','BorderColor','k','borderwidth',1);
 hpStatus.Position(3:4)=[hpStatus.Parent.Position(3) 65];
 hpStatus.Position(1:2)=[0 0];
-% hpStatus.Position(1:2)=[140 1];
 
-
+% Tab Grou : Job object detail
 hpJobDetail=uitabgroup(hpMain,'units','pixels');
 hpJobDetail.Position(3:4)=[347 300];
 hpJobDetail.Position(1:2)=[1 hpStatus.Position(2)+hpStatus.Position(4)];
 
+% Tab : Default Job
 default_job_tab=uitab(hpJobDetail,'Title','default job','units','pixels');
-current_job_tab=uitab(hpJobDetail,'Title','current job','units','pixels');
+hpSeq = uipanel('parent',default_job_tab,'units','normalized',...
+    'backgroundcolor',cc,'position',[0 0 1 1]);
 
-% hpDefaultJob = uipanel('parent',default_job_tab,'backgroundcolor','w','units',...
-%     'normalized','position',[0 0 1 1]);
+% Tab : Current Job
+current_job_tab=uitab(hpJobDetail,'Title','current job','units','pixels');
 hpCurrentJob = uipanel('parent',current_job_tab,'backgroundcolor','w','units',...
     'normalized','position',[0 0 1 1]);
 
-
-
-% sequence uipanel
-% hpSeq = uipanel('parent',default_job_tab,'units','pixels','backgroundcolor',cc,...
-%     'bordertype','etchedin','title','sequence');
-hpSeq = uipanel('parent',default_job_tab,'units','normalized','backgroundcolor',cc,'position',[0 0 1 1]);
-% hpSeq.Position(3:4)=[347 120];
-% hpSeq.Position(1:2)=[1 hpJobDetail.Position(2)+hpJobDetail.Position(4)];
-% hpSeq.Position(1:2)=[0 hpSeq.Parent.Position(4)-hpSeq.Position(4)];
-
-% run uipanel
+% Panel : Job Controller
 hpRun = uipanel('Parent',hpMain,'units','pixels','Title','job controller',...
     'backgroundcolor',cc,'bordertype','line','BorderColor','k','borderwidth',1);
 hpRun.Position(3:4)=[350 140];
 hpRun.Position(1:2)=[0 hpJobDetail.Position(2)+hpJobDetail.Position(4)];
-% hpRun.Position(1:2)=[1 1];
 
- % Jobs uipanel
+% Panel : Job Queue
 hpJobs = uipanel('parent',hF,'units','pixels','backgroundcolor','w',...
-    'title','job queue','bordertype','etchedin');
+    'title','Job Queue','bordertype','etchedin');
 hpJobs.Position(1:2) = [1 hpRun.Position(2)+hpRun.Position(4)];
 hpJobs.Position(3:4)=[w 90];
 
-hF.SizeChangedFcn=@sequencer_resize;
-
     function sequencer_resize(src,evt)
         try
-        hpMain.Position(3:4) = hpMain.Parent.Position(3:4);
-        hpStatus.Position(3) = hpStatus.Parent.Position(3);
-        hpJobs.Position(4) = hpJobs.Parent.Position(4)-hpJobs.Position(2)-5;
-        tJobs.Position(4) = tJobs.Parent.Position(4)-tJobs.Position(2)-20;
-        axWaitBar.Position(3)=[axWaitBar.Parent.Position(3)-2*axWaitBar.Position(1)];
-        axAdWinBar.Position(3) = axWaitBar.Position(3);
-        tCycle.Position(1) = tCycle.Parent.Position(3)-tCycle.Position(3)-10;
-        hpJobDetail.Position(3)=hpJobDetail.Parent.Position(3);
+            hpMain.Position(3:4)    = hpMain.Parent.Position(3:4);
+            hpStatus.Position(3)    = hpStatus.Parent.Position(3);
+            hpJobs.Position(4)      = hpJobs.Parent.Position(4)-hpJobs.Position(2)-5;
+            tJobs.Position(4)       = tJobs.Parent.Position(4)-tJobs.Position(2)-20;
+            axWaitBar.Position(3)   = axWaitBar.Parent.Position(3)-2*axWaitBar.Position(1);
+            axAdWinBar.Position(3)  = axWaitBar.Position(3);
+            tCycle.Position(1)      = tCycle.Parent.Position(3)-tCycle.Position(3)-10;
+            hpJobDetail.Position(3) = hpJobDetail.Parent.Position(3);
         end
     end
 
@@ -181,7 +155,7 @@ hF.SizeChangedFcn=@sequencer_resize;
 
 % Job Table
 tJobs = uitable('parent',hpJobs,'fontsize',8,'rowname',{});
-tJobs.ColumnName = {'', 'status','cycles','name'};
+tJobs.ColumnName = {'', 'Status','Cycles','Job Name'};
 tJobs.ColumnWidth={20 60 40 170};
 tJobs.ColumnEditable=[true false false false];
 tJobs.ColumnFormat = {'logical','char','char','char'};
@@ -201,6 +175,8 @@ bHelp.Position(1:2)=[5 5];
     end
 
 
+
+
 % Checkbox to hold sequencer
 cBoop=uicontrol(hpJobs,'style','checkbox','string','run default job after queue end','fontsize',7,...
     'backgroundcolor',cc,'units','pixels');
@@ -208,12 +184,11 @@ cBoop.Position(3:4)=[150 cBoop.Extent(4)];
 cBoop.Position(1:2)=[200 5];
 cBoop.Tooltip='Hold the sequencer after end of next cycle.';
 
-
 % Button to run the cycle
 bRunJob=uicontrol(hpJobs,'style','pushbutton','String','Start Queue',...
     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','callback',@startJobsCB);
-bRunJob.Position(3:4)=[40 20];
+bRunJob.Position(3:4)=[80 20];
 bRunJob.Position(1:2)=[35 5];
 bRunJob.Tooltip='Run the jobs';
 

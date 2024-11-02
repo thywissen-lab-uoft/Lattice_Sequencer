@@ -29,6 +29,8 @@ evalin('base','openvar(''seqdata.params'')')
 evalin('base','openvar(''seqdata.variables'')')
 waitDefault=30;
 defaultSequence={@main_settings,@main_sequence};
+defaultSequence={@test_sequence};
+
 seqdata.sequence_functions = defaultSequence;
 figName='Main GUI';
 if seqdata.debugMode    
@@ -115,16 +117,6 @@ hpStatus.Position(1:2)=[0 0];
 hpJobDetail=uitabgroup(hpMain,'units','pixels');
 hpJobDetail.Position(3:4)=[347 350];
 hpJobDetail.Position(1:2)=[1 hpStatus.Position(2)+hpStatus.Position(4)];
-
-% Tab : Default Job
-default_job_tab=uitab(hpJobDetail,'Title','default job','units','pixels');
-hpSeq = uipanel('parent',default_job_tab,'units','normalized',...
-    'backgroundcolor',cc,'position',[0 0 1 1]);
-
-% Tab : Current Job
-current_job_tab=uitab(hpJobDetail,'Title','current job','units','pixels');
-hpCurrentJob = uipanel('parent',current_job_tab,'backgroundcolor','w','units',...
-    'normalized','position',[0 0 1 1]);
 
 % Panel : Job Controller
 hpRun = uipanel('Parent',hpMain,'units','pixels','Title','job controller',...
@@ -252,13 +244,6 @@ bAddJob.Tooltip='Add jobs';
 %% Sequence
 
 
-options=struct;
-options.Position = [1 30 100+180+5 205];
-
-J_default = job_default;
-J_default.MakeTableInterface(hpSeq,options);
-
-
 % tblDefaultJob = uitable('parent',hpSeq,'units','pixels','fontsize',7,...
 %     'columnwidth',{100 180},'ColumnFormat',{'char','char'},...
 %     'RowName',{},'columnname',{},'ColumnEditable',[false true],...
@@ -286,13 +271,13 @@ J_default.MakeTableInterface(hpSeq,options);
 % tSeq.Position(1:2)=[5 46];
 
 % Sequence File edit box
-eSeq=uicontrol(hpSeq,'style','edit','string','A',...
-    'horizontalalignment','left','fontsize',8,'backgroundcolor',cc,'enable','off','units','normalized');
-eSeq.Position(4)=eSeq.Extent(4);
-% eSeq.Position(1:2)=[25 32];
-% eSeq.Position(3)=eSeq.Parent.Position(3)-eSeq.Position(1)-5;
-eSeq.Position(1:2)=[.02 .02];
-eSeq.Position(3)=.95;
+% eSeq=uicontrol(hpMain,'style','edit','string','A',...
+%     'horizontalalignment','left','fontsize',8,'backgroundcolor',cc,'enable','off','units','normalized');
+% eSeq.Position(4)=eSeq.Extent(4);
+% % eSeq.Position(1:2)=[25 32];
+% % eSeq.Position(3)=eSeq.Parent.Position(3)-eSeq.Position(1)-5;
+% eSeq.Position(1:2)=[.02 .02];
+% eSeq.Position(3)=.95;
 
 %% Sequencer Status Panel
 % 
@@ -377,30 +362,31 @@ tCycle.Position(2) = tStatus.Position(2);
 
 
 %% Wait Timer Graphical interface
+% 
+% tWaitMode = uicontrol(hpSeq,'style','text','string','wait mode : ',...
+%     'units','pixels','fontsize',7,'backgroundcolor','w','fontname','arial');
+% tWaitMode.Position(1:2) = [5 250];
+% tWaitMode.Position(3:4) = [50 10];
+% 
+% menuWaitMode = uicontrol(hpSeq,'style','popupmenu','string',{'none','intercycle','total'},...
+%     'units','pixels','fontsize',7,'value',2);
+% menuWaitMode.Position(3:4)=[70 15];
+% menuWaitMode.Position(1:2)=[tWaitMode.Position(1)+tWaitMode.Position(3) tWaitMode.Position(2)];
+% 
+% % Table for storing value of wait time
+% tblWait=uitable(hpSeq,'RowName','','ColumnName','','Data',waitDefault,...
+%     'ColumnWidth',{30},'ColumnEditable',true,'ColumnFormat',{'numeric'},...
+%     'fontsize',8,'Enable','on');
+% tblWait.Position(3:4)=tblWait.Extent(3:4);
+% tblWait.Position(4)=tblWait.Position(4);
+% tblWait.Position(1:2)=[2+menuWaitMode.Position(1)+menuWaitMode.Position(3) menuWaitMode.Position(2)-5];
+% 
+% % Wait Unit Label
+% tWaitSec = uicontrol(hpSeq,'style','text','string','sec.',...
+%     'units','pixels','fontsize',7,'backgroundcolor','w','fontname','arial');
+% tWaitSec.Position(1:2) = [tblWait.Position(1)+tblWait.Position(3) tWaitMode.Position(2)];
+% tWaitSec.Position(3:4) = [20 10];
 
-tWaitMode = uicontrol(hpSeq,'style','text','string','wait mode : ',...
-    'units','pixels','fontsize',7,'backgroundcolor','w','fontname','arial');
-tWaitMode.Position(1:2) = [5 250];
-tWaitMode.Position(3:4) = [50 10];
-
-menuWaitMode = uicontrol(hpSeq,'style','popupmenu','string',{'none','intercycle','total'},...
-    'units','pixels','fontsize',7,'value',2);
-menuWaitMode.Position(3:4)=[70 15];
-menuWaitMode.Position(1:2)=[tWaitMode.Position(1)+tWaitMode.Position(3) tWaitMode.Position(2)];
-
-% Table for storing value of wait time
-tblWait=uitable(hpSeq,'RowName','','ColumnName','','Data',waitDefault,...
-    'ColumnWidth',{30},'ColumnEditable',true,'ColumnFormat',{'numeric'},...
-    'fontsize',8,'Enable','on');
-tblWait.Position(3:4)=tblWait.Extent(3:4);
-tblWait.Position(4)=tblWait.Position(4);
-tblWait.Position(1:2)=[2+menuWaitMode.Position(1)+menuWaitMode.Position(3) menuWaitMode.Position(2)-5];
-
-% Wait Unit Label
-tWaitSec = uicontrol(hpSeq,'style','text','string','sec.',...
-    'units','pixels','fontsize',7,'backgroundcolor','w','fontname','arial');
-tWaitSec.Position(1:2) = [tblWait.Position(1)+tblWait.Position(3) tWaitMode.Position(2)];
-tWaitSec.Position(3:4) = [20 10];
 %% Job Controller
 
 % Status String
@@ -441,31 +427,31 @@ cHold.Position(3:4)=[150 cHold.Extent(4)];
 cHold.Position(1:2)=[5 cRpt.Position(2)-15];
 cHold.Tooltip='Hold the sequencer after end of next cycle.';
 
-% Button to run the cycle
-bRunIter=uicontrol(hpRun,'style','pushbutton','String','Run Single Cycle',...
-    'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
-    'fontweight','bold','Callback',{@bRunCB 0});
-bRunIter.Position(3:4)=[120 16];
-bRunIter.Position(1:2)=[5 22];
-bRunIter.Tooltip='Run the current sequence.';
+% % Button to run the cycle
+% bRunIter=uicontrol(hpRun,'style','pushbutton','String','Run Single Cycle',...
+%     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
+%     'fontweight','bold','Callback',{@bRunCB 0});
+% bRunIter.Position(3:4)=[120 16];
+% bRunIter.Position(1:2)=[5 22];
+% bRunIter.Tooltip='Run the current sequence.';
 
 % Button to run the cycle
-bStartScan=uicontrol(hpRun,'style','pushbutton','String','Start Current Job',...
+bStartScan=uicontrol(hpRun,'style','pushbutton','String','Start Job',...
     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold');
 bStartScan.Position(3:4)=[120 16];
 bStartScan.Position(1:2)=[5 5];
-bStartScan.Callback={@bRunCB 1};
+% bStartScan.Callback={@bRunCB 1};
 bStartScan.Tooltip='Start the scan.';
 
-% Button to run the cycle
-bContinue=uicontrol(hpRun,'style','pushbutton','String','Continue Current Job',...
-    'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
-    'fontweight','bold');
-bContinue.Position(3:4)=[120 16];
-bContinue.Position(1:2)=[bStartScan.Position(1)+bStartScan.Position(3) 5];
-bContinue.Callback={@bRunCB 2};
-bContinue.Tooltip='Continue the scan.';
+% % Button to run the cycle
+% bContinue=uicontrol(hpRun,'style','pushbutton','String','Continue Current Job',...
+%     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
+%     'fontweight','bold');
+% bContinue.Position(3:4)=[120 16];
+% bContinue.Position(1:2)=[bStartScan.Position(1)+bStartScan.Position(3) 5];
+% bContinue.Callback={@bRunCB 2};
+% bContinue.Tooltip='Continue the scan.';
 
 
 % 
@@ -603,7 +589,7 @@ bCmd.Position(1:2)=bCompileFull.Position(1:2)+[bCompileFull.Position(3)+2 0];
 
     function runSequenceCB    
         d=guidata(hF);
-        d.SequencerWatcher.RequestWaitTime = d.SequencerWatcher.WaitTable.Data;
+        % d.SequencerWatcher.RequestWaitTime = d.SequencerWatcher.WaitTable.Data;
 
         runSequence(seqdata.sequence_functions);    
         d.SequencerListener.Enabled=1;
@@ -636,8 +622,7 @@ bCmd.Position(1:2)=bCompileFull.Position(1:2)+[bCompileFull.Position(3)+2 0];
     end
 %% guidata output
 
-handles.WaitButtons = menuWaitMode;
-handles.WaitTable = tblWait;
+
 handles.WaitBar = pWaitBar;
 handles.WaitStr1 = tWaitTime1;
 handles.WaitStr2 = tWaitTime2;
@@ -645,20 +630,26 @@ handles.AdwinBar = pAdWinBar;
 handles.AdwinStr1 = tAdWinTime1;
 handles.AdwinStr2 = tAdWinTime2;
 handles.StatusStr = tStatus;
-handles.SequenceText = eSeq;
+
+% handles.SequenceText = eSeq;
+
 handles.CycleStr= tCycle;
+data.SequencerWatcher = sequencer_watcher(handles);
+data.SequencerListener = listener(data.SequencerWatcher,...
+    'CycleComplete',@CycleComplete);
 
 
 data.cycleTbl = cycleTbl;
 data.Status = tStatus;
 data.VarText = tScanVar;
-data.SequencerWatcher = sequencer_watcher(handles);
-data.SequencerListener = listener(data.SequencerWatcher,...
-    'CycleComplete',@CycleComplete);
+
 data.SequencerListener.Enabled = 0;
 data.JobTable = tJobs;
-data.SequenceText = eSeq;
+
+% data.SequenceText = eSeq;
+
 data.CycleStr = tCycle;
+data.JobTabs = hpJobDetail;
 
 
 guidata(hF,data);
@@ -666,8 +657,11 @@ guidata(hF,data);
 data.JobHandler = job_handler(hF);
 guidata(hF,data);
 
+
+bStartScan.Callback=@(src,evt) data.JobHandler.start;
+
 %% Update Things
-data.SequencerWatcher.updateSequenceFileText(seqdata.sequence_functions);
+% data.SequencerWatcher.updateSequenceFileText(seqdata.sequence_functions);
 
 
 %% Assign Handles
@@ -677,6 +671,8 @@ data.SequencerWatcher.updateSequenceFileText(seqdata.sequence_functions);
 assignin('base','jh',data.JobHandler);
 assignin('base','gui_main',hF);
 assignin('base','sw',data.SequencerWatcher);
+
+commandwindow
 end
 
 

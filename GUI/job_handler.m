@@ -23,6 +23,7 @@ properties
     SequencerWatcher    % sequencer_watcher which watches the adwin
     doIterate           % boolean to continue running jobs
     DefaultJob          % The default job to run
+    JobTabs         
 end    
 events
    
@@ -37,10 +38,21 @@ function obj = job_handler(gui_handle)
     obj.TextBox = d.JobTable;
     obj.updateJobText;
     obj.SequencerWatcher = d.SequencerWatcher;
-    obj.DefaultJob = job_default;
+    obj.JobTabs = d.JobTabs;
+
+    J_default = job_default;
+    J_default.MakeTableInterface(obj.JobTabs);
+
+    obj.DefaultJob = J_default;
 end
 
+
 function start(obj,job)      
+    
+    if nargin == 1
+        job = obj.DefaultJob;
+    end
+    keyboard
 % START hello
 % 
 % This function
@@ -49,9 +61,9 @@ function start(obj,job)
     end
         
     % Find first pending job if none specified
-    if nargin == 1
-       job = obj.findNextJob;
-    end
+    % if nargin == 1
+    %    job = obj.findNextJob;
+    % end
     
     % Check to see if job is object or number
     if ~isequal(class(job),'sequencer_job') && isnumeric(job)

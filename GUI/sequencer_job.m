@@ -42,6 +42,11 @@ properties
     CycleCompleteFcn        % user custom function to evaluate after the cycle
     JobCompleteFcn          % user custom function to evaluate when job is complete
     CameraFile              % camera control output file
+
+
+    Tab
+
+    Panel                   % Panel interface
     TableInterface
 end    
 events
@@ -84,12 +89,11 @@ function obj = sequencer_job(npt)
   
 end    
 
-function MakeTableInterface(this,parent,options)
-    if nargin ==2
-        options=struct;
-    end
-
-    this.TableInterface = uitable('parent',parent,...
+function MakeTableInterface(this,parent) 
+    this.Tab = uitab(parent,'title',this.JobName);
+    this.Panel = uipanel('parent',this.Tab,'units','normalized',...
+        'backgroundcolor','w','position',[0 0 1 1]);
+    this.TableInterface = uitable('parent',this.Panel,...
         'units','pixels',...
         'fontsize',7,...
         'columnwidth',{100 180},...
@@ -99,29 +103,25 @@ function MakeTableInterface(this,parent,options)
         'fontname','arialnarrow',...
         'ButtonDownFcn',@this.TableButtonDownFcn);
     this.updateTableInterface();
-
-    if isfield(options,'Position')
-        this.TableInterface.Position=options.Position;
-    end
-
+    this.TableInterface.Position = [1 1 this.TableInterface.Extent(3)+1 this.TableInterface.Extent(4)+1];
 
     % Button for file selection of the sequenece file
     cdata=imresize(imread(['GUI/images' filesep 'browse.jpg']),[16 16]);
-    bBrowse=uicontrol(parent,'style','pushbutton','CData',cdata,...
+    bBrowse=uicontrol(this.Panel,'style','pushbutton','CData',cdata,...
         'backgroundcolor','w','Callback',@browseCB,'tooltip','browse file');
     bBrowse.Position(3:4)=[18 18];
     bBrowse.Position(1:2)=[this.TableInterface.Position(1) ...
         this.TableInterface.Position(2)+this.TableInterface.Position(4)+2];
 
     % Go to Default Sequence
-    bSeqDefault=uicontrol(parent,'style','pushbutton','String','default sequence',...
+    bSeqDefault=uicontrol(this.Panel,'style','pushbutton','String','default sequence',...
         'backgroundcolor','w','FontSize',7,'units','pixels',...
         'Callback',@this.chSequence,'UserData',0);
     bSeqDefault.Position(3:4)=[80 18];
     bSeqDefault.Position(1:2)=bBrowse.Position(1:2) + [bBrowse.Position(3)+2 0];
 
     % Go to Test Sequence
-    bSeqTest=uicontrol(parent,'style','pushbutton','String','test sequence',...
+    bSeqTest=uicontrol(this.Panel,'style','pushbutton','String','test sequence',...
         'backgroundcolor','w','FontSize',7,'units','pixels',...
         'Callback',@this.chSequence,'UserData',1);
     bSeqTest.Position(3:4)=[80 18];
@@ -201,8 +201,7 @@ end
 % function that evaluates upon job completion
 function JobCompleteFcnWrapper(obj)  
     disp('Executing job complete function');
-    pause(.1);
-    
+    pause(.1);    
     if ~isempty(obj.JobCompleteFcn)
        obj.JobCompleteFcn(); 
     end

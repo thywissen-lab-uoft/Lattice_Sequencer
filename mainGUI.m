@@ -389,20 +389,6 @@ tCycle.Position(2) = tStatus.Position(2);
 
 %% Job Controller
 
-% Status String
-tCycleNumberLabel=uicontrol(hpRun,'style','text','string','cycle # :',...
-    'backgroundcolor','w','fontsize',7,'units','pixels',...
-    'horizontalalignment','left');
-tCycleNumberLabel.Position(3:4)=[45 10];
-tCycleNumberLabel.Position(1:2)=[5 100];
-
-cycleTbl=uitable(hpRun,'RowName',{},'ColumnName',{},...
-    'ColumnEditable',[true],'Data',[1],'units','pixels',...
-    'ColumnWidth',{30},'FontSize',7,'CellEditCallback',@tblCB,...
-    'columnformat',{'numeric'});
-cycleTbl.Position(3:4)=cycleTbl.Extent(3:4);
-cycleTbl.Position(1:2)=[tCycleNumberLabel.Position(1)+tCycleNumberLabel.Position(3)+2 tCycleNumberLabel.Position(2)-5];
-
     function tblCB(src,evt)
         n = evt.NewData;
         if ~isnan(n) && isnumeric(n) && floor(n)==n && ~isinf(n) && n>0
@@ -412,37 +398,53 @@ cycleTbl.Position(1:2)=[tCycleNumberLabel.Position(1)+tCycleNumberLabel.Position
         end
     end
 
+tbl_job_options = uitable(hpRun,'RowName',{},'columnname',{},...
+    'ColumnEditable',[true false],'units','pixels',...
+    'ColumnWidth',{25 180},'fontsize',7,'columnformat',{'logical','char'},...
+    'CellEditCallback',@tblCB);
+tbl_job_options.Data={false, 'hold cycle number';
+    false, 'stop job after next cycle';
+    false, 'start queue on DefaultJob CycleComplete'};
+tbl_job_options.Position=[5 30 ...
+    tbl_job_options.Extent(3) tbl_job_options.Extent(4)];
+
+tbl_job_cycle=uitable(hpRun,'RowName',{},'ColumnName',{},...
+    'ColumnEditable',[true false],'Data',{1, 'Cycle Number'},'units','pixels',...
+    'ColumnWidth',{25, 180},'FontSize',7,...
+    'columnformat',{'numeric','char'});
+tbl_job_cycle.Position(3:4)=tbl_job_cycle.Extent(3:4);
+tbl_job_cycle.Position(1:2)=tbl_job_options.Position(1:2)+[0 tbl_job_options.Position(4)];
 
 % Checkbox for repeat cycle
-cRpt=uicontrol(hpRun,'style','checkbox','string','hold cycle #','fontsize',7,...
-    'backgroundcolor',cc,'units','pixels');
-cRpt.Position(3:4)=[100 cRpt.Extent(4)];
-cRpt.Position(1:2)=[5 tCycleNumberLabel.Position(2)-25];
-cRpt.Tooltip='Enable or disable automatic repitition of the sequence.';
-
-% Checkbox to hold sequencer
-cHold=uicontrol(hpRun,'style','checkbox','string','stop job after current cycle','fontsize',7,...
-    'backgroundcolor',cc,'units','pixels');
-cHold.Position(3:4)=[150 cHold.Extent(4)];
-cHold.Position(1:2)=[5 cRpt.Position(2)-15];
-cHold.Tooltip='Hold the sequencer after end of next cycle.';
-
-% % Button to run the cycle
-% bRunIter=uicontrol(hpRun,'style','pushbutton','String','Run Single Cycle',...
-%     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
-%     'fontweight','bold','Callback',{@bRunCB 0});
-% bRunIter.Position(3:4)=[120 16];
-% bRunIter.Position(1:2)=[5 22];
-% bRunIter.Tooltip='Run the current sequence.';
+% cRpt=uicontrol(hpRun,'style','checkbox','string','hold cycle #','fontsize',7,...
+%     'backgroundcolor',cc,'units','pixels');
+% cRpt.Position(3:4)=[100 cRpt.Extent(4)];
+% cRpt.Position(1:2)=[5 tCycleNumberLabel.Position(2)-25];
+% cRpt.Tooltip='Enable or disable automatic repitition of the sequence.';
+% 
+% % Checkbox to hold sequencer
+% cHold=uicontrol(hpRun,'style','checkbox','string','stop job after current cycle','fontsize',7,...
+%     'backgroundcolor',cc,'units','pixels');
+% cHold.Position(3:4)=[150 cHold.Extent(4)];
+% cHold.Position(1:2)=[5 cRpt.Position(2)-15];
+% cHold.Tooltip='Hold the sequencer after end of next cycle.';
 
 % Button to run the cycle
-bStartScan=uicontrol(hpRun,'style','pushbutton','String','Start Job',...
+bRun=uicontrol(hpRun,'style','pushbutton','String','Run Queued Job',...
     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold');
-bStartScan.Position(3:4)=[120 16];
-bStartScan.Position(1:2)=[5 5];
-% bStartScan.Callback={@bRunCB 1};
-bStartScan.Tooltip='Start the scan.';
+bRun.Position(3:4)=[160 16];
+bRun.Position(1:2)=[5 5];
+bRun.Tooltip='Start or continue queued job.';
+
+% Button to run the cycle
+bRunDefault=uicontrol(hpRun,'style','pushbutton','String','Run DefaultJob',...
+    'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
+    'fontweight','bold');
+bRunDefault.Position(3:4)=[160 16];
+bRunDefault.Position(1:2)=[bRun.Position(1)+bRun.Position(3)+2 5];
+bRunDefault.Tooltip='Start DefaultJob';
+
 
 % % Button to run the cycle
 % bContinue=uicontrol(hpRun,'style','pushbutton','String','Continue Current Job',...
@@ -539,13 +541,13 @@ bCmd.Position(1:2)=bCompileFull.Position(1:2)+[bCompileFull.Position(3)+2 0];
         d.CycleStr.String = '';
         if cRpt.Value
             disp('Repeating the sequence');
-            cycleTbl.Data       = seqdata.scancycle;
+            tbl_job_cycle.Data       = seqdata.scancycle;
             runSequenceCB;
         else
             if seqdata.doscan
                 % Increment the scan and run the sequencer again
                 seqdata.scancycle = seqdata.scancycle+1;
-                cycleTbl.Data       = seqdata.scancycle;
+                tbl_job_cycle.Data       = seqdata.scancycle;
                 runSequenceCB;
             end
         end   
@@ -568,15 +570,15 @@ bCmd.Position(1:2)=bCompileFull.Position(1:2)+[bCompileFull.Position(3)+2 0];
                 
         switch run_mode            
             case 0 % Run a single iteration               
-                seqdata.scancycle   = cycleTbl.Data;
+                seqdata.scancycle   = tbl_job_cycle.Data;
             case 1 % 1 : start a scan
                 seqdata.doscan      = 1;
                 seqdata.scancycle   = 1;
-                cycleTbl.Data       = 1;
+                tbl_job_cycle.Data       = 1;
             case 2 % Continue the scan
                 seqdata.doscan      = 1;
                 seqdata.scancycle   = seqdata.scancycle + 1;
-                cycleTbl.Data       = seqdata.scancycle;
+                tbl_job_cycle.Data       = seqdata.scancycle;
         end  
         runSequenceCB;        
     end
@@ -621,7 +623,7 @@ bCmd.Position(1:2)=bCompileFull.Position(1:2)+[bCompileFull.Position(3)+2 0];
         end
     end
 %% guidata output
-
+% THIS IS SUPER MESSY
 
 handles.WaitBar = pWaitBar;
 handles.WaitStr1 = tWaitTime1;
@@ -630,39 +632,25 @@ handles.AdwinBar = pAdWinBar;
 handles.AdwinStr1 = tAdWinTime1;
 handles.AdwinStr2 = tAdWinTime2;
 handles.StatusStr = tStatus;
-
-% handles.SequenceText = eSeq;
-
 handles.CycleStr= tCycle;
 data.SequencerWatcher = sequencer_watcher(handles);
 data.SequencerListener = listener(data.SequencerWatcher,...
     'CycleComplete',@CycleComplete);
-
-
-data.cycleTbl = cycleTbl;
+data.TableJobCycle = tbl_job_cycle;
+data.TableJobOptions = tbl_job_options;
 data.Status = tStatus;
 data.VarText = tScanVar;
-
 data.SequencerListener.Enabled = 0;
 data.JobTable = tJobs;
-
-% data.SequenceText = eSeq;
-
 data.CycleStr = tCycle;
 data.JobTabs = hpJobDetail;
-
-
 guidata(hF,data);
-
 data.JobHandler = job_handler(hF);
 guidata(hF,data);
-
-
-bStartScan.Callback=@(src,evt) data.JobHandler.start;
-
+bRun.Callback=@(src,evt) data.JobHandler.start('queue');
+bRunDefault.Callback = @(src,evt) data.JobHandler.start('default');
 %% Update Things
 % data.SequencerWatcher.updateSequenceFileText(seqdata.sequence_functions);
-
 
 %% Assign Handles
 % Add gui figure, sequecner watcher, and job handler to base workspace so

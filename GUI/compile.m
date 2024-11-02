@@ -35,7 +35,7 @@ data.VarText.String = '...';
 
 
 % update sequencer file text
-data.SequencerWatcher.updateSequenceFileText(seqdata.sequence_functions);
+% data.SequencerWatcher.updateSequenceFileText(seqdata.sequence_functions);
 
 
 %% Run Sequence Functions

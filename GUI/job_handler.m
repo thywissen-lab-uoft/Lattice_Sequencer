@@ -31,60 +31,63 @@ end
 
 methods
     
+    % constructor
 function obj = job_handler(gui_handle)          
-% constructor
     obj.SequencerJobs={};            
     d=guidata(gui_handle);          
     obj.TextBox = d.JobTable;
     obj.updateJobText;
     obj.SequencerWatcher = d.SequencerWatcher;
     obj.JobTabs = d.JobTabs;
-
     J_default = job_default;
     J_default.MakeTableInterface(obj.JobTabs);
-
     obj.DefaultJob = J_default;
 end
 
-
-function start(obj,job)      
-    
-    if nargin == 1
-        job = obj.DefaultJob;
-    end
-    keyboard
-% START hello
-% 
-% This function
+function start(obj,job_type)     
     if ~obj.isIdle
        return; 
-    end
-        
-    % Find first pending job if none specified
-    % if nargin == 1
-    %    job = obj.findNextJob;
-    % end
-    
-    % Check to see if job is object or number
-    if ~isequal(class(job),'sequencer_job') && isnumeric(job)
-        job = obj.SequencerJobs{job};
-    end
-    
+    end  
+
     % Check if sequencer is alrady running
     if obj.SequencerWatcher.isRunning
        warning('sequencer already running');              
        return;
     end
+
+    if nargin == 1
+        job_type = 'default';
+    end
+
+    if isnumeric(job_type)
+        job_index = job_type;
+        if length(obj.SequencerJobs)>=job_index
+            job_type = obj.SequencerJobs{job_index};
+        end
+    end
+
+    switch class(job_type)
+        case 'sequencer_job'
+            job = job_type;            
+        case 'char'
+            switch job_type
+                case 'default'
+                    job = obj.DefaultJob;
+                case 'queue'
+                    job = obj.findNextJob;
+                otherwise
+                    error('Unexpected job type. Fix your code!');              
+            end
+
+        otherwise
+            error('Unexpected job_type class. Fix your code!');
+    end
     
     % Update current job
     obj.CurrentJob = job;
     
-    % Cycle remaining in this job
-    % cycles_left = setdiff(job.ScanCyclesRequested,job.ScanCyclesCompleted);
-
     cycles_left = job.CyclesRequested-job.CyclesCompleted;    
-    % No more cycles, run the job complete fcn
-    if isempty(cycles_left) || cycles_left<1
+    if cycles_left<=0
         obj.JobCompleteFcn;
         return;
     end    
@@ -92,9 +95,9 @@ function start(obj,job)
     job.Status = 'running';
     obj.updateJobText;
 
-    job.ScanCycle = cycles_left(1);
+ 
     global seqdata
-    seqdata.scancycle = job.ScanCycle;
+    seqdata.scancycle = job.CyclesCompleted+1;
     seqdata.sequence_functions = job.SequenceFunctions;
 
     t=runSequence(job.SequenceFunctions,@job.CycleStartFcnWrapper);              
@@ -139,7 +142,7 @@ function CycleCompleteFcn(obj)
     job = obj.CurrentJob;           % get the current job
 
     % Increment cycles completed
-    job.ScanCyclesCompleted(end+1) = job.ScanCycle;           
+    job.CyclesCompleted = job.CyclesCompleted+1;           
         
     % Execute User function here        
     obj.SequencerWatcher.StatusStr.String = 'evaluating job end function';
@@ -169,16 +172,6 @@ function CycleCompleteFcn(obj)
         obj.start(job);        % Continue job    
     end
     
-
-  % Check if any more runs to do
-    % cycles_left = setdiff(job.ScanCyclesRequested,...
-    %     job.ScanCyclesCompleted); 
-    % 
-    % if isempty(cycles_left) 
-    %     obj.JobCompleteFcn;     % Finish job
-    % else
-    %     obj.start(job);        % Continue job        
-    % end
 end
 
 % Add job to list
@@ -272,6 +265,11 @@ end
 
 % Find next job that is pending
 function job = findNextJob(obj)
+    if isempty(obj.SequencerJobs)
+        job = obj.DefaultJob;
+        return;
+    end
+
     job = [];
    for kk=1:length(obj.SequencerJobs)
        if isequal(obj.SequencerJobs{kk}.Status,'pending')
@@ -279,6 +277,8 @@ function job = findNextJob(obj)
             return
        end
    end
+
+   
 end
 
 

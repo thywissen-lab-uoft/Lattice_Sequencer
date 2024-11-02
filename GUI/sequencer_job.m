@@ -18,23 +18,12 @@ classdef sequencer_job < matlab.mixin.Copyable
 % See also JOB_HANDLER, MAINGUI
 properties        
     SequenceFunctions       % cell arary of sequence functions to evaluate
-
-
-    % ScanCyclesRequested     % array of scan cycle indices to run
-    % ScanCyclesCompleted     % array of scan cycle indices which have been complete so far
-    % ScanCycle               % which scan cycle will be run
-
     CyclesCompleted         % Number of cycles Completed
     CyclesRequested         % Number of cycles requested
-    Cycle                   % Next/Current Cycle to run
     WaitMode
     WaitTime
-
     SaveDir
-
     isComplete
-
-
     JobName                 % the name of the job
     ExecutionDates          % the dates at which each sequence in the job is run
     Status                  % the current status of the job
@@ -43,9 +32,7 @@ properties
     JobCompleteFcn          % user custom function to evaluate when job is complete
     CameraFile              % camera control output file
 
-
     Tab
-
     Panel                   % Panel interface
     TableInterface
 end    
@@ -63,7 +50,6 @@ function obj = sequencer_job(npt)
     obj.isComplete          = false;
     obj.CyclesRequested     = npt.CyclesRequested;
     obj.CyclesCompleted     = 0;    
-    obj.Cycle               = 1;
     obj.SaveDir             = '';
     obj.ExecutionDates      = [];
     obj.CycleStartFcn       = [];

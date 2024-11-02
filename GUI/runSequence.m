@@ -99,7 +99,7 @@ end
 % Start Timer
 data.Status.String = ['adwin is running'];
 data.Status.ForegroundColor = 'r';
-data.SequencerWatcher.RequestAdwinTime = seqdata.sequencetime;
+data.SequencerWatcher.AdwinTime = seqdata.sequencetime;
 start(data.SequencerWatcher);
 end
 

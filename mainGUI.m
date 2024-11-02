@@ -115,13 +115,13 @@ hpStatus.Position(1:2)=[0 0];
 
 % Tab Grou : Job object detail
 hpJobDetail=uitabgroup(hpMain,'units','pixels');
-hpJobDetail.Position(3:4)=[347 350];
+hpJobDetail.Position(3:4)=[347 260];
 hpJobDetail.Position(1:2)=[0 hpStatus.Position(2)+hpStatus.Position(4)];
 
 % Panel : Job Controller
 hpRun = uipanel('Parent',hpMain,'units','pixels',...
     'backgroundcolor',cc,'bordertype','line','BorderColor','k','borderwidth',1);
-hpRun.Position(3:4)=[hpRun.Parent.Position(3) 140];
+hpRun.Position(3:4)=[hpRun.Parent.Position(3) 130];
 hpRun.Position(1:2)=[0 hpJobDetail.Position(2)+hpJobDetail.Position(4)];
 
 % Panel : Job Queue
@@ -156,17 +156,9 @@ tableJobs.ColumnName = {'', 'Status','Cycles','Job Name'};
 tableJobs.ColumnWidth={20 60 40 170};
 tableJobs.ColumnEditable=[true false false false];
 tableJobs.ColumnFormat = {'logical','char','char','char'};
-hme = 30;
-tableJobs.Position = [1 hme hpMain.Position(3) hpJobQueue.Position(4)-(hme+15)];
+tableJobs.Position = [1 1 hpMain.Position(3) hpJobQueue.Position(4)-12];
 
 %% Sequencer Status Panel
-% 
-% % Status String
-% sL=uicontrol(hpStatus,'style','text','string','sequencer status',...
-%     'backgroundcolor','w','fontsize',7,'units','pixels',...
-%     'visible','on','horizontalalignment','left');
-% sL.Position=[5 sL.Parent.Position(4)-12 100 10];
-
 
 % Axis object for plotting the wait bar
 waitbarcolor=[106, 163, 241 ]/255;
@@ -269,28 +261,6 @@ tCycle.Position(2) = tStatus.Position(2);
 
 %% Job Controller
 
-    function tblCB(src,evt)
-        n = evt.NewData;
-        if ~isnan(n) && isnumeric(n) && floor(n)==n && ~isinf(n) && n>0
-            seqdata.scancycle = evt.NewData;
-        else
-            src.Data = evt.PreviousData;
-        end
-    end
-
-
-
-% Button for file selection of the sequenece file
-cdata=imresize(imread(['GUI/images' filesep 'help.jpg']),[16 16]);
-bHelp=uicontrol(hpJobQueue,'style','pushbutton','CData',cdata,...
-    'backgroundcolor',cc,'Callback',@helpCB,'tooltip','help');
-bHelp.Position(3:4)=[20 20];
-bHelp.Position(1:2)=[5 5];
-
-    function helpCB(~,~)
-       doc job_handler
-       doc sequencer_job
-    end
 
     function addJobsCB(~,~)        
         dirName=['Jobs'];
@@ -354,7 +324,7 @@ cdata=imresize(imread(['GUI/images' filesep 'plot.jpg']),[24 24]);
 bPlot=uicontrol(hpRun,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@bPlotCB,'tooltip','plot');
 bPlot.Position(3:4)=[25 25];
-bPlot.Position(1:2)=[bAddJob.Position(1) bAddJob.Position(2)+bAddJob.Position(4)+5];
+bPlot.Position(1:2)=[bAddJob.Position(1) bPlot.Parent.Position(4)-bPlot.Position(4)-2];
 
     function bPlotCB(~,~)
         plotgui2;
@@ -389,16 +359,18 @@ bCmd.Position(1:2)=bCompileFull.Position(1:2)+[bCompileFull.Position(3)+2 0];
         updateScanVarText;    
     end
 
+% Button for file selection of the sequenece file
+cdata=imresize(imread(['GUI/images' filesep 'help.jpg']),[20 20]);
+bHelp=uicontrol(hpRun,'style','pushbutton','CData',cdata,...
+    'backgroundcolor',cc,'Callback',@helpCB,'tooltip','help');
+bHelp.Position(3:4)=[25 25];
+bHelp.Position(1:2)=bCmd.Position(1:2)+[bCmd.Position(3)+2 0];
 
-% % Button to run the cycle
-% bContinue=uicontrol(hpRun,'style','pushbutton','String','Continue Current Job',...
-%     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
-%     'fontweight','bold');
-% bContinue.Position(3:4)=[120 16];
-% bContinue.Position(1:2)=[bStartScan.Position(1)+bStartScan.Position(3) 5];
-% bContinue.Callback={@bRunCB 2};
-% bContinue.Tooltip='Continue the scan.';
- 
+    function helpCB(~,~)
+       doc job_handler
+       doc sequencer_job
+    end
+
 % % Button to reseed random list
 % ttStr=['Reseed random list of scan indeces.'];
 % bRandSeed=uicontrol(hpRun,'style','pushbutton','String','reseed random',...
@@ -443,6 +415,15 @@ tbl_job_options.Data={false, 'hold CycleNumber';
     false, 'start queue on DefaultJob CycleComplete'};
 tbl_job_options.Position=[bRunDefault.Position(1)+bRunDefault.Position(3)+10 bRunDefault.Position(2) ...
     tbl_job_options.Extent(3) tbl_job_options.Extent(4)];
+
+    function tblCB(src,evt)
+        n = evt.NewData;
+        if ~isnan(n) && isnumeric(n) && floor(n)==n && ~isinf(n) && n>0
+            seqdata.scancycle = evt.NewData;
+        else;src.Data = evt.PreviousData;end
+    end
+
+
 
 tbl_job_cycle=uitable(hpRun,'RowName',{},'ColumnName',{},...
     'ColumnEditable',[true false],'Data',{1, 'CycleNumber'},'units','pixels',...

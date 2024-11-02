@@ -105,7 +105,7 @@ hF.SizeChangedFcn=@sequencer_resize;
 % Main uipanel
 hpMain=uipanel('parent',hF,'units','pixels','backgroundcolor',cc,...
     'bordertype','line','BorderColor','k','borderwidth',1);
-hpMain.Position=[0 1 350 600];
+hpMain.Position=[1 1 350 600];
 
 % Panel : Timer Display and Status
 hpStatus = uipanel('Parent',hpMain,'units','pixels',...
@@ -116,97 +116,48 @@ hpStatus.Position(1:2)=[0 0];
 % Tab Grou : Job object detail
 hpJobDetail=uitabgroup(hpMain,'units','pixels');
 hpJobDetail.Position(3:4)=[347 350];
-hpJobDetail.Position(1:2)=[1 hpStatus.Position(2)+hpStatus.Position(4)];
+hpJobDetail.Position(1:2)=[0 hpStatus.Position(2)+hpStatus.Position(4)];
 
 % Panel : Job Controller
-hpRun = uipanel('Parent',hpMain,'units','pixels','Title','job controller',...
+hpRun = uipanel('Parent',hpMain,'units','pixels',...
     'backgroundcolor',cc,'bordertype','line','BorderColor','k','borderwidth',1);
-hpRun.Position(3:4)=[350 140];
-hpRun.Position(1:2)=[1 hpJobDetail.Position(2)+hpJobDetail.Position(4)];
+hpRun.Position(3:4)=[hpRun.Parent.Position(3) 140];
+hpRun.Position(1:2)=[0 hpJobDetail.Position(2)+hpJobDetail.Position(4)];
 
 % Panel : Job Queue
-hpJobs = uipanel('parent',hF,'units','pixels','backgroundcolor','w',...
+hpJobQueue = uipanel('parent',hF,'units','pixels','backgroundcolor','w',...
     'title','Job Queue','bordertype','etchedin');
-hpJobs.Position(1:2) = [1 hpRun.Position(2)+hpRun.Position(4)];
-hpJobs.Position(3:4)=[w 90];
+hpJobQueue.Position(1:2) = [1 hpRun.Position(2)+hpRun.Position(4)];
+hpJobQueue.Position(3:4)=[hpJobQueue.Parent.Position(3) 90];
 
     function sequencer_resize(src,evt)
         try
             hpMain.Position(3:4)    = hpMain.Parent.Position(3:4);
             hpStatus.Position(3)    = hpStatus.Parent.Position(3);
-            hpJobs.Position(4)      = max([hpJobs.Parent.Position(4)-hpJobs.Position(2)-5 50]);
-            tJobs.Position(4)       = max([tJobs.Parent.Position(4)-tJobs.Position(2)-20 50]);
+            hpJobDetail.Position(3) = hpJobDetail.Parent.Position(3);
+            hpRun.Position(3)       = hpRun.Parent.Position(3);
+            hpJobQueue.Position(3)  = hpJobQueue.Parent.Position(3);
+            hpJobQueue.Position(4)  = max([hpJobQueue.Parent.Position(4)-hpJobQueue.Position(2)-5 50]);            
+            tableJobs.Position(3)    = tableJobs.Parent.Position(3)-tableJobs.Position(1)-2;
+            tableJobs.ColumnWidth{4} = max([50 tableJobs.Position(3)-sum([tableJobs.ColumnWidth{1:end-1}])-20]);
+            tableJobs.Position(4)   = max([tableJobs.Parent.Position(4)-tableJobs.Position(2)-20 50]);
             axWaitBar.Position(3)   = axWaitBar.Parent.Position(3)-2*axWaitBar.Position(1);
             axAdWinBar.Position(3)  = axWaitBar.Position(3);
             tCycle.Position(1)      = tCycle.Parent.Position(3)-tCycle.Position(3)-10;
-            hpJobDetail.Position(3) = hpJobDetail.Parent.Position(3);
+            drawnow;
         end
     end
 
 %% Jobs Panel Graphical Objects
 
 % Job Table
-tJobs = uitable('parent',hpJobs,'fontsize',8,'rowname',{});
-tJobs.ColumnName = {'', 'Status','Cycles','Job Name'};
-tJobs.ColumnWidth={20 60 40 170};
-tJobs.ColumnEditable=[true false false false];
-tJobs.ColumnFormat = {'logical','char','char','char'};
+tableJobs = uitable('parent',hpJobQueue,'fontsize',8,'rowname',{});
+tableJobs.ColumnName = {'', 'Status','Cycles','Job Name'};
+tableJobs.ColumnWidth={20 60 40 170};
+tableJobs.ColumnEditable=[true false false false];
+tableJobs.ColumnFormat = {'logical','char','char','char'};
 hme = 30;
-tJobs.Position = [1 hme hpMain.Position(3) hpJobs.Position(4)-(hme+15)];
-
-
-
-% % Button to run the cycle
-% bStopJob=uicontrol(hpJobs,'style','pushbutton','String','Stop',...
-%     'backgroundcolor',[255	218	107]/255,'FontSize',8,'units','pixels',...
-%     'fontweight','bold','callback',@stopJobsCB);
-% bStopJob.Position(3:4)=[40 20];
-% bStopJob.Position(1:2)=[80 5];
-% bStopJob.Tooltip='Stop jobs';
-% 
-%     function stopJobsCB(~,~)
-%         d=guidata(hF);
-%         d.JobHandler.stop;
-%     end
-
-
-%% Sequence
-
-
-% tblDefaultJob = uitable('parent',hpSeq,'units','pixels','fontsize',7,...
-%     'columnwidth',{100 180},'ColumnFormat',{'char','char'},...
-%     'RowName',{},'columnname',{},'ColumnEditable',[false true],...
-%     'fontname','arialnarrow');
-% tblDefaultJob.Data={
-%     'Name', 'default job';
-%     'SequenceFunctions','@main_settings,@main_sequence';...
-%     'CyclesCompleted','0';    
-%     'Cycles','inf';
-%     'WaitMode','1';
-%     'WaitTime', '30'
-%     'SaveDirName', 'NewData';
-%     'CycleCompleteFcn','';
-%     'JobCompleteFcn','';
-%     'CycleStartFcn',''};
-% tblDefaultJob.Position(3:4)=[100+180+5 185];
-% tblDefaultJob.Position(1:2)=[1 30];
-
-% Sequence File edit box
-% mystr='comma separated sequnce functions (@func1,@func2,@func3,...)';
-% tSeq=uicontrol(hpSeq,'style','text','string',mystr,...
-%     'horizontalalignment','left','fontsize',7,'backgroundcolor',cc);
-% tSeq.Position(3)=335;
-% tSeq.Position(4)=tSeq.Extent(4);
-% tSeq.Position(1:2)=[5 46];
-
-% Sequence File edit box
-% eSeq=uicontrol(hpMain,'style','edit','string','A',...
-%     'horizontalalignment','left','fontsize',8,'backgroundcolor',cc,'enable','off','units','normalized');
-% eSeq.Position(4)=eSeq.Extent(4);
-% % eSeq.Position(1:2)=[25 32];
-% % eSeq.Position(3)=eSeq.Parent.Position(3)-eSeq.Position(1)-5;
-% eSeq.Position(1:2)=[.02 .02];
-% eSeq.Position(3)=.95;
+tableJobs.Position = [1 hme hpMain.Position(3) hpJobQueue.Position(4)-(hme+15)];
 
 %% Sequencer Status Panel
 % 
@@ -331,7 +282,7 @@ tCycle.Position(2) = tStatus.Position(2);
 
 % Button for file selection of the sequenece file
 cdata=imresize(imread(['GUI/images' filesep 'help.jpg']),[16 16]);
-bHelp=uicontrol(hpJobs,'style','pushbutton','CData',cdata,...
+bHelp=uicontrol(hpJobQueue,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@helpCB,'tooltip','help');
 bHelp.Position(3:4)=[20 20];
 bHelp.Position(1:2)=[5 5];
@@ -609,7 +560,7 @@ data.TableJobOptions = tbl_job_options;
 data.Status = tStatus;
 data.VarText = tScanVar;
 data.SequencerListener.Enabled = 0;
-data.JobTable = tJobs;
+data.JobTable = tableJobs;
 data.CycleStr = tCycle;
 data.JobTabs = hpJobDetail;
 guidata(hF,data);

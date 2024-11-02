@@ -113,7 +113,7 @@ hpStatus.Position(1:2)=[0 0];
 
 % Tab Grou : Job object detail
 hpJobDetail=uitabgroup(hpMain,'units','pixels');
-hpJobDetail.Position(3:4)=[347 300];
+hpJobDetail.Position(3:4)=[347 350];
 hpJobDetail.Position(1:2)=[1 hpStatus.Position(2)+hpStatus.Position(4)];
 
 % Tab : Default Job
@@ -142,8 +142,8 @@ hpJobs.Position(3:4)=[w 90];
         try
             hpMain.Position(3:4)    = hpMain.Parent.Position(3:4);
             hpStatus.Position(3)    = hpStatus.Parent.Position(3);
-            hpJobs.Position(4)      = hpJobs.Parent.Position(4)-hpJobs.Position(2)-5;
-            tJobs.Position(4)       = tJobs.Parent.Position(4)-tJobs.Position(2)-20;
+            hpJobs.Position(4)      = max([hpJobs.Parent.Position(4)-hpJobs.Position(2)-5 50]);
+            tJobs.Position(4)       = max([tJobs.Parent.Position(4)-tJobs.Position(2)-20 50]);
             axWaitBar.Position(3)   = axWaitBar.Parent.Position(3)-2*axWaitBar.Position(1);
             axAdWinBar.Position(3)  = axWaitBar.Position(3);
             tCycle.Position(1)      = tCycle.Parent.Position(3)-tCycle.Position(3)-10;
@@ -173,9 +173,6 @@ bHelp.Position(1:2)=[5 5];
        doc job_handler
        doc sequencer_job
     end
-
-
-
 
 % Checkbox to hold sequencer
 cBoop=uicontrol(hpJobs,'style','checkbox','string','run default job after queue end','fontsize',7,...
@@ -256,7 +253,7 @@ bAddJob.Tooltip='Add jobs';
 
 
 options=struct;
-options.Position = [1 30 100+180+5 185];
+options.Position = [1 30 100+180+5 205];
 
 J_default = job_default;
 J_default.MakeTableInterface(hpSeq,options);

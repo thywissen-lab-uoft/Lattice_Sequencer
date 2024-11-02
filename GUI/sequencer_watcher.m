@@ -8,8 +8,8 @@ properties
     WaitStartTime    
     RequestAdwinTime
     RequestWaitTime
-    AdwinTimer
-    WaitTimer
+    AdwinGraphicTimer       % Updates the AdwinTimer bar
+    WaitGraphicTimer        % Updates the WaitTimer
     WaitStr1
     WaitStr2
     AdwinStr1
@@ -32,31 +32,33 @@ methods
 
 % Class constructor
 function this = sequencer_watcher(handles)
-    this.AdwinTimer = timer('ExecutionMode','FixedSpacing', ...
-        'Period',0.05,'name','AdwinTimer');
-    this.WaitTimer = timer('ExecutionMode','FixedSpacing', ...
-        'Period',0.05,'name','WaitTimer');
-    this.isRunning = 0;
-    this.WaitStr1 = handles.WaitStr1;
-    this.WaitStr2 = handles.WaitStr2;            
-    this.AdwinStr1 = handles.AdwinStr1;
-    this.AdwinStr2 = handles.AdwinStr2;            
-    this.AdwinBar = handles.AdwinBar;
-    this.WaitBar = handles.WaitBar;            
-    this.WaitTable=handles.WaitTable;
-    this.WaitButtons=handles.WaitButtons;       
-    this.AdwinTimer.TimerFcn = @this.updateAdwin;
-    this.WaitTimer.TimerFcn = @this.updateWait;   
-    % this.WaitButtons.SelectionChangedFcn = @(src,evt) this.chWaitMode(evt.NewValue.UserData);
-    % this.WaitMode = this.WaitButtons.SelectedObject.UserData;
+    this.AdwinGraphicTimer = timer(...
+        'ExecutionMode','FixedSpacing', ...
+        'Period',0.05,'name','AdwinGraphicTimer',...
+        'TimerFcn',@this.updateAdwin);
+    this.WaitGraphicTimer = timer(...
+        'ExecutionMode','FixedSpacing', ...
+        'Period',0.05,'name','WaitGraphiTimer',...
+        'TimerFcn',@this.updateWait);
+    this.isRunning          = 0;
+    this.WaitStr1           = handles.WaitStr1;
+    this.WaitStr2           = handles.WaitStr2;            
+    this.AdwinStr1          = handles.AdwinStr1;
+    this.AdwinStr2          = handles.AdwinStr2;            
+    this.AdwinBar           = handles.AdwinBar;
+    this.WaitBar            = handles.WaitBar;            
+    this.WaitTable          = handles.WaitTable;
+    this.WaitButtons        = handles.WaitButtons;       
 
-    this.WaitMode = this.WaitButtons.Value;
+    % Wait graphics to be changed
+    this.WaitMode           = this.WaitButtons.Value;
     this.WaitButtons.Callback = @this.chWaitMode;
-
-    this.StatusStr = handles.StatusStr;           
     this.WaitTable.CellEditCallback = @(src,evt) this.chWaitTime(src,evt);
-    this.RequestWaitTime=30;
-    this.SequenceText = handles.SequenceText;
+    this.RequestWaitTime    = 30;
+
+
+    this.StatusStr          = handles.StatusStr;           
+    this.SequenceText       = handles.SequenceText;
 end
 
 % function that updates the sequence file text
@@ -68,6 +70,24 @@ function updateSequenceFileText(obj,SequenceFunctions)
     mystr(end)=[];
     obj.SequenceText.String=mystr;
 end
+% 
+% % Change the wait time
+% function chWaitTime(this,WaitMode,JobWaitTime)
+%     this.WaitMode = WaitMode;   % Wait time mode
+% 
+%     switch this.WaitMode
+%         case 0
+%             this.WaitTime = 0;
+%         case 1
+%             this.WaitTime = 
+%         case 2
+%     end
+% 
+% 
+% 
+% 
+%     this.WaitTime = WaitTime;
+% end
 
 % callback for wait time table edit
 function chWaitTime(this,src,evt)
@@ -88,14 +108,6 @@ end
 function chWaitMode(this,src,evt)   
     WaitMode = evt.Source.Value;
 
-    % ch=this.WaitButtons.Children;
-    % for kk=1:length(ch)
-    %    if ch(kk).UserData == WaitMode
-    %        ch(kk).Value = 1;
-    %    else
-    %        ch(kk).Value = 0;
-    %    end
-    % end
     this.WaitMode = WaitMode;            
     if WaitMode == 1
        this.WaitTable.Enable = 'off';
@@ -129,7 +141,7 @@ function updateAdwin(this,src,evt)
             this.WaitStartTime = now;                
             this.StatusStr.String = 'waiting ...';
             this.StatusStr.ForegroundColor = 'k';
-            start(this.WaitTimer);
+            start(this.WaitGraphicTimer);
         else
             this.cycleComplete;
         end
@@ -179,16 +191,16 @@ function start(this)
     this.AdwinStr2.String=[num2str(this.RequestAdwinTime,'%.2f') ' s'];   
     this.StatusStr.String = 'adwin is running';
     this.StatusStr.ForegroundColor = 'r';
-    start(this.AdwinTimer); 
+    start(this.AdwinGraphicTimer); 
 end
 
 % delete funcion
 function delete(this)
-    stop(this.AdwinTimer);
-    stop(this.WaitTimer);
+    stop(this.AdwinGraphicTimer);
+    stop(this.WaitGraphicTimer);
     pause(0.1);
-    delete(this.AdwinTimer);
-    delete(this.WaitTimer);
+    delete(this.AdwinGraphicTimer);
+    delete(this.WaitGraphicTimer);
 end
 end
 end

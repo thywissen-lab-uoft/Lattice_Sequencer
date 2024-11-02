@@ -23,7 +23,6 @@ properties
     SequencerWatcher    % sequencer_watcher which watches the adwin
     doIterate           % boolean to continue running jobs
     DefaultJob          % The default job to run
-    DefaultJobTable     %
 end    
 events
    
@@ -110,6 +109,7 @@ function JobCompleteFcn(obj)
     
     % Ending Stuff
     obj.CurrentJob.Status = 'complete';
+    obj.CurrentJob.isComplete = true;
     obj.CurrentJob = [];
     obj.updateJobText;
      

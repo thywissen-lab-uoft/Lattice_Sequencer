@@ -10,7 +10,6 @@ function J = job_default
 
     function default_cycle_start_fcn
         disp('cycle start function');
-        disp('oop')
     end
 
     function default_job_complete_fcn
@@ -19,18 +18,16 @@ function J = job_default
 
 %% Create Job File
 out = struct;
-out.SequenceFunctions   = {...
-    @main_settings,...
-    @main_sequence};
-out.CyclesRequested   = inf;
-out.JobName               = ['default job'];
-
-out.CycleStartFcn         = @default_cycle_start_fcn;
-out.CycleCompleteFcn      = @default_cycle_complete_fcn;
-out.JobCompleteFcn        = @default_job_complete_fcn;
-out.SaveDir               = 'NewData';
+out.SequenceFunctions       = {@main_settings,@main_sequence};
+out.CyclesRequested         = inf;
+out.JobName                 = 'Default Job';
+out.CycleStartFcn           = @default_cycle_start_fcn;
+out.CycleCompleteFcn        = @default_cycle_complete_fcn;
+out.JobCompleteFcn          = @default_job_complete_fcn;
+out.SaveDir                 = 'NewData';
 
 %% Output Job File
+
 J = sequencer_job(out);
 
 end

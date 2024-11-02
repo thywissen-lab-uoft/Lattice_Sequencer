@@ -32,6 +32,8 @@ properties
 
     SaveDir
 
+    isComplete
+
 
     JobName                 % the name of the job
     ExecutionDates          % the dates at which each sequence in the job is run
@@ -53,6 +55,7 @@ function obj = sequencer_job(npt)
     obj.JobName             = npt.JobName;            
     obj.SequenceFunctions   = npt.SequenceFunctions;
     obj.Status              = 'pending';
+    obj.isComplete          = false;
     obj.CyclesRequested     = npt.CyclesRequested;
     obj.CyclesCompleted     = 0;    
     obj.Cycle               = 1;
@@ -171,6 +174,7 @@ function updateTableInterface(this)
     this.TableInterface.Data={
         'JobName', this.JobName;
         'SequenceFunctions',this.getSequenceFunctionStr;...
+        'isComplete',this.isComplete;    
         'CyclesCompleted',this.CyclesCompleted;    
         'CyclesRequested',this.CyclesRequested;
         'WaitMode',this.WaitMode;

@@ -23,6 +23,7 @@ properties
     SequencerWatcher    % sequencer_watcher which watches the adwin
     doIterate           % boolean to continue running jobs
     DefaultJob          % The default job to run
+    DefaultJobTable     %
 end    
 events
    
@@ -39,7 +40,10 @@ function obj = job_handler(gui_handle)
     obj.SequencerWatcher = d.SequencerWatcher;
     obj.DefaultJob = job_default;
 
-end   
+    obj.DefaultJob.
+    obj.DefaultJobTable = d.DefaultJobTable;
+    obj.DefaultJobTable.CellEditCallback = @obj.foo;
+end
 
 function start(obj,job)      
 % START hello
@@ -69,10 +73,11 @@ function start(obj,job)
     obj.CurrentJob = job;
     
     % Cycle remaining in this job
-    cycles_left = setdiff(job.ScanCyclesRequested,job.ScanCyclesCompleted);
-    
+    % cycles_left = setdiff(job.ScanCyclesRequested,job.ScanCyclesCompleted);
+
+    cycles_left = job.CyclesRequested-job.CyclesCompleted;    
     % No more cycles, run the job complete fcn
-    if isempty(cycles_left)
+    if isempty(cycles_left) || cycles_left<1
         obj.JobCompleteFcn;
         return;
     end
@@ -85,9 +90,9 @@ function start(obj,job)
     global seqdata
     seqdata.scancycle = job.ScanCycle;
     seqdata.sequence_functions = job.SequenceFunctions;
+
     t=runSequence(job.SequenceFunctions,@job.CycleStartFcnWrapper);              
     job.ExecutionDates(end+1) = t;
-    
     % Get ready to wait for job to finish
     obj.ListenerCycle=listener(obj.SequencerWatcher,'CycleComplete',...
         @(src, evt) obj.CycleCompleteFcn);
@@ -148,14 +153,25 @@ function CycleCompleteFcn(obj)
         return;
     end        
     
-    % Check if any more runs to do
-    cycles_left = setdiff(job.ScanCyclesRequested,...
-        job.ScanCyclesCompleted);  
-    if isempty(cycles_left) 
-        obj.JobCompleteFcn;     % Finish job
+  
+    cycles_left = job.CyclesRequested-job.CyclesCompleted;    
+    % No more cycles, run the job complete fcn
+    if isempty(cycles_left) || cycles_left<1
+        obj.JobCompleteFcn;
     else
-        obj.start(job);        % Continue job        
+        obj.start(job);        % Continue job    
     end
+    
+
+  % Check if any more runs to do
+    % cycles_left = setdiff(job.ScanCyclesRequested,...
+    %     job.ScanCyclesCompleted); 
+    % 
+    % if isempty(cycles_left) 
+    %     obj.JobCompleteFcn;     % Finish job
+    % else
+    %     obj.start(job);        % Continue job        
+    % end
 end
 
 % Add job to list
@@ -205,9 +221,9 @@ function updateJobText(obj)
             mystr(end)=[];
 
             obj.TextBox.Data{kk,2} = obj.SequencerJobs{kk}.Status;
-            obj.TextBox.Data{kk,3} = num2str(length(obj.SequencerJobs{kk}.ScanCyclesRequested));
+            obj.TextBox.Data{kk,3} = num2str(obj.SequencerJobs{kk}.CyclesRequested);
             obj.TextBox.Data{kk,4} = obj.SequencerJobs{kk}.JobName;
-            obj.TextBox.Data{kk,5} = mystr;                
+            % obj.TextBox.Data{kk,5} = mystr;                
         end
     end
 end

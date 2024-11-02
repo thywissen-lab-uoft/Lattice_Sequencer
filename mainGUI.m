@@ -152,6 +152,10 @@ tableJobs = uitable('parent',hpJobQueue,'fontsize',8,'rowname',{},...
             axWaitBar.Position(3)   = axWaitBar.Parent.Position(3)-2*axWaitBar.Position(1);
             axAdWinBar.Position(3)  = axWaitBar.Position(3);
             tCycle.Position(1)      = tCycle.Parent.Position(3)-tCycle.Position(3)-10;
+            tScanVar.Position(3)=axAdWinBar.Position(3);
+
+            tStatus.Position(3)=[tStatus.Parent.Position(3)-tStatus.Parent.Position(1)-5];
+
             drawnow;
         end
     end
@@ -210,9 +214,10 @@ tScanVar.Position(2) = axAdWinBar.Position(2)+axAdWinBar.Position(4)+2;
 tStatus=uicontrol(hpStatus,'style','text','string','sequencer idle',...
     'backgroundcolor','w','fontsize',8,'units','pixels',...
     'fontweight','bold','visible','on','horizontalalignment','left');
-tStatus.Position(3:4)=[150 15];
 tStatus.Position(1) = axAdWinBar.Position(1);
 tStatus.Position(2) = tScanVar.Position(2)+tScanVar.Position(4)+1;
+tStatus.Position(3:4)=[tStatus.Parent.Position(3)-tStatus.Parent.Position(1)-15 15];
+
 tStatus.ForegroundColor=[0 128 0]/255;
 
 % Status String
@@ -352,8 +357,8 @@ tbl_job_options = uitable(hpRun,'RowName',{},'columnname',{},...
     'ColumnEditable',[true false],'units','pixels',...
     'ColumnWidth',{20 180},'fontsize',7,'columnformat',{'logical','char'});
 tbl_job_options.Data={false, 'hold CycleNumber';
-    false, 'stop job on next CycleComplete';
-    false, 'stop job queue on next JobComplete';
+    false, 'stop on next CycleComplete';
+    false, 'stop on next JobComplete';
     false, 'start queue on DefaultJob CycleComplete'};
 tbl_job_options.Position=[bRunDefault.Position(1)+bRunDefault.Position(3)+10 bRunDefault.Position(2) ...
     tbl_job_options.Extent(3) tbl_job_options.Extent(4)];
@@ -365,69 +370,6 @@ tbl_job_cycle=uitable(hpRun,'RowName',{},'ColumnName',{},...
 tbl_job_cycle.Position(3:4)=tbl_job_cycle.Extent(3:4);
 tbl_job_cycle.Position(1:2)=tbl_job_options.Position(1:2)+[0 tbl_job_options.Position(4)];
 
-
-%% Button Callbacks
-% 
-%     function CycleComplete(src,evt)        
-%         d=guidata(hF);
-%         d.SequencerListener.Enabled = 0;
-%         d.CycleStr.String = '';
-%         if cRpt.Value
-%             disp('Repeating the sequence');
-%             tbl_job_cycle.Data       = seqdata.scancycle;
-%             runSequenceCB;
-%         else
-%             if seqdata.doscan
-%                 % Increment the scan and run the sequencer again
-%                 seqdata.scancycle = seqdata.scancycle+1;
-%                 tbl_job_cycle.Data       = seqdata.scancycle;
-%                 runSequenceCB;
-%             end
-%         end   
-%     end    
-% 
-% % Run button callback.
-%     function bRunCB(~,~,run_mode)    
-%         % Initialize the sequence if seqdata is not defined
-%         % Should this just happen every single time?
-%         if isempty(seqdata)
-%             LatticeSequencerInitialize();
-%         end
-%         d=guidata(hF);       
-% 
-%         % Is the sequence already running?        
-%         if (d.SequencerWatcher.isRunning)
-%            warning('The sequencer running you clod!');
-%            return;
-%         end        
-% 
-%         switch run_mode            
-%             case 0 % Run a single iteration               
-%                 seqdata.scancycle   = tbl_job_cycle.Data;
-%             case 1 % 1 : start a scan
-%                 seqdata.doscan      = 1;
-%                 seqdata.scancycle   = 1;
-%                 tbl_job_cycle.Data       = 1;
-%             case 2 % Continue the scan
-%                 seqdata.doscan      = 1;
-%                 seqdata.scancycle   = seqdata.scancycle + 1;
-%                 tbl_job_cycle.Data       = seqdata.scancycle;
-%         end  
-%         runSequenceCB;        
-%     end
-% 
-%     function bStopCB(~,~)    
-%         disp('stopping scan');
-%         seqdata.doscan=0;           
-%     end
-% 
-% 
-%     function runSequenceCB    
-%         d=guidata(hF);
-%         % d.SequencerWatcher.RequestWaitTime = d.SequencerWatcher.WaitTable.Data;
-%         runSequence(seqdata.sequence_functions);    
-%         d.SequencerListener.Enabled=1;
-%     end    
 
 % Reset Button callback (not tested well)
     function bResetCB(~,~)        
@@ -467,8 +409,6 @@ handles.StatusStr = tStatus;
 handles.CycleStr= tCycle;
 data.SequencerWatcher = sequencer_watcher(handles);
 
-% data.SequencerListener = listener(data.SequencerWatcher,...
-%     'CycleComplete',@CycleComplete);
 
 data.TableJobCycle = tbl_job_cycle;
 data.TableJobOptions = tbl_job_options;
@@ -484,14 +424,12 @@ guidata(hF,data);
 data.JobHandler = job_handler(hF);
 guidata(hF,data);
 bRun.Callback=@(src,evt) data.JobHandler.start('queue');
-bRunDefault.Callback = @(src,evt) data.JobHandler.start('default');
+bRunDefault.Callback = @(src,evt) data.JobHandler.start('default',0);
 
 dirName=['Jobs'];
 curpath = fileparts(mfilename('fullpath'));
 defname = fullfile(curpath,dirName);     
 bAddJob.Callback = @(src,evt) data.JobHandler.addJobGUI(defname);
-%% Update Things
-% data.SequencerWatcher.updateSequenceFileText(seqdata.sequence_functions);
 
 %% Assign Handles
 % Add gui figure, sequecner watcher, and job handler to base workspace so

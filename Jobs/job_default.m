@@ -21,7 +21,7 @@ out = struct;
 % out.SequenceFunctions       = {@main_settings,@main_sequence};
 out.SequenceFunctions       = {@test_sequence};
 
-out.CyclesRequested         = inf;
+out.CyclesRequested         = 5;
 out.JobName                 = 'JobDefault';
 out.CycleStartFcn           = @default_cycle_start_fcn;
 out.CycleCompleteFcn        = @default_cycle_complete_fcn;

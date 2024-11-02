@@ -79,10 +79,10 @@ function updateAdwin(this,src,evt)
     dT0 = this.AdwinTime;
     if dT>=dT0
         stop(src);  
-        this.notify('AdwinComplete');
         this.AdwinBar.XData = [0 1 1 0];             
         this.AdwinStr1.String=[num2str(dT0,'%.2f') ' s'];
         this.AdwinStr2.String=[num2str(dT0,'%.2f') ' s']; 
+        this.notify('AdwinComplete');
         if this.WaitTime>0
             this.WaitStartTime = datetime;                
             this.StatusStr.String = 'waiting ...';

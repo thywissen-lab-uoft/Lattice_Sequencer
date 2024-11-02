@@ -1,4 +1,4 @@
-function tExecute=runSequence(funcs,CycleStartFcn)
+function tExecute=runSequence(funcs)
 global seqdata
 global adwinprocessnum
 
@@ -69,12 +69,6 @@ if ~seqdata.debugMode
     tExecute = makeControlFile;
 else 
     tExecute = now;
-end
-
-%% Special Function
-
-if nargin == 2
-    CycleStartFcn();
 end
 
 %% Start the Adwin

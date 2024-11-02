@@ -131,7 +131,7 @@ function runCurrentJob(obj)
     global seqdata
     seqdata.scancycle = job.CyclesCompleted+1;
     seqdata.sequence_functions = job.SequenceFunctions;
-    t=runSequence(job.SequenceFunctions,@job.CycleStartFcnWrapper);              
+    t=runSequence(job.SequenceFunctions);              
     job.ExecutionDates(end+1) = t;
     % Get ready to wait for job to finish
     obj.ListenerCycle=listener(obj.SequencerWatcher,'CycleComplete',...

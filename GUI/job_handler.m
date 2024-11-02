@@ -39,10 +39,6 @@ function obj = job_handler(gui_handle)
     obj.updateJobText;
     obj.SequencerWatcher = d.SequencerWatcher;
     obj.DefaultJob = job_default;
-
-    obj.DefaultJob.
-    obj.DefaultJobTable = d.DefaultJobTable;
-    obj.DefaultJobTable.CellEditCallback = @obj.foo;
 end
 
 function start(obj,job)      
@@ -80,8 +76,7 @@ function start(obj,job)
     if isempty(cycles_left) || cycles_left<1
         obj.JobCompleteFcn;
         return;
-    end
-    
+    end    
     % Update the job
     job.Status = 'running';
     obj.updateJobText;

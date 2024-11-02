@@ -68,12 +68,9 @@ function obj = sequencer_job(npt)
     if isfield(npt,'WaitTime');         obj.WaitTime        = npt.WaitTime;end  
     if isfield(npt,'SaveDir');          obj.SaveDir         = npt.SaveDir;end
     if isfield(npt,'CyclesRequested');  obj.CyclesRequested = npt.CyclesRequested;end
-
-
-    if isfield(npt,'CycleStartFcn');obj.CycleStartFcn = @npt.CycleStartFcn;end
-    if isfield(npt,'CycleCompleteFcn');obj.CycleCompleteFcn = @npt.CycleCompleteFcn;end
-    if isfield(npt,'JobCompleteFcn');obj.JobCompleteFcn = @npt.JobCompleteFcn;end
-
+    if isfield(npt,'CycleStartFcn');obj.CycleStartFcn = npt.CycleStartFcn;end
+    if isfield(npt,'CycleCompleteFcn');obj.CycleCompleteFcn = npt.CycleCompleteFcn;end
+    if isfield(npt,'JobCompleteFcn');obj.JobCompleteFcn = npt.JobCompleteFcn;end
     if isfield(npt,'TableInterface')
         obj.TableInterface = npt.TableInterface;
         obj.TableInterface.CellEditCallback = obj.EditTableInterface;
@@ -96,8 +93,81 @@ function MakeTableInterface(this,parent,options)
         'ColumnFormat',{'char','char'},...
         'RowName',{},'columnname',{},...
         'ColumnEditable',[false true],...
-        'fontname','arialnarrow');
+        'fontname','arialnarrow',...
+        'ButtonDownFcn',@this.TableButtonDownFcn);
+    this.updateTableInterface();
 
+    if isfield(options,'Position')
+        this.TableInterface.Position=options.Position;
+    end
+
+
+    % Button for file selection of the sequenece file
+    cdata=imresize(imread(['GUI/images' filesep 'browse.jpg']),[16 16]);
+    bBrowse=uicontrol(parent,'style','pushbutton','CData',cdata,...
+        'backgroundcolor','w','Callback',@browseCB,'tooltip','browse file');
+    bBrowse.Position(3:4)=[18 18];
+    bBrowse.Position(1:2)=[this.TableInterface.Position(1) ...
+        this.TableInterface.Position(2)+this.TableInterface.Position(4)+2];
+
+    % Go to Default Sequence
+    bSeqDefault=uicontrol(parent,'style','pushbutton','String','default sequence',...
+        'backgroundcolor','w','FontSize',7,'units','pixels',...
+        'Callback',@this.chSequence,'UserData',0);
+    bSeqDefault.Position(3:4)=[80 18];
+    bSeqDefault.Position(1:2)=bBrowse.Position(1:2) + [bBrowse.Position(3)+2 0];
+
+    % Go to Test Sequence
+    bSeqTest=uicontrol(parent,'style','pushbutton','String','test sequence',...
+        'backgroundcolor','w','FontSize',7,'units','pixels',...
+        'Callback',@this.chSequence,'UserData',1);
+    bSeqTest.Position(3:4)=[80 18];
+    bSeqTest.Position(1:2)=bSeqDefault.Position(1:2) + [bSeqDefault.Position(3)+2 0];
+end
+
+function chSequence(this,src,evt)
+    switch src.UserData
+        case 0
+            this.SequenceFunctions={@main_settings,@main_sequence};
+        case 1
+            this.SequenceFunctions={@test_sequence}; 
+        otherwise
+
+    end
+    this.updateTableInterface();
+end
+
+function TableButtonDownFcn(this,src,evt)
+      % figHandle = ancestor(src, 'figure');
+      clickType = get(ancestor(src,'figure'),'SelectionType');
+      if strcmp(clickType, 'alt')
+          disp('right click action goes here!');
+      else 
+          disp('idffernt')
+      end
+end
+
+
+function browseCB(this,src,evt)    
+    % % Directory where the sequence files lives
+    % dirName=['Sequence Files' filesep 'Core Sequences'];
+    % % The directory of the root
+    % curpath = fileparts(mfilename('fullpath'));
+    % % Construct the path where the sequence files live
+    % defname=[curpath filesep dirName];
+    % fstr='Select a sequence file to use...';
+    % [file,~] = uigetfile('*.m',fstr,defname);          
+    % if ~file
+    % disp([datestr(now,13) ' Cancelling'])
+    % return;
+    % end        
+    % file = erase(file,'.m');        
+    % seqdata.sequence_functions = {str2func(file)};        
+    % d=guidata(hF);
+    % d.SequencerWatcher.updateSequenceFileText(seqdata.sequence_functions);               
+end
+
+function updateTableInterface(this)
     this.TableInterface.Data={
         'JobName', this.JobName;
         'SequenceFunctions',this.getSequenceFunctionStr;...
@@ -106,18 +176,16 @@ function MakeTableInterface(this,parent,options)
         'WaitMode',this.WaitMode;
         'WaitTime', this.WaitTime;
         'SaveDir', this.SaveDir;
-        'CycleCompleteFcn',func2str(@this.CycleCompleteFcn);
-        'JobCompleteFcn',func2str(@this.JobCompleteFcn);
-        'CycleStartFcn',func2str(@this.CycleStartFcn)};
-    if isfield(options,'Position')
-        this.TableInterface.Position=options.Position;
-    end
+        'CycleStartFcn',func2str(this.CycleStartFcn);
+        'CycleCompleteFcn',func2str(this.CycleCompleteFcn);
+        'JobCompleteFcn',func2str(this.JobCompleteFcn)
+        };
 end
 
 function mystr=getSequenceFunctionStr(this)
     mystr=[];
     for ii = 1:length(this.SequenceFunctions)
-        mystr = [mystr func2str(funcs{ii}) ','];
+        mystr = [mystr func2str(this.SequenceFunctions{ii}) ','];
     end
     mystr(end)=[];
 end
@@ -152,7 +220,6 @@ function CycleStartFcnWrapper(obj)
     if ~isempty(obj.CycleStartFcn)
         obj.CycleStartFcn(); 
     end
-    keyboard
 %     if ~isempty(obj.SaveDirName)
 %         SaveDir = obj.SaveDirName;
 %         try

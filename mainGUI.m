@@ -322,96 +322,6 @@ eSeq.Position(4)=eSeq.Extent(4);
 eSeq.Position(1:2)=[.02 .02];
 eSeq.Position(3)=.95;
 
-% Button for file selection of the sequenece file
-cdata=imresize(imread(['GUI/images' filesep 'browse.jpg']),[22 22]);
-bBrowse=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
-    'backgroundcolor',cc,'Callback',@browseCB,'tooltip','browse file');
-bBrowse.Position(3:4)=[24 24];
-
-bBrowse.Position(1:2)=[tblDefaultJob.Position(1) tblDefaultJob.Position(2)+tblDefaultJob.Position(4)+5];
-
-% button to change to default sequence
-bDefault=uicontrol(hpSeq,'style','pushbutton','String','default seq.',...
-    'backgroundcolor',cc,'FontSize',8,'units','pixels',...
-    'Callback',@defaultCB);
-bDefault.Position(3:4)=[60 24];
-bDefault.Position(1:2)=bBrowse.Position(1:2) + [bBrowse.Position(3)+2 0];
-
-    function defaultCB(~,~)
-        seqdata.sequence_functions = defaultSequence;
-        d=guidata(hF);        
-        d.SequencerWatcher.updateSequenceFileText(defaultSequence);
-    end
-
-% matlab.desktop.editor.getActive
-% 
-% % Button for file selection of the sequenece file
-% cdata=imresize(imread(['GUI/images' filesep 'folder_up.jpg']),[20 20]);
-% bDirUp=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
-%     'backgroundcolor',cc,'Callback',@(~,~) cd('..'),'tooltip','move up directory level');
-% bDirUp.Position(3:4)=[24 24];
-% bDirUp.Position(1:2)=bDefault.Position(1:2)+[bDefault.Position(3)+2 0];
-
-% Button for file selection of the sequenece file
-cdata=imresize(imread(['GUI/images' filesep 'file1.png']),[17 17]);
-bFile1=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
-    'backgroundcolor',cc,'Callback',{@fileCB 1},'tooltip','open first file');
-bFile1.Position(3:4)=[24 24];
-bFile1.Position(1:2)=bDefault.Position(1:2)+[bDefault.Position(3)+2 0];
-
-% Button for file selection of the sequenece file
-cdata=imresize(imread(['GUI/images' filesep 'file2.png']),[17 17]);
-bFile2=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
-    'backgroundcolor',cc,'Callback',{@fileCB 2},'tooltip','open second file');
-bFile2.Position(3:4)=[24 24];
-bFile2.Position(1:2)=bFile1.Position(1:2)+[bFile1.Position(3)+2 0];
-
-% Button for file selection of the sequenece file
-cdata=imresize(imread(['GUI/images' filesep 'file3.png']),[17 17]);
-bFile3=uicontrol(hpSeq,'style','pushbutton','CData',cdata,...
-    'backgroundcolor',cc,'Callback',{@fileCB 3},'tooltip','open third file');
-bFile3.Position(3:4)=[24 24];
-bFile3.Position(1:2)=bFile2.Position(1:2)+[bFile2.Position(3)+2 0];
-
-
-% callback to change sequence file
-    function browseCB(src,evt)    
-        disp([datestr(now,13) ' Changing the sequence file.']);        
-        % Directory where the sequence files lives
-        dirName=['Sequence Files' filesep 'Core Sequences'];
-        % The directory of the root
-        curpath = fileparts(mfilename('fullpath'));
-        % Construct the path where the sequence files live
-        defname=[curpath filesep dirName];
-        fstr='Select a sequence file to use...';
-        [file,~] = uigetfile('*.m',fstr,defname);          
-        if ~file
-            disp([datestr(now,13) ' Cancelling'])
-            return;
-        end        
-        file = erase(file,'.m');        
-        seqdata.sequence_functions = {str2func(file)};        
-        d=guidata(hF);
-        d.SequencerWatcher.updateSequenceFileText(seqdata.sequence_functions);               
-    end
-
-    function fileCB(~,~,n)
-        d=guidata(hF);
-        str = d.SequencerWatcher.SequenceText.String;
-        
-        try            
-            strs=strsplit(strrep(str,'@',''),',');
-            names={};
-            for kk=1:length(strs)
-                names{kk} =  erase(strs{kk},'@'); 
-            end            
-            name = strsplit(names{n},'/');
-            name = name{1};
-            open(name);
-        catch ME
-            warning(ME.message);
-        end        
-    end
 %% Sequencer Status Panel
 % 
 % % Status String
@@ -419,7 +329,6 @@ bFile3.Position(1:2)=bFile2.Position(1:2)+[bFile2.Position(3)+2 0];
 %     'backgroundcolor','w','fontsize',7,'units','pixels',...
 %     'visible','on','horizontalalignment','left');
 % sL.Position=[5 sL.Parent.Position(4)-12 100 10];
-
 
 
 % Axis object for plotting the wait bar
@@ -559,10 +468,6 @@ cHold=uicontrol(hpRun,'style','checkbox','string','stop job after current cycle'
 cHold.Position(3:4)=[150 cHold.Extent(4)];
 cHold.Position(1:2)=[5 cRpt.Position(2)-15];
 cHold.Tooltip='Hold the sequencer after end of next cycle.';
-
-
-
-
 
 % Button to run the cycle
 bRunIter=uicontrol(hpRun,'style','pushbutton','String','Run Single Cycle',...
@@ -782,7 +687,6 @@ data.SequencerListener.Enabled = 0;
 data.JobTable = tJobs;
 data.SequenceText = eSeq;
 data.CycleStr = tCycle;
-data.DefaultJobTable = tblDefaultJob;
 
 
 guidata(hF,data);

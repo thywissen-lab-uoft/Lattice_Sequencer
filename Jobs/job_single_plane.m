@@ -35,8 +35,8 @@ out.SequenceFunctions   = {...
     @main_settings,...
     @one_plane,...
     @main_sequence};
-out.ScanCyclesRequested   = 1:npt.NumCycles;
-out.JobName               = ['single plane ' num2str(npt.xdt_B_evap_power) ' mW, '  num2str(npt.lattice_load_feshbach_field) ' G' ];
+out.CyclesRequested     = npt.NumCycles;
+out.JobName             = ['single plane ' num2str(npt.xdt_B_evap_power) ' mW, '  num2str(npt.lattice_load_feshbach_field) ' G' ];
 
 %% Output Job File
 J = sequencer_job(out);

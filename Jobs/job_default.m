@@ -11,7 +11,6 @@ function J = job_default
     function default_cycle_start_fcn
         disp('cycle start function');
         disp('oop')
-        keyboard
     end
 
     function default_job_complete_fcn
@@ -29,6 +28,7 @@ out.JobName               = ['default job'];
 out.CycleStartFcn         = @default_cycle_start_fcn;
 out.CycleCompleteFcn      = @default_cycle_complete_fcn;
 out.JobCompleteFcn        = @default_job_complete_fcn;
+out.SaveDir               = 'NewData';
 
 %% Output Job File
 J = sequencer_job(out);

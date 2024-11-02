@@ -57,7 +57,7 @@ out.SequenceFunctions   = {...
     @stripe_seq,...
     @main_sequence};
 out.CycleCompleteFcn      = @cycle_complete_fcn_focus;
-out.ScanCyclesRequested   = npt.NumCycles;
+out.CyclesRequested   = npt.NumCycles;
 out.JobName               = ['stripe and focus feedback'];
 out.JobName               = ['stripe feedback'];
 

@@ -97,7 +97,7 @@ for ii = 1:length(freq_list)
 %     npt.CycleStartFcn       = @cycleStart;
 %     npt.CycleCompleteFcn    = @cycleComplete;
 %     npt.JobCompleteFcn      = @jobComplete;
-    npt.ScanCyclesRequested = 17;
+    npt.CyclesRequested = 17;
     npt.JobName             = [num2str(ii) ' shake ' num2str(f) ' Hz,' ...
         num2str(B_conductivity) 'G,' num2str(1e3*power_conductivity) ' mW ' num2str(mod_strength) ' amp, ' ...
         num2str(mod_ramp_time) ' ms ramp, ', num2str(uwave_freq_amp), ' kHz uwave amp'];

@@ -157,31 +157,22 @@ tableJobs = uitable('parent',hpJobQueue,'fontsize',7,...
 
             tStatus.Position(3)=[tStatus.Parent.Position(3)-tStatus.Parent.Position(1)-5];
 
-            drawnow;
             for kk=1:length(hpJobDetail.Children)
-                % hpJobDetail.Children.Position(3:4)=hpJobDetail.Position(3:4);
-                 % keyboard
                 gphx=hpJobDetail.Children(kk).Children(1).Children;
-                for jj=1:length(gphx)
-                    
+                for jj=1:length(gphx)                    
                     if isequal(class(gphx(jj)),'matlab.ui.control.Table')
-                        % gphx(jj).ColumnWidth(2)
-
                         gphx(jj).Parent.Units='pixels';
                         wP = gphx(jj).Parent.Position(3);
-                        gphx(jj).Parent.Units='normalized';
-
-                        
-
+                        gphx(jj).Parent.Units='normalized';    
                         w2 = wP-gphx(jj).ColumnWidth{1}-20;
-
                         gphx(jj).ColumnWidth{2}=max([w2 50]);
-                        gphx(jj).Position(3:4)=gphx(jj).Extent(3:4)
-
+                        gphx(jj).Position(3:4)=gphx(jj).Extent(3:4)+[5 2];
                     end
 
                 end
             end
+            drawnow;
+
         end
     end
 

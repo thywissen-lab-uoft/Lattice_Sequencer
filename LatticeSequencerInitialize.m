@@ -88,6 +88,7 @@ seqdata = struct('analogadwinlist',[],...   % adwin list is [time channel value]
 seqdata.sequence_functions = {};
 seqdata.scancycle=1;
 seqdata.randcyclelist=makeRandList;
+seqdata.LogFile = 'sequencer_log.html';
 
 %ADWIN processor speed (300 MHz)
 adwin_processor_speed = 300E6;

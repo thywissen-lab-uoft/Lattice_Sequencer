@@ -21,6 +21,8 @@ fprintf(fileID,'</style>\n');
 
 fprintf(fileID,'</head></body>\n');
 
+fprintf(fileID,['compiled at ' datestr(datetime)]);
+
 % fprintf(fileID,'<p style="font-size: 24pt;">');
 % fprintf(fileID,'Lattice Sequencer Compiler');
 % fprintf(fileID,'</p>');

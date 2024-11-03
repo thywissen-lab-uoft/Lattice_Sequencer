@@ -56,6 +56,7 @@ function obj = sequencer_job(npt)
     obj.WaitMode            = 1;
     obj.WaitTime            = 30;
     obj.AdwinTime           = NaN;
+    obj.Tab                 = [];
     if isfield(npt,'WaitMode');         obj.WaitMode        = npt.WaitMode;end
     if isfield(npt,'WaitTime');         obj.WaitTime        = npt.WaitTime;end  
     if isfield(npt,'SaveDir');          obj.SaveDir         = npt.SaveDir;end
@@ -68,6 +69,10 @@ function obj = sequencer_job(npt)
         obj.TableInterface.CellEditCallback = obj.EditTableInterface;
     end   
 end    
+
+function delete(obj)
+    if ~isempty(obj.Tab);delete(obj.Tab);end
+end
 
 function MakeTableInterface(this,parent,boop)
     if nargin ==2

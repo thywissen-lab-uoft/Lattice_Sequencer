@@ -334,13 +334,22 @@ bPlot.Position(1:2)=[bRunDefault.Position(1)+bRunDefault.Position(3)+4 bRunDefau
         plotgui2;
     end
 
+% Button to open log
+cdata=imresize(imread(['GUI/images' filesep 'log.jpg']),[24 24]);
+bLog=uicontrol(hpRun,'style','pushbutton','CData',cdata,...
+    'backgroundcolor',cc,'Callback',@(src,evt) web(log_file),'tooltip','plot');
+bLog.Position(3:4)=[25 25];
+bLog.Position(1:2)=bPlot.Position(1:2)+[0 bPlot.Position(4)];
+
+  
+
 % Button to recompile seqdata but not program devices
 cdata=imresize(imread(['GUI/images' filesep 'compile.jpg']),[20 20]);
 bCompilePartial=uicontrol(hpRun,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'tooltip',...
     'compile sequence but don''t program devices');
 bCompilePartial.Position(3:4)=[25 25];
-bCompilePartial.Position(1:2)=bPlot.Position(1:2)+[0 bPlot.Position(4)];
+bCompilePartial.Position(1:2)=bLog.Position(1:2)+[0 bLog.Position(4)];
 
 % Button to recompile seqdata
 cdata=imresize(imread(['GUI/images' filesep 'compile_yellow.jpg']),[20 20]);
@@ -489,9 +498,9 @@ bRunDefault.Callback    = @(src,evt) data.JobHandler.start('default',0);
 bClearQueue.Callback    = @(src,evt) data.JobHandler.clearQueue();
 bAddJob.Callback        = @(src,evt) data.JobHandler.addJobGUI(defname);
 bViewJob.Callback       = @(src,evt) data.JobHandler.viewJobs();
-bRemoveJob.Callback     = @(src,evt) data.JobHandler.deleteSelectedJobs();
-bMoveJobDown.Callback   = @(src,evt) data.JobHandler.moveSelectJobs(-1);
-bMoveJobUp.Callback     = @(src,evt) data.JobHandler.moveSelectJobs(1);
+bRemoveJob.Callback     = @(src,evt) data.JobHandler.clearQueueSelect();
+bMoveJobDown.Callback   = @(src,evt) data.JobHandler.moveQueueSelect(-1);
+bMoveJobUp.Callback     = @(src,evt) data.JobHandler.moveQueueSelect(1);
 
 % Old way (Can't fully test new until in lab);
 % bCompilePartial.Callback ={@bCompileCB 0};

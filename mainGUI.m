@@ -41,7 +41,7 @@ end
 disp('Opening Lattice Sequencer...');
 
 % Figure color and size settings
-cc='w';w=350;h=600;
+cc='w';w=360;h=600;
 
 % Initialize the figure graphics objects
 hF=figure('toolbar','none','Name',figName,'color',cc,'NumberTitle','off',...
@@ -105,7 +105,7 @@ hF.SizeChangedFcn=@sequencer_resize;
 % Panel : Main
 hpMain=uipanel('parent',hF,'units','pixels','backgroundcolor',cc,...
     'bordertype','line','BorderColor','k','borderwidth',1);
-hpMain.Position=[1 1 350 600];
+hpMain.Position=[1 1 400 600];
 
 % Panel : Timer Display and Status
 hpStatus = uipanel('Parent',hpMain,'units','pixels',...
@@ -131,12 +131,13 @@ hpJobQueue.Position(1:2) = [1 hpRun.Position(2)+hpRun.Position(4)];
 hpJobQueue.Position(3:4)=[hpJobQueue.Parent.Position(3) 90];
 
 % Job Queue Table Table
-tableJobs = uitable('parent',hpJobQueue,'fontsize',8,...
+tableJobs = uitable('parent',hpJobQueue,'fontsize',7,...
     'ColumnName',{'', 'Status','#','Job Name'},...
     'ColumnEditable',[true false false false],...
     'ColumnWidth',{20 50 20 170},...
     'ColumnFormat',{'logical','char','char','char'},...
-    'Position', [1 1 hpMain.Position(3) hpJobQueue.Position(4)-12]);
+    'Position', [1 1 hpMain.Position(3) hpJobQueue.Position(4)-12],...
+    'FontName','Helvetica-Narrow');
 
     function sequencer_resize(src,evt)
         try
@@ -237,12 +238,12 @@ tCycle.Position(1) = tCycle.Parent.Position(3)-tCycle.Position(3)-10;
 tCycle.Position(2) = tStatus.Position(2);
 
 %% Job Controller
-wB = 140;
+wB = 100;
 hB  = 18;
 
 % Button to run the cycle
 bRunDefault=uicontrol(hpRun,'style','pushbutton','String','Run JobDefault',...
-    'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
+    'backgroundcolor',[152 251 152]/255,'FontSize',7,'units','pixels',...
     'fontweight','bold');
 bRunDefault.Position(3:4)=[wB hB];
 bRunDefault.Position(1:2)=[5 5];
@@ -250,7 +251,7 @@ bRunDefault.Tooltip='Start JobDefault';
 
 % Button to run the cycle
 bRun=uicontrol(hpRun,'style','pushbutton','String','Run JobQueue',...
-    'backgroundcolor',[173 216 230]/255,'FontSize',8,'units','pixels',...
+    'backgroundcolor',[173 216 230]/255,'FontSize',7,'units','pixels',...
     'fontweight','bold');
 bRun.Position(3:4)=[wB hB];
 bRun.Position(1:2)=[bRunDefault.Position(1) bRunDefault.Position(2)+bRunDefault.Position(4)+2];
@@ -258,42 +259,47 @@ bRun.Tooltip='Start or continue queued job.';
 
 % Button to run the cycle
 bClearQueue=uicontrol(hpRun,'style','pushbutton','String','Clear JobQueue',...
-    'backgroundcolor', [255 206 27]/255,'FontSize',8,'units','pixels',...
-    'fontweight','bold','callback',@clearJobsCB);
+    'backgroundcolor', [255 206 27]/255,'FontSize',7,'units','pixels',...
+    'fontweight','bold');
 bClearQueue.Position(3:4)=[wB hB];
 bClearQueue.Position(1:2)=[bRun.Position(1) bRun.Position(2)+bRun.Position(4)+2];
 bClearQueue.Tooltip='Clear jobs';
 
-    function clearJobsCB(~,~)
-        d=guidata(hF);
-        d.JobHandler.clear;
-    end
+
 
 % Button to add a job
 bAddJob=uicontrol(hpRun,'style','pushbutton','String','Add to JobQueue',...
-    'backgroundcolor',[205,133,63]/255,'FontSize',8,'units','pixels',...
+    'backgroundcolor',[205,133,63]/255,'FontSize',7,'units','pixels',...
     'fontweight','bold');
 bAddJob.Position(3:4)=[wB hB];
 bAddJob.Position(1:2)=[bClearQueue.Position(1) bClearQueue.Position(2)+bClearQueue.Position(4)+2];
 bAddJob.Tooltip='Add jobs';
 
 % Button to remove selected jobs
-bRemoveJob=uicontrol(hpRun,'style','pushbutton','String',['Del. ' char(10003) ' from JobQueue'],...
-    'backgroundcolor',[248, 131, 121]/255,'FontSize',8,'units','pixels',...
+bViewJob=uicontrol(hpRun,'style','pushbutton','String',['View ' char(10003) ' in JobQueue'],...
+    'backgroundcolor',[218, 177, 218]/255,'FontSize',7,'units','pixels',...
+    'fontweight','bold');
+bViewJob.Position(3:4)=[wB hB];
+bViewJob.Position(1:2)=[bAddJob.Position(1) bAddJob.Position(2)+bAddJob.Position(4)+2];
+bViewJob.Tooltip='View jobs';
+
+% Button to remove selected jobs
+bRemoveJob=uicontrol(hpRun,'style','pushbutton','String',['Del. ' char(10003) ' in JobQueue'],...
+    'backgroundcolor',[248, 131, 121]/255,'FontSize',7,'units','pixels',...
     'fontweight','bold');
 bRemoveJob.Position(3:4)=[wB hB];
-bRemoveJob.Position(1:2)=[bAddJob.Position(1) bAddJob.Position(2)+bAddJob.Position(4)+2];
+bRemoveJob.Position(1:2)=[bViewJob.Position(1) bViewJob.Position(2)+bViewJob.Position(4)+2];
 bRemoveJob.Tooltip='Add jobs';
 
 bMoveJobUp=uicontrol(hpRun,'style','pushbutton','String',['Move ' char(10003) ' ' char(8593)],...
-    'backgroundcolor',[205,133,63]/255,'FontSize',8,'units','pixels',...
+    'backgroundcolor',[205,133,63]/255,'FontSize',7,'units','pixels',...
     'fontweight','bold');
 bMoveJobUp.Position(3:4)=[wB/2 hB];
 bMoveJobUp.Position(1:2)=[bRemoveJob.Position(1) bRemoveJob.Position(2)+bRemoveJob.Position(4)+2];
 bMoveJobUp.Tooltip='Move Job Up';
 
 bMoveJobDown=uicontrol(hpRun,'style','pushbutton','String',['Move ' char(10003) ' ' char(8595) ],...
-    'backgroundcolor',[205,133,63]/255,'FontSize',8,'units','pixels',...
+    'backgroundcolor',[205,133,63]/255,'FontSize',7,'units','pixels',...
     'fontweight','bold');
 bMoveJobDown.Position(3:4)=[wB/2 hB];
 bMoveJobDown.Position(1:2)=[bMoveJobUp.Position(1)+bMoveJobUp.Position(3) bMoveJobUp.Position(2)];
@@ -305,7 +311,7 @@ cdata=imresize(imread(['GUI/images' filesep 'plot.jpg']),[24 24]);
 bPlot=uicontrol(hpRun,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@bPlotCB,'tooltip','plot');
 bPlot.Position(3:4)=[25 25];
-bPlot.Position(1:2)=[bAddJob.Position(1) bPlot.Parent.Position(4)-bPlot.Position(4)-2];
+bPlot.Position(1:2)=[bRunDefault.Position(1)+bRunDefault.Position(3)+4 bRunDefault.Position(2)];
 
     function bPlotCB(~,~)
         plotgui2;
@@ -317,7 +323,7 @@ bCompilePartial=uicontrol(hpRun,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',{@bCompileCB 0},'tooltip',...
     'compile sequence but don''t program devices');
 bCompilePartial.Position(3:4)=[25 25];
-bCompilePartial.Position(1:2)=bPlot.Position(1:2)+[bPlot.Position(3)+2 0];
+bCompilePartial.Position(1:2)=bPlot.Position(1:2)+[0 bPlot.Position(4)];
 
 % Button to recompile seqdata
 cdata=imresize(imread(['GUI/images' filesep 'compile_yellow.jpg']),[20 20]);
@@ -325,7 +331,7 @@ bCompileFull=uicontrol(hpRun,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',{@bCompileCB 1},'tooltip',...
     'compile sequence and program devices');
 bCompileFull.Position(3:4)=[25 25];
-bCompileFull.Position(1:2)=bCompilePartial.Position(1:2)+[bCompilePartial.Position(3)+2 0];
+bCompileFull.Position(1:2)=bCompilePartial.Position(1:2)+[0 bCompilePartial.Position(4)];
 
 % Button to recompile seqdata
 cdata=imresize(imread(['GUI/images' filesep 'command_window.jpg']),[20 20]);
@@ -333,7 +339,7 @@ bCmd=uicontrol(hpRun,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@(~,~) commandwindow,'tooltip',...
     'move up directory level','tooltip','command window');
 bCmd.Position(3:4)=[25 25];
-bCmd.Position(1:2)=bCompileFull.Position(1:2)+[bCompileFull.Position(3)+2 0];
+bCmd.Position(1:2)=bCompileFull.Position(1:2)+[0 bCompileFull.Position(4)];
 
     function bCompileCB(~,~,doProgramDevices)    
         compile(seqdata.sequence_functions,doProgramDevices)        
@@ -345,7 +351,7 @@ cdata=imresize(imread(['GUI/images' filesep 'help.jpg']),[20 20]);
 bHelp=uicontrol(hpRun,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@helpCB,'tooltip','help');
 bHelp.Position(3:4)=[25 25];
-bHelp.Position(1:2)=bCmd.Position(1:2)+[bCmd.Position(3)+2 0];
+bHelp.Position(1:2)=bCmd.Position(1:2)+[0 bCmd.Position(4)+1];
 
     function helpCB(~,~)
        doc job_handler
@@ -388,7 +394,7 @@ bHelp.Position(1:2)=bCmd.Position(1:2)+[bCmd.Position(3)+2 0];
 
 tbl_job_options = uitable(hpRun,'RowName',{},'columnname',{},...
     'ColumnEditable',[true false],'units','pixels',...
-    'ColumnWidth',{20 190},'fontsize',7,'columnformat',{'logical','char'});
+    'ColumnWidth',{15 195},'fontsize',7,'columnformat',{'logical','char'});
 tbl_job_options.Data={...
     false, 'HOLD CycleNumber';
     false, 'STOP on CycleComplete';
@@ -396,7 +402,7 @@ tbl_job_options.Data={...
     false, 'START Queue on DefaultJob CycleComplete';
     false, 'START DefaultJob on QueueComplete ';
     false, 'REPEAT QUEUE on QueueComplete'};
-tbl_job_options.Position=[bRunDefault.Position(1)+bRunDefault.Position(3)+10 bRunDefault.Position(2) ...
+tbl_job_options.Position=[bRunDefault.Position(1)+bRunDefault.Position(3)+35 bRunDefault.Position(2) ...
     tbl_job_options.Extent(3) tbl_job_options.Extent(4)];
 
 tbl_job_cycle=uitable(hpRun,'RowName',{},'ColumnName',{},...
@@ -460,14 +466,21 @@ data.JobTabs = hpJobDetail;
 guidata(hF,data);
 data.JobHandler = job_handler(hF);
 guidata(hF,data);
-bRun.Callback=@(src,evt) data.JobHandler.start('queue');
-bRunDefault.Callback = @(src,evt) data.JobHandler.start('default',0);
 
 dirName=['Jobs'];
 curpath = fileparts(mfilename('fullpath'));
-defname = fullfile(curpath,dirName);     
-bAddJob.Callback = @(src,evt) data.JobHandler.addJobGUI(defname);
+defname = fullfile(curpath,dirName);   
 
+
+bRun.Callback           = @(src,evt) data.JobHandler.start('queue');
+bRunDefault.Callback    = @(src,evt) data.JobHandler.start('default',0);
+bClearQueue.Callback    = @(src,evt) data.JobHandler.clearQueue();
+bAddJob.Callback        = @(src,evt) data.JobHandler.addJobGUI(defname);
+bViewJob.Callback       = @(src,evt) data.JobHandler.viewJobs();
+bRemoveJob.Callback     = @(src,evt) data.JobHandler.deleteSelectedJobs();
+bMoveJobDown.Callback   = @(src,evt) data.JobHandler.moveSelectJobs(-1);
+bMoveJobUp.Callback     = @(src,evt) data.JobHandler.moveSelectJobs(1);
+    
 %% Assign Handles
 % Add gui figure, sequecner watcher, and job handler to base workspace so
 % that they may be accessed from the command line

@@ -66,14 +66,14 @@ function obj = sequencer_job(npt)
     if isfield(npt,'TableInterface')
         obj.TableInterface = npt.TableInterface;
         obj.TableInterface.CellEditCallback = obj.EditTableInterface;
-    end
-    
-
-    
-  
+    end   
 end    
 
-function MakeTableInterface(this,parent) 
+function MakeTableInterface(this,parent,boop)
+    if nargin ==2
+        boop=false;
+    end
+
     this.Tab = uitab(parent,'title',this.JobName);
     this.Panel = uipanel('parent',this.Tab,'units','normalized',...
         'backgroundcolor','w','position',[0 0 1 1]);
@@ -89,27 +89,37 @@ function MakeTableInterface(this,parent)
     this.updateTableInterface();
     this.TableInterface.Position = [1 1 this.TableInterface.Extent(3)+1 this.TableInterface.Extent(4)+1];
 
-    % Button for file selection of the sequenece file
-    cdata=imresize(imread(['GUI/images' filesep 'browse.jpg']),[16 16]);
-    bBrowse=uicontrol(this.Panel,'style','pushbutton','CData',cdata,...
-        'backgroundcolor','w','Callback',@browseCB,'tooltip','browse file');
-    bBrowse.Position(3:4)=[18 18];
-    bBrowse.Position(1:2)=[this.TableInterface.Position(1) ...
-        this.TableInterface.Position(2)+this.TableInterface.Position(4)+2];
 
-    % Go to Default Sequence
-    bSeqDefault=uicontrol(this.Panel,'style','pushbutton','String','default sequence',...
-        'backgroundcolor','w','FontSize',7,'units','pixels',...
-        'Callback',@this.chSequence,'UserData',0);
-    bSeqDefault.Position(3:4)=[80 18];
-    bSeqDefault.Position(1:2)=bBrowse.Position(1:2) + [bBrowse.Position(3)+2 0];
-
-    % Go to Test Sequence
-    bSeqTest=uicontrol(this.Panel,'style','pushbutton','String','test sequence',...
-        'backgroundcolor','w','FontSize',7,'units','pixels',...
-        'Callback',@this.chSequence,'UserData',1);
-    bSeqTest.Position(3:4)=[80 18];
-    bSeqTest.Position(1:2)=bSeqDefault.Position(1:2) + [bSeqDefault.Position(3)+2 0];
+    if boop
+        bClose = uicontrol(this.Panel,'style','pushbutton',...
+            'string','close','fontsize',7,'foregroundcolor','r','units','pixels',...
+            'Callback',{@(src,evt) delete(this.Tab)},'backgroundcolor','w');
+        bClose.Position(1:2)=this.TableInterface.Position(1:2)+[0 this.TableInterface.Position(4)];
+        bClose.Position(3:4)=[30 20];
+    else
+    
+        % Button for file selection of the sequenece file
+        cdata=imresize(imread(['GUI/images' filesep 'browse.jpg']),[16 16]);
+        bBrowse=uicontrol(this.Panel,'style','pushbutton','CData',cdata,...
+            'backgroundcolor','w','Callback',@browseCB,'tooltip','browse file');
+        bBrowse.Position(3:4)=[18 18];
+        bBrowse.Position(1:2)=[this.TableInterface.Position(1) ...
+            this.TableInterface.Position(2)+this.TableInterface.Position(4)+2];
+     % Go to Default Sequence
+        bSeqDefault=uicontrol(this.Panel,'style','pushbutton','String','default sequence',...
+            'backgroundcolor','w','FontSize',7,'units','pixels',...
+            'Callback',@this.chSequence,'UserData',0);
+        bSeqDefault.Position(3:4)=[80 18];
+        bSeqDefault.Position(1:2)=bBrowse.Position(1:2) + [bBrowse.Position(3)+2 0];
+    
+        % Go to Test Sequence
+        bSeqTest=uicontrol(this.Panel,'style','pushbutton','String','test sequence',...
+            'backgroundcolor','w','FontSize',7,'units','pixels',...
+            'Callback',@this.chSequence,'UserData',1);
+        bSeqTest.Position(3:4)=[80 18];
+        bSeqTest.Position(1:2)=bSeqDefault.Position(1:2) + [bSeqDefault.Position(3)+2 0];
+    end
+   
 end
 
 function chSequence(this,src,evt)

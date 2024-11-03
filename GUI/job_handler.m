@@ -20,7 +20,7 @@ properties
     SequencerJobs       % array of sequencer jobs to run
     ListenerCycle       % listener object for when Cycle finishes
     ListenerAdwin       % listener object for when Adwin finishes
-    TextBox             % text table to update job progress
+    JobTable             % text table to update job progress
     SequencerWatcher    % sequencer_watcher which watches the adwin
     % doIterate           % boolean to continue running jobs
     DefaultJob          % The default job to run
@@ -46,7 +46,7 @@ methods
 function obj = job_handler(gui_handle)          
     obj.SequencerJobs={};            
     d=guidata(gui_handle);          
-    obj.TextBox = d.JobTable;
+    obj.JobTable = d.JobTable;
     obj.updateJobText;
     obj.SequencerWatcher = d.SequencerWatcher;
     obj.JobTabs = d.JobTabs;
@@ -68,10 +68,10 @@ function obj = job_handler(gui_handle)
     end
     obj.Cycle                                   = 1;
     obj.doHoldCycle                             = 0;
-    obj.doStopOnCycleComplete                = 0;
-    obj.doStopOnJobComplete                = 0;
+    obj.doStopOnCycleComplete                   = 0;
+    obj.doStopOnJobComplete                     = 0;
     obj.doStartQueueOnDefaultJobCycleComplete   = 0;
-    obj.doStartDefaultJobOnQueueComplete=0;
+    obj.doStartDefaultJobOnQueueComplete        = 0;
 end
 
 function JobOptionsCB(obj,src,evt)
@@ -279,6 +279,8 @@ function CycleCompleteFcn(obj)
     % Continue this job
 end
 
+
+
 function addJobGUI(obj,startdir)
     if nargin==1
         startdir=pwd;
@@ -314,8 +316,15 @@ end
 %     obj.updateJobText;
 % end   
 
+function viewJobs(obj)
+    selJobs=obj.SequencerJobs([obj.JobTable.Data{:,1}]);
+    for kk=1:length(selJobs)
+        selJobs{kk}.MakeTableInterface(obj.JobTabs,1);
+    end
+end
+
 % Clear all jobs
-function clear(obj) 
+function clearQueue(obj) 
     for kk=1:length(obj.SequencerJobs)
        delete(obj.SequencerJobs{kk}); 
     end
@@ -327,7 +336,7 @@ end
 % Function that updates the job table
 function updateJobText(obj)
     if isempty(obj.SequencerJobs)
-       obj.TextBox.Data={};
+       obj.JobTable.Data={};
     else
         for kk = 1:length(obj.SequencerJobs)
             funcs=obj.SequencerJobs{kk}.SequenceFunctions;
@@ -336,10 +345,10 @@ function updateJobText(obj)
                 mystr = [mystr func2str(funcs{ii}) ','];
             end
             mystr(end)=[];
-
-            obj.TextBox.Data{kk,2} = obj.SequencerJobs{kk}.Status;
-            obj.TextBox.Data{kk,3} = num2str(obj.SequencerJobs{kk}.CyclesRequested);
-            obj.TextBox.Data{kk,4} = obj.SequencerJobs{kk}.JobName;
+            obj.JobTable.Data{kk,1} = false;
+            obj.JobTable.Data{kk,2} = obj.SequencerJobs{kk}.Status;
+            obj.JobTable.Data{kk,3} = num2str(obj.SequencerJobs{kk}.CyclesRequested);
+            obj.JobTable.Data{kk,4} = obj.SequencerJobs{kk}.JobName;
             % obj.TextBox.Data{kk,5} = mystr;                
         end
     end
@@ -402,7 +411,7 @@ end
 % delete me
 function delete(obj)
     % delete any listeners
-    obj.clear;
+    obj.clearQueue;
     obj.updateJobText;
 end
 

@@ -55,6 +55,10 @@ adwinprocessnum = -1;
 adwin_process_path = fullfile(curpath,'TransferData.TB1'); 
 %path of the TB1 file to be loaded on the ADWIN
 
+global log_file 
+log_file= fullfile(curpath,'sequencer_log.html'); 
+
+
 %this allows debugging without being connected to the ADWIN
 adwin_connected = 1;
 
@@ -90,7 +94,6 @@ seqdata = struct('analogadwinlist',[],...   % adwin list is [time channel value]
 seqdata.sequence_functions = {};
 seqdata.scancycle=1;
 seqdata.randcyclelist=makeRandList;
-seqdata.LogFile = 'sequencer_log.html';
 
 %ADWIN processor speed (300 MHz)
 adwin_processor_speed = 300E6;

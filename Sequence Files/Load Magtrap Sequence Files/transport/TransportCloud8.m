@@ -12,6 +12,7 @@ else
 end
 global seqdata;
 dispLineStr('TRANSPORT',curtime);
+logNewSection('Transport',curtime);
 %% Votlage Fucntions
 
 func_push = 2;
@@ -269,7 +270,8 @@ tV = getVar('transport_time');
 z_init = 0;
 
 %% Transport to 174 mm
-dispLineStr('Vertical Transpot Start',calctime(curtime,0));
+dispLineStr('Vertical Transport Start',calctime(curtime,0));
+logNewSection('Vertical Transport',curtime);
 
 % Ramp all coil currents
 AnalogFunc(calctime(curtime,0),'Coil 12a',...
@@ -303,6 +305,9 @@ tt = linspace(0,tV,1e4);
 I15_vec=z2i15(ramp_minjerk(tt,tV,z_init,zMatch));
 i0=length(tt)-find(flip(I15_vec)>0,1);
 Tswitch = tt(i0);
+logText(['   Vertical Transport Time  (ms) : ' num2str(tV)]);
+logText(['   Coil 15 Cross Over  Time (ms) : ' num2str(Tswitch)]);
+
 disp(['Vertical Transport Time (ms)' num2str(tV)]);
 disp(['Coil 15 Cross Over  Time (ms)' num2str(Tswitch)]);
 

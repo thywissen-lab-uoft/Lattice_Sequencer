@@ -1,7 +1,6 @@
-function logHeader
-global seqdata
+function logFileHeader
+global log_file
 
-logfile=seqdata.LogFile;
 
 line_num=dbstack;
 ind = min([2 length(line_num)]);
@@ -13,7 +12,7 @@ line = lNum.line;
     % file, file);
 hotlinkcode = sprintf('<a href="matlab: matlab.desktop.editor.openDocument(which(''%s'')); ">%s </a>', ...
     file, file);
-fileID = fopen(logfile,'a+');
+fileID = fopen(log_file,'a+');
 
 fprintf(fileID,'<p style="font-size: 16pt;">');
 fprintf(fileID,hotlinkcode);

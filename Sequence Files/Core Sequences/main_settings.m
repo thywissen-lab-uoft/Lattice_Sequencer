@@ -1,5 +1,5 @@
 function timeout = main_settings(timein)
-logHeader();
+logFileHeader();
 % main_settings.m
 log_lines = {};
 
@@ -827,6 +827,6 @@ seqdata.labjack_trigger = 'Plane selection';
 
 timeout = curtime;
 log_lines{end+1}=[' scope_trigger : ' seqdata.scope_trigger];
-logAdd(log_lines);
+logText(log_lines);
 end
 

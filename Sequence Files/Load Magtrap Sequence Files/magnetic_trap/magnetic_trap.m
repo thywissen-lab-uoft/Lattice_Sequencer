@@ -50,6 +50,7 @@ if ( seqdata.flags.RF_evap_stages(1) == 1 )
     % |2,2>-->|2,1>=h*f ==> E_atom = 2*h*f
     % Accounting for the factor of two : 1 MHz evaporates 96 uK atoms
     dispLineStr('RF1A',curtime);
+    logNewSection('RF1A',curtime);
 
     fake_sweep = 0;             % do a fake RF sweep
     hold_time = 100;            % hold time after sweeps
@@ -101,6 +102,9 @@ if ( seqdata.flags.RF_evap_stages(1) == 1 )
     disp(['     Times        (ms) : ' mat2str(sweep_times_1) ]);
     disp(['     Frequencies (MHz) : ' mat2str(freqs_1*1E-6) ]);
     disp(['     Gains         (V) : ' mat2str(RF_gain_1) ]);
+    logText(['   Times        (ms) : ' mat2str(sweep_times_1) ]);
+    logText(['   Frequencies (MHz) : ' mat2str(freqs_1*1E-6) ]);
+    logText(['   Gains         (V) : ' mat2str(RF_gain_1) ]);
 
     % Hold before beginning evaporation
     curtime = calctime(curtime,pre_hold_time);

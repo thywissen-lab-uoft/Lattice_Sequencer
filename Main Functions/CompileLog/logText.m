@@ -1,18 +1,22 @@
-function logAdd(log_lines)
-global seqdata
-
-logfile=seqdata.LogFile;
+function logText(log_lines)
+global log_file
 
 if ~isempty(log_lines)
-    fileID = fopen(logfile,'a+');
-    fprintf(fileID,'<p>\n');
+    fileID = fopen(log_file,'a+');
+    % fprintf(fileID,'<p>\n');
+    fprintf(fileID,'\n');
+
+    if ~iscell(log_lines)
+        log_lines={log_lines};
+    end
     for kk=1:length(log_lines)
         fprintf(fileID,'<pre>');
         fprintf(fileID,'%s',log_lines{kk});
         fprintf(fileID,'</pre>');
-        fprintf(fileID,'\n');
     end
-    fprintf(fileID,'</p>');
+    
+    % fprintf(fileID,'</p>');
+
     fclose(fileID);
 end
 end

@@ -1,7 +1,10 @@
-function logAddLink(str,curtime)
+function logNewSection(str,curtime)
 
-global seqdata
-logfile=seqdata.LogFile;
+global log_file
+
+if nargin ==1
+    curtime = nan;
+end
 
 line_num=dbstack;
 ind = min([2 length(line_num)]);
@@ -15,12 +18,11 @@ hotlinkcode = sprintf('<a href="matlab: matlab.desktop.editor.openAndGoToLine(wh
 mystr = [' ' '(' num2str(t) ' ms) ' hotlinkcode ' ' str];
 
 
-fileID = fopen(logfile,'a+');
-
+fileID = fopen(log_file,'a+');
+fprintf(fileID,'\n');
 fprintf(fileID,'<p>');
 fprintf(fileID,'%s',mystr);
 fprintf(fileID,'</p>');
-fprintf(fileID,'\n');
 fclose(fileID);
 
 end

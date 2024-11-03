@@ -36,8 +36,8 @@ figName='Main GUI';
 if seqdata.debugMode    
     figName=[figName ' DEBUG MODE'];
 end
-
-web(seqdata.LogFile)
+global log_file;
+web(log_file);
 %% Initialize Primary Figure graphics
 
 disp('Opening Lattice Sequencer...');

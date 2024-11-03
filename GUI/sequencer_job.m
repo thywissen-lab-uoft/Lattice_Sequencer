@@ -22,8 +22,7 @@ properties
     CyclesRequested         % Number of cycles requested
     WaitMode
     WaitTime
-    SaveDir
-    isComplete
+    SaveDir    
     JobName                 % the name of the job
     ExecutionDates          % the dates at which each sequence in the job is run
     Status                  % the current status of the job
@@ -47,14 +46,13 @@ function obj = sequencer_job(npt)
     obj.JobName             = npt.JobName;            
     obj.SequenceFunctions   = npt.SequenceFunctions;
     obj.Status              = 'pending';
-    obj.isComplete          = false;
     obj.CyclesRequested     = npt.CyclesRequested;
     obj.CyclesCompleted     = 0;    
     obj.SaveDir             = '';
     obj.ExecutionDates      = [];
-    obj.CycleStartFcn       = [];
-    obj.CycleCompleteFcn    = [];
-    obj.JobCompleteFcn      = [];
+    obj.CycleStartFcn       = @false;
+    obj.CycleCompleteFcn    = @false;
+    obj.JobCompleteFcn      = @false;
     obj.WaitMode            = 1;
     obj.WaitTime            = 30;
 
@@ -160,7 +158,6 @@ function updateTableInterface(this)
     this.TableInterface.Data={
         'JobName', this.JobName;
         'SequenceFunctions',this.getSequenceFunctionStr;...
-        'isComplete',this.isComplete;    
         'CyclesCompleted',this.CyclesCompleted;    
         'CyclesRequested',this.CyclesRequested;
         'WaitMode',this.WaitMode;
@@ -170,6 +167,10 @@ function updateTableInterface(this)
         'CycleCompleteFcn',func2str(this.CycleCompleteFcn);
         'JobCompleteFcn',func2str(this.JobCompleteFcn)
         };
+end
+
+function ret=isComplete(this)
+    ret=this.CyclesCompleted>=this.CyclesRequested;
 end
 
 function mystr=getSequenceFunctionStr(this)

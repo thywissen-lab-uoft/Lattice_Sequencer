@@ -106,6 +106,9 @@ function start(obj,job_type,Cycle)
                     job = obj.DefaultJob;
                 case 'queue'
                     job = obj.findNextJob;
+                    if isequal(job,obj.DefaultJob)
+                        job.CyclesCompleted = 0;
+                    end
                 otherwise
                     error('Unexpected job type. Fix your code!');              
             end
@@ -120,7 +123,6 @@ function start(obj,job_type,Cycle)
     
     % Update current job
     obj.CurrentJob = job; 
-    if job.CyclesCompleted>=job.CyclesRequested;obj.JobCompleteFcn;return;end   
     obj.runCurrentJob();    
 end
 
@@ -131,6 +133,7 @@ function runCurrentJob(obj)
     global seqdata
     seqdata.scancycle = job.CyclesCompleted+1;
     seqdata.sequence_functions = job.SequenceFunctions;
+    obj.CycleStartFcn();
     t=runSequence(job.SequenceFunctions);              
     job.ExecutionDates(end+1) = t;
     % Get ready to wait for job to finish
@@ -139,6 +142,23 @@ function runCurrentJob(obj)
     obj.ListenerAdwin=listener(obj.SequencerWatcher,'AdwinComplete',...
         @(src, evt) obj.AdwinCompleteFcn);
     % obj.doIterate   = true;
+end
+
+function CycleStartFcn(obj)
+    obj.CurrentJob.Status = 'CycleStartFcn()';
+    set(obj.SequencerWatcher.StatusStr,...
+        'String',[func2str(obj.CurrentJob.CycleStartFcn)],...
+        'ForegroundColor',[220,88,42]/255);
+    obj.updateJobText();
+    try         
+        obj.CurrentJob.CycleStartFcn();
+        obj.CurrentJob.Status = 'pending';
+    catch ME
+        warning on
+        warning(getReport(ME,'extended','hyperlinks','on'));
+        obj.CurrentJob.Status = 'CycleStartFcn() Error';
+    end
+    obj.updateJobText();
 end
 
 % Evaluates when the Adwin is complete. Independent of Wait Timer
@@ -154,6 +174,7 @@ function AdwinCompleteFcn(obj)
     obj.CurrentJob.Status = 'CycleCompleteFcn()';
     obj.updateJobText;
 
+    % if ~isempty(obj.CurrentJob.CycleCompleteFcn)
     set(obj.SequencerWatcher.StatusStr,...
         'String',[func2str(obj.CurrentJob.CycleCompleteFcn)],...
         'ForegroundColor',[220,88,42]/255);
@@ -166,8 +187,7 @@ function AdwinCompleteFcn(obj)
         obj.CurrentJob.Status = 'CycleCompleteFcn() Error';
     end
     obj.updateJobText;
-
-    if obj.CurrentJob.CyclesCompleted>=obj.CurrentJob.CyclesRequested
+    if obj.CurrentJob.isComplete()
         obj.JobCompleteFcn();       
     end
     obj.updateJobText;
@@ -205,7 +225,7 @@ function CycleCompleteFcn(obj)
         return;
     end
 
-    if (obj.doStopOnJobComplete && obj.CurrentJob.isComplete)
+    if (obj.doStopOnJobComplete && obj.CurrentJob.isComplete())
         return;
     end
 
@@ -214,13 +234,14 @@ function CycleCompleteFcn(obj)
             (obj.doStartQueueOnDefaultJobCycleComplete)
         obj.start('queue');
         return;        
-    end
+    end    
 
     % If JobComplete move onto next job
-    if  obj.CurrentJob.isComplete
+    if  obj.CurrentJob.isComplete()
         obj.start('queue');
         return;
     end
+    
     % Continue this job
     obj.start(obj.CurrentJob)      
 end

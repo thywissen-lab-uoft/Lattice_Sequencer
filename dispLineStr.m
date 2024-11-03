@@ -15,5 +15,8 @@ disp(repmat('-',1,60));
 disp(mystr);
 disp([' ' str]);
 
+
+% logNewSection(str,curtime);
+
 end
 

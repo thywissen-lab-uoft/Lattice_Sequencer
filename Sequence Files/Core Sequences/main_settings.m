@@ -1,8 +1,12 @@
 function timeout = main_settings(timein)
 % main_settings.m
 
+log_lines = {};
+
+
 %% Initialize
 if nargin == 0 
+    timein = 0;
     curtime = 0;
 else
     curtime = timein;
@@ -436,7 +440,7 @@ seqdata.flags.xdtB_rf_mix                   = 1;
 seqdata.flags.xdtB_evap                     = 1;
 defVar('xdtB_evap_power',[0.1],'W');0.065;.085;
 defVar('xdtB_evap_time',[5000],'ms');
-defVar('xdtB_evap_tau_fraction',3.5','arb')
+defVar('xdtB_evap_tau_fraction',3.5','arb');
 
 seqdata.flags.xdtB_evap_levitate_compensate            = 0;
 
@@ -557,7 +561,7 @@ seqdata.flags.conductivity_mod_direction        = 1; % 1:X-direction 2:Y-directi
 defVar('conductivity_snap_and_hold_time',[0],'ms');
 defVar('conductivity_FB_field',201,'G');201.1;
 defVar('conductivity_zshim',0,'A')
-defVar('conductivity_mod_freq',[55],'Hz')       %w Modulation Frequency
+defVar('conductivity_mod_freq',[55],'Hz');       %w Modulation Frequency
 defVar('conductivity_mod_time',[50],'ms');      % Modulation Time
 defVar('conductivity_mod_ramp_time',50,'ms');50;  % Ramp Time
 
@@ -823,5 +827,6 @@ seqdata.labjack_trigger = 'Plane selection';
 
 timeout = curtime;
 
+logAdd(log_lines,timein,timeout);
 end
 

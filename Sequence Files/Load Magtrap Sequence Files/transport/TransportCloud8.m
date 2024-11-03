@@ -195,7 +195,7 @@ i12b_hf = -dataH.I_out(end,end);
 
 i12a_vi = -data.i1(1); i12b_vi = -data.i2(1);
 
-defVar('transport_vert_t_match_horz',100,'ms')
+defVar('transport_vert_t_match_horz',100,'ms');
 
 % Boundary condition which matches with "old" transport
 defVar('transport_vert_match_pos',0.1763,'ms');
@@ -203,7 +203,7 @@ zMatch = getVar('transport_vert_match_pos');
 i14_Match = [0 interp1(data.zz,data.i4,zMatch)];
 i15_Match = [-10.21 interp1(data.zz,data.i5,zMatch)];
 i16_Match = [18.35 interp1(data.zz,data.i6,zMatch)];  
-defVar('transport_vert_t_match_vert',500,'ms')
+defVar('transport_vert_t_match_vert',500,'ms');
 t_v2e = 100;
 
 % Create functions that map position to current

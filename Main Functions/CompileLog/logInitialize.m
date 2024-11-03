@@ -1,4 +1,4 @@
-function initLog(logfile)
+function logInitialize(logfile)
 if nargin==0
     logfile='sequencer_log.html';
 end

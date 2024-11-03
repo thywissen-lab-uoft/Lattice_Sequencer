@@ -436,7 +436,7 @@ function ret = compile(obj,doProgramDevices)
         obj.updateSeqStr('initializing sequence','k');    
         start_new_sequence;
         initialize_channels;
-        initLog;
+        logInitialize;
     catch ME
         warning(getReport(ME,'extended','hyperlinks','on'));
         obj.updateSeqStr('sequence initialize error','r'); 

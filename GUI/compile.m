@@ -45,6 +45,7 @@ data.Status.ForegroundColor = 'k';
 start_new_sequence;
 initialize_channels;
 curtime = 0;
+initLog;
 for kk = 1:length(funcs)
     data.Status.String = ['running @' func2str(funcs{kk})];
     data.Status.ForegroundColor = [220,88,42]/255;

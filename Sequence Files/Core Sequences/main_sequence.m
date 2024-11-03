@@ -1,5 +1,6 @@
 function timeout = main_sequence(timein)
 % main_sequence.m
+logHeader();
 
 if nargin == 0 
     timein = 0;
@@ -308,6 +309,7 @@ end
 
 if seqdata.flags.transport
     dispLineStr('Magnetic Transport',curtime);
+
     % Open kitten relay
     curtime = setDigitalChannel(curtime,'Kitten Relay',1);
     

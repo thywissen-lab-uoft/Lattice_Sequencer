@@ -18,8 +18,8 @@ function J = job_default
 
 %% Create Job File
 out = struct;
-% out.SequenceFunctions       = {@main_settings,@main_sequence};
-out.SequenceFunctions       = {@test_sequence};
+out.SequenceFunctions       = {@main_settings,@main_sequence};
+% out.SequenceFunctions       = {@test_sequence};
 
 out.CyclesRequested         = 5;
 out.JobName                 = 'JobDefault';

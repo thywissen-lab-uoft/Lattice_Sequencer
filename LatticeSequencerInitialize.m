@@ -27,6 +27,8 @@ addpath(fullfile(curpath,'Sequence Files','Core Sequences'));
 addpath(fullfile(curpath,'Sequence Files','Action Files'));
 addpath(fullfile(curpath,'Main Functions'));
 addpath(fullfile(curpath,'Main Functions','Adwin Commands'));
+addpath(fullfile(curpath,'Main Functions','CompileLog'));
+
 addpath(fullfile(curpath,'Main Functions','Device Functions'));
 addpath(fullfile(curpath,'Main Functions','Math Functions'));
 addpath(fullfile(curpath,'Main Functions','AMO Functions'));

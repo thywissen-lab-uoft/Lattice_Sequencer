@@ -345,7 +345,7 @@ bCompilePartial.Position(1:2)=bPlot.Position(1:2)+[0 bPlot.Position(4)];
 % Button to recompile seqdata
 cdata=imresize(imread(['GUI/images' filesep 'compile_yellow.jpg']),[20 20]);
 bCompileFull=uicontrol(hpRun,'style','pushbutton','CData',cdata,...
-    'backgroundcolor',cc,tooltip',...
+    'backgroundcolor',cc,'tooltip',...
     'compile sequence and program devices');
 bCompileFull.Position(3:4)=[25 25];
 bCompileFull.Position(1:2)=bCompilePartial.Position(1:2)+[0 bCompilePartial.Position(4)];
@@ -496,8 +496,9 @@ bMoveJobUp.Callback     = @(src,evt) data.JobHandler.moveSelectJobs(1);
 % bCompilePartial.Callback ={@bCompileCB 0};
 % bCompileFull.Callback ={@bCompileCB 1};
 
-bCompilePartial.Callback = @(src,evt) data.JobHandlder.compile(0);
-bCompileFull.Callback = @(src,evt) data.JobHandlder.compile(1);
+% New Way (Keep this if you show that the sequencer works in the same way)
+bCompilePartial.Callback = @(src,evt) data.JobHandler.compile(0);
+bCompileFull.Callback = @(src,evt) data.JobHandler.compile(1);
 
 %% Assign Handles
 % Add gui figure, sequecner watcher, and job handler to base workspace so

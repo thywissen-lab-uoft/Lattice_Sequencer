@@ -3,6 +3,7 @@ global seqdata
 
 % Added to avoid multiple compile commands, not well tested (CF
 % 2023/10/04);
+% 2024/11/03 : THis is now legacy code
 if ~isfield(seqdata,'compiler_status')
     seqdata.compiler_status = 'idle';
 end

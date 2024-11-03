@@ -421,19 +421,16 @@ function delete(obj)
     obj.updateJobText;
 end
 
-%% Seqdat Adwin Functions
+%% seqdata Adwin Functions
 
-function ret = compile(obj,doProgramDevices)
-    if obj.CompilerStatus
-        warning('Compiler is busy!');
-    end
-
-    obj.CompilerStatus = 1;
-    ret = true;
-    curtime = 0;
-
-    if nargin==1;doProgramDevices=1;end
+% Compiles the seqdata (see compile.m for old way)
+function ret = compile(obj,doProgramDevices)       
     
+    if nargin==1;doProgramDevices=1;end
+
+    obj.CompilerStatus = 1; % compiler busy
+    ret = true;             % compile good
+
     % Initialize Sequence
     try
         obj.updateSeqStr('initializing sequence','k');    
@@ -444,11 +441,14 @@ function ret = compile(obj,doProgramDevices)
         warning(getReport(ME,'extended','hyperlinks','on'));
         obj.updateSeqStr('sequence initialize error','r'); 
         pause(0.1)
-        ret = false;
+        ret = false;% compile fail
+        obj.CompilerStatus = 0;% compiler idle
+        return;
     end
 
     % Evaluate Sequence Functions
-    try
+    try    
+        curtime = 0;
         obj.updateSeqStr('evaluating sequence functions','k');   
         for kk = 1:length(obj.CurrentJob.SequenceFunctions)
             obj.updateSeqStr(['@' func2str(obj.CurrentJob.SequenceFunctions{kk})],[220,88,42]/255);    
@@ -459,9 +459,13 @@ function ret = compile(obj,doProgramDevices)
         warning(getReport(ME,'extended','hyperlinks','on'));
         obj.updateSeqStr('sequence compile error','r'); 
         pause(0.1)
-        ret = false;
+        ret = false;% compile fail
+        obj.CompilerStatus = 0;% compiler idle
+        return;
     end
-    updateScanVarText;
+
+     % Update GUI Text (needs to be udpated)
+    try;updateScanVarText;end
 
     % Convert Into Hardware Commands
     try
@@ -476,7 +480,9 @@ function ret = compile(obj,doProgramDevices)
         warning(getReport(ME,'extended','hyperlinks','on'));
         obj.updateSeqStr('hardware conversion error','r'); 
         pause(0.1)
-        ret = false;
+        ret = false;% compile fail
+        obj.CompilerStatus = 0;% compiler idle
+        return;
     end
     obj.CompilerStatus = 0;
 end

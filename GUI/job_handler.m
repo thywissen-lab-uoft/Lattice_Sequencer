@@ -32,7 +32,8 @@ properties
     doStopOnCycleComplete
     doStopOnJobComplete
     doStartQueueOnDefaultJobCycleComplete
-    doStopOnQueueComplete
+    doStartDefaultJobOnQueueComplete
+    StringJob
 end    
 
 events
@@ -61,12 +62,16 @@ function obj = job_handler(gui_handle)
         obj.TableJobOptions=d.TableJobOptions;
         obj.TableJobOptions.CellEditCallback=@obj.JobOptionsCB;
     end
+
+    if isfield(d,'StringJob')
+        obj.StringJob=d.StringJob;
+    end
     obj.Cycle                                   = 1;
     obj.doHoldCycle                             = 0;
     obj.doStopOnCycleComplete                = 0;
     obj.doStopOnJobComplete                = 0;
     obj.doStartQueueOnDefaultJobCycleComplete   = 0;
-    obj.doStopOnQueueComplete=0;
+    obj.doStartDefaultJobOnQueueComplete=0;
 end
 
 function JobOptionsCB(obj,src,evt)
@@ -74,7 +79,7 @@ function JobOptionsCB(obj,src,evt)
     obj.doStopOnCycleComplete = src.Data{2,1};
     obj.doStopOnJobComplete = src.Data{3,1};
     obj.doStartQueueOnDefaultJobCycleComplete = src.Data{4,1};
-    obj.doStopOnQueueComplete = src.Data{5,1};
+    obj.doStartDefaultJobOnQueueComplete = src.Data{5,1};
 end
 
 function JobCycleCB(obj,src,evt)   
@@ -132,6 +137,8 @@ end
 function runCurrentJob(obj)
     job=obj.CurrentJob;
     job.Status = 'running';
+    obj.StringJob.String=['(' num2str(obj.getCurrentJobIndex) ') ' obj.CurrentJob.JobName];
+
     obj.updateJobText; 
     global seqdata
     seqdata.scancycle = job.CyclesCompleted+1;
@@ -145,6 +152,14 @@ function runCurrentJob(obj)
     obj.ListenerAdwin=listener(obj.SequencerWatcher,'AdwinComplete',...
         @(src, evt) obj.AdwinCompleteFcn);
     % obj.doIterate   = true;
+end
+
+function ind=getCurrentJobIndex(obj)
+    if isequal(obj.CurrentJob,obj.DefaultJob)
+        ind = 0;
+    else        
+        ind=find(cellfun(@(myjob) isequal(obj.CurrentJob,myjob),obj.SequencerJobs),1);
+    end
 end
 
 function CycleStartFcn(obj)
@@ -238,14 +253,30 @@ function CycleCompleteFcn(obj)
         return;        
     end    
 
-    % If JobComplete move onto next job
-    if  obj.CurrentJob.isComplete()
-        obj.start('queue');
-        return;
+    % Continue the job
+    if ~obj.CurrentJob.isComplete()
+        obj.start(obj.CurrentJob)  
+    else
+        if isequal(obj.DefaultJob,obj.findNextJob())
+            % If the next job is complete, then all jobs are done
+            if obj.doStartDefaultJobOnQueueComplete
+                % run default job on complete
+                obj.DefaultJob.CyclesCompleted=0;
+                obj.start('default');
+                return;
+            end
+        else
+            % go to next job
+            obj.start('queue');
+            return;
+        end
     end
+
+
+
+    
     
     % Continue this job
-    obj.start(obj.CurrentJob)      
 end
 
 function addJobGUI(obj,startdir)
@@ -352,20 +383,19 @@ end
 
 % Find next job that is pending
 function job = findNextJob(obj)
+    job = [];
     if isempty(obj.SequencerJobs)
         job = obj.DefaultJob;
         return;
     end
 
-    job = [];
    for kk=1:length(obj.SequencerJobs)
        if isequal(obj.SequencerJobs{kk}.Status,'pending')
             job = obj.SequencerJobs{kk};
             return
        end
    end
-
-   
+    job = obj.DefaultJob;   
 end
 
 

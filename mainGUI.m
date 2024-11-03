@@ -110,7 +110,7 @@ hpMain.Position=[1 1 350 600];
 % Panel : Timer Display and Status
 hpStatus = uipanel('Parent',hpMain,'units','pixels',...
     'backgroundcolor',cc,'bordertype','line','BorderColor','k','borderwidth',1);
-hpStatus.Position(3:4)=[hpStatus.Parent.Position(3) 65];
+hpStatus.Position(3:4)=[hpStatus.Parent.Position(3) 85];
 hpStatus.Position(1:2)=[0 0];
 
 % Tab Group : Job object detail
@@ -121,7 +121,7 @@ hpJobDetail.Position(1:2)=[0 hpStatus.Position(2)+hpStatus.Position(4)];
 % Panel : Job Controller
 hpRun = uipanel('Parent',hpMain,'units','pixels',...
     'backgroundcolor',cc,'bordertype','line','BorderColor','k','borderwidth',1);
-hpRun.Position(3:4)=[hpRun.Parent.Position(3) 130];
+hpRun.Position(3:4)=[hpRun.Parent.Position(3) 160];
 hpRun.Position(1:2)=[0 hpJobDetail.Position(2)+hpJobDetail.Position(4)];
 
 % Panel : Job Queue
@@ -131,10 +131,10 @@ hpJobQueue.Position(1:2) = [1 hpRun.Position(2)+hpRun.Position(4)];
 hpJobQueue.Position(3:4)=[hpJobQueue.Parent.Position(3) 90];
 
 % Job Queue Table Table
-tableJobs = uitable('parent',hpJobQueue,'fontsize',8,'rowname',{},...
-    'ColumnName',{'', 'Status','Cycles','Job Name'},...
+tableJobs = uitable('parent',hpJobQueue,'fontsize',8,...
+    'ColumnName',{'', 'Status','#','Job Name'},...
     'ColumnEditable',[true false false false],...
-    'ColumnWidth',{20 60 40 170},...
+    'ColumnWidth',{20 50 20 170},...
     'ColumnFormat',{'logical','char','char','char'},...
     'Position', [1 1 hpMain.Position(3) hpJobQueue.Position(4)-12]);
 
@@ -147,7 +147,7 @@ tableJobs = uitable('parent',hpJobQueue,'fontsize',8,'rowname',{},...
             hpJobQueue.Position(3)  = hpJobQueue.Parent.Position(3);
             hpJobQueue.Position(4)  = max([hpJobQueue.Parent.Position(4)-hpJobQueue.Position(2)-5 50]);            
             tableJobs.Position(3)    = tableJobs.Parent.Position(3)-tableJobs.Position(1)-2;
-            tableJobs.ColumnWidth{4} = max([50 tableJobs.Position(3)-sum([tableJobs.ColumnWidth{1:end-1}])-20]);
+            tableJobs.ColumnWidth{4} = max([50 tableJobs.Position(3)-sum([tableJobs.ColumnWidth{1:end-1}])-60]);
             tableJobs.Position(4)   = max([tableJobs.Parent.Position(4)-tableJobs.Position(2)-20 50]);
             axWaitBar.Position(3)   = axWaitBar.Parent.Position(3)-2*axWaitBar.Position(1);
             axAdWinBar.Position(3)  = axWaitBar.Position(3);
@@ -217,8 +217,16 @@ tStatus=uicontrol(hpStatus,'style','text','string','sequencer idle',...
 tStatus.Position(1) = axAdWinBar.Position(1);
 tStatus.Position(2) = tScanVar.Position(2)+tScanVar.Position(4)+1;
 tStatus.Position(3:4)=[tStatus.Parent.Position(3)-tStatus.Parent.Position(1)-15 15];
-
 tStatus.ForegroundColor=[0 128 0]/255;
+
+% Status String
+tCurrentJob=uicontrol(hpStatus,'style','text','string','JobDefault',...
+    'backgroundcolor','w','fontsize',8,'units','pixels',...
+    'fontweight','bold','visible','on','horizontalalignment','left');
+tCurrentJob.Position(1) = axAdWinBar.Position(1);
+tCurrentJob.Position(2) = tStatus.Position(2)+tStatus.Position(4)+1;
+tCurrentJob.Position(3:4)=[tCurrentJob.Parent.Position(3)-tCurrentJob.Parent.Position(1)-15 15];
+tCurrentJob.ForegroundColor=[0 0 0];
 
 % Status String
 tCycle=uicontrol(hpStatus,'style','text','string','Cycle # : ',...
@@ -229,28 +237,30 @@ tCycle.Position(1) = tCycle.Parent.Position(3)-tCycle.Position(3)-10;
 tCycle.Position(2) = tStatus.Position(2);
 
 %% Job Controller
+wB = 140;
+hB  = 18;
 
 % Button to run the cycle
 bRunDefault=uicontrol(hpRun,'style','pushbutton','String','Run JobDefault',...
     'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold');
-bRunDefault.Position(3:4)=[120 18];
+bRunDefault.Position(3:4)=[wB hB];
 bRunDefault.Position(1:2)=[5 5];
 bRunDefault.Tooltip='Start JobDefault';
 
 % Button to run the cycle
 bRun=uicontrol(hpRun,'style','pushbutton','String','Run JobQueue',...
-    'backgroundcolor',[152 251 152]/255,'FontSize',8,'units','pixels',...
+    'backgroundcolor',[173 216 230]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold');
-bRun.Position(3:4)=[120 18];
+bRun.Position(3:4)=[wB hB];
 bRun.Position(1:2)=[bRunDefault.Position(1) bRunDefault.Position(2)+bRunDefault.Position(4)+2];
 bRun.Tooltip='Start or continue queued job.';
 
 % Button to run the cycle
 bClearQueue=uicontrol(hpRun,'style','pushbutton','String','Clear JobQueue',...
-    'backgroundcolor',[173 216 230]/255,'FontSize',8,'units','pixels',...
+    'backgroundcolor', [255 206 27]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold','callback',@clearJobsCB);
-bClearQueue.Position(3:4)=[120 18];
+bClearQueue.Position(3:4)=[wB hB];
 bClearQueue.Position(1:2)=[bRun.Position(1) bRun.Position(2)+bRun.Position(4)+2];
 bClearQueue.Tooltip='Clear jobs';
 
@@ -263,9 +273,32 @@ bClearQueue.Tooltip='Clear jobs';
 bAddJob=uicontrol(hpRun,'style','pushbutton','String','Add to JobQueue',...
     'backgroundcolor',[205,133,63]/255,'FontSize',8,'units','pixels',...
     'fontweight','bold');
-bAddJob.Position(3:4)=[120 18];
+bAddJob.Position(3:4)=[wB hB];
 bAddJob.Position(1:2)=[bClearQueue.Position(1) bClearQueue.Position(2)+bClearQueue.Position(4)+2];
 bAddJob.Tooltip='Add jobs';
+
+% Button to remove selected jobs
+bRemoveJob=uicontrol(hpRun,'style','pushbutton','String',['Del. ' char(10003) ' from JobQueue'],...
+    'backgroundcolor',[248, 131, 121]/255,'FontSize',8,'units','pixels',...
+    'fontweight','bold');
+bRemoveJob.Position(3:4)=[wB hB];
+bRemoveJob.Position(1:2)=[bAddJob.Position(1) bAddJob.Position(2)+bAddJob.Position(4)+2];
+bRemoveJob.Tooltip='Add jobs';
+
+bMoveJobUp=uicontrol(hpRun,'style','pushbutton','String',['Move ' char(10003) ' ' char(8593)],...
+    'backgroundcolor',[205,133,63]/255,'FontSize',8,'units','pixels',...
+    'fontweight','bold');
+bMoveJobUp.Position(3:4)=[wB/2 hB];
+bMoveJobUp.Position(1:2)=[bRemoveJob.Position(1) bRemoveJob.Position(2)+bRemoveJob.Position(4)+2];
+bMoveJobUp.Tooltip='Move Job Up';
+
+bMoveJobDown=uicontrol(hpRun,'style','pushbutton','String',['Move ' char(10003) ' ' char(8595) ],...
+    'backgroundcolor',[205,133,63]/255,'FontSize',8,'units','pixels',...
+    'fontweight','bold');
+bMoveJobDown.Position(3:4)=[wB/2 hB];
+bMoveJobDown.Position(1:2)=[bMoveJobUp.Position(1)+bMoveJobUp.Position(3) bMoveJobUp.Position(2)];
+bMoveJobDown.Tooltip='Move Job Down';
+
 
 % Button to recompile seqdata
 cdata=imresize(imread(['GUI/images' filesep 'plot.jpg']),[24 24]);
@@ -355,12 +388,14 @@ bHelp.Position(1:2)=bCmd.Position(1:2)+[bCmd.Position(3)+2 0];
 
 tbl_job_options = uitable(hpRun,'RowName',{},'columnname',{},...
     'ColumnEditable',[true false],'units','pixels',...
-    'ColumnWidth',{20 180},'fontsize',7,'columnformat',{'logical','char'});
-tbl_job_options.Data={false, 'hold CycleNumber';
-    false, 'stop on next CycleComplete';
-    false, 'stop on next JobComplete';
-    false, 'start queue on DefaultJob CycleComplete';
-    false, 'stop on QueueComplete'};
+    'ColumnWidth',{20 190},'fontsize',7,'columnformat',{'logical','char'});
+tbl_job_options.Data={...
+    false, 'HOLD CycleNumber';
+    false, 'STOP on CycleComplete';
+    false, 'STOP on JobComplete ';
+    false, 'START Queue on DefaultJob CycleComplete';
+    false, 'START DefaultJob on QueueComplete ';
+    false, 'REPEAT QUEUE on QueueComplete'};
 tbl_job_options.Position=[bRunDefault.Position(1)+bRunDefault.Position(3)+10 bRunDefault.Position(2) ...
     tbl_job_options.Extent(3) tbl_job_options.Extent(4)];
 
@@ -414,13 +449,14 @@ data.SequencerWatcher = sequencer_watcher(handles);
 data.TableJobCycle = tbl_job_cycle;
 data.TableJobOptions = tbl_job_options;
 
-
+data.StringJob = tCurrentJob;
 data.Status = tStatus;
 data.VarText = tScanVar;
 data.SequencerListener.Enabled = 0;
 data.JobTable = tableJobs;
 data.CycleStr = tCycle;
 data.JobTabs = hpJobDetail;
+
 guidata(hF,data);
 data.JobHandler = job_handler(hF);
 guidata(hF,data);

@@ -234,8 +234,6 @@ if seqdata.flags.MOT_prepare_for_MT
     if seqdata.flags.image_type ~= 1    
         DigitalPulse(calctime(curtime,-10),'Mot Camera Trigger',1,1);
     end
-
-
     curtime = Prepare_MOT_for_MagTrap(curtime);
 
     if seqdata.flags.image_type == 0    

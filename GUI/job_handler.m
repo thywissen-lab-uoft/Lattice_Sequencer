@@ -35,6 +35,7 @@ properties
     doStartDefaultJobOnQueueComplete
     StringJob
     CompilerStatus
+    DebugMode
 
 end    
 
@@ -75,7 +76,8 @@ function obj = job_handler(gui_handle)
     obj.doStopOnJobComplete                     = 0;
     obj.doStartQueueOnDefaultJobCycleComplete   = 0;
     obj.doStartDefaultJobOnQueueComplete        = 0;
-    obj.CompilerStatus                          = 0;                      
+    obj.CompilerStatus                          = 0; 
+    obj.DebugMode = data.DebugMode;
 end
 
 function JobOptionsCB(obj,src,evt)
@@ -313,15 +315,6 @@ function add(obj,job)
     end
 end
 
-% % Stop Current Job
-% function stop(obj)
-%     obj.doIterate   = false;
-%     if ~isempty(obj.CurrentJob)
-%        obj.CurrentJob.Status = 'stopping';
-%     end
-%     obj.updateJobText;
-% end   
-
 function viewJobs(obj)
     selJobs=obj.SequencerJobs([obj.JobTable.Data{:,1}]);
     for kk=1:length(selJobs)
@@ -423,6 +416,48 @@ end
 
 %% seqdata Adwin Functions
 
+function ret = run(obj)
+    global adwinprocessnum
+    ret = true;             % compile good
+
+    obj.updateSeqStr('loading adwin',[220,88,42]/255); 
+    if ~obj.DebugMode
+        try            
+            load_sequence;
+        catch ME
+            warning(getReport(ME,'extended','hyperlinks','on'))
+            ret = false;
+            return;
+        end
+    end
+    obj.updateSeqStr('adwin loaded',[17,59,8]/255); 
+
+    % Make control file
+    try
+        obj.updateSeqStr('making log file',[17,59,8]/255);
+        if ~obj.DebugMode    
+            tExecute = makeControlFile;
+        else 
+            tExecute = now;
+        end
+    catch ME
+        warning(getReport(ME,'extended','hyperlinks','on'))
+        ret = false;
+        return;
+    end
+    obj.updateSeqStr('starting adwin',[17,59,8]/255); 
+    try
+        if ~obj.DebugMode;Start_Process(adwinprocessnum);end        
+    catch ME
+        warning(getReport(ME,'extended','hyperlinks','on'))
+        ret = false;
+        return;
+    end
+    obj.updateSeqStr('adwin is running','r'); 
+    obj.SequencerWatcher.AdwinTime = obj.CurrentJob.AdwinTime;
+    start(obj.SequencerWatcher);
+end
+
 % Compiles the seqdata (see compile.m for old way)
 function ret = compile(obj,doProgramDevices)       
     
@@ -472,7 +507,7 @@ function ret = compile(obj,doProgramDevices)
         obj.updateSeqStr(...
             ['converting sequence into hardware commands'],...
             [220,88,42]/255); 
-        calc_sequence(doProgramDevices);    
+        obj.CurrentJob.AdwinTime=calc_sequence(doProgramDevices);    
         obj.updateSeqStr(...
             ['sequence calulated'],...
             [17,59,8]/255); 

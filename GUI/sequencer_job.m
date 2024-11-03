@@ -33,6 +33,7 @@ properties
     Tab
     Panel                   % Panel interface
     TableInterface
+    AdwinTime               % Time to evaluvlate sequence
 end    
 events
 
@@ -54,7 +55,7 @@ function obj = sequencer_job(npt)
     obj.JobCompleteFcn      = @false;
     obj.WaitMode            = 1;
     obj.WaitTime            = 30;
-
+    obj.AdwinTime           = NaN;
     if isfield(npt,'WaitMode');         obj.WaitMode        = npt.WaitMode;end
     if isfield(npt,'WaitTime');         obj.WaitTime        = npt.WaitTime;end  
     if isfield(npt,'SaveDir');          obj.SaveDir         = npt.SaveDir;end

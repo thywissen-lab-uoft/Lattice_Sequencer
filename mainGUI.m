@@ -474,6 +474,7 @@ data.SequencerListener.Enabled = 0;
 data.JobTable = tableJobs;
 data.CycleStr = tCycle;
 data.JobTabs = hpJobDetail;
+data.DebugMode = seqdata.debugMode;
 
 guidata(hF,data);
 data.JobHandler = job_handler(hF);

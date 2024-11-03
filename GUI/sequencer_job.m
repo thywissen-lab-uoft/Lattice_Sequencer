@@ -74,7 +74,10 @@ function MakeTableInterface(this,parent,boop)
         boop=false;
     end
 
-    this.Tab = uitab(parent,'title',this.JobName);
+    if isempty(this.Tab) || ~isvalid(this.Tab)
+        this.Tab = uitab(parent,'title',this.JobName);
+    end
+
     this.Panel = uipanel('parent',this.Tab,'units','normalized',...
         'backgroundcolor','w','position',[0 0 1 1]);
     this.TableInterface = uitable('parent',this.Panel,...

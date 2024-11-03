@@ -17,20 +17,19 @@ classdef sequencer_job < matlab.mixin.Copyable
 %
 % See also JOB_HANDLER, MAINGUI
 properties        
-    SequenceFunctions       % cell arary of sequence functions to evaluate
-    CyclesCompleted         % Number of cycles Completed
-    CyclesRequested         % Number of cycles requested
-    WaitMode
-    WaitTime
-    SaveDir    
-    JobName                 % the name of the job
+    SequenceFunctions       % cell array : sequence functions to evaluate
+    CyclesCompleted         % double     : number of cycles completed
+    CyclesRequested         % double     : number of cycles requested
+    WaitMode                % double     : 0:no wait, 1:intercycle, 2: total
+    WaitTime                % double     : wait time in seconds
+    SaveDir                 % char       : directory string save images (see imaging computer)
+    JobName                 % char       : name of the job
     ExecutionDates          % the dates at which each sequence in the job is run
     Status                  % the current status of the job
     CycleStartFcn           % user custom function to evalulate before sequence runs
     CycleCompleteFcn        % user custom function to evaluate after the cycle
     JobCompleteFcn          % user custom function to evaluate when job is complete
     CameraFile              % camera control output file
-
     Tab
     Panel                   % Panel interface
     TableInterface
@@ -104,7 +103,7 @@ function MakeTableInterface(this,parent,boop)
         % Button for file selection of the sequenece file
         cdata=imresize(imread(['GUI/images' filesep 'browse.jpg']),[16 16]);
         bBrowse=uicontrol(this.Panel,'style','pushbutton','CData',cdata,...
-            'backgroundcolor','w','Callback',@browseCB,'tooltip','browse file');
+            'backgroundcolor','w','Callback',@this.browseCB,'tooltip','browse file');
         bBrowse.Position(3:4)=[18 18];
         bBrowse.Position(1:2)=[this.TableInterface.Position(1) ...
             this.TableInterface.Position(2)+this.TableInterface.Position(4)+2];
@@ -149,22 +148,18 @@ end
 
 
 function browseCB(this,src,evt)    
-    % % Directory where the sequence files lives
-    % dirName=['Sequence Files' filesep 'Core Sequences'];
-    % % The directory of the root
-    % curpath = fileparts(mfilename('fullpath'));
-    % % Construct the path where the sequence files live
-    % defname=[curpath filesep dirName];
-    % fstr='Select a sequence file to use...';
-    % [file,~] = uigetfile('*.m',fstr,defname);          
-    % if ~file
-    % disp([datestr(now,13) ' Cancelling'])
-    % return;
-    % end        
-    % file = erase(file,'.m');        
-    % seqdata.sequence_functions = {str2func(file)};        
-    % d=guidata(hF);
-    % d.SequencerWatcher.updateSequenceFileText(seqdata.sequence_functions);               
+    % Directory where the sequence files lives
+    dirName=['Sequence Files' filesep 'Core Sequences'];
+    % The directory of the root
+    curpath = fileparts(fileparts(mfilename('fullpath')));
+    % Construct the path where the sequence files live    
+    defname=[curpath filesep dirName];
+    fstr='Select a sequence file to use...';
+    [file,~] = uigetfile('*.m',fstr,defname);          
+    if ~file;return;end        
+    file = erase(file,'.m');  
+    this.SequenceFunctions = {str2func(file)}; 
+    this.updateTableInterface();
 end
 
 function updateTableInterface(this)

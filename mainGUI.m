@@ -323,7 +323,7 @@ bMoveJobDown.Position(1:2)=[bMoveJobUp.Position(1)+bMoveJobUp.Position(3) bMoveJ
 bMoveJobDown.Tooltip='Move Job Down';
 
 
-% Button to recompile seqdata
+% Button to plot seqdata
 cdata=imresize(imread(['GUI/images' filesep 'plot.jpg']),[24 24]);
 bPlot=uicontrol(hpRun,'style','pushbutton','CData',cdata,...
     'backgroundcolor',cc,'Callback',@bPlotCB,'tooltip','plot');
@@ -337,7 +337,7 @@ bPlot.Position(1:2)=[bRunDefault.Position(1)+bRunDefault.Position(3)+4 bRunDefau
 % Button to recompile seqdata but not program devices
 cdata=imresize(imread(['GUI/images' filesep 'compile.jpg']),[20 20]);
 bCompilePartial=uicontrol(hpRun,'style','pushbutton','CData',cdata,...
-    'backgroundcolor',cc,'Callback',{@bCompileCB 0},'tooltip',...
+    'backgroundcolor',cc,'tooltip',...
     'compile sequence but don''t program devices');
 bCompilePartial.Position(3:4)=[25 25];
 bCompilePartial.Position(1:2)=bPlot.Position(1:2)+[0 bPlot.Position(4)];
@@ -345,7 +345,7 @@ bCompilePartial.Position(1:2)=bPlot.Position(1:2)+[0 bPlot.Position(4)];
 % Button to recompile seqdata
 cdata=imresize(imread(['GUI/images' filesep 'compile_yellow.jpg']),[20 20]);
 bCompileFull=uicontrol(hpRun,'style','pushbutton','CData',cdata,...
-    'backgroundcolor',cc,'Callback',{@bCompileCB 1},'tooltip',...
+    'backgroundcolor',cc,'Callback','tooltip',...
     'compile sequence and program devices');
 bCompileFull.Position(3:4)=[25 25];
 bCompileFull.Position(1:2)=bCompilePartial.Position(1:2)+[0 bCompilePartial.Position(4)];
@@ -357,11 +357,6 @@ bCmd=uicontrol(hpRun,'style','pushbutton','CData',cdata,...
     'move up directory level','tooltip','command window');
 bCmd.Position(3:4)=[25 25];
 bCmd.Position(1:2)=bCompileFull.Position(1:2)+[0 bCompileFull.Position(4)];
-
-    function bCompileCB(~,~,doProgramDevices)    
-        compile(seqdata.sequence_functions,doProgramDevices)        
-        updateScanVarText;    
-    end
 
 % Button for file selection of the sequenece file
 cdata=imresize(imread(['GUI/images' filesep 'help.jpg']),[20 20]);
@@ -496,7 +491,14 @@ bViewJob.Callback       = @(src,evt) data.JobHandler.viewJobs();
 bRemoveJob.Callback     = @(src,evt) data.JobHandler.deleteSelectedJobs();
 bMoveJobDown.Callback   = @(src,evt) data.JobHandler.moveSelectJobs(-1);
 bMoveJobUp.Callback     = @(src,evt) data.JobHandler.moveSelectJobs(1);
-    
+
+% Old way (Can't fully test new until in lab);
+% bCompilePartial.Callback ={@bCompileCB 0};
+% bCompileFull.Callback ={@bCompileCB 1};
+
+bCompilePartial.Callback = @(src,evt) data.JobHandlder.compile(0);
+bCompileFull.Callback = @(src,evt) data.JobHandlder.compile(1);
+
 %% Assign Handles
 % Add gui figure, sequecner watcher, and job handler to base workspace so
 % that they may be accessed from the command line

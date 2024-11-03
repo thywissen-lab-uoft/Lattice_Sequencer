@@ -34,6 +34,8 @@ properties
     doStartQueueOnDefaultJobCycleComplete
     doStartDefaultJobOnQueueComplete
     StringJob
+    CompilerStatus
+
 end    
 
 events
@@ -53,6 +55,7 @@ function obj = job_handler(gui_handle)
     J_default = job_default;
     J_default.MakeTableInterface(obj.JobTabs);
     obj.DefaultJob = J_default;
+    obj.CurrentJob = obj.DefaultJob;
 
     if isfield(d,'TableJobCycle')
         obj.TableJobCycle=d.TableJobCycle;
@@ -72,6 +75,7 @@ function obj = job_handler(gui_handle)
     obj.doStopOnJobComplete                     = 0;
     obj.doStartQueueOnDefaultJobCycleComplete   = 0;
     obj.doStartDefaultJobOnQueueComplete        = 0;
+    obj.CompilerStatus                          = 0;                      
 end
 
 function JobOptionsCB(obj,src,evt)
@@ -179,6 +183,14 @@ function CycleStartFcn(obj)
     obj.updateJobText();
 end
 
+function updateSeqStr(obj,str,cc)
+    if nargin == 2
+        cc=[0 0 0];
+    end
+   set(obj.SequencerWatcher.StatusStr,...
+        'String',str,'ForegroundColor',cc);
+end
+
 % Evaluates when the Adwin is complete. Independent of Wait Timer
 function AdwinCompleteFcn(obj)
     delete(obj.ListenerAdwin);                      % Delete Listener
@@ -271,12 +283,6 @@ function CycleCompleteFcn(obj)
             return;
         end
     end
-
-
-
-    
-    
-    % Continue this job
 end
 
 
@@ -414,6 +420,67 @@ function delete(obj)
     obj.clearQueue;
     obj.updateJobText;
 end
+
+%% Seqdat Adwin Functions
+
+function ret = compile(obj,doProgramDevices)
+    if obj.CompilerStatus
+        warning('Compiler is busy!');
+    end
+
+    obj.CompilerStatus = 1;
+    ret = true;
+    curtime = 0;
+
+    if nargin==1;doProgramDevices=1;end
+    
+    % Initialize Sequence
+    try
+        obj.updateSeqStr('initializing sequence','k');    
+        start_new_sequence;
+        initialize_channels;
+        initLog;
+    catch ME
+        warning(getReport(ME,'extended','hyperlinks','on'));
+        obj.updateSeqStr('sequence initialize error','r'); 
+        pause(0.1)
+        ret = false;
+    end
+
+    % Evaluate Sequence Functions
+    try
+        obj.updateSeqStr('evaluating sequence functions','k');   
+        for kk = 1:length(obj.CurrentJob.SequenceFunctions)
+            obj.updateSeqStr(['@' func2str(obj.CurrentJob.SequenceFunctions{kk})],[220,88,42]/255);    
+            pause(0.1);
+            curtime = obj.CurrentJob.SequenceFunctions{kk}(curtime);                 
+        end
+    catch ME
+        warning(getReport(ME,'extended','hyperlinks','on'));
+        obj.updateSeqStr('sequence compile error','r'); 
+        pause(0.1)
+        ret = false;
+    end
+    updateScanVarText;
+
+    % Convert Into Hardware Commands
+    try
+        obj.updateSeqStr(...
+            ['converting sequence into hardware commands'],...
+            [220,88,42]/255); 
+        calc_sequence(doProgramDevices);    
+        obj.updateSeqStr(...
+            ['sequence calulated'],...
+            [17,59,8]/255); 
+    catch ME
+        warning(getReport(ME,'extended','hyperlinks','on'));
+        obj.updateSeqStr('hardware conversion error','r'); 
+        pause(0.1)
+        ret = false;
+    end
+    obj.CompilerStatus = 0;
+end
+
 
 end
 

@@ -11,7 +11,6 @@ if ~isequal(seqdata.compiler_status, 'idle')
 end
 seqdata.compiler_status = 'busy';
 
-
 if nargin == 1
     doProgramDevices = 1;
 end
@@ -32,11 +31,6 @@ end
 
 data=guidata(fig);
 data.VarText.String = '...';
-
-
-% update sequencer file text
-% data.SequencerWatcher.updateSequenceFileText(seqdata.sequence_functions);
-
 
 %% Run Sequence Functions
 data.Status.String = 'initializing sequence ...';

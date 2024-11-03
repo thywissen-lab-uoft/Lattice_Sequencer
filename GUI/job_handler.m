@@ -32,6 +32,7 @@ properties
     doStopOnCycleComplete
     doStopOnJobComplete
     doStartQueueOnDefaultJobCycleComplete
+    doStopOnQueueComplete
 end    
 
 events
@@ -65,6 +66,7 @@ function obj = job_handler(gui_handle)
     obj.doStopOnCycleComplete                = 0;
     obj.doStopOnJobComplete                = 0;
     obj.doStartQueueOnDefaultJobCycleComplete   = 0;
+    obj.doStopOnQueueComplete=0;
 end
 
 function JobOptionsCB(obj,src,evt)
@@ -72,6 +74,7 @@ function JobOptionsCB(obj,src,evt)
     obj.doStopOnCycleComplete = src.Data{2,1};
     obj.doStopOnJobComplete = src.Data{3,1};
     obj.doStartQueueOnDefaultJobCycleComplete = src.Data{4,1};
+    obj.doStopOnQueueComplete = src.Data{5,1};
 end
 
 function JobCycleCB(obj,src,evt)   
@@ -195,7 +198,6 @@ end
 
 % Evaluates when a job is complete.  Independent of Wait Timer
 function JobCompleteFcn(obj)
-    obj.CurrentJob.isComplete = true;
     obj.CurrentJob.Status = 'job end';
     obj.updateJobText;    
     

@@ -185,33 +185,6 @@ function EditTableInterface(this,src,evt)
     keyboard
 end
 
-% % function that evaluates upon job completion
-% function JobCompleteFcnWrapper(obj)  
-%     disp('Executing job complete function');
-%     pause(.1);    
-%     if ~isempty(obj.JobCompleteFcn)
-%        obj.JobCompleteFcn(); 
-%     end
-% end
-% 
-% % function that evaluates upon cycle completion
-% function CycleCompleteFcnWrapper(obj)        
-%     disp('Executing cycle complete function.');
-%     pause(.1);
-%     if ~isempty(obj.CycleCompleteFcn)
-%         obj.CycleCompleteFcn(); 
-%     end
-% end
-% 
-% % function that evaluates upon after compitation but before run
-% function CycleStartFcnWrapper(obj)        
-%     disp('Executing cycle start function.');
-%     pause(.1);
-%     if ~isempty(obj.CycleStartFcn)
-%         obj.CycleStartFcn(); 
-%     end
-% end
-
 end
 end
 

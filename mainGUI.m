@@ -359,7 +359,8 @@ tbl_job_options = uitable(hpRun,'RowName',{},'columnname',{},...
 tbl_job_options.Data={false, 'hold CycleNumber';
     false, 'stop on next CycleComplete';
     false, 'stop on next JobComplete';
-    false, 'start queue on DefaultJob CycleComplete'};
+    false, 'start queue on DefaultJob CycleComplete';
+    false, 'stop on QueueComplete'};
 tbl_job_options.Position=[bRunDefault.Position(1)+bRunDefault.Position(3)+10 bRunDefault.Position(2) ...
     tbl_job_options.Extent(3) tbl_job_options.Extent(4)];
 

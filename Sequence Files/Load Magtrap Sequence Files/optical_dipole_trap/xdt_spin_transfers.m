@@ -39,7 +39,7 @@ tStart = curtime;
 % Prepare the magnetic field for Rb transfers which occur at around 19.5
 % Gauss. Only ramp the shims because the FB coils have low inductance.
 if seqdata.flags.xdt_spin_xfer_prep_field
-    dispLineStr('Preperatory Field Ramp',curtime);
+    logNewSection('Preperatory Field Ramp',curtime);
 
     tR = defVar('xdt_spin_transfer_t1',20,'ms'); 
    % Ramp the FB Field
@@ -53,7 +53,7 @@ end
 % Pulse the Rb uWave.  We rely on a field sweep in order to perform the
 % Landau Zener transition
 if seqdata.flags.xdt_spin_xfer_transfer_Rb       
-    dispLineStr('uWave Rb Pulse',calctime(curtime,t0_rb));       
+    logNewSection('uWave Rb Pulse',calctime(curtime,t0_rb));       
     
     % Anritsu frequency is 6.8756 GHz, which is 19.5 Ga to linear order in
     % B
@@ -74,7 +74,7 @@ end
 % Pulse the Rb uWave.  We rely on a field sweep in order to perform the
 % Landau Zener transition
 if seqdata.flags.xdt_spin_xfer_transfer_Rb_freq_sweep       
-    dispLineStr('uWave Rb Pulse',calctime(curtime,0));       
+    logNewSection('uWave Rb Pulse',calctime(curtime,0));       
   
     % field ramp settlign time 
 curtime = calctime(curtime,60);
@@ -156,7 +156,7 @@ if seqdata.flags.xdt_spin_xfer_Rb_2_kill2
     B0 = 19.5;
     df = 1.39 * B0; % 2-->3 transition zeeman shift
     
-    dispLineStr('Blowing Rb F=2 away',curtime);
+    logNewSection('Blowing Rb F=2 away',curtime);
     probe32_trap_detuning = 0;
     f_osc = calcOffsetLockFreq(probe32_trap_detuning,'Probe32');
     DDS_id = 3;    
@@ -175,7 +175,7 @@ end
 % 
 % if seqdata.flags.xdt_spin_xfer_transfer_K
 %     % NOTE THAT THIS FREQUENCY COUPLES TO THE RB FIELD SWEEP    
-%     dispLineStr('RF K Sweep 9-->-9',curtime);  
+%     logNewSection('RF K Sweep 9-->-9',curtime);  
 %     
 %     DDS_ID=1;
 % 
@@ -204,7 +204,7 @@ end
 %% Ramp Feshbach Field
 
 if seqdata.flags.xdt_spin_xfer_ramp_field
-    dispLineStr('Field Ramp',curtime);    
+    logNewSection('Field Ramp',curtime);    
     tsw = getVar('xdt_spin_field_ramp_time');
 
     AnalogFuncTo(calctime(curtime,0),'FB current',...
@@ -219,7 +219,7 @@ end
 
 if seqdata.flags.xdt_spin_xfer_transfer_K
     % NOTE THAT THIS FREQUENCY COUPLES TO THE RB FIELD SWEEP    
-    dispLineStr('RF K Sweep 9-->-9',curtime);       
+    logNewSection('RF K Sweep 9-->-9',curtime);       
  
     % Avoid feshbach ramps to minimize time in bad spin combinations
     disp(' Applying RF sweep to transfer K state.');
@@ -258,7 +258,7 @@ end
 %% Rb F=2 Blow Away
 
 if seqdata.flags.xdt_spin_xfer_Rb_2_kill
-    dispLineStr('Blowing Rb F=2 away',curtime);
+    logNewSection('Blowing Rb F=2 away',curtime);
     setAnalogChannel(calctime(curtime,-10),4,0.0); % set amplitude   0.7
     AnalogFuncTo(calctime(curtime,-15),34,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,6590-237); % Ramp Rb trap laser to resonance   237
 
@@ -284,6 +284,6 @@ curtime = calctime(curtime,tW);
 % curtime=xdt_evap_stage_1(curtime,0,0,0)
 
 
-dispLineStr('Ending spintransfer',curtime);
+logNewSection('Ending spintransfer',curtime);
 end
 

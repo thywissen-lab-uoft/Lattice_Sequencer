@@ -49,7 +49,7 @@ function timeout = TransportCloud2(timein)
 
 curtime = timein;
 global seqdata;
-dispLineStr('TRANSPORT',curtime);
+logNewSection('TRANSPORT',curtime);
 
 % % hor_transport_type,ver_transport_type, image_loc
 % % 

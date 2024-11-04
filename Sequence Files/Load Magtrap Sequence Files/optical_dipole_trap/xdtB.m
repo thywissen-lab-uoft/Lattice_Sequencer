@@ -118,7 +118,7 @@ end
 
 %% RF Mix at high field
 if seqdata.flags.xdtB_rf_mix
-    dispLineStr('High Field K 9-7 Mixing.',curtime);  
+    logNewSection('High Field K 9-7 Mixing.',curtime);  
     
     % Get the Feshbach field
     Bfesh   = getChannelValue(seqdata,'FB Current',1);   
@@ -229,7 +229,7 @@ end
 %% Optical Evaporation
 
 if seqdata.flags.xdtB_evap    
-                dispLineStr('xdtB evap',curtime); 
+                logNewSection('xdtB evap',curtime); 
 
      % Get Variables
     evap_time   = getVar('xdtB_evap_time');
@@ -278,7 +278,7 @@ end
 % Compress XDT after Stage 2 optical evaporation
 
 if seqdata.flags.xdtB_ramp_power_end 
-    dispLineStr('Ramping XDT Power Back Up',curtime); 
+    logNewSection('Ramping XDT Power Back Up',curtime); 
 
     Pr = getVar('xdtB_evap_end_ramp_power');
     Pr2 = getVar('xdtB_evap_end_ramp_power2');
@@ -303,7 +303,7 @@ end
 %% Secondary Feshbach Ramp after evaporation
 
 if seqdata.flags.xdtB_feshbach_fine2   
-            dispLineStr('feshbach fine 2',curtime); 
+            logNewSection('feshbach fine 2',curtime); 
 
     tr = getVar('xdtB_feshbach_fine2_ramptime');
     fesh = getVar('xdtB_feshbach_fine2_field');
@@ -327,7 +327,7 @@ end
 %% Levitation Adjustment
 
 if seqdata.flags.xdtB_levitate_fine2
-        dispLineStr('levitate fine 2',curtime); 
+        logNewSection('levitate fine 2',curtime); 
 
     HF_QP = getVar('xdtB_levitate_fine2_value');
     tr = getVar('xdtB_levitate_fine2_ramptime');       
@@ -340,7 +340,7 @@ end
 %% Re-create a spin mixture after high-field evaporation
 if seqdata.flags.xdtB_rf_mix_post_evap
     
-    dispLineStr('High Field K 9-7 Mixing after XDTB evap.',curtime);  
+    logNewSection('High Field K 9-7 Mixing after XDTB evap.',curtime);  
     
     % Get the Feshbach field
     Bfesh   = getChannelValue(seqdata,'FB Current',1);   
@@ -388,7 +388,7 @@ end
 %% RF Spin Flip HF
 
 if seqdata.flags.xdtB_post_RF_97
-    dispLineStr('RF transfer -9/2 to -7/2',curtime);
+    logNewSection('RF transfer -9/2 to -7/2',curtime);
     
     % Get the Feshbach field
     Bfesh   = getChannelValue(seqdata,'FB Current',1);   
@@ -506,7 +506,7 @@ end
 %% Turn off feshbach field
 
 if seqdata.flags.xdtB_feshbach_off   
-        dispLineStr('Turning off the feshbach',curtime); 
+        logNewSection('Turning off the feshbach',curtime); 
 
     tr = getVar('xdtB_feshbach_off_ramptime');
     fesh = getVar('xdtB_feshbach_off_field');        
@@ -557,7 +557,7 @@ end
 %% Ramp Power After Low field
 % One application is to measure the trap bottom at low field
 if seqdata.flags.xdtB_ramp_power_end2
-    dispLineStr('Ramping XDT Power Back Up',curtime); 
+    logNewSection('Ramping XDT Power Back Up',curtime); 
 
     Pr = getVar('xdtB_evap_end2_ramp_power');
     tr = getVar('xdtB_evap_end2_ramp_time');   
@@ -574,7 +574,7 @@ if seqdata.flags.xdtB_ramp_power_end2
 end
 %% Piezo kick
 if seqdata.flags.xdtB_piezo_vert_kick
-    dispLineStr('Kicking the dipole trap',curtime);
+    logNewSection('Kicking the dipole trap',curtime);
     
     tr = getVar('xdtB_piezo_vert_kick_rampup_time');
     V = getVar('xdtB_piezo_vert_kick_amplitude');
@@ -597,7 +597,7 @@ end
 % After optical evaporation, turn off one of the trap so you can see the
 % position of the other ODT beam
 if seqdata.flags.xdtB_one_beam
-    dispLineStr('Turning off one of the dipole trap beams',curtime);
+    logNewSection('Turning off one of the dipole trap beams',curtime);
     tr = 10;    
     
     P1 = getChannelValue(seqdata,'dipoleTrap1',1);

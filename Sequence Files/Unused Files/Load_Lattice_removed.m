@@ -274,7 +274,7 @@ end
 %% uWave single shot spectroscopy
 
 if ( do_singleshot_spectroscopy ) % does an rf pulse or sweep for spectroscopy
-        dispLineStr('singleshot_spectroscopy.',curtime);
+        logNewSection('singleshot_spectroscopy.',curtime);
 %     addGPIBCommand(2,sprintf(['FUNC PULS; PULS:PER %g; FUNG:PULS:WIDT %g; VOLT:HIGH 4.5V; VOLT:LOW 0V; BURS:MODE TRIG; BURS:NCYC 1; ' ...
 %         'AMPR %gdBm; MODL 1; DISP 2; ENBR
 %         %g;'],SRSfreq,SRSmod_dev,SRSpower,rf_on));

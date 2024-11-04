@@ -1,5 +1,5 @@
 function [outputArg1,outputArg2] = KuWaveSpectroscopy(timein)
-dispLineStr('Performing K uWave Spectroscopy',curtime);
+logNewSection('Performing K uWave Spectroscopy',timein);
 
 global seqdata
 curtime = timein;

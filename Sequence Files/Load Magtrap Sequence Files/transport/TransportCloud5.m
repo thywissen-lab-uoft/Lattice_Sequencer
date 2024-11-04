@@ -11,7 +11,7 @@ if curtime==0
    curtime=calctime(curtime,100); 
 end
 global seqdata;
-dispLineStr('TRANSPORT',curtime);
+logNewSection('TRANSPORT',curtime);
 
 %% Horizontal Transport
 
@@ -110,7 +110,7 @@ AnalogFunc(calctime(curtime,0),'Transport FF',...
 curtime = calctime(curtime,t_h2v);
 
 %% Transport to 153 mm
-dispLineStr('Transport from 12ab to Crossover region at 153 mm',curtime);
+logNewSection('Transport from 12ab to Crossover region at 153 mm',curtime);
 defVar('transport_stage1_time',[1000],'ms');%used to be 1000 07/25
 t_init2cross = getVar('transport_stage1_time');
 z_init = 0;
@@ -170,7 +170,7 @@ i16_cross_i = z2i16(z_cross_i);i16_cross_f = z2i16(z_cross_f);
 T_RAMP_CROSS_OVER = 200;    
 
 %% 15/16 GS Ramp Parameters
-dispLineStr('Transport Kitten Handoff',curtime);
+logNewSection('Transport Kitten Handoff',curtime);
 
 %%%%%% 15/16 GS Ramp Parameters %%%%%
 % V_GS_LOW is the "low" GS voltage, supposed to be right below turn on

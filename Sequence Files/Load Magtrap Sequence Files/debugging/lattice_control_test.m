@@ -74,8 +74,9 @@ end
 
 do_lattice_mod = 0;
 if do_lattice_mod
-    dispLineStr('Amplitude Modulation Spectroscopy',curtime)
-    
+%     dispLineStr('Amplitude Modulation Spectroscopy',curtime)
+    logNewSection('Amplitude Modulation Spectroscopy',curtime);
+
     mod_freq = 250e3;    
     mod_time = 10;%0.2; %Closer to 100ms to kill atoms, 3ms for band excitations only. 
     mod_amp = .5;

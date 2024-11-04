@@ -832,7 +832,7 @@ if opt.Ramp_Fields_Down
 
     ramp.settling_time = 200; %200
 
-dispLineStr('TIME!!!!',curtime);
+logNewSection('TIME!!!!',curtime);
 curtime = ramp_bias_fields(calctime(curtime,0), ramp);
 
 else

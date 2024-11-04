@@ -55,7 +55,7 @@ end
 % Turn off of lattices
  if (seqdata.flags.lattice_off_bandmap)               
     % Ramp off the XDTs before the lattices    
-    dispLineStr('Band mapping',curtime);
+    logNewSection('Band mapping',curtime);
     
     % Scope Trigger for bandmap
     ScopeTriggerPulse(curtime,'lattice_off');     

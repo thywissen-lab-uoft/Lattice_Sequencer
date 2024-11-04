@@ -4,7 +4,7 @@ function timeout = xdt_load(timein)
 curtime = timein;
 global seqdata;
 
-dispLineStr('Dipole Loading',curtime);
+logNewSection('Dipole Loading',curtime);
 
 seqdata.flags.xdt_load_ramp_odt1    = 1;   % Ramp on the XDTs
 seqdata.flags.xdt_load_ramp_odt2    = 1;   % Ramp on the XDTs
@@ -208,7 +208,7 @@ if seqdata.flags.xdt_load_hold
    curtime = calctime(curtime,100); 
 end
 
-dispLineStr('xdt load is onde',curtime);
+logNewSection('xdt load is onde',curtime);
 %% Output
 timeout = curtime;
 end

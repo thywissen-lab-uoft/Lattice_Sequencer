@@ -88,7 +88,7 @@ seqdata.flags.xdt_d1op_start =1;
 % Landau Zener transition
 
 if seqdata.flags.xdt_spin_xfer_transfer_Rb_freq_sweep       
-    dispLineStr('uWave Rb Pulse',calctime(curtime,0));       
+    logNewSection('uWave Rb Pulse',calctime(curtime,0));       
     % 6834.7 MHz is approximately the zero field value     
     % Anritsu frequency is 6875.6 MHz  (~19.5 Gauss)    
     
@@ -148,7 +148,7 @@ end
 %% Rb F=2 Blow Away
 
 if seqdata.flags.xdt_spin_xfer_Rb_2_kill
-    dispLineStr('Blowing Rb F=2 away',curtime);
+    logNewSection('Blowing Rb F=2 away',curtime);
     setAnalogChannel(calctime(curtime,-10),4,0.0); % set amplitude   0.7
     AnalogFuncTo(calctime(curtime,-15),34,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,6590-237); % Ramp Rb trap laser to resonance   237
 
@@ -171,7 +171,7 @@ end
 
 if seqdata.flags.xdt_spin_xfer_transfer_K
     % NOTE THAT THIS FREQUENCY COUPLES TO THE RB FIELD SWEEP    
-    dispLineStr('RF K Sweep 9-->-9',curtime);  
+    logNewSection('RF K Sweep 9-->-9',curtime);  
     
  
 
@@ -223,7 +223,7 @@ end
 
 %% D1 Optical Pumping in ODT before evap!
 if (seqdata.flags.xdt_d1op_start==1)
-    dispLineStr('D1 Optical Pumping pre op evap',curtime);  
+    logNewSection('D1 Optical Pumping pre op evap',curtime);  
 
     op_time_list = [5];
     optical_pump_time = getScanParameter(op_time_list, ...
@@ -326,7 +326,7 @@ end
     %curtime=calctime(curtime,50);
     
     
-dispLineStr('Ending spintransfer',curtime);
+logNewSection('Ending spintransfer',curtime);
 end
 
 

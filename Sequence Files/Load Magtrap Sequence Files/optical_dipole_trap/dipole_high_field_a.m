@@ -103,7 +103,7 @@ seqdata.flags.xdt_hf_crossFBDown               = 0;
 % Ramp the QP gradient up to levitate
 
 if seqdata.flags.xdt_hf_ramp_QP_gradient_cancel
-    dispLineStr('XDT HF QP Gradient cancel',curtime);
+    logNewSection('XDT HF QP Gradient cancel',curtime);
     
     defVar('conductivity_QP_reverse',[0.1],'A');            
     HF_QP = getVar('conductivity_QP_reverse');
@@ -150,7 +150,7 @@ end
 %% Feshbach Field Ramp
 % Ramp the feshbach field to the initial high value (and set the z-shim)
 if seqdata.flags.xdt_hf_ramp_field_1
-    dispLineStr('XDT HF Field Ramp 1',curtime);
+    logNewSection('XDT HF Field Ramp 1',curtime);
 
     % Shim Field Value
     BzShim = 0;
@@ -286,7 +286,7 @@ end
 %% Create -9/2, -7/2 Spin Mixture at High Field
 
 if seqdata.flags.xdt_hf_mix_7_9
-    dispLineStr('XDT HF 97 Mix',curtime);
+    logNewSection('XDT HF 97 Mix',curtime);
     
         %Do RF Sweep
     clear('sweep');
@@ -349,7 +349,7 @@ curtime = calctime(curtime,50);
 end
 %% Flip 97
 if seqdata.flags.xdt_hf_79_spec
-    dispLineStr('RF transfer -9/2 to -7/2',curtime);
+    logNewSection('RF transfer -9/2 to -7/2',curtime);
     
     % Get the Feshbach field
     Bfesh   = getChannelValue(seqdata,'FB Current',1);   
@@ -399,7 +399,7 @@ do_ACync_rf = 0;
 end
 %%
 if seqdata.flags.xdt_hf_uwave_spec    
-    dispLineStr('uWave_K_Spectroscopy',curtime);
+    logNewSection('uWave_K_Spectroscopy',curtime);
     
     % Get the Feshbach field
     Bfesh   = getChannelValue(seqdata,'FB Current',1);   
@@ -457,7 +457,7 @@ end
 % This evaporates at high field from the initial evaporation
 
 if (seqdata.flags.xdt_hf_CDT_evap_2_high_field==1)
-    dispLineStr('Optical evaporation at high field',curtime);   
+    logNewSection('Optical evaporation at high field',curtime);   
     
     % Second Stage ending evaporation power
     Evap2_End_Power_List = [.1];        
@@ -508,7 +508,7 @@ end
 % minimized as we have found the 95 mixture to be lossy.
 
 if seqdata.flags.xdt_hf_crossFBUp
-    dispLineStr('XDT HF Resonance Transfer',curtime);
+    logNewSection('XDT HF Resonance Transfer',curtime);
     
     %%%%%%%%%%%%%%%%%% INITIAL MAGNETIC FIELD %%%%%%%%%%%%%%%%%%%%%%%
     % Get the Feshbach field
@@ -618,7 +618,7 @@ end
 %%  RF transfer from -7/2 to -5/2
         
 if flip_7_5
-    dispLineStr('RF transfer -7/2 to -5/2',curtime);
+    logNewSection('RF transfer -7/2 to -5/2',curtime);
     
     % Get the Feshbach field
     Bfesh   = getChannelValue(seqdata,'FB Current',1);   
@@ -669,7 +669,7 @@ end
     
 %% Field Ramp 2
 if ramp_field_2
-    dispLineStr('XDT HF Field Ramp 2',curtime);
+    logNewSection('XDT HF Field Ramp 2',curtime);
 
     % Shim Field Value
     BzShim = 0;
@@ -716,7 +716,7 @@ end
  
 %% RF 75 Flip again
 if flip_7_5_again
-    dispLineStr('RF transfer -7/2 to -5/2',curtime);
+    logNewSection('RF transfer -7/2 to -5/2',curtime);
 
     % Get the Feshbach field
     Bfesh   = getChannelValue(seqdata,'FB Current',1);   
@@ -818,7 +818,7 @@ curtime = calctime(curtime,HF_wait_time);
 
     xdt_ramp_down = 0;
     if xdt_ramp_down 
-        dispLineStr('Ramping XDT Power Back Down',curtime);    
+        logNewSection('Ramping XDT Power Back Down',curtime);    
 
         dip_1 = .06; %1.5
         dip_2 = .06; %1.5
@@ -843,7 +843,7 @@ end
 %% RF Sweep Spectroscopy
     
 if seqdata.flags.xdt_hf_79_spec2
-    dispLineStr('RF Sweep Spectroscopy',curtime);
+    logNewSection('RF Sweep Spectroscopy',curtime);
     ScopeTriggerPulse(curtime,'rf_spectroscopy');
 
     mF1=-9/2;   % Lower energy spin state
@@ -1088,7 +1088,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
    
   %% Back back acrros resonsnace
 if seqdata.flags.xdt_hf_crossFBDown
-    dispLineStr('XDT HF Resonance Transfer Down',curtime);
+    logNewSection('XDT HF Resonance Transfer Down',curtime);
 
     %%%%%%%%%%%%%%%%%% INITIAL MAGNETIC FIELD %%%%%%%%%%%%%%%%%%%%%%%
     % Get the Feshbach field
@@ -1238,7 +1238,7 @@ curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
 
     xdt_ramp_down = 0;
     if xdt_ramp_down 
-        dispLineStr('Ramping XDT Power Back Down',curtime);    
+        logNewSection('Ramping XDT Power Back Down',curtime);    
 
         dip_1 = .06;
         dip_2 = .06;

@@ -11,7 +11,7 @@ global seqdata;
 % regulation boxes
 
 if seqdata.flags.xdt_am_modulate
-    dispLineStr('Modulate Dipole trap beam power',curtime);    
+    logNewSection('Modulate Dipole trap beam power',curtime);    
 
     % Oscillate with a sinuisoidal function
     dip_osc = @(t,freq,y2,y1)(y1 +y2*sin(2*pi*freq*t/1000));
@@ -112,7 +112,7 @@ end
 % pumping.
 
 if (seqdata.flags.xdt_d1op_end==1 && seqdata.flags.CDT_evap==1)
-    dispLineStr('D1 Optical Pumping post optical evaporation',curtime);  
+    logNewSection('D1 Optical Pumping post optical evaporation',curtime);  
 
     % optical pumping pulse length
     op_time_list = [5];[1]; %1
@@ -167,7 +167,7 @@ if (seqdata.flags.xdt_rfmix_end==1 && seqdata.flags.CDT_evap==1)
         curtime = ramp_bias_fields(calctime(curtime,0), ramp);            
     end
     
-        dispLineStr('RF K Sweeps for -7,-9 mixture.',curtime);  
+        logNewSection('RF K Sweeps for -7,-9 mixture.',curtime);  
 
         %Do RF Sweep
         clear('sweep');
@@ -251,7 +251,7 @@ end
 
 %% uWave_K_Spectroscopy
 if (seqdata.flags.xdt_uWave_K_Spectroscopy)
-    dispLineStr('uWave_K_Spectroscopy',curtime);      
+    logNewSection('uWave_K_Spectroscopy',curtime);      
 %     
     % FB coil settings
     ramp=struct;
@@ -351,7 +351,7 @@ end
 %% RF Rabi Oscillation
 
 if (seqdata.flags.xdt_k_rf_rabi_oscillation)      
-    dispLineStr('RF K Rabi Oscillations',curtime);  
+    logNewSection('RF K Rabi Oscillations',curtime);  
 
     do_ramp_field=1;
     if do_ramp_field
@@ -442,7 +442,7 @@ end
     %RHYS - An alterative way to measure trap frequency using a piezo mirror to
     %give the atoms a kick. 
     if seqdata.flags.xdt_do_dipole_trap_kick
-        dispLineStr('Kicking the dipole trap',curtime);
+        logNewSection('Kicking the dipole trap',curtime);
         %How Long to Wait After Kick
         kick_ramp_time = 100;
         curtime = calctime(curtime, kick_ramp_time+20);
@@ -520,7 +520,7 @@ end
 % Perform operations in the dipole trap at high magnetic field.
 
 if (seqdata.flags.xdt_high_field_a)    
-    dispLineStr('Dipole Trap High Field a',curtime);
+    logNewSection('Dipole Trap High Field a',curtime);
     curtime = dipole_high_field_a(curtime);  
 end
      
@@ -529,7 +529,7 @@ end
 % at the end of evaporation. Strong field gradients kick atoms out of the
 % trap. And a "round trip" magnetic field ramp tests this.
 if seqdata.flags.xdt_ramp_QP_FB_and_back
-    dispLineStr('Ramping Fields Up and Down',curtime);
+    logNewSection('Ramping Fields Up and Down',curtime);
 
     % Feshvalue to ramp to
     HF_FeshValue_Initial_List =[195];
@@ -644,7 +644,7 @@ end
 %% XDT Hold
 
 if seqdata.flags.xdt_do_hold_end 
-    dispLineStr('Holding XDT at End',curtime);
+    logNewSection('Holding XDT at End',curtime);
     xdt_wait_time_list = [10000];
     xdt_wait_time = getScanParameter(xdt_wait_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'xdt_wait_time','ms');   
@@ -653,6 +653,6 @@ end
 %% The End!
 
 timeout = curtime;
-dispLineStr('Dipole Transfer complete',curtime);
+logNewSection('Dipole Transfer complete',curtime);
 end
 

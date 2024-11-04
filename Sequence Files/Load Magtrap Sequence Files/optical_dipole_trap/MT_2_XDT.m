@@ -1,7 +1,7 @@
 function curtime = MT_2_XDT(timein)
 curtime = timein;
 global seqdata;
-dispLineStr('XDT Load Begin',curtime);
+logNewSection('XDT Load Begin',curtime);
 
 %% Flags and Parameters
 

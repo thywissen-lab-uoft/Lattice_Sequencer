@@ -6,7 +6,7 @@ if seqdata.flags.xdt_rfmix_start
     warning('DONT DO AM SPEC WITH A SPIN MIXTURE!!')
 end
     
-    dispLineStr('Amplitude Modulation Spectroscopy',curtime)
+    logNewSection('Amplitude Modulation Spectroscopy',curtime)
     
 %% AM Spec Parameters
     AM_spec_direction = 'X';

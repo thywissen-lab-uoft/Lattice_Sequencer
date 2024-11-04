@@ -45,7 +45,7 @@ dCz = getScanParameter(dCz_list,seqdata.scancycle,...
 %% XDT Optical Power Ramp up
 % Optical powers are increased to load into the optical dipole trap.
 
-dispLineStr('ODT ramp up started at',calctime(curtime,0));
+logNewSection('ODT ramp up started at',calctime(curtime,0));
 
 % Turn on XDT AOMs
 setDigitalChannel(calctime(curtime,-10),'XDT TTL',0);  
@@ -95,7 +95,7 @@ end
 
 %% QP Ramp Down
 if seqdata.flags.xdt_qp_ramp_down1  
-    dispLineStr('QP RAMP DOWN 1',curtime);
+    logNewSection('QP RAMP DOWN 1',curtime);
 
     % Calculate the change in QP current
     dI_QP=QP_ramp_end1-I_QP; 
@@ -148,7 +148,7 @@ end
 
 if seqdata.flags.xdt_qp_ramp_down2
 
-    dispLineStr('QP RAMP DOWN 2',curtime);
+    logNewSection('QP RAMP DOWN 2',curtime);
 
     XDT_pin_time_list = [0];
     XDT_pin_time = getScanParameter(XDT_pin_time_list,...
@@ -242,7 +242,7 @@ if seqdata.flags.xdt_plug_off
     plug_turnoff_time = getScanParameter(plug_turnoff_time_list,...
         seqdata.scancycle,seqdata.randcyclelist,'plug_turnoff_time');
     setDigitalChannel(calctime(curtime,plug_turnoff_time),'Plug Shutter',0);%0:OFF; 1:ON; -200
-    dispLineStr('Turning off plug ',calctime(curtime,plug_turnoff_time));
+    logNewSection('Turning off plug ',calctime(curtime,plug_turnoff_time));
 end
 %% Turn Off Voltage on Transport and Shim Supply 
 

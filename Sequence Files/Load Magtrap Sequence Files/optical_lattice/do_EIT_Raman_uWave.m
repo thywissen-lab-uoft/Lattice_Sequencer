@@ -99,7 +99,7 @@ if ~BField.RampUp && BField.RampDown
 end
 
 %% Display Settings
-dispLineStr('Applyg EIT/Raman/uWave',curtime);
+logNewSection('Applyg EIT/Raman/uWave',curtime);
 
 if BField.RampUp
    disp(BField); 

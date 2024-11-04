@@ -8,7 +8,7 @@ global seqdata;
 
 if seqdata.flags.CDT_evap ==1 && seqdata.flags.xdt_ramp2sympathetic
     % Pre ramp powers to sympathtetic cooling regime
-    dispLineStr('Ramp to sympathetic regime',curtime);
+    logNewSection('Ramp to sympathetic regime',curtime);
     % Powers to ramp to
     Ps = getVar('xdt_evap_sympathetic_power');
     % Duration of ramp
@@ -27,7 +27,7 @@ end
 % Perform the first stage of optical evaporation
 
 if ( seqdata.flags.CDT_evap == 1 )
-    dispLineStr('Optical evaporation 1',curtime);
+    logNewSection('Optical evaporation 1',curtime);
     
     % Get Variables
     evap_time   = getVar('xdt_evap1_time');
@@ -62,7 +62,7 @@ end
 % Compress XDT after Stage 2 optical evaporation
 
 if seqdata.flags.xdt_ramp_power_end 
-    dispLineStr('Ramping XDT Power Back Up',curtime); 
+    logNewSection('Ramping XDT Power Back Up',curtime); 
 
     Pr = getVar('xdt_evap_end_ramp_power');
     Pr2 = getVar('xdt_evap_end_ramp_power2');

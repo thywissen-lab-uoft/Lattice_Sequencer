@@ -282,7 +282,7 @@ end
 
 %% uWave Spectroscopy to Check field 
  if seqdata.flags.conductivity_rf_spec
-     dispLineStr('RF Spec',curtime);
+     logNewSection('RF Spec',curtime);
      
     Bfb = getChannelValue(seqdata,'FB Current',1);    
     Iz_shim = getChannelValue(seqdata,'Z Shim',1);    

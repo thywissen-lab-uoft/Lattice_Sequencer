@@ -1,6 +1,6 @@
 function updatePALock(curtime)
 
-    dispLineStr('Updating PA Request',curtime);
+    logNewSection('Updating PA Request',curtime);
 
     % K D2 line
     PA_resonance = 391016.821;

@@ -11,7 +11,6 @@ else
     doDebug = 0;
 end
 global seqdata;
-dispLineStr('TRANSPORT',curtime);
 logNewSection('Transport',curtime);
 %% Votlage Fucntions
 
@@ -270,7 +269,7 @@ tV = getVar('transport_time');
 z_init = 0;
 
 %% Transport to 174 mm
-dispLineStr('Vertical Transport Start',calctime(curtime,0));
+logNewSection('Vertical Transport Start',calctime(curtime,0));
 logNewSection('Vertical Transport',curtime);
 
 % Ramp all coil currents
@@ -313,7 +312,7 @@ disp(['Coil 15 Cross Over  Time (ms)' num2str(Tswitch)]);
 
 
 % Turn on the 15/16 FET at the cross-over time
-dispLineStr('Transport Kitten Handoff : 15/16 GS On',calctime(curtime,Tswitch));
+logNewSection('Transport Kitten Handoff : 15/16 GS On',calctime(curtime,Tswitch));
 T1516delay = 0;
 T_1516_ON = 25;
 V_GS_HIGH = 9;

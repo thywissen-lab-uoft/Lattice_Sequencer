@@ -28,7 +28,9 @@ if doRotateWaveplate
     P_RotWave_II = 1;    
 %     P_RotWave_II = 0.01;    
 
-    dispLineStr('Rotate waveplate again',curtime)    
+%     dispLineStr('Rotate waveplate again',curtime) 
+       logNewSection('Rotate waveplate again',curtime);
+
         %Rotate waveplate again to divert the rest of the power to lattice beams
 curtime = AnalogFunc(calctime(curtime,0),41,...
         @(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),...

@@ -9,7 +9,7 @@ GHz = 1E9;
 
 %% Ramp up QP
 if seqdata.flags.mt_compress_after_transport
-    dispLineStr('Compression stage after transport to science cell.',curtime);
+    logNewSection('Compression stage after transport to science cell.',curtime);
     % Compression stage after the transport to the science cell
     [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_trans(curtime, ...
         seqdata.flags.mt_compress_after_transport);
@@ -49,7 +49,7 @@ if ( seqdata.flags.RF_evap_stages(1) == 1 )
     % For Rubidium we evaporate on 2-->1
     % |2,2>-->|2,1>=h*f ==> E_atom = 2*h*f
     % Accounting for the factor of two : 1 MHz evaporates 96 uK atoms
-    dispLineStr('RF1A',curtime);
+%     dispLineStr('RF1A',curtime);
     logNewSection('RF1A',curtime);
 
     fake_sweep = 0;             % do a fake RF sweep
@@ -130,7 +130,7 @@ end
 % CF : I don't konw what this is for?
 
 if ( seqdata.flags.RF_evap_stages(1) == 2 )
-    dispLineStr('Fast RF1A for transport benchmark',curtime);
+    logNewSection('Fast RF1A for transport benchmark',curtime);
 
     fake_sweep = 1;
     hold_time = 100;
@@ -157,7 +157,7 @@ if ramp_wo_transfer
     [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_wo_transfer(curtime,...
         seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
 else
-    dispLineStr('Decompressing and tranpsorting.',curtime);
+    logNewSection('Decompressing and tranpsorting.',curtime);
     [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_before_transfer(curtime,...
         seqdata.flags.RF_evap_stages(2), I_QP, I_kitt, V_QP, I_fesh);
 end
@@ -177,7 +177,7 @@ end
 % Turn on the plug beam.  We currently only have a shutter on the plug beam
 
 if  seqdata.flags.mt_use_plug == 1       
-    dispLineStr('Turning on the plug',curtime);
+    logNewSection('Turning on the plug',curtime);
     
     defVar('mt_plug_offset',-500,'ms');-500;
     plug_offset=getVar('mt_plug_offset');
@@ -195,7 +195,7 @@ end
 %% Evaporation Stage 1b
 
 if ( seqdata.flags.RF_evap_stages(3) == 1 )    
-    dispLineStr('RF1B begins.',curtime);    
+    logNewSection('RF1B begins.',curtime);    
 
     freqs_1b = [...
           getVar('RF1B_freq_0') ... 
@@ -250,7 +250,7 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
         setDigitalChannel(curtime,'RF TTL',0);% rf TTL
      end
 
-    dispLineStr('RF1B ends.',curtime);    
+    logNewSection('RF1B ends.',curtime);    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     ramp_after_1B = 0;
 %     if ramp_after_1B
@@ -269,7 +269,7 @@ end
 
 %% Kill Rb after evap
 if seqdata.flags.mt_kill_Rb_after_evap
-    dispLineStr('Kill Rb after rf evap',curtime);        
+    logNewSection('Kill Rb after rf evap',curtime);        
     kill_pulse_time = 5; %5
 
     % Prepare probe beam
@@ -292,7 +292,7 @@ end
 %% Kill K after evap
 
 if seqdata.flags.mt_kill_K_after_evap
-    dispLineStr('Kill K after rf evap',curtime);    
+    logNewSection('Kill K after rf evap',curtime);    
     K_blow_away_time = -15; %1350    
 
     %open K probe shutter
@@ -334,7 +334,7 @@ end
 % - Checking for adiabaticity of gradient ramps
 
 if seqdata.flags.mt_ramp_down_end 
-    dispLineStr('Ramp down gradient',curtime);    
+    logNewSection('Ramp down gradient',curtime);    
 
     tr1 = getVar('mt_ramp_grad_time');
     i1 = getVar('mt_ramp_grad_value');
@@ -478,7 +478,7 @@ end
 % measure the geometric trap center of the coils
 
 if seqdata.flags.mt_ramp_end 
-    dispLineStr('Ramp down gradient',curtime);    
+    logNewSection('Ramp down gradient',curtime);    
 
     tr1 = 100;
     defVar('mt_qp_current_ramp',[26],'A');

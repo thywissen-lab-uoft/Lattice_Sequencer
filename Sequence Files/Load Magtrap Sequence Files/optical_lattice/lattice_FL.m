@@ -123,7 +123,7 @@ end
 
     if fluor.TriggerIxon 
         if fluor.IxonFrameTransferMode
-            dispLineStr('Triggering iXon Frame Transfer Mode',curtime);
+            logNewSection('Triggering iXon Frame Transfer Mode',curtime);
             tpre=-50;
             
             % Initial trigger to start aqsuitision
@@ -170,7 +170,7 @@ end
                 end    
             end                
         else
-            dispLineStr('Triggering iXon External Exposure Mode',curtime);
+            logNewSection('Triggering iXon External Exposure Mode',curtime);
             tpre=-500;
             DigitalPulse(calctime(curtime,tpre),...
                     'iXon Trigger',10,1)    

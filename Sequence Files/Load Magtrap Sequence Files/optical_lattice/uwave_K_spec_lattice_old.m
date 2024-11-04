@@ -2,7 +2,7 @@ function curtime = uwave_K_spec_lattice_old(timein)
 curtime = timein;
 global seqdata
 
- dispLineStr('Performing K uWave Spectroscopy',curtime);
+ logNewSection('Performing K uWave Spectroscopy',curtime);
     clear('spect_pars');
 
     freq_list = [0]/1000;[20]/1000;

@@ -477,12 +477,12 @@ defVar('xdtb_lattice_hold_pulse_time',[2],'ms');
 defVar('xdtb_lattice_pulse_equil_time',[500],'ms');
 
 % Feshbach
-seqdata.flags.xdtB_feshbach_off             = 1;
+seqdata.flags.xdtB_feshbach_off             = 0;
 defVar('xdtB_feshbach_off_field',20,'G');
 defVar('xdtB_feshbach_off_ramptime',100,'ms');100;
 
 % Unlevitate
-seqdata.flags.xdtB_levitate_off             = 1;
+seqdata.flags.xdtB_levitate_off             = 0;
 defVar('xdtB_levitate_off_ramptime',100,'ms');100;
 
 % piezo kick for vertical trap frequency
@@ -516,7 +516,7 @@ defVar('rotate_waveplate1_value',0.3,'normalized power');.3; % Amount of power g
 %% Load the Optical Lattice
 
 % These are the lattice flags sorted roughly chronologically. 
-seqdata.flags.lattice_load            = 0;    
+seqdata.flags.lattice_load            = 1;    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Loading optical lattical

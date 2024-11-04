@@ -57,7 +57,7 @@ end
     
 %% Prepare Switches for uWave Radiation
 
-disp('Changing switches so that uwave are on');
+logText('Changing switches so that uwave are on');
 
 % Make sure RF, Rb uWave, K uWave are all off for safety
 setDigitalChannel(calctime(curtime,0),'RF TTL',0);
@@ -127,9 +127,9 @@ if opts.ramp_field_CF
         Ix = seqdata.params.shim_zero(1) + getVar('qgm_plane_tilt_dIx');
         Iy = seqdata.params.shim_zero(2) + getVar('qgm_plane_tilt_dIy');
         Iz = seqdata.params.shim_zero(3) + getVar('qgm_plane_tilt_dIz');  
-        disp('tilting');
+        logText('tilting');
     else
-        disp('no tilt');
+        logText('no tilt');
 
         % Sept 2024 calibration
         defVar('qgm_plane_notilt_dIx',[-1.7],'A');        
@@ -150,7 +150,7 @@ if opts.ramp_field_CF
     Tr  = getVar('qgm_pselect_ramp_time');
     Ts  = getVar('qgm_pselect_settle_time'); 
     
-    dispLineStr('Ramping Fields CF', curtime);
+    logNewSection('Ramping Fields CF', curtime);
     val_FF = getChannelValue(seqdata,'Transport FF',1);
     val_16 = getChannelValue(seqdata,'Coil 16',1);
     val_FB = getChannelValue(seqdata,'FB Current',1);
@@ -200,7 +200,7 @@ end
 
 switch opts.SelectMode      
     case 'SweepFreqSmoothLinear'
-        dispLineStr('Smooth Linear Frequency Sweep',curtime);
+        logNewSection('Smooth Linear Frequency Sweep',curtime);
         if ~opts.dotilt
             freq_offset = getVarOrdered('qgm_plane_uwave_frequency_offset_notilt');
             freq_amp = getVar('qgm_plane_uwave_frequency_amplitude_notilt');
@@ -244,10 +244,10 @@ switch opts.SelectMode
         
         addOutputParam('qgm_plane_uwave_frequency',uWave_opts.Frequency);  
         
-        disp(['     Freq         : ' num2str(uWave_opts.Frequency) ' MHz']);    
-        disp(['     Freq Offset  : ' num2str(freq_offset) ' kHz']);    
-        disp(['     Pulse Time   : ' num2str(sweep_time) ' ms']);
-        disp(['     Freq Amp     : ' num2str(freq_amp) ' kHz']);
+        logText(['     Freq         : ' num2str(uWave_opts.Frequency) ' MHz']);    
+        logText(['     Freq Offset  : ' num2str(freq_offset) ' kHz']);    
+        logText(['     Pulse Time   : ' num2str(sweep_time) ' ms']);
+        logText(['     Freq Amp     : ' num2str(freq_amp) ' kHz']);
 
 
         %%%% The uWave Sweep Code Begins Here %%%%        
@@ -305,7 +305,7 @@ switch opts.SelectMode
         %% Sweep Frequency 
         % This does an HS1 plane frequency sweep, this is only good for one
         % plane really.
-        dispLineStr('HS1 Frequency Sweep',curtime);
+        logNewSection('HS1 Frequency Sweep',curtime);
         
         % Read in frequency and amplitude for tilt or no tilt
         if ~opts.dotilt
@@ -350,10 +350,10 @@ switch opts.SelectMode
         addOutputParam('qgm_plane_uwave_HS1_beta',beta);
         addOutputParam('qgm_plane_uwave_HS1_amp',env_amp);
         
-        disp(['     Freq         : ' num2str(uWave_opts.Frequency) ' MHz']);    
-        disp(['     Freq Offset  : ' num2str(freq_offset) ' kHz']);    
-        disp(['     Pulse Time   : ' num2str(sweep_time) ' ms']);
-        disp(['     Freq Amp     : ' num2str(freq_amp) ' kHz']);
+        logText(['     Freq         : ' num2str(uWave_opts.Frequency) ' MHz']);    
+        logText(['     Freq Offset  : ' num2str(freq_offset) ' kHz']);    
+        logText(['     Pulse Time   : ' num2str(sweep_time) ' ms']);
+        logText(['     Freq Amp     : ' num2str(freq_amp) ' kHz']);
 
 
         %%%% The uWave Sweep Code Begins Here %%%%        
@@ -403,7 +403,7 @@ switch opts.SelectMode
 
     case 'SweepFieldLegacy'
         %% Sweep Field Legacy (Pre CF)
-        disp('Using Z shim to plane select');
+        logText('Using Z shim to plane select');
 
         % uwave freq width (gets overwritten)
         ffscan_list = [100]/1000;%frequency sweep width
@@ -461,7 +461,7 @@ switch opts.SelectMode
 
         % synchronizing this plane-selection sweep
         if opts.use_ACSync
-              dispLineStr('enabling acync',curtime);
+              logNewSection('enabling acync',curtime);
 
     %                 % Enable ACync right after ramping up to start field
     %                 ACync_start_time = calctime(curtime,spect_pars.uwave_delay + field_shift_time);
@@ -518,7 +518,7 @@ end
 % remove any atoms not transfered to the F=7/2 manifold.
 
 if opts.planeselect_doVertKill==1
-    dispLineStr('Applying vertical D2 Kill Pulse',curtime);
+    logNewSection('Applying vertical D2 Kill Pulse',curtime);
 
     %Resonant light pulse to remove any untransferred atoms from
     %F=9/2
@@ -536,11 +536,11 @@ if opts.planeselect_doVertKill==1
     str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',mod_freq,mod_amp,mod_offset);
     addVISACommand(8, str);  %Device 8 is the new kill beam Rigol changed on July 10, 2021
     % Display update about
-    disp(' D2 Kill pulse');
-    disp(['     Kill Time       (ms) : ' num2str(kill_time)]); 
-    disp(['     Kill Frequency (MHz) : ' num2str(mod_freq*1E-6)]); 
-    disp(['     Kill Amp         (V) : ' num2str(mod_amp)]); 
-    disp(['     Kill Detuning  (MHz) : ' num2str(kill_detuning)]); 
+    logText(' D2 Kill pulse');
+    logText(['     Kill Time       (ms) : ' num2str(kill_time)]); 
+    logText(['     Kill Frequency (MHz) : ' num2str(mod_freq*1E-6)]); 
+    logText(['     Kill Amp         (V) : ' num2str(mod_amp)]); 
+    logText(['     Kill Detuning  (MHz) : ' num2str(kill_detuning)]); 
 
 
     if kill_time>0
@@ -573,7 +573,7 @@ if opts.planeselect_doMicrowaveBack
     switch opts.SelectModeBack
         case 'SweepFreqHS1'        
             %Sweep the frequency
-            disp('sweeping frequency HS1');
+            logText('sweeping frequency HS1');
             
             % For SRS GPIB 29
             setDigitalChannel(calctime(curtime,0),'SRS Source post spec',1);
@@ -598,7 +598,7 @@ if opts.planeselect_doMicrowaveBack
             freq_offset = getScanParameter(freq_list,seqdata.scancycle,...
                 seqdata.randcyclelist,'uwave_freq_offset_back','kHz from 1606.75 MHz');
 
-            disp(['     Freq Offset  : ' num2str(freq_offset) ' kHz']);
+            logText(['     Freq Offset  : ' num2str(freq_offset) ' kHz']);
 
             % SRS settings (may be overwritten later)
             uWave_opts=struct;
@@ -610,7 +610,7 @@ if opts.planeselect_doMicrowaveBack
             addOutputParam('uwave_pwr_back',uWave_opts.Power)
             addOutputParam('uwave_frequency_back',uWave_opts.Frequency);    
 
-            disp('HS1 Sweep Pulse Backwards');
+            logText('HS1 Sweep Pulse Backwards');
 
             % Calculate the beta parameter
             beta=asech(0.005);   
@@ -630,8 +630,8 @@ if opts.planeselect_doMicrowaveBack
             sweep_time = getScanParameter(uwave_sweep_time_list,...
                 seqdata.scancycle,seqdata.randcyclelist,'uwave_sweep_time_back');     
 
-            disp(['     Pulse Time   : ' num2str(sweep_time) ' ms']);
-            disp(['     Freq Delta   : ' num2str(uWave_delta_freq*1E3) ' kHz']);
+            logText(['     Pulse Time   : ' num2str(sweep_time) ' ms']);
+            logText(['     Freq Delta   : ' num2str(uWave_delta_freq*1E3) ' kHz']);
 
             % Enable uwave frequency sweep
             uWave_opts.EnableSweep=1;                    
@@ -647,7 +647,7 @@ if opts.planeselect_doMicrowaveBack
 
             % Turn on the uWave        
             if  ~opts.fake_the_plane_selection_sweep
-                disp('disabling ');
+                logText('disabling ');
                 setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);  
             end
 
@@ -797,7 +797,7 @@ if opts.planeselect_again
     % Wait for switches to finish
     curtime = calctime(curtime,30);
     
-    disp('HS1 Sweep Pulse');
+    logText('HS1 Sweep Pulse');
 
         % Calculate the beta parameter
         beta=asech(0.005);   
@@ -817,8 +817,8 @@ if opts.planeselect_again
         sweep_time = getScanParameter(uwave_sweep_time_list,...
             seqdata.scancycle,seqdata.randcyclelist,'uwave_sweep_time_2');     
 
-        disp(['     Pulse Time   : ' num2str(sweep_time) ' ms']);
-        disp(['     Freq Delta   : ' num2str(uWave_delta_freq*1E3) ' kHz']);
+        logText(['     Pulse Time   : ' num2str(sweep_time) ' ms']);
+        logText(['     Freq Delta   : ' num2str(uWave_delta_freq*1E3) ' kHz']);
 
         % Enable uwave frequency sweep
         uWave_opts.EnableSweep=1;                    
@@ -834,7 +834,7 @@ if opts.planeselect_again
 
         % Turn on the uWave        
         if  ~opts.fake_the_plane_selection_sweep
-            disp('disabling ');
+            logText('disabling ');
             setDigitalChannel(calctime(curtime,0),'K uWave TTL',1);  
         end
 
@@ -881,11 +881,11 @@ if opts.planeselect_again
             mod_amp = mod_amp;0.05;0.1; % use same power for both pulses 
             
             % Display update about
-            disp(' D2 Kill pulse');
-            disp(['     Kill Time       (ms) : ' num2str(kill_time)]); 
-            disp(['     Kill Frequency (MHz) : ' num2str(mod_freq*1E-6)]); 
-            disp(['     Kill Amp         (V) : ' num2str(mod_amp)]); 
-            disp(['     Kill Detuning  (MHz) : ' num2str(kill_detuning)]); 
+            logText(' D2 Kill pulse');
+            logText(['     Kill Time       (ms) : ' num2str(kill_time)]); 
+            logText(['     Kill Frequency (MHz) : ' num2str(mod_freq*1E-6)]); 
+            logText(['     Kill Amp         (V) : ' num2str(mod_amp)]); 
+            logText(['     Kill Detuning  (MHz) : ' num2str(kill_detuning)]); 
 
             % Offset time of pulse (why?)
             pulse_offset_time = -5;       

@@ -61,7 +61,7 @@ if seqdata.flags.xdt_uwave_K_spec
     tr = 100;
     fesh = 124; % 124 G   
     
-   dispLineStr('XDT uWave K Spectroscopy',curtime);   
+   logNewSection('XDT uWave K Spectroscopy',curtime);   
 
     % MHz B=0 Gfield splitting
     f0 = 1285.8; % 1607         
@@ -75,7 +75,7 @@ if seqdata.flags.xdt_uwave_K_spec
     uwave_power=defVar('uwave_power',5,'dBm');
     
     if doRampFB                
-        dispLineStr('XDT uWave K Spectroscopy',curtime);  
+        logNewSection('XDT uWave K Spectroscopy',curtime);  
         % MHz B=0 Gfield splitting
         f0 = 1602.5;1571.5;1788.85; % 124 G 1602.5 MHz, 195 G 1788.85 MHz         
         % Frequency away from f0 (B=0 splitting)
@@ -103,7 +103,7 @@ if seqdata.flags.xdt_uwave_K_spec
     seqdata.flags.xdt_K_spinflip_end = 0;
     if seqdata.flags.xdt_K_spinflip_end
         % NOTE THAT THIS FREQUENCY COUPLES TO THE RB FIELD SWEEP    
-        dispLineStr('RF K Sweep -9/2 --> -7/2',curtime);  
+        logNewSection('RF K Sweep -9/2 --> -7/2',curtime);  
 
         defVar('xdt_spin_xfer_K_end_freq',[31.0272],'MHz');1.52;
         defVar('xdt_spin_xfer_K_end_freq_amp',1,'MHz');.15;
@@ -252,6 +252,6 @@ end
     
 %% The End!
 timeout = curtime;
-dispLineStr('Dipole Transfer complete',curtime);
+logNewSection('Dipole Transfer complete',curtime);
 
 end

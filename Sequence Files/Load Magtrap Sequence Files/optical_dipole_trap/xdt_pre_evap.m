@@ -7,7 +7,7 @@ ScopeTriggerPulse(curtime,'xdt load');
 %% Rb uWave 1 SWEEP FESHBACH FIELD
 %Pre-ramp the field to 20G for transfer
 if ( seqdata.flags.xdt_Rb_21uwave_sweep_field)      
-    dispLineStr('uWave Rb 2-->1',curtime);    
+    logNewSection('uWave Rb 2-->1',curtime);    
     init_ramp_fields = 1; % Ramp field to starting value?
     
     %%%%%%%%%%%%%%%%%%%%%%%%
@@ -108,7 +108,7 @@ end
 % state using a uWave frequency sweep.
 if ( seqdata.flags.xdt_Rb_21uwave_sweep_freq)
     % Ramp the field to the desired value
-    dispLineStr('Field Ramp for RF/uWave Transfer',curtime);        
+    logNewSection('Field Ramp for RF/uWave Transfer',curtime);        
 
     % F=2 Rb Blow Away
     do_F2_blowaway=1;
@@ -151,7 +151,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     % uWave Sweeep Prepare
     %%%%%%%%%%%%%%%%%%%%
 %     use_ACSync=0;    
-    dispLineStr('Sweeping uWave Rb 2-->1',curtime);   
+    logNewSection('Sweeping uWave Rb 2-->1',curtime);   
     
     % uWave Center Frequency
     freq_list = [-0.125];
@@ -239,7 +239,7 @@ end
 %% Rb F=2 Blow Away
 
 if seqdata.flags.xdt_Rb_2_kill
-    dispLineStr('Blowing Rb F=2 away',curtime);
+    logNewSection('Blowing Rb F=2 away',curtime);
     setAnalogChannel(calctime(curtime,-10),4,0.0); % set amplitude   0.7
     AnalogFuncTo(calctime(curtime,-15),34,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,6590-237); % Ramp Rb trap laser to resonance   237
 
@@ -262,7 +262,7 @@ end
 if seqdata.flags.xdt_K_p2n_rf_sweep_freq
     % NOTE THAT THIS FREQUENCY COUPLES TO THE RB FIELD SWEEP
     
-    dispLineStr('RF K Sweep 9-->-9',curtime);       
+    logNewSection('RF K Sweep 9-->-9',curtime);       
  
     % Avoid feshbach ramps to minimize time in bad spin combinations
     disp(' Applying RF sweep to transfer K state.');
@@ -330,7 +330,7 @@ end
     
 %% D1 Optical Pumping in ODT before evap!
 if (seqdata.flags.xdt_d1op_start==1)
-    dispLineStr('D1 Optical Pumping pre op evap',curtime);  
+    logNewSection('D1 Optical Pumping pre op evap',curtime);  
 
     op_time_list = [5];
     optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_op_time1','ms'); %optical pumping pulse length
@@ -420,7 +420,7 @@ end
 
 %% Spin mixture after Optical Pumping
 if seqdata.flags.xdt_rfmix_start
-    dispLineStr('RF K Sweeps for -7,-9 mixture.',curtime);  
+    logNewSection('RF K Sweeps for -7,-9 mixture.',curtime);  
 
     if ~seqdata.flags.xdt_d1op_start
         disp(' Ramping the magnetic field');

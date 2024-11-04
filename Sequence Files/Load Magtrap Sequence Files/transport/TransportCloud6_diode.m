@@ -12,7 +12,7 @@ else
     doDebug = 0;
 end
 global seqdata;
-dispLineStr('TRANSPORT',curtime);
+logNewSection('TRANSPORT',curtime);
 %% Votlage Fucntions
 
 % Voltage Function indeces that convert current to request voltage
@@ -127,7 +127,7 @@ AnalogFunc(calctime(curtime,0),'15/16 GS', ...
     100, 100, 0,1,1);     
 
 
-dispLineStr('Transport from 12ab to Crossover region at 153 mm',curtime);
+logNewSection('Transport from 12ab to Crossover region at 153 mm',curtime);
 defVar('transport_stage1_time',[3000],'ms'); % used to be 1000 ms, made longer because of weird spike in 14 influenceing 15 2024/07/25
 t_init2cross = getVar('transport_stage1_time');
 z_init = 0;
@@ -185,7 +185,7 @@ curtime = calctime(curtime,t_init2cross);
 
 
 %% Coil 15 Be Sure Off
-dispLineStr('Transport Kitten Handoff : Coil 15 Off',curtime);
+logNewSection('Transport Kitten Handoff : Coil 15 Off',curtime);
 
 % Time to ramp Coil 15 FET request to make sure it is 100% off
 T_15_OFF = 10;
@@ -195,7 +195,7 @@ curtime = AnalogFunc(calctime(curtime,0),'Coil 15',...
 setAnalogChannel(calctime(curtime,0),'Coil 15',-1,1);
 
 %% Turn on 15/16 FET
-dispLineStr('Transport Kitten Handoff : 15/16 GS On',curtime);
+logNewSection('Transport Kitten Handoff : 15/16 GS On',curtime);
 
 T_1516_ON = 50;
 V_GS_HIGH = 9;

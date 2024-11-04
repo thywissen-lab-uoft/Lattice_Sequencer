@@ -232,8 +232,10 @@ function TableCellEditCB(this,src,evt)
 
         otherwise
     end
-    this.UpdateHandlerFcn();
     
+    if ~isempty(this.UpdateHandlerFcn)
+        this.UpdateHandlerFcn();
+    end
 
 end
 

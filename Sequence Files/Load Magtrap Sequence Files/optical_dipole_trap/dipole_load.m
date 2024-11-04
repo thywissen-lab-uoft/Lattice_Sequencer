@@ -22,7 +22,7 @@ curtime = timein;
 global seqdata;
 
 
-dispLineStr('Dipole Loading',curtime);
+logNewSection('Dipole Loading',curtime);
 
 %% INTRODUCTION
 % This code transfer the atomic cloud from the quadrupolar field into
@@ -213,6 +213,6 @@ curtime=calctime(curtime,100);
 
 timeout=curtime;
     
-dispLineStr('Dipole Loading complete',curtime);
+logNewSection('Dipole Loading complete',curtime);
 
 end

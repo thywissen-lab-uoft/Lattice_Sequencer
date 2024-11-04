@@ -5242,7 +5242,7 @@ end
 %  % uWave Sweeep Prepare
 %     %%%%%%%%%%%%%%%%%%%%
 % %     use_ACSync=0;    
-%     dispLineStr('Sweeping uWave Rb 2-->1',curtime);   
+%     logNewSection('Sweeping uWave Rb 2-->1',curtime);   
 %     
 %     % uWave Center Frequency
 %     freq_list = [-0.125];
@@ -5513,7 +5513,7 @@ if doRotateWaveplate
     P_RotWave_II = 0.99;    
 %     P_RotWave_II = 0.01;    
 % 
-    dispLineStr('Rotate waveplate again',curtime)    
+    logNewSection('Rotate waveplate again',curtime)    
         %Rotate waveplate again to divert the rest of the power to lattice beams
 curtime = AnalogFunc(calctime(curtime,0),41,...
         @(t,tt,Pmin,Pmax)(0.5*asind(sqrt(Pmin + (Pmax-Pmin)*(t/tt)))/9.36),...

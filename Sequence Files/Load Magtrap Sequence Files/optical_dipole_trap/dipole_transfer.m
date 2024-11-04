@@ -100,7 +100,7 @@ end
 
 %% Dipole trap initial ramp on
 
-dispLineStr('ODT 1 ramp up started at',calctime(curtime,0));
+logNewSection('ODT 1 ramp up started at',calctime(curtime,0));
 
 % XDT Ramp time delay (or pre turn on)
 dipole_ramp_start_time_list =[0]; [-500];
@@ -164,7 +164,7 @@ end
 
 %% QP Ramp Down 1
 if seqdata.flags.xdt_qp_ramp_down1  
-    dispLineStr('QP RAMP DOWN 1',curtime);
+    logNewSection('QP RAMP DOWN 1',curtime);
 
     % Calculate the change in QP current
     dI_QP=QP_ramp_end1-I_QP; 
@@ -215,7 +215,7 @@ end
 
 if seqdata.flags.xdt_qp_ramp_down2
 
-    dispLineStr('QP RAMP DOWN 2',curtime);
+    logNewSection('QP RAMP DOWN 2',curtime);
 
     XDT_pin_time_list = [0];
     XDT_pin_time = getScanParameter(XDT_pin_time_list,...
@@ -310,7 +310,7 @@ plug_turnoff_time = getScanParameter(plug_turnoff_time_list,...
     seqdata.scancycle,seqdata.randcyclelist,'plug_turnoff_time');
 setDigitalChannel(calctime(curtime,plug_turnoff_time),'Plug Shutter',0);%0:OFF; 1:ON; -200
 
-dispLineStr('Turning off plug ',calctime(curtime,plug_turnoff_time));
+logNewSection('Turning off plug ',calctime(curtime,plug_turnoff_time));
 
 
 %% Turn Off Voltage on Transport and Shim Supply 
@@ -333,7 +333,7 @@ end
 
 %Pre-ramp the field to 20G for transfer
 if ( seqdata.flags.xdt_Rb_21uwave_sweep_field)      
-    dispLineStr('uWave Rb 2-->1',curtime);
+    logNewSection('uWave Rb 2-->1',curtime);
     
     init_ramp_fields = 1; % Ramp field to starting value?
     do_F2_blowaway = 1 ; % Remove remaining F=2 atoms after transfer?
@@ -434,7 +434,7 @@ curtime  =  AnalogFuncTo(calctime(curtime,0),'FB current',...
     % F=2 Pulse Blow Away
     %%%%%%%%%%%%%%%%%%%%%%%
     if do_F2_blowaway
-        dispLineStr('Blowing Rb F=2 away',curtime);
+        logNewSection('Blowing Rb F=2 away',curtime);
 
         %wait a bit before pulse
         curtime = calctime(curtime,0);
@@ -504,7 +504,7 @@ end
 
 if ( seqdata.flags.xdt_Rb_21uwave_sweep_freq)
     % Ramp the field to the desired value
-    dispLineStr('Field Ramp for RF/uWave Transfer',curtime);        
+    logNewSection('Field Ramp for RF/uWave Transfer',curtime);        
 
     % F=2 Rb Blow Away
     do_F2_blowaway=1;
@@ -547,7 +547,7 @@ curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields 
     % uWave Sweeep Prepare
     %%%%%%%%%%%%%%%%%%%%
 %     use_ACSync=0;    
-    dispLineStr('Sweeping uWave Rb 2-->1',curtime);   
+    logNewSection('Sweeping uWave Rb 2-->1',curtime);   
     
     % uWave Center Frequency
     freq_list = [-0.125];
@@ -635,7 +635,7 @@ end
 %Sweep 40K to |9/2,-9/2> before optical evaporation   
 
 if seqdata.flags.xdt_K_p2n_rf_sweep_freq
-    dispLineStr('RF K Sweep 9-->-9',curtime);   
+    logNewSection('RF K Sweep 9-->-9',curtime);   
     
     % Get the Feshbach value (in G) at this time.
     fesh_value = getChannelValue(seqdata,'FB current',1,0);
@@ -726,7 +726,7 @@ end
 %% D1 Optical Pumping in ODT before evap!
 
 if (seqdata.flags.xdt_d1op_start==1)
-    dispLineStr('D1 Optical Pumping pre op evap',curtime);  
+    logNewSection('D1 Optical Pumping pre op evap',curtime);  
 
     op_time_list = [5];
     optical_pump_time = getScanParameter(op_time_list, seqdata.scancycle, seqdata.randcyclelist, 'ODT_op_time1','ms'); %optical pumping pulse length
@@ -817,7 +817,7 @@ end
 %% Spin mixture after Optical Pumping
 
 if seqdata.flags.xdt_rfmix_start
-    dispLineStr('RF K Sweeps for -7,-9 mixture.',curtime);  
+    logNewSection('RF K Sweeps for -7,-9 mixture.',curtime);  
 
     if ~seqdata.flags.xdt_d1op_start
         disp(' Ramping the magnetic field');
@@ -924,7 +924,7 @@ end
 % so it is unclear if this code is necessary
 
 if seqdata.flags.xdt_ramp_FB_before_evap
-    dispLineStr('Ramping FB field prior to optical evaporation',curtime);
+    logNewSection('Ramping FB field prior to optical evaporation',curtime);
     Evap_FB_field_list = [15];
     Evap_FB_field = getScanParameter(Evap_FB_field_list,seqdata.scancycle,...
                 seqdata.randcyclelist,'Evap_FB_field','G');
@@ -1038,7 +1038,7 @@ end
 
 if seqdata.flags.CDT_evap ==1 && seqdata.flags.xdt_ramp2sympathetic
     % Pre ramp powers to sympathtetic cooling regime
-    dispLineStr('Ramp to sympathetic regime',curtime);
+    logNewSection('Ramp to sympathetic regime',curtime);
 
     % Powers to ramp to 
     dipole_preramp_time = 500;
@@ -1104,7 +1104,7 @@ end
 % Perform the first stage of optical evaporation
 
 if ( seqdata.flags.CDT_evap == 1 )
-    dispLineStr('Optical evaporation 1',curtime);
+    logNewSection('Optical evaporation 1',curtime);
 
     disp(' Performing exponential evaporation');
     disp(['     Evap Time (ms) : ' num2str(evap_time_total)]);
@@ -1335,7 +1335,7 @@ end
 % Stage 2 (K only) optical evaporation at low field
 
 if ( seqdata.flags.CDT_evap == 1 && seqdata.flags.xdt_evap2stage)
-    dispLineStr('Optical evaporation 2',curtime);
+    logNewSection('Optical evaporation 2',curtime);
     
     %%%%%%%%%%%%%%%% DO THE SECOND EVAP STAGE %%%%%%%%%%%%%%%%%%%%%
     evap_exp_ramp = @(t,tt,tau,y2,y1) ...
@@ -1369,7 +1369,7 @@ end
 % Compress XDT after Stage 2 optical evaporation
 
 if seqdata.flags.xdt_ramp_power_end 
-    dispLineStr('Ramping XDT Power Back Up',curtime); 
+    logNewSection('Ramping XDT Power Back Up',curtime); 
 
     Pr = getVar('xdt_evap_end_ramp_power');
     tr = getVar('xdt_evap_end_ramp_time');   
@@ -1397,7 +1397,7 @@ end
 % regulation boxes
 
 if seqdata.flags.xdt_am_modulate
-    dispLineStr('Modulate Dipole trap beam power',curtime);    
+    logNewSection('Modulate Dipole trap beam power',curtime);    
 
     % Oscillate with a sinuisoidal function
     dip_osc = @(t,freq,y2,y1)(y1 +y2*sin(2*pi*freq*t/1000));
@@ -1498,7 +1498,7 @@ end
 % pumping.
 
 if (seqdata.flags.xdt_d1op_end==1 && seqdata.flags.CDT_evap==1)
-    dispLineStr('D1 Optical Pumping post optical evaporation',curtime);  
+    logNewSection('D1 Optical Pumping post optical evaporation',curtime);  
 
     % optical pumping pulse length
     op_time_list = [5];[1]; %1
@@ -1553,7 +1553,7 @@ if (seqdata.flags.xdt_rfmix_end==1 && seqdata.flags.CDT_evap==1)
         curtime = ramp_bias_fields(calctime(curtime,0), ramp);            
     end
     
-        dispLineStr('RF K Sweeps for -7,-9 mixture.',curtime);  
+        logNewSection('RF K Sweeps for -7,-9 mixture.',curtime);  
 
         %Do RF Sweep
         clear('sweep');
@@ -1637,7 +1637,7 @@ end
 
 %% uWave_K_Spectroscopy
 if (seqdata.flags.xdt_uWave_K_Spectroscopy)
-    dispLineStr('uWave_K_Spectroscopy',curtime);      
+    logNewSection('uWave_K_Spectroscopy',curtime);      
 %     
     % FB coil settings
     ramp=struct;
@@ -1737,7 +1737,7 @@ end
 %% RF Rabi Oscillation
 
 if (seqdata.flags.xdt_k_rf_rabi_oscillation)      
-    dispLineStr('RF K Rabi Oscillations',curtime);  
+    logNewSection('RF K Rabi Oscillations',curtime);  
 
     do_ramp_field=1;
     if do_ramp_field
@@ -1828,7 +1828,7 @@ end
     %RHYS - An alterative way to measure trap frequency using a piezo mirror to
     %give the atoms a kick. 
     if seqdata.flags.xdt_do_dipole_trap_kick
-        dispLineStr('Kicking the dipole trap',curtime);
+        logNewSection('Kicking the dipole trap',curtime);
         %How Long to Wait After Kick
         kick_ramp_time = 100;
         curtime = calctime(curtime, kick_ramp_time+20);
@@ -1906,7 +1906,7 @@ end
 % Perform operations in the dipole trap at high magnetic field.
 
 if (seqdata.flags.xdt_high_field_a)    
-    dispLineStr('Dipole Trap High Field a',curtime);
+    logNewSection('Dipole Trap High Field a',curtime);
     curtime = dipole_high_field_a(curtime);  
 end
      
@@ -1915,7 +1915,7 @@ end
 % at the end of evaporation. Strong field gradients kick atoms out of the
 % trap. And a "round trip" magnetic field ramp tests this.
 if seqdata.flags.xdt_ramp_QP_FB_and_back
-    dispLineStr('Ramping Fields Up and Down',curtime);
+    logNewSection('Ramping Fields Up and Down',curtime);
 
     % Feshvalue to ramp to
     HF_FeshValue_Initial_List =[195];
@@ -2031,7 +2031,7 @@ end
 %% XDT Hold
 
 if seqdata.flags.xdt_do_hold_end 
-    dispLineStr('Holding XDT at End',curtime);
+    logNewSection('Holding XDT at End',curtime);
     xdt_wait_time_list = [10000];
     xdt_wait_time = getScanParameter(xdt_wait_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'xdt_wait_time','ms');   
@@ -2040,6 +2040,6 @@ end
 %% The End!
 
 timeout = curtime;
-dispLineStr('Dipole Transfer complete',curtime);
+logNewSection('Dipole Transfer complete',curtime);
 
 end

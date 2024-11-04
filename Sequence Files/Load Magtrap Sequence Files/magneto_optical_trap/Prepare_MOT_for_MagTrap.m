@@ -11,7 +11,7 @@ setDigitalChannel(calctime(curtime,-500),'UV LED',0);
 %% cMOT
 
 if seqdata.flags.MOT_CMOT==1
-    dispLineStr('CMOT',curtime); 
+    logNewSection('CMOT',curtime); 
     cMOT_time = max([getVar('cmot_rb_ramp_time') ...
         getVar('cmot_k_ramp_time')]);
 
@@ -112,7 +112,7 @@ end
 % Molasses for Rb at the same time from the CMOT phase
 
 if seqdata.flags.MOT_Mol == 1
-    dispLineStr('Molasses',curtime);
+    logNewSection('Molasses',curtime);
     
     ScopeTriggerPulse(calctime(curtime,0),'Molasses');
 

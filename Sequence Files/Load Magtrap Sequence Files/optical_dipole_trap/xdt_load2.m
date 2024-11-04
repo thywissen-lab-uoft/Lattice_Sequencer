@@ -26,7 +26,7 @@ defVar('xdt_load2_wait_time',200,'ms');
 %% Decompress Magnetic Trap
 
 if seqdata.flags.xdt_load2_mt_decompress     
-    dispLineStr('Decompressing MT',curtime);    
+    logNewSection('Decompressing MT',curtime);    
 
     tr1 = getVar('xdt_load2_mt_decompress_time');
     i1 = getVar('xdt_load2_mt_decompress_value');

@@ -228,8 +228,9 @@ end
 % MOT power?!?
 
 if seqdata.flags.MOT_prepare_for_MT
-    dispLineStr('Preparing MOT for MT',curtime);   
+%     dispLineStr('Preparing MOT for MT',curtime);   
     logNewSection('Preparing MOT for MT',curtime);
+
     % If not a fluoresence image take a picture of the MOT here
     if seqdata.flags.image_type ~= 1    
         DigitalPulse(calctime(curtime,-10),'Mot Camera Trigger',1,1);
@@ -306,7 +307,7 @@ end
 % science chamber.
 
 if seqdata.flags.transport
-    dispLineStr('Magnetic Transport',curtime);
+%     dispLineStr('Magnetic Transport',curtime);
     logNewSection('Magnetic Transport',curtime);
 
     % Open kitten relay
@@ -496,7 +497,7 @@ end
 % becaues this wavpelate rotation should not interfere with the
 % experimental cycle (ideally, the PIDs should handle the regulation)
 if seqdata.flags.rotate_waveplate_1
-    dispLineStr('Rotating waveplate',curtime);    
+%     dispLineStr('Rotating waveplate',curtime);    
     logNewSection('rotate_waveplate_1',curtime);
 
     tr = getVar('rotate_waveplate1_duration');
@@ -552,7 +553,7 @@ end
 %% Initiate Time of Flight in absorption image
 
 if seqdata.flags.image_type == 0
-    dispLineStr('Turning off coils and traps.',curtime);   
+%     dispLineStr('Turning off coils and traps.',curtime);   
     logNewSection('Turning off coils and traps.',curtime);   
 
     % Make sure RF is off
@@ -618,7 +619,7 @@ if isfield(seqdata.flags, 'HF_Imaging') && seqdata.flags.HF_Imaging
     
     if seqdata.flags.image_type == 0    
         ScopeTriggerPulse(calctime(curtime,0),'TOF');    
-        dispLineStr('High Field Absorption Imaging.',curtime);
+%         dispLineStr('High Field Absorption Imaging.',curtime);
         logNewSection('High Field Absorption Imaging',curtime);
         curtime = HF_absorption_image(calctime(curtime,0.0));   
     end 
@@ -650,7 +651,7 @@ else
     %Perform Low Field Absorption Imaging
     if seqdata.flags.image_type == 0    
         ScopeTriggerPulse(calctime(curtime,0),'TOF');    
-        dispLineStr('Absorption Imaging.',curtime);
+%         dispLineStr('Absorption Imaging.',curtime);
         logNewSection('Absorption Imaging',curtime);
 
         curtime = absorption_image2(calctime(curtime,0.0));   
@@ -811,7 +812,7 @@ setAnalogChannel(curtime,'15/16 GS',0);
 
 %% Load MOT
 % Load the MOT
-dispLineStr('Load the MOT',curtime);
+% dispLineStr('Load the MOT',curtime);
 logNewSection('Load MOT',curtime);
 % trigger_offset=0;
 % trigger_length = 50;

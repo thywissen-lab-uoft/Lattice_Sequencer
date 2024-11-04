@@ -69,7 +69,8 @@ function params = do_HF_abs_pulses(curtime,params,flags,tD)
     %sweep_type = 'SRS_HS1';
     sweep_type = 'SRS_LINEAR';
     
-    dispLineStr('Programming HF Imaging RF Sweep',curtime);
+%     dispLineStr('Programming HF Imaging RF Sweep',curtime);
+logNewSection('Programming HF Imaging RF Sweep',curtime);
 
     switch sweep_type
         case 'DDS'   

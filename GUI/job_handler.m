@@ -423,7 +423,7 @@ end
 % running, complete, or queue
 function updateJobText(obj)
     obj.JobTable.Data={};
-    
+if ~isempty(obj.SequencerJobs)    
     for kk=1:length(obj.SequencerJobs)   
         obj.JobTable.Data{kk,1} = false;
         obj.JobTable.Data{kk,2} = ...
@@ -436,6 +436,7 @@ function updateJobText(obj)
             obj.SequencerJobs{kk}.JobName;         
     end
     drawnow
+end
 end
 
 % % Function that updates the job table
@@ -607,6 +608,10 @@ end
 
 % Compiles the seqdata (see compile.m for old way)
 function ret = compile(obj,doProgramDevices)       
+    if isempty(obj.CurrentJob) || ~isvalid(obj.CurrentJob)
+        obj.CurrentJob = obj.DefaultJob;
+    end
+
     if nargin==1;doProgramDevices=1;end
 
     obj.CompilerStatus = 1; % compiler busy

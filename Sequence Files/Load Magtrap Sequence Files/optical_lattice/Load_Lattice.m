@@ -47,7 +47,7 @@ end
 % Rotate the waveplate to shift the optical power to the lattices.
 
 if seqdata.flags.lattice_rotate_waveplate_1
-    dispLineStr('Rotating waveplate',curtime);
+    logNewSection('Rotating waveplate',curtime);
     %Start with a little power towards lattice beams, and increase power to
     %max only after ramping on the lattice
     
@@ -70,7 +70,7 @@ end
 % Ramp the lattices up to the starting values.  The ramp procedue can
 % either be multi step or single step.
 if seqdata.flags.lattice_lattice_ramp_1    
-    dispLineStr('Defining initial lattice and DMD ramps.',curtime);
+    logNewSection('Defining initial lattice and DMD ramps.',curtime);
     ScopeTriggerPulse(curtime,'lattice_ramp_1');
     
     % First QPD trigger has it takes data
@@ -252,7 +252,7 @@ if seqdata.flags.lattice_lattice_ramp_1
     seqdata.times.lattice_start_time = curtime;
     ScopeTriggerPulse(curtime,'Load lattices');
     
-    dispLineStr('Ramping lattices.',curtime);
+    logNewSection('Ramping lattices.',curtime);
     disp(['     Ramp Mode            : ' num2str(rampMode)]);
     disp(' ');
     disp(['     Ramp Times      (ms) : ' mat2str(latt_times) ]);
@@ -416,7 +416,7 @@ end
 %% Pin Lattice
 %Do not use if lattice_conductivity_new is also pinning
 if (seqdata.flags.lattice_pin)
-    dispLineStr('Pinning optical lattice',curtime);
+    logNewSection('Pinning optical lattice',curtime);
     U_pin = getVar('lattice_pin_depth');
     T_pin = getVar('lattice_pin_time');
     disp([' U pin : ' num2str(U_pin) ' Er']);
@@ -536,7 +536,7 @@ end
 
 if seqdata.flags.lattice_RF_spec_pre_OP
     
-    dispLineStr('Lattice RF transfer -9/2 to -7/2',curtime);
+    logNewSection('Lattice RF transfer -9/2 to -7/2',curtime);
     
     % Get the Feshbach field
     Bfesh   = getChannelValue(seqdata,'FB Current',1);   
@@ -591,7 +591,7 @@ end
 %% Optical Pumping
 % Optical pumping
 if (seqdata.flags.lattice_do_optical_pumping == 1)
-    dispLineStr('Optical Pumping.',curtime);
+    logNewSection('Optical Pumping.',curtime);
 
     doPinForOP = 0; 
     if doPinForOP 
@@ -711,7 +711,7 @@ end
 %% Optical Pumping (C Fujiwara)
 
 if (seqdata.flags.lattice_do_optical_pumping == 2)
-    dispLineStr('Optical Pumping.',curtime);
+    logNewSection('Optical Pumping.',curtime);
     
     % Hold before optical pumping
 %     t_hold_preOP = getVar('lattice_pin_waittime');
@@ -849,7 +849,7 @@ end
 
 if ( do_K_uwave_spectroscopy_old || ...
         do_RF_spectroscopy || seqdata.flags.lattice_uWave_spec)
-    dispLineStr('Ramping magnetic fields BEFORE RF/uwave spectroscopy',curtime);
+    logNewSection('Ramping magnetic fields BEFORE RF/uwave spectroscopy',curtime);
     
     ramp_fields = 1; % do a field ramp for spectroscopy
     
@@ -888,7 +888,7 @@ end
 
 if seqdata.flags.lattice_uWave_spec
     
-     dispLineStr('uWave_K_Spectroscopy',curtime);
+     logNewSection('uWave_K_Spectroscopy',curtime);
    
     % Frequency
     freq_shift_list = [200];[15]; % Offset in kHz
@@ -951,7 +951,7 @@ end
 %% RF Spectroscopy
 
 if do_RF_spectroscopy
-        dispLineStr('RF spectroscopy.',curtime);
+        logNewSection('RF spectroscopy.',curtime);
         
         %Do RF Sweep
         clear('sweep');
@@ -990,7 +990,7 @@ if ( do_K_uwave_spectroscopy_old || ...
         do_RF_spectroscopy || seqdata.flags.lattice_uWave_spec...
         )
     
-    dispLineStr('Ramping magnetic fields AFTER RF/uwave spectroscopy',curtime);
+    logNewSection('Ramping magnetic fields AFTER RF/uwave spectroscopy',curtime);
     ramp_fields = 0; % do a field ramp for spectroscopy
     
     if ramp_fields
@@ -1042,7 +1042,7 @@ end
 % CF : WHY HAVE PLANE SELECTION BEFORE THE SPECROTOPSCY? SHOULD BE RIGHT
 % BEFORE IMAGING?
 if seqdata.flags.do_plane_selection
-    dispLineStr('Plane Selection',curtime);     
+    logNewSection('Plane Selection',curtime);     
     curtime = plane_selection(curtime);      
 end
 
@@ -1050,7 +1050,7 @@ end
 % Rotate waveplate to distribute more power to the lattice
 
 if seqdata.flags.lattice_rotate_waveplate_2 
-    dispLineStr('Rotate waveplate again',curtime)    
+    logNewSection('Rotate waveplate again',curtime)    
   % Ramp waveplate to divert all power to lattices
   wp_Trot2 = 150; 
     P_RotWave_I = getVar('rotate_waveplate1_value');
@@ -1074,7 +1074,7 @@ end
 %% Ramp lattice after spectroscopy/plane selection
 
 if seqdata.flags.lattice_fluor_ramp
-    dispLineStr('Lattice Ramp for Fluorescence',curtime)    
+    logNewSection('Lattice Ramp for Fluorescence',curtime)    
     ScopeTriggerPulse(curtime,'lattice_ramp_3');    
     %  Ramp Time
     defVar('lattice_FI_ramptime',10,'ms');        
@@ -1150,7 +1150,7 @@ if seqdata.flags.lattice_fluor%
 %     end
     ScopeTriggerPulse(calctime(curtime,0),'fluorescence');    
 
-    dispLineStr('Fluorescence image',curtime); 
+    logNewSection('Fluorescence image',curtime); 
 %     curtime = lattice_FL_fieldramp(curtime);
     curtime = lattice_FL(curtime);
     curtime = calctime(curtime,15);
@@ -1279,7 +1279,7 @@ curtime = calctime(curtime,50);
     stripe_opts.planeselect_doFinalRepumpPulse = 0;
     stripe_opts.planeselect_again = 0;
     stripe_opts.doProgram = 0;
-    dispLineStr('Additional stripe plane selection',curtime);      
+    logNewSection('Additional stripe plane selection',curtime);      
     curtime = plane_selection(curtime,stripe_opts);
     
     curtime = calctime(curtime,100);
@@ -1305,7 +1305,7 @@ curtime = calctime(curtime,50);
     fluor_opts.PulseTime = getVar('stripe_img_time');
     fluor_opts.ExposureTime = getVar('stripe_img_time');
     
-    dispLineStr('Stripe fluorescence image',curtime);
+    logNewSection('Stripe fluorescence image',curtime);
     
     curtime = lattice_FL_fieldramp(curtime);
     curtime = lattice_FL(curtime,fluor_opts);
@@ -1363,7 +1363,7 @@ end
 % alignment (4) Single photon detuning
 
 if (seqdata.flags.Raman_transfers == 1)
-    dispLineStr('Raman Transfer',curtime);
+    logNewSection('Raman Transfer',curtime);
 
     %During imaging, generate about a 4.4G horizontal field. Both shims get
     %positive control voltages, but draw from the 'negative' shim supply. 
@@ -1532,7 +1532,7 @@ curtime = do_horizontal_plane_selection(curtime, ...
     % Turn on optical pumping beam AOM for thermal stabilization
     setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);  
     
-    dispLineStr('do_horizontal_plane_selection execution finished at',curtime);
+    logNewSection('do_horizontal_plane_selection execution finished at',curtime);
 end
 
 

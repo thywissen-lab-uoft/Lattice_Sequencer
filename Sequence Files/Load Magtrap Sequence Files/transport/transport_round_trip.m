@@ -9,7 +9,7 @@ doHandOff = 1;
 doRamp2 = 1;
      
      if doRoundTripBasic
-        dispLineStr('round trip transport',curtime);
+        logNewSection('round trip transport',curtime);
         defVar('transport_round_trip_point',[150:2:172],'mm');
         defVar('transport_round_trip_number',1,'trips');
         t = 500;

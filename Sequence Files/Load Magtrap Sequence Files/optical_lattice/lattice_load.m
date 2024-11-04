@@ -10,7 +10,7 @@ end
 
 %% Prepare PID levels to load
 
-dispLineStr('Loading into optical lattice',curtime);   
+logNewSection('Loading into optical lattice',curtime);   
 
 % Set lattice feedback offset (double PD configuration)
 setAnalogChannel(calctime(curtime,-60),'Lattice Feedback Offset', -9.8,1);

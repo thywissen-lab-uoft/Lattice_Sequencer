@@ -6,7 +6,7 @@ curtime = timein;
     % - Ramp field up to 197G
     % - Create 99 doublons via Raman n-->n+1 pulse
     
-    dispLineStr('Ramping High Field in Lattice',curtime);
+    logNewSection('Ramping High Field in Lattice',curtime);
 
     ScopeTriggerPulse(curtime,'Lattice HF');
 
@@ -98,7 +98,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
     %% Feshbach ramp
     
     if field_ramp_init
-        dispLineStr('Initial Field Ramp',curtime);
+        logNewSection('Initial Field Ramp',curtime);
 
         
         % Feshbach Field ramp
@@ -899,7 +899,7 @@ end
 %% RF Sweep Spectroscopy
     
     if do_rf_spectroscopy
-        dispLineStr('RF Sweep Spectroscopy',curtime);
+        logNewSection('RF Sweep Spectroscopy',curtime);
         ScopeTriggerPulse(curtime,'rf_spectroscopy');
         
         mF1=-7/2;   % Lower energy spin state
@@ -1143,7 +1143,7 @@ end
 %% do_rf_post_spectroscopy
    
  if do_rf_post_spectroscopy
-        dispLineStr('RF Sweep Spectroscopy',curtime);
+        logNewSection('RF Sweep Spectroscopy',curtime);
         mF1=-7/2;   % Lower energy spin state
         mF2=-9/2;   % Higher energy spin state
 
@@ -1462,7 +1462,7 @@ curtime=calctime(curtime,35);
 %% RF shift register
     
     if shift_reg_at_HF
-        dispLineStr('Shift register high field in Lattice',curtime);
+        logNewSection('Shift register high field in Lattice',curtime);
         clear('sweep');
         B = HF_FeshValue_Initial; 
         f1 = (BreitRabiK(B,9/2,-5/2) - BreitRabiK(B,9/2,-7/2))/6.6260755e-34/1E6;

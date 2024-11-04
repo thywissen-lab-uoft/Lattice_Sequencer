@@ -306,7 +306,7 @@ end
 % MOT power?!?
 
 if seqdata.flags.MOT_prepare_for_MT
-    dispLineStr('Preparing MOT for MT',curtime);   
+    logNewSection('Preparing MOT for MT',curtime);   
     
     % If not a fluoresence image take a picture of the MOT here
 %     if seqdata.flags.image_type ~= 1    

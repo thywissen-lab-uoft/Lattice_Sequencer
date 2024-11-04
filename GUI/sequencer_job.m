@@ -18,8 +18,10 @@ classdef sequencer_job < matlab.mixin.Copyable
 % See also JOB_HANDLER, MAINGUI
 properties (SetObservable)
     SequenceFunctions       % cell array : sequence functions to evaluate
-    CyclesCompleted         % double     : number of cycles completed
-    CyclesRequested         % double     : number of cycles requested
+    % CyclesCompleted         % double     : number of cycles completed
+    % CyclesRequested         % double     : number of cycles requested
+    CycleCurrent            % double
+    CycleFinal              % double
     WaitMode                % double     : 0:no wait, 1:intercycle, 2: total
     WaitTime                % double     : wait time in seconds
     SaveDir                 % char       : directory string save images (see imaging computer)
@@ -48,8 +50,15 @@ function obj = sequencer_job(npt)
     obj.JobName             = npt.JobName;            
     obj.SequenceFunctions   = npt.SequenceFunctions;
     obj.Status              = 'pending';
-    obj.CyclesRequested     = npt.CyclesRequested;
-    obj.CyclesCompleted     = 0;    
+    % 
+    % obj.CyclesCompleted     = 0;    
+    % obj.CyclesRequested     = npt.CyclesRequested;
+
+    obj.CycleCurrent        = 1;
+    obj.CycleFinal          = inf; 
+
+
+
     obj.SaveDir             = '';
     obj.ExecutionDates      = [];
     obj.CycleStartFcn       = @false;
@@ -62,7 +71,10 @@ function obj = sequencer_job(npt)
     if isfield(npt,'WaitMode');         obj.WaitMode        = npt.WaitMode;end
     if isfield(npt,'WaitTime');         obj.WaitTime        = npt.WaitTime;end  
     if isfield(npt,'SaveDir');          obj.SaveDir         = npt.SaveDir;end
-    if isfield(npt,'CyclesRequested');  obj.CyclesRequested = npt.CyclesRequested;end
+    % if isfield(npt,'CyclesRequested');  obj.CyclesRequested = npt.CyclesRequested;end
+    if isfield(npt,'CycleFinal');  obj.CycleFinal = npt.CycleFinal;end
+
+    
     if isfield(npt,'CycleStartFcn');obj.CycleStartFcn = npt.CycleStartFcn;end
     if isfield(npt,'CycleCompleteFcn');obj.CycleCompleteFcn = npt.CycleCompleteFcn;end
     if isfield(npt,'JobCompleteFcn');obj.JobCompleteFcn = npt.JobCompleteFcn;end
@@ -163,21 +175,38 @@ function TableCellEditCB(this,src,evt)
             this.JobName = s;
         case 'SequenceFunctions'
             src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;
-        case 'CyclesCompleted'
+            
+        % case 'CyclesCompleted'
+        %     if isnumeric(s) && isequal(floor(s),s) && ...
+        %         ~isnan(s) && ~isinf(s) && s>=0 
+        %         s = max([this.CyclesRequested s]);
+        %         this.CyclesCompleted = s;
+        %     else
+        %         src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;
+        %     end
+        % case 'CyclesRequested'
+        %     if isnumeric(s) && isequal(floor(s),s) && ...
+        %         ~isnan(s) &&  s>=0                
+        %         this.CyclesRequested = s;
+        %     else
+        %         src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;
+        %     end
+        case 'CycleCurrent'
             if isnumeric(s) && isequal(floor(s),s) && ...
-                ~isnan(s) && ~isinf(s) && s>=0 
-                s = max([this.CyclesRequested s]);
-                this.CyclesCompleted = s;
+                ~isnan(s) && ~isinf(s) && s>0 
+                s = max([this.CycleFinal s]);
+                this.CycleCurrent = s;
             else
                 src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;
             end
-        case 'CyclesRequested'
+        case 'CycleFinal'
             if isnumeric(s) && isequal(floor(s),s) && ...
-                ~isnan(s) &&  s>=0                
-                this.CyclesRequested = s;
+                ~isnan(s) &&  s>0                
+                this.CycleFinal = s;
             else
                 src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;
             end
+
         case 'WaitMode'
             if isequal(s,0) || isequal(s,1) || isequal(s,2)
                 this.WaitMode = s;
@@ -267,8 +296,10 @@ function updateTableInterface(this)
     this.TableInterface.Data={
         'JobName', this.JobName;
         'SequenceFunctions',this.getSequenceFunctionStr;...
-        'CyclesCompleted',this.CyclesCompleted;    
-        'CyclesRequested',this.CyclesRequested;
+        % 'CyclesCompleted',this.CyclesCompleted;    
+        % 'CyclesRequested',this.CyclesRequested;
+        'CycleCurrent',this.CycleCurrent;    
+        'CycleFinal',this.CycleFinal;
         'WaitMode',this.WaitMode;
         'WaitTime', this.WaitTime;
         'SaveDir', this.SaveDir;
@@ -279,7 +310,7 @@ function updateTableInterface(this)
 end
 
 function ret=isComplete(this)
-    ret=this.CyclesCompleted>=this.CyclesRequested;
+    ret=this.CycleCurrent>=this.CycleFinal;
 end
 
 function mystr=getSequenceFunctionStr(this)

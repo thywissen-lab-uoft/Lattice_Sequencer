@@ -119,7 +119,9 @@ function start(obj,job_type,Cycle)
                 case 'queue'
                     job = obj.findNextJob;
                     if isequal(job,obj.DefaultJob)
-                        job.CyclesCompleted = 0;
+                        % job.CyclesCompleted = 0;
+                        job.CycleCurrent = 1;
+
                     end
                 otherwise
                     error('Unexpected job type. Fix your code!');              
@@ -130,7 +132,8 @@ function start(obj,job_type,Cycle)
     end
 
     if nargin==3
-        job.CyclesCompleted = Cycle;
+        % job.CyclesCompleted = Cycle;
+        job.CycleCurrent = Cycle;
     end
     
     % Update current job
@@ -181,11 +184,10 @@ function AdwinCompleteFcn(obj)
         return;
     end
 
-
     % Increment Cycles Completed
-    if ~obj.doHoldCycle
-        obj.CurrentJob.CyclesCompleted = obj.CurrentJob.CyclesCompleted+1;   
-    end    
+    % if ~obj.doHoldCycle
+    %     obj.CurrentJob.CyclesCompleted = obj.CurrentJob.CyclesCompleted+1;   
+    % end    
     obj.CurrentJob.updateTableInterface();
     obj.CurrentJob.Status = 'AdwinComplete';
     obj.updateJobText;
@@ -253,6 +255,10 @@ function CycleCompleteFcn(obj)
         warning('CurrentJob deleted. Treating as if is complete.')
     end       
 
+    if isvalid(obj.CurrentJob) && ~obj.doHoldCycle 
+        obj.CurrentJob.CycleCurrent = obj.CurrentJob.CycleCurrent+1;   
+    end    
+
     if obj.doStopOnCycleComplete
         return;
     end
@@ -282,7 +288,9 @@ function CycleCompleteFcn(obj)
             % If the next job is complete, then all jobs are done
             if obj.doStartDefaultJobOnQueueComplete
                 % run default job on complete
-                obj.DefaultJob.CyclesCompleted=0;
+                % obj.DefaultJob.CyclesCompleted=0;
+                obj.DefaultJob.CycleCurrent=1;
+
                 obj.start('default');
                 return;
             end
@@ -297,7 +305,9 @@ end
 
 function resetQueue(obj)
     for kk=1:length(obj.SequencerJobs)        
-        obj.SequencerJobs{kk}.CyclesCompleted=0;
+        % obj.SequencerJobs{kk}.CyclesCompleted=0;
+        obj.SequencerJobs{kk}.CycleCurrent=1;
+
         obj.SequencerJobs{kk}.Status='pending';
     end    
     obj.updateJobText();
@@ -307,7 +317,9 @@ function resetQueueSelect(obj)
     selInds = [obj.JobTable.Data{:,1}];
     for kk=1:length(obj.SequencerJobs)
         if selInds(kk)
-            obj.SequencerJobs{kk}.CyclesCompleted=0;
+            % obj.SequencerJobs{kk}.CyclesCompleted=0;
+            obj.SequencerJobs{kk}.CycleCurrent=1;
+
             obj.SequencerJobs{kk}.Status='pending';
         end
     end
@@ -412,8 +424,12 @@ function updateJobText(obj)
             mystr(end)=[];
             obj.JobTable.Data{kk,1} = false;
             obj.JobTable.Data{kk,2} = obj.SequencerJobs{kk}.Status;
-            obj.JobTable.Data{kk,3} = num2str(obj.SequencerJobs{kk}.CyclesRequested);
+            % obj.JobTable.Data{kk,3} = num2str(obj.SequencerJobs{kk}.CyclesRequested);
+
+            obj.JobTable.Data{kk,3} = num2str(obj.SequencerJobs{kk}.CycleFinal);
+
             obj.JobTable.Data{kk,4} = obj.SequencerJobs{kk}.JobName;
+            
             % obj.TextBox.Data{kk,5} = mystr;                
         end
     end
@@ -509,7 +525,9 @@ function runCurrentJob(obj)
     obj.CurrentJob.updateTableInterface();
 
     global seqdata
-    seqdata.scancycle = job.CyclesCompleted+1;
+    % seqdata.scancycle = job.CyclesCompleted+1;
+    seqdata.scancycle = job.CycleCurrent;
+
     seqdata.sequence_functions = job.SequenceFunctions;
     obj.CycleStartFcn();
     

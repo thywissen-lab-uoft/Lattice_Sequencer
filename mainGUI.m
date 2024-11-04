@@ -508,7 +508,7 @@ curpath = fileparts(mfilename('fullpath'));
 defname = fullfile(curpath,dirName);   
 
 bRun.Callback           = @(src,evt) data.JobHandler.start('queue');
-bRunDefault.Callback    = @(src,evt) data.JobHandler.start('default',0);
+bRunDefault.Callback    = @(src,evt) data.JobHandler.start('default',1);
 bClearQueue.Callback    = @(src,evt) data.JobHandler.clearQueue();
 bAddJob.Callback        = @(src,evt) data.JobHandler.addJobGUI(defname);
 bViewJob.Callback       = @(src,evt) data.JobHandler.viewJobs();

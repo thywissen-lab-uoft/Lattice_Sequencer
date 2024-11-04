@@ -43,7 +43,7 @@ web(log_file);
 disp('Opening Lattice Sequencer...');
 
 % Figure color and size settings
-cc='w';w=360;h=600;
+cc='w';w=370;h=600;
 
 % Initialize the figure graphics objects
 hF=figure('toolbar','none','Name',figName,'color',cc,'NumberTitle','off',...
@@ -117,13 +117,13 @@ hpStatus.Position(1:2)=[0 0];
 
 % Tab Group : Job object detail
 hpJobDetail=uitabgroup(hpMain,'units','pixels');
-hpJobDetail.Position(3:4)=[347 260];
+hpJobDetail.Position(3:4)=[347 240];
 hpJobDetail.Position(1:2)=[0 hpStatus.Position(2)+hpStatus.Position(4)];
 
 % Panel : Job Controller
 hpRun = uipanel('Parent',hpMain,'units','pixels',...
     'backgroundcolor',cc,'bordertype','line','BorderColor','k','borderwidth',1);
-hpRun.Position(3:4)=[hpRun.Parent.Position(3) 160];
+hpRun.Position(3:4)=[hpRun.Parent.Position(3) 190];
 hpRun.Position(1:2)=[0 hpJobDetail.Position(2)+hpJobDetail.Position(4)];
 
 % Panel : Job Queue
@@ -255,7 +255,7 @@ tCycle.Position(1) = tCycle.Parent.Position(3)-tCycle.Position(3)-10;
 tCycle.Position(2) = tStatus.Position(2);
 
 %% Job Controller
-wB = 100;
+wB = 110;
 hB  = 18;
 
 % Button to run the cycle
@@ -322,6 +322,21 @@ bMoveJobDown.Position(3:4)=[wB/2 hB];
 bMoveJobDown.Position(1:2)=[bMoveJobUp.Position(1)+bMoveJobUp.Position(3) bMoveJobUp.Position(2)];
 bMoveJobDown.Tooltip='Move Job Down';
 
+% Button to reset JobQueue
+bResetQueueSelect=uicontrol(hpRun,'style','pushbutton','String',['Reset ' char(10003) ' in JobQueue'],...
+    'backgroundcolor',[255,215,0]/255,'FontSize',7,'units','pixels',...
+    'fontweight','bold');
+bResetQueueSelect.Position(3:4)=[wB hB];
+bResetQueueSelect.Position(1:2)=bMoveJobUp.Position(1:2)+[0 bMoveJobUp.Position(4)];
+bResetQueueSelect.Tooltip='Reset selected jobs';
+
+% Button to reset JobQueue
+bResetQueue=uicontrol(hpRun,'style','pushbutton','String',['Reset JobQueue'],...
+    'backgroundcolor',[152 251 152]/255,'FontSize',7,'units','pixels',...
+    'fontweight','bold');
+bResetQueue.Position(3:4)=[wB hB];
+bResetQueue.Position(1:2)=bResetQueueSelect.Position(1:2)+[0 bResetQueueSelect.Position(4)];
+bResetQueue.Tooltip='Reset job queue';
 
 % Button to plot seqdata
 cdata=imresize(imread(['GUI/images' filesep 'plot.jpg']),[24 24]);
@@ -337,7 +352,7 @@ bPlot.Position(1:2)=[bRunDefault.Position(1)+bRunDefault.Position(3)+4 bRunDefau
 % Button to open log
 cdata=imresize(imread(['GUI/images' filesep 'log.jpg']),[24 24]);
 bLog=uicontrol(hpRun,'style','pushbutton','CData',cdata,...
-    'backgroundcolor',cc,'Callback',@(src,evt) web(log_file),'tooltip','plot');
+    'backgroundcolor',cc,'Callback',@(src,evt) web(log_file),'tooltip','open log');
 bLog.Position(3:4)=[25 25];
 bLog.Position(1:2)=bPlot.Position(1:2)+[0 bPlot.Position(4)];
 
@@ -422,16 +437,16 @@ tbl_job_options.Data={...
     false, 'STOP on JobComplete ';
     false, 'START Queue on DefaultJob CycleComplete';
     false, 'START DefaultJob on QueueComplete ';
-    false, 'REPEAT QUEUE on QueueComplete'};
+    false, 'RESET QUEUE on QueueComplete'};
 tbl_job_options.Position=[bRunDefault.Position(1)+bRunDefault.Position(3)+35 bRunDefault.Position(2) ...
     tbl_job_options.Extent(3) tbl_job_options.Extent(4)];
 
-tbl_job_cycle=uitable(hpRun,'RowName',{},'ColumnName',{},...
-    'ColumnEditable',[true false],'Data',{1, 'CycleNumber'},'units','pixels',...
-    'ColumnWidth',{20, 180},'FontSize',7,...
-    'columnformat',{'numeric','char'});
-tbl_job_cycle.Position(3:4)=tbl_job_cycle.Extent(3:4);
-tbl_job_cycle.Position(1:2)=tbl_job_options.Position(1:2)+[0 tbl_job_options.Position(4)];
+% tbl_job_cycle=uitable(hpRun,'RowName',{},'ColumnName',{},...
+%     'ColumnEditable',[true false],'Data',{1, 'CycleNumber'},'units','pixels',...
+%     'ColumnWidth',{20, 180},'FontSize',7,...
+%     'columnformat',{'numeric','char'});
+% tbl_job_cycle.Position(3:4)=tbl_job_cycle.Extent(3:4);
+% tbl_job_cycle.Position(1:2)=tbl_job_options.Position(1:2)+[0 tbl_job_options.Position(4)];
 
 
 % Reset Button callback (not tested well)
@@ -473,7 +488,7 @@ handles.CycleStr= tCycle;
 data.SequencerWatcher = sequencer_watcher(handles);
 
 
-data.TableJobCycle = tbl_job_cycle;
+% data.TableJobCycle = tbl_job_cycle;
 data.TableJobOptions = tbl_job_options;
 
 data.StringJob = tCurrentJob;
@@ -509,6 +524,9 @@ bMoveJobUp.Callback     = @(src,evt) data.JobHandler.moveQueueSelect(1);
 % New Way (Keep this if you show that the sequencer works in the same way)
 bCompilePartial.Callback = @(src,evt) data.JobHandler.compile(0);
 bCompileFull.Callback = @(src,evt) data.JobHandler.compile(1);
+
+bResetQueue.Callback = @(src,evt) data.JobHandler.resetQueue();
+bResetQueueSelect.Callback = @(src,evt) data.JobHandler.resetQueueSelect();
 
 %% Assign Handles
 % Add gui figure, sequecner watcher, and job handler to base workspace so

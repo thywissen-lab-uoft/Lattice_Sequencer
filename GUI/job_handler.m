@@ -20,20 +20,26 @@ properties
     SequencerJobs       % array of sequencer jobs to run
     ListenerCycle       % listener object for when Cycle finishes
     ListenerAdwin       % listener object for when Adwin finishes
+    ListenerWaitMode
+    ListenerWaitTime
+    
     JobTable             % text table to update job progress
     SequencerWatcher    % sequencer_watcher which watches the adwin
     % doIterate           % boolean to continue running jobs
     DefaultJob          % The default job to run
     JobTabs         
     Cycle
-    TableJobCycle
+    % TableJobCycle
     TableJobOptions
     doHoldCycle
     doStopOnCycleComplete
     doStopOnJobComplete
     doStartQueueOnDefaultJobCycleComplete
     doStartDefaultJobOnQueueComplete
+    doRepeatQueueOnQueueComplete
+
     StringJob
+    CycleStr
     CompilerStatus
     DebugMode
 
@@ -58,10 +64,10 @@ function obj = job_handler(gui_handle)
     obj.DefaultJob = J_default;
     obj.CurrentJob = obj.DefaultJob;
 
-    if isfield(d,'TableJobCycle')
-        obj.TableJobCycle=d.TableJobCycle;
-        obj.TableJobCycle.CellEditCallback=@obj.JobCycleCB;
-    end
+    % if isfield(d,'TableJobCycle')
+    %     obj.TableJobCycle=d.TableJobCycle;
+    %     obj.TableJobCycle.CellEditCallback=@obj.JobCycleCB;
+    % end
     if isfield(d,'TableJobOptions')
         obj.TableJobOptions=d.TableJobOptions;
         obj.TableJobOptions.CellEditCallback=@obj.JobOptionsCB;
@@ -70,32 +76,28 @@ function obj = job_handler(gui_handle)
     if isfield(d,'StringJob')
         obj.StringJob=d.StringJob;
     end
+
+    obj.CycleStr = d.CycleStr;
     obj.Cycle                                   = 1;
     obj.doHoldCycle                             = 0;
     obj.doStopOnCycleComplete                   = 0;
     obj.doStopOnJobComplete                     = 0;
     obj.doStartQueueOnDefaultJobCycleComplete   = 0;
     obj.doStartDefaultJobOnQueueComplete        = 0;
+    obj.doRepeatQueueOnQueueComplete            = 0;
     obj.CompilerStatus                          = 0; 
     obj.DebugMode = d.DebugMode;
 end
 
 function JobOptionsCB(obj,src,evt)
-    obj.doHoldCycle = src.Data{1,1};
-    obj.doStopOnCycleComplete = src.Data{2,1};
-    obj.doStopOnJobComplete = src.Data{3,1};
+    obj.doHoldCycle                         = src.Data{1,1};
+    obj.doStopOnCycleComplete               = src.Data{2,1};
+    obj.doStopOnJobComplete                 = src.Data{3,1};
     obj.doStartQueueOnDefaultJobCycleComplete = src.Data{4,1};
-    obj.doStartDefaultJobOnQueueComplete = src.Data{5,1};
+    obj.doStartDefaultJobOnQueueComplete    = src.Data{5,1};
+    obj.doRepeatQueueOnQueueComplete        = src.Data{6,1};
 end
 
-function JobCycleCB(obj,src,evt)   
-    n = evt.NewData;
-    if ~isnan(n) && isnumeric(n) && floor(n)==n && ~isinf(n) && n>0
-        obj.Cycle = round(n);
-    else
-        src.Data = evt.PreviousData;
-    end
-end
 
 function start(obj,job_type,Cycle)     
     if ~obj.isIdle;return;end 
@@ -182,13 +184,14 @@ function AdwinCompleteFcn(obj)
         obj.updateJobText;
         return;
     end
-    
-    obj.CurrentJob.Status = 'AdwinComplete';
+
 
     % Increment Cycles Completed
     if ~obj.doHoldCycle
         obj.CurrentJob.CyclesCompleted = obj.CurrentJob.CyclesCompleted+1;   
     end    
+    obj.CurrentJob.updateTableInterface();
+    obj.CurrentJob.Status = 'AdwinComplete';
     obj.updateJobText;
     obj.CurrentJob.Status = 'CycleCompleteFcn()';
     obj.updateJobText;
@@ -245,6 +248,11 @@ end
 % Evaluates when the Total Cycle (Adwin+Wait) is complete
 function CycleCompleteFcn(obj)    
     delete(obj.ListenerCycle);          % delete Listener   
+    delete(obj.ListenerWaitMode);       % delete listerner
+    delete(obj.ListenerWaitTime);       % delete listerner
+
+  
+
     jobExist = isvalid(obj.CurrentJob);
     % If job is deleted, count is as completed
     if ~jobExist
@@ -286,6 +294,24 @@ function CycleCompleteFcn(obj)
     end
 end
 
+function resetQueue(obj)
+    for kk=1:length(obj.SequencerJobs)        
+        obj.SequencerJobs{kk}.CyclesCompleted=0;
+        obj.SequencerJobs{kk}.Status='pending';
+    end    
+    obj.updateJobText();
+end
+
+function resetQueueSelect(obj)
+    selInds = [obj.JobTable.Data{:,1}];
+    for kk=1:length(obj.SequencerJobs)
+        if selInds(kk)
+            obj.SequencerJobs{kk}.CyclesCompleted=0;
+            obj.SequencerJobs{kk}.Status='pending';
+        end
+    end
+    obj.updateJobText();
+end
 
 
 function addJobGUI(obj,startdir)
@@ -479,6 +505,8 @@ function runCurrentJob(obj)
     job.Status = 'running';
     obj.StringJob.String=['(' num2str(obj.getCurrentJobIndex) ') ' obj.CurrentJob.JobName];
     obj.updateJobText; 
+    obj.CurrentJob.updateTableInterface();
+
     global seqdata
     seqdata.scancycle = job.CyclesCompleted+1;
     seqdata.sequence_functions = job.SequenceFunctions;
@@ -486,6 +514,7 @@ function runCurrentJob(obj)
     
     ret = obj.compile();
     if ret
+        obj.CycleStr.String = num2str(seqdata.scancycle);
         [ret,tExecute]=obj.run();
     end
     if ret
@@ -494,8 +523,21 @@ function runCurrentJob(obj)
             @(src,evt) obj.CycleCompleteFcn);
         obj.ListenerAdwin=listener(obj.SequencerWatcher,'AdwinComplete',...
             @(src,evt) obj.AdwinCompleteFcn);
+
+        obj.ListenerWaitMode = addlistener(obj.CurrentJob,'WaitMode',...
+            'PostSet',@(src,evt) obj.waitTimeUpdate);
+        obj.ListenerWaitTime = addlistener(obj.CurrentJob,'WaitTime',...
+            'PostSet',@(src,evt) obj.waitTimeUpdate);
+      
     end
 end
+
+function waitTimeUpdate(obj)
+    obj.SequencerWatcher.WaitTime = obj.CurrentJob.calcRealWaitTime();
+    obj.SequencerWatcher.WaitEnable = obj.CurrentJob.WaitMode;
+
+end
+
 function [ret,tExecute] = run(obj)
     global adwinprocessnum
     ret = true;             % compile good
@@ -535,7 +577,9 @@ function [ret,tExecute] = run(obj)
         return;
     end
     obj.updateSeqStr('adwin is running','r'); 
-    obj.SequencerWatcher.AdwinTime = obj.CurrentJob.AdwinTime;
+    obj.SequencerWatcher.AdwinTime  = obj.CurrentJob.AdwinTime;
+    obj.SequencerWatcher.WaitTime   = obj.CurrentJob.calcRealWaitTime();
+    obj.SequencerWatcher.WaitEnable = obj.CurrentJob.WaitMode; 
     start(obj.SequencerWatcher);
 end
 

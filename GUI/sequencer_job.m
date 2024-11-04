@@ -16,7 +16,7 @@ classdef sequencer_job < matlab.mixin.Copyable
 % be excuted from an instance of the job_handler class.
 %
 % See also JOB_HANDLER, MAINGUI
-properties        
+properties (SetObservable)
     SequenceFunctions       % cell array : sequence functions to evaluate
     CyclesCompleted         % double     : number of cycles completed
     CyclesRequested         % double     : number of cycles requested
@@ -34,6 +34,8 @@ properties
     Panel                   % Panel interface
     TableInterface
     AdwinTime               % Time to evaluvlate sequence
+
+    
 end    
 events
 
@@ -66,7 +68,6 @@ function obj = sequencer_job(npt)
     if isfield(npt,'JobCompleteFcn');obj.JobCompleteFcn = npt.JobCompleteFcn;end
     if isfield(npt,'TableInterface')
         obj.TableInterface = npt.TableInterface;
-        obj.TableInterface.CellEditCallback = obj.EditTableInterface;
     end   
 end    
 
@@ -93,10 +94,10 @@ function MakeTableInterface(this,parent,boop)
         'RowName',{},'columnname',{},...
         'ColumnEditable',[false true],...
         'fontname','arialnarrow',...
-        'ButtonDownFcn',@this.TableButtonDownFcn);
+        'ButtonDownFcn',@this.TableButtonDownFcn,...
+        'CellEditCallback',@this.TableCellEditCB);
     this.updateTableInterface();
     this.TableInterface.Position = [1 1 this.TableInterface.Extent(3)+1 this.TableInterface.Extent(4)+1];
-
 
     if boop
         bClose = uicontrol(this.Panel,'style','pushbutton',...
@@ -113,12 +114,20 @@ function MakeTableInterface(this,parent,boop)
         bBrowse.Position(3:4)=[18 18];
         bBrowse.Position(1:2)=[this.TableInterface.Position(1) ...
             this.TableInterface.Position(2)+this.TableInterface.Position(4)+2];
-     % Go to Default Sequence
+     
+        % refresh
+        bJobRefresh=uicontrol(this.Panel,'style','pushbutton','String','refresh job_default()',...
+            'backgroundcolor','w','FontSize',7,'units','pixels',...
+            'Callback',@this.refreshDefaultJob);
+        bJobRefresh.Position(3:4)=[100 18];
+        bJobRefresh.Position(1:2)=bBrowse.Position(1:2) + [bBrowse.Position(3)+2 0];
+
+        % Go to Default Sequence
         bSeqDefault=uicontrol(this.Panel,'style','pushbutton','String','default sequence',...
             'backgroundcolor','w','FontSize',7,'units','pixels',...
             'Callback',@this.chSequence,'UserData',0);
         bSeqDefault.Position(3:4)=[80 18];
-        bSeqDefault.Position(1:2)=bBrowse.Position(1:2) + [bBrowse.Position(3)+2 0];
+        bSeqDefault.Position(1:2)=bJobRefresh.Position(1:2) + [bJobRefresh.Position(3)+2 0];
     
         % Go to Test Sequence
         bSeqTest=uicontrol(this.Panel,'style','pushbutton','String','test sequence',...
@@ -126,8 +135,76 @@ function MakeTableInterface(this,parent,boop)
             'Callback',@this.chSequence,'UserData',1);
         bSeqTest.Position(3:4)=[80 18];
         bSeqTest.Position(1:2)=bSeqDefault.Position(1:2) + [bSeqDefault.Position(3)+2 0];
+    end   
+end
+
+function refreshDefaultJob(this,src,evt)
+    % delete(this);
+    J = job_default();
+    names = fieldnames(this);
+    for kk=1:length(names)
+        if ~isequal(names{kk},'Tab') ...
+                && ~isequal(names{kk},'Panel') ...
+                && ~isequal(names{kk},'TableInterface')
+
+            this.(names{kk})=J.(names{kk});
+        end        
     end
-   
+    if ~isempty(this.Tab) && isvalid(this.Tab)
+        this.updateTableInterface();
+    end
+end
+
+function TableCellEditCB(this,src,evt)
+    Name = src.Data{evt.Indices(1),1};
+    s = evt.NewData;
+    switch Name
+        case 'JobName'
+            this.JobName = s;
+        case 'SequenceFunctions'
+            src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;
+        case 'CyclesCompleted'
+            if isnumeric(s) && isequal(floor(s),s) && ...
+                ~isnan(s) && ~isinf(s) && s>=0 
+                s = max([this.CyclesRequested s]);
+                this.CyclesCompleted = s;
+            else
+                src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;
+            end
+        case 'CyclesRequested'
+            if isnumeric(s) && isequal(floor(s),s) && ...
+                ~isnan(s) && ~isinf(s) && s>=0                
+                this.CyclesRequested = s;
+            else
+                src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;
+            end
+        case 'WaitMode'
+            if isequal(s,0) || isequal(s,1) || isequal(s,2)
+                this.WaitMode = s;
+            end
+        case 'WaitTime'
+            if isnumeric(s) &&  ...
+                ~isnan(s) && ~isinf(s) && s>=0                
+                this.WaitTime = s;
+            else
+                src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;
+            end
+        case 'SaveDir'
+            if verify_filename(s)
+                this.SaveDir = s;
+            else
+                src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;
+            end
+        case 'CycleStartFcn'
+                src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;
+        case 'CycleCompleteFcn'
+                src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;
+        case 'JobCompleteFcn'
+                src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;
+
+        otherwise
+    end
+
 end
 
 function chSequence(this,src,evt)
@@ -168,7 +245,25 @@ function browseCB(this,src,evt)
     this.updateTableInterface();
 end
 
+function tWaitReal=calcRealWaitTime(this)
+    if isnumeric(this.AdwinTime) && ~isnan(this.AdwinTime) && ~isinf(this.AdwinTime)
+        switch this.WaitMode
+            case 0
+                tWaitReal=0;
+            case 1
+                tWaitReal = this.WaitTime;
+            case 2
+                tWaitReal = this.WaitTime-this.AdwinTime;
+        end
+    else
+        tWaitReal = NaN;
+    end
+end
+
 function updateTableInterface(this)
+    if isempty(this.Tab) || ~isvalid(this.Tab) || ~isvalid(this.TableInterface)
+        return;
+    end
     this.TableInterface.Data={
         'JobName', this.JobName;
         'SequenceFunctions',this.getSequenceFunctionStr;...
@@ -195,9 +290,6 @@ function mystr=getSequenceFunctionStr(this)
     mystr(end)=[];
 end
 
-function EditTableInterface(this,src,evt)
-    keyboard
-end
 
 end
 end

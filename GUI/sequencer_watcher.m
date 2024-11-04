@@ -58,6 +58,12 @@ function this = sequencer_watcher(handles)
     % this.SequenceText       = handles.SequenceText;
 end
 
+function updateWait(this,WaitTime,WaitEnable)
+    this.WaitEnable = WaitEnable;
+    this.WaitTime = WaitTime;
+    this.WaitStr2.String=[num2str(this.WaitTime,'%.2f') ' s'];  
+end
+
 function [AdwinTimerRunning,WaitTimerRunning] = getSequencerStatus(obj)
     AdwinTimerRunning = obj.AdwinGraphicTimer.Running;
     WaitTimerRunning = obj.WaitGraphicTimer.Running;

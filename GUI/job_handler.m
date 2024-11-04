@@ -36,7 +36,7 @@ properties
     doStopOnJobComplete
     doStartQueueOnDefaultJobCycleComplete
     doStartDefaultJobOnQueueComplete
-    doRepeatQueueOnQueueComplete
+    doResetQueueOnQueueComplete
 
     StringJob
     CycleStr
@@ -84,7 +84,7 @@ function obj = job_handler(gui_handle)
     obj.doStopOnJobComplete                     = 0;
     obj.doStartQueueOnDefaultJobCycleComplete   = 0;
     obj.doStartDefaultJobOnQueueComplete        = 0;
-    obj.doRepeatQueueOnQueueComplete            = 0;
+    obj.doResetQueueOnQueueComplete            = 0;
     obj.CompilerStatus                          = 0; 
     obj.DebugMode = d.DebugMode;
 end
@@ -95,7 +95,7 @@ function JobOptionsCB(obj,src,evt)
     obj.doStopOnJobComplete                 = src.Data{3,1};
     obj.doStartQueueOnDefaultJobCycleComplete = src.Data{4,1};
     obj.doStartDefaultJobOnQueueComplete    = src.Data{5,1};
-    obj.doRepeatQueueOnQueueComplete        = src.Data{6,1};
+    obj.doResetQueueOnQueueComplete        = src.Data{6,1};
 end
 
 
@@ -250,9 +250,7 @@ function CycleCompleteFcn(obj)
     delete(obj.ListenerCycle);          % delete Listener   
     delete(obj.ListenerWaitMode);       % delete listerner
     delete(obj.ListenerWaitTime);       % delete listerner
-
   
-
     jobExist = isvalid(obj.CurrentJob);
     % If job is deleted, count is as completed
     if ~jobExist
@@ -279,6 +277,13 @@ function CycleCompleteFcn(obj)
         obj.start(obj.CurrentJob)  
     else
         if isequal(obj.DefaultJob,obj.findNextJob())
+
+            if obj.doResetQueueOnQueueComplete
+                obj.resetQueue();
+                obj.start('queue');
+                return;
+            end
+
             % If the next job is complete, then all jobs are done
             if obj.doStartDefaultJobOnQueueComplete
                 % run default job on complete
@@ -286,6 +291,7 @@ function CycleCompleteFcn(obj)
                 obj.start('default');
                 return;
             end
+          
         else
             % go to next job
             obj.start('queue');
@@ -533,8 +539,7 @@ function runCurrentJob(obj)
 end
 
 function waitTimeUpdate(obj)
-    obj.SequencerWatcher.WaitTime = obj.CurrentJob.calcRealWaitTime();
-    obj.SequencerWatcher.WaitEnable = obj.CurrentJob.WaitMode;
+    obj.SequencerWatcher.updateWait(obj.CurrentJob.calcRealWaitTime(),obj.CurrentJob.WaitMode);
 
 end
 

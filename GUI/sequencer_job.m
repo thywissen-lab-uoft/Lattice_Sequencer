@@ -20,8 +20,8 @@ properties (SetObservable)
     SequenceFunctions       % cell array : sequence functions to evaluate
     % CyclesCompleted         % double     : number of cycles completed
     % CyclesRequested         % double     : number of cycles requested
-    CycleCurrent            % double
-    CycleFinal              % double
+    CycleNow            % double
+    CycleEnd              % double
     WaitMode                % double     : 0:no wait, 1:intercycle, 2: total
     WaitTime                % double     : wait time in seconds
     SaveDir                 % char       : directory string save images (see imaging computer)
@@ -49,13 +49,13 @@ function obj = sequencer_job(npt)
     obj.CameraFile = 'Y:\_communication\camera_control.mat';
     obj.JobName             = npt.JobName;            
     obj.SequenceFunctions   = npt.SequenceFunctions;
-    obj.Status              = 'pending';
+    % obj.Status              = 'pending';
     % 
     % obj.CyclesCompleted     = 0;    
     % obj.CyclesRequested     = npt.CyclesRequested;
 
-    obj.CycleCurrent        = 1;
-    obj.CycleFinal          = inf; 
+    obj.CycleNow        = 1;
+    obj.CycleEnd          = inf; 
 
 
 
@@ -72,7 +72,7 @@ function obj = sequencer_job(npt)
     if isfield(npt,'WaitTime');         obj.WaitTime        = npt.WaitTime;end  
     if isfield(npt,'SaveDir');          obj.SaveDir         = npt.SaveDir;end
     % if isfield(npt,'CyclesRequested');  obj.CyclesRequested = npt.CyclesRequested;end
-    if isfield(npt,'CycleFinal');  obj.CycleFinal = npt.CycleFinal;end
+    if isfield(npt,'CycleEnd');  obj.CycleEnd = npt.CycleEnd;end
 
     
     if isfield(npt,'CycleStartFcn');obj.CycleStartFcn = npt.CycleStartFcn;end
@@ -191,18 +191,18 @@ function TableCellEditCB(this,src,evt)
         %     else
         %         src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;
         %     end
-        case 'CycleCurrent'
+        case 'CycleNow'
             if isnumeric(s) && isequal(floor(s),s) && ...
                 ~isnan(s) && ~isinf(s) && s>0 
-                s = max([this.CycleFinal s]);
-                this.CycleCurrent = s;
+                s = max([this.CycleEnd s]);
+                this.CycleNow = s;
             else
                 src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;
             end
-        case 'CycleFinal'
+        case 'CycleEnd'
             if isnumeric(s) && isequal(floor(s),s) && ...
                 ~isnan(s) &&  s>0                
-                this.CycleFinal = s;
+                this.CycleEnd = s;
             else
                 src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;
             end
@@ -298,8 +298,8 @@ function updateTableInterface(this)
         'SequenceFunctions',this.getSequenceFunctionStr;...
         % 'CyclesCompleted',this.CyclesCompleted;    
         % 'CyclesRequested',this.CyclesRequested;
-        'CycleCurrent',this.CycleCurrent;    
-        'CycleFinal',this.CycleFinal;
+        'CycleNow',this.CycleNow;    
+        'CycleEnd',this.CycleEnd;
         'WaitMode',this.WaitMode;
         'WaitTime', this.WaitTime;
         'SaveDir', this.SaveDir;
@@ -310,7 +310,7 @@ function updateTableInterface(this)
 end
 
 function ret=isComplete(this)
-    ret=this.CycleCurrent>=this.CycleFinal;
+    ret=this.CycleNow>=this.CycleEnd;
 end
 
 function mystr=getSequenceFunctionStr(this)

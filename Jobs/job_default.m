@@ -27,7 +27,7 @@ out.SequenceFunctions       = {@test_sequence};
 out.WaitMode                = 1;
 out.WaitTime                = 5;
 
-out.CycleFinal              = inf;
+out.CycleEnd              = inf;
 out.JobName                 = 'JobDefault';
 out.CycleStartFcn           = @default_cycle_start_fcn;
 out.CycleCompleteFcn        = @default_cycle_complete_fcn;

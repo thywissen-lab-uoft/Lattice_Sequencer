@@ -134,10 +134,10 @@ hpJobQueue.Position(3:4)=[hpJobQueue.Parent.Position(3) 90];
 
 % Job Queue Table Table
 tableJobs = uitable('parent',hpJobQueue,'fontsize',7,...
-    'ColumnName',{'', 'Status','#','Job Name'},...
-    'ColumnEditable',[true false false false],...
-    'ColumnWidth',{20 50 20 170},...
-    'ColumnFormat',{'logical','char','char','char'},...
+    'ColumnName',{'', '?','#','#f','Job Name'},...
+    'ColumnEditable',[true false true true true],...
+    'ColumnWidth',{20 35 20 20 170},...
+    'ColumnFormat',{'logical','char','numeric','numeric','char'},...
     'Position', [1 1 hpMain.Position(3) hpJobQueue.Position(4)-12],...
     'FontName','Helvetica-Narrow');
 
@@ -150,13 +150,12 @@ tableJobs = uitable('parent',hpJobQueue,'fontsize',7,...
             hpJobQueue.Position(3)  = hpJobQueue.Parent.Position(3);
             hpJobQueue.Position(4)  = max([hpJobQueue.Parent.Position(4)-hpJobQueue.Position(2)-5 50]);            
             tableJobs.Position(3)    = tableJobs.Parent.Position(3)-tableJobs.Position(1)-2;
-            tableJobs.ColumnWidth{4} = max([50 tableJobs.Position(3)-sum([tableJobs.ColumnWidth{1:end-1}])-60]);
+            tableJobs.ColumnWidth{end} = max([50 tableJobs.Position(3)-sum([tableJobs.ColumnWidth{1:end-1}])-60]);
             tableJobs.Position(4)   = max([tableJobs.Parent.Position(4)-tableJobs.Position(2)-20 50]);
             axWaitBar.Position(3)   = axWaitBar.Parent.Position(3)-2*axWaitBar.Position(1);
             axAdWinBar.Position(3)  = axWaitBar.Position(3);
             tCycle.Position(1)      = tCycle.Parent.Position(3)-tCycle.Position(3)-10;
             tScanVar.Position(3)=axAdWinBar.Position(3);
-
             tStatus.Position(3)=[tStatus.Parent.Position(3)-tStatus.Parent.Position(1)-5];
 
             for kk=1:length(hpJobDetail.Children)
@@ -507,8 +506,8 @@ dirName=['Jobs'];
 curpath = fileparts(mfilename('fullpath'));
 defname = fullfile(curpath,dirName);   
 
-bRun.Callback           = @(src,evt) data.JobHandler.start('queue');
-bRunDefault.Callback    = @(src,evt) data.JobHandler.start('default',1);
+bRun.Callback           = @(src,evt) data.JobHandler.startCB('queue');
+bRunDefault.Callback    = @(src,evt) data.JobHandler.startCB('default',1);
 bClearQueue.Callback    = @(src,evt) data.JobHandler.clearQueue();
 bAddJob.Callback        = @(src,evt) data.JobHandler.addJobGUI(defname);
 bViewJob.Callback       = @(src,evt) data.JobHandler.viewJobs();

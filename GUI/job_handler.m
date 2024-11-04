@@ -18,224 +18,458 @@ classdef job_handler < handle
 properties        
     CurrentJob          % current active sequencer job
     SequencerJobs       % array of sequencer jobs to run
-    ListenerCycle       % listener object for adwin cycle complete
-    TextBox             % text table to update job progress
+    ListenerCycle       % listener object for when Cycle finishes
+    ListenerAdwin       % listener object for when Adwin finishes
+    ListenerWaitMode
+    ListenerWaitTime
+    
+    JobTable             % text table to update job progress
     SequencerWatcher    % sequencer_watcher which watches the adwin
-    doIterate           % boolean to continue running jobs
+    % doIterate           % boolean to continue running jobs
+    DefaultJob          % The default job to run
+    JobTabs         
+    Cycle
+    % TableJobCycle
+    TableJobOptions
+    doHoldCycle
+    doStopOnCycleComplete
+    doStopOnJobComplete
+    doStartQueueOnDefaultJobCycleComplete
+    doStartDefaultJobOnQueueComplete
+    doResetQueueOnQueueComplete
+
+    StringJob
+    CycleStr
+    CompilerStatus
+    DebugMode
+
 end    
+
 events
    
 end
 
 methods
     
+    % constructor ITS ALL KIND OF MESSY
 function obj = job_handler(gui_handle)          
-% constructor
     obj.SequencerJobs={};            
     d=guidata(gui_handle);          
-    obj.TextBox = d.JobTable;
-    obj.updateJobText;
+    obj.JobTable = d.JobTable;
+    obj.updateJobText();
     obj.SequencerWatcher = d.SequencerWatcher;
-end   
+    obj.JobTabs = d.JobTabs;
+    J_default = job_default;
+    J_default.MakeTableInterface(obj.JobTabs);
+    obj.DefaultJob = J_default;
+    obj.CurrentJob = obj.DefaultJob;
 
-function start(obj,job)      
-% START hello
-% 
-% This function
-    if ~obj.isIdle
-       return; 
+    if isfield(d,'TableJobOptions')
+        obj.TableJobOptions=d.TableJobOptions;
+        obj.TableJobOptions.CellEditCallback=@obj.JobOptionsCB;
     end
-        
-    % Find first pending job if none specified
-    if nargin == 1
-       job = obj.findNextJob;
-    end
-    
-    % Check to see if job is object or number
-    if ~isequal(class(job),'sequencer_job') && isnumeric(job)
-        job = obj.SequencerJobs{job};
-    end
-    
-    % Check if sequencer is alrady running
-    if obj.SequencerWatcher.isRunning
-       warning('sequencer already running');              
-       return;
-    end
-    
-    % Update current job
-    obj.CurrentJob = job;
-    
-    % Cycle remaining in this job
-    cycles_left = setdiff(job.ScanCyclesRequested,job.ScanCyclesCompleted);
-    
-    % No more cycles, run the job complete fcn
-    if isempty(cycles_left)
-        obj.JobCompleteFcn;
-        return;
-    end
-    
-    % Update the job
-    job.Status = 'running';
-    obj.updateJobText;
 
-    job.ScanCycle = cycles_left(1);
-    global seqdata
-    seqdata.scancycle = job.ScanCycle;
-    seqdata.sequence_functions = job.SequenceFunctions;
-    t=runSequence(job.SequenceFunctions,@job.CycleStartFcnWrapper);              
-    job.ExecutionDates(end+1) = t;
-    
-    % Get ready to wait for job to finish
-    obj.ListenerCycle=listener(obj.SequencerWatcher,'CycleComplete',...
-        @(src, evt) obj.CycleCompleteFcn);
-    obj.doIterate   = true;
+    if isfield(d,'StringJob')
+        obj.StringJob=d.StringJob;
+    end
+
+    obj.CycleStr = d.CycleStr;
+    obj.Cycle                                   = 1;
+    obj.doHoldCycle                             = 0;
+    obj.doStopOnCycleComplete                   = 0;
+    obj.doStopOnJobComplete                     = 0;
+    obj.doStartQueueOnDefaultJobCycleComplete   = 0;
+    obj.doStartDefaultJobOnQueueComplete        = 0;
+    obj.doResetQueueOnQueueComplete            = 0;
+    obj.CompilerStatus                          = 0; 
+    obj.DebugMode = d.DebugMode;
 end
 
-function JobCompleteFcn(obj)
-% Evaluates at the end of the job. This handles graphical calls and also
-% excutes any user defind functions in the sequencer_job
+function JobOptionsCB(obj,src,evt)
+    obj.doHoldCycle                             = src.Data{1,1};
+    obj.doStopOnCycleComplete                   = src.Data{2,1};
+    obj.doStopOnJobComplete                     = src.Data{3,1};
+    obj.doStartQueueOnDefaultJobCycleComplete   = src.Data{4,1};
+    obj.doResetQueueOnQueueComplete             = src.Data{5,1};
+    obj.doStartDefaultJobOnQueueComplete        = src.Data{6,1};
+end
 
-    obj.CurrentJob.Status = 'job end';
-    obj.updateJobText;
+function startCB(obj,job_type,cycle)
+    if obj.isIdle && ~obj.SequencerWatcher.isRunning
+        switch nargin
+            case 1
+                obj.start();
+            case 2
+                obj.start(job_type);
+            case 3
+                obj.start(job_type,cycle)
+        end    
+    end
+end
+function start(obj,job_type,Cycle)     
+    % if ~obj.isIdle;return;end 
+    if obj.SequencerWatcher.isRunning;return;end
+    if nargin == 1;job_type = 'default';end
+
+    % Get Job if you give it an index
+    if isnumeric(job_type)
+        job_index = job_type;
+        if length(obj.SequencerJobs)>=job_index
+            job_type = obj.SequencerJobs{job_index};
+        end
+    end
+
+    % Different behavior if the second argin is a string
+    switch class(job_type)
+        case 'sequencer_job'
+            job = job_type;            
+        case 'char'
+            switch job_type
+                case 'default'
+                    job = obj.DefaultJob;
+                case 'queue'
+                    job = obj.findNextJob;
+                    if isequal(job,obj.DefaultJob)
+                        % job.CyclesCompleted = 0;
+                        job.CycleNow = 1;
+
+                    end
+                otherwise
+                    error('Unexpected job type. Fix your code!');              
+            end
+
+        otherwise
+            error('Unexpected job_type class. Fix your code!');
+    end
+
+    if nargin==3
+        % job.CyclesCompleted = Cycle;
+        job.CycleNow = Cycle;
+    end
+    % Update current job
+    obj.CurrentJob = job; 
+    obj.runCurrentJob();    
+end
+
+
+function ind=getCurrentJobIndex(obj)
+    if isequal(obj.CurrentJob,obj.DefaultJob)
+        ind = 0;
+    else        
+        ind=find(cellfun(@(myjob) isequal(obj.CurrentJob,myjob),obj.SequencerJobs),1);
+    end
+end
+
+function CycleStartFcn(obj)
+    set(obj.SequencerWatcher.StatusStr,...
+        'String',[func2str(obj.CurrentJob.CycleStartFcn)],...
+        'ForegroundColor',[220,88,42]/255);
+    try         
+        obj.CurrentJob.CycleStartFcn();
+    catch ME
+        warning on
+        warning(getReport(ME,'extended','hyperlinks','on'));
+    end
+end
+
+function updateSeqStr(obj,str,cc)
+    if nargin == 2
+        cc=[0 0 0];
+    end
+   set(obj.SequencerWatcher.StatusStr,...
+        'String',str,'ForegroundColor',cc);
+end
+
+% Evaluates when the Adwin is complete. Independent of Wait Timer
+function AdwinCompleteFcn(obj)
+    delete(obj.ListenerAdwin);                      % Delete Listener
+    if isempty(obj.CurrentJob) || ~isvalid(obj.CurrentJob)
+        warning('CurrentJob has been deleted. Ignoring CycleCompleteFcn.')
+        return;
+    end  
+    obj.CurrentJob.updateTableInterface();
+
+    % if ~isempty(obj.CurrentJob.CycleCompleteFcn)
+    set(obj.SequencerWatcher.StatusStr,...
+        'String',[func2str(obj.CurrentJob.CycleCompleteFcn)],...
+        'ForegroundColor',[220,88,42]/255);
+    try         
+        obj.CurrentJob.CycleCompleteFcn();
+    catch ME
+        warning on
+        warning(getReport(ME,'extended','hyperlinks','on'));
+    end
+    if obj.CurrentJob.isComplete()
+        obj.JobCompleteFcn();       
+    end
+end
+
+% Evaluates when a job is complete.  Independent of Wait Timer
+function JobCompleteFcn(obj)
+
+    % If job is deleted, count is as completed
+    if ~isvalid(obj.CurrentJob)
+        warning('CurrentJob deleted. No JobCompleteFcn to evaluate.')
+        return;
+    end    
     
     % Run User job funcion
-    obj.SequencerWatcher.StatusStr.String = 'evaluating job end function';
-    obj.SequencerWatcher.StatusStr.ForegroundColor = [220,88,42]/255;
-    obj.CurrentJob.JobCompleteFcnWrapper;
-    obj.SequencerWatcher.StatusStr.String = 'idle';
-    obj.SequencerWatcher.StatusStr.ForegroundColor = [0 128 0]/255;
-    
-    % Ending Stuff
-    obj.CurrentJob.Status = 'complete';
-    obj.CurrentJob = [];
-    obj.updateJobText;
-     
-    % Insert check on buttons
-    if obj.doIterate && ~isempty(obj.findNextJob)
-        obj.start;
-    end        
+    set(obj.SequencerWatcher.StatusStr,...
+        'String',[func2str(obj.CurrentJob.JobCompleteFcn)],...
+        'ForegroundColor',[220,88,42]/255);
+    try
+        obj.CurrentJob.JobCompleteFcn();        
+    catch ME
+        warning on
+        warning(getReport(ME,'extended','hyperlinks','on'));
+    end
+    set(obj.SequencerWatcher.StatusStr,...
+        'String','idle','ForegroundColor',[0 128 0]/255);    
+end
+%% Cycle Complete Fcn
+% Evaluates when the Total Cycle (Adwin+Wait) is complete
+function CycleCompleteFcn(obj)    
+    delete(obj.ListenerCycle);          % delete Listener   
+    delete(obj.ListenerWaitMode);       % delete listerner
+    delete(obj.ListenerWaitTime);       % delete listerner
+
+    jobExist = ~isempty(obj.CurrentJob) && isvalid(obj.CurrentJob);
+    % If job is deleted, count is as completed
+    if jobExist
+        isJobDone = (obj.CurrentJob.CycleNow>=obj.CurrentJob.CycleEnd) && ~obj.doHoldCycle;
+        if ~isJobDone
+            if ~obj.doHoldCycle 
+                obj.CurrentJob.CycleNow = obj.CurrentJob.CycleNow+1;   
+            end
+        else
+            obj.CurrentJob.Status = 'done';
+            obj.updateJobText();
+        end        
+    else
+        disp('CurrentJob deleted. Treating as if is JobComplete.')
+        isJobDone = true;
+%         obj.CurrentJob=obj.findNextJob();
+    end         
+
+    % Always stop on CycleComplete
+    if obj.doStopOnCycleComplete
+        if jobExist && ~isJobDone
+            obj.CurrentJob.Status = 'queue';
+        end
+        obj.CurrentJob=[];
+        obj.updateJobText();
+        return;
+    end
+
+    if isJobDone && obj.doStopOnJobComplete
+        if jobExist && isJobDone
+            obj.CurrentJob.Status = 'done';
+        end
+        obj.CurrentJob=[];
+        obj.updateJobText();
+        return;
+    end
+
+    % If DefaultJob and want to start queue, move onto next job
+    if (isequal(obj.CurrentJob,obj.DefaultJob) && ...
+            (obj.doStartQueueOnDefaultJobCycleComplete))
+        obj.CurrentJob=[];
+        obj.updateJobText();
+        obj.start('queue');
+        return;        
+    end    
+
+    % Contine the job
+    if ~isJobDone
+        obj.updateJobText();
+        obj.start(obj.CurrentJob);
+        return;
+    end
+
+    if (isJobDone && isequal(obj.DefaultJob,obj.findNextJob()) && ...
+        obj.doResetQueueOnQueueComplete && ~isequal(obj.CurrentJob,obj.DefaultJob))
+        obj.CurrentJob=[];
+        obj.resetQueue();  
+        obj.start('queue');
+        return;
+
+    end
+
+    if (isJobDone && isequal(obj.DefaultJob,obj.findNextJob()) ...
+        && obj.doStartDefaultJobOnQueueComplete && ~isequal(obj.DefaultJob,obj.CurrentJob))
+        obj.CurrentJob=[];
+        obj.updateJobText();
+        obj.DefaultJob.CycleNow = 1;
+        obj.start('default');
+        return;
+    end
+
+    if isJobDone && ~isequal(obj.DefaultJob,obj.findNextJob()) 
+        obj.CurrentJob=[];
+        obj.start('queue');
+    end
+
+end
+%%
+function resetQueue(obj)
+    for kk=1:length(obj.SequencerJobs)        
+        if ~isequal(obj.CurrentJob,obj.SequencerJobs{kk})
+            obj.SequencerJobs{kk}.CycleNow=1;
+            obj.SequencerJobs{kk}.Status='queue';
+        end
+    end    
+    obj.updateJobText();
 end
 
-function CycleCompleteFcn(obj)    
-% Evaluates at the end of the cycle. This handles graphical calls and also
-% excutes any user defind functions in the sequencer_job
+function resetQueueSelect(obj)
+    selInds = [obj.JobTable.Data{:,1}];
+    for kk=1:length(obj.SequencerJobs)
+        if selInds(kk)
+            if ~isequal(obj.CurrentJob,obj.SequencerJobs{kk})
+                obj.SequencerJobs{kk}.CycleNow=1;
+                obj.SequencerJobs{kk}.Status='queue';
+            end
+        end
+    end
+    obj.updateJobText();
+end
 
-    delete(obj.ListenerCycle);      % delete listerner   
-    job = obj.CurrentJob;           % get the current job
 
-    % Increment cycles completed
-    job.ScanCyclesCompleted(end+1) = job.ScanCycle;           
-        
-    % Execute User function here        
-    obj.SequencerWatcher.StatusStr.String = 'evaluating job end function';
-    obj.SequencerWatcher.StatusStr.ForegroundColor = [220,88,42]/255;
-    obj.CurrentJob.Status = 'cycle end';
-    obj.updateJobText;
-    obj.CurrentJob.CycleCompleteFcnWrapper;       
-    obj.CurrentJob.Status = 'pending';
-    obj.updateJobText;
-    obj.SequencerWatcher.StatusStr.String = 'idle';
-    obj.SequencerWatcher.StatusStr.ForegroundColor = [0 128 0]/255;
-    
-    % Insert check on buttons
-    if ~obj.doIterate
-        obj.CurrentJob.Status='pending';
-        obj.CurrentJob = [];
-        obj.updateJobText;
+function addJobGUI(obj,startdir)
+    if nargin==1
+        startdir=pwd;
+    end
+    fstr='Add job files';
+    [file,~] = uigetfile('*.m',fstr,startdir);          
+    if ~file
         return;
-    end        
-    
-    % Check if any more runs to do
-    cycles_left = setdiff(job.ScanCyclesRequested,...
-        job.ScanCyclesCompleted);  
-    if isempty(cycles_left) 
-        obj.JobCompleteFcn;     % Finish job
-    else
-        obj.start(job);        % Continue job        
+    end            
+    try            
+        func=str2func(strrep(file,'.m',''));
+        J = func();            
+        obj.add(J);
+    catch ME           
+        warning(getReport(ME,'extended','hyperlinks','on'))
     end
 end
 
-% Add job to list
+% Add job to queue
 function add(obj,job)
     for kk=1:length(job)
         obj.SequencerJobs{end+1} = job(kk);
-        obj.updateJobText;
+        job(kk).Status ='queue';
+        job(kk).UpdateHandlerFcn=@obj.updateJobText;
+    end
+    obj.updateJobText();
+end
+
+function viewJobs(obj)
+    selJobs=obj.SequencerJobs([obj.JobTable.Data{:,1}]);
+    for kk=1:length(selJobs)
+        selJobs{kk}.MakeTableInterface(obj.JobTabs,1);
     end
 end
 
-% Stop Current Job
-function stop(obj)
-    obj.doIterate   = false;
-    if ~isempty(obj.CurrentJob)
-       obj.CurrentJob.Status = 'stopping';
-    end
-    obj.updateJobText;
-end   
-
 % Clear all jobs
-function clear(obj)
-    if ~isIdle(obj)
-       warning('Cannot clear jobs until idle. Stopping jobs instead.');
-       obj.stop;
-       return;
-    end
-    
+% What should happen to current job?
+function clearQueue(obj) 
     for kk=1:length(obj.SequencerJobs)
        delete(obj.SequencerJobs{kk}); 
     end
     obj.SequencerJobs={};
-    obj.CurrentJob = [];
-    obj.updateJobText;
+    obj.updateJobText();
 end
 
-% Function that updates the job table
-function updateJobText(obj)
-    if isempty(obj.SequencerJobs)
-       obj.TextBox.Data={};
-    else
-        for kk = 1:length(obj.SequencerJobs)
-            funcs=obj.SequencerJobs{kk}.SequenceFunctions;
-            mystr =[];
-            for ii = 1:length(funcs)
-                mystr = [mystr func2str(funcs{ii}) ','];
-            end
-            mystr(end)=[];
-
-            obj.TextBox.Data{kk,2} = obj.SequencerJobs{kk}.Status;
-            obj.TextBox.Data{kk,3} = num2str(length(obj.SequencerJobs{kk}.ScanCyclesRequested));
-            obj.TextBox.Data{kk,4} = obj.SequencerJobs{kk}.JobName;
-            obj.TextBox.Data{kk,5} = mystr;                
+function clearQueueSelect(obj)
+    delInds = [obj.JobTable.Data{:,1}];
+    for kk=1:length(obj.SequencerJobs)
+        if delInds(kk)
+            delete(obj.SequencerJobs{kk})
         end
     end
+    obj.SequencerJobs(delInds)=[];
+    obj.updateJobText();
+
 end
+
+function moveQueueSelect(obj,number)
+    temp_data = [obj.JobTable.Data{:,1}];
+    selected_indeces = [obj.JobTable.Data{:,1}]; 
+    N = length(selected_indeces);
+
+    inds = 1:N;
+
+
+    if number>0
+        for mm=2:N
+            if ~selected_indeces(mm-1) && selected_indeces(mm)
+                 inds([mm-1 mm])=inds([mm mm-1]);
+                 selected_indeces([mm-1 mm])=selected_indeces([mm mm-1]);
+            end
+        end 
+    else
+        for mm=(N-1):-1:1
+            if ~selected_indeces(mm+1) && selected_indeces(mm)
+                 inds([mm+1 mm])=inds([mm mm+1]);
+                  selected_indeces([mm+1 mm])=selected_indeces([mm mm+1]);
+            end
+        end
+    end
+    obj.SequencerJobs=obj.SequencerJobs(inds);
+    obj.JobTable.Data=obj.JobTable.Data(inds,:);
+end
+
+% Updates the status of all jobs
+% running, complete, or queue
+function updateJobText(obj)
+    obj.JobTable.Data={};
+    
+    for kk=1:length(obj.SequencerJobs)   
+        obj.JobTable.Data{kk,1} = false;
+        obj.JobTable.Data{kk,2} = ...
+            obj.SequencerJobs{kk}.Status;
+        obj.JobTable.Data{kk,3} = ...
+            num2str(obj.SequencerJobs{kk}.CycleNow);
+        obj.JobTable.Data{kk,4} = ...
+            num2str(obj.SequencerJobs{kk}.CycleEnd);
+        obj.JobTable.Data{kk,5} = ...
+            obj.SequencerJobs{kk}.JobName;         
+    end
+    drawnow
+end
+
+% % Function that updates the job table
+% function updateJobText(obj)
+%     if isempty(obj.SequencerJobs)
+%        obj.JobTable.Data={};
+%        return;
+%     end
+% 
+%     for kk = 1:length(obj.SequencerJobs)        
+%         obj.JobTable.Data{kk,1} = false;
+%         obj.JobTable.Data{kk,2} = ...
+%             obj.SequencerJobs{kk}.Status;
+%         obj.JobTable.Data{kk,3} = ...
+%             num2str(obj.SequencerJobs{kk}.CycleNow);
+%         obj.JobTable.Data{kk,4} = ...
+%             num2str(obj.SequencerJobs{kk}.CycleEnd);
+%         obj.JobTable.Data{kk,5} = ...
+%             obj.SequencerJobs{kk}.JobName;        
+%     end
+% 
+% end
 
 % Check if job handler is idle
 function val = isIdle(obj)
     val = 1;
     for kk=1:length(obj.SequencerJobs)
-        status = obj.SequencerJobs{kk}.Status;     
-        
+        status = obj.SequencerJobs{kk}.Status;             
         switch status
-            case 'complete'
-            case 'pending'
-            case 'running'
+            case 'done'
+            case 'queue'
+            case 'run'
                 val = 0;
                 str = ['Job ' num2str(kk) ' is currently running.'];
-                warning(str);
-                return;
-            case 'stopping'
-                val = 0;
-                str = ['Job ' num2str(kk) ' is currently stopping.'];
-                warning(str);
-                return;
-            case 'cycle end'
-                val = 0;
-                str = ['Job ' num2str(kk) ' is cycle end function'];
-                warning(str);
-                return;
-            case 'job end'
-                val = 0;
-                str = ['Job ' num2str(kk) ' is job end function'];
                 warning(str);
                 return;
             otherwise
@@ -247,21 +481,193 @@ end
 % Find next job that is pending
 function job = findNextJob(obj)
     job = [];
+    if isempty(obj.SequencerJobs)
+        job = obj.DefaultJob;
+        return;
+    end
+
    for kk=1:length(obj.SequencerJobs)
-       if isequal(obj.SequencerJobs{kk}.Status,'pending')
+       if isequal(obj.SequencerJobs{kk}.Status,'queue') %pending
             job = obj.SequencerJobs{kk};
             return
        end
    end
+    job = obj.DefaultJob;   
 end
 
 
 % delete me
 function delete(obj)
     % delete any listeners
-    obj.clear;
-    obj.updateJobText;
+    obj.clearQueue;
+    obj.updateJobText();
 end
+
+%% seqdata Adwin Functions
+% 
+% function runCurrentJob(obj)
+%     job=obj.CurrentJob;
+%     job.Status = 'running';
+%     obj.StringJob.String=['(' num2str(obj.getCurrentJobIndex) ') ' obj.CurrentJob.JobName];
+%     obj.updateJobText; 
+%     global seqdata
+%     seqdata.scancycle = job.CyclesCompleted+1;
+%     seqdata.sequence_functions = job.SequenceFunctions;
+%     obj.CycleStartFcn();
+%     t=runSequence(job.SequenceFunctions);              
+%     job.ExecutionDates(end+1) = t;
+%     % Get ready to wait for job to finish
+%     obj.ListenerCycle=listener(obj.SequencerWatcher,'CycleComplete',...
+%         @(src, evt) obj.CycleCompleteFcn);
+%     obj.ListenerAdwin=listener(obj.SequencerWatcher,'AdwinComplete',...
+%         @(src, evt) obj.AdwinCompleteFcn);
+%     % obj.doIterate   = true;
+% end
+
+function runCurrentJob(obj) 
+    obj.updateJobText(); 
+    obj.StringJob.String=...
+        ['(' num2str(obj.getCurrentJobIndex) ') ' ...
+        obj.CurrentJob.JobName];
+    obj.CurrentJob.Status = 'run';
+    obj.CurrentJob.updateTableInterface();
+    obj.updateJobText();
+    global seqdata
+    seqdata.scancycle           = obj.CurrentJob.CycleNow;
+    seqdata.sequence_functions  = obj.CurrentJob.SequenceFunctions;
+    obj.CycleStartFcn();    
+    ret = obj.compile();
+    if ret
+        obj.CycleStr.String = num2str(seqdata.scancycle);
+        [ret,tExecute]=obj.run();        
+    end
+    if ret
+        obj.CurrentJob.ExecutionDates(end+1) = tExecute;
+        obj.ListenerCycle=listener(obj.SequencerWatcher,'CycleComplete',...
+            @(src,evt) obj.CycleCompleteFcn);
+        obj.ListenerAdwin=listener(obj.SequencerWatcher,'AdwinComplete',...
+            @(src,evt) obj.AdwinCompleteFcn);
+
+        obj.ListenerWaitMode = addlistener(obj.CurrentJob,'WaitMode',...
+            'PostSet',@(src,evt) obj.waitTimeUpdate);
+        obj.ListenerWaitTime = addlistener(obj.CurrentJob,'WaitTime',...
+            'PostSet',@(src,evt) obj.waitTimeUpdate);      
+    end
+end
+
+function waitTimeUpdate(obj)
+    obj.SequencerWatcher.updateWait(obj.CurrentJob.calcRealWaitTime(),obj.CurrentJob.WaitMode);
+
+end
+
+function [ret,tExecute] = run(obj)
+    global adwinprocessnum
+    ret = true;             % compile good
+    tExecute = [];
+
+    obj.updateSeqStr('loading adwin',[220,88,42]/255); 
+    if ~obj.DebugMode
+        try            
+            load_sequence;
+        catch ME
+            warning(getReport(ME,'extended','hyperlinks','on'))
+            ret = false;
+            return;
+        end
+    end
+    obj.updateSeqStr('adwin loaded',[17,59,8]/255); 
+
+    % Make control file
+    try
+        obj.updateSeqStr('making log file',[17,59,8]/255);
+        if ~obj.DebugMode    
+            tExecute = makeControlFile;
+        else 
+            tExecute = now;
+        end
+    catch ME
+        warning(getReport(ME,'extended','hyperlinks','on'))
+        ret = false;
+        return;
+    end
+    obj.updateSeqStr('starting adwin',[17,59,8]/255); 
+    try
+        if ~obj.DebugMode;Start_Process(adwinprocessnum);end        
+    catch ME
+        warning(getReport(ME,'extended','hyperlinks','on'))
+        ret = false;
+        return;
+    end
+    obj.updateSeqStr('adwin is running','r'); 
+    obj.SequencerWatcher.AdwinTime  = obj.CurrentJob.AdwinTime;
+    obj.SequencerWatcher.WaitTime   = obj.CurrentJob.calcRealWaitTime();
+    obj.SequencerWatcher.WaitEnable = obj.CurrentJob.WaitMode; 
+    start(obj.SequencerWatcher);
+end
+
+% Compiles the seqdata (see compile.m for old way)
+function ret = compile(obj,doProgramDevices)       
+    if nargin==1;doProgramDevices=1;end
+
+    obj.CompilerStatus = 1; % compiler busy
+    ret = true;             % compile good
+
+    % Initialize Sequence
+    try
+        obj.updateSeqStr('initializing sequence','k');    
+        start_new_sequence;
+        initialize_channels;
+        logInitialize;
+    catch ME
+        warning(getReport(ME,'extended','hyperlinks','on'));
+        obj.updateSeqStr('sequence initialize error','r'); 
+        pause(0.1)
+        ret = false;% compile fail
+        obj.CompilerStatus = 0;% compiler idle
+        return;
+    end
+
+    % Evaluate Sequence Functions
+    try    
+        curtime = 0;
+        obj.updateSeqStr('evaluating sequence functions','k');   
+        for kk = 1:length(obj.CurrentJob.SequenceFunctions)
+            obj.updateSeqStr(['@' func2str(obj.CurrentJob.SequenceFunctions{kk})],[220,88,42]/255);    
+            pause(0.1);
+            curtime = obj.CurrentJob.SequenceFunctions{kk}(curtime);                 
+        end
+    catch ME
+        warning(getReport(ME,'extended','hyperlinks','on'));
+        obj.updateSeqStr('sequence compile error','r'); 
+        pause(0.1)
+        ret = false;% compile fail
+        obj.CompilerStatus = 0;% compiler idle
+        return;
+    end
+
+     % Update GUI Text (needs to be udpated)
+    try;updateScanVarText;end
+
+    % Convert Into Hardware Commands
+    try
+        obj.updateSeqStr(...
+            ['converting sequence into hardware commands'],...
+            [220,88,42]/255); 
+        obj.CurrentJob.AdwinTime=calc_sequence(doProgramDevices);    
+        obj.updateSeqStr(...
+            ['sequence calulated'],...
+            [17,59,8]/255); 
+    catch ME
+        warning(getReport(ME,'extended','hyperlinks','on'));
+        obj.updateSeqStr('hardware conversion error','r'); 
+        pause(0.1)
+        ret = false;% compile fail
+        obj.CompilerStatus = 0;% compiler idle
+        return;
+    end
+    obj.CompilerStatus = 0;
+end
+
 
 end
 

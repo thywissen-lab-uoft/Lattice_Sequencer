@@ -12,6 +12,7 @@ else
 end
 global seqdata;
 dispLineStr('TRANSPORT',curtime);
+logNewSection('Transport',curtime);
 %% Votlage Fucntions
 
 func_push = 2;
@@ -195,7 +196,7 @@ i12b_hf = -dataH.I_out(end,end);
 
 i12a_vi = -data.i1(1); i12b_vi = -data.i2(1);
 
-defVar('transport_vert_t_match_horz',100,'ms')
+defVar('transport_vert_t_match_horz',100,'ms');
 
 % Boundary condition which matches with "old" transport
 defVar('transport_vert_match_pos',0.1763,'ms');
@@ -203,7 +204,7 @@ zMatch = getVar('transport_vert_match_pos');
 i14_Match = [0 interp1(data.zz,data.i4,zMatch)];
 i15_Match = [-10.21 interp1(data.zz,data.i5,zMatch)];
 i16_Match = [18.35 interp1(data.zz,data.i6,zMatch)];  
-defVar('transport_vert_t_match_vert',500,'ms')
+defVar('transport_vert_t_match_vert',500,'ms');
 t_v2e = 100;
 
 % Create functions that map position to current
@@ -269,7 +270,8 @@ tV = getVar('transport_time');
 z_init = 0;
 
 %% Transport to 174 mm
-dispLineStr('Vertical Transpot Start',calctime(curtime,0));
+dispLineStr('Vertical Transport Start',calctime(curtime,0));
+logNewSection('Vertical Transport',curtime);
 
 % Ramp all coil currents
 AnalogFunc(calctime(curtime,0),'Coil 12a',...
@@ -303,6 +305,9 @@ tt = linspace(0,tV,1e4);
 I15_vec=z2i15(ramp_minjerk(tt,tV,z_init,zMatch));
 i0=length(tt)-find(flip(I15_vec)>0,1);
 Tswitch = tt(i0);
+logText(['   Vertical Transport Time  (ms) : ' num2str(tV)]);
+logText(['   Coil 15 Cross Over  Time (ms) : ' num2str(Tswitch)]);
+
 disp(['Vertical Transport Time (ms)' num2str(tV)]);
 disp(['Coil 15 Cross Over  Time (ms)' num2str(Tswitch)]);
 

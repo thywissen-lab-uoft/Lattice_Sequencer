@@ -1,5 +1,6 @@
 function timeout = main_sequence(timein)
 % main_sequence.m
+logFileHeader();
 
 if nargin == 0 
     timein = 0;
@@ -228,13 +229,11 @@ end
 
 if seqdata.flags.MOT_prepare_for_MT
     dispLineStr('Preparing MOT for MT',curtime);   
-    
+    logNewSection('Preparing MOT for MT',curtime);
     % If not a fluoresence image take a picture of the MOT here
     if seqdata.flags.image_type ~= 1    
         DigitalPulse(calctime(curtime,-10),'Mot Camera Trigger',1,1);
     end
-
-
     curtime = Prepare_MOT_for_MagTrap(curtime);
 
     if seqdata.flags.image_type == 0    
@@ -308,6 +307,8 @@ end
 
 if seqdata.flags.transport
     dispLineStr('Magnetic Transport',curtime);
+    logNewSection('Magnetic Transport',curtime);
+
     % Open kitten relay
     curtime = setDigitalChannel(curtime,'Kitten Relay',1);
     
@@ -475,7 +476,7 @@ end
 %% Dipole Trap Stage 2
 
 if ( seqdata.flags.xdtB == 1 )
-    dispLineStr('Caling xdtB.m',curtime);   
+    logNewSection('xdtB.m',curtime);
     curtime = xdtB(curtime); 
 end
 
@@ -496,6 +497,8 @@ end
 % experimental cycle (ideally, the PIDs should handle the regulation)
 if seqdata.flags.rotate_waveplate_1
     dispLineStr('Rotating waveplate',curtime);    
+    logNewSection('rotate_waveplate_1',curtime);
+
     tr = getVar('rotate_waveplate1_duration');
     td = getVar('rotate_waveplate1_delay');
     value = getVar('rotate_waveplate1_value');    
@@ -550,7 +553,8 @@ end
 
 if seqdata.flags.image_type == 0
     dispLineStr('Turning off coils and traps.',curtime);   
-    
+    logNewSection('Turning off coils and traps.',curtime);   
+
     % Make sure RF is off
     setDigitalChannel(curtime,'RF TTL',0);% rf TTL
 
@@ -615,6 +619,7 @@ if isfield(seqdata.flags, 'HF_Imaging') && seqdata.flags.HF_Imaging
     if seqdata.flags.image_type == 0    
         ScopeTriggerPulse(calctime(curtime,0),'TOF');    
         dispLineStr('High Field Absorption Imaging.',curtime);
+        logNewSection('High Field Absorption Imaging',curtime);
         curtime = HF_absorption_image(calctime(curtime,0.0));   
     end 
     
@@ -646,9 +651,10 @@ else
     if seqdata.flags.image_type == 0    
         ScopeTriggerPulse(calctime(curtime,0),'TOF');    
         dispLineStr('Absorption Imaging.',curtime);
+        logNewSection('Absorption Imaging',curtime);
+
         curtime = absorption_image2(calctime(curtime,0.0));   
     end  
-    
 end
 %% Take Background Fluoresence Image
 
@@ -806,7 +812,7 @@ setAnalogChannel(curtime,'15/16 GS',0);
 %% Load MOT
 % Load the MOT
 dispLineStr('Load the MOT',curtime);
-
+logNewSection('Load MOT',curtime);
 % trigger_offset=0;
 % trigger_length = 50;
 % DigitalPulse(calctime(curtime,trigger_offset-trigger_length),...

@@ -4,7 +4,7 @@
 %Summary: This function calculates the current sequence (creates the array
 %to send to the ADWIN)
 %------
-function calc_sequence(doProgramDevices)
+function tAdwin=calc_sequence(doProgramDevices)
 
 global seqdata;
 global adwin_processor_speed;
@@ -363,6 +363,8 @@ seqdata.seqcalculated = 1;
 
 
 seqdata = orderfields(seqdata);
+
+tAdwin=seqdata.sequencetime;
 
 disp('done.');
 end

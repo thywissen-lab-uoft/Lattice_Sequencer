@@ -1,6 +1,8 @@
 function dispLineStr(str,curtime)
 line_num=dbstack;
-lNum=line_num(2);
+
+ind = min([2 length(line_num)]);
+lNum=line_num(ind);
 
 t=curtime2realtime(curtime);
 file = lNum.file;
@@ -12,6 +14,9 @@ mystr = [' ' '(' num2str(t) ' ms) ' hotlinkcode];
 disp(repmat('-',1,60));
 disp(mystr);
 disp([' ' str]);
+
+
+% logNewSection(str,curtime);
 
 end
 

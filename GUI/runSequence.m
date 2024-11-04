@@ -1,4 +1,4 @@
-function tExecute=runSequence(funcs,foo)
+function tExecute=runSequence(funcs)
 global seqdata
 global adwinprocessnum
 
@@ -42,7 +42,8 @@ isGood = 1;
 % Update GUI
 data.Status.String = ['loading adwin'];
 data.Status.ForegroundColor = [220,88,42]/255;
-    
+data.CycleStr.String = ['cycle : ' num2str(seqdata.scancycle)];
+
 if ~seqdata.debugMode
     % Try Loading
     try
@@ -70,12 +71,6 @@ else
     tExecute = now;
 end
 
-%% Special Function
-
-if nargin == 2
-    foo();
-end
-
 %% Start the Adwin
 
 % Run Adwin
@@ -98,7 +93,7 @@ end
 % Start Timer
 data.Status.String = ['adwin is running'];
 data.Status.ForegroundColor = 'r';
-data.SequencerWatcher.RequestAdwinTime = seqdata.sequencetime;
+data.SequencerWatcher.AdwinTime = seqdata.sequencetime;
 start(data.SequencerWatcher);
 end
 

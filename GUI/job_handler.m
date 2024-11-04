@@ -404,7 +404,6 @@ function updateJobStatus(obj)
          if ~isequal(obj.SequencerJobs{kk},obj.CurrentJob)
             if obj.SequencerJobs{kk}.isComplete()
                 obj.SequencerJobs{kk}.Status = 'done';
-                keyboard
             else
                 obj.SequencerJobs{kk}.Status = 'queue';
             end

@@ -479,11 +479,11 @@ seqdata.flags.xdtB_levitate_off             = 1;
 defVar('xdtB_levitate_off_ramptime',100,'ms');100;
 
 % piezo kick for vertical trap frequency
-seqdata.flags.xdtB_piezo_vert_kick          = 1;
+seqdata.flags.xdtB_piezo_vert_kick          = 0;
 defVar('xdtB_piezo_vert_kick_amplitude',4,'V');         
 defVar('xdtB_piezo_vert_kick_rampup_time',100,'ms');
 defVar('xdtB_piezo_vert_kick_rampoff_time',4,'ms');
-defVar('xdtB_piezo_vert_kick_holdtime', [20:0.5:30],'ms');
+defVar('xdtB_piezo_vert_kick_holdtime', [1],'ms');
 
 % Turn off one of the dipole trap beams to measure its position
 seqdata.flags.xdtB_one_beam                 = 0;

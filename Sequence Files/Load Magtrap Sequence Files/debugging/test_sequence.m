@@ -6515,12 +6515,12 @@ curtime = calctime(curtime,150);
 
 %%
 
-setDigitalChannel(curtime,95,0);
+% setDigitalChannel(curtime,95,0);
 % setDigitalChannel(calctime(curtime,1000),95,0);
 
 setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);  
 
-
+% setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);  
 
 timeout = curtime;
 

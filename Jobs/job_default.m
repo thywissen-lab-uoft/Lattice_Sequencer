@@ -23,9 +23,9 @@ out.WaitMode                = 2;
 out.WaitTime                = 90;
 
 
-out.SequenceFunctions       = {@test_sequence};
-out.WaitMode                = 1;
-out.WaitTime                = 5;
+% out.SequenceFunctions       = {@test_sequence};
+% out.WaitMode                = 1;
+% out.WaitTime                = 5;
 
 out.CycleEnd                = inf;
 out.JobName                 = 'JobDefault';

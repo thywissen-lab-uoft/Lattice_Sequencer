@@ -147,7 +147,6 @@ function start(obj,job_type,Cycle)
         % job.CyclesCompleted = Cycle;
         job.CycleNow = Cycle;
     end
-    
     % Update current job
     obj.CurrentJob = job; 
     obj.runCurrentJob();    
@@ -185,7 +184,7 @@ end
 % Evaluates when the Adwin is complete. Independent of Wait Timer
 function AdwinCompleteFcn(obj)
     delete(obj.ListenerAdwin);                      % Delete Listener
-    if ~isvalid(obj.CurrentJob)
+    if isempty(obj.CurrentJob) || ~isvalid(obj.CurrentJob)
         warning('CurrentJob has been deleted. Ignoring CycleCompleteFcn.')
         return;
     end  
@@ -235,7 +234,7 @@ function CycleCompleteFcn(obj)
     delete(obj.ListenerWaitMode);       % delete listerner
     delete(obj.ListenerWaitTime);       % delete listerner
   
-    jobExist = isvalid(obj.CurrentJob);
+    jobExist = ~isempty(obj.CurrentJob) && isvalid(obj.CurrentJob);
     % If job is deleted, count is as completed
     if ~jobExist
         warning('CurrentJob deleted. Treating as if is complete.')
@@ -330,6 +329,7 @@ end
 function add(obj,job)
     for kk=1:length(job)
         obj.SequencerJobs{end+1} = job(kk);
+        job(kk).Status ='queue';
         job(kk).UpdateHandlerFcn=@obj.updateJobStatus;
     end
     obj.updateJobStatus();
@@ -349,7 +349,7 @@ function clearQueue(obj)
        delete(obj.SequencerJobs{kk}); 
     end
     obj.SequencerJobs={};
-    obj.CurrentJob = [];
+%     obj.CurrentJob = [];
     obj.updateJobStatus();
 end
 
@@ -360,7 +360,7 @@ function clearQueueSelect(obj)
             delete(obj.SequencerJobs{kk})
         end
     end
-    obj.SequencerJobs(delInds)=[];
+%     obj.SequencerJobs(delInds)=[];
     obj.updateJobStatus();
 end
 
@@ -399,7 +399,9 @@ function updateJobStatus(obj)
        obj.JobTable.Data={};
        return;
     end
+    try
     obj.CurrentJob.Status = 'run';
+    end
     for kk=1:length(obj.SequencerJobs)
          if ~isequal(obj.SequencerJobs{kk},obj.CurrentJob)
             if obj.SequencerJobs{kk}.isComplete()

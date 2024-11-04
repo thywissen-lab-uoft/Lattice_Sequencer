@@ -45,7 +45,8 @@ evap_depth = 0.1;
             warning('No feedback directory to run on');
         return;    
         end              
-        data = getRecentGuiData(30); 
+%         data = getRecentGuiData(30); 
+        data = getRecentGuiData(npt.NumCycles); 
          feedback_stripe(data);        
 %       feedback_focus(data);
    end

@@ -429,6 +429,80 @@ end
 if seqdata.flags.xdtB_feshbach_unhop
     % NEEDS TO BE WRITTEN FROM OLD CODE
 end
+
+%% Pulse on lattices
+
+if seqdata.flags.xdtB_pulse_lattice
+    
+    % Ramp parameters
+    tL = getVar('xdtb_lattice_load_time');
+
+    % Define individual lattices separately just in case
+    Ux = getVar('xdtb_lattice_depth');
+    Uy = getVar('xdtb_lattice_depth');
+    Uz = getVar('xdtb_lattice_depth');
+    
+    tH = getVar('xdtb_lattice_hold_pulse_time');
+    teq = getVar('xdtb_lattice_pulse_equil_time');
+    
+    % Set lattice feedback offset (double PD configuration)
+setAnalogChannel(calctime(curtime,-60),'Lattice Feedback Offset', -9.8,1);
+% Set PID request to below zero to rail PID
+setAnalogChannel(calctime(curtime,-60),'xLattice',-9.85,1);
+setAnalogChannel(calctime(curtime,-60),'yLattice',-9.85,1);
+setAnalogChannel(calctime(curtime,-60),'zLattice',-9.85,1);
+    
+    % Enable AOMs on the lattice beams
+    setDigitalChannel(calctime(curtime,-50),'yLatticeOFF',0); % 0 : All on, 1 : All off
+
+
+    % Bring the PID levels to the "zero" value
+    AnalogFuncTo(calctime(curtime,-40),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        20,20,seqdata.params.lattice_zero(1));
+    AnalogFuncTo(calctime(curtime,-40),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        20,20,seqdata.params.lattice_zero(2));
+    AnalogFuncTo(calctime(curtime,-40),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        20,20,seqdata.params.lattice_zero(3));
+
+    % turn on the lattices
+    ScopeTriggerPulse(curtime,'xdtb_pulse_lattice');
+    AnalogFuncTo(calctime(curtime,0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tL,tL,Ux); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tL,tL,Uy);
+curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tL,tL,Uz); 
+
+    % pulse for some time
+curtime = calctime(curtime,tH);
+
+
+    % Ramp to low
+    AnalogFuncTo(calctime(curtime,0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tL,tL,seqdata.params.lattice_zero(1));
+    AnalogFuncTo(calctime(curtime,0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tL,tL,seqdata.params.lattice_zero(2));
+curtime = AnalogFuncTo(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tL,tL,seqdata.params.lattice_zero(3));
+
+    % Disable AOMs on the lattice beams
+    setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1); % 0 : All on, 1 : All off
+
+    % let atoms equilibriate in XDT
+curtime = calctime(curtime,teq);
+ 
+    
+    
+end
 %% Turn off feshbach field
 
 if seqdata.flags.xdtB_feshbach_off   

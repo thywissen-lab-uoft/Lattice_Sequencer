@@ -104,6 +104,13 @@ function feedback_focus(data)
                 
                 old_piezo_offset = X(1);                
                 piezo_offset=round(old_piezo_offset+d_piezo_offset,2);
+                
+                %Prevents microscope from moving too far
+                if (getVarOrdered('objective_piezo') + piezo_offset) >= 10 || ...
+                        (getVarOrdered('objective_piezo') + piezo_offset) <= 0
+                    piezo_offset = old_piezo_offset;
+                end
+                
                 save('piezo_offset.mat','piezo_offset');                             
             end
 

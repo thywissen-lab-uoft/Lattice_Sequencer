@@ -41,9 +41,9 @@ function J=job_conducivity_ac_shake
 clear J
 
 % Magnetic Field (G)
-B_conductivity = 201.3;
+B_conductivity = 201.1;
 % Optical Evaporation Power (W)
-power_conductivity = 0.065; 
+power_conductivity = 0.064; 
 %Evaporation Levitation Voltage
 lev_conductivity = 0.11;
 % Conductivity modulation ramp up time (ms)
@@ -51,7 +51,7 @@ mod_ramp_time = 50;
 % Plane Selection Frequency amplitude (kHz);
 uwave_freq_amp = 30;
 % Modulation Frequencies
-freq_list = 55+[-30 -20 -10 0 10 20 30 45];
+freq_list = 55+[-35 -30 -25 -20 -10 -5 0 5 10 20 30 45];
 % Randomize the modulation frequencies
 freq_list = freq_list(randperm(numel(freq_list)));
 
@@ -77,10 +77,10 @@ for ii = 1:length(freq_list)
 %     aH = [1.28e-3 -1.61e-7 1.56e-11 -7.28e-16]; 
 
     %0.65um amplitude response
-    x0 = 50;
-    y0 = 0.8352;
-    aL = [7.96e-4 -1.17e-6 1.21e-9 -5.22e-13];
-    aH = [1.00e-3 -1.05e-7 1.16e-11 -5.99e-16]; 
+    x0 = 51;
+    y0 = 0.7139;
+    aL = [7.67e-4 -1.01e-6 9.34e-10 -3.66e-13];
+    aH = [1.07e-3 -1.42e-7 1.71e-11 -8.98e-16]; 
     
     if f<=x0
         a=aL;

@@ -434,7 +434,7 @@ seqdata.flags.xdtB_rf_mix                   = 1;
 
 % Evaporation
 seqdata.flags.xdtB_evap                     = 1;
-defVar('xdtB_evap_power',[0.1],'W');0.065;.085;
+defVar('xdtB_evap_power',[0.1],'W');0.0655;.085;
 defVar('xdtB_evap_time',[5000],'ms');
 defVar('xdtB_evap_tau_fraction',3.5','arb')
 
@@ -465,6 +465,13 @@ seqdata.flags.xdtB_post_RF_97                = 0;
 % Unhop Resonance
 seqdata.flags.xdtB_feshbach_unhop           = 0;
 
+% Pulse lattice
+seqdata.flags.xdtB_pulse_lattice            = 0;
+defVar('xdtb_lattice_load_time',0.1,'ms');
+defVar('xdtb_lattice_depth',[2],'Er');
+defVar('xdtb_lattice_hold_pulse_time',[2],'ms');
+defVar('xdtb_lattice_pulse_equil_time',[500],'ms');
+
 % Feshbach
 seqdata.flags.xdtB_feshbach_off             = 1;
 defVar('xdtB_feshbach_off_field',20,'G');
@@ -475,11 +482,11 @@ seqdata.flags.xdtB_levitate_off             = 1;
 defVar('xdtB_levitate_off_ramptime',100,'ms');100;
 
 % piezo kick for vertical trap frequency
-seqdata.flags.xdtB_piezo_vert_kick          = 1;
+seqdata.flags.xdtB_piezo_vert_kick          = 0;
 defVar('xdtB_piezo_vert_kick_amplitude',4,'V');         
 defVar('xdtB_piezo_vert_kick_rampup_time',100,'ms');
 defVar('xdtB_piezo_vert_kick_rampoff_time',4,'ms');
-defVar('xdtB_piezo_vert_kick_holdtime', [20:0.5:30],'ms');
+defVar('xdtB_piezo_vert_kick_holdtime', [1],'ms');
 
 % Turn off one of the dipole trap beams to measure its position
 seqdata.flags.xdtB_one_beam                 = 0;
@@ -513,8 +520,8 @@ seqdata.flags.lattice_load            = 0;
 % Load the lattices
 defVar('lattice_load_time',[750],'ms');750;
 defVar('lattice_load_depthX',[2.5],'Er');2.5;
-defVar('lattice_load_depthY',[2.5],'Er');2.5;
-defVar('lattice_load_depthZ',[2.5],'Er');2.5;
+defVar('lattice_load_depthY',getVar('lattice_load_depthX'),'Er');2.5;
+defVar('lattice_load_depthZ',getVar('lattice_load_depthX'),'Er');2.5;
 
 % Ramp dimple during lattice loading (not implemented yet)
 seqdata.flags.lattice_load_dimple         = 0;
@@ -579,7 +586,7 @@ elseif seqdata.flags.conductivity_mod_direction == 2
 end    
 
 %% Optical Lattice
-seqdata.flags.lattice                       = 0; 
+seqdata.flags.lattice                       = 1; 
 if ~seqdata.flags.lattice_load;seqdata.flags.lattice  =0;end
 
 % Pin 
@@ -628,7 +635,7 @@ seqdata.flags.lattice_uWave_spec            = 0;
 
 %% Plane Selection
 
-seqdata.flags.do_plane_selection            = 0;    % Plane selection flag
+seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
 
 seqdata.flags.plane_selection_useBigShim    = 1;
 % Apply uwave to shelve a particular plane
@@ -647,10 +654,21 @@ seqdata.flags.plane_selection_dotilt        = 1;
 seqdata.flags.plane_selection_do_ring_select        = 0; % testing CF
 defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 
+% How to set up stripe + focus stabilization.
+% (1) Warm up the stripes 30 min? (like want passive stability of 1 plane/hour)
+% (2) Manually change freq_offset_tilt_list to get close to good stripe
+% condition (ie want a focused stripe at position of nCenter=[276,256] (or
+% whatever we decided on long term).
+% (2b) If we stabilize to same nCenter position, does that uniquely
+% determine the best df = titl-notilt? CF think this is true.
+% (3) Turn on the stripe feedback algorithm (maybe figure out way to make this
+% able to do without the job? Or long term how to streamline jobs)
+% (4) Turn on focus feedback
+
 
 %tilt Plane Selection Tilt Settings
 % 2024/10/26 positive number moves dot feature to the right
-freq_offset_tilt_list = 170;
+freq_offset_tilt_list = 120;
 freq_offset_amplitude_tilt_list = [15]; % 15 kHz good 2024/10/27 CJF
 defVar('qgm_plane_uwave_frequency_offset_tilt',freq_offset_tilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_tilt',freq_offset_amplitude_tilt_list,'kHz');
@@ -664,9 +682,9 @@ defVar('qgm_plane_uwave_frequency_amplitude_tilt',freq_offset_amplitude_tilt_lis
 % 2024/10/26 if stripe stabilized to [276 256]. 
 %freq_offset_notilt_list = [300];
 
-freq_offset_notilt_list = freq_offset_tilt_list+100;% df=+100 with phase stab [276,256]
+freq_offset_notilt_list = [220];freq_offset_tilt_list+100;% df=+100 with phase stab [276,256]
 
-freq_offset_amplitude_notilt_list = [35];
+freq_offset_amplitude_notilt_list = [30];
 defVar('qgm_plane_uwave_frequency_offset_notilt',freq_offset_notilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_notilt',freq_offset_amplitude_notilt_list,'kHz');
 
@@ -814,6 +832,8 @@ seqdata.scope_trigger = 'lattice_ramp_1';
 
 % seqdata.scope_trigger = '40k 97 mixing';
 % seqdata.scope_trigger = 'Rampup ODT';
+
+% seqdata.scope_trigger = 'xdtb_pulse_lattice';
 
 %% Labjack trigger
 % seqdata.labjack_trigger = 'Transport';

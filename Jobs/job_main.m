@@ -1,14 +1,16 @@
 function J=job_main
 
 npt = struct;
-npt.lattice_load_feshbach_field = 201;
+npt.lattice_load_feshbach_field = 201.1;
 
 %% Flags
+%Make sure the ixon GUI is on auto camera config if swapping between
+%different lattice_fluor_multi_mode for different jobs
 
 doJob_warmup            = 0;
 doJob_stabilize         = 0;
-doJob_single_plane      = 1;
-doJob_Conductivity      = 0;
+doJob_single_plane      = 0;
+doJob_Conductivity      = 1;
 
 %%
 
@@ -45,11 +47,11 @@ end
 if doJob_Conductivity
     J_ac = job_conducivity_ac_shake;
     clear J
-    J(1)=J_focus;
+    J(1)=copy(J_stripe);
     for rr=1:length(J_ac)
-        J(end+1) = J_ac(rr);
-        J(end+1) = J_stripe;
-        J(end+1) = J_focus;
+        J(end+1) = copy(J_focus);
+        J(end+1) = copy(J_ac(rr));
+        J(end+1) = copy(J_stripe);
     end
 end
 

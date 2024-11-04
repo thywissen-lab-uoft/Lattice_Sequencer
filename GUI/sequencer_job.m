@@ -54,8 +54,8 @@ function obj = sequencer_job(npt)
     % obj.CyclesCompleted     = 0;    
     % obj.CyclesRequested     = npt.CyclesRequested;
 
-    obj.CycleNow        = 1;
-    obj.CycleEnd          = inf; 
+    obj.CycleNow            = 1;
+    obj.CycleEnd            = 2; 
 
 
 

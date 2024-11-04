@@ -399,7 +399,7 @@ function updateJobStatus(obj)
        obj.JobTable.Data={};
        return;
     end
-    obj.CurrentJob.Status = 'running';
+    obj.CurrentJob.Status = 'run';
     for kk=1:length(obj.SequencerJobs)
          if ~isequal(obj.SequencerJobs{kk},obj.CurrentJob)
             if obj.SequencerJobs{kk}.isComplete()

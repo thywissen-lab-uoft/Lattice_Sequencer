@@ -484,19 +484,18 @@ handles.AdwinBar = pAdWinBar;
 handles.AdwinStr1 = tAdWinTime1;
 handles.AdwinStr2 = tAdWinTime2;
 handles.StatusStr = tStatus;
-handles.CycleStr= tCycle;
-data.SequencerWatcher = sequencer_watcher(handles);
 
-
-% data.TableJobCycle = tbl_job_cycle;
-data.TableJobOptions = tbl_job_options;
-
+% I think these should belong to sequencer_watcher?
 data.StringJob = tCurrentJob;
-data.Status = tStatus;
 data.VarText = tScanVar;
+data.CycleStr = tCycle;
+
+
+
+data.SequencerWatcher = sequencer_watcher(handles);
+data.TableJobOptions = tbl_job_options;
 data.SequencerListener.Enabled = 0;
 data.JobTable = tableJobs;
-data.CycleStr = tCycle;
 data.JobTabs = hpJobDetail;
 data.DebugMode = seqdata.debugMode;
 

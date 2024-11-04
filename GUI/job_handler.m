@@ -51,7 +51,7 @@ end
 
 methods
     
-    % constructor
+    % constructor ITS ALL KIND OF MESSY
 function obj = job_handler(gui_handle)          
     obj.SequencerJobs={};            
     d=guidata(gui_handle);          
@@ -64,10 +64,6 @@ function obj = job_handler(gui_handle)
     obj.DefaultJob = J_default;
     obj.CurrentJob = obj.DefaultJob;
 
-    % if isfield(d,'TableJobCycle')
-    %     obj.TableJobCycle=d.TableJobCycle;
-    %     obj.TableJobCycle.CellEditCallback=@obj.JobCycleCB;
-    % end
     if isfield(d,'TableJobOptions')
         obj.TableJobOptions=d.TableJobOptions;
         obj.TableJobOptions.CellEditCallback=@obj.JobOptionsCB;

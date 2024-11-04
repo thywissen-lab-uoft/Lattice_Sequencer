@@ -55,7 +55,6 @@ function this = sequencer_watcher(handles)
 
     this.isRunning          = 0; 
     this.StatusStr          = handles.StatusStr;           
-    % this.SequenceText       = handles.SequenceText;
 end
 
 function updateWait(this,WaitTime,WaitEnable)

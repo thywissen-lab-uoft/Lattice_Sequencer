@@ -236,7 +236,7 @@ function CycleCompleteFcn(obj)
     jobExist = ~isempty(obj.CurrentJob) && isvalid(obj.CurrentJob);
     % If job is deleted, count is as completed
     if jobExist
-        isJobDone = (obj.CurrentJob.CycleNow>=obj.CurrentJob.CycleEnd);
+        isJobDone = (obj.CurrentJob.CycleNow>=obj.CurrentJob.CycleEnd) && ~obj.doHoldCycle;
         if ~isJobDone
             if ~obj.doHoldCycle 
                 obj.CurrentJob.CycleNow = obj.CurrentJob.CycleNow+1;   
@@ -299,6 +299,7 @@ function CycleCompleteFcn(obj)
         && obj.doStartDefaultJobOnQueueComplete && ~isequal(obj.DefaultJob,obj.CurrentJob))
         obj.CurrentJob=[];
         obj.updateJobText();
+        obj.DefaultJob.CycleNow = 1;
         obj.start('default');
         return;
     end

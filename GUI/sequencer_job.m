@@ -311,7 +311,7 @@ function updateTableInterface(this)
 end
 
 function ret=isComplete(this)
-    ret=this.CycleNow>=this.CycleEnd;
+    ret=this.CycleNow>this.CycleEnd;
 end
 
 function mystr=getSequenceFunctionStr(this)

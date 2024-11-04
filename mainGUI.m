@@ -438,8 +438,8 @@ tbl_job_options.Data={...
     false, 'STOP on CycleComplete';
     false, 'STOP on JobComplete ';
     false, 'START Queue on DefaultJob CycleComplete';
-    false, 'START DefaultJob on QueueComplete ';
-    false, 'RESET QUEUE on QueueComplete'};
+    false, 'RESET QUEUE on QueueComplete';
+    false, 'START DefaultJob on QueueComplete '};
 tbl_job_options.Position=[bRunDefault.Position(1)+bRunDefault.Position(3)+35 bRunDefault.Position(2) ...
     tbl_job_options.Extent(3) tbl_job_options.Extent(4)];
 

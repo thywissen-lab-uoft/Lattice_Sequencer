@@ -23,13 +23,13 @@ out.WaitMode                = 2;
 out.WaitTime                = 90;
 
 
-% out.SequenceFunctions       = {@test_sequence};
-% out.WaitMode                = 1;
-% out.WaitTime                = 5;
+out.SequenceFunctions       = {@test_sequence};
+out.WaitMode                = 1;
+out.WaitTime                = 5;
 
-out.CycleEnd                = inf;
+out.CycleEnd                = 3;
 out.WaitMode = 2;
-out.WaitTime = 90;
+out.WaitTime = 5;
 out.JobName                 = 'JobDefault';
 out.CycleStartFcn           = @default_cycle_start_fcn;
 out.CycleCompleteFcn        = @default_cycle_complete_fcn;

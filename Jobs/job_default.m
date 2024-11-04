@@ -28,7 +28,7 @@ out.WaitMode                = 1;
 out.WaitTime                = 5;
 
 
-out.CyclesRequested         = 5;
+out.CyclesRequested         = inf;
 out.JobName                 = 'JobDefault';
 out.CycleStartFcn           = @default_cycle_start_fcn;
 out.CycleCompleteFcn        = @default_cycle_complete_fcn;

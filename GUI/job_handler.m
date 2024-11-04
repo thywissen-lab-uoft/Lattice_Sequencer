@@ -273,7 +273,6 @@ function CycleCompleteFcn(obj)
         obj.start(obj.CurrentJob)  
     else
         if isequal(obj.DefaultJob,obj.findNextJob())
-
             if obj.doResetQueueOnQueueComplete
                 obj.resetQueue();
                 obj.start('queue');

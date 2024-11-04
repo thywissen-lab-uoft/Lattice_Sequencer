@@ -655,7 +655,6 @@ else
 
         curtime = absorption_image2(calctime(curtime,0.0));   
     end  
-    
 end
 %% Take Background Fluoresence Image
 

@@ -173,7 +173,7 @@ function TableCellEditCB(this,src,evt)
             end
         case 'CyclesRequested'
             if isnumeric(s) && isequal(floor(s),s) && ...
-                ~isnan(s) && ~isinf(s) && s>=0                
+                ~isnan(s) &&  s>=0                
                 this.CyclesRequested = s;
             else
                 src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;

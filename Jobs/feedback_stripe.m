@@ -5,7 +5,7 @@ function feedback_stripe(data)
         src ='StripeCircular';
         clear t
         clear phi
-        nCenter = [276 256]; 
+        nCenter = [297 253]; 
         doFeedback=1;
 
         % Lattice Site (n1,n2) to Stabiize Phase

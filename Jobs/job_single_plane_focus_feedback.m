@@ -22,7 +22,7 @@ end
 
 
 %% Sequence Modifier Function
-    function curtime = stripe_seq(curtime)
+    function curtime = focus_seq(curtime)
         global seqdata         
         defVar('xdtB_evap_power',npt.xdt_B_evap_power,'W');
         defVar('lattice_load_feshbach_field',npt.lattice_load_feshbach_field,'G'); 
@@ -43,7 +43,7 @@ end
             warning('No feedback directory to run on');
         return;    
         end              
-        data = getRecentGuiData(30); 
+        data = getRecentGuiData(npt.NumCycles); 
         feedback_focus(data);
    end
 
@@ -51,7 +51,7 @@ end
 out = struct;
 out.SequenceFunctions   = {...
     @main_settings,...
-    @stripe_seq,...
+    @focus_seq,...
     @main_sequence};
 out.CycleCompleteFcn      = @cycle_complete_fcn_focus;
 out.CyclesRequested   = npt.NumCycles;

@@ -248,7 +248,7 @@ function CycleCompleteFcn(obj)
     else
         disp('CurrentJob deleted. Treating as if is JobComplete.')
         isJobDone = true;
-        obj.CurrentJob=[];
+%         obj.CurrentJob=obj.findNextJob();
     end         
 
     % Always stop on CycleComplete
@@ -308,7 +308,6 @@ function CycleCompleteFcn(obj)
         obj.CurrentJob=[];
         obj.start('queue');
     end
-% 
 
 end
 %%

@@ -99,9 +99,9 @@ if ( seqdata.flags.RF_evap_stages(1) == 1 )
           getVar('RF1A_time_3')].*getVar('RF1A_time_scale');
 
     
-    disp(['     Times        (ms) : ' mat2str(sweep_times_1) ]);
-    disp(['     Frequencies (MHz) : ' mat2str(freqs_1*1E-6) ]);
-    disp(['     Gains         (V) : ' mat2str(RF_gain_1) ]);
+%     disp(['     Times        (ms) : ' mat2str(sweep_times_1) ]);
+%     disp(['     Frequencies (MHz) : ' mat2str(freqs_1*1E-6) ]);
+%     disp(['     Gains         (V) : ' mat2str(RF_gain_1) ]);
     logText(['   Times        (ms) : ' mat2str(sweep_times_1) ]);
     logText(['   Frequencies (MHz) : ' mat2str(freqs_1*1E-6) ]);
     logText(['   Gains         (V) : ' mat2str(RF_gain_1) ]);
@@ -237,10 +237,10 @@ if ( seqdata.flags.RF_evap_stages(3) == 1 )
     RF1Bopts.RFEnable = ones(1,length(sweep_times_1b));
     RF1Bopts.QPCurrents = currs_1b;
     
-    disp(['     Times        (ms) : ' mat2str(sweep_times_1b) ]);
-    disp(['     Frequencies (MHz) : ' mat2str(freqs_1b*1E-6) ]);
-    disp(['     Currents      (A) : ' mat2str(currs_1b) ]);
-    disp(['     Gains         (V) : ' mat2str(gains) ]);
+    logText(['     Times        (ms) : ' mat2str(sweep_times_1b) ]);
+    logText(['     Frequencies (MHz) : ' mat2str(freqs_1b*1E-6) ]);
+    logText(['     Currents      (A) : ' mat2str(currs_1b) ]);
+    logText(['     Gains         (V) : ' mat2str(gains) ]);
 
     % Perform RF1B
     [curtime, I_QP, V_QP, I_shim] = MT_rfevaporation(curtime, RF1Bopts, I_QP, V_QP);

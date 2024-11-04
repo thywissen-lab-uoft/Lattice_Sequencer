@@ -148,10 +148,10 @@ if seqdata.flags.xdtB_rf_mix
     sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,...
         seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  
 
-    disp([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
-    disp([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
-    disp([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
-    disp([' RF Power        (V) : ' num2str(sweep_pars.power)]);
+    logText([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
+    logText([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
+    logText([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
+    logText([' RF Power        (V) : ' num2str(sweep_pars.power)]);
     
     n_sweeps_mix=getVar('xdtB_rf_mix_sweep_num');
     % Perform any additional sweeps
@@ -237,11 +237,11 @@ if seqdata.flags.xdtB_evap
     p_end       = getVar('xdtB_evap_power');
 
     % Display Settings
-    disp(' Performing exponential evaporation');
-    disp(['     Evap Time (ms) : ' num2str(evap_time)]);
-    disp(['     tau       (ms) : ' num2str(evap_tau)]);
-    disp(['     XDT1 end   (W) : ' num2str(p_end)]);
-    disp(['     XDT2 end   (W) : ' num2str(p_end)]);
+    logText(' Performing exponential evaporation');
+    logText(['     Evap Time (ms) : ' num2str(evap_time)]);
+    logText(['     tau       (ms) : ' num2str(evap_tau)]);
+    logText(['     XDT1 end   (W) : ' num2str(p_end)]);
+    logText(['     XDT2 end   (W) : ' num2str(p_end)]);
 
     % Ramp Function
     evap_exp_ramp = @(t,tt,tau,y2,y1)(y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));    
@@ -370,10 +370,10 @@ if seqdata.flags.xdtB_rf_mix_post_evap
     sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,...
         seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  
 
-    disp([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
-    disp([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
-    disp([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
-    disp([' RF Power        (V) : ' num2str(sweep_pars.power)]);
+    logText([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
+    logText([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
+    logText([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
+    logText([' RF Power        (V) : ' num2str(sweep_pars.power)]);
     
     n_sweeps_mix=getVar('xdtB_rf_mix_post_evap_sweep_num');
     % Perform any additional sweeps
@@ -413,10 +413,10 @@ if seqdata.flags.xdtB_post_RF_97
     sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,...
         seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  % also is sweep length  0.5               
 
-    disp([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
-    disp([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
-    disp([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
-    disp([' RF Power        (V) : ' num2str(sweep_pars.power)]);
+    logText([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
+    logText([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
+    logText([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
+    logText([' RF Power        (V) : ' num2str(sweep_pars.power)]);
 
     % Do the RF Sweep
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse 

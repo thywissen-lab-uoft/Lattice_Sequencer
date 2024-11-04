@@ -399,7 +399,7 @@ if seqdata.flags.transport
 
     
     t2=toc;
-    disp(['Transport cloud calculation took ' num2str(t2) ' seconds']);
+    logText(['Transport cloud calculation took ' num2str(t2) ' seconds']);
     
 
 end
@@ -503,9 +503,9 @@ if seqdata.flags.rotate_waveplate_1
     tr = getVar('rotate_waveplate1_duration');
     td = getVar('rotate_waveplate1_delay');
     value = getVar('rotate_waveplate1_value');    
-    disp(['     Rotation Time : ' num2str(tr) ' ms']);
-    disp(['     Delay    Time : ' num2str(td) ' ms']);
-    disp(['     Power         : ' num2str(100*value) '%']);   
+    logText(['     Rotation Time : ' num2str(tr) ' ms']);
+    logText(['     Delay    Time : ' num2str(td) ' ms']);
+    logText(['     Power         : ' num2str(100*value) '%']);   
     P0 = 0.0158257; % power level at 0V (this is a bad way);
     AnalogFunc(calctime(curtime,td),'latticeWaveplate',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
@@ -665,7 +665,7 @@ if seqdata.flags.lattice
             isfield(seqdata.flags,'lattice_fluor_bkgd') && ...
             seqdata.flags.lattice_fluor && ...
             seqdata.flags.lattice_fluor_bkgd)
-        disp('Running the fluorence imaging code again to take background light');        
+        logText('Running the fluorence imaging code again to take background light');        
 %         fluor_opts.doInitialFieldRamp = 0;
 %         fluor_opts.doInitialFieldRamp2 = 0;
 

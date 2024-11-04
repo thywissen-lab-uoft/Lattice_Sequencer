@@ -67,8 +67,8 @@ end
     dip2_endpower = seqdata.params.ODT_zeros(2);    
     
     % Display
-    disp([' Ramping off XDTs']);
-    disp([' Ramp Time  (ms) : ' num2str(xdt_ramptime) ]);   
+    logText([' Ramping off XDTs']);
+    logText([' Ramp Time  (ms) : ' num2str(xdt_ramptime) ]);   
     
     % Ramp them
     if xdt_ramptime>0
@@ -86,7 +86,7 @@ end
     if ~seqdata.flags.lattice_off_bandmap_xdt_off_simultaneous       
         dip_waittime = getVar('lattice_bm_xdt_waittime');
         curtime = calctime(curtime,xdt_ramptime+dip_waittime);
-        disp([' Wait Time  (ms) : ' num2str(dip_waittime) ]);   
+        logText([' Wait Time  (ms) : ' num2str(dip_waittime) ]);   
     end
        
     
@@ -96,10 +96,10 @@ end
     Uy_off=seqdata.params.lattice_zero(2);
     Uz_off=seqdata.params.lattice_zero(3);
     if bm_time > 0
-        disp([' Band Map Time (ms) : ' num2str(bm_time)])
-        disp([' xLattice End (Er)  : ' num2str(Ux_off)])
-        disp([' yLattice End (Er)  : ' num2str(Uy_off)])
-        disp([' zLattice End (Er)  : ' num2str(Uz_off)])
+        logText([' Band Map Time (ms) : ' num2str(bm_time)])
+        logText([' xLattice End (Er)  : ' num2str(Ux_off)])
+        logText([' yLattice End (Er)  : ' num2str(Uy_off)])
+        logText([' zLattice End (Er)  : ' num2str(Uz_off)])
 
         AnalogFuncTo(calctime(curtime,0),'xLattice',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
@@ -112,7 +112,7 @@ end
             bm_time,Uz_off);
         curtime = calctime(curtime,bm_time);
     else
-        disp('Snapping off lattice');
+        logText('Snapping off lattice');
     end       
     setDigitalChannel(calctime(curtime,0),'yLatticeOFF',1); 
  else

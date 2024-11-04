@@ -307,8 +307,8 @@ Tswitch = tt(i0);
 logText(['   Vertical Transport Time  (ms) : ' num2str(tV)]);
 logText(['   Coil 15 Cross Over  Time (ms) : ' num2str(Tswitch)]);
 
-disp(['Vertical Transport Time (ms)' num2str(tV)]);
-disp(['Coil 15 Cross Over  Time (ms)' num2str(Tswitch)]);
+% disp(['Vertical Transport Time (ms)' num2str(tV)]);
+% disp(['Coil 15 Cross Over  Time (ms)' num2str(Tswitch)]);
 
 
 % Turn on the 15/16 FET at the cross-over time

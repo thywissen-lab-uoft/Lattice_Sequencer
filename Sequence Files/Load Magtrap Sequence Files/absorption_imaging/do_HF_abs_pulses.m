@@ -85,10 +85,10 @@ logNewSection('Programming HF Imaging RF Sweep',curtime);
             pulse_list=[0.1 rf_tof_pulse_length 0.1]; 
 
             % Display the sweep settings
-            disp([' Freq Center    (MHz) : [' num2str(rf_tof_freq) ']']);
-            disp([' Freq List    (MHz) : [' num2str(freq_list) ']']);
-            disp([' Time List     (ms) : [' num2str(pulse_list) ']']);
-            disp([' RF Gain Range  (V) : [' num2str(rf_off_voltage) ' ' num2str(rf_tof_gain) ']']);
+            logText([' Freq Center    (MHz) : [' num2str(rf_tof_freq) ']']);
+            logText([' Freq List    (MHz) : [' num2str(freq_list) ']']);
+            logText([' Time List     (ms) : [' num2str(pulse_list) ']']);
+            logText([' RF Gain Range  (V) : [' num2str(rf_off_voltage) ' ' num2str(rf_tof_gain) ']']);
 
             % Set RF gain to zero a little bit before
             setAnalogChannel(calctime(curtime,-40),'RF Gain',rf_off_voltage);   
@@ -166,7 +166,7 @@ logNewSection('Programming HF Imaging RF Sweep',curtime);
             if isfield(params,'isProgrammedSRS') && params.isProgrammedSRS == 0
                 rf_wait_time = 0.00;   
 
-                disp('HS1 SRS Sweep Pulse');  
+                logText('HS1 SRS Sweep Pulse');  
 
                 rf_tof_srs_power_list = [12];
                 rf_tof_srs_power = getScanParameter(rf_tof_srs_power_list,seqdata.scancycle,...
@@ -183,10 +183,10 @@ logNewSection('Programming HF Imaging RF Sweep',curtime);
                 beta=asech(0.005);   
                 addOutputParam('rf_HS1_beta',beta);
 
-                disp(['     Freq Center  : ' num2str(rf_tof_freq) ' MHz']);
-                disp(['     Freq Delta   : ' num2str(rf_tof_delta_freq*1E3) ' kHz']);
-                disp(['     Pulse Time   : ' num2str(rf_tof_pulse_length) ' ms']);
-                disp(['     Beta         : ' num2str(beta)]);
+                logText(['     Freq Center  : ' num2str(rf_tof_freq) ' MHz']);
+                logText(['     Freq Delta   : ' num2str(rf_tof_delta_freq*1E3) ' kHz']);
+                logText(['     Pulse Time   : ' num2str(rf_tof_pulse_length) ' ms']);
+                logText(['     Beta         : ' num2str(beta)]);
 
                 % Enable uwave frequency sweep
                 rf_srs_opts.EnableSweep=1;                    
@@ -248,7 +248,7 @@ logNewSection('Programming HF Imaging RF Sweep',curtime);
             if isfield(params,'isProgrammedSRS') && params.isProgrammedSRS == 0
                 rf_wait_time = 0.00;   
 
-                disp('LINEAR SRS Sweep Pulse');  
+                logText('LINEAR SRS Sweep Pulse');  
 
                 rf_tof_srs_power_list = [12];
                 rf_tof_srs_power = getScanParameter(rf_tof_srs_power_list,seqdata.scancycle,...
@@ -261,9 +261,9 @@ logNewSection('Programming HF Imaging RF Sweep',curtime);
                 rf_srs_opts.EnableBNC=1;                         % Enable SRS output 
                 rf_srs_opts.PowerBNC = rf_tof_srs_power;                           
                 rf_srs_opts.Frequency = rf_tof_freq;     
-                disp(['     Freq Center  : ' num2str(rf_tof_freq) ' MHz']);
-                disp(['     Freq Delta   : ' num2str(rf_tof_delta_freq*1E3) ' kHz']);
-                disp(['     Pulse Time   : ' num2str(rf_tof_pulse_length) ' ms']);
+                logText(['     Freq Center  : ' num2str(rf_tof_freq) ' MHz']);
+                logText(['     Freq Delta   : ' num2str(rf_tof_delta_freq*1E3) ' kHz']);
+                logText(['     Pulse Time   : ' num2str(rf_tof_pulse_length) ' ms']);
 
                 % Enable uwave frequency sweep
                 rf_srs_opts.EnableSweep=1;                    

@@ -419,8 +419,8 @@ if (seqdata.flags.lattice_pin)
     logNewSection('Pinning optical lattice',curtime);
     U_pin = getVar('lattice_pin_depth');
     T_pin = getVar('lattice_pin_time');
-    disp([' U pin : ' num2str(U_pin) ' Er']);
-    disp([' T pin : ' num2str(T_pin) ' ms']);
+    logText([' U pin : ' num2str(U_pin) ' Er']);
+    logText([' T pin : ' num2str(T_pin) ' ms']);
 
     AnalogFuncTo(calctime(curtime,0),'xLattice',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
@@ -570,10 +570,10 @@ if seqdata.flags.lattice_RF_spec_pre_OP
     sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,...
         seqdata.scancycle,seqdata.randcyclelist,'lattice_rf_pulse_length_pre_op');  % also is sweep length  0.5               
 
-    disp([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
-    disp([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
-    disp([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
-    disp([' RF Power        (V) : ' num2str(sweep_pars.power)]);
+    logText([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
+    logText([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
+    logText([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
+    logText([' RF Power        (V) : ' num2str(sweep_pars.power)]);
 
     % Do the RF Sweep
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse

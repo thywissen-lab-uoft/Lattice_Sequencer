@@ -13,9 +13,9 @@ if seqdata.flags.CDT_evap ==1 && seqdata.flags.xdt_ramp2sympathetic
     Ps = getVar('xdt_evap_sympathetic_power');
     % Duration of ramp
     tr = getVar('xdt_evap_sympathetic_ramp_time');
-    disp(['     Ramp Time (ms) : ' num2str(tr)]);      
-    disp(['     XDT 1 (W)      : ' num2str(Ps)]);
-    disp(['     XDT 2 (W)      : ' num2str(Ps)]); 
+    logText(['     Ramp Time (ms) : ' num2str(tr)]);      
+    logText(['     XDT 1 (W)      : ' num2str(Ps)]);
+    logText(['     XDT 2 (W)      : ' num2str(Ps)]); 
     % Ramp optical power requests to sympathetic regime
     AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),tr,tr,Ps);
@@ -35,11 +35,11 @@ if ( seqdata.flags.CDT_evap == 1 )
     p_end       = getVar('xdt_evap1_power');
 
     % Display Settings
-    disp(' Performing exponential evaporation');
-    disp(['     Evap Time (ms) : ' num2str(evap_time)]);
-    disp(['     tau       (ms) : ' num2str(evap_tau)]);
-    disp(['     XDT1 end   (W) : ' num2str(p_end)]);
-    disp(['     XDT2 end   (W) : ' num2str(p_end)]);
+    logText(' Performing exponential evaporation');
+    logText(['     Evap Time (ms) : ' num2str(evap_time)]);
+    logText(['     tau       (ms) : ' num2str(evap_tau)]);
+    logText(['     XDT1 end   (W) : ' num2str(p_end)]);
+    logText(['     XDT2 end   (W) : ' num2str(p_end)]);
 
     % Ramp Function
     evap_exp_ramp = @(t,tt,tau,y2,y1)(y1+(y2-y1)/(exp(-tt/tau)-1)*(exp(-t/tau)-1));    

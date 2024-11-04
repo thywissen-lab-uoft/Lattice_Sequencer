@@ -64,24 +64,24 @@ seqdata.flags.xdt_d1op_start =1;
  % Estimate the frequency shift based on the FB field (Gauss or Amps?)
     % Use this value if you are tryign to find the center frequency
     I_FB = getChannelValue(seqdata,'FB Current',1);     
-    disp([' Feshbach ' num2str(round(I_FB,2)) ' A? or Gauss?']);
+    logText([' Feshbach ' num2str(round(I_FB,2)) ' A? or Gauss?']);
     
     % Rubidium Frequency Shift  Transition MHz/Gauss (2,2-->1,1)    
     kappa_rb = 2.1;
     dRb=kappa_rb*I_FB;    
-    disp([' Est. Rb uWave Shift : FB*' num2str(round(kappa_rb,2)) 'MHz/G =' num2str(round(dRb,2)) ' MHz']);
+    logText([' Est. Rb uWave Shift : FB*' num2str(round(kappa_rb,2)) 'MHz/G =' num2str(round(dRb,2)) ' MHz']);
     
     % Potassium Frequency Shift 9/2,9/2-->9/2,7/2
     % gF=2/9, muB = 1.4 MHz/Gauss
     kappa_K = 2/9*1.4; % Transition MHz/Gauss (2,2-->1,1)
     dK=kappa_K*I_FB;    
-    disp([' Est. K RF Shift     : FB*' num2str(round(kappa_K,2))  'MHz/G ='  num2str(round(dK,2)) ' MHz']);
+    logText([' Est. K RF Shift     : FB*' num2str(round(kappa_K,2))  'MHz/G ='  num2str(round(dK,2)) ' MHz']);
     
     % Rubidium RF Frequency Shift 2,2->2,1 UNDESIRED
     % gF=1/2, muB = 1.4 MHz/Gauss
     kappa_rb_rf = 1/2*(2-1)*1.4; % gF*deltaM*muB
     drb_rf=kappa_rb_rf*I_FB;    
-    disp([' Est. Rb RF Shift    : FB*' num2str(round(kappa_rb_rf,2))  'MHz/G ='  num2str(round(drb_rf,2)) ' MHz']);   
+    logText([' Est. Rb RF Shift    : FB*' num2str(round(kappa_rb_rf,2))  'MHz/G ='  num2str(round(drb_rf,2)) ' MHz']);   
     
 %% Rb Transfer |2,2> to |1,1> Using SRS + Freq sweep
 % Pulse the Rb uWave.  We rely on a field sweep in order to perform the
@@ -118,9 +118,9 @@ if seqdata.flags.xdt_spin_xfer_transfer_Rb_freq_sweep
     uWave_opts.EnableSweep  = 1;                    
     uWave_opts.SweepRange   = 1e-3*getVar('Rb_uWave_transfer_freq_amp');         % Sweep Amplitude [MHz]
 
-    disp(['     Freq         : ' num2str(getVar('Rb_uWave_transfer_freq')) ' MHz']);    
-    disp(['     Pulse Time   : ' num2str(getVar('Rb_uWave_transfer_time')) ' ms']);
-    disp(['     Freq Amp     : ' num2str(getVar('Rb_uWave_transfer_freq_amp')) ' kHz']);
+    logText(['     Freq         : ' num2str(getVar('Rb_uWave_transfer_freq')) ' MHz']);    
+    logText(['     Pulse Time   : ' num2str(getVar('Rb_uWave_transfer_time')) ' ms']);
+    logText(['     Freq Amp     : ' num2str(getVar('Rb_uWave_transfer_freq_amp')) ' kHz']);
 
     setDigitalChannel(calctime(curtime,0),'Rb uWave SRS TTL',1);    % Turn on the uWave
     % Ramp up rabi frequency

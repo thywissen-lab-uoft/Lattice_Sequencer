@@ -50,7 +50,9 @@ for ii = 1:length(var_list)
 %     if B>=200.5
 %         npt.ScanCyclesRequested = 1:41;
 %     else
-        npt.ScanCyclesRequested = 1:40;
+        npt.CyleEnd = 40;
+           npt.WaitMode = 2;
+    npt.WaitTime = 90;
 %     end
     npt.JobName             = [num2str(ii) ' 2.5Er 2V 2V Quench ' num2str(x)];
     npt.SaveDirName         = npt.JobName;    

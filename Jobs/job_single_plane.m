@@ -35,7 +35,9 @@ out.SequenceFunctions   = {...
     @main_settings,...
     @one_plane,...
     @main_sequence};
-out.CyclesRequested     = npt.NumCycles;
+out.CycleEnd     = npt.NumCycles;
+out.WaitMode = 2;
+out.WaitTime = 90;
 out.JobName             = ['single plane ' num2str(npt.xdt_B_evap_power) ' mW, '  num2str(npt.lattice_load_feshbach_field) ' G' ];
 
 %% Output Job File

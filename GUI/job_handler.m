@@ -330,6 +330,7 @@ end
 function add(obj,job)
     for kk=1:length(job)
         obj.SequencerJobs{end+1} = job(kk);
+        job(kk).UpdateHandlerFcn=@obj.updateJobStatus;
     end
     obj.updateJobStatus();
 end
@@ -402,7 +403,8 @@ function updateJobStatus(obj)
     for kk=1:length(obj.SequencerJobs)
          if ~isequal(obj.SequencerJobs{kk},obj.CurrentJob)
             if obj.SequencerJobs{kk}.isComplete()
-                obj.SequencerJobs{kk}.Status = 'complete';
+                obj.SequencerJobs{kk}.Status = 'done';
+                keyboard
             else
                 obj.SequencerJobs{kk}.Status = 'queue';
             end
@@ -446,9 +448,9 @@ function val = isIdle(obj)
     for kk=1:length(obj.SequencerJobs)
         status = obj.SequencerJobs{kk}.Status;             
         switch status
-            case 'complete'
+            case 'done'
             case 'queue'
-            case 'running'
+            case 'run'
                 val = 0;
                 str = ['Job ' num2str(kk) ' is currently running.'];
                 warning(str);

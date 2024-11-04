@@ -36,7 +36,7 @@ properties (SetObservable)
     Panel                   % Panel interface
     TableInterface
     AdwinTime               % Time to evaluvlate sequence
-
+    UpdateHandlerFcn
     
 end    
 events
@@ -194,11 +194,10 @@ function TableCellEditCB(this,src,evt)
         case 'CycleNow'
             if isnumeric(s) && isequal(floor(s),s) && ...
                 ~isnan(s) && ~isinf(s) && s>0 
-                s = max([this.CycleEnd s]);
                 this.CycleNow = s;
             else
                 src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;
-            end
+            end            
         case 'CycleEnd'
             if isnumeric(s) && isequal(floor(s),s) && ...
                 ~isnan(s) &&  s>0                
@@ -233,6 +232,8 @@ function TableCellEditCB(this,src,evt)
 
         otherwise
     end
+    this.UpdateHandlerFcn();
+    
 
 end
 

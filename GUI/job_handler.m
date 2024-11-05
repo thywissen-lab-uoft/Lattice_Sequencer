@@ -22,6 +22,7 @@ properties
     ListenerAdwin       % listener object for when Adwin finishes
     ListenerWaitMode
     ListenerWaitTime
+    ListenerSaveDir
     
     JobTable             % text table to update job progress
     SequencerWatcher    % sequencer_watcher which watches the adwin
@@ -232,7 +233,9 @@ function CycleCompleteFcn(obj)
     delete(obj.ListenerCycle);          % delete Listener   
     delete(obj.ListenerWaitMode);       % delete listerner
     delete(obj.ListenerWaitTime);       % delete listerner
-
+try
+    delete(obj.ListenerSaveDir);       % delete listerner
+end
     jobExist = ~isempty(obj.CurrentJob) && isvalid(obj.CurrentJob);
     % If job is deleted, count is as completed
     if jobExist
@@ -532,12 +535,13 @@ function runCurrentJob(obj)
         obj.CurrentJob.JobName];
     obj.CurrentJob.Status = 'run';
     obj.CurrentJob.updateTableInterface();
+    obj.CurrentJob.updateCameraControl();
     obj.updateJobText();
     global seqdata
     seqdata.scancycle           = obj.CurrentJob.CycleNow;
     seqdata.sequence_functions  = obj.CurrentJob.SequenceFunctions;
     obj.CycleStartFcn();    
-    ret = obj.compile();
+    ret = obj.compile(1,1);
     if ret
         obj.CycleStr.String = num2str(seqdata.scancycle);
         [ret,tExecute]=obj.run();        
@@ -552,13 +556,18 @@ function runCurrentJob(obj)
         obj.ListenerWaitMode = addlistener(obj.CurrentJob,'WaitMode',...
             'PostSet',@(src,evt) obj.waitTimeUpdate);
         obj.ListenerWaitTime = addlistener(obj.CurrentJob,'WaitTime',...
-            'PostSet',@(src,evt) obj.waitTimeUpdate);      
+            'PostSet',@(src,evt) obj.waitTimeUpdate);     
+        obj.ListenerSaveDir = addlistener(obj.CurrentJob,'SaveDir',...
+            'PostSet',@(src,evt) obj.CurrentJobSaveDirCB);     
     end
+end
+
+function CurrentJobSaveDirCB(obj)
+    obj.CurrentJob.updateCameraControl();
 end
 
 function waitTimeUpdate(obj)
     obj.SequencerWatcher.updateWait(obj.CurrentJob.calcRealWaitTime(),obj.CurrentJob.WaitMode);
-
 end
 
 function [ret,tExecute] = run(obj)
@@ -607,19 +616,25 @@ function [ret,tExecute] = run(obj)
 end
 
 % Compiles the seqdata (see compile.m for old way)
-function ret = compile(obj,doProgramDevices)       
+function ret = compile(obj,doProgramDevices,isRun)       
     if isempty(obj.CurrentJob) || ~isvalid(obj.CurrentJob)
         obj.CurrentJob = obj.DefaultJob;
     end
 
-    if nargin==1;doProgramDevices=1;end
+    if nargin <3
+        isRun=false;
+    end
+
+    if nargin==1
+        doProgramDevices=1;
+    end
 
     obj.CompilerStatus = 1; % compiler busy
     ret = true;             % compile good
 
     % Initialize Sequence
     try
-        obj.updateSeqStr('initializing sequence','k');    
+        obj.updateSeqStr('initializing sequence','k');
         start_new_sequence;
         initialize_channels;
         logInitialize;
@@ -631,6 +646,9 @@ function ret = compile(obj,doProgramDevices)
         obj.CompilerStatus = 0;% compiler idle
         return;
     end
+
+    global seqdata
+    seqdata.isRun = isRun;
 
     % Evaluate Sequence Functions
     try    

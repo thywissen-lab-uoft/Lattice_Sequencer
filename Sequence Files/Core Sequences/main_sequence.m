@@ -901,5 +901,7 @@ seqdata.flags = orderfields(seqdata.flags,flag_names);
 global mainGUI_Directory
 last_objective_piezo_voltage = getChannelValue(seqdata,'objective Piezo Z',1);  
 
-save(fullfile(mainGUI_Directory,'last_objective_piezo_voltage.mat'),'last_objective_piezo_voltage');
+if isfield(seqdata,'isRun') && seqdata.isRun
+    save(fullfile(mainGUI_Directory,'last_objective_piezo_voltage.mat'),'last_objective_piezo_voltage');
+end
 end

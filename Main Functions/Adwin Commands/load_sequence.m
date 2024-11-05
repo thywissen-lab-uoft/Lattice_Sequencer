@@ -84,7 +84,6 @@ if adwin_connected
         logText('saving camera control file');
         logText(seqdata.camera_control_file);
         save(seqdata.camera_control_file,'-struct','CameraControl');       
-
     end    
 end
 

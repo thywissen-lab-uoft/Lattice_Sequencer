@@ -27,8 +27,8 @@ function curtime = one_plane(curtime)
     seqdata.flags.plane_selection_dotilt        = 0; 
     seqdata.flags.lattice_fluor_multi_mode      = 0;  
 
-    seqdata.flags.qgm_doPlaneShift = 1;
-    defVar('qgm_planeShift_N',[-4:1:4],'plane');
+   % seqdata.flags.qgm_doPlaneShift = 1;
+   % defVar('qgm_planeShift_N',[-8:2:8],'plane');
 end
 
 %% Create Job File

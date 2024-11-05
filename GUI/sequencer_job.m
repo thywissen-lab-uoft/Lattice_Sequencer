@@ -150,6 +150,18 @@ function MakeTableInterface(this,parent,boop)
     end   
 end
 
+function updateCameraControl(this)
+    camera_control_file = 'Y:\_communication\camera_control.mat';
+    CameraControl=load(camera_control_file);
+    if isempty(this.SaveDir)
+        str = 'NewData';
+    else
+        str = this.SaveDir;
+    end
+    CameraControl.SaveDir = str;
+     save(camera_control_file,'-struct','CameraControl');
+end
+
 function refreshDefaultJob(this,src,evt)
     % delete(this);
     J = job_default();

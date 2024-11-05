@@ -107,7 +107,7 @@ global mainGUI_Directory
             if doFeedback
                 errorAll = V_error;                
                 error_P = errorAll(1);
-                gain_P = 0.5;                                
+                gain_P = 0.7;                                
                 % Integral Error
                 tau_I = 10; % tau in minutes                
                 exp_weights = exp(-(timeAgo-timeAgo(1))/tau_I);                

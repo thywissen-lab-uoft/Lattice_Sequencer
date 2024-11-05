@@ -87,8 +87,19 @@ if seqdata.flags.misc_moveObjective
 % dV_PLANE = N_PLANE*V_PLANE;
 
     
-    setAnalogChannel(calctime(curtime,0),'objective Piezo Z',...
-        V,1);
+
+if isfield(seqdata,'previous_objective_piezo_voltage')
+    tPiezoMove = 500;
+    V0 = seqdata.previous_objective_piezo_voltage;
+%V0=5
+    AnalogFunc(calctime(curtime,100),'objective Piezo Z',...
+            @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2),...
+            tPiezoMove,tPiezoMove,V0,V,1); 
+else
+     setAnalogChannel(calctime(curtime,0),'objective Piezo Z',...
+         V,1);
+end
+
 end   
 
 
@@ -885,7 +896,10 @@ end
 seqdata.flags = orderfields(seqdata.flags,flag_names);
 
 %% Write Down Last Objective Piezo Voltage
+% Record the last objective piezo voltage so that the next sequence might
+% be able to ramp the piezo more smoothly
+global mainGUI_Directory
 last_objective_piezo_voltage = getChannelValue(seqdata,'objective Piezo Z',1);  
 
-% save('last_objective_piezo_voltage.mat','last_objective_piezo_voltage');
+save(fullfile(mainGUI_Directory,'last_objective_piezo_voltage.mat'),'last_objective_piezo_voltage');
 end

@@ -17,7 +17,7 @@ if ~isfield(npt,'lattice_load_feshbach_field')
 end
 
 if ~isfield(npt,'NumCycles')
-   npt.NumCycles=5; 
+   npt.NumCycles=6; 
 end
 
 field      = 201.1;

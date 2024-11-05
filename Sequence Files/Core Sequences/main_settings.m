@@ -708,6 +708,12 @@ seqdata.flags.misc_UsePiezoOffset = 1;
 % Offset of piezo in interger multiples of plane separation
 % Change N_PLANE if you want to try hopping to different planes, keep this
 % near 0 ideally to keep things simple
+% 
+
+% The most recently written piezo voltage (from previous sequence)
+d = load(fullfile(mainGUI_Directory,'last_objective_piezo_voltage.mat'));
+last_objective_piezo_voltage=d.last_objective_piezo_voltage;
+seqdata.previous_objective_piezo_voltage = last_objective_piezo_voltage;
 
 %% Fluorescence Imaging
 

@@ -209,6 +209,14 @@ switch opts.SelectMode
             freq_amp = getVar('qgm_plane_uwave_frequency_amplitude_tilt');
         end 
         
+
+        if ~opts.dotilt && seqdata.flags.qgm_doPlaneShift
+            kappa=getVar('qgm_planeShift_freqperplane',85,'kHz');
+            N_PLANE = getVar('qgm_planeShift_N');
+            df = kappa*N_PLANE;
+            freq_offset = freq_offset + df;
+        end
+
         sweep_time = freq_amp/10;
         % If using feedback add an additional freqeuncy offset
         if opts.useFeedback

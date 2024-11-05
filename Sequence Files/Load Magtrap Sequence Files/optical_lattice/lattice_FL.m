@@ -134,7 +134,8 @@ end
             seqdata.CameraControl.IxonMultiPiezos(end+1) = NaN;
             
             if seqdata.flags.lattice_fluor_multi_mode== 2
-                V_piezo_init = getChannelValue(seqdata,'objective Piezo Z',1);    
+                V_piezo_init = getChannelValue(seqdata,'objective Piezo Z',1);  
+                defVar('objective_piezo_center',V_piezo_init,'V'); % piezo value that is NO CHANGE
                 dT_piezo = fluor.ObjectivePiezoShiftTime;
                 
                 AnalogFuncTo(calctime(curtime,-2*dT_piezo+tpre),'objective Piezo Z',...

@@ -1,4 +1,6 @@
 function feedback_stripe(data)
+
+global mainGUI_Directory;
         clear freqs
         clear phi
         clear stripes
@@ -107,30 +109,7 @@ function feedback_stripe(data)
             
             freqs_fb(bad_inds)=[];
             timeAgo_fb(bad_inds)=[];
-            phi_plane_fb(bad_inds)=[];         
-            
-                
-            
-%             
-%             % Find Figure... or make it
-%             FigName = 'StripeFeedback';
-%             ff=get(groot,'Children');
-%             fig2=[];
-%             for kk=1:length(ff)
-%                 if isequal(ff(kk).Name,FigName)
-%                     fig2 = ff(kk);
-%                 end
-%             end
-% 
-%             if isempty(fig2)
-%                 fig2=figure;
-%                 fig2.Name=FigName;
-%                 fig2.WindowStyle='docked';
-%                 fig2.Color='w';
-%             end
-% 
-%             clf(fig2);
-%             co=get(gca,'colororder');         
+            phi_plane_fb(bad_inds)=[];          
 
             
             ax1=subplot(2,2,2,'Parent',fig);
@@ -147,7 +126,7 @@ function feedback_stripe(data)
             xlabel(ax2,'time ago (min.)');
             
 
-          if doFeedback && ~bad_inds(1) && length(phi_plane_fb)>1
+            if doFeedback && ~bad_inds(1) && length(phi_plane_fb)>1
                 % Proportional Error
                 error_P = phi_plane_fb(1);
                 gain_P = 0.5;
@@ -178,7 +157,7 @@ function feedback_stripe(data)
                  'linewidth',1,'markersize',8,'parent',ax1);
 
                 f_offset=freq_new;
-                save('f_offset.mat','f_offset');
+                save(fullfile(mainGUI_Directory,'f_offset.mat'),'f_offset');
             end
 
 

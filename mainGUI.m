@@ -38,6 +38,12 @@ if seqdata.debugMode
 end
 global log_file;
 web(log_file);
+
+% The directory of this folder
+global mainGUI_Directory
+
+mainGUI_Directory = fileparts(mfilename('fullpath'));
+
 %% Initialize Primary Figure graphics
 
 disp('Opening Lattice Sequencer...');

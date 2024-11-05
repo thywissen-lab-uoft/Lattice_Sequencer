@@ -26,6 +26,9 @@ function curtime = one_plane(curtime)
     seqdata.flags.lattice_conductivity_new      = 0; 
     seqdata.flags.plane_selection_dotilt        = 0; 
     seqdata.flags.lattice_fluor_multi_mode      = 0;  
+
+    seqdata.flags.qgm_doPlaneShift = 1;
+    defVar('qgm_planeShift_N',[-4:1:4],'plane');
 end
 
 %% Create Job File

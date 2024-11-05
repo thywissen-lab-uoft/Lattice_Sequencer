@@ -75,6 +75,17 @@ if seqdata.flags.misc_moveObjective
        V = V+dV;
     end
 
+    if seqdata.flags.qgm_doPlaneShift 
+        kappa = getVar('qgm_planeShift_voltperplane');
+        N_PLANE = getVar('qgm_planeShift_N');
+        Vshiftplane = kappa*N_PLANE;
+        V = V + Vshiftplane;
+    end
+
+
+% dF_PLANE = N_PLANE*F_PLANE;
+% dV_PLANE = N_PLANE*V_PLANE;
+
     
     setAnalogChannel(calctime(curtime,0),'objective Piezo Z',...
         V,1);
@@ -873,4 +884,8 @@ for kk = 1:length(flag_groups)
 end
 seqdata.flags = orderfields(seqdata.flags,flag_names);
 
+%% Write Down Last Objective Piezo Voltage
+last_objective_piezo_voltage = getChannelValue(seqdata,'objective Piezo Z',1);  
+
+% save('last_objective_piezo_voltage.mat','last_objective_piezo_voltage');
 end

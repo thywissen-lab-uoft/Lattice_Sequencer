@@ -647,12 +647,12 @@ defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 % Offset of frequency in interger multiples of plane separation
 % Change N_PLANE if you want to try hopping to different planes, keep this
 % near 0 ideally to keep things simple
-N_PLANE = defVar('qgm_plane_plane_offset',0,'plane');% ALWAYS AN INTERGER
-F_PLANE = defVar('qgm_plane_plane_sep',85,'kHz');
-dF_PLANE = N_PLANE*F_PLANE;
-
+defVar('qgm_planeShift_N',0,'plane');% ALWAYS AN INTERGER
+defVar('qgm_planeShift_freqperplane',85,'kHz');
+defVar('qgm_planeShift_voltperplane',0.076,'V');
+seqdata.flags.qgm_doPlaneShift = 0;
 % Tilt Plane Selection Tilt Settings
-freq_offset_tilt_list = 120+dF_PLANE; 
+freq_offset_tilt_list = 120; 
 freq_offset_amplitude_tilt_list = [15]; % 15 kHz good 2024/10/27 CJF
 defVar('qgm_plane_uwave_frequency_offset_tilt',freq_offset_tilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_tilt',freq_offset_amplitude_tilt_list,'kHz');
@@ -669,14 +669,14 @@ defVar('qgm_plane_uwave_frequency_offset_notilt',freq_offset_notilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_notilt',freq_offset_amplitude_notilt_list,'kHz');
 
 %% Plane Selection Feedback
-
+global mainGUI_Directory
 % use this line to set f_offset to zero
 reset_f_offset=0;
 
-d = load('f_offset.mat');
+d = load(fullfile(mainGUI_Directory,'f_offset.mat'));
 f_offset = d.f_offset;
 if reset_f_offset
-    f_offset=0;save('f_offset.mat','f_offset');
+    f_offset=0;save(fullfile(mainGUI_Directory,'f_offset.mat'),'f_offset');
 end
 
 defVar('f_offset',f_offset,'kHz');
@@ -694,13 +694,13 @@ defVar('objective_piezo',[6.45],'V');6.3;3.75;[1.65];
 % specify to within 0.1V for a single plane and 1V for the entire cloud
 % Use this line to set piezo_offset to zero
 
-
+% use this line to set piezo_offset to zero
 reset_piezo_offset=0;
 
-d = load('piezo_offset.mat');
+d = load(fullfile(mainGUI_Directory,'piezo_offset.mat'));
 piezo_offset = d.piezo_offset; 
 if reset_piezo_offset
-    piezo_offset=0;save('piezo_offset.mat','piezo_offset');
+    piezo_offset=0;save(fullfile(mainGUI_Directory,'piezo_offset.mat'),'piezo_offset');
 end
 defVar('piezo_offset',piezo_offset,'V');
 seqdata.flags.misc_UsePiezoOffset = 1;
@@ -708,9 +708,7 @@ seqdata.flags.misc_UsePiezoOffset = 1;
 % Offset of piezo in interger multiples of plane separation
 % Change N_PLANE if you want to try hopping to different planes, keep this
 % near 0 ideally to keep things simple
-N_PLANE = defVar('qgm_plane_plane_offset',0,'plane');% ALWAYS AN INTERGER
-F_PLANE = defVar('qgm_plane_plane_sep',85,'kHz');
-dF_PLANE = N_PLANE*F_PLANE;
+
 %% Fluorescence Imaging
 
 % OLD OBSOLETE IMAGING FLAG

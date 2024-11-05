@@ -17,7 +17,7 @@ if ~isfield(npt,'lattice_load_feshbach_field')
 end
 
 if ~isfield(npt,'NumCycles')
-   npt.NumCycles=2; 
+   npt.NumCycles=4; 
 end
 
 
@@ -43,7 +43,7 @@ end
             warning('No feedback directory to run on');
         return;    
         end              
-        data = getRecentGuiData(npt.NumCycles); 
+        data = getRecentGuiData(10);  % CF : DONT TOUCH THIS W/O TALKING TO ME
         feedback_focus(data);
    end
 
@@ -57,7 +57,8 @@ out.CycleCompleteFcn      = @cycle_complete_fcn_focus;
 out.CycleEnd   = npt.NumCycles;
 out.WaitMode = 2;
 out.WaitTime = 90;
-out.JobName               = ['focus feedback'];
+out.JobName  = ['focus feedback'];
+out.SaveDir  = 'focus';
 J = sequencer_job(out);
 
 end

@@ -128,7 +128,7 @@ end
             
             % Initial trigger to start aqsuitision
             DigitalPulse(calctime(curtime,tpre),'iXon Trigger',10,1)       
-            disp(['Trigger : ' num2str(curtime2realtime(calctime(curtime,-tpre))) ' ms']);
+            logText(['iXon Trigger : ' num2str(curtime2realtime(calctime(curtime,-tpre))) ' ms']);
 
             seqdata.CameraControl.IxonMultiExposures(end+1) = NaN;
             seqdata.CameraControl.IxonMultiPiezos(end+1) = NaN;
@@ -148,7 +148,7 @@ end
                 seqdata.CameraControl.IxonMultiPiezos(end+1) = getChannelValue(seqdata,'objective Piezo Z',1);
                 
                 t0 = t0 + fluor.ExposureTime(kk);
-                disp(['Trigger : ' num2str(curtime2realtime(calctime(curtime,t0))) ' ms']);
+                logText(['iXon Trigger : ' num2str(curtime2realtime(calctime(curtime,t0))) ' ms']);
                 DigitalPulse(calctime(curtime,t0),...
                     'iXon Trigger',10,1); 
                 seqdata.CameraControl.IxonMultiExposures(end+1) = fluor.ExposureTime(kk);

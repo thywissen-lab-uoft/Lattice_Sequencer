@@ -5,7 +5,8 @@ function feedback_stripe(data)
         src ='StripeCircular';
         clear t
         clear phi
-        nCenter = [297 253]; 
+%         nCenter = [297 253]; 
+        nCenter = [276,256]; % CF: DONT CHANGE THIS
         doFeedback=1;
 
         % Lattice Site (n1,n2) to Stabiize Phase
@@ -38,7 +39,7 @@ function feedback_stripe(data)
             phi_plane = (mod(phi+pi,2*pi)-pi)/(2*pi); % Map phase from [-.5,.5]   
             
             % Find Figure... or make it
-            FigName = 'StripeMonitor';
+            FigName = 'Stripe';
             ff=get(groot,'Children');
             fig=[];
             for kk=1:length(ff)
@@ -50,34 +51,35 @@ function feedback_stripe(data)
             if isempty(fig)
                 fig=figure;
                 fig.Name=FigName;
-                fig.WindowStyle='docked';
+                 fig.WindowStyle='docked';
                 fig.Color='w';
             end
 
             clf(fig);
             co=get(gca,'colororder');
+            fig.NumberTitle='off';
 
-            ax1=subplot(2,3,1,'Parent',fig);
+            ax1=subplot(5,2,1,'Parent',fig);
             plot(t,Lambda,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
                 'linewidth',1,'markersize',8,'parent',ax1);
             ylabel(ax1,'Wavelength \lambda (sites)');
 
-            ax2=subplot(2,3,2,'Parent',fig);
+            ax2=subplot(5,2,3,'Parent',fig);
             plot(t,Theta,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
                 'linewidth',1,'markersize',8,'parent',ax2);
             ylabel(ax2,'Rot. Angle \theta (deg)');
 
-            ax3=subplot(2,3,3,'Parent',fig);
+            ax3=subplot(5,2,5,'Parent',fig);
             plot(t,Radius,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
                 'linewidth',1,'markersize',8,'parent',ax3);
             ylabel(ax3,'Radius R (sites)');       
 
-            ax4=subplot(2,3,4,'Parent',fig);
+            ax4=subplot(5,2,7,'Parent',fig);
             plot(t,phi_plane,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
                 'linewidth',1,'markersize',8,'parent',ax4);
             ylabel(ax4,'Phase \phi (planes)');  
             
-            ax5=subplot(2,3,5,'Parent',fig);
+            ax5=subplot(5,2,9,'Parent',fig);
             plot(t,freqs,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
                 'linewidth',1,'markersize',8,'parent',ax5);
             ylabel(ax5,'freq (kHz)');  
@@ -109,43 +111,43 @@ function feedback_stripe(data)
             
                 
             
+%             
+%             % Find Figure... or make it
+%             FigName = 'StripeFeedback';
+%             ff=get(groot,'Children');
+%             fig2=[];
+%             for kk=1:length(ff)
+%                 if isequal(ff(kk).Name,FigName)
+%                     fig2 = ff(kk);
+%                 end
+%             end
+% 
+%             if isempty(fig2)
+%                 fig2=figure;
+%                 fig2.Name=FigName;
+%                 fig2.WindowStyle='docked';
+%                 fig2.Color='w';
+%             end
+% 
+%             clf(fig2);
+%             co=get(gca,'colororder');         
+
             
-            % Find Figure... or make it
-            FigName = 'StripeFeedback';
-            ff=get(groot,'Children');
-            fig2=[];
-            for kk=1:length(ff)
-                if isequal(ff(kk).Name,FigName)
-                    fig2 = ff(kk);
-                end
-            end
-
-            if isempty(fig2)
-                fig2=figure;
-                fig2.Name=FigName;
-                fig2.WindowStyle='docked';
-                fig2.Color='w';
-            end
-
-            clf(fig2);
-            co=get(gca,'colororder');         
-
-            
-            ax1=subplot(1,2,1,'Parent',fig2);
+            ax1=subplot(2,2,2,'Parent',fig);
             plot(timeAgo_fb,freqs_fb,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
                 'linewidth',1,'markersize',8,'parent',ax1);
             ylabel(ax1,'freq (kHz)');
             xlabel(ax1,'time ago (min.)');
             hold(ax1,'on');
 
-            ax2=subplot(1,2,2,'Parent',fig2);
+            ax2=subplot(2,2,4,'Parent',fig);
             plot(timeAgo_fb,phi_plane_fb,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
                 'linewidth',1,'markersize',8,'parent',ax2);
             ylabel(ax2,'Phase \phi (planes)');
             xlabel(ax2,'time ago (min.)');
             
 
-              if doFeedback && ~bad_inds(1) && length(phi_plane_fb)>1
+          if doFeedback && ~bad_inds(1) && length(phi_plane_fb)>1
                 % Proportional Error
                 error_P = phi_plane_fb(1);
                 gain_P = 0.5;

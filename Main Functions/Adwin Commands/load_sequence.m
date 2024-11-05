@@ -4,7 +4,7 @@
 %Summary: This function loads the current sequence to the ADWIN
 %------
 function load_sequence()
-
+logFileHeader();
 global seqdata;
 global adwin_booted;
 global adwinprocessnum;
@@ -40,19 +40,26 @@ if adwin_connected
     %note: need to put this on a timer or something!
 
     %send the update list
-    disp('Loading the Update List');
+    logText('Loading the Update List (analog channels?)');
+    tic;
 %     seqdata.updatelist
     Set_Par(1,length(seqdata.updatelist)-1); %maxcount in Adbasic file
     SetData_Double(1,seqdata.updatelist,1);
 
     %set the number of clock cycles between updates
     Set_Par(2,globaldelay);
+    t2=toc;
+    logText(['Loading took ' num2str(round(t2,2)) 's']);
+
 
     %send the channel update information
-    disp('Loading the Channel Information');
+    logText('Loading the Channel Information');
+    tic;
     SetData_Double(2,seqdata.chnum,1);
     SetData_Double(3,seqdata.chval,1);
-    
+    t2=toc;
+    logText(['Took ' num2str(round(t2,2)) 's']);
+
     %load the reset to zero data (default DO NOT reset to zero)
     SetData_Double(4,zeros(1,64+seqdata.digcardnum),1); % length of zeros: number of analog channels plus number of digital cards
     
@@ -74,8 +81,10 @@ if adwin_connected
     
     if isfield(seqdata,'CameraControl') && isfield(seqdata,'camera_control_file')
         CameraControl = seqdata.CameraControl;
+        logText('saving camera control file');
+        logText(seqdata.camera_control_file);
         save(seqdata.camera_control_file,'-struct','CameraControl');       
-        disp('Writing Camera Control File');
+
     end    
 end
 

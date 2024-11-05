@@ -129,7 +129,7 @@ cmds.BURST_IDLE = ':SOURCE<n>:BURST:IDLE';                  % Final value after 
 % Override to DC value
 cmds.DC = ':SOURCE<n>:APPLY:DC';
 %% Notify the user
-logText([' Progamming ' DeviceName]);
+logText(['Progamming ' DeviceName]);
 % disp(' - BURST, MOD, and SWEEP are mutually exclusive commands');
 % disp(' - SWEEP returns to initial frequency at end of sweep.');
 % disp(' - BURST can only go up to 100 MHz, <300ns trigger latency');
@@ -144,7 +144,7 @@ if isempty(obj)
 end   
 
 % Have the Rigol beep to show that you're talking to it
-playBeep;
+% playBeep;
 
 %% Write
 try
@@ -270,7 +270,7 @@ function obj=visaConnect(DeviceName)
         % Get basic device information
         nfo = query(obj, '*IDN?');
         nfo=strtrim(nfo);   
-        logText(['Established connection to ' nfo]);
+        logText([nfo]);
 
     catch ME
         warning([DeviceName]);

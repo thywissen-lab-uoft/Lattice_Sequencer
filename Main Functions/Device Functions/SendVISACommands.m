@@ -40,8 +40,8 @@ for j=1:length(cmds)
         fopen(obj);
         success = 1;
     catch ERR
-        disp(' ');
-        disp(['visa::error could not connect to device ' addr '! Moving on.'])
+%         disp(' ');
+        logText(['visa::error could not connect to device ' addr '! Moving on.'])
         success = 0;
     end
     
@@ -57,7 +57,7 @@ for j=1:length(cmds)
             
             if ~isempty(qry)
                 qry = query(obj, qry);
-                if (talk); disp(['VISA device ' addr ': ' qry]); end
+                if (talk); logText(['VISA device ' addr ': ' qry]); end
             end
             fclose(obj);
         catch ERR

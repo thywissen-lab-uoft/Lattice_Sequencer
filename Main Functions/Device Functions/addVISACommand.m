@@ -87,7 +87,7 @@ if ( ~isempty(varargin) )
         % check that the option is valid; i.e. defined as a field of the
         % structure opt. Make it an error if needed.
         if ~isfield(opt,optnames{j})
-            disp([mename '::Unknown option ''' optnames{j} ''' !']);
+            logText([mename '::Unknown option ''' optnames{j} ''' !']);
             % error('Unknown option ''' optnames{j} ''' !'); 
         else
             opt.(optnames{j}) = optvalues{j};

@@ -407,7 +407,6 @@ end
 %% MOT Shim back for therml
 % Ramp MOT shims back to their steady state value
 
-
  
 
 %% Floursence image in MOT Cell
@@ -461,7 +460,7 @@ if seqdata.flags.transport_save && seqdata.flags.transport
     opts.DigitalChannels = {'MOT TTL','Coil 16 TTL','15/16 Switch','Transport Relay',...
         'Kitten Relay','Reverse QP Switch','LabJack Trigger Transport'};
     opts.FileName = 'magnetic_transport.mat';
-    saveTraces(opts)
+    saveTraces(opts);
 end    
 
 

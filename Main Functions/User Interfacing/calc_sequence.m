@@ -5,11 +5,11 @@
 %to send to the ADWIN)
 %------
 function tAdwin=calc_sequence(doProgramDevices)
-
+logFileHeader();
 global seqdata;
 global adwin_processor_speed;
 
-fprintf('Calculating sequence...');
+% fprintf('Calculating sequence...');
 
 if nargin == 0
     doProgramDevices = 1;
@@ -17,7 +17,8 @@ end
 
 %% Process DDS Sweeps
 if doProgramDevices && ~seqdata.debugMode
-disp('DDS...');    
+logText('programming DDS');
+% disp('DDS...');    
     if seqdata.numDDSsweeps ~= 0    
         % Create TCP/IP object 't'. Specify server machine and port number. 
         t(1) = udp('192.168.1.155', 37829, 'LocalPort', 4629); % RF
@@ -86,40 +87,45 @@ disp('DDS...');
         clear t      
     end    
 else 
-    disp('skipping dds...');
+    logText('NOT programming DDS.');
 end
 %% Program GPIB devices
 
 if doProgramDevices && isfield(seqdata,'gpib') && ~seqdata.debugMode
+    logText('GPIB');
+
     try    
-        fprintf('gpib...');
+        %fprintf('gpib...');
         % send commands; (..,1) to display query results in command window
         SendGPIBCommands(seqdata.gpib,1);
     catch ME
        warning(ME.message);
     end
 else
-    fprintf('skipping gpib...');
+    %fprintf('skipping gpib...');
 end
 
 %% Program VISA devices
 
 if doProgramDevices && isfield(seqdata,'visa') && ~seqdata.debugMode
+    logText('VISA');
+
     try
-        fprintf('visa...');
+%         fprintf('visa...');
         SendVISACommands(seqdata.visa,1);
     catch ME
        warning(ME.message);
     end
 else
-    fprintf('skipping visa ...');
+%     fprintf('skipping visa ...');
 end
 
 %% Convert Analog values into 16 bit
 %disp(repmat('-',1,60));
 %disp('Converting analog voltages to b16 ...');
+logText('converting analog votlages to b16 adwin.');
 
-fprintf('analog...');
+% fprintf('analog...');
 
 %Used to be in the ADWIN, but moved here so that we can use a long for the
 %ADWIN data array
@@ -141,7 +147,8 @@ analogAdwin(:,3) = (seqdata.analogadwinlist(:,3)+10)/20*2^(16);
 %Change the digital update array into an array of update words
 
 if (~isempty(seqdata.digadwinlist))
-fprintf('digital...');
+%fprintf('digital...');
+logText('Formating digital array for adwin.');
 
     %pre-allocate, can be no bigger than the current update list
     new_digarray = zeros(length(seqdata.digadwinlist(:,1)),3);
@@ -198,7 +205,8 @@ end
 
 
 %% Process Main Array
-fprintf('timings...');
+% fprintf('timings...');
+logText('Timings?');
 
 %sort the adwin list by times
 [templist, sortindices] = sort(adwinlist,1);
@@ -366,5 +374,6 @@ seqdata = orderfields(seqdata);
 
 tAdwin=seqdata.sequencetime;
 
-disp('done.');
+logText('calc_sequence over');
+
 end

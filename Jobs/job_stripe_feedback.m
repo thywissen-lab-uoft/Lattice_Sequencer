@@ -45,8 +45,7 @@ evap_depth = 0.1;
             warning('No feedback directory to run on');
         return;    
         end              
-%         data = getRecentGuiData(30); 
-        data = getRecentGuiData(npt.NumCycles); 
+         data = getRecentGuiData(50);  % CF : DONT TOUCH THIS W/O TALKING TO ME
          feedback_stripe(data);        
 %       feedback_focus(data);
    end
@@ -63,6 +62,7 @@ out.WaitMode = 2;
 out.WaitTime = 90;
 out.JobName               = ['stripe and focus feedback'];
 out.JobName               = ['stripe feedback'];
+out.SaveDir = 'stripe';
 
 J = sequencer_job(out);
 

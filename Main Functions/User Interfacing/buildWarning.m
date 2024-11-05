@@ -16,7 +16,7 @@ function buildWarning(source, msgstring, aserror)
     if (aserror) % throw an error; source is evident in command window
         error(msgstring);
     else % throw a non-interupting warning
-        disp([source '::warning -- ' msgstring]);
+        logText([source '::warning -- ' msgstring]);
     end
 
 end

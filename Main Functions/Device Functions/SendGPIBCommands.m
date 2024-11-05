@@ -39,7 +39,7 @@ for j=1:length(cmds)
         qry = query(obj, qry);
         if (talk)            
             str=strrep(strrep(qry,newline,''),char(13),'');
-            disp(sprintf(['GPIB device #%g: ' str],pa));
+            logText(sprintf(['GPIB device #%g: ' str],pa));
         end
     end
     fclose(obj);

@@ -95,7 +95,9 @@ end
 
 %% EIT Probe Settings
 
-if opts.EnableEITProbe && pulse_time > 0    
+if opts.EnableEITProbe && pulse_time > 0   
+     logNewSection('EIT Probe Settings',curtime);
+
     if isfield(opts,'EIT1_Power')
        ch1 = struct;
         ch1.AMPLITUDE = opts.EIT1_Power;    
@@ -122,6 +124,8 @@ end
 
 % Raman Settings
 if opts.EnableRaman    
+     logNewSection('Raman Fluoresence',curtime);
+
     ch1 = struct;
     ch1.STATE= 'ON';
     ch1.FREQUENCY = opts.Raman1_Frequency;

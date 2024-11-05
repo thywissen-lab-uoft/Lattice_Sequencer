@@ -44,7 +44,7 @@ if seqdata.flags.MOT_CMOT==1
                 getVar('cmot_k_ramp_time'),getVar('cmot_k_ramp_time'),...
                 getVar('cmot_k_repump_detuning'),2);    
         case 2
-            disp('switching cmot detunings');
+            logText('switching cmot detunings');
             % RbTrap Detuning (cant do Rb repump as of now)
             DDS_sweep(calctime(curtime,0),DDS_id,f_osc*1e6,f_osc*1e6,.01);   
             
@@ -55,7 +55,7 @@ if seqdata.flags.MOT_CMOT==1
             setAnalogChannel(calctime(curtime,0),'K Repump FM',...
                 getVar('cmot_k_repump_detuning'),2); 
         otherwise
-            disp('not changing cmot detunings');
+            logText('not changing cmot detunings');
     end
     
     %%%%%%%%%%%%%%%% CMOT Power %%%%%%%%%%%%%%%%    
@@ -87,7 +87,7 @@ if seqdata.flags.MOT_CMOT==1
             setAnalogChannel(calctime(curtime,0),'K Repump AM',...
                 getVar('cmot_k_repump_power')); 
         otherwise
-            disp('not changing cmot power');
+            logText('not changing cmot power');
             
     end    
 
@@ -101,7 +101,7 @@ if seqdata.flags.MOT_CMOT==1
             setAnalogChannel(calctime(curtime,0),'MOT Coil',...
                 getVar('cmot_grad'));
         otherwise
-            disp('not ramping gradient');
+            logText('not ramping gradient');
     end          
     
     %%%%%%%%%%%%%% Advance time %%%%%%%%%%%%%%%%

@@ -85,31 +85,9 @@ seqdata.flags.misc_lock_PA                  = 0; % Update wavemeter lock
 seqdata.flags.misc_program4pass             = 1; % Update four-pass frequency
 seqdata.flags.misc_programGMDP              = 0; % Update GM DP frequency
 seqdata.flags.misc_ramp_fesh_between_cycles = 1; % Demag the chamber
-seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[6.45],'V');6.3;3.75;[1.65];
-
-
-% Feedback offset defaults to 0
- d = load('piezo_offset.mat');
- piezo_offset = d.piezo_offset;
- 
-reset_piezo_offset=0;
-if reset_piezo_offset
-    piezo_offset=0;
-    save('piezo_offset.mat','piezo_offset');
-end
-
-defVar('piezo_offset',piezo_offset,'V');
-seqdata.flags.misc_UsePiezoOffset = 1;
 
 
 
-% 0.1V = 700 nm, larger means further away from chamber
-% 1 V= 7 um
-% 10 V = 70 um
-% tubeis m30 x .75 (750 um per turn)
-% Typically have around 10 planes at most --> 5 um width --> need to
-% specify to within 0.1V for a single plane and 1V for the entire cloud
 seqdata.flags.Rb_Probe_Order                = 1;   % 1: AOM deflecting into -1 order, beam ~resonant with F=2->F'=2 when offset lock set for MOT
                                                     % 2: AOM deflecting into +1 order, beam ~resonant with F=2->F'=3 when offset lock set for MOT
 defVar('PA_detuning',round(-49.539,6),'GHz');
@@ -640,21 +618,15 @@ seqdata.flags.lattice_uWave_spec            = 0;
 %% Plane Selection
 
 seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
-
 seqdata.flags.plane_selection_useBigShim    = 1;
-% Apply uwave to shelve a particular plane
 seqdata.flags.plane_selection_douWave       = 1; 
-
-% Apply kill beam to kill unshelved planes
-seqdata.flags.plane_selection_doKill    = 1;
+seqdata.flags.plane_selection_doKill        = 1;
 defVar('qgm_kill_time',[.7],'ms');10;5;
 defVar('qgm_kill_detuning',[41],'MHz');41;36;% 2024/05/07 35 MHz for 120 Er; 2024/07/08 30 MHz 250 ER, 41 MHz 70 ER
 defVar('qgm_kill_power',[1.5],'V');.01;.02;
-
     
 seqdata.flags.plane_selection_useFeedback   = 1;
 seqdata.flags.plane_selection_dotilt        = 1;
-
 seqdata.flags.plane_selection_do_ring_select        = 0; % testing CF
 defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 
@@ -669,43 +641,76 @@ defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 % able to do without the job? Or long term how to streamline jobs)
 % (4) Turn on focus feedback
 
+% CJF : Please BE VERY CAREFUL when adjusting these settings, and only
+% change the settings which we know need to be changed.
 
-%tilt Plane Selection Tilt Settings
-% 2024/10/26 positive number moves dot feature to the right
-freq_offset_tilt_list = 120;
+% Offset of frequency in interger multiples of plane separation
+% Change N_PLANE if you want to try hopping to different planes, keep this
+% near 0 ideally to keep things simple
+N_PLANE = defVar('qgm_plane_plane_offset',0,'plane');% ALWAYS AN INTERGER
+F_PLANE = defVar('qgm_plane_plane_sep',85,'kHz');
+dF_PLANE = N_PLANE*F_PLANE;
+
+% Tilt Plane Selection Tilt Settings
+freq_offset_tilt_list = 120+dF_PLANE; 
 freq_offset_amplitude_tilt_list = [15]; % 15 kHz good 2024/10/27 CJF
 defVar('qgm_plane_uwave_frequency_offset_tilt',freq_offset_tilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_tilt',freq_offset_amplitude_tilt_list,'kHz');
+% 2024/10/26 positive number moves dot feature to the right
 
 %2024/10/24 We think that we put on a 9.1 Gauss Bias field to induce the
 %tilt. Gradient is 86 kHz/plane vertical
-% Default Plane Selection No Tilt Settings
-% ==> 867 kHz difference between tilt and no tilt
-% But THIS ASSUMES X SHIM IS PARALLEL because of the small angle, there is
-% no apriori way to know the relationship
 % 2024/10/26 if stripe stabilized to [276 256]. 
 %freq_offset_notilt_list = [300];
-
-freq_offset_notilt_list = [220];freq_offset_tilt_list+100;% df=+100 with phase stab [276,256]
-
+% CF: DONT CHANGE THIS DF=100 LINE, MAKE A NEW ONE IF YOU DISAGREE WITH ME
+freq_offset_notilt_list = freq_offset_tilt_list+100;% df=+100 with phase stab [276,256]
 freq_offset_amplitude_notilt_list = [30];
 defVar('qgm_plane_uwave_frequency_offset_notilt',freq_offset_notilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_notilt',freq_offset_amplitude_notilt_list,'kHz');
 
-% Feedback offset defaults to 0
-d = load('f_offset.mat');
-f_offset = d.f_offset;
+%% Plane Selection Feedback
 
- % use this line to set f_offset to zero
+% use this line to set f_offset to zero
 reset_f_offset=0;
 
+d = load('f_offset.mat');
+f_offset = d.f_offset;
 if reset_f_offset
-    f_offset=0;
-save('f_offset.mat','f_offset');
+    f_offset=0;save('f_offset.mat','f_offset');
 end
 
 defVar('f_offset',f_offset,'kHz');
 
+%% Micrscope and Microscope Feedback Position
+seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
+defVar('objective_piezo',[6.45],'V');6.3;3.75;[1.65];
+
+% CF : I have no idea how this was calibrated, but it should be
+% 0.1V = 700 nm, larger means further away from chamber
+% 1 V= 7 um
+% 10 V = 70 um
+% tubeis m30 x .75 (750 um per turn)
+% Typically have around 10 planes at most --> 5 um width --> need to
+% specify to within 0.1V for a single plane and 1V for the entire cloud
+% Use this line to set piezo_offset to zero
+
+
+reset_piezo_offset=0;
+
+d = load('piezo_offset.mat');
+piezo_offset = d.piezo_offset; 
+if reset_piezo_offset
+    piezo_offset=0;save('piezo_offset.mat','piezo_offset');
+end
+defVar('piezo_offset',piezo_offset,'V');
+seqdata.flags.misc_UsePiezoOffset = 1;
+
+% Offset of piezo in interger multiples of plane separation
+% Change N_PLANE if you want to try hopping to different planes, keep this
+% near 0 ideally to keep things simple
+N_PLANE = defVar('qgm_plane_plane_offset',0,'plane');% ALWAYS AN INTERGER
+F_PLANE = defVar('qgm_plane_plane_sep',85,'kHz');
+dF_PLANE = N_PLANE*F_PLANE;
 %% Fluorescence Imaging
 
 % OLD OBSOLETE IMAGING FLAG

@@ -45,7 +45,7 @@ function feedback_focus(data)
             % Total Piezo Voltage
             Vtot = Vpiezo + X;
              % Find Figure... or make it
-            FigName = 'FocusMonitor';
+            FigName = 'Focus';
             ff=get(groot,'Children');
             fig=[];
             for kk=1:length(ff)
@@ -62,32 +62,46 @@ function feedback_focus(data)
             end
 
             clf(fig);
+            fig.NumberTitle='off';
             co=get(gca,'colororder');
 
-            ax1=subplot(2,3,1,'Parent',fig);
-            plot(t,V_best_offset,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
+            ax1=subplot(3,2,1,'Parent',fig);
+            plot(t,V_best,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
                 'linewidth',1,'markersize',8,'parent',ax1);
-            ylabel(ax1,'best focus piezo offset (V)');
+            ylabel(ax1,'best piezo (V)');
 
-            ax2=subplot(2,3,2,'Parent',fig);
+            ax2=subplot(3,2,3,'Parent',fig);
             plot(t,X,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
                 'linewidth',1,'markersize',8,'parent',ax2);
-            ylabel(ax2,'piezo offset (V)');
-            
-
+            ylabel(ax2,'piezo offset (V)');     
             
             
-            ax3=subplot(2,3,3,'Parent',fig);
+            ax3=subplot(3,2,5,'Parent',fig);
             plot(t,maxScore,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
                 'linewidth',1,'markersize',8,'parent',ax3);
             ylabel(ax3,'peak score (arb.)');
             
             
+%             
+            ax4=subplot(2,2,2,'Parent',fig);
+            plot(timeAgo,X,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
+                'linewidth',1,'markersize',8,'parent',ax4);
+            ylabel(ax4,'piezo offset (V)');
+            xlabel(ax4,'time ago (min.)');
+            hold(ax4,'on');
+
+            ax5=subplot(2,2,4,'Parent',fig);
+            plot(timeAgo,V_best_offset-X,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
+                'linewidth',1,'markersize',8,'parent',ax5);
+            ylabel(ax5,'best piezo - piezo');
+            xlabel(ax5,'time ago (min.)');
+
+
             if doFeedback
                 errorAll = V_best_offset(1)-X(1);
                 
                 error_P = errorAll(1);
-                gain_P = 0.8;
+                gain_P = 0.5;
                                 
                 % Integral Error
                 tau_I = 10; % tau in minutes                
@@ -110,7 +124,9 @@ function feedback_focus(data)
                         (getVarOrdered('objective_piezo') + piezo_offset) <= 0
                     piezo_offset = old_piezo_offset;
                 end
-                
+                                
+                plot(0,piezo_offset,'o-','markerfacecolor',co(2,:),'markeredgecolor',co(2,:)*.5,...
+                 'linewidth',1,'markersize',8,'parent',ax4);
                 save('piezo_offset.mat','piezo_offset');                             
             end
 

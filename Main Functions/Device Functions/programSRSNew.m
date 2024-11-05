@@ -25,14 +25,14 @@ if nargin==0
 end
 
 
-disp('Programming SRS ');
-disp(['     Address      : ' num2str(settings.Address)]);
-disp(['     Frequency    : ' num2str(settings.Frequency) ' MHz']);
-disp(['     Power        : ' num2str(settings.PowerBNC) ' dBm']);
-disp(['     Enable BNC   : ' num2str(settings.EnableBNC)]);
-disp(['     Enable N     : ' num2str(settings.EnableN)]);
-disp(['     Enable Sweep : ' num2str(settings.EnableSweep)]);
-disp(['     Sweep Range  : ' num2str(settings.SweepRange) ' MHz']);
+logText('Programming SRS ');
+logText(['     Address      : ' num2str(settings.Address)]);
+logText(['     Frequency    : ' num2str(settings.Frequency) ' MHz']);
+logText(['     Power        : ' num2str(settings.PowerBNC) ' dBm']);
+logText(['     Enable BNC   : ' num2str(settings.EnableBNC)]);
+logText(['     Enable N     : ' num2str(settings.EnableN)]);
+logText(['     Enable Sweep : ' num2str(settings.EnableSweep)]);
+logText(['     Sweep Range  : ' num2str(settings.SweepRange) ' MHz']);
 
 
 % ADDRESSES:

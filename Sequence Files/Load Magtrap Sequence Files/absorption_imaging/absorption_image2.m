@@ -47,7 +47,7 @@ params = seqdata.params.absorption_image;
 % Display the imaging flags (conditions of imaging)
 str=['Absorption Imaging : ' flags.image_atomtype ' ' flags.img_direction ...
     ' ' flags.negative_imaging_shim ' ' flags.condition];
-disp(str);
+logText(str);
 
 % Rb Probe Detuning and Power
 Rb_detuning = params.detunings.Rb.(flags.img_direction) ...

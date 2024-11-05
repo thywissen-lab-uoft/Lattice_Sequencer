@@ -54,7 +54,7 @@ params = seqdata.params.absorption_image;
 % Display the imaging flags (conditions of imaging)
 str=['Absorption Imaging : ' flags.image_atomtype ' ' flags.img_direction ...
     ' ' flags.negative_imaging_shim ' ' flags.condition];
-disp(str);
+logText(str);
 
 % Rb Probe Detuning and Power
 Rb_detuning = params.detunings.Rb.(flags.img_direction) ...
@@ -84,7 +84,7 @@ Is = quant_shim_val;
 % separate F and mF states 
 
 if strcmp(flags.condition, 'SG')
-    disp(' Pulsing Stern-Gerlach field.');
+    logText(' Pulsing Stern-Gerlach field.');
     do_stern_gerlach(seqdata,flags,params.SG)
 end
 

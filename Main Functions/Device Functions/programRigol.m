@@ -129,9 +129,7 @@ cmds.BURST_IDLE = ':SOURCE<n>:BURST:IDLE';                  % Final value after 
 % Override to DC value
 cmds.DC = ':SOURCE<n>:APPLY:DC';
 %% Notify the user
-disp(' ');
-
-disp([' Progamming ' DeviceName]);
+logText([' Progamming ' DeviceName]);
 % disp(' - BURST, MOD, and SWEEP are mutually exclusive commands');
 % disp(' - SWEEP returns to initial frequency at end of sweep.');
 % disp(' - BURST can only go up to 100 MHz, <300ns trigger latency');
@@ -151,12 +149,12 @@ playBeep;
 %% Write
 try
     if ~isempty(ch1_set)
-        disp('Programming channel 1.');
+        logText('Programming channel 1.');
         writeRigol(1,ch1_set);
     end
     
     if ~isempty(ch2_set)
-        disp('Programming channel 2.');
+        logText('Programming channel 2.');
         writeRigol(2,ch2_set);
     end
 catch ME
@@ -239,7 +237,7 @@ delete(obj);
 
 % Have the function generator play a beep;
     function playBeep      
-        disp('Playing a BEEP on the Rigol.');
+        logText('Playing a BEEP on the Rigol.');
         strBeepON=':SYSTEM:BEEPER:STATE ON';        % Enable the beeper
         strBeepOFF=':SYSTEM:BEEPER:STATE OFF';      % Disable the beeper
         strBeepGo=':SYSTEM:BEEPER::IMMEDIATE';      % Play the Beeper
@@ -272,7 +270,7 @@ function obj=visaConnect(DeviceName)
         % Get basic device information
         nfo = query(obj, '*IDN?');
         nfo=strtrim(nfo);   
-        disp(['Established connection to ' nfo]);
+        logText(['Established connection to ' nfo]);
 
     catch ME
         warning([DeviceName]);

@@ -117,7 +117,7 @@ if sum(settings.ENBL + settings.ENBR)~=1
    error('You can only have one SRS output enabled at a time!!'); 
 end
 %% Print desired output
-disp('Programming SRS ');
+logText('Programming SRS ');
 
 for kk=1:length(fnames)
     str = ['     ' fnames{kk} ' : ' num2str(settings.(fnames{kk}))];
@@ -125,7 +125,7 @@ for kk=1:length(fnames)
     if isfield(units,fnames{kk})
         str = [str ' ' units.(fnames{kk})];
     end
-   disp(str);
+   logText(str);
 end
 
 %% Disable outputs first

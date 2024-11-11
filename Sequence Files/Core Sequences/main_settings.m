@@ -452,7 +452,7 @@ seqdata.flags.xdtB_pulse_lattice            = 0;
 defVar('xdtb_lattice_load_time',0.1,'ms');
 defVar('xdtb_lattice_depth',[2],'Er');
 defVar('xdtb_lattice_hold_pulse_time',[2],'ms');
-defVar('xdtb_lattice_pulse_equil_time',[500],'ms');
+defVar('xdtb_lattice_pulse_equil_time',[100],'ms');
 
 % Feshbach
 seqdata.flags.xdtB_feshbach_off             = 0;
@@ -647,10 +647,10 @@ defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 % Offset of frequency in interger multiples of plane separation
 % Change N_PLANE if you want to try hopping to different planes, keep this
 % near 0 ideally to keep things simple
-defVar('qgm_planeShift_N',0,'plane');% ALWAYS AN INTERGER
+defVar('qgm_planeShift_N',-6,'plane');% ALWAYS AN INTERGER
 defVar('qgm_planeShift_freqperplane',85,'kHz'); % kHz/Plane
 defVar('qgm_planeShift_voltperplane',-0.076,'V'); % V/Plane (sign convention is relative to freqperplane)
-seqdata.flags.qgm_doPlaneShift = 0;
+seqdata.flags.qgm_doPlaneShift = 1;
 % Tilt Plane Selection Tilt Settings
 freq_offset_tilt_list = 120; 
 freq_offset_amplitude_tilt_list = [15]; % 15 kHz good 2024/10/27 CJF
@@ -683,7 +683,7 @@ defVar('f_offset',f_offset,'kHz');
 
 %% Micrscope and Microscope Feedback Position
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[6.45],'V');6.3;3.75;[1.65];
+defVar('objective_piezo',[6],'V');6.45; 6.3;3.75;[1.65];
 
 % CF : I have no idea how this was calibrated, but it should be
 % 0.1V = 700 nm, larger means further away from chamber

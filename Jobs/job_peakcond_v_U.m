@@ -1,15 +1,15 @@
-function J=job_conducivity_ac_shake
+function J=job_peakcond_v_U
    
 %% AC Sequnece Modifier
 % THIS CODE IS UGLY AND CONFUSING, NEEDS TO BE FIXED
- function curtime = ac_conductivity(curtime,freq,field,evap_depth,mod_strength,mod_ramp_time,uwave_freq_amp)
+ function curtime = ac_pvU(curtime,freq,field,evap_depth,mod_strength,mod_ramp_time,uwave_freq_amp)
         global seqdata;        
         
         % Optical Evaporation        
         defVar('xdtB_evap_power',evap_depth,'W');
         % Magnetic Field in Lattice
         defVar('lattice_load_feshbach_field',field,'G'); 
-   
+               
         seqdata.flags.lattice_conductivity_new      = 1;  
         % Conductivity       
         seqdata.flags.conductivity_ODT1_mode            = 1; % 0:OFF, 1:SINE, 2:DC
@@ -17,11 +17,13 @@ function J=job_conducivity_ac_shake
         seqdata.flags.conductivity_mod_direction        = 1; % 1:X-direction 2:Y-direction 
         defVar('conductivity_mod_freq',freq,'Hz');
         defVar('conductivity_ODT2_mod_amp',mod_strength,'V');  % ODT2 Mod Depth
-        defVar('conductivity_mod_ramp_time',mod_ramp_time,'ms');      
-        
+        defVar('conductivity_mod_ramp_time',mod_ramp_time,'ms'); 
+     
         % Modulation time
         t0 = 50;T = 1e3/freq; 
         t_start = T*ceil((t0+mod_ramp_time)/T);
+%         tvec = round(t0 + linspace(0,2*T,18),1);
+%         tvec = round(t_start + [zeros(1,3) 0.25*ones(1,3) 0.5*ones(1,3) 0.75*ones(1,3) ones(1,3)]*T, 1) - mod_ramp_time;
         tvec = round(t_start + [0:0.125:2]*T, 1) - mod_ramp_time;
         tvec = tvec(:);
         tvec = tvec';
@@ -38,59 +40,31 @@ function J=job_conducivity_ac_shake
 clear J
 
 % Magnetic Field (G)
-B_conductivity = 190;
+% B_conductivity = 201.1;
 % Optical Evaporation Power (W)
 power_conductivity = 0.065; 
 % Conductivity modulation ramp up time (ms)
-mod_ramp_time = 50;
+mod_ramp_time = 150;
 % Plane Selection Frequency amplitude (kHz);
 uwave_freq_amp = 30;
 % Modulation Frequencies
-freq_list = 50+[-30 -20 -15 -10 -5 0 5 10 15 25 40];
+f = 51;
+%Modulation amplitude
+mod_strength = 0.2;
+%xdtB lattice pulse depth
+field_list = [190 195 198.5];
 
-% Randomize the modulation frequencies
-freq_list = freq_list(randperm(numel(freq_list)));
+% Randomize the lattice pulse depths
+field_list = field_list(randperm(numel(field_list)));
 
-for ii = 1:length(freq_list)
+
+for ii = 1:length(field_list)
     % Get the current modulation frequency
-    f = freq_list(ii);   
-    
-    % AMPLITUDE RESPONSE CODE CAN BE CALCULATED MANUALLY NO NEED TO ALWAYS
-    % PUT IT IN. FC FIX THIS PLEASE
-    
-    % Modulation Amplitude Calibration    
-    %0.85um amplitude response
-%     x0 = 50;
-%     y0 = 0.9513;
-%     aL = [9.3e-4 -1.18e-6 1.04e-9 -3.95e-13];
-%     aH = [1.41e-3 -2.08e-7 2.47e-11 -1.3e-15];   
-
-    %0.65um amplitude response
-%     x0 = 50;
-%     y0 = 0.9513;
-%     aL = [7.87e-4 -9.73e-7 8.73e-10 -3.47e-13];
-%     aH = [1.28e-3 -1.61e-7 1.56e-11 -7.28e-16]; 
-
-    %0.65um amplitude response
-    x0 = 52;
-    y0 = 0.4038;
-    aL = [3.95e-4 -4.90e-7 4.30e-10 -1.60e-13];
-    aH = [4.99e-4 -4.43e-8 5.05e-12 -2.43e-16]; 
-    
-%     if f<=x0
-%         a=aL;
-%     else
-%         a=aH;
-%     end        
-    a=aL;
-    mod_strength = y0 + a(1)*(f-x0)^2 + a(2)*(f-x0)^4 + a(3)*(f-x0)^6 + a(4)*(f-x0)^8; 
-    mod_strength = min([mod_strength 4]);
-
-    mod_strength = 0.4;
+    B_conductivity = field_list(ii);   
     
     out = struct;   
     out.SequenceFunctions   = {@main_settings,@(curtime) ...
-        ac_conductivity(curtime,f,B_conductivity,power_conductivity,mod_strength,mod_ramp_time,uwave_freq_amp),@main_sequence};
+        ac_pvU(curtime,f,B_conductivity,power_conductivity,mod_strength,mod_ramp_time,uwave_freq_amp),@main_sequence};
 %     npt.CycleStartFcn       = @cycleStart;
 %     npt.CycleCompleteFcn    = @cycleComplete;
 %     npt.JobCompleteFcn      = @jobComplete;

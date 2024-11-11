@@ -535,7 +535,6 @@ function runCurrentJob(obj)
         obj.CurrentJob.JobName];
     obj.CurrentJob.Status = 'run';
     obj.CurrentJob.updateTableInterface();
-    obj.CurrentJob.updateCameraControl();
     obj.updateJobText();
     global seqdata
     seqdata.scancycle           = obj.CurrentJob.CycleNow;
@@ -544,7 +543,8 @@ function runCurrentJob(obj)
     ret = obj.compile(1,1);
     if ret
         obj.CycleStr.String = num2str(seqdata.scancycle);
-        [ret,tExecute]=obj.run();        
+        [ret,tExecute]=obj.run(); 
+        obj.CurrentJob.updateCameraControl();
     end
     if ret
         obj.CurrentJob.ExecutionDates(end+1) = tExecute;
@@ -613,6 +613,20 @@ function [ret,tExecute] = run(obj)
     obj.SequencerWatcher.WaitTime   = obj.CurrentJob.calcRealWaitTime();
     obj.SequencerWatcher.WaitEnable = obj.CurrentJob.WaitMode; 
     start(obj.SequencerWatcher);
+end
+
+function ret = compileTestJob(obj,J)
+    OldCurrentJob = obj.CurrentJob;
+    ret = false;
+    try
+        obj.CurrentJob = J;
+        ret = obj.compile(0,0);
+    catch ME
+        warning(getReport(ME,'extended','hyperlinks','on'));
+        obj.CurrentJob = OldCurrentJob;
+    end
+    obj.CurrentJob = OldCurrentJob;
+
 end
 
 % Compiles the seqdata (see compile.m for old way)

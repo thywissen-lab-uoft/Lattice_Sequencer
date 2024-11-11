@@ -7,7 +7,7 @@ global mainGUI_Directory
         clear focus
         try
             % Collect Focus Data
-            warning off
+            %warning off
             for l=1:length(data)                
                 if isfield(data{l},src)
                     P = data{l}.Params;                    
@@ -30,7 +30,7 @@ global mainGUI_Directory
                 end
             end   
             
-            warning on
+            %warning on
             t = datetime(t,'convertfrom','datenum');
             tNow = datetime(now,'convertfrom','datenum');
 

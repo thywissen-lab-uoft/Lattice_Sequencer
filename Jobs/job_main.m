@@ -10,10 +10,10 @@ npt.lattice_load_feshbach_field = 201.1;
 doJob_warmup            = 0;
 doJob_stabilize         = 0;
 doJob_single_plane      = 0;
-doJob_Conductivity      = 1;
+doJob_Conductivity      = 0;
 doJob_Conductivity_single_freq_long_time = 0;
 doJob_Conductivity_Vary_Force=0;
-doJob_peakCond_v_U      = 0;
+doJob_peakCond_v_U      = 1;
 %%
 
 J_stripe            = job_stripe_feedback(npt);

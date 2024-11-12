@@ -44,15 +44,15 @@ clear J
 % Optical Evaporation Power (W)
 power_conductivity = 0.065; 
 % Conductivity modulation ramp up time (ms)
-mod_ramp_time = 150;
+mod_ramp_time = 50;
 % Plane Selection Frequency amplitude (kHz);
 uwave_freq_amp = 30;
 % Modulation Frequencies
-f = 51;
+f = 54;
 %Modulation amplitude
-mod_strength = 0.2;
+mod_strength = 0.4;
 %xdtB lattice pulse depth
-field_list = [190 195 198.5];
+field_list = [190 195 198.5 199.4 200 200.4 200.65 200.8 200.9 201.1 201.2];
 
 % Randomize the lattice pulse depths
 field_list = field_list(randperm(numel(field_list)));

@@ -27,9 +27,10 @@ function curtime = one_plane(curtime)
     seqdata.flags.plane_selection_dotilt        = 0; 
     seqdata.flags.lattice_fluor_multi_mode      = 0; 
  
+    defVar('objective_piezo',[5],'V');
 
-   seqdata.flags.qgm_doPlaneShift = 1;
-   defVar('qgm_planeShift_N',[-5 -4 -3],'plane');
+%    seqdata.flags.qgm_doPlaneShift = 1;
+%    defVar('qgm_planeShift_N',[-9:1:-3],'plane');
  
 end
 

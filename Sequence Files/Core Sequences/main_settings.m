@@ -397,7 +397,7 @@ seqdata.flags.xdtB                          = 1;         % Master Flag
 
 % Levitation
 seqdata.flags.xdtB_levitate                 = 1;
-defVar('xdtB_levitate_value',[0.11],'V');.1475;0.09;.07;0.1475;
+defVar('xdtB_levitate_value',[0.11],'V'); %NOT USED .1475;0.09;.07;0.1475;
 defVar('xdtB_levitate_ramptime',100,'ms');
 
 % Feshbach
@@ -647,7 +647,7 @@ defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 % Offset of frequency in interger multiples of plane separation
 % Change N_PLANE if you want to try hopping to different planes, keep this
 % near 0 ideally to keep things simple
-defVar('qgm_planeShift_N',-6,'plane');% ALWAYS AN INTERGER
+defVar('qgm_planeShift_N',0,'plane');% ALWAYS AN INTERGER
 defVar('qgm_planeShift_freqperplane',85,'kHz'); % kHz/Plane
 defVar('qgm_planeShift_voltperplane',-0.076,'V'); % V/Plane (sign convention is relative to freqperplane)
 seqdata.flags.qgm_doPlaneShift = 1;
@@ -683,7 +683,7 @@ defVar('f_offset',f_offset,'kHz');
 
 %% Micrscope and Microscope Feedback Position
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[6],'V');6.45; 6.3;3.75;[1.65];
+defVar('objective_piezo',[6.5],'V');
 
 % CF : I have no idea how this was calibrated, but it should be
 % 0.1V = 700 nm, larger means further away from chamber
@@ -703,7 +703,7 @@ if reset_piezo_offset
     piezo_offset=0;save(fullfile(mainGUI_Directory,'piezo_offset.mat'),'piezo_offset');
 end
 defVar('piezo_offset',piezo_offset,'V');
-seqdata.flags.misc_UsePiezoOffset = 1;
+seqdata.flags.misc_UsePiezoOffset = 0;
 
 % Offset of piezo in interger multiples of plane separation
 % Change N_PLANE if you want to try hopping to different planes, keep this

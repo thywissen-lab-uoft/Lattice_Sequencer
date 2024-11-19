@@ -46,7 +46,7 @@ evap_depth = 0.1;
         return;    
         end              
          data = getRecentGuiData(50);  % CF : DONT TOUCH THIS W/O TALKING TO ME
-         feedback_stripe(data);        
+%          feedback_stripe(data);        
 %       feedback_focus(data);
    end
 

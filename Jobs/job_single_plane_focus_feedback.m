@@ -44,7 +44,7 @@ end
         return;    
         end              
         data = getRecentGuiData(4);  % CF : DONT TOUCH THIS W/O TALKING TO ME, oKAY CF CHANGED IT BUT IT SHOULD REALLY UST BE A BIG NMBER FIX THIS BUG LATER
-         feedback_focus(data);
+        feedback_focus(data);
    end
 
 %% Create Job Object

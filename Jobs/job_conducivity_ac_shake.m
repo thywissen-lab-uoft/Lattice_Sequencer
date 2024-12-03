@@ -2,12 +2,13 @@ function J=job_conducivity_ac_shake
    
 %% AC Sequnece Modifier
 % THIS CODE IS UGLY AND CONFUSING, NEEDS TO BE FIXED
- function curtime = ac_conductivity(curtime,freq,field,evap_depth,mod_strength,mod_ramp_time,uwave_freq_amp)
+ function curtime = ac_conductivity(curtime,freq,field,evap_depth,mod_strength,mod_ramp_time)
         global seqdata;        
         
         % Optical Evaporation        
         defVar('xdtB_evap_power',evap_depth,'W');
         % Magnetic Field in Lattice
+        seqdata.flags.lattice_load_feshbach_ramp  = 1;
         defVar('lattice_load_feshbach_field',field,'G'); 
    
         seqdata.flags.lattice_conductivity_new      = 1;  
@@ -19,17 +20,29 @@ function J=job_conducivity_ac_shake
         defVar('conductivity_ODT2_mod_amp',mod_strength,'V');  % ODT2 Mod Depth
         defVar('conductivity_mod_ramp_time',mod_ramp_time,'ms');      
         
+        % Pulse lattice
+        seqdata.flags.xdtB_pulse_lattice            = 0;
+        defVar('xdtb_lattice_load_time',0.1,'ms');
+        defVar('xdtb_lattice_depth',[5],'Er');
+        defVar('xdtb_lattice_hold_pulse_time',[2],'ms');
+        defVar('xdtb_lattice_pulse_equil_time',[500],'ms');
+        
         % Modulation time
         t0 = 50;T = 1e3/freq; 
         t_start = T*ceil((t0+mod_ramp_time)/T);
+        
+        % Two periods 1/8 cycle sampling
         tvec = round(t_start + [0:0.125:2]*T, 1) - mod_ramp_time;
+        
+        % Three periods 1/10 cycle sampling
+%         tvec = round(t_start + [0:0.1:3]*T, 1) - mod_ramp_time;
+        
         tvec = tvec(:);
         tvec = tvec';
         defVar('conductivity_mod_time',tvec,'ms');             
         
         % Plane Selection
         seqdata.flags.plane_selection_dotilt        = 0;
-        defVar('qgm_plane_uwave_frequency_amplitude_notilt',uwave_freq_amp,'kHz');
         d = load('f_offset.mat');
         f_offset = d.f_offset;% - 1*20;        
         defVar('f_offset',f_offset,'kHz'); 
@@ -38,18 +51,20 @@ function J=job_conducivity_ac_shake
 clear J
 
 % Magnetic Field (G)
-B_conductivity = 190;
+B_conductivity = 201.1;
 % Optical Evaporation Power (W)
-power_conductivity = 0.065; 
+power_conductivity = 0.067; 
 % Conductivity modulation ramp up time (ms)
 mod_ramp_time = 50;
 % Plane Selection Frequency amplitude (kHz);
-uwave_freq_amp = 30;
+
 % Modulation Frequencies
-freq_list = 50+[-30 -20 -15 -10 -5 0 5 10 15 25 40];
+freq_list = [54];
 
 % Randomize the modulation frequencies
-freq_list = freq_list(randperm(numel(freq_list)));
+% freq_list = freq_list(randperm(numel(freq_list)));
+
+% freq_list = [160 freq_list];
 
 for ii = 1:length(freq_list)
     % Get the current modulation frequency
@@ -72,34 +87,38 @@ for ii = 1:length(freq_list)
 %     aH = [1.28e-3 -1.61e-7 1.56e-11 -7.28e-16]; 
 
     %0.65um amplitude response
-    x0 = 52;
-    y0 = 0.4038;
+    x0 = 14;
+    y0 = 1.9786;
     aL = [3.95e-4 -4.90e-7 4.30e-10 -1.60e-13];
-    aH = [4.99e-4 -4.43e-8 5.05e-12 -2.43e-16]; 
+    aH = [2.09e-4 4.91e-8 -4.40e-12 1.16e-16]; 
     
 %     if f<=x0
 %         a=aL;
 %     else
 %         a=aH;
-%     end        
-    a=aL;
+%     end   
+
+    a=aH;
     mod_strength = y0 + a(1)*(f-x0)^2 + a(2)*(f-x0)^4 + a(3)*(f-x0)^6 + a(4)*(f-x0)^8; 
     mod_strength = min([mod_strength 4]);
 
-    mod_strength = 0.4;
+    mod_strength = 4;
     
     out = struct;   
     out.SequenceFunctions   = {@main_settings,@(curtime) ...
-        ac_conductivity(curtime,f,B_conductivity,power_conductivity,mod_strength,mod_ramp_time,uwave_freq_amp),@main_sequence};
+        ac_conductivity(curtime,f,B_conductivity,power_conductivity,mod_strength,mod_ramp_time),@main_sequence};
 %     npt.CycleStartFcn       = @cycleStart;
 %     npt.CycleCompleteFcn    = @cycleComplete;
 %     npt.JobCompleteFcn      = @jobComplete;
-    out.CycleEnd = 17;
+
+    out.CycleEnd = 17;    
+%     out.CycleEnd = 30;
+
     out.WaitMode = 2;
     out.WaitTime = 90;
-    out.JobName             = [num2str(ii) ' shake ' num2str(f) ' Hz,' ...
+    out.JobName             = [num2str(ii) ' shake ' '5 Er pulse' num2str(f) ' Hz,' ...
         num2str(B_conductivity) 'G,' num2str(1e3*power_conductivity) ' mW ' num2str(mod_strength) ' amp, ' ...
-        num2str(mod_ramp_time) ' ms ramp, ', num2str(uwave_freq_amp), ' kHz uwave amp'];
+        num2str(mod_ramp_time) ' ms ramp'];
     out.SaveDir         = out.JobName;    
     J(ii) = sequencer_job(out);
 end

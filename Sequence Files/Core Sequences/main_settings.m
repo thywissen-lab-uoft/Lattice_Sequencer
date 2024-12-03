@@ -174,7 +174,7 @@ seqdata.flags.image_F1_pulse                = 0; % (unused?) repump Rb F=1 befor
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',[25],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',[15],'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[.1],'ms');
@@ -348,14 +348,14 @@ defVar('xdt_evap_sympathetic_ramp_time',[500],'ms');  % Sympathetic ramp time
 
 % Optical evaporation
 seqdata.flags.CDT_evap                       = 1; 
-defVar('xdt_evap1_power',[0.14],'W');0.14;
+defVar('xdt_evap1_power',0.14,'W');0.14;
 defVar('xdt_evap1_time',25e3,'ms');
 defVar('xdt_evap1_tau_fraction',3.5,'arb');
 
 % Power Ramp (useful to halt evaporation)
 seqdata.flags.xdt_ramp_power_end             = 1;   
-defVar('xdt_evap_end_ramp_power', [.17],'W');  0.17;.12;
-defVar('xdt_evap_end_ramp_power2', [.17],'W');0.176;
+defVar('xdt_evap_end_ramp_power', [0.17],'W');  0.17;.12;
+defVar('xdt_evap_end_ramp_power2', [0.17],'W');0.176;
 defVar('xdt_evap_end_ramp_time',  [500],'ms');  
 defVar('xdt_evap_end_ramp_hold',  [0],'ms'); 
 
@@ -416,7 +416,7 @@ seqdata.flags.xdtB_rf_mix                   = 1;
 
 % Evaporation
 seqdata.flags.xdtB_evap                     = 1;
-defVar('xdtB_evap_power',[0.1],'W');0.0655;.085;
+defVar('xdtB_evap_power',[0.064],'W');0.0655;.085;
 defVar('xdtB_evap_time',[5000],'ms');
 defVar('xdtB_evap_tau_fraction',3.5','arb');
 
@@ -501,9 +501,9 @@ seqdata.flags.lattice_load            = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load the lattices
 defVar('lattice_load_time',[750],'ms');750;
-defVar('lattice_load_depthX',[2.5],'Er');2.5;
-defVar('lattice_load_depthY',getVar('lattice_load_depthX'),'Er');2.5;
-defVar('lattice_load_depthZ',getVar('lattice_load_depthX'),'Er');2.5;
+defVar('lattice_load_depthX',2.5,'Er');2.5;
+defVar('lattice_load_depthY',2.5,'Er');2.5;
+defVar('lattice_load_depthZ',2.5,'Er');2.5;
 
 % Ramp dimple during lattice loading (not implemented yet)
 seqdata.flags.lattice_load_dimple         = 0;
@@ -539,11 +539,18 @@ seqdata.flags.lattice_conductivity_new      = 0;   % New sequence created July 2
 seqdata.flags.lattice_conductivity          = 0;    % old sequence
 
 % Conductivity Flags
-seqdata.flags.conductivity_ODT1_mode            = 1; % 0:OFF, 1:SINE, 2:DC
-seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
+seqdata.flags.conductivity_ODT1_mode            = 2; % 0:OFF, 1:SINE, 2:DC
+seqdata.flags.conductivity_ODT2_mode            = 2; % 0:OFF, 1:SINE, 2:DC
 seqdata.flags.conductivity_mod_direction        = 1; % 1:X-direction 2:Y-direction
 
-defVar('conductivity_snap_and_hold_time',[0],'ms');
+%Additional Lattice Conductivity Flags
+seqdata.flags.conductivity_rf_spec              = 0;
+seqdata.flags.conductivity_enable_mod_ramp      = 1; % Enable a abiabatic ramp up of XDT piezos
+seqdata.flags.conductivity_QPD_trigger          = 1; % Trigger QPD monitor LabJack/Scope
+seqdata.flags.conductivity_snap_off_XDT         = 0; % Quick ramp of ODTs while atoms are displaced
+seqdata.flags.conductivity_snap_and_hold        = 0; % Diabatically turn off mod for quench measurement
+
+defVar('conductivity_snap_and_hold_time',[10],'ms');
 defVar('conductivity_FB_field',201,'G');201.1;
 defVar('conductivity_zshim',0,'A')
 defVar('conductivity_mod_freq',[55],'Hz');       %w Modulation Frequency
@@ -558,7 +565,7 @@ defVar('FB_heating_holdtime',[750],'ms');
 if seqdata.flags.conductivity_mod_direction == 1
     %For x-direction modulation only adjust ODT2 amp
     defVar('conductivity_ODT1_mod_amp',0,'V');  % ODT1 Mod Depth   
-    defVar('conductivity_ODT2_mod_amp',[0.9],'V');0.9;  % ODT2 Mod Depth
+    defVar('conductivity_ODT2_mod_amp',[2],'V');0.9;  % ODT2 Mod Depth
     defVar('conductivity_rel_mod_phase',0,'deg');   % Phase shift of sinusoidal mod - should be 0 for mod along x
 elseif seqdata.flags.conductivity_mod_direction == 2
     %For y-direction modulation only adjust ODT1 amp
@@ -626,7 +633,7 @@ defVar('qgm_kill_detuning',[41],'MHz');41;36;% 2024/05/07 35 MHz for 120 Er; 202
 defVar('qgm_kill_power',[1.5],'V');.01;.02;
     
 seqdata.flags.plane_selection_useFeedback   = 1;
-seqdata.flags.plane_selection_dotilt        = 1;
+seqdata.flags.plane_selection_dotilt        = 0;
 seqdata.flags.plane_selection_do_ring_select        = 0; % testing CF
 defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 
@@ -647,12 +654,12 @@ defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 % Offset of frequency in interger multiples of plane separation
 % Change N_PLANE if you want to try hopping to different planes, keep this
 % near 0 ideally to keep things simple
-defVar('qgm_planeShift_N',0,'plane');% ALWAYS AN INTERGER
+defVar('qgm_planeShift_N',-7,'plane');% ALWAYS AN INTERGER
 defVar('qgm_planeShift_freqperplane',85,'kHz'); % kHz/Plane
 defVar('qgm_planeShift_voltperplane',-0.076,'V'); % V/Plane (sign convention is relative to freqperplane)
 seqdata.flags.qgm_doPlaneShift = 1;
 % Tilt Plane Selection Tilt Settings
-freq_offset_tilt_list = 120; 
+freq_offset_tilt_list =-170;120; 
 freq_offset_amplitude_tilt_list = [15]; % 15 kHz good 2024/10/27 CJF
 defVar('qgm_plane_uwave_frequency_offset_tilt',freq_offset_tilt_list,'kHz');
 defVar('qgm_plane_uwave_frequency_amplitude_tilt',freq_offset_amplitude_tilt_list,'kHz');
@@ -683,7 +690,7 @@ defVar('f_offset',f_offset,'kHz');
 
 %% Micrscope and Microscope Feedback Position
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[6.5],'V');
+defVar('objective_piezo',[6],'V');
 
 % CF : I have no idea how this was calibrated, but it should be
 % 0.1V = 700 nm, larger means further away from chamber
@@ -703,7 +710,7 @@ if reset_piezo_offset
     piezo_offset=0;save(fullfile(mainGUI_Directory,'piezo_offset.mat'),'piezo_offset');
 end
 defVar('piezo_offset',piezo_offset,'V');
-seqdata.flags.misc_UsePiezoOffset = 0;
+seqdata.flags.misc_UsePiezoOffset = 1;
 
 % Offset of piezo in interger multiples of plane separation
 % Change N_PLANE if you want to try hopping to different planes, keep this

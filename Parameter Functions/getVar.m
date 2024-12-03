@@ -16,7 +16,7 @@ function [val,ind] = getVar(name)
             random_list = random_list(random_list<=L);  % Partial random list          
             cycle_number = seqdata.scancycle;           % Cycle Number        
             ind = random_list(1+mod(cycle_number-1,L));
-            val = value_list(ind);               
+            val = value_list(ind);    
     end
     
     % Write to output parameters

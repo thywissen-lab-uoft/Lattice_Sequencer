@@ -1081,7 +1081,7 @@ if seqdata.flags.lattice_fluor_ramp
     % Lattice Depth Request
     defVar('lattice_FI_depth_X',[1050],'Er');1050;
     defVar('lattice_FI_depth_Y',[1040],'Er');1040;
-    defVar('lattice_FI_depth_Z',[1000],'Er');1150;  
+    defVar('lattice_FI_depth_Z',[1300],'Er');1150;  
    % Perform the rest of the lattice ramps
    dT = getVar('lattice_FI_ramptime');
    Ux = getVar('lattice_FI_depth_X');

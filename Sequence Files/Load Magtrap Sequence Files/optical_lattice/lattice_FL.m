@@ -191,7 +191,7 @@ end
 % This code set the Fpump power regulation and the 4 pass frequency
 
     % Power that the Fpump beam regulates to
-    F_Pump_List = [0.85];.8;[0.7];[0.9];
+    F_Pump_List = [0.95];[0.85];.8;[0.7];[0.9];
     
     % Frequency of the FPUMP single pass (MHz)
     fluor.F_Pump_Frequency = 80;
@@ -285,7 +285,7 @@ defVar('qgm_Raman2_power',0.4,'normalized');0.4;
 % Detunings to modify the Raman condition (shouldn't this always be zero?)
 % CF : Since I believe Raman two photon should be the same as EIT two
 % photon
-defVar('qgm_Raman1_shift',[-80],'kHz');-110;
+defVar('qgm_Raman1_shift',[-40],'kHz');-80;-110;
 defVar('qgm_Raman2_shift',0,'kHz');
 
 %Set the range of the frequency sweeps for Raman spectroscopy

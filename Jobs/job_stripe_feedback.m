@@ -28,6 +28,7 @@ evap_depth = 0.1;
         global seqdata         
         defVar('xdtB_evap_power',evap_depth,'W');
         defVar('lattice_load_feshbach_field',field,'G'); 
+        seqdata.flags.do_plane_selection            = 1;
         seqdata.flags.lattice_conductivity_new      = 0; 
         seqdata.flags.plane_selection_dotilt        = 1;           
         seqdata.flags.lattice_fluor_multi_mode      = 0; % 0: one image 2 :piezo multi shot
@@ -46,8 +47,7 @@ evap_depth = 0.1;
         return;    
         end              
          data = getRecentGuiData(50);  % CF : DONT TOUCH THIS W/O TALKING TO ME
-%          feedback_stripe(data);        
-%       feedback_focus(data);
+         feedback_stripe(data);        
    end
 
 %% Create Job Object

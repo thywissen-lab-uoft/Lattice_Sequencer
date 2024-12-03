@@ -37,6 +37,7 @@ data=guidata(fig);
           end
        end
        vars(notUsed)=[];
+       
         if isempty(vars)
            str = 'no scan variable detected';
         else
@@ -49,6 +50,9 @@ data=guidata(fig);
               str=[str vars{kk} '(' num2str(ind) '/' ...
                   num2str(length(seqdata.variables.(vars{kk})))...
                   ')'];
+              
+%               [val,ind] = getVar(vars{kk})
+%               keyboard
            end
         end
        data.VarText.String = str;

@@ -9,7 +9,6 @@ setAnalogChannel(curtime,'Modulation Ramp',-10,1);
 % seqdata.flags.conductivity_ODT1_mode            = 1; % 0:OFF, 1:SINE, 2:DC
 % seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
 
-
 % Feshbach flags : (2024/05) disabled as we do feshbach ramps elsewhere
 seqdata.flags.conductivity_ramp_FB_on             = 0; 1;% Ramp FB field to resonance
 seqdata.flags.conductivity_ramp_QP_on             = 0; 1; % Ramp QP reverse with FB (only works if ramp_FB is enabled)
@@ -20,12 +19,6 @@ seqdata.flags.conductivity_ramp_QP_off            = 0;1; % Ramp QP reverse with 
 % Pin flag : (2024/05) disabled as we do this else where
 seqdata.flags.conductivity_dopin                    = 0; % Pin after modulation
 
-
-seqdata.flags.conductivity_rf_spec              = 0;
-seqdata.flags.conductivity_enable_mod_ramp      = 1; % Enable a abiabatic ramp up of XDT piezos
-seqdata.flags.conductivity_QPD_trigger          = 1; % Trigger QPD monitor LabJack/Scope
-seqdata.flags.conductivity_snap_off_XDT         = 0; % Quick ramp of ODTs while atoms are displaced
-seqdata.flags.conductivity_snap_and_hold        = 0; % Diabatically turn off mod for quench measurement
 %% Modulation Settings
 
 % VISA Address of Rigol
@@ -45,10 +38,18 @@ end
 
 if seqdata.flags.conductivity_enable_mod_ramp
     cond_mod_time = getVarOrdered('conductivity_mod_time');
+    
+    % TRYING RANDOM
+    cond_mod_time = getVar('conductivity_mod_time');
+
     cond_mod_ramp_time = getVar('conductivity_mod_ramp_time');
     total_mod_time = cond_mod_ramp_time + cond_mod_time;
 else
     total_mod_time = getVarOrdered('conductivity_mod_time');
+    
+    % TRYING RANDOM
+    total_mod_time = getVar('conductivity_mod_time');
+
 end
 
 % Phase at the end of modulation (for setting the burst idle value)
@@ -245,7 +246,6 @@ end
 
 %% Quench the modulation
 % For decay/quench measurement
-
 if seqdata.flags.conductivity_snap_and_hold
     % Ramp it down smoothly
     defVar('piezo_diabat_ramp_time',4,'ms');4;

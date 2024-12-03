@@ -212,7 +212,7 @@ switch opts.SelectMode
 
         if seqdata.flags.qgm_doPlaneShift
             kappa=getVar('qgm_planeShift_freqperplane');
-            N_PLANE = getVar('qgm_planeShift_N');
+            N_PLANE = getVarOrdered('qgm_planeShift_N');
             df = kappa*N_PLANE;
             freq_offset = freq_offset + df;
         end

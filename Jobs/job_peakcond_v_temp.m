@@ -49,17 +49,17 @@ clear J
 % Magnetic Field (G)
 B_conductivity = 201.1;
 % Optical Evaporation Power (W)
-power_conductivity = 0.064; 
+power_conductivity = 0.065; 
 % Conductivity modulation ramp up time (ms)
 mod_ramp_time = 50;
 % Plane Selection Frequency amplitude (kHz);
 uwave_freq_amp = 30;
 % Modulation Frequencies
-f = 51;
+f = 54;
 %Modulation amplitude
-mod_strength = 0.9;
+mod_strength = 0.6;
 %xdtB lattice pulse depth
-pulse_depth_list = [0:4];
+pulse_depth_list = [8 9 10];
 
 % Randomize the lattice pulse depths
 pulse_depth_list = pulse_depth_list(randperm(numel(pulse_depth_list)));

@@ -77,7 +77,7 @@ if seqdata.flags.misc_moveObjective
 
     if seqdata.flags.qgm_doPlaneShift 
         kappa = getVar('qgm_planeShift_voltperplane');
-        N_PLANE = getVar('qgm_planeShift_N');
+        N_PLANE = getVarOrdered('qgm_planeShift_N');
         Vshiftplane = kappa*N_PLANE;
         V = V + Vshiftplane;
     end

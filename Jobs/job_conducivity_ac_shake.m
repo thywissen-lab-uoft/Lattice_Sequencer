@@ -70,39 +70,22 @@ for ii = 1:length(freq_list)
     % Get the current modulation frequency
     f = freq_list(ii);   
     
-    % AMPLITUDE RESPONSE CODE CAN BE CALCULATED MANUALLY NO NEED TO ALWAYS
-    % PUT IT IN. FC FIX THIS PLEASE
-    
-    % Modulation Amplitude Calibration    
-    %0.85um amplitude response
-%     x0 = 50;
-%     y0 = 0.9513;
-%     aL = [9.3e-4 -1.18e-6 1.04e-9 -3.95e-13];
-%     aH = [1.41e-3 -2.08e-7 2.47e-11 -1.3e-15];   
-
     %0.65um amplitude response
-%     x0 = 50;
-%     y0 = 0.9513;
-%     aL = [7.87e-4 -9.73e-7 8.73e-10 -3.47e-13];
-%     aH = [1.28e-3 -1.61e-7 1.56e-11 -7.28e-16]; 
+    % x0 = 14;
+    % y0 = 1.9786;
+    % aL = [3.95e-4 -4.90e-7 4.30e-10 -1.60e-13];
+    % aH = [2.09e-4 4.91e-8 -4.40e-12 1.16e-16]; 
 
-    %0.65um amplitude response
-    x0 = 14;
-    y0 = 1.9786;
-    aL = [3.95e-4 -4.90e-7 4.30e-10 -1.60e-13];
-    aH = [2.09e-4 4.91e-8 -4.40e-12 1.16e-16]; 
+    [x0,y0,aL,aH] = calc_drive(2.4,2*pi*36,0.65); %Inputs: (Temp (t), Gamma (s^-1), desired amp (um))
     
-%     if f<=x0
-%         a=aL;
-%     else
-%         a=aH;
-%     end   
+    if f<=x0
+        a=aL;
+    else
+        a=aH;
+    end   
 
-    a=aH;
     mod_strength = y0 + a(1)*(f-x0)^2 + a(2)*(f-x0)^4 + a(3)*(f-x0)^6 + a(4)*(f-x0)^8; 
     mod_strength = min([mod_strength 4]);
-
-    mod_strength = 4;
     
     out = struct;   
     out.SequenceFunctions   = {@main_settings,@(curtime) ...

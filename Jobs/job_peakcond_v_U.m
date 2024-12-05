@@ -38,13 +38,13 @@ clear J
 % Magnetic Field (G)
 % B_conductivity = 201.1;
 % Optical Evaporation Power (W)
-power_conductivity = 0.068; 
+power_conductivity = 0.070; 
 % Conductivity modulation ramp up time (ms)
 mod_ramp_time = 50;
 % Modulation Frequencies
 f = 54;
 %Modulation amplitude
-mod_strength = [0.4 0.8];
+mod_strength = [1.2];
  
 %xdtB lattice pulse depth
 field_list = [190 195 198.5 199.4 200 200.4 200.65 200.8 200.9 201.1 201.2];

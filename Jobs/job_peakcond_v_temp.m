@@ -47,9 +47,9 @@ function J=job_peakcond_v_temp
 clear J
 
 % Magnetic Field (G)
-B_conductivity = 201.1;
+B_list = [190 200];
 % Optical Evaporation Power (W)
-power_conductivity = 0.065; 
+evap_list = [0.064:0.002:0.070]; 
 % Conductivity modulation ramp up time (ms)
 mod_ramp_time = 50;
 % Plane Selection Frequency amplitude (kHz);
@@ -57,32 +57,45 @@ uwave_freq_amp = 30;
 % Modulation Frequencies
 f = 54;
 %Modulation amplitude
-mod_strength = 0.6;
+mod_strength = [0.4 0.8];
 %xdtB lattice pulse depth
-pulse_depth_list = [8 9 10];
+pulse_depth_list = [0 4];
 
 % Randomize the lattice pulse depths
 pulse_depth_list = pulse_depth_list(randperm(numel(pulse_depth_list)));
 
-
-for ii = 1:length(pulse_depth_list)
-    % Get the current modulation frequency
-    pulse_depth = pulse_depth_list(ii);   
+ind=1;
+for bb = 1:length(B_list)
+    B = B_list(bb);
+    if B < 199
+        V = mod_strength(1);
+    else
+        V = mod_strength(2);
+    end
     
-    out = struct;   
-    out.SequenceFunctions   = {@main_settings,@(curtime) ...
-        ac_p(curtime,f,B_conductivity,pulse_depth,power_conductivity,mod_strength,mod_ramp_time,uwave_freq_amp),@main_sequence};
-%     npt.CycleStartFcn       = @cycleStart;
-%     npt.CycleCompleteFcn    = @cycleComplete;
-%     npt.JobCompleteFcn      = @jobComplete;
-    out.CycleEnd = 17;
-    out.WaitMode = 2;
-    out.WaitTime = 90;
-    out.JobName             = [num2str(ii) ' shake ' num2str(pulse_depth) 'ER, ' num2str(f) ' Hz,' ...
-        num2str(B_conductivity) 'G,' num2str(1e3*power_conductivity) ' mW ' num2str(mod_strength) ' amp, ' ...
-        num2str(mod_ramp_time) ' ms ramp, ', num2str(uwave_freq_amp), ' kHz uwave amp'];
-    out.SaveDir         = out.JobName;    
-    J(ii) = sequencer_job(out);
+    for pp = 1:length(evap_list)
+        power_conductivity = evap_list(pp);
+        
+        for ii = 1:length(pulse_depth_list)
+            pulse_depth = pulse_depth_list(ii);   
+
+            out = struct;   
+            out.SequenceFunctions   = {@main_settings,@(curtime) ...
+                ac_p(curtime,f,B,pulse_depth,power_conductivity,V,mod_ramp_time,uwave_freq_amp),@main_sequence};
+        %     npt.CycleStartFcn       = @cycleStart;
+        %     npt.CycleCompleteFcn    = @cycleComplete;
+        %     npt.JobCompleteFcn      = @jobComplete;
+            out.CycleEnd = 17;
+            out.WaitMode = 2;
+            out.WaitTime = 90;
+            out.JobName             = [num2str(ii) ' shake ' num2str(pulse_depth) 'ER, ' num2str(f) ' Hz,' ...
+                num2str(B) 'G,' num2str(1e3*power_conductivity) ' mW, ' num2str(V) ' V amp, ' ...
+                num2str(mod_ramp_time) ' ms ramp'];
+            out.SaveDir         = out.JobName;    
+            J(ind) = sequencer_job(out);
+            ind = ind+1;
+        end
+    end
 end
 
 

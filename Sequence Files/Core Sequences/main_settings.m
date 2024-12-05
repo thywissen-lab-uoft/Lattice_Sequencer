@@ -654,7 +654,7 @@ defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 % Offset of frequency in interger multiples of plane separation
 % Change N_PLANE if you want to try hopping to different planes, keep this
 % near 0 ideally to keep things simple
-defVar('qgm_planeShift_N',-7,'plane');% ALWAYS AN INTERGER
+defVar('qgm_planeShift_N',0,'plane');% ALWAYS AN INTERGER
 defVar('qgm_planeShift_freqperplane',85,'kHz'); % kHz/Plane
 defVar('qgm_planeShift_voltperplane',-0.076,'V'); % V/Plane (sign convention is relative to freqperplane)
 seqdata.flags.qgm_doPlaneShift = 1;

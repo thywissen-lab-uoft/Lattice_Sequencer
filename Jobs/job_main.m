@@ -13,8 +13,8 @@ doJob_single_plane      = 0;
 doJob_Conductivity      = 1;
 doJob_Conductivity_single_freq_long_time = 0;
 doJob_Conductivity_Vary_Force=0;
-doJob_peakCond_v_U      = 1;
-doJob_peakCond_v_T      = 0;
+doJob_peakCond_v_U      = 0;
+doJob_peakCond_v_T      = 1;
 doJob_peakCond_v_amp    = 0;
 doJob_peakCond_v_T_evap = 0;
 %%

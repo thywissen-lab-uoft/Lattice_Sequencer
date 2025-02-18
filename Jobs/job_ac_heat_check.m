@@ -5,7 +5,7 @@ function J = job_ac_heat_check
         global seqdata;        
         
         % Optical Evaporation        
-        defVar('xdtB_evap_power',[0.0638],'W');
+        defVar('xdtB_evap_power',[0.0648],'W');
         % Magnetic Field in Lattice
         defVar('lattice_load_feshbach_field',field,'G'); 
         %Levitation voltage value during xdtB
@@ -19,6 +19,13 @@ function J = job_ac_heat_check
         defVar('conductivity_ODT2_mod_amp',mod_strength,'V');  % ODT2 Mod Depth
         defVar('conductivity_mod_ramp_time',mod_ramp_time,'ms');  
         defVar('lattice_load_feshbach_holdtime',[0],'ms');
+        
+        % Pulse lattice
+        seqdata.flags.xdtB_pulse_lattice            = 1;
+        defVar('xdtb_lattice_load_time',0.1,'ms');
+        defVar('xdtb_lattice_depth',4.5,'Er');
+        defVar('xdtb_lattice_hold_pulse_time',[2],'ms');
+        defVar('xdtb_lattice_pulse_equil_time',[100],'ms');
 
         
         
@@ -43,9 +50,9 @@ function J = job_ac_heat_check
 clear J
 
 % Magnetic Field (G)
-B_conductivity = 201.1;
+B_conductivity = 200.65;
 % Optical Evaporation Power (W)
-power_conductivity = 0.064; 
+power_conductivity = 0.065; 
 % Conductivity modulation ramp up time (ms)
 mod_ramp_time = 50;
 % Plane Selection Frequency amplitude (kHz);
@@ -53,7 +60,7 @@ uwave_freq_amp = 30;
 % Modulation Frequencies
 f = 50;
 %Modulation strength
-mod_strength = 0.4;
+mod_strength = 0.6;
 
 out = struct;   
 out.SequenceFunctions   = {@main_settings,@(curtime) ...
@@ -67,7 +74,7 @@ out.WaitTime = 90;
 out.JobName             = [' ac heat check ' num2str(f) ' Hz,' ...
     num2str(B_conductivity) 'G,' num2str(1e3*power_conductivity) ' mW ' num2str(mod_strength) ' amp, ' ...
     num2str(mod_ramp_time) ' ms ramp, ', num2str(uwave_freq_amp), ' kHz uwave amp'];
-out.JobName = ['single plane shake heat check, vary evap depth, 201.1G'];
+out.JobName = ['single plane shake heat check, vary evap depth, 200.9G'];
 out.SaveDir         = out.JobName;    
 J = sequencer_job(out);
 

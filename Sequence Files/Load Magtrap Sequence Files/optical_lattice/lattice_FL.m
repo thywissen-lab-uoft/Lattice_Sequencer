@@ -41,10 +41,10 @@ global seqdata
     fluor.PulseTime             = pulse_time;     % [ms]   
     % 1 ms is typical for Raman spectroscopy
     % 1 ms is typical for uWave spectroscopy
-    % 2000 ms is typical for fluoresence imaging    
+    % 2000-4000 ms is typical for fluoresence imaging    
     % FPUMP 1000Er, 83% transfer at 1 ms, 0.1 V
     % EIT Probe 1 , 45% transfer at 0.1 ms, 0.05 rel power
-    % EIT Probe 2 , 60% transfer at 0.1 ms, 0.1 rel power
+    % EIT Probe 2 , 80% transfer at 0.1 ms, 0.1 rel power
 
 %% Ixon Camera Settings
 
@@ -191,13 +191,16 @@ end
 % This code set the Fpump power regulation and the 4 pass frequency
 
     % Power that the Fpump beam regulates to
-    F_Pump_List = [0.95];[0.85];.8;[0.7];[0.9];
+    F_Pump_List = [0.95];
     
     % Frequency of the FPUMP single pass (MHz)
     fluor.F_Pump_Frequency = 80;
     
-    fluor.F_Pump_Power = getScanParameter(F_Pump_List,...
-        seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V');    
+%     fluor.F_Pump_Power = getScanParameter(F_Pump_List,...
+%         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V');  
+    
+    
+    fluor.F_Pump_Power = getVar('F_Pump_Power');
 
     addOutputParam('qgm_FPUMP_Frequency',fluor.F_Pump_Frequency,'MHz');
 
@@ -279,18 +282,18 @@ Raman1_V0 = 1.3;
 Raman2_V0 = 1.36;
 
 % Relative power to use during the experiment
-defVar('qgm_Raman1_power',0.4,'normalized');0.4;
-defVar('qgm_Raman2_power',0.4,'normalized');0.4;
+% defVar('qgm_Raman1_power',1.1,'normalized');0.4;
+% defVar('qgm_Raman2_power',0.4,'normalized');0.4;
 
 % Detunings to modify the Raman condition (shouldn't this always be zero?)
 % CF : Since I believe Raman two photon should be the same as EIT two
 % photon
-defVar('qgm_Raman1_shift',[-40],'kHz');-80;-110;
-defVar('qgm_Raman2_shift',0,'kHz');
+% defVar('qgm_Raman1_shift',[-40],'kHz');-80;-110;
+% defVar('qgm_Raman2_shift',0,'kHz');
 
 %Set the range of the frequency sweeps for Raman spectroscopy
-defVar('qgm_Raman1_sweepRange',[50],'kHz');
-defVar('qgm_Raman2_sweepRange',50,'kHz');
+% defVar('qgm_Raman1_sweepRange',[50],'kHz');
+% defVar('qgm_Raman2_sweepRange',50,'kHz');
 
 %% Raman 1 Settings          
     fluor.Raman1_EnableSweep = 0;

@@ -11,12 +11,14 @@ doJob_warmup            = 0;
 doJob_stabilize         = 0;
 doJob_single_plane      = 0;
 doJob_Conductivity      = 1;
+doJob_Conductivity_quench = 0;
 doJob_Conductivity_single_freq_long_time = 0;
 doJob_Conductivity_Vary_Force=0;
 doJob_peakCond_v_U      = 0;
-doJob_peakCond_v_T      = 1;
+doJob_peakCond_v_T      = 0;
 doJob_peakCond_v_amp    = 0;
 doJob_peakCond_v_T_evap = 0;
+doJob_TrapFrequency     = 0;
 %%
 
 J_stripe            = job_stripe_feedback(npt);
@@ -51,12 +53,35 @@ end
 %% AC Conductivity
 if doJob_Conductivity
     J_ac = job_conducivity_ac_shake;
-%     J_peak = job_peakcond_v_temp;
     clear J
     J(1)=copy(J_stripe);
     for rr=1:length(J_ac)
         J(end+1) = copy(J_focus);
         J(end+1) = copy(J_ac(rr));
+        J(end+1) = copy(J_stripe);
+    end
+end
+
+%% Trap frequencies
+if doJob_TrapFrequency
+    J_tf = job_trapfrequency;
+    clear J
+    J(1)=copy(J_stripe);
+    for rr=1:length(J_tf)
+        J(end+1) = copy(J_focus);
+        J(end+1) = copy(J_tf(rr));
+        J(end+1) = copy(J_stripe);
+    end
+end
+
+%% Quench Conductivity
+if doJob_Conductivity_quench
+    J_q = job_conducivity_quench;
+    clear J
+    J(1)=copy(J_stripe);
+    for rr=1:length(J_q)
+        J(end+1) = copy(J_focus);
+        J(end+1) = copy(J_q(rr));
         J(end+1) = copy(J_stripe);
     end
 end

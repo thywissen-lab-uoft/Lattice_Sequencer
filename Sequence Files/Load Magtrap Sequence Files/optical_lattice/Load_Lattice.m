@@ -413,6 +413,16 @@ if seqdata.flags.lattice_lattice_ramp_1
 end
 %}
 
+%% Amplitude Modulation Heating in lattice
+% This code applies amplitude modulation to XYZ optical lattices.  This is
+% done by programming a Rigol generator that goes into the sum input of the
+% Newport regulation boxes.
+
+if seqdata.flags.do_lattice_am_heat
+   curtime = lattice_am_heat(curtime);
+end
+
+
 %% Pin Lattice
 %Do not use if lattice_conductivity_new is also pinning
 if (seqdata.flags.lattice_pin)

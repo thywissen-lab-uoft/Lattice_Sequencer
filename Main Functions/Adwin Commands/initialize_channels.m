@@ -842,12 +842,12 @@ end
     seqdata.analogchannels(54).maxvoltage = 10;
     seqdata.analogchannels(54).defaultvoltagefunc = 1; 
 
-    %channel 55 (Piezo mirror controller, channel Y)
-    seqdata.analogchannels(55).name = 'Piezo mirror Y';
-    seqdata.analogchannels(55).minvoltage = -0.15;
+    %channel 55 (Piezo mirror controller, channel X2)
+    seqdata.analogchannels(55).name = 'XDT1 V Piezo';
+    seqdata.analogchannels(55).minvoltage = -0.1;
     seqdata.analogchannels(55).maxvoltage = 10;
-    seqdata.analogchannels(55).defaultvoltagefunc = 2; 
-    seqdata.analogchannels(55).voltagefunc{2} = @(a)((a-1.7)/15.04);
+    seqdata.analogchannels(55).defaultvoltagefunc = 1; 
+%     seqdata.analogchannels(55).voltagefunc{2} = @(a)((a-1.7)/15.04);
 
     %channel 56 (Piezo mirror controller, channel Z)
     seqdata.analogchannels(56).name = 'Piezo mirror Z';
@@ -864,7 +864,7 @@ end
     seqdata.analogchannels(57).voltagefunc{2} = @(a)(a);
 
     %channel 58 (XDT2 Piezo Mirror Mod) %Disconnected
-    seqdata.analogchannels(58).name = 'XDT2 Piezo';
+    seqdata.analogchannels(58).name = '58';
     seqdata.analogchannels(58).minvoltage = -10;
     seqdata.analogchannels(58).maxvoltage = 10;
     seqdata.analogchannels(58).defaultvoltagefunc = 2; 

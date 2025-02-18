@@ -6518,7 +6518,9 @@ curtime = calctime(curtime,150);
 % setDigitalChannel(curtime,95,0);
 % setDigitalChannel(calctime(curtime,1000),95,0);
 
-setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);  
+setAnalogChannel(calctime(curtime,50),'XDT2 V Piezo',0);  
+setAnalogChannel(calctime(curtime,50),'XDT1 V Piezo',5);
+setDigitalChannel(calctime(curtime,20),'ScopeTrigger',0); 
 
 % setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);  
 

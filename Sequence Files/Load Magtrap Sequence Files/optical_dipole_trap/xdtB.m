@@ -577,7 +577,7 @@ if seqdata.flags.xdtB_piezo_vert_kick
     logNewSection('Kicking the dipole trap',curtime);
     
     tr = getVar('xdtB_piezo_vert_kick_rampup_time');
-    V = getVar('xdtB_piezo_vert_kick_amplitude');
+    V = getVar('xdtB_piezo_vert_kick_disp');
     t_off = getVar('xdtB_piezo_vert_kick_rampoff_time');
     th = getVarOrdered('xdtB_piezo_vert_kick_holdtime');
 
@@ -587,10 +587,95 @@ if seqdata.flags.xdtB_piezo_vert_kick
     
     % Piezo Mirror to Original displacement
     curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),t_off,t_off,0);
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),t_off,t_off,5);
     
     % Wait for oscillations
     curtime = calctime(curtime,th);  
+end
+
+%% Piezo hold ODT1
+if seqdata.flags.xdtB_odt1_piezo_vert_disp
+    logNewSection('Displacing ODT1',curtime);
+    
+    tr = getVar('xdtB_odt1_piezo_vert_disp_rampup_time');
+    V = getVar('xdtB_odt1_piezo_vert_disp_amplitude');
+    
+    DigitalPulse(calctime(curtime,-200),'QPD Monitor Trigger',5,1);
+
+%     % Piezo Mirror to a Displaced Position
+%     curtime = AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V);
+%     
+
+        tr = 100;
+    
+        % Piezo Mirror to a Displaced Position
+    V1 = 1;
+    curtime = AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V1);
+    
+    curtime = calctime(curtime,50);
+    
+    curtime = AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,5);
+    
+    curtime = calctime(curtime,200);
+    
+    
+    
+    % Piezo Mirror to a Displaced Position
+    V2 = 9;
+    curtime = AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V2);
+    
+    curtime = calctime(curtime,50);
+    
+    curtime = AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,5);
+    
+    
+     
+end
+
+%% Piezo hold ODT2
+if seqdata.flags.xdtB_odt2_piezo_vert_disp
+    logNewSection('Displacing ODT2',curtime);
+    
+    tr = getVar('xdtB_odt2_piezo_vert_disp_rampup_time');
+    V = getVar('xdtB_odt2_piezo_vert_disp_amplitude');
+    
+    DigitalPulse(calctime(curtime,-100),'QPD Monitor Trigger',5,1);
+
+    % Piezo Mirror to a Displaced Position
+%     curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V);
+%     
+        tr = 100;
+    
+        % Piezo Mirror to a Displaced Position
+    V1 = 1;
+    curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V1);
+    
+    curtime = calctime(curtime,50);
+    
+    curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,5);
+    
+    curtime = calctime(curtime,200);
+    
+    
+    
+    % Piezo Mirror to a Displaced Position
+    V2 = 9;
+    curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V2);
+    
+    curtime = calctime(curtime,50);
+    
+    curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,5);
+     
 end
 
 %% Single Beam Check
@@ -598,19 +683,18 @@ end
 % position of the other ODT beam
 if seqdata.flags.xdtB_one_beam
     logNewSection('Turning off one of the dipole trap beams',curtime);
-    tr = 10;    
+    tr = 100;    
     
     P1 = getChannelValue(seqdata,'dipoleTrap1',1);
     P2 = getChannelValue(seqdata,'dipoleTrap2',1);
     
-    odt1_on = 1;
-    odt2_on = 0;
+    odt1_on = 0;
+    odt2_on = 1;
     
     % To mitigate gravitational sag, turn one ODT off but then increase the
     % power in the other beam
     
-    if odt2_on
-        % Comment out which beam you want to stay on    
+    if odt2_on 
         AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
             tr,tr,0);
@@ -620,8 +704,7 @@ if seqdata.flags.xdtB_one_beam
         curtime = calctime(curtime,tr);
     end
     
-    if odt1_on
-        % Comment out which beam you want to stay on    
+    if odt1_on    
         AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
             tr,tr,2*P1);
@@ -631,8 +714,9 @@ if seqdata.flags.xdtB_one_beam
         curtime = calctime(curtime,tr);
     end
 
+%     curtime = DigitalPulse(calctime(curtime,0),'QPD Monitor Trigger',5,1);
     
-    curtime = calctime(curtime,20);
+    curtime = calctime(curtime,50);
 end
 
 

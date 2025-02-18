@@ -22,10 +22,12 @@ end
 
 
 %% Sequence Modifier Function
-    function curtime = focus_seq(curtime)
-        global seqdata         
+    function curtime = focus_seq(curtime,plane_shift)
+        global seqdata
+        seqdata.flags.do_plane_selection            = 1;
         defVar('xdtB_evap_power',npt.xdt_B_evap_power,'W');
         defVar('lattice_load_feshbach_field',npt.lattice_load_feshbach_field,'G'); 
+        defVar('qgm_planeShift_N',plane_shift,'plane');% ALWAYS AN INTERGER
         seqdata.flags.lattice_conductivity_new      = 0; 
         seqdata.flags.plane_selection_dotilt        = 0;           
         seqdata.flags.lattice_fluor_multi_mode      = 2;
@@ -48,16 +50,20 @@ end
    end
 
 %% Create Job Object
+
+plane_shift = 0;
+
 out = struct;
 out.SequenceFunctions   = {...
     @main_settings,...
-    @focus_seq,...
+    @(curtime) ...
+    focus_seq(curtime,plane_shift),...
     @main_sequence};
 out.CycleCompleteFcn      = @cycle_complete_fcn_focus;
 out.CycleEnd   = npt.NumCycles;
 out.WaitMode = 2;
 out.WaitTime = 90;
-out.JobName  = ['focus feedback'];
+out.JobName  = ['focus feedback, Plane Shift ' num2str(plane_shift)];
 out.SaveDir  = 'focus';
 J = sequencer_job(out);
 

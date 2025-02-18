@@ -1,6 +1,6 @@
 function J=job_trapfrequency
 %% Trap Frequency Measurement Sequence Modifier
- function curtime = trapfreq(curtime,ODT1_power,ODT2_power,field,evap_depth,mod_strength,mod_ramp_time,UX,UY,UZ,uwave_freq_amp)
+ function curtime = trapfreq(curtime,ODT1_power,ODT2_power,field,evap_depth,mod_strength,mod_ramp_time,UX,UY,UZ,uwave_freq_amp,vert_disp)
         global seqdata;        
         
         %Set the evap depth
@@ -9,6 +9,7 @@ function J=job_trapfrequency
         %Keep atoms spin-polarized
         seqdata.flags.xdtB_rf_mix                   = 0;
         seqdata.flags.xdtB_rf_mix_post_evap         = 0;
+%         seqdata.flags.lattice_load_xdt_off        = 0; 
         
         %Set the final powers of the XDTs
         seqdata.flags.xdtB_ramp_power_end           = 1;
@@ -33,10 +34,20 @@ function J=job_trapfrequency
         
         %Enable snap for trap frequency measurements
         seqdata.flags.conductivity_snap_and_hold        = 1; 
-        defVar('conductivity_snap_and_hold_time',[0:2:24 50:2:74],'ms');
+        defVar('conductivity_snap_and_hold_time',[0],'ms');[0:2:24 50:2:74];[0:2.5:42.5];
         defVar('piezo_diabat_ramp_time',4,'ms'); %How fast to snap back to zero displacement
+        
+        %Change to ODT1 if displacing along Y
+%         defVar('conductivity_ODT1_mod_amp',mod_strength,'V');  % ODT1 Displacement
         defVar('conductivity_ODT2_mod_amp',mod_strength,'V');  % ODT2 Displacement
+        
         defVar('conductivity_mod_ramp_time',mod_ramp_time,'ms');  %How fast we initially displace the beams         
+        defVar('conductivity_mod_time',50,'ms'); % 200 ms for force calibration
+        
+        %Set odt2 vertical displacement
+        seqdata.flags.xdtB_piezo_vert_disp          = 1;
+        defVar('xdtB_piezo_vert_disp_amplitude',[vert_disp],'V');         
+        defVar('xdtB_piezo_vert_disp_rampup_time',100,'ms');
         
         % Plane Selection
         seqdata.flags.plane_selection_dotilt        = 0;
@@ -49,7 +60,7 @@ function J=job_trapfrequency
 clear J
 
 % Magnetic Field (G)
-B = 201.1;
+B = 200;
 
 %Set final powers of ODTs in W
 ODT1_power = 0.195;
@@ -64,28 +75,31 @@ depthZ = -0.5;
 evap_depth = 0.065;
 
 % Conductivity modulation ramp up time (ms)
-mod_ramp_time = 50;
+mod_ramp_time = 50; % 200 ms for force calibration
 
 %Modulation amplitude (V)
-mod_strength = 2;
+mod_strength = [3]; %3 for XDT+lattice
 
 %Choose the number of planes via uwave freq amplitude
 uwave_freq_amp = 120;
 
-out = struct;   
-out.SequenceFunctions   = {@main_settings,@(curtime) ...
-    trapfreq(curtime,ODT1_power,ODT2_power,B,evap_depth,mod_strength,mod_ramp_time,...
-    depthX,depthY,depthZ,uwave_freq_amp),@main_sequence};
-out.CycleEnd = 26;
-out.WaitMode = 2;
-out.WaitTime = 90;
-out.JobName             = ['ODT Powers ' num2str(ODT1_power*1e3) ',' num2str(ODT2_power*1e3) ' mW' ...
-    num2str(depthX) ',' num2str(depthY) ',' num2str(depthZ), ' Er' num2str(B) 'G,' num2str(1e3*evap_depth) ' mW ' num2str(mod_strength) ' amp, ' ...
-    num2str(mod_ramp_time) ' ms ramp'];
-out.SaveDir         = out.JobName;    
-J = sequencer_job(out);
+vert_disp_list = [5];
+vert_disp_list = vert_disp_list(randperm(numel(vert_disp_list)));
 
-
-
+for ii = 1:length(vert_disp_list)
+    vert_disp = vert_disp_list(ii);
+    out = struct;   
+    out.SequenceFunctions   = {@main_settings,@(curtime) ...
+        trapfreq(curtime,ODT1_power,ODT2_power,B,evap_depth,mod_strength,mod_ramp_time,...
+        depthX,depthY,depthZ,uwave_freq_amp,vert_disp),@main_sequence};
+    out.CycleEnd = 23;
+    out.WaitMode = 2;
+    out.WaitTime = 90;
+    out.JobName             = ['Trap freq, ODTs (' num2str(ODT1_power*1e3) ',' num2str(ODT2_power*1e3) ') mW, (' ...
+        num2str(depthX) ',' num2str(depthY) ',' num2str(depthZ), ') Er, ' num2str(B) ' G, ' num2str(1e3*evap_depth) ' mW, ' num2str(mod_strength) ' V amp, ' ...
+        num2str(mod_ramp_time) ' ms ramp, Vert Disp ' num2str(vert_disp) ' V'];
+    out.SaveDir         = out.JobName;    
+    J(ii) = sequencer_job(out);
+end
 end
 

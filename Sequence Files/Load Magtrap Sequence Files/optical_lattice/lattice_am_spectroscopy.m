@@ -9,7 +9,7 @@ end
     logNewSection('Amplitude Modulation Spectroscopy',curtime)
     
 %% AM Spec Parameters
-    AM_spec_direction = 'Z';
+    AM_spec_direction = 'Y';
     AM_spec_latt_depth = 100;
     addOutputParam('AM_spec_depth',AM_spec_latt_depth);
 
@@ -17,13 +17,9 @@ end
     y_latt_voltage = getChannelValue(seqdata,'yLattice',1,1);
     z_latt_voltage = getChannelValue(seqdata,'zLattice',1,1);    
 
-%     mod_freq = paramGet('AM_spec_freq'); 
-    
-    defVar('AM_spec_freq',[136:2:160]*1e3,'Hz');%107.5:5:192.5;154.1; 
-
     mod_freq = getVar('AM_spec_freq'); 
-
-    mod_time = 3;%0.2; %Closer to 100ms to kill atoms, 3ms for band excitations only. 
+    mod_time = getVar('AM_spec_time');
+    
     addOutputParam('adwin_am_spec_X',x_latt_voltage);
     addOutputParam('adwin_am_spec_Y',y_latt_voltage);
     addOutputParam('adwin_am_spec_Z',z_latt_voltage);
@@ -86,8 +82,6 @@ curtime = calctime (curtime,50);
 
             % Shift for frequency dependence
             mod_amp = mod_amp+d_amp;            
-
-            mod_amp = mod_amp;
   
             % Program the Rigols for modulation
             ch_on.AMPLITUDE = mod_amp;

@@ -14,7 +14,7 @@ seqdata.flags.conductivity_ramp_FB_on             = 0; 1;% Ramp FB field to reso
 seqdata.flags.conductivity_ramp_QP_on             = 0; 1; % Ramp QP reverse with FB (only works if ramp_FB is enabled)
 seqdata.flags.conductivity_FB_heating             = 0; 1;% Ramp closer to resonance to induce heating for T control
 seqdata.flags.conductivity_ramp_FB_off            = 0; 1;% Ramp FB field to resonance
-seqdata.flags.conductivity_ramp_QP_off            = 0;1; % Ramp QP reverse with FB (only works if ramp
+seqdata.flags.conductivity_ramp_QP_off            = 0; 1;% Ramp QP reverse with FB (only works if ramp
 
 % Pin flag : (2024/05) disabled as we do this else where
 seqdata.flags.conductivity_dopin                    = 0; % Pin after modulation
@@ -40,7 +40,7 @@ if seqdata.flags.conductivity_enable_mod_ramp
     cond_mod_time = getVarOrdered('conductivity_mod_time');
     
     % TRYING RANDOM
-    cond_mod_time = getVar('conductivity_mod_time');
+%     cond_mod_time = getVar('conductivity_mod_time');
 
     cond_mod_ramp_time = getVar('conductivity_mod_ramp_time');
     total_mod_time = cond_mod_ramp_time + cond_mod_time;
@@ -48,7 +48,7 @@ else
     total_mod_time = getVarOrdered('conductivity_mod_time');
     
     % TRYING RANDOM
-    total_mod_time = getVar('conductivity_mod_time');
+%     total_mod_time = getVar('conductivity_mod_time');
 
 end
 

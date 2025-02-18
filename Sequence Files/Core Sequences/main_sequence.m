@@ -167,11 +167,12 @@ CDT_piezo_X = 0;
 CDT_piezo_Y = 0;
 CDT_piezo_Z = 0;
 % setAnalogChannel(curtime,'Piezo mirror X',CDT_piezo_X,1);
-setAnalogChannel(curtime,'Piezo mirror Y',CDT_piezo_Y,1);
+% setAnalogChannel(curtime,'Piezo mirror Y',CDT_piezo_Y,1);
 setAnalogChannel(curtime,'Piezo mirror Z',CDT_piezo_Z,1);
 
-
-setAnalogChannel(curtime,'XDT2 V Piezo',0,1);
+% Set XDT vertical piezos to half the range
+setAnalogChannel(curtime,'XDT1 V Piezo',5,1);
+setAnalogChannel(curtime,'XDT2 V Piezo',5,1);
 
 %Close science cell repump shutter
 setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',0); %1 = open, 0 = closed
@@ -830,6 +831,10 @@ setAnalogChannel(curtime,'15/16 GS',0);
 
  AnalogFuncTo(calctime(curtime,0),'latticeWaveplate',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2500,2500,0,1);
+    
+% % Piezo Mirror to Original displacement
+%  AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
+%     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,0);
 
 %% Load MOT
 % Load the MOT

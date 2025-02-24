@@ -25,7 +25,16 @@ kappa = 80;
 
 % Maximum Step Size [kHz]
 df_max = 20;
+
+% PID Gain Settings
+% Because we know the feedback slope, the gains gain be calculated exactly.
+% For this reason the sums of gains should equal to one.
+gain_P = 0.5;          
+gain_I = 1 - gain_P;
         
+% Integral time constant [min.]
+tau_I = 10;             
+
 % Engage Feedback?
 doFeedback=1;
 
@@ -144,32 +153,28 @@ try
 
 
     if doFeedback && ~bad_inds(1) && length(phi_plane_fb)>1
-        % Proportional Error
+        % Proportional Error (most recent error)
         error_P = phi_plane_fb(1);
-        gain_P = 0.5;
-
-        % Integral Error
-        tau_I = 10; % tau in minutes                
+        % Integral Error (time average error with exp weight)
         exp_weights = exp(-(timeAgo_fb-timeAgo_fb(1))/tau_I);                
-        error_I = sum(phi_plane_fb.*exp_weights)/sum(exp_weights);                
-        gain_I = 1-gain_P;
-
+        error_I = sum(phi_plane_fb.*exp_weights)/sum(exp_weights);  
         % Total Error
-        error_T = error_P*gain_P+error_I*gain_I;
+        error_T = error_P*gain_P+error_I*gain_I;        
+        % Frequency Shift
+        dfreq = kappa*error_T;          
 
-        dfreq = kappa*error_T;
+        % Limit total frequency shift
+        if abs(dfreq)>df_max;dfreq=df_max*sign(dfreq);end
 
-        if abs(dfreq)>df_max
-            dfreq=df_max*sign(dfreq);
-        end
-
+        % Find new frequency
         freq_previous = freqs_fb(1);
-
         freq_new = freq_previous+dfreq;  
 
+        % Plot it
         plot(0,freq_new,'o-','markerfacecolor',co(2,:),'markeredgecolor',co(2,:)*.5,...
          'linewidth',1,'markersize',8,'parent',ax1);
 
+        % Save this frequency to file
         f_offset=freq_new;
         save(fullfile(mainGUI_Directory,'f_offset.mat'),'f_offset');
     end

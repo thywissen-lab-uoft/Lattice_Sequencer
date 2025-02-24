@@ -550,7 +550,7 @@ end
 
 %% Optical Lattice
 
-if ( seqdata.flags.lattice ~= 0 )
+if (seqdata.flags.lattice ~= 0)
     curtime = Load_Lattice(curtime); 
 end
 

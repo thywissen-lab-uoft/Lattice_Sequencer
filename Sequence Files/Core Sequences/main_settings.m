@@ -174,7 +174,7 @@ seqdata.flags.image_F1_pulse                = 0; % (unused?) repump Rb F=1 befor
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',25,'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',0.25,'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[.1],'ms');
@@ -393,7 +393,7 @@ seqdata.flags.xdt_high_field_a              = 0;
 
 %% Optical Dipole Trap B
 
-seqdata.flags.xdtB                          = 1;         % Master Flag
+seqdata.flags.xdtB                          = 0;         % Master Flag
 
 % Levitation
 seqdata.flags.xdtB_levitate                 = 1;
@@ -455,12 +455,12 @@ defVar('xdtb_lattice_hold_pulse_time',[2],'ms');
 defVar('xdtb_lattice_pulse_equil_time',[100],'ms');
 
 % Feshbach
-seqdata.flags.xdtB_feshbach_off             = 1;
+seqdata.flags.xdtB_feshbach_off             = 0;
 defVar('xdtB_feshbach_off_field',20,'G');
 defVar('xdtB_feshbach_off_ramptime',100,'ms');100;
 
 % Unlevitate
-seqdata.flags.xdtB_levitate_off             = 1;
+seqdata.flags.xdtB_levitate_off             = 0;
 defVar('xdtB_levitate_off_ramptime',100,'ms');100;
 
 % piezo kick ODT2 for vertical trap frequency
@@ -470,19 +470,30 @@ defVar('xdtB_piezo_vert_kick_rampup_time',100,'ms');
 defVar('xdtB_piezo_vert_kick_rampoff_time',4,'ms');
 defVar('xdtB_piezo_vert_kick_holdtime', [1],'ms');
 
-% piezo disp vertical ODT1
-seqdata.flags.xdtB_odt1_piezo_vert_disp          = 0;
-defVar('xdtB_odt1_piezo_vert_disp_amplitude',[5],'V');         
-defVar('xdtB_odt1_piezo_vert_disp_rampup_time',100,'ms');
-
-% piezo disp vertical ODT2
-seqdata.flags.xdtB_odt2_piezo_vert_disp          = 0;
-defVar('xdtB_odt2_piezo_vert_disp_amplitude',[4],'V');         
-defVar('xdtB_odt2_piezo_vert_disp_rampup_time',100,'ms');
-
-
 % Turn off one of the dipole trap beams to measure its position
 seqdata.flags.xdtB_one_beam                 = 0;
+
+% Ramp Vertical Piezo of ODT1 or ODT2
+seqdata.flags.xdtB_vert_piezo_ramp          = 0;
+defVar('xdtB_vert_piezo_ramp_time',[100],'ms');         
+defVar('xdtB_vert_piezo_ramp_value_1',8,'V');
+defVar('xdtB_vert_piezo_ramp_value_2',8,'V');
+
+
+% 2024/02/19 : CJF Rewrote these codes in exchange for the above code.
+% FC/RL please look at the changes and see if they are better in your
+% opinon. Then delete the unused code.
+% % piezo disp vertical ODT1
+% seqdata.flags.xdtB_odt1_piezo_vert_disp          = 0;
+% defVar('xdtB_odt1_piezo_vert_disp_amplitude',[5],'V');         
+% defVar('xdtB_odt1_piezo_vert_disp_rampup_time',100,'ms');
+% 
+% % piezo disp vertical ODT2
+% seqdata.flags.xdtB_odt2_piezo_vert_disp          = 0;
+% defVar('xdtB_odt2_piezo_vert_disp_amplitude',[4],'V');         
+% defVar('xdtB_odt2_piezo_vert_disp_rampup_time',100,'ms');
+
+
 
 % Ramp up optical power to halt evaporation
 seqdata.flags.xdtB_ramp_power_end2           = 0;
@@ -595,11 +606,12 @@ defVar('AM_heat_mod_amp',[10],'Vpp');
 defVar('AM_heat_freq',[165],'Hz');%107.5:5:192.5;154.1; 
 defVar('AM_heat_time',[50],'ms'); %Closer to 100ms to kill atoms, 3ms for band excitations only. 
 
-% Pin 
+%% Pin 
 seqdata.flags.lattice_pin                   = 1;
 defVar('lattice_pin_depth',[70],'Er');70;
 defVar('lattice_pin_time', [.2], 'ms');0.2;
 
+%% Lattice After Pinning
 % Turn off feshbach/levitation after pinning
 seqdata.flags.lattice_feshbach_off          = 1;
 defVar('lattice_feshbach_off_field',20,'G');
@@ -643,7 +655,7 @@ seqdata.flags.lattice_uWave_spec            = 0;
 
 %% Plane Selection
 
-seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
+seqdata.flags.do_plane_selection            = 0;    % Plane selection flag
 seqdata.flags.plane_selection_useBigShim    = 1;
 seqdata.flags.plane_selection_douWave       = 1; 
 seqdata.flags.plane_selection_doKill        = 1;
@@ -709,7 +721,7 @@ defVar('f_offset',f_offset,'kHz');
 
 %% Micrscope and Microscope Feedback Position
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[5.3],'V');
+defVar('objective_piezo',[5.75],'V');
 
 % CF : I have no idea how this was calibrated, but it should be
 % 0.1V = 700 nm, larger means further away from chamber

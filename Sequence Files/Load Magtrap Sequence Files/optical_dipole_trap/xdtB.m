@@ -431,6 +431,10 @@ if seqdata.flags.xdtB_feshbach_unhop
 end
 
 %% Pulse on lattices
+% CJF : This is poorly named code and confused me for a while.
+% Please fix this.  Why would we call this a loading time?  
+% All these variable name need to refer to the
+% fact that this is a pulse measurement. 
 
 if seqdata.flags.xdtB_pulse_lattice
     
@@ -593,92 +597,7 @@ if seqdata.flags.xdtB_piezo_vert_kick
     curtime = calctime(curtime,th);  
 end
 
-%% Piezo hold ODT1
-if seqdata.flags.xdtB_odt1_piezo_vert_disp
-    logNewSection('Displacing ODT1',curtime);
-    
-    tr = getVar('xdtB_odt1_piezo_vert_disp_rampup_time');
-    V = getVar('xdtB_odt1_piezo_vert_disp_amplitude');
-    
-    DigitalPulse(calctime(curtime,-200),'QPD Monitor Trigger',5,1);
-
-%     % Piezo Mirror to a Displaced Position
-%     curtime = AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
-%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V);
-%     
-
-        tr = 100;
-    
-        % Piezo Mirror to a Displaced Position
-    V1 = 1;
-    curtime = AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V1);
-    
-    curtime = calctime(curtime,50);
-    
-    curtime = AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,5);
-    
-    curtime = calctime(curtime,200);
-    
-    
-    
-    % Piezo Mirror to a Displaced Position
-    V2 = 9;
-    curtime = AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V2);
-    
-    curtime = calctime(curtime,50);
-    
-    curtime = AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,5);
-    
-    
-     
-end
-
-%% Piezo hold ODT2
-if seqdata.flags.xdtB_odt2_piezo_vert_disp
-    logNewSection('Displacing ODT2',curtime);
-    
-    tr = getVar('xdtB_odt2_piezo_vert_disp_rampup_time');
-    V = getVar('xdtB_odt2_piezo_vert_disp_amplitude');
-    
-    DigitalPulse(calctime(curtime,-100),'QPD Monitor Trigger',5,1);
-
-    % Piezo Mirror to a Displaced Position
-%     curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
-%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V);
-%     
-        tr = 100;
-    
-        % Piezo Mirror to a Displaced Position
-    V1 = 1;
-    curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V1);
-    
-    curtime = calctime(curtime,50);
-    
-    curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,5);
-    
-    curtime = calctime(curtime,200);
-    
-    
-    
-    % Piezo Mirror to a Displaced Position
-    V2 = 9;
-    curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V2);
-    
-    curtime = calctime(curtime,50);
-    
-    curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,5);
-     
-end
-
-%% Single Beam Check
+%% Turn off one of the ODT beams
 % After optical evaporation, turn off one of the trap so you can see the
 % position of the other ODT beam
 if seqdata.flags.xdtB_one_beam
@@ -690,6 +609,7 @@ if seqdata.flags.xdtB_one_beam
     
     odt1_on = 0;
     odt2_on = 1;
+    doWait = 0;
     
     % To mitigate gravitational sag, turn one ODT off but then increase the
     % power in the other beam
@@ -712,12 +632,157 @@ if seqdata.flags.xdtB_one_beam
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
             tr,tr,0);
         curtime = calctime(curtime,tr);
-    end
-
-%     curtime = DigitalPulse(calctime(curtime,0),'QPD Monitor Trigger',5,1);
+    end    
     
-    curtime = calctime(curtime,50);
+    % Optional wait time
+    if doWait
+        curtime = calctime(curtime,50);
+    end
 end
+
+%% XDT Piezo Ramp
+% 2024/02/19 : CJF rewrote this code to make more sense to me, the other
+% versions seemed needlessly complicated.
+
+if seqdata.flags.xdtB_vert_piezo_ramp
+    logNewSection('Displacing ODT Piezos',curtime);
+    DigitalPulse(calctime(curtime,-100),'QPD Monitor Trigger',5,1);
+
+    tr = getVar('xdtB_vert_piezo_ramp_time');           % Ramp Time
+    
+    v10 = getChannelValue(seqdata,'XDT1 V Piezo',1);    % Starting ODT1
+    v20 = getChannelValue(seqdata,'XDT2 V Piezo',1);    % Starting ODT2
+    
+    v1 = getVar('xdtB_vert_piezo_ramp_value_1');        % Set ODT1
+    v2 = getVar('xdtB_vert_piezo_ramp_value_2');        % Set ODT2
+    
+    % Do you actually ramp?
+    doRamp_ODT1 = 0;
+    doRamp_ODT2 = 1;    
+    doRampBack = 1;
+    
+    % Ramp ODT1 Vertical Piezo
+    if doRamp_ODT1
+        AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,v1);
+    end
+    
+    % Ramp ODT2 Vertical Piezo
+    if doRamp_ODT2
+        AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,v2);
+    end
+    
+    % Wait for Piezo Ramps
+    if (doRamp_ODT1 || doRamp_ODT2);curtime = calctime(curtime,tr);end
+    
+    % Wait for a bit (optional, sometimes this is useful)
+%     curtime = calctime(curtime,50);]
+
+    % Additional ramps to return (useful for round trip measurements)
+    if doRampBack
+       if doRamp_ODT1
+            AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
+                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,v10);
+       end       
+        if doRamp_ODT2
+            AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,v20);
+        end        
+        % Wait for ramps if they happened
+        if (doRamp_ODT1 || doRamp_ODT2);curtime = calctime(curtime,tr);end        
+    end
+    
+    % Wait for a bit (optional, sometimes this is useful)
+%     curtime = calctime(curtime,50);]
+end
+
+ %% Piezo hold ODT1
+% if seqdata.flags.xdtB_odt1_piezo_vert_disp
+%     logNewSection('Displacing ODT1',curtime);
+%     
+%     tr = getVar('xdtB_odt1_piezo_vert_disp_rampup_time');
+%     V = getVar('xdtB_odt1_piezo_vert_disp_amplitude');
+%     
+%     DigitalPulse(calctime(curtime,-200),'QPD Monitor Trigger',5,1);
+% 
+% %     % Piezo Mirror to a Displaced Position
+%     curtime = AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V);
+%     
+%     doRampBack = 0;
+%     if doRampBack
+%         
+%     end
+%     
+% % 
+% %         tr = 100;
+% %     
+% %         % Piezo Mirror to a Displaced Position
+% %     V1 = 1;
+% %     curtime = AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
+% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V1);
+% %     
+% %     curtime = calctime(curtime,50);
+% %     
+% %     curtime = AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
+% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,5);
+% %     
+% %     curtime = calctime(curtime,200);
+% %     
+% %     
+% %     
+% %     % Piezo Mirror to a Displaced Position
+% %     V2 = 9;
+% %     curtime = AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
+% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V2);
+% %     
+% %     curtime = calctime(curtime,50);
+% %     
+% %     curtime = AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
+% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,5);
+% end
+
+%% Piezo hold ODT2
+% if seqdata.flags.xdtB_odt2_piezo_vert_disp
+%     logNewSection('Displacing ODT2',curtime);
+%     
+%     tr = getVar('xdtB_odt2_piezo_vert_disp_rampup_time');
+%     V = getVar('xdtB_odt2_piezo_vert_disp_amplitude');
+%     
+%     DigitalPulse(calctime(curtime,-100),'QPD Monitor Trigger',5,1);
+% 
+% %     Piezo Mirror to a Displaced Position
+%     curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V);
+%     
+% %         tr = 100;
+%     
+% %         % Piezo Mirror to a Displaced Position
+% %     V1 = 1;
+% %     curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V1);
+% %     
+% %     curtime = calctime(curtime,50);
+% %     
+% %     curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,5);
+% %     
+% %     curtime = calctime(curtime,200);
+% %     
+% %     
+% %     
+% %     % Piezo Mirror to a Displaced Position
+% %     V2 = 9;
+% %     curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,V2);
+% %     
+% %     curtime = calctime(curtime,50);
+% %     
+% %     curtime = AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+% %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,5);
+%      
+% end
 
 
 %% The End

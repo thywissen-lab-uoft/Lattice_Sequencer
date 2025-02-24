@@ -31,7 +31,7 @@ evap_depth = 0.11;
         defVar('lattice_load_feshbach_field',field,'G'); 
         defVar('qgm_planeShift_N',plane_shift,'plane');% ALWAYS AN INTERGER
         seqdata.flags.do_plane_selection            = 1;
-        seqdata.flags.lattice_conductivity_new      = 1; 
+        seqdata.flags.lattice_conductivity_new      = 0; 
         seqdata.flags.plane_selection_dotilt        = 1;           
         seqdata.flags.lattice_fluor_multi_mode      = 0; % 0: one image 2 :piezo multi shot
     end

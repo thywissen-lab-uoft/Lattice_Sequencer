@@ -8,6 +8,10 @@ src ='StripeCircular';
 clear t
 clear phi
 
+%% Engage Feedback
+% Engage Feedback?
+doFeedback=1;
+
 %% Feedback Settings
 
 % (X,Y) pixel position to stabilize the phase
@@ -35,12 +39,9 @@ gain_I = 1 - gain_P;
 % Integral time constant [min.]
 tau_I = 10;             
 
-% Engage Feedback?
-doFeedback=1;
 
 %%
 
-% Lattice Site (n1,n2) to Stabiize Phase
 try
     % Collect stripes, local phase, and freqs
     warning off
@@ -79,6 +80,7 @@ try
         end
     end
 
+    % Set figure settings
     if isempty(fig)
         fig=figure;
         fig.Name=FigName;
@@ -90,67 +92,78 @@ try
     co=get(gca,'colororder');
     fig.NumberTitle='off';
 
+    %% Plot Recent Stripe Data
+    
+    % Wavelength Plot
     ax1=subplot(5,2,1,'Parent',fig);
     plot(t,Lambda,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
         'linewidth',1,'markersize',8,'parent',ax1);
     ylabel(ax1,'Wavelength \lambda (sites)');
 
+    % Angle Plot
     ax2=subplot(5,2,3,'Parent',fig);
     plot(t,Theta,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
         'linewidth',1,'markersize',8,'parent',ax2);
     ylabel(ax2,'Rot. Angle \theta (deg)');
 
+    % Radius Plot
     ax3=subplot(5,2,5,'Parent',fig);
     plot(t,Radius,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
         'linewidth',1,'markersize',8,'parent',ax3);
     ylabel(ax3,'Radius R (sites)');       
 
+    % Phase plot
     ax4=subplot(5,2,7,'Parent',fig);
     plot(t,phi_plane,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
         'linewidth',1,'markersize',8,'parent',ax4);
     ylabel(ax4,'Phase \phi (planes)');  
 
+    % Frequencies
     ax5=subplot(5,2,9,'Parent',fig);
     plot(t,freqs,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
         'linewidth',1,'markersize',8,'parent',ax5);
     ylabel(ax5,'freq (kHz)');  
 
+    % Get Time now
     tNow = datetime(now,'convertfrom','datenum');
-
     timeAgo = minutes(tNow-t);
 
+    % Find data that is outside the limits
+    bad_Lambda  = [Lambda<Lambda_Lim(1)]+[Lambda>Lambda_Lim(2)];% Bad Wavelength
+    bad_Theta   = [Theta<Theta_Lim(1)]+[Theta>Theta_Lim(2)];    % Bad Angle
+    bad_Time    = [timeAgo>Time_max];                           % Bad Time
+    bad_inds    = bad_Lambda+bad_Theta+bad_Time;
+    bad_inds    = logical(bad_inds);
 
+    % Remove bad data points from feedback data
+    freqs_fb = freqs;freqs_fb(bad_inds)=[];
+    timeAgo_fb = timeAgo;timeAgo_fb(bad_inds)=[];
+    phi_plane_fb = phi_plane;phi_plane_fb(bad_inds)=[];          
 
+    % Save the bad data point values
+    freqs_bad = freqs(bad_inds);
+    timeAgo_bad = timeAgo(bad_inds);
+    phi_plane_bad = phi_plane(bad_inds);    
 
-    bad_Lambda  = [Lambda<Lambda_Lim(1)]+[Lambda>Lambda_Lim(2)];
-    bad_Theta  = [Theta<Theta_Lim(1)]+[Theta>Theta_Lim(2)];
-    bad_Time   = [timeAgo>Time_max];
-
-    bad_inds=bad_Lambda+bad_Theta+bad_Time;
-    bad_inds=logical(bad_inds);
-
-    freqs_fb = freqs;
-    timeAgo_fb = timeAgo;
-    phi_plane_fb = phi_plane;
-
-    freqs_fb(bad_inds)=[];
-    timeAgo_fb(bad_inds)=[];
-    phi_plane_fb(bad_inds)=[];          
-
-
+    % Plot Frequency Feedback Values
     ax1=subplot(2,2,2,'Parent',fig);
     plot(timeAgo_fb,freqs_fb,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
         'linewidth',1,'markersize',8,'parent',ax1);
     ylabel(ax1,'freq (kHz)');
     xlabel(ax1,'time ago (min.)');
     hold(ax1,'on');
-
+    plot(timeAgo_bad,freqs_bad,'rx',...
+        'linewidth',1,'markersize',8,'parent',ax1);
+    
+    % Plot Phase Values
     ax2=subplot(2,2,4,'Parent',fig);
     plot(timeAgo_fb,phi_plane_fb,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
         'linewidth',1,'markersize',8,'parent',ax2);
     ylabel(ax2,'Phase \phi (planes)');
     xlabel(ax2,'time ago (min.)');
-
+    % Dont plot bad phases
+%     plot(timeAgo_bad,phi_plane_bad,'rx',...
+%         'linewidth',1,'markersize',8,'parent',ax2);
 
     if doFeedback && ~bad_inds(1) && length(phi_plane_fb)>1
         % Proportional Error (most recent error)
@@ -177,6 +190,14 @@ try
         % Save this frequency to file
         f_offset=freq_new;
         save(fullfile(mainGUI_Directory,'f_offset.mat'),'f_offset');
+    else
+        % Load the saved f_offset.mat since that will be next
+        d = load(fullfile(mainGUI_Directory,'f_offset.mat'));
+        f_offset = d.f_offset;
+
+        % Plot it
+        plot(0,f_offset,'o-','markerfacecolor',co(3,:),'markeredgecolor',co(3,:)*.5,...
+            'linewidth',1,'markersize',8,'parent',ax1);
     end
 
 

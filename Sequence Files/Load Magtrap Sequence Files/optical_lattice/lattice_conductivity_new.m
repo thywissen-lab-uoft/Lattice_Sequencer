@@ -27,11 +27,11 @@ rigol_address = 12;
 if seqdata.flags.conductivity_mod_direction == 1
     % Set ODT 1 mod amp such that modulation is along x lattice
     defVar('conductivity_ODT1_mod_amp',...
-        round(getVar('conductivity_ODT2_mod_amp')/1.28,3),'V'); %1.34;
+        round(getVar('conductivity_ODT2_mod_amp')/1.43,3),'V'); %1.28%1.34;
 elseif seqdata.flags.conductivity_mod_direction == 2
      % Set ODT 2 mod amp such that modulation is along y lattice
     defVar('conductivity_ODT2_mod_amp',...
-        round(getVar('conductivity_ODT1_mod_amp')/(-1.87),3),'V'); %2.05;
+        round(getVar('conductivity_ODT1_mod_amp')/1.77,3),'V'); %1.87;2.05;
 end
 
 %% Calculate Timings and Phase

@@ -21,7 +21,7 @@ if ~isfield(npt,'NumCycles')
 end
 
 field      = 201.1;
-evap_depth = 0.11;
+evap_depth = 0.1;0.11;
 
 
 %% Sequence Modifier Function
@@ -54,7 +54,7 @@ evap_depth = 0.11;
 
 %% Create Job Object
 
-plane_shift = 0;
+plane_shift = 16;
 
 out = struct;
 out.SequenceFunctions   = {...

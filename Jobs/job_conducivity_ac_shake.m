@@ -31,7 +31,7 @@ function J=job_conducivity_ac_shake
         defVar('xdtb_lattice_pulse_equil_time',[100],'ms');
         
         %Set odt2 vertical displacement
-        seqdata.flags.xdtB_piezo_vert_disp          = 1;
+        seqdata.flags.xdtB_piezo_vert_disp          = 0;
         defVar('xdtB_piezo_vert_disp_amplitude',[vert_disp],'V');         
         defVar('xdtB_piezo_vert_disp_rampup_time',100,'ms');
         
@@ -67,7 +67,7 @@ mod_ramp_time = 50;
 % Plane Selection Frequency amplitude (kHz);
 
 % Choose how many plane from center to shift by
-Nplane = [-18]; 
+Nplane = [16]; 
 
 % Modulation Frequencies
 freq_list = [20 30 40 50 60 65 67 70 72 75 80 90 100];[20 30 35 40 45 48 50 52 55 57 60 65 75 90 100];
@@ -95,7 +95,7 @@ Gamma_list = [160];2*pi*563.4*.04*.96*[0.45 1.34];[0.45 0.6 1.17 1.6 1.77 1.9 2.
 Gamma_list = Gamma_list([rand_ind]);
 
 % evaporation depths
-power_conductivity_list = [0.0647]; [0.0637];
+power_conductivity_list = [0.058]; [0.0637];
 
 vert_disp = [5];
 
@@ -104,7 +104,7 @@ for bb = 1:length(field_list)
     B = field_list(bb);
     pulse_depth = pulse_list(bb);
     power_conductivity = power_conductivity_list(bb);
-    mod_strength_list = calc_drive(1.5,Gamma_list(bb),1,freq_list);
+    mod_strength_list = calc_drive(2,Gamma_list(bb),1,freq_list);
     
     for ii = 1:length(freq_list)
         % Get the current modulation frequency

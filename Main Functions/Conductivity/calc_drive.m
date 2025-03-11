@@ -6,9 +6,10 @@ function [displacement] = calc_drive(Tpred,Gpred,amp_desired,freq_list)
     aLatt = 527e-9;
     amu = 1.660538921e-27;
     m = 39.964008*amu;
+    %Mar 2025 scaled by 3.68 um/V
     %Feb 2024, scaled by 3.55 um/V
     %Oct 2024, scaled by 2.63 um/V
-    v2um = 3.6;
+    v2um = 3.68;
     
     %% Define the lookup tables for R and E
     global Rvalues;

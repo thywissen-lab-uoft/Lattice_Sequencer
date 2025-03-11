@@ -249,8 +249,9 @@ end
         seqdata.analogchannels(5).voltagefunc{6} = @(freq_aom)(freq_aom-94.82)/6.03;
 
     
-    %Push channel
-    seqdata.analogchannels(6).name = 'Raman VVA';
+    % ODT2 Piezo Horizontal+Vertical Channel 
+    % 0 -->0 V, 10 V --> 150V
+    seqdata.analogchannels(6).name = 'ODT2 Piezo HV';
     seqdata.analogchannels(6).minvoltage = 0;
     seqdata.analogchannels(6).maxvoltage = 10;
     
@@ -554,12 +555,13 @@ end
     seqdata.analogchannels(32).voltagefunc{2} = @(a)max(min((20*a-10),10),-10);%@(a)((log10(a) + 1) * (-5/2)); %Roughly linearizing.
     seqdata.analogchannels(32).voltagefunc{3} = @(a)((a-151.64)/8.2101);
     
-    % channel 33 (unused)
-    seqdata.analogchannels(33).name = 'Vortex Current Mod';
-    seqdata.analogchannels(33).minvoltage = -10;
+    % Channel 33 : ODT1 Piezo Horizontal+Vertical Channel 
+    % 0 -->0 V, 10 V --> 150V   
+    seqdata.analogchannels(33).name = 'ODT1 Piezo HV';
+    seqdata.analogchannels(33).minvoltage = 0;
     seqdata.analogchannels(33).maxvoltage = 10;
-    seqdata.analogchannels(33).defaultvoltagefunc = 2; 
-    seqdata.analogchannels(33).voltagefunc{2} = @(a)(a);%
+%     seqdata.analogchannels(33).defaultvoltagefunc = 2; 
+%     seqdata.analogchannels(33).voltagefunc{2} = @(a)(a);%
 
     %channel 34 (Rb Offset frequency)
     % OBSOLETE AND NO LONGER USED
@@ -621,7 +623,8 @@ end
     % seqdata.analogchannels(38).voltagefunc{4} = @(a)(5.9026*a + 0.1953); %2022-01-12
     % seqdata.analogchannels(38).voltagefunc{4} = @(a)(5.4671*a + 0.0429); %2022-03-25
     % seqdata.analogchannels(38).voltagefunc{4} = @(P)(4.7504*P + 0.00807); %2022-10-25
-    seqdata.analogchannels(38).voltagefunc{4} = @(P)(4.2156*P + 0.0012); %2024-10-17
+%     seqdata.analogchannels(38).voltagefunc{4} = @(P)(4.2156*P + 0.0012); %2024-10-17
+    seqdata.analogchannels(38).voltagefunc{4} = @(P)(4.3062*P + 0.0213); %2025-02-27
 
     %channel 39 (RF Gain control)
     seqdata.analogchannels(39).name = 'RF Gain';
@@ -646,7 +649,8 @@ end
     % seqdata.analogchannels(40).voltagefunc{4} = @(P) (6.2123*P + 0.0359); %2022-03-25
     % seqdata.analogchannels(40).voltagefunc{4} = @(P) (2.9518*P + 0.013658); %2022-10-30
     % seqdata.analogchannels(40).voltagefunc{4} = @(P) (3.0738*P + 0.03); %2022-11-21
-    seqdata.analogchannels(40).voltagefunc{4} = @(P) (3.2266*P + 0.0218); %2024-10-17
+%     seqdata.analogchannels(40).voltagefunc{4} = @(P) (3.2266*P + 0.0218); %2024-10-17
+    seqdata.analogchannels(40).voltagefunc{4} = @(P) (3.2686*P + 0.0169); %2025-02-27
 
 
     %Channel 41 (motorized waveplate for dipole/lattice power dist)

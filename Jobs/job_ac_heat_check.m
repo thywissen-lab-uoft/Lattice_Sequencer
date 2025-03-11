@@ -5,7 +5,7 @@ function J = job_ac_heat_check
         global seqdata;        
         
         % Optical Evaporation        
-        defVar('xdtB_evap_power',[0.0648],'W');
+        defVar('xdtB_evap_power',[0.058],'W');
         % Magnetic Field in Lattice
         defVar('lattice_load_feshbach_field',field,'G'); 
         %Levitation voltage value during xdtB
@@ -21,7 +21,7 @@ function J = job_ac_heat_check
         defVar('lattice_load_feshbach_holdtime',[0],'ms');
         
         % Pulse lattice
-        seqdata.flags.xdtB_pulse_lattice            = 1;
+        seqdata.flags.xdtB_pulse_lattice            = 0;
         defVar('xdtb_lattice_load_time',0.1,'ms');
         defVar('xdtb_lattice_depth',4.5,'Er');
         defVar('xdtb_lattice_hold_pulse_time',[2],'ms');
@@ -50,9 +50,9 @@ function J = job_ac_heat_check
 clear J
 
 % Magnetic Field (G)
-B_conductivity = 200.65;
+B_conductivity = 200.9;
 % Optical Evaporation Power (W)
-power_conductivity = 0.065; 
+power_conductivity = 0.058; 
 % Conductivity modulation ramp up time (ms)
 mod_ramp_time = 50;
 % Plane Selection Frequency amplitude (kHz);

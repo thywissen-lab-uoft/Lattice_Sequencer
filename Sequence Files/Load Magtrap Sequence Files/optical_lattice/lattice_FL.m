@@ -210,8 +210,8 @@ end
     EIT1_max_voltage = 1.1;
     EIT2_max_voltage = .850;
     
-    defVar('qgm_EIT1_power',.8,'normalized');0.8;
-    defVar('qgm_EIT2_power',.8,'normalized');0.8;
+    defVar('qgm_EIT1_power',0.8,'normalized');0.8;
+    defVar('qgm_EIT2_power',0.8,'normalized');0.8;
 
     % Relative power choice (0 to 1)
 %     EIT_probe_rel_pow_list =[.4:.05:1];

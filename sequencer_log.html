@@ -4,9 +4,9 @@
 <link href="https://fonts.cdnfonts.com/css/anonymous-pro" rel="stylesheet"><style>
 * { font-family: "Anonymous Pro", sans-serif; font-size: 8pt}pre { font-family: "Anonymous Pro", sans-serif; font-size: 8pt;   margin: 0;  padding: 0}</style>
 </head></body>
-compiled at 24-Feb-2025 11:44:55<p style="font-size: 16pt;"><a href="matlab: matlab.desktop.editor.openDocument(which('main_settings.m')); ">main_settings.m </a></p>
+compiled at 11-Mar-2025 15:49:47<p style="font-size: 16pt;"><a href="matlab: matlab.desktop.editor.openDocument(which('main_settings.m')); ">main_settings.m </a></p>
 
-<pre> scope_trigger : Lattice_Mod</pre><p style="font-size: 16pt;"><a href="matlab: matlab.desktop.editor.openDocument(which('main_sequence.m')); ">main_sequence.m </a></p>
+<pre> scope_trigger : lattice_ramp_1</pre><p style="font-size: 16pt;"><a href="matlab: matlab.desktop.editor.openDocument(which('main_sequence.m')); ">main_sequence.m </a></p>
 
 <pre>Progamming USB0::0x1AB1::0x0641::DG4E225202524::INSTR</pre>
 <pre>Rigol Technologies,DG4162,DG4E225202524,00.01.14</pre>
@@ -15,19 +15,19 @@ compiled at 24-Feb-2025 11:44:55<p style="font-size: 16pt;"><a href="matlab: mat
 <pre>Progamming USB0::0x1AB1::0x0641::DG4E221100174::INSTR</pre>
 <pre>Rigol Technologies,DG4162,DG4E221100174,00.01.14</pre>
 <pre>Programming channel 2.</pre>
-<p> (1000 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('main_sequence.m'), 255); ">main_sequence.m (255)</a> Preparing MOT for MT</p>
+<p> (1000 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('main_sequence.m'), 257); ">main_sequence.m (257)</a> Preparing MOT for MT</p>
 <p> (1000 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('Prepare_MOT_for_MagTrap.m'), 14); ">Prepare_MOT_for_MagTrap.m (14)</a> CMOT</p>
 <pre>switching cmot detunings</pre>
 <pre>not ramping gradient</pre>
 <p> (1020 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('Prepare_MOT_for_MagTrap.m'), 115); ">Prepare_MOT_for_MagTrap.m (115)</a> Molasses</p>
-<p> (1032.1 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('main_sequence.m'), 334); ">main_sequence.m (334)</a> Magnetic Transport</p>
+<p> (1032.1 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('main_sequence.m'), 336); ">main_sequence.m (336)</a> Magnetic Transport</p>
 <p> (1032.1 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('TransportCloud8.m'), 14); ">TransportCloud8.m (14)</a> Transport</p>
 <p> (3042.1 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('TransportCloud8.m'), 272); ">TransportCloud8.m (272)</a> Vertical Transport Start</p>
 <p> (3042.1 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('TransportCloud8.m'), 273); ">TransportCloud8.m (273)</a> Vertical Transport</p>
 <pre>   Vertical Transport Time  (ms) : 2000</pre>
 <pre>   Coil 15 Cross Over  Time (ms) : 1448.7449</pre>
 <p> (4490.84 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('TransportCloud8.m'), 315); ">TransportCloud8.m (315)</a> Transport Kitten Handoff : 15/16 GS On</p>
-<pre>Transport cloud calculation took 0.80316 seconds</pre>
+<pre>Transport cloud calculation took 0.90839 seconds</pre>
 <p> (5442.1 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('magnetic_trap.m'), 53); ">magnetic_trap.m (53)</a> RF1A</p>
 <pre>   Times        (ms) : [3600 3300 1200]</pre>
 <pre>   Frequencies (MHz) : [42 28 20 16]</pre>
@@ -68,24 +68,119 @@ compiled at 24-Feb-2025 11:44:55<p style="font-size: 16pt;"><a href="matlab: mat
 <pre> Performing exponential evaporation</pre>
 <pre>     Evap Time (ms) : 25000</pre>
 <pre>     tau       (ms) : 7142.8571</pre>
-<pre>     XDT1 end   (W) : 0.14</pre>
-<pre>     XDT2 end   (W) : 0.14</pre>
+<pre>     XDT1 end   (W) : 0.12</pre>
+<pre>     XDT2 end   (W) : 0.12</pre>
 <p> (48845.1 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('xdt_evap_stage_1.m'), 65); ">xdt_evap_stage_1.m (65)</a> Ramping XDT Power Back Up</p>
 <p> (49355.1 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('xdt.m'), 255); ">xdt.m (255)</a> Dipole Transfer complete</p>
-<p> (49355.1 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('main_sequence.m'), 523); ">main_sequence.m (523)</a> rotate_waveplate_1</p>
+<p> (49355.1 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('main_sequence.m'), 504); ">main_sequence.m (504)</a> xdtB.m</p>
+<p> (50485.1 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('xdtB.m'), 121); ">xdtB.m (121)</a> High Field K 9-7 Mixing.</p>
+<pre> Sweep Time    (ms)  : 0.5</pre>
+<pre> RF Freq       (MHz) : 43.7133</pre>
+<pre> Delta Freq    (MHz) : 0.1</pre>
+<pre> RF Power        (V) : -7.8</pre>
+<p> (50596.7 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('xdtB.m'), 232); ">xdtB.m (232)</a> xdtB evap</p>
+<pre> Performing exponential evaporation</pre>
+<pre>     Evap Time (ms) : 5000</pre>
+<pre>     tau       (ms) : 1428.5714</pre>
+<pre>     XDT1 end   (W) : 0.08</pre>
+<pre>     XDT2 end   (W) : 0.08</pre>
+<p> (55596.7 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('xdtB.m'), 281); ">xdtB.m (281)</a> Ramping XDT Power Back Up</p>
+<p> (55846.7 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('xdtB.m'), 343); ">xdtB.m (343)</a> High Field K 9-7 Mixing after XDTB evap.</p>
+<pre> Sweep Time    (ms)  : 0.5</pre>
+<pre> RF Freq       (MHz) : 43.7133</pre>
+<pre> Delta Freq    (MHz) : 0.1</pre>
+<pre> RF Power        (V) : -7.8</pre>
+<p> (55943.3 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('main_sequence.m'), 525); ">main_sequence.m (525)</a> rotate_waveplate_1</p>
 <pre>     Rotation Time : 5000 ms</pre>
 <pre>     Delay    Time : -5500 ms</pre>
 <pre>     Power         : 30%</pre>
-<p> (49355.1 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('main_sequence.m'), 579); ">main_sequence.m (579)</a> Turning off coils and traps.</p>
-<p> (49355.1 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('main_sequence.m'), 677); ">main_sequence.m (677)</a> Absorption Imaging</p>
+<p> (55943.3 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('lattice_load.m'), 13); ">lattice_load.m (13)</a> Loading into optical lattice</p>
+<p> (56813.3 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('Load_Lattice.m'), 429); ">Load_Lattice.m (429)</a> Pinning optical lattice</p>
+<pre> U pin : 70 Er</pre>
+<pre> T pin : 0.2 ms</pre>
+<p> (57100.5 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('Load_Lattice.m'), 724); ">Load_Lattice.m (724)</a> Optical Pumping.</p>
+<p> (57401.5 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('Load_Lattice.m'), 1055); ">Load_Lattice.m (1055)</a> Plane Selection</p>
+<pre>Changing switches so that uwave are on</pre>
+<pre>no tilt</pre>
+<p> (57431.5 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('plane_selection.m'), 153); ">plane_selection.m (153)</a> Ramping Fields CF</p>
+<p> (57931.5 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('plane_selection.m'), 203); ">plane_selection.m (203)</a> Smooth Linear Frequency Sweep</p>
+<pre>     Freq         : 1603.3551 MHz</pre>
+<pre>     Freq Offset  : 1585.1207 kHz</pre>
+<pre>     Pulse Time   : 2 ms</pre>
+<pre>     Freq Amp     : 30 kHz</pre>
+<pre>Programming SRS </pre>
+<pre>     Address      : 30</pre>
+<pre>     Frequency    : 1603.3551 MHz</pre>
+<pre>     Power        : 5 dBm</pre>
+<pre>     Enable       : 1</pre>
+<pre>     Enable Sweep : 1</pre>
+<pre>     Sweep Range  : 0.03 MHz</pre>
+<p> (57963.7 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('plane_selection.m'), 529); ">plane_selection.m (529)</a> Applying vertical D2 Kill Pulse</p>
+<pre> D2 Kill pulse</pre>
+<pre>     Kill Time       (ms) : 3</pre>
+<pre>     Kill Frequency (MHz) : 120</pre>
+<pre>     Kill Amp         (V) : 1.5</pre>
+<pre>     Kill Detuning  (MHz) : 41</pre>
+<p> (58386.7 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('Load_Lattice.m'), 1063); ">Load_Lattice.m (1063)</a> Rotate waveplate again</p>
+<p> (58786.7 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('Load_Lattice.m'), 1087); ">Load_Lattice.m (1087)</a> Lattice Ramp for Fluorescence</p>
+<p> (58811.7 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('Load_Lattice.m'), 1163); ">Load_Lattice.m (1163)</a> Fluorescence image</p>
+<p> (58811.7 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('lattice_FL.m'), 126); ">lattice_FL.m (126)</a> Triggering iXon Frame Transfer Mode</p>
+<pre>iXon Trigger : 58861.7 ms</pre>
+<pre>iXon Trigger : 59711.7 ms</pre>
+<pre>iXon Trigger : 60611.7 ms</pre>
+<pre>iXon Trigger : 61511.7 ms</pre>
+<pre>iXon Trigger : 62411.7 ms</pre>
+<p> (58811.7 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('lattice_FL_helper.m'), 99); ">lattice_FL_helper.m (99)</a> EIT Probe Settings</p>
+<pre>Progamming USB0::0x1AB1::0x0641::DG4E231700442::INSTR</pre>
+<pre>Rigol Technologies,DG4162,DG4E231700442,00.01.14</pre>
+<pre>Programming channel 1.</pre>
+<pre>Progamming USB0::0x1AB1::0x0641::DG4E224101686::INSTR</pre>
+<pre>Rigol Technologies,DG4162,DG4E224101686,00.01.14</pre>
+<pre>Programming channel 2.</pre>
+<p> (58811.7 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('lattice_FL_helper.m'), 127); ">lattice_FL_helper.m (127)</a> Raman Fluoresence</p>
+<pre>Progamming USB0::0x1AB1::0x0641::DG4E180900374::INSTR</pre>
+<pre>Rigol Technologies,DG4162,DG4E180900374,00.01.12</pre>
+<pre>Programming channel 1.</pre>
+<pre>Programming channel 2.</pre>
+<p> (62826.7 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('lattice_off.m'), 58); ">lattice_off.m (58)</a> Band mapping</p>
+<pre> Ramping off XDTs</pre>
+<pre> Ramp Time  (ms) : 5</pre>
+<pre> Wait Time  (ms) : 10</pre>
+<pre> Band Map Time (ms) : 5</pre>
+<pre> xLattice End (Er)  : 0.01</pre>
+<pre> yLattice End (Er)  : -0.25</pre>
+<pre> zLattice End (Er)  : -0.5</pre>
+<p> (62846.7 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('main_sequence.m'), 581); ">main_sequence.m (581)</a> Turning off coils and traps.</p>
+<p> (62846.7 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('main_sequence.m'), 679); ">main_sequence.m (679)</a> Absorption Imaging</p>
 <pre>Absorption Imaging : K X negative normal</pre>
 <pre>ramp_bias_fields::warning -- Known issue with switching off FB field! Check current monitor!</pre>
-<p> (53165.35 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('main_sequence.m'), 842); ">main_sequence.m (842)</a> Load MOT</p><p style="font-size: 16pt;"><a href="matlab: matlab.desktop.editor.openDocument(which('calc_sequence.m')); ">calc_sequence.m </a></p>
+<pre>Running the fluorence imaging code again to take background light</pre>
+<p> (63511.7 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('lattice_FL.m'), 126); ">lattice_FL.m (126)</a> Triggering iXon Frame Transfer Mode</p>
+<pre>iXon Trigger : 63561.7 ms</pre>
+<pre>iXon Trigger : 64411.7 ms</pre>
+<pre>iXon Trigger : 65311.7 ms</pre>
+<pre>iXon Trigger : 66211.7 ms</pre>
+<pre>iXon Trigger : 67111.7 ms</pre>
+<p> (63511.7 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('lattice_FL_helper.m'), 99); ">lattice_FL_helper.m (99)</a> EIT Probe Settings</p>
+<pre>Progamming USB0::0x1AB1::0x0641::DG4E231700442::INSTR</pre>
+<pre>Rigol Technologies,DG4162,DG4E231700442,00.01.14</pre>
+<pre>Programming channel 1.</pre>
+<pre>Progamming USB0::0x1AB1::0x0641::DG4E224101686::INSTR</pre>
+<pre>Rigol Technologies,DG4162,DG4E224101686,00.01.14</pre>
+<pre>Programming channel 2.</pre>
+<p> (63511.7 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('lattice_FL_helper.m'), 127); ">lattice_FL_helper.m (127)</a> Raman Fluoresence</p>
+<pre>Progamming USB0::0x1AB1::0x0641::DG4E180900374::INSTR</pre>
+<pre>Rigol Technologies,DG4162,DG4E180900374,00.01.12</pre>
+<pre>Programming channel 1.</pre>
+<pre>Programming channel 2.</pre>
+<p> (70671.7 ms) <a href="matlab: matlab.desktop.editor.openAndGoToLine(which('main_sequence.m'), 844); ">main_sequence.m (844)</a> Load MOT</p>
+<pre>addVISACommand::warning -- Multiple programming at VISA address USB0::0x1AB1::0x0641::DG4E221100169::INSTR ignored.</pre><p style="font-size: 16pt;"><a href="matlab: matlab.desktop.editor.openDocument(which('calc_sequence.m')); ">calc_sequence.m </a></p>
 
 <pre>programming DDS</pre>
 <pre>GPIB</pre>
 <pre>GPIB device #28: 1285800000.000000</pre>
 <pre>GPIB device #27: 6845040000.000000</pre>
+<pre>GPIB device #30: 1603355121.000000</pre>
 <pre>VISA</pre>
 <pre>visa::error could not connect to device USB0::0x1AB1::0x0641::DG4E191700653::INSTR! Moving on.</pre>
 <pre>converting analog votlages to b16 adwin.</pre>
@@ -94,8 +189,8 @@ compiled at 24-Feb-2025 11:44:55<p style="font-size: 16pt;"><a href="matlab: mat
 <pre>calc_sequence over</pre><p style="font-size: 16pt;"><a href="matlab: matlab.desktop.editor.openDocument(which('load_sequence.m')); ">load_sequence.m </a></p>
 
 <pre>Loading the Update List (analog channels?)</pre>
-<pre>Loading took 2.9s</pre>
+<pre>Loading took 3.74s</pre>
 <pre>Loading the Channel Information</pre>
-<pre>Took 5.87s</pre>
+<pre>Took 7.01s</pre>
 <pre>saving camera control file</pre>
 <pre>Y:\_communication\camera_control.mat</pre>

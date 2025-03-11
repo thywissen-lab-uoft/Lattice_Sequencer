@@ -51,7 +51,7 @@ end
 
 %% Create Job Object
 
-plane_shift = 0;
+plane_shift = 16;
 
 out = struct;
 out.SequenceFunctions   = {...

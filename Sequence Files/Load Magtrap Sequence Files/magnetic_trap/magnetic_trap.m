@@ -481,7 +481,7 @@ if seqdata.flags.mt_ramp_end
     logNewSection('Ramp down gradient',curtime);    
 
     tr1 = 100;
-    defVar('mt_qp_current_ramp',[26],'A');
+    defVar('mt_qp_current_ramp',[20],'A');
     i1 = getVar('mt_qp_current_ramp'); 
         
     % Ramp the QP Current

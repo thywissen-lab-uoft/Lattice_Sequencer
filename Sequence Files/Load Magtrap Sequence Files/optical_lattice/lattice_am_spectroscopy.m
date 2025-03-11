@@ -9,7 +9,7 @@ end
     logNewSection('Amplitude Modulation Spectroscopy',curtime)
     
 %% AM Spec Parameters
-    AM_spec_direction = 'Y';
+    AM_spec_direction = 'X';
     AM_spec_latt_depth = 100;
     addOutputParam('AM_spec_depth',AM_spec_latt_depth);
 

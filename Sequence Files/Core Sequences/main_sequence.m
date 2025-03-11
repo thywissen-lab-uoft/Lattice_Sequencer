@@ -119,7 +119,7 @@ setAnalogChannel(curtime,'Coil 15 Small',-0.002); %Set
 setAnalogChannel(calctime(curtime,0),'Modulation Ramp',-10,1);
 
 %Initialize the Raman VVA to on.
-setAnalogChannel(calctime(curtime,0),'Raman VVA',9.9);
+% setAnalogChannel(calctime(curtime,0),'Raman VVA',9.9);
 
 %close all RF and uWave switches
 setDigitalChannel(calctime(curtime,0),'RF TTL',0);
@@ -171,8 +171,10 @@ CDT_piezo_Z = 0;
 setAnalogChannel(curtime,'Piezo mirror Z',CDT_piezo_Z,1);
 
 % Set XDT vertical piezos to half the range
-setAnalogChannel(curtime,'XDT1 V Piezo',5,1);
-setAnalogChannel(curtime,'XDT2 V Piezo',5,1);
+setAnalogChannel(calctime(curtime,0),'XDT1 V Piezo',5,1);
+setAnalogChannel(calctime(curtime,0),'XDT2 V Piezo',5,1);
+setAnalogChannel(calctime(curtime,0),'ODT1 Piezo HV',5,1); 
+setAnalogChannel(calctime(curtime,0),'ODT2 Piezo HV',5,1); 
 
 %Close science cell repump shutter
 setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',0); %1 = open, 0 = closed

@@ -58,7 +58,7 @@ if seqdata.flags.xdtB_levitate
         tFF,tFF,QP_FFValue);
     curtime = calctime(curtime,tFF);    
     % Ramp Coil 15
-    I_QP_rev = defVar('xdtB_levitate_current',0.2,'A');
+    I_QP_rev = getVar('xdtB_levitate_current');
     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15 Small',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,I_QP_rev,2); 
 end
@@ -636,7 +636,7 @@ if seqdata.flags.xdtB_one_beam
     
     % Optional wait time
     if doWait
-        curtime = calctime(curtime,50);
+        curtime = calctime(curtime,25);
     end
 end
 

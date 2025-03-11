@@ -34,7 +34,7 @@ function J=job_trapfrequency
         
         %Enable snap for trap frequency measurements
         seqdata.flags.conductivity_snap_and_hold        = 1; 
-        defVar('conductivity_snap_and_hold_time',[0],'ms');[0:2:24 50:2:74];[0:2.5:42.5];
+        defVar('conductivity_snap_and_hold_time',[0:1.5:36],'ms');[0:3:24 40:3:64];[0:2:24 50:2:74];[0:2.5:42.5];
         defVar('piezo_diabat_ramp_time',4,'ms'); %How fast to snap back to zero displacement
         
         %Change to ODT1 if displacing along Y
@@ -45,7 +45,7 @@ function J=job_trapfrequency
         defVar('conductivity_mod_time',50,'ms'); % 200 ms for force calibration
         
         %Set odt2 vertical displacement
-        seqdata.flags.xdtB_piezo_vert_disp          = 1;
+        seqdata.flags.xdtB_piezo_vert_disp          = 0;
         defVar('xdtB_piezo_vert_disp_amplitude',[vert_disp],'V');         
         defVar('xdtB_piezo_vert_disp_rampup_time',100,'ms');
         
@@ -60,19 +60,19 @@ function J=job_trapfrequency
 clear J
 
 % Magnetic Field (G)
-B = 200;
+B = 201.1;
 
 %Set final powers of ODTs in W
-ODT1_power = 0.195;
-ODT2_power = 0.150;
+ODT1_power = 0.198;
+ODT2_power = 0.088;
 
 %Choose Lattice Depths
-depthX = -0.5;
-depthY = -0.5;
-depthZ = -0.5;
+depthX = 2.5;
+depthY = 2.5;
+depthZ = 2.5;
 
 % Optical Evaporation Power (W)
-evap_depth = 0.065;
+evap_depth = 0.058;0.065;
 
 % Conductivity modulation ramp up time (ms)
 mod_ramp_time = 50; % 200 ms for force calibration
@@ -92,12 +92,12 @@ for ii = 1:length(vert_disp_list)
     out.SequenceFunctions   = {@main_settings,@(curtime) ...
         trapfreq(curtime,ODT1_power,ODT2_power,B,evap_depth,mod_strength,mod_ramp_time,...
         depthX,depthY,depthZ,uwave_freq_amp,vert_disp),@main_sequence};
-    out.CycleEnd = 23;
+    out.CycleEnd = 25;
     out.WaitMode = 2;
     out.WaitTime = 90;
-    out.JobName             = ['Trap freq, ODTs (' num2str(ODT1_power*1e3) ',' num2str(ODT2_power*1e3) ') mW, (' ...
+    out.JobName             = ['XDT and Lattice X Trap Freq, ODTs (' num2str(ODT1_power*1e3) ',' num2str(ODT2_power*1e3) ') mW, (' ...
         num2str(depthX) ',' num2str(depthY) ',' num2str(depthZ), ') Er, ' num2str(B) ' G, ' num2str(1e3*evap_depth) ' mW, ' num2str(mod_strength) ' V amp, ' ...
-        num2str(mod_ramp_time) ' ms ramp, Vert Disp ' num2str(vert_disp) ' V'];
+        num2str(mod_ramp_time) ' ms ramp'];
     out.SaveDir         = out.JobName;    
     J(ii) = sequencer_job(out);
 end

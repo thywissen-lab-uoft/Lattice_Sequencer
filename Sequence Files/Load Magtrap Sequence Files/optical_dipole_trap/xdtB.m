@@ -607,8 +607,8 @@ if seqdata.flags.xdtB_one_beam
     P1 = getChannelValue(seqdata,'dipoleTrap1',1);
     P2 = getChannelValue(seqdata,'dipoleTrap2',1);
     
-    odt1_on = 0;
-    odt2_on = 1;
+    odt1_on = 1;
+    odt2_on = 0;
     doWait = 0;
     
     % To mitigate gravitational sag, turn one ODT off but then increase the
@@ -659,7 +659,7 @@ if seqdata.flags.xdtB_vert_piezo_ramp
     % Do you actually ramp?
     doRamp_ODT1 = 0;
     doRamp_ODT2 = 1;    
-    doRampBack = 1;
+    doRampBack = 0;
     
     % Ramp ODT1 Vertical Piezo
     if doRamp_ODT1
@@ -671,13 +671,23 @@ if seqdata.flags.xdtB_vert_piezo_ramp
     if doRamp_ODT2
         AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,v2);
+        
+        % % Conversion functions for ODT2
+        V_C = 5;
+        a2 = -1.45/5;
+        b2 = .015;
+        ODT2_CTRL_2_HV = @(V_CTRL) a2*(V_CTRL-V_C)+b2*(V_CTRL-V_C).^2+V_C;
+        
+        AnalogFuncTo(calctime(curtime,0),'ODT2 Piezo HV',...
+            @(t,tt,y1,y2) ODT2_CTRL_2_HV(ramp_minjerk(t,tt,y1,y2)), ...
+            tr,tr,v2);
     end
     
     % Wait for Piezo Ramps
     if (doRamp_ODT1 || doRamp_ODT2);curtime = calctime(curtime,tr);end
     
-    % Wait for a bit (optional, sometimes this is useful)
-%     curtime = calctime(curtime,50);]
+%     Wait for a bit (optional, sometimes this is useful)
+    curtime = calctime(curtime,250);
 
     % Additional ramps to return (useful for round trip measurements)
     if doRampBack

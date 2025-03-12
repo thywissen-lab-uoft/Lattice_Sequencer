@@ -72,7 +72,7 @@ depthY = 2.5;
 depthZ = 2.5;
 
 % Optical Evaporation Power (W)
-evap_depth = 0.058;0.065;
+evap_depth = 0.054;0.065;
 
 % Conductivity modulation ramp up time (ms)
 mod_ramp_time = 50; % 200 ms for force calibration

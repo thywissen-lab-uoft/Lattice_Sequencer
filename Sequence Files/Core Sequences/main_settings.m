@@ -425,7 +425,7 @@ seqdata.flags.xdtB_rf_mix                   = 1;
 
 % Evaporation
 seqdata.flags.xdtB_evap                     = 1;
-defVar('xdtB_evap_power',[0.060],'W');0.0655;.085;
+defVar('xdtB_evap_power',[0.080],'W');0.0655;.085;
 defVar('xdtB_evap_time',[5000],'ms');
 defVar('xdtB_evap_tau_fraction',3.5','arb');
 
@@ -694,7 +694,7 @@ defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 % Offset of frequency in interger multiples of plane separation
 % Change N_PLANE if you want to try hopping to different planes, keep this
 % near 0 ideally to keep things simple
-defVar('qgm_planeShift_N',16,'plane');% ALWAYS AN INTERGER
+defVar('qgm_planeShift_N',8,'plane');% ALWAYS AN INTERGER
 defVar('qgm_planeShift_freqperplane',85,'kHz'); % kHz/Plane
 defVar('qgm_planeShift_voltperplane',-0.076,'V'); % V/Plane (sign convention is relative to freqperplane)
 seqdata.flags.qgm_doPlaneShift = 1;

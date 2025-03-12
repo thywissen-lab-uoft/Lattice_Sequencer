@@ -835,8 +835,14 @@ setAnalogChannel(curtime,'15/16 GS',0);
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2500,2500,0,1);
     
 % % Piezo Mirror to Original displacement
-%  AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
-%     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,0);
+ AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
+    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,5);
+ AnalogFuncTo(calctime(curtime,0),'ODT1 Piezo HV',...
+    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,5);
+ AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,5);
+ AnalogFuncTo(calctime(curtime,0),'ODT2 Piezo HV',...
+    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,5);
 
 %% Load MOT
 % Load the MOT

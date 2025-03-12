@@ -70,7 +70,7 @@ mod_ramp_time = 50;
 Nplane = [16]; 
 
 % Modulation Frequencies
-freq_list = [20 30 40 50 60 65 67 70 72 75 80 90 100];[20 30 35 40 45 48 50 52 55 57 60 65 75 90 100];
+freq_list = [20 30 40 50 55 60 62 65 67 70 72 75 80 90 100];[20 30 35 40 45 48 50 52 55 57 60 65 75 90 100];
 
 % Randomize the modulation frequencies
 freq_list = freq_list(randperm(numel(freq_list)));
@@ -83,7 +83,7 @@ rand_ind = [1];% Randomize the modulation frequencies
 % rand_ind = rand_ind(randperm(numel(rand_ind)));
 
 % Lattice pulse depth
-pulse_list = [3];[6 5.5];%tbd [6.5 6 5 5 5 4.5 4.5];
+pulse_list = [1];[6 5.5];%tbd [6.5 6 5 5 5 4.5 4.5];
 pulse_list = pulse_list([rand_ind]);
  
 % B field list
@@ -95,7 +95,7 @@ Gamma_list = [160];2*pi*563.4*.04*.96*[0.45 1.34];[0.45 0.6 1.17 1.6 1.77 1.9 2.
 Gamma_list = Gamma_list([rand_ind]);
 
 % evaporation depths
-power_conductivity_list = [0.058]; [0.0637];
+power_conductivity_list = [0.0545]; [0.0637];
 
 vert_disp = [5];
 

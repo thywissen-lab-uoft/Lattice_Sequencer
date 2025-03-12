@@ -21,7 +21,7 @@ nCenter = [276,256];
 
 % Feedback bounds
 Lambda_Lim = [66 77];   % [px] Wavelength bounds for stripes
-Theta_Lim = [-2 4];     % [deg] Angle bounds for stripes
+Theta_Lim = [-2.5 4];     % [deg] Angle bounds for stripes
 Time_max = 40;          % [min] maximum number of minutes to feedback on    
     
 % Plane Separation [kHz/plane]

@@ -54,7 +54,7 @@ evap_depth = 0.1;0.11;
 
 %% Create Job Object
 
-plane_shift = 16;
+plane_shift = 9;
 
 out = struct;
 out.SequenceFunctions   = {...

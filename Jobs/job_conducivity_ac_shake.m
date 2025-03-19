@@ -30,11 +30,6 @@ function J=job_conducivity_ac_shake
         defVar('xdtb_lattice_hold_pulse_time',[2],'ms');
         defVar('xdtb_lattice_pulse_equil_time',[100],'ms');
         
-        %Set odt2 vertical displacement
-        seqdata.flags.xdtB_piezo_vert_disp          = 0;
-        defVar('xdtB_piezo_vert_disp_amplitude',[vert_disp],'V');         
-        defVar('xdtB_piezo_vert_disp_rampup_time',100,'ms');
-        
         % Modulation time
         t0 = 50;T = 1e3/freq; 
         t_start = T*ceil((t0+mod_ramp_time)/T);
@@ -47,7 +42,7 @@ function J=job_conducivity_ac_shake
         
         tvec = tvec(:);
         tvec = tvec';
-        defVar('conductivity_mod_time',tvec,'ms');             
+        defVar('conductivity_mod_time',tvec,'ms');
         
         % Plane Selection
         seqdata.flags.plane_selection_dotilt        = 0;
@@ -67,10 +62,10 @@ mod_ramp_time = 50;
 % Plane Selection Frequency amplitude (kHz);
 
 % Choose how many plane from center to shift by
-Nplane = [16]; 
+Nplane = [5]; 
 
 % Modulation Frequencies
-freq_list = [20 30 40 50 55 60 62 65 67 70 72 75 80 90 100];[20 30 35 40 45 48 50 52 55 57 60 65 75 90 100];
+freq_list = [20 30 40 50 55 57 60 62 65 67 70 75 80 90 100];[20 30 35 40 45 48 50 52 55 57 60 65 75 90 100];
 
 % Randomize the modulation frequencies
 freq_list = freq_list(randperm(numel(freq_list)));
@@ -83,19 +78,19 @@ rand_ind = [1];% Randomize the modulation frequencies
 % rand_ind = rand_ind(randperm(numel(rand_ind)));
 
 % Lattice pulse depth
-pulse_list = [1];[6 5.5];%tbd [6.5 6 5 5 5 4.5 4.5];
+pulse_list = [3];[6 5.5];%tbd [6.5 6 5 5 5 4.5 4.5];
 pulse_list = pulse_list([rand_ind]);
  
 % B field list
-field_list = [200.9];[190 195 199.4 200.4 200.65 200.9 201.1]; 
+field_list = [201.1];[190 195 199.4 200.4 200.65 200.9 201.1]; 
 field_list = field_list([rand_ind]);
 
 % Gamma guesses for T = 2.8t, n=.08/2, in s^-1 
-Gamma_list = [160];2*pi*563.4*.04*.96*[0.45 1.34];[0.45 0.6 1.17 1.6 1.77 1.9 2.2]; [1.34 1.9];
+Gamma_list = [230];2*pi*563.4*.04*.96*[0.45 1.34];[0.45 0.6 1.17 1.6 1.77 1.9 2.2]; [1.34 1.9];
 Gamma_list = Gamma_list([rand_ind]);
 
 % evaporation depths
-power_conductivity_list = [0.0545]; [0.0637];
+power_conductivity_list = [0.0548]; [0.0637];
 
 vert_disp = [5];
 
@@ -104,7 +99,7 @@ for bb = 1:length(field_list)
     B = field_list(bb);
     pulse_depth = pulse_list(bb);
     power_conductivity = power_conductivity_list(bb);
-    mod_strength_list = calc_drive(2,Gamma_list(bb),1,freq_list);
+    mod_strength_list = calc_drive(2.5,Gamma_list(bb),1,freq_list);
     
     for ii = 1:length(freq_list)
         % Get the current modulation frequency

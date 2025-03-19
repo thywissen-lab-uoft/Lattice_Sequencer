@@ -170,13 +170,43 @@ CDT_piezo_Z = 0;
 % setAnalogChannel(curtime,'Piezo mirror Y',CDT_piezo_Y,1);
 setAnalogChannel(curtime,'Piezo mirror Z',CDT_piezo_Z,1);
 
-% Set XDT vertical piezos to half the range
-setAnalogChannel(calctime(curtime,0),'XDT1 V Piezo',5,1);
-setAnalogChannel(calctime(curtime,0),'XDT2 V Piezo',5,1);
-setAnalogChannel(calctime(curtime,0),'ODT1 Piezo HV',5,1); 
-setAnalogChannel(calctime(curtime,0),'ODT2 Piezo HV',5,1); 
+%% Set XDT vertical piezos to half the range
+% 2025/03/12 CJF : Rather crappy code to set the initial piezo
+% displacements.
 
-%Close science cell repump shutter
+% Control values 
+ctrl1 = 5;
+ctrl2 = 4;
+
+% Conversion functions for ODT2
+V_C = 5;
+a2 = -1.45/5;
+b2 = .015;
+ODT2_CTRL_2_HV = @(V_CTRL) a2*(V_CTRL-V_C)+b2*(V_CTRL-V_C).^2+V_C;
+ODT2_CTRL_2_V  = @(V_CTRL) V_CTRL;
+% 
+%  Conversion functions for ODT1
+V_C = 5;
+a1 = 0.175/5;
+b1 = 0;
+ODT1_CTRL_2_HV = @(V_CTRL) a1*(V_CTRL-V_C)+b1*(V_CTRL-V_C).^2+V_C;
+ODT1_CTRL_2_V  = @(V_CTRL) V_CTRL;
+
+% Calculate the actual piezo voltages
+ODT1_V_Piezo = ODT1_CTRL_2_V(ctrl1);
+ODT1_HV_Piezo = ODT1_CTRL_2_HV(ctrl1);
+ODT2_V_Piezo = ODT2_CTRL_2_V(ctrl2);
+ODT2_HV_Piezo = ODT2_CTRL_2_HV(ctrl2);
+
+% ODT1 V and HV piezos
+setAnalogChannel(calctime(curtime,0),'XDT1 V Piezo',ODT1_V_Piezo,1);
+setAnalogChannel(calctime(curtime,0),'ODT1 Piezo HV',ODT1_HV_Piezo,1); 
+
+% ODT2 V and HV piezos
+setAnalogChannel(calctime(curtime,0),'XDT2 V Piezo',ODT2_V_Piezo,1);
+setAnalogChannel(calctime(curtime,0),'ODT2 Piezo HV',ODT2_HV_Piezo,1); 
+
+%% Close science cell repump shutter
 setDigitalChannel(calctime(curtime,0),'Rb Sci Repump',0); %1 = open, 0 = closed
 setDigitalChannel(calctime(curtime,0),'K Sci Repump',0); %1 = open, 0 = closed
 
@@ -834,15 +864,16 @@ setAnalogChannel(curtime,'15/16 GS',0);
  AnalogFuncTo(calctime(curtime,0),'latticeWaveplate',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2500,2500,0,1);
     
-% % Piezo Mirror to Original displacement
+%% % Piezo Mirror to Original displacement
+
  AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
-    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,5);
+    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,ODT1_V_Piezo);
  AnalogFuncTo(calctime(curtime,0),'ODT1 Piezo HV',...
-    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,5);
+    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,ODT1_HV_Piezo);
  AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
-    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,5);
+    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,ODT2_V_Piezo);
  AnalogFuncTo(calctime(curtime,0),'ODT2 Piezo HV',...
-    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,5);
+    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),100,100,ODT2_HV_Piezo);
 
 %% Load MOT
 % Load the MOT

@@ -480,35 +480,20 @@ defVar('xdtB_piezo_vert_kick_rampoff_time',4,'ms');
 defVar('xdtB_piezo_vert_kick_holdtime', [0],'ms');
 
 % Turn off one of the dipole trap beams to measure its position
-seqdata.flags.xdtB_one_beam                 = 0;
+seqdata.flags.xdtB_one_beam_ODT1            = 0;
+seqdata.flags.xdtB_one_beam_ODT2            = 0;
 
 % Ramp Vertical Piezo of ODT1 or ODT2
-seqdata.flags.xdtB_vert_piezo_ramp          = 0;
+seqdata.flags.xdtB_vert_piezo_ramp_ODT1   = 0;
+seqdata.flags.xdtB_vert_piezo_ramp_ODT2   = 0;
 defVar('xdtB_vert_piezo_ramp_time',[100],'ms');         
-defVar('xdtB_vert_piezo_ramp_value_1',8,'V');
-defVar('xdtB_vert_piezo_ramp_value_2',8,'V');
-
-
-% 2024/02/19 : CJF Rewrote these codes in exchange for the above code.
-% FC/RL please look at the changes and see if they are better in your
-% opinon. Then delete the unused code.
-% % piezo disp vertical ODT1
-% seqdata.flags.xdtB_odt1_piezo_vert_disp          = 0;
-% defVar('xdtB_odt1_piezo_vert_disp_amplitude',[5],'V');         
-% defVar('xdtB_odt1_piezo_vert_disp_rampup_time',100,'ms');
-% 
-% % piezo disp vertical ODT2
-% seqdata.flags.xdtB_odt2_piezo_vert_disp          = 0;
-% defVar('xdtB_odt2_piezo_vert_disp_amplitude',[4],'V');         
-% defVar('xdtB_odt2_piezo_vert_disp_rampup_time',100,'ms');
-
-
+defVar('xdtB_vert_piezo_ramp_value_1',[5],'V');
+defVar('xdtB_vert_piezo_ramp_value_2',[5],'V');
 
 % Ramp up optical power to halt evaporation
 seqdata.flags.xdtB_ramp_power_end2           = 0;
 defVar('xdtB_evap_end2_ramp_power', [.120],'W');   
 defVar('xdtB_evap_end2_ramp_time',  [250],'ms');  
-
 
 %% Waveplate Rotation 1
 % This rotation occurs at the end of optical evaporation
@@ -694,9 +679,11 @@ defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 % Offset of frequency in interger multiples of plane separation
 % Change N_PLANE if you want to try hopping to different planes, keep this
 % near 0 ideally to keep things simple
-defVar('qgm_planeShift_N',8,'plane');% ALWAYS AN INTERGER
+defVar('qgm_planeShift_N',9,'plane');% ALWAYS AN INTERGER
 defVar('qgm_planeShift_freqperplane',85,'kHz'); % kHz/Plane
-defVar('qgm_planeShift_voltperplane',-0.076,'V'); % V/Plane (sign convention is relative to freqperplane)
+defVar('qgm_planeShift_voltperplane',-0.086,'V'); % V/Plane (sign convention is relative to freqperplane)
+% Optimized 2025/03/14 by CJF.
+
 seqdata.flags.qgm_doPlaneShift = 1;
 % Tilt Plane Selection Tilt Settings
 freq_offset_tilt_list =160;120; 
@@ -733,7 +720,7 @@ defVar('f_offset',f_offset,'kHz');
 
 %% Micrscope and Microscope Feedback Position
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[6.05],'V');
+defVar('objective_piezo',[5.9],'V');5.95;
 
 % CF : I have no idea how this was calibrated, but it should be
 % 0.1V = 700 nm, larger means further away from chamber

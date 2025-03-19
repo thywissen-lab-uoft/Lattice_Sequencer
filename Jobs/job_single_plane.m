@@ -28,7 +28,7 @@ function curtime = one_plane(curtime)
     seqdata.flags.lattice_fluor_multi_mode      = 0; 
     
     seqdata.flags.qgm_doPlaneShift = 1;
-    defVar('qgm_planeShift_N',[9],'plane');    
+    defVar('qgm_planeShift_N',[7],'plane');    
     
     % Pulse lattice
     seqdata.flags.xdtB_pulse_lattice            = 0;
@@ -42,32 +42,17 @@ function curtime = one_plane(curtime)
 %     defVar('xdtB_odt1_piezo_vert_disp_amplitude',[5],'V');  
     
 % %     Turn off one of the dipole trap beams to measure its position
-    seqdata.flags.xdtB_one_beam                 = 0;
+    seqdata.flags.xdtB_one_beam_ODT1            = 0;
+    seqdata.flags.xdtB_one_beam_ODT2            = 0;
     
 %     % Ramp Vertical Piezo of ODT1 or ODT2
-seqdata.flags.xdtB_vert_piezo_ramp          = 1;
-defVar('xdtB_vert_piezo_ramp_time',[100],'ms');         
-defVar('xdtB_vert_piezo_ramp_value_1',5,'V');
-defVar('xdtB_vert_piezo_ramp_value_2',[0:1:10],'V');
+    seqdata.flags.xdtB_one_beam_ODT1 = 0;
+    seqdata.flags.xdtB_one_beam_ODT2 = 1;
+    defVar('xdtB_vert_piezo_ramp_time',[100],'ms');         
+    defVar('xdtB_vert_piezo_ramp_value_1',5,'V');
+    defVar('xdtB_vert_piezo_ramp_value_2',[0:1:10],'V');
 
             
-    % FL settings
-    % Scan Raman power
-%     raman_power = [0.2:0.2:1 1.1:0.1:1.5];
-%     defVar('qgm_Raman1_power',0.4,'normalized');1;
-%     defVar('qgm_Raman2_power',0.4,'normalized');1; %     
-%     defVar('qgm_Raman1_shift',[-40],'kHz'); -40;% 
-%     defVar('qgm_field_shift',[0.21],'G');%     
-%     defVar('F_Pump_Power',[0.95],'V');
-
-%     freq_offset_tilt_list = 160;
-%     defVar('tilt_notilt_shift',[155],'kHz');
-%     tilt_notilt_offset = getVar('tilt_notilt_shift');
-%     freq_offset_notilt_list = freq_offset_tilt_list+tilt_notilt_offset;
-%     % freq_offset_amplitude_notilt_list = [30];
-%     defVar('qgm_plane_uwave_frequency_offset_notilt',freq_offset_notilt_list,'kHz');
-%     defVar('qgm_plane_uwave_frequency_amplitude_notilt',15,'kHz');
-    
 % %     % Lattice Load Settings
     defVar('lattice_load_time',[.2],'ms');750;
     defVar('lattice_load_depthX',70,'Er');2.5;
@@ -82,10 +67,10 @@ out.SequenceFunctions   = {...
     @main_settings,...
     @one_plane,...
     @main_sequence};
-out.CycleEnd   = 11;npt.NumCycles;
+out.CycleEnd   = 13;npt.NumCycles;
 out.WaitMode = 2;
 out.WaitTime = 90;
-out.JobName             = ['N = 9 scan ODT2 vertical disp ' num2str(1e3*0.058) ' mW, '  num2str(npt.lattice_load_feshbach_field) ' G' ];
+out.JobName             = ['ODT1 only scan plane shift ' num2str(1e3*0.058) ' mW, '  num2str(npt.lattice_load_feshbach_field) ' G' ];
 out.SaveDir         = out.JobName;  
 %% Output Job File
 J = sequencer_job(out);

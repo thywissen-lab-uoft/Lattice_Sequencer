@@ -1,4 +1,4 @@
-function feedback_stripe(data)
+function feedback_stripe(data,doFeedback)
 
 global mainGUI_Directory;
 clear freqs
@@ -10,7 +10,11 @@ clear phi
 
 %% Engage Feedback
 % Engage Feedback?
-doFeedback=1;
+% doFeedback=1;
+
+if nargin==1
+    doFeedback=0;
+end
 
 %% Feedback Settings
 
@@ -21,7 +25,7 @@ nCenter = [276,256];
 
 % Feedback bounds
 Lambda_Lim = [66 77];   % [px] Wavelength bounds for stripes
-Theta_Lim = [-2.5 4];     % [deg] Angle bounds for stripes
+Theta_Lim = [-2.5 4];   % [deg] Angle bounds for stripes
 Time_max = 40;          % [min] maximum number of minutes to feedback on    
     
 % Plane Separation [kHz/plane]
@@ -37,8 +41,10 @@ gain_P = 0.5;
 gain_I = 1 - gain_P;
         
 % Integral time constant [min.]
-tau_I = 10;             
+tau_I = 15;             
 
+% Minutes to plot things
+tMinLim=60;
 
 %%
 
@@ -51,12 +57,14 @@ try
                 stripes(end+1) = data{l}.(src)(1);
                 freqs(end+1) = data{l}.Params.f_offset;
                 t(end+1) = data{l}.Params.ExecutionDate;
+                plane_shift(end+1) = data{l}.Params.qgm_planeShift_N;
                 phi(end+1) = stripes(end).PhaseFunc(nCenter(1),nCenter(2));
             else
                 stripes(1) = data{l}.(src)(1);
                 freqs(1) = data{l}.Params.f_offset;
-                t(1) = data{1}.Params.ExecutionDate;
+                t(1) = data{l}.Params.ExecutionDate;
                 phi(1) = stripes(end).PhaseFunc(nCenter(1),nCenter(2));
+                plane_shift(1) = data{l}.Params.qgm_planeShift_N;
             end
         end
     end    
@@ -91,48 +99,71 @@ try
     clf(fig);
     co=get(gca,'colororder');
     fig.NumberTitle='off';
+    
+    tNow = datetime(now,'convertfrom','datenum');
+
+    %% initialize tabs
+hpTG = uitabgroup(fig,'units','normalized','position',[0 0 1 1]);
+tSummary = uitab(hpTG,'Title','summary','backgroundcolor','w');
+tDetails = uitab(hpTG,'Title','details','backgroundcolor','w');
 
     %% Plot Recent Stripe Data
     
     % Wavelength Plot
-    ax1=subplot(5,2,1,'Parent',fig);
+    axW=subplot(2,3,1,'Parent',tDetails);
     plot(t,Lambda,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
-        'linewidth',1,'markersize',8,'parent',ax1);
-    ylabel(ax1,'Wavelength \lambda (sites)');
-
+        'linewidth',1,'markersize',8,'parent',axW);
+    ylabel(axW,'Wavelength \lambda (sites)');
+    set(axW,'XLim',tNow+[-minutes(tMinLim) 0]);
+   
+    
     % Angle Plot
-    ax2=subplot(5,2,3,'Parent',fig);
+    axA=subplot(2,3,2,'Parent',tDetails);
     plot(t,Theta,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
-        'linewidth',1,'markersize',8,'parent',ax2);
-    ylabel(ax2,'Rot. Angle \theta (deg)');
+        'linewidth',1,'markersize',8,'parent',axA);
+    ylabel(axA,'Rot. Angle \theta (deg)');
+    set(axA,'XLim',tNow+[-minutes(tMinLim) 0]);
 
     % Radius Plot
-    ax3=subplot(5,2,5,'Parent',fig);
+    axR=subplot(2,3,3,'Parent',tDetails);
     plot(t,Radius,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
-        'linewidth',1,'markersize',8,'parent',ax3);
-    ylabel(ax3,'Radius R (sites)');       
+        'linewidth',1,'markersize',8,'parent',axR);
+    ylabel(axR,'Radius R (sites)');       
+    set(axR,'XLim',tNow+[-minutes(tMinLim) 0]);
 
     % Phase plot
-    ax4=subplot(5,2,7,'Parent',fig);
+    axP=subplot(2,3,4,'Parent',tDetails);
     plot(t,phi_plane,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
-        'linewidth',1,'markersize',8,'parent',ax4);
-    ylabel(ax4,'Phase \phi (planes)');  
+        'linewidth',1,'markersize',8,'parent',axP);
+    ylabel(axP,'Phase \phi (planes)');  
+    set(axP,'XLim',tNow+[-minutes(tMinLim) 0]);
 
     % Frequencies
-    ax5=subplot(5,2,9,'Parent',fig);
+    axF=subplot(2,3,5,'Parent',tDetails);
     plot(t,freqs,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
-        'linewidth',1,'markersize',8,'parent',ax5);
-    ylabel(ax5,'freq (kHz)');  
+        'linewidth',1,'markersize',8,'parent',axF);
+    ylabel(axF,'freq (kHz)');  
+    set(axF,'XLim',tNow+[-minutes(tMinLim) 0]);
+    
+    % Plane Shift
+     axS=subplot(2,3,6,'Parent',tDetails);
+    plot(t,plane_shift,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
+        'linewidth',1,'markersize',8,'parent',axS);
+    ylabel(axS,'plane shift (planes)');  
+    set(axS,'XLim',tNow+[-minutes(tMinLim) 0]);
+    
+    
 
+%% Calculate Stuff
     % Get Time now
-    tNow = datetime(now,'convertfrom','datenum');
     timeAgo = minutes(tNow-t);
 
     % Find data that is outside the limits
     bad_Lambda  = [Lambda<Lambda_Lim(1)]+[Lambda>Lambda_Lim(2)];% Bad Wavelength
     bad_Theta   = [Theta<Theta_Lim(1)]+[Theta>Theta_Lim(2)];    % Bad Angle
     bad_Time    = [timeAgo>Time_max];                           % Bad Time
-    bad_inds    = bad_Lambda+bad_Theta+bad_Time;
+    bad_PlaneShift = [plane_shift~=plane_shift(1)];             % Only consider first plane shift
+    bad_inds    = bad_Lambda+bad_Theta+bad_Time+bad_PlaneShift;
     bad_inds    = logical(bad_inds);
 
     % Remove bad data points from feedback data
@@ -144,28 +175,43 @@ try
     freqs_bad = freqs(bad_inds);
     timeAgo_bad = timeAgo(bad_inds);
     phi_plane_bad = phi_plane(bad_inds);    
-
+%%
     % Plot Frequency Feedback Values
-    ax1=subplot(2,2,2,'Parent',fig);
-    plot(timeAgo_fb,freqs_fb,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
+    ax1=subplot(1,2,1,'Parent',tSummary);
+    pFreq_FB=plot(timeAgo_fb,freqs_fb,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
         'linewidth',1,'markersize',8,'parent',ax1);
     ylabel(ax1,'freq (kHz)');
     xlabel(ax1,'time ago (min.)');
     hold(ax1,'on');
-    plot(timeAgo_bad,freqs_bad,'rx',...
+    pFreq_BAD=plot(timeAgo_bad,freqs_bad,'rx',...
         'linewidth',1,'markersize',8,'parent',ax1);
+    tStr = ['Now : ' datestr(datetime(now,'convertfrom','datenum'))];
+    text(.01,.99,tStr,'units','normalized','parent',ax1,...
+        'verticalalignment','top','horizontalalignment','left');
+    title('frequency offset (control)','parent',ax1);
+    set(ax1,'XLim',[0 tMinLim]);
+    
     
     % Plot Phase Values
-    ax2=subplot(2,2,4,'Parent',fig);
-    plot(timeAgo_fb,phi_plane_fb,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
+    ax2=subplot(1,2,2,'Parent',tSummary);
+    pPhase_FB=plot(timeAgo_fb,phi_plane_fb,'o-',...
+        'markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
         'linewidth',1,'markersize',8,'parent',ax2);
+    hold(ax2,'on');
+    pPhase_BAD=plot(timeAgo_bad,phi_plane_bad,'rx',...
+        'linewidth',1,'markersize',8,'parent',ax2);    
     ylabel(ax2,'Phase \phi (planes)');
     xlabel(ax2,'time ago (min.)');
-    % Dont plot bad phases
-%     plot(timeAgo_bad,phi_plane_bad,'rx',...
-%         'linewidth',1,'markersize',8,'parent',ax2);
+    text(.01,.99,tStr,'units','normalized','parent',ax2,...
+        'verticalalignment','top','horizontalalignment','left');
+    title('measured phase (error)','parent',ax2);
+    set(ax2,'XLim',[0 tMinLim],'YLim',[-.5 .5],'YTick',[-.5:.1:.5],'YGrid','on');
+    
+    legend([pPhase_FB pPhase_BAD],{'feedback','ignore'});
 
-    if doFeedback && ~bad_inds(1) && length(phi_plane_fb)>1
+
+
+    if doFeedback && ~bad_inds(1) && length(phi_plane_fb)>3
         % Proportional Error (most recent error)
         error_P = phi_plane_fb(1);
         % Integral Error (time average error with exp weight)
@@ -184,21 +230,27 @@ try
         freq_new = freq_previous+dfreq;  
 
         % Plot it
-        plot(0,freq_new,'o-','markerfacecolor',co(2,:),'markeredgecolor',co(2,:)*.5,...
+        pFreq_next=plot(0,freq_new,'o-','markerfacecolor',co(2,:),'markeredgecolor',co(2,:)*.5,...
          'linewidth',1,'markersize',8,'parent',ax1);
 
         % Save this frequency to file
         f_offset=freq_new;
         save(fullfile(mainGUI_Directory,'f_offset.mat'),'f_offset');
+            s3 = 'next fb on';
+
     else
         % Load the saved f_offset.mat since that will be next
         d = load(fullfile(mainGUI_Directory,'f_offset.mat'));
         f_offset = d.f_offset;
 
         % Plot it
-        plot(0,f_offset,'o-','markerfacecolor',co(3,:),'markeredgecolor',co(3,:)*.5,...
+        pFreq_next=plot(0,f_offset,'o-','markerfacecolor',co(3,:),'markeredgecolor',co(3,:)*.5,...
             'linewidth',1,'markersize',8,'parent',ax1);
+        s3 = 'next fb off';
     end
+    
+     legend([pFreq_FB pFreq_BAD pFreq_next],{'feedback','ignore',s3});
+
 
 
 catch ME

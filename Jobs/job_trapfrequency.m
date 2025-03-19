@@ -21,6 +21,10 @@ function J=job_trapfrequency
         defVar('lattice_load_depthY',UY,'Er');2.5;
         defVar('lattice_load_depthZ',UZ,'Er');2.5;
         
+        %Set plane shift
+        seqdata.flags.qgm_doPlaneShift = 1;
+        defVar('qgm_planeShift_N',9,'plane');% ALWAYS AN INTERGER
+        
         %Set the field
         seqdata.flags.lattice_load_feshbach_ramp  = 1;
         defVar('lattice_load_feshbach_field',field,'G'); 
@@ -30,24 +34,20 @@ function J=job_trapfrequency
         % Conductivity       
         seqdata.flags.conductivity_ODT1_mode            = 2; % 0:OFF, 1:SINE, 2:DC
         seqdata.flags.conductivity_ODT2_mode            = 2; % 0:OFF, 1:SINE, 2:DC
-        seqdata.flags.conductivity_mod_direction        = 1; % 1:X-direction 2:Y-direction 
+        seqdata.flags.conductivity_mod_direction        = 2; % 1:X-direction 2:Y-direction 
         
         %Enable snap for trap frequency measurements
         seqdata.flags.conductivity_snap_and_hold        = 1; 
-        defVar('conductivity_snap_and_hold_time',[0:1.5:36],'ms');[0:3:24 40:3:64];[0:2:24 50:2:74];[0:2.5:42.5];
+        defVar('conductivity_snap_and_hold_time',[0:1.5:36],'ms');[0:3:24 40:3:64];[0:1.5:36];[0:2.5:42.5];
         defVar('piezo_diabat_ramp_time',4,'ms'); %How fast to snap back to zero displacement
         
         %Change to ODT1 if displacing along Y
-%         defVar('conductivity_ODT1_mod_amp',mod_strength,'V');  % ODT1 Displacement
-        defVar('conductivity_ODT2_mod_amp',mod_strength,'V');  % ODT2 Displacement
+        defVar('conductivity_ODT1_mod_amp',mod_strength,'V');  % ODT1 Displacement
+%         defVar('conductivity_ODT2_mod_amp',mod_strength,'V');  % ODT2 Displacement
         
         defVar('conductivity_mod_ramp_time',mod_ramp_time,'ms');  %How fast we initially displace the beams         
         defVar('conductivity_mod_time',50,'ms'); % 200 ms for force calibration
         
-        %Set odt2 vertical displacement
-        seqdata.flags.xdtB_piezo_vert_disp          = 0;
-        defVar('xdtB_piezo_vert_disp_amplitude',[vert_disp],'V');         
-        defVar('xdtB_piezo_vert_disp_rampup_time',100,'ms');
         
         % Plane Selection
         seqdata.flags.plane_selection_dotilt        = 0;
@@ -95,7 +95,7 @@ for ii = 1:length(vert_disp_list)
     out.CycleEnd = 25;
     out.WaitMode = 2;
     out.WaitTime = 90;
-    out.JobName             = ['XDT and Lattice X Trap Freq, ODTs (' num2str(ODT1_power*1e3) ',' num2str(ODT2_power*1e3) ') mW, (' ...
+    out.JobName             = ['XDT and Lattice Y Trap Freq, ODTs (' num2str(ODT1_power*1e3) ',' num2str(ODT2_power*1e3) ') mW, (' ...
         num2str(depthX) ',' num2str(depthY) ',' num2str(depthZ), ') Er, ' num2str(B) ' G, ' num2str(1e3*evap_depth) ' mW, ' num2str(mod_strength) ' V amp, ' ...
         num2str(mod_ramp_time) ' ms ramp'];
     out.SaveDir         = out.JobName;    

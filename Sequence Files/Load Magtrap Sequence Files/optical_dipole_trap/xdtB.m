@@ -597,18 +597,100 @@ if seqdata.flags.xdtB_piezo_vert_kick
     curtime = calctime(curtime,th);  
 end
 
+%% XDT Piezo Ramp
+% 2024/02/19 : CJF rewrote this code to make more sense to me, the other
+% versions seemed needlessly complicated.
+
+if seqdata.flags.xdtB_vert_piezo_ramp_ODT2 || seqdata.flags.xdtB_vert_piezo_ramp_ODT1
+    logNewSection('Displacing ODT Piezos',curtime);
+    DigitalPulse(calctime(curtime,-100),'QPD Monitor Trigger',5,1);
+
+    tr = getVar('xdtB_vert_piezo_ramp_time');           % Ramp Time
+    
+    v10 = getChannelValue(seqdata,'XDT1 V Piezo',1);    % Starting ODT1
+    v20 = getChannelValue(seqdata,'XDT2 V Piezo',1);    % Starting ODT2
+    
+    v1 = getVar('xdtB_vert_piezo_ramp_value_1');        % Set ODT1
+    v2 = getVar('xdtB_vert_piezo_ramp_value_2');        % Set ODT2
+    
+    % Do you actually ramp?
+    doRamp_ODT1 = seqdata.flags.xdtB_vert_piezo_ramp_ODT1;
+    doRamp_ODT2 = seqdata.flags.xdtB_vert_piezo_ramp_ODT2;    
+    doRampBack = 0;
+    
+    % Ramp ODT1 Vertical Piezo
+    if doRamp_ODT1
+        
+        %  Conversion functions for ODT1
+        V_C = 5;
+        a1 = 0.175/5;
+        b1 = 0;
+        ODT1_CTRL_2_HV = @(V_CTRL) a1*(V_CTRL-V_C)+b1*(V_CTRL-V_C).^2+V_C;
+        ODT1_CTRL_2_V  = @(V_CTRL) V_CTRL;
+        
+        
+        v10 = getChannelValue(seqdata,'XDT1 V Piezo',1);   
+        AnalogFunc(calctime(curtime,0),'XDT1 V Piezo',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,v10,v1);
+        AnalogFunc(calctime(curtime,0),'ODT1 Piezo HV',...
+            @(t,tt,y1,y2) ODT1_CTRL_2_HV(ramp_minjerk(t,tt,y1,y2)),tr,tr,v10,v1);
+    
+    end
+    
+    % Ramp ODT2 Vertical Piezo
+    if doRamp_ODT2
+        
+        % % Conversion functions for ODT2
+        V_C = 5;
+        a2 = -1.45/5;
+        b2 = .015;
+        ODT2_CTRL_2_HV = @(V_CTRL) a2*(V_CTRL-V_C)+b2*(V_CTRL-V_C).^2+V_C;
+        
+        v20 = getChannelValue(seqdata,'XDT2 V Piezo',1);    
+        AnalogFunc(calctime(curtime,0),'XDT2 V Piezo',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,v20,v2);  
+        AnalogFunc(calctime(curtime,0),'ODT2 Piezo HV',...
+            @(t,tt,y1,y2) ODT2_CTRL_2_HV(ramp_minjerk(t,tt,y1,y2)), ...
+            tr,tr,v20,v2);
+    end
+    
+    % Wait for Piezo Ramps
+    if (doRamp_ODT1 || doRamp_ODT2);curtime = calctime(curtime,tr);end
+    
+%     Wait for a bit (optional, sometimes this is useful)
+    curtime = calctime(curtime,250);
+
+    % Additional ramps to return (useful for round trip measurements)
+    if doRampBack
+       if doRamp_ODT1
+            AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
+                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,v10);
+       end       
+        if doRamp_ODT2
+            AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
+                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,v20);
+        end        
+        % Wait for ramps if they happened
+        if (doRamp_ODT1 || doRamp_ODT2);curtime = calctime(curtime,tr);end        
+    end
+    
+    % Wait for a bit (optional, sometimes this is useful)
+%     curtime = calctime(curtime,50);]
+end
+
+
 %% Turn off one of the ODT beams
 % After optical evaporation, turn off one of the trap so you can see the
 % position of the other ODT beam
-if seqdata.flags.xdtB_one_beam
+if seqdata.flags.xdtB_one_beam_ODT1 || seqdata.flags.xdtB_one_beam_ODT2
     logNewSection('Turning off one of the dipole trap beams',curtime);
     tr = 100;    
     
     P1 = getChannelValue(seqdata,'dipoleTrap1',1);
     P2 = getChannelValue(seqdata,'dipoleTrap2',1);
     
-    odt1_on = 1;
-    odt2_on = 0;
+    odt1_on = seqdata.flags.xdtB_one_beam_ODT1;
+    odt2_on = seqdata.flags.xdtB_one_beam_ODT2;
     doWait = 0;
     
     % To mitigate gravitational sag, turn one ODT off but then increase the
@@ -636,76 +718,11 @@ if seqdata.flags.xdtB_one_beam
     
     % Optional wait time
     if doWait
-        curtime = calctime(curtime,25);
+         tW=defVar('xdtB_hold_time',[0]);
+         curtime = calctime(curtime,tW);
     end
 end
 
-%% XDT Piezo Ramp
-% 2024/02/19 : CJF rewrote this code to make more sense to me, the other
-% versions seemed needlessly complicated.
-
-if seqdata.flags.xdtB_vert_piezo_ramp
-    logNewSection('Displacing ODT Piezos',curtime);
-    DigitalPulse(calctime(curtime,-100),'QPD Monitor Trigger',5,1);
-
-    tr = getVar('xdtB_vert_piezo_ramp_time');           % Ramp Time
-    
-    v10 = getChannelValue(seqdata,'XDT1 V Piezo',1);    % Starting ODT1
-    v20 = getChannelValue(seqdata,'XDT2 V Piezo',1);    % Starting ODT2
-    
-    v1 = getVar('xdtB_vert_piezo_ramp_value_1');        % Set ODT1
-    v2 = getVar('xdtB_vert_piezo_ramp_value_2');        % Set ODT2
-    
-    % Do you actually ramp?
-    doRamp_ODT1 = 0;
-    doRamp_ODT2 = 1;    
-    doRampBack = 0;
-    
-    % Ramp ODT1 Vertical Piezo
-    if doRamp_ODT1
-        AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,v1);
-    end
-    
-    % Ramp ODT2 Vertical Piezo
-    if doRamp_ODT2
-        AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,v2);
-        
-        % % Conversion functions for ODT2
-        V_C = 5;
-        a2 = -1.45/5;
-        b2 = .015;
-        ODT2_CTRL_2_HV = @(V_CTRL) a2*(V_CTRL-V_C)+b2*(V_CTRL-V_C).^2+V_C;
-        
-        AnalogFuncTo(calctime(curtime,0),'ODT2 Piezo HV',...
-            @(t,tt,y1,y2) ODT2_CTRL_2_HV(ramp_minjerk(t,tt,y1,y2)), ...
-            tr,tr,v2);
-    end
-    
-    % Wait for Piezo Ramps
-    if (doRamp_ODT1 || doRamp_ODT2);curtime = calctime(curtime,tr);end
-    
-%     Wait for a bit (optional, sometimes this is useful)
-    curtime = calctime(curtime,250);
-
-    % Additional ramps to return (useful for round trip measurements)
-    if doRampBack
-       if doRamp_ODT1
-            AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...
-                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,v10);
-       end       
-        if doRamp_ODT2
-            AnalogFuncTo(calctime(curtime,0),'XDT2 V Piezo',...
-                @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,v20);
-        end        
-        % Wait for ramps if they happened
-        if (doRamp_ODT1 || doRamp_ODT2);curtime = calctime(curtime,tr);end        
-    end
-    
-    % Wait for a bit (optional, sometimes this is useful)
-%     curtime = calctime(curtime,50);]
-end
 
  %% Piezo hold ODT1
 % if seqdata.flags.xdtB_odt1_piezo_vert_disp

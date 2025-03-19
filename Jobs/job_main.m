@@ -56,7 +56,7 @@ if doJob_Conductivity
     clear J
     J(1)=copy(J_stripe);
     for rr=1:length(J_ac)
-        J(end+1) = copy(J_focus);
+%         J(end+1) = copy(J_focus);
         J(end+1) = copy(J_ac(rr));
         J(end+1) = copy(J_stripe);
     end

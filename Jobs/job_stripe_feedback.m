@@ -48,8 +48,9 @@ evap_depth = 0.1;0.11;
             warning('No feedback directory to run on');
         return;    
         end              
-         data = getRecentGuiData(50);  % CF : DONT TOUCH THIS W/O TALKING TO ME
-         feedback_stripe(data);        
+         data = getRecentGuiData(50);       % CF : DONT TOUCH THIS W/O TALKING TO ME
+         doFeedback = 1;                    % use feedback?
+         feedback_stripe(data,doFeedback);  % call stripe feedback function 
    end
 
 %% Create Job Object

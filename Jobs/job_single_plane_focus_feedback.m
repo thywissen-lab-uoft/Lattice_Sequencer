@@ -9,7 +9,7 @@ if nargin==0
 end
 
 if ~isfield(npt,'xdtB_evap_power')
-    npt.xdt_B_evap_power = 0.08;
+    npt.xdt_B_evap_power = 0.058;
 end
 
 if ~isfield(npt,'lattice_load_feshbach_field')
@@ -51,7 +51,7 @@ end
 
 %% Create Job Object
 
-plane_shift = 9;
+plane_shift = 7;
 
 out = struct;
 out.SequenceFunctions   = {...

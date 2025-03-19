@@ -89,8 +89,19 @@ if fluor.IxonFrameTransferMode
             % Focusing : 4 Images with equal exposure time
             fluor.NumberOfImages           = 4;        
             fluor.ObjectivePiezoShiftTime  = 100; % in ms
-            fluor.ObjectivePiezoShiftValue = [0 0.05 0.0 -0.05];    
+            fluor.ObjectivePiezoShiftValue = [0 0.08 0.0 -0.08];    
             fluor.ExposureTime         = ones(1,fluor.NumberOfImages)*fluor.PulseTime/fluor.NumberOfImages-fluor.ObjectivePiezoShiftTime; 
+            
+            
+            % Focusing : 3 Images with unequal equal exposure time
+            % Fitting a parabola is too hard. Just do a +/- measurement
+            fluor.NumberOfImages           = 3;        
+            fluor.ObjectivePiezoShiftTime  = 100; % in ms
+            fluor.ObjectivePiezoShiftValue = [0.08 0.08 -0.08];  
+            % 10%, 40%, 40%; the first 10% is to let bad atoms die 
+            fluor.ExposureTime         = [.1 .4 .4]*fluor.PulseTime-fluor.ObjectivePiezoShiftTime; 
+            
+            
         otherwise
             % Basic    : 1 Image
             fluor.NumberOfImages       = 1;     

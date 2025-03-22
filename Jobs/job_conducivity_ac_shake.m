@@ -6,7 +6,7 @@ function J=job_conducivity_ac_shake
         global seqdata;        
         
         % Optical Evaporation        
-        defVar('xdtB_evap_power',evap_depth,'W');
+        defVar('xdtB_evap_power',evap_depth,'W');evap_depth;
         % Magnetic Field in Lattice
         seqdata.flags.lattice_load_feshbach_ramp  = 1;
         defVar('lattice_load_feshbach_field',field,'G'); 
@@ -26,7 +26,7 @@ function J=job_conducivity_ac_shake
         % Pulse lattice
         seqdata.flags.xdtB_pulse_lattice            = 1;
         defVar('xdtb_lattice_load_time',0.1,'ms');
-        defVar('xdtb_lattice_depth',[pulse_depth],'Er');
+        defVar('xdtb_lattice_depth',[pulse_depth],'Er');pulse_depth;
         defVar('xdtb_lattice_hold_pulse_time',[2],'ms');
         defVar('xdtb_lattice_pulse_equil_time',[100],'ms');
         
@@ -42,7 +42,7 @@ function J=job_conducivity_ac_shake
         
         tvec = tvec(:);
         tvec = tvec';
-        defVar('conductivity_mod_time',tvec,'ms');
+        defVar('conductivity_mod_time',[tvec],'ms');tvec;
         
         % Plane Selection
         seqdata.flags.plane_selection_dotilt        = 0;
@@ -62,7 +62,7 @@ mod_ramp_time = 50;
 % Plane Selection Frequency amplitude (kHz);
 
 % Choose how many plane from center to shift by
-Nplane = [5]; 
+Nplane = [6]; 
 
 % Modulation Frequencies
 freq_list = [20 30 40 50 55 57 60 62 65 67 70 75 80 90 100];[20 30 35 40 45 48 50 52 55 57 60 65 75 90 100];
@@ -78,7 +78,7 @@ rand_ind = [1];% Randomize the modulation frequencies
 % rand_ind = rand_ind(randperm(numel(rand_ind)));
 
 % Lattice pulse depth
-pulse_list = [3];[6 5.5];%tbd [6.5 6 5 5 5 4.5 4.5];
+pulse_list = [1];[6 5.5];%tbd [6.5 6 5 5 5 4.5 4.5];
 pulse_list = pulse_list([rand_ind]);
  
 % B field list
@@ -90,9 +90,9 @@ Gamma_list = [230];2*pi*563.4*.04*.96*[0.45 1.34];[0.45 0.6 1.17 1.6 1.77 1.9 2.
 Gamma_list = Gamma_list([rand_ind]);
 
 % evaporation depths
-power_conductivity_list = [0.0548]; [0.0637];
+power_conductivity_list = [0.0546]; [0.0637];
 
-vert_disp = [5];
+vert_disp = [6];
 
 loop = 1;
 for bb = 1:length(field_list)  

@@ -28,7 +28,7 @@ function curtime = vertical_odt_scan(curtime,ODT1_onebeam,ODT2_onebeam,ODT1_vert
     seqdata.flags.lattice_fluor_multi_mode      = 0; 
     
     seqdata.flags.qgm_doPlaneShift = 1;
-    defVar('qgm_planeShift_N',[10],'plane');    
+    defVar('qgm_planeShift_N',[8],'plane');    
     
 %   Turn off one of the dipole trap beams to measure its position
     seqdata.flags.xdtB_one_beam_ODT1            = ODT1_onebeam;

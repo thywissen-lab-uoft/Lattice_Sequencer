@@ -25,7 +25,7 @@ nCenter = [276,256];
 
 % Feedback bounds
 Lambda_Lim = [66 77];   % [px] Wavelength bounds for stripes
-Theta_Lim = [-2.5 4];   % [deg] Angle bounds for stripes
+Theta_Lim = [-3 2];   % [deg] Angle bounds for stripes
 Time_max = 40;          % [min] maximum number of minutes to feedback on    
     
 % Plane Separation [kHz/plane]
@@ -37,7 +37,7 @@ df_max = 20;
 % PID Gain Settings
 % Because we know the feedback slope, the gains gain be calculated exactly.
 % For this reason the sums of gains should equal to one.
-gain_P = 0.5;          
+gain_P = 0.7;          
 gain_I = 1 - gain_P;
         
 % Integral time constant [min.]
@@ -46,7 +46,12 @@ tau_I = 15;
 % Minutes to plot things
 tMinLim=60;
 
-%%
+% String Descriptor of PID
+strPID = ['$(G_p,G_I,\tau,\kappa) : (' num2str(gain_P) ',' ...
+    num2str(gain_I) ',' num2str(tau_I) '~\mathrm{min.},' ...
+    num2str(kappa) '~\mathrm{kHz/plane})$'];
+
+%% Collect Data
 
 try
     % Collect stripes, local phase, and freqs
@@ -77,7 +82,7 @@ try
     Theta = [stripes.Theta]*180/pi;
     Radius = [stripes.Radius];
     phi_plane = (mod(phi+pi,2*pi)-pi)/(2*pi); % Map phase from [-.5,.5]   
-
+%% Initialize Figure
     % Find Figure... or make it
     FigName = 'Stripe';
     ff=get(groot,'Children');
@@ -92,14 +97,17 @@ try
     if isempty(fig)
         fig=figure;
         fig.Name=FigName;
-        fig.WindowStyle='docked';
+%         fig.WindowStyle='docked';
         fig.Color='w';
+        fig.Position=[1 5 1080 260];
     end
+    
+    
 
     clf(fig);
     co=get(gca,'colororder');
     fig.NumberTitle='off';
-    
+    set(fig,'menubar','none','toolbar','none');
     tNow = datetime(now,'convertfrom','datenum');
 
     %% initialize tabs
@@ -207,11 +215,16 @@ tDetails = uitab(hpTG,'Title','details','backgroundcolor','w');
     title('measured phase (error)','parent',ax2);
     set(ax2,'XLim',[0 tMinLim],'YLim',[-.5 .5],'YTick',[-.5:.1:.5],'YGrid','on');
     
-    legend([pPhase_FB pPhase_BAD],{'feedback','ignore'});
+    text(.01,.01,strPID,'units','normalized','parent',ax2,...
+        'verticalalignment','bottom','horizontalalignment','left',...
+        'interpreter','latex');
+    
+    legend([pPhase_FB pPhase_BAD],{'feedback','ignore'},...
+        'location','best');
 
 
 
-    if doFeedback && ~bad_inds(1) && length(phi_plane_fb)>3
+    if doFeedback && ~bad_inds(1) && length(phi_plane_fb)>2
         % Proportional Error (most recent error)
         error_P = phi_plane_fb(1);
         % Integral Error (time average error with exp weight)
@@ -247,10 +260,9 @@ tDetails = uitab(hpTG,'Title','details','backgroundcolor','w');
         pFreq_next=plot(0,f_offset,'o-','markerfacecolor',co(3,:),'markeredgecolor',co(3,:)*.5,...
             'linewidth',1,'markersize',8,'parent',ax1);
         s3 = 'next fb off';
-    end
-    
-     legend([pFreq_FB pFreq_BAD pFreq_next],{'feedback','ignore',s3});
-
+    end    
+     legend([pFreq_FB pFreq_BAD pFreq_next],{'feedback','ignore',s3},...
+        'location','best');
 
 
 catch ME

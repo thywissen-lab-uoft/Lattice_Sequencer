@@ -679,7 +679,7 @@ defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 % Offset of frequency in interger multiples of plane separation
 % Change N_PLANE if you want to try hopping to different planes, keep this
 % near 0 ideally to keep things simple
-defVar('qgm_planeShift_N',9,'plane');% ALWAYS AN INTERGER
+defVar('qgm_planeShift_N',6,'plane');% ALWAYS AN INTERGER
 defVar('qgm_planeShift_freqperplane',85,'kHz'); % kHz/Plane
 defVar('qgm_planeShift_voltperplane',-0.086,'V'); % V/Plane (sign convention is relative to freqperplane)
 % Optimized 2025/03/14 by CJF.
@@ -720,7 +720,7 @@ defVar('f_offset',f_offset,'kHz');
 
 %% Micrscope and Microscope Feedback Position
 seqdata.flags.misc_moveObjective            = 1; % update ojective piezo position
-defVar('objective_piezo',[5.9],'V');5.95;
+defVar('objective_piezo',[5.7],'V');5.95;
 
 % CF : I have no idea how this was calibrated, but it should be
 % 0.1V = 700 nm, larger means further away from chamber

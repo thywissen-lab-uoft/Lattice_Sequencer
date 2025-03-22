@@ -87,21 +87,27 @@ if fluor.IxonFrameTransferMode
             fluor.ObjectivePiezoShiftValue = zeros(1,fluor.NumberOfImages);    
         case 2
             % Focusing : 4 Images with equal exposure time
-            fluor.NumberOfImages           = 4;        
-            fluor.ObjectivePiezoShiftTime  = 100; % in ms
-            fluor.ObjectivePiezoShiftValue = [0 0.08 0.0 -0.08];    
-            fluor.ExposureTime         = ones(1,fluor.NumberOfImages)*fluor.PulseTime/fluor.NumberOfImages-fluor.ObjectivePiezoShiftTime; 
+%             fluor.NumberOfImages           = 4;        
+%             fluor.ObjectivePiezoShiftTime  = 100; % in ms
+%             fluor.ObjectivePiezoShiftValue = [0 0.08 0.0 -0.08];    
+%             fluor.ExposureTime         = ones(1,fluor.NumberOfImages)*fluor.PulseTime/fluor.NumberOfImages-fluor.ObjectivePiezoShiftTime; 
             
             
             % Focusing : 3 Images with unequal equal exposure time
             % Fitting a parabola is too hard. Just do a +/- measurement
-            fluor.NumberOfImages           = 3;        
-            fluor.ObjectivePiezoShiftTime  = 100; % in ms
-            fluor.ObjectivePiezoShiftValue = [0.08 0.08 -0.08];  
-            % 10%, 40%, 40%; the first 10% is to let bad atoms die 
-            fluor.ExposureTime         = [.1 .4 .4]*fluor.PulseTime-fluor.ObjectivePiezoShiftTime; 
+%             fluor.NumberOfImages           = 3;        
+%             fluor.ObjectivePiezoShiftTime  = 100; % in ms
+%             fluor.ObjectivePiezoShiftValue = [0.08 0.08 -0.08];  
+%             % 10%, 40%, 40%; the first 10% is to let bad atoms die 
+%             fluor.ExposureTime         = [.1 .4 .4]*fluor.PulseTime-fluor.ObjectivePiezoShiftTime; 
             
-            
+            % Focusing : 4 Images with unequal exposure time
+            fluor.NumberOfImages            = 4;
+            fluor.ObjectivePiezoShiftTime   = 100; % in ms
+            fluor.ObjectivePiezoShiftValue  = [0 0 0.08 -0.08];  
+            % 10%, 30%, 30%, 30%; the first 10% is to let bad atoms die 
+            fluor.ExposureTime              = [0.1 0.3 0.3 0.3]*fluor.PulseTime-fluor.ObjectivePiezoShiftTime; 
+
         otherwise
             % Basic    : 1 Image
             fluor.NumberOfImages       = 1;     
@@ -146,10 +152,8 @@ end
              V_piezo_init = getChannelValue(seqdata,'objective Piezo Z',1);  
 
             defVar('objective_piezo_center',V_piezo_init,'V'); % piezo value that is NO CHANGE
-            if seqdata.flags.lattice_fluor_multi_mode== 2
-               
-                dT_piezo = fluor.ObjectivePiezoShiftTime;
-                
+            if seqdata.flags.lattice_fluor_multi_mode== 2               
+                dT_piezo = fluor.ObjectivePiezoShiftTime;                
                 AnalogFuncTo(calctime(curtime,-2*dT_piezo+tpre),'objective Piezo Z',...
                     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
                     dT_piezo,dT_piezo,V_piezo_init+fluor.ObjectivePiezoShiftValue(1));

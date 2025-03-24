@@ -1,4 +1,5 @@
-function feedback_focus(data,doFeedback)
+function doExitPID=feedback_focus(data,doFeedback)
+doExitPID = 0;
 global mainGUI_Directory
 
 %% Settings
@@ -130,6 +131,8 @@ try
 
     clf(fig);
     fig.NumberTitle='off';
+    fig.MenuBar='none';
+    fig.ToolBar='none';
         
 %% Initialize Tabs
     hpTG = uitabgroup(fig,'units','normalized','position',[0 0 1 1]);
@@ -142,51 +145,51 @@ try
     
     co=get(gca,'colororder');
 % 
-    ax1=subplot(2,3,1,'Parent',tDetails);
+    axa=subplot(2,3,1,'Parent',tDetails);
     plot(t,c1,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
-        'linewidth',1,'markersize',8,'parent',ax1);
+        'linewidth',1,'markersize',8,'parent',axa);
     hold on
     plot(t,c2,'o-','markerfacecolor',co(2,:),'markeredgecolor',co(2,:)*.5,...
-        'linewidth',1,'markersize',8,'parent',ax1);
+        'linewidth',1,'markersize',8,'parent',axa);
     plot(t,c3,'o-','markerfacecolor',co(3,:),'markeredgecolor',co(3,:)*.5,...
-        'linewidth',1,'markersize',8,'parent',ax1);
-    ylabel(ax1,'box counts');
+        'linewidth',1,'markersize',8,'parent',axa);
+    ylabel(axa,'box counts');
 % 
-    ax2=subplot(2,3,2,'Parent',tDetails);
+    axb=subplot(2,3,2,'Parent',tDetails);
     plot(t,s1,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
-        'linewidth',1,'markersize',8,'parent',ax2);
+        'linewidth',1,'markersize',8,'parent',axb);
     hold on
     plot(t,s2,'o-','markerfacecolor',co(2,:),'markeredgecolor',co(2,:)*.5,...
-        'linewidth',1,'markersize',8,'parent',ax2);
+        'linewidth',1,'markersize',8,'parent',axb);
     plot(t,s3,'o-','markerfacecolor',co(3,:),'markeredgecolor',co(3,:)*.5,...
-        'linewidth',1,'markersize',8,'parent',ax2);
-    ylabel(ax2,'scores');
+        'linewidth',1,'markersize',8,'parent',axb);
+    ylabel(axb,'scores');
     
-    ax3=subplot(2,3,3,'Parent',tDetails);
+    axc=subplot(2,3,3,'Parent',tDetails);
     plot(t,s1./S,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
-        'linewidth',1,'markersize',8,'parent',ax3);
+        'linewidth',1,'markersize',8,'parent',axc);
     hold on
     plot(t,s2./S,'o-','markerfacecolor',co(2,:),'markeredgecolor',co(2,:)*.5,...
-        'linewidth',1,'markersize',8,'parent',ax3);
+        'linewidth',1,'markersize',8,'parent',axc);
     plot(t,s3./S,'o-','markerfacecolor',co(3,:),'markeredgecolor',co(3,:)*.5,...
-        'linewidth',1,'markersize',8,'parent',ax3);
-    ylabel(ax3,'normalized scores');
+        'linewidth',1,'markersize',8,'parent',axc);
+    ylabel(axc,'normalized scores');
     
-    ax4 = subplot(2,3,4,'parent',tDetails);
+    axd = subplot(2,3,4,'parent',tDetails);
     plot(t,piezo_offset_all,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
-        'linewidth',1,'markersize',8,'parent',ax4);
-    ylabel(ax4,'piezo offset (V)');
+        'linewidth',1,'markersize',8,'parent',axd);
+    ylabel(axd,'piezo offset (V)');
     
-    ax5 = subplot(2,3,5,'parent',tDetails);
+    axe = subplot(2,3,5,'parent',tDetails);
     plot(t,objective_piezo,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
-        'linewidth',1,'markersize',8,'parent',ax5);
-    ylabel(ax5,'piezo offset (V)');
+        'linewidth',1,'markersize',8,'parent',axe);
+    ylabel(axe,'piezo offset (V)');
     
         
-    ax6 = subplot(2,3,6,'parent',tDetails);
+    axf = subplot(2,3,6,'parent',tDetails);
     plot(t,plane_shift,'o-','markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5,...
-        'linewidth',1,'markersize',8,'parent',ax6);
-    ylabel(ax6,'plane');
+        'linewidth',1,'markersize',8,'parent',axf);
+    ylabel(axf,'plane');
     
     %% Convert
     timeAgo = minutes(tNow-t);  
@@ -244,7 +247,7 @@ try
     
     %% Apply Feedback
 % 
-        if doFeedback&& ~bad_inds(1) 
+        if doFeedback && ~bad_inds(1) 
             piezo_offset_now = piezo_offset_fb(1);
             piezo_offset_best = best_offset_fb(1);
             
@@ -257,7 +260,12 @@ try
                piezo_offset = piezo_offset_now; 
                plot(0,piezo_offset,'o-','markerfacecolor',co(3,:),'markeredgecolor',co(3,:)*.5,...
                     'linewidth',1,'markersize',8,'parent',ax2);
-            end                                    
+            end
+         
+                % Allow exiting of PID if small phase error
+            if abs(piezo_offset_best-piezo_offset_now)<0.02
+                doExitPID=1;
+            end
         end
 
 

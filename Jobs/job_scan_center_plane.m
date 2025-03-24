@@ -28,8 +28,9 @@ function curtime = scan_center_plane(curtime,ODT1_onebeam,ODT2_onebeam,ODT1_vert
     seqdata.flags.lattice_fluor_multi_mode      = 0; 
     
     seqdata.flags.qgm_doPlaneShift = 1;
-    defVar('qgm_planeShift_N',[2:1:15],'plane');[0:1:13];    
-    
+%     defVar('qgm_planeShift_N',[2:1:15],'plane');  
+    defVar('qgm_planeShift_N',[-10:1:10],'plane');  
+
 %   Turn off one of the dipole trap beams to measure its position
     seqdata.flags.xdtB_one_beam_ODT1 = ODT1_onebeam;
     seqdata.flags.xdtB_one_beam_ODT2 = ODT2_onebeam;
@@ -39,7 +40,7 @@ function curtime = scan_center_plane(curtime,ODT1_onebeam,ODT2_onebeam,ODT1_vert
     seqdata.flags.xdtB_vert_piezo_ramp_ODT2   = ODT2_vert_ramp;
     defVar('xdtB_vert_piezo_ramp_time',[100],'ms');         
     defVar('xdtB_vert_piezo_ramp_value_1',5,'V');
-    defVar('xdtB_vert_piezo_ramp_value_2',[6],'V');
+    defVar('xdtB_vert_piezo_ramp_value_2',[5],'V');
 
 % % %     % Lattice Load Settings
     defVar('lattice_load_time',[lattice_load_time],'ms');750;
@@ -69,7 +70,7 @@ out.SequenceFunctions   = {...
     @(curtime) ...
     scan_center_plane(curtime,ODT1_onebeam,ODT2_onebeam,ODT1_vert_ramp,ODT2_vert_ramp,lattice_load_depth,lattice_load_time),...
     @main_sequence};
-out.CycleEnd   = 14;npt.NumCycles;
+out.CycleEnd   = 20;npt.NumCycles;
 out.WaitMode = 2;
 out.WaitTime = 90;
 out.JobName         = ['scan center plane ' 'Beams ' num2str([ODT1_onebeam ODT2_onebeam]) ', Ramps ' num2str([ODT1_vert_ramp ODT2_vert_ramp]) ', Lattice Load ' num2str(lattice_load_depth) 'ER, ' 'evap' num2str(1e3*0.0545) ' mW, '  num2str(201.1) ' G' ];

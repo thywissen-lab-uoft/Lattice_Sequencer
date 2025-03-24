@@ -54,11 +54,17 @@ end
 if doJob_Conductivity
     J_ac = job_conducivity_ac_shake;
     clear J
-    J(1)=copy(J_stripe);
+    J(1)=copy(J_stripe(1));
     for rr=1:length(J_ac)
 %         J(end+1) = copy(J_focus);
         J(end+1) = copy(J_ac(rr));
-        J(end+1) = copy(J_stripe);
+        if length(J_stripe)>1
+            for jj=1:length(J_stripe)
+                J(end+1) = copy(J_stripe(jj));
+            end
+        else
+            J(end+1) = copy(J_stripe);
+        end
     end
 end
 

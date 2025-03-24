@@ -176,7 +176,7 @@ setAnalogChannel(curtime,'Piezo mirror Z',CDT_piezo_Z,1);
 
 % Control values 
 ctrl1 = 5;
-ctrl2 = 6;
+ctrl2 = 5;
 
 % Conversion functions for ODT2
 V_C = 5;

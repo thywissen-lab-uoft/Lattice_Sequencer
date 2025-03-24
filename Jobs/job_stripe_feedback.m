@@ -35,7 +35,9 @@ end
 %     CycleCompleteFcn        % user custom function to evaluate after the cycle
 
 %% Cycle Complete Function    
-   function cycle_complete_fcn_stripe
+   function cycle_complete_fcn_stripe(obj)       
+        obj;
+    
         global seqdata
         if ~isfield(seqdata,'IxonGUIAnalayisHistoryDirectory') || ...
                 ~exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')
@@ -44,10 +46,18 @@ end
         end              
          data = getRecentGuiData(50);       % CF : DONT TOUCH THIS W/O TALKING TO ME
          doFeedback = 1;                    % use feedback?
-         feedback_stripe(data,doFeedback);  % call stripe feedback function 
+         doExitPID = feedback_stripe(data,doFeedback);  % call stripe feedback function 
+         
+         
+%         % Use this code to allow feedback to end itself
+%          if doExitPID
+%             obj.CycleNow = obj.CycleEnd; 
+%          end
    end
 
-   function cycle_complete_fcn_focus
+   function cycle_complete_fcn_focus(obj)       
+       obj;
+     
         global seqdata
         if ~isfield(seqdata,'IxonGUIAnalayisHistoryDirectory') || ...
                 ~exist(seqdata.IxonGUIAnalayisHistoryDirectory,'dir')
@@ -55,12 +65,18 @@ end
         return;    
         end              
         data = getRecentGuiData(50);  % CF : DONT TOUCH THIS W/O TALKING TO ME, oKAY CF CHANGED IT BUT IT SHOULD REALLY UST BE A BIG NMBER FIX THIS BUG LATER
-        doFeedback = 0;
-         feedback_focus(data,doFeedback);
+        doFeedback = 1;
+        doExitPID=feedback_focus(data,doFeedback);
+       
+       
+        % Use this code to allow feedback to end itself
+         if doExitPID
+            obj.CycleNow = obj.CycleEnd; 
+         end
    end
 %% useful Settings
 
-plane_shift = 6;
+plane_shift = 0;
 field      = 201.1;
 evap_depth_stripe = 0.1;
 evap_depth_focus = 0.055;
@@ -83,6 +99,7 @@ out_stripe.JobName                 = ['stripe feedback, Plane Shift ' num2str(pl
 out_stripe.SaveDir                 = 'stripe';
 
 Jstripe = sequencer_job(out_stripe);
+Jstripe.CycleCompleteFcn=@() cycle_complete_fcn_stripe(Jstripe);
 
 %% Create Job Object
 out_focus = struct;
@@ -97,6 +114,7 @@ out_focus.JobName                 = ['focus feedback, Plane Shift ' num2str(plan
 out_focus.SaveDir                 = 'focus';
 
 Jfocus = sequencer_job(out_focus);
+Jfocus.CycleCompleteFcn=@() cycle_complete_fcn_focus(Jfocus);
 
 %% Output
 

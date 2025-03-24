@@ -1,5 +1,5 @@
-function feedback_stripe(data,doFeedback)
-
+function doExitPID = feedback_stripe(data,doFeedback)
+doExitPID = 0;
 global mainGUI_Directory;
 clear freqs
 clear phi
@@ -224,7 +224,7 @@ tDetails = uitab(hpTG,'Title','details','backgroundcolor','w');
 
 
 
-    if doFeedback && ~bad_inds(1) && length(phi_plane_fb)>2
+    if doFeedback && ~bad_inds(1) && length(phi_plane_fb)>1
         % Proportional Error (most recent error)
         error_P = phi_plane_fb(1);
         % Integral Error (time average error with exp weight)
@@ -250,6 +250,12 @@ tDetails = uitab(hpTG,'Title','details','backgroundcolor','w');
         f_offset=freq_new;
         save(fullfile(mainGUI_Directory,'f_offset.mat'),'f_offset');
             s3 = 'next fb on';
+        
+         % Allow exiting of PID if small phase error
+         if abs(error_P)<0.1 && abs(dfreq)<10
+            doExitPID=1;
+        end
+       
 
     else
         % Load the saved f_offset.mat since that will be next

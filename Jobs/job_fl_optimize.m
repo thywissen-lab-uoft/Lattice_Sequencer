@@ -6,7 +6,11 @@ plane_shift             = 5;
 field                   = 201.1;
 evap_depth_fl           = 0.055;
 
-str_fluor = ['fluor optimize : plane=' num2str(plane_shift) ',' ...
+str_2photon = ['fluor optimize : plane=' num2str(plane_shift) ',' ...
+    'field=' num2str(field) ',' ...
+    'evap2=' num2str(evap_depth_fl)];
+
+str_raman = ['raman optimize : plane=' num2str(plane_shift) ',' ...
     'field=' num2str(field) ',' ...
     'evap2=' num2str(evap_depth_fl)];
 %% Sequence Modifier Function
@@ -31,9 +35,21 @@ function curtime = seq_fl_detuning(curtime)
     seqdata.flags.lattice_fluor_multi_mode      = 1;             
     seqdata.flags.qgm_doPlaneShift              = 1;
 end
+
+out_detune = struct;
+out_detune.SequenceFunctions   = {...
+    @main_settings,...
+    @(curtime) seq_fl_detuning(curtime),...
+    @main_sequence};
+out_detune.CycleEnd        = length(BB);
+out_detune.WaitMode        = 2;
+out_detune.WaitTime        = 90;
+out_detune.JobName         = str_2photon;
+out_detune.SaveDir         = 'fidelity optimize';  
+
 %% Raman Modifier Function
-v1 = [0.3:.1:1.0];
-v2 = [0.3:.1:1.0];
+v1 = [0.2:.2:1.0];
+v2 = [0.2:.2:1.0];
 [vv1,vv2] = meshgrid(v1,v2);
 vv1=vv1(:);
 vv2=vv2(:);  
@@ -47,8 +63,8 @@ function curtime = seq_fl_raman(curtime)
     defVar('qgm_field_shift',0.20,'G');
     defVar('F_Pump_Power',1.2,'V');
     
-    defVar('qgm_Raman1_power',v1);
-    defVar('qgm_Raman2_power',v2);
+    defVar('qgm_Raman1_power',vv1);
+    defVar('qgm_Raman2_power',vv2);
     
     seqdata.flags.do_plane_selection            = 1;
     seqdata.flags.lattice_conductivity_new      = 0; 
@@ -56,19 +72,22 @@ function curtime = seq_fl_raman(curtime)
     seqdata.flags.lattice_fluor_multi_mode      = 1;             
     seqdata.flags.qgm_doPlaneShift              = 1;
 end
-%%
-out = struct;
-out.SequenceFunctions   = {...
+
+out_raman_pow = struct;
+out_raman_pow.SequenceFunctions   = {...
     @main_settings,...
-    @(curtime) seq_fl_detuning(curtime),...
+    @(curtime) seq_fl_raman(curtime),...
     @main_sequence};
-out.CycleEnd        = length(BB);
-out.WaitMode        = 2;
-out.WaitTime        = 90;
-out.JobName         = str_fluor;
-out.SaveDir         = 'fidelity optimize';  
+out_raman_pow.CycleEnd        = length(vv1);
+out_raman_pow.WaitMode        = 2;
+out_raman_pow.WaitTime        = 90;
+out_raman_pow.JobName         = str_raman;
+out_raman_pow.SaveDir         = 'fidelity optimize raman power';  
+
+
 %% Output Job File
-J = sequencer_job(out);
+% J = sequencer_job(out_detune);
+J = sequencer_job(out_raman_pow);
 
 end
 

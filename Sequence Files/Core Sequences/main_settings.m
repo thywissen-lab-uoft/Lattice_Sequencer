@@ -889,12 +889,9 @@ seqdata.scope_trigger = 'lattice_ramp_1';
 % seqdata.scope_trigger = 'Molasses';
 % seqdata.scope_trigger = 'Plane selection';
 % seqdata.scope_trigger = 'fluorescence';
-
-% seqdata.scope_trigger='Shim Pulse';
-
+% seqdata.scope_trigger = 'Shim Pulse';
 % seqdata.scope_trigger = '40k 97 mixing';
 % seqdata.scope_trigger = 'Rampup ODT';
-
 % seqdata.scope_trigger = 'xdtb_pulse_lattice';
 
 %% Labjack trigger

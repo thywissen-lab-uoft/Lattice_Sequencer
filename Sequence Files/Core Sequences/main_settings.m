@@ -772,7 +772,7 @@ seqdata.flags.lattice_fluor                 = 1;    % Do Fluoresnce imaging
 defVar('qgm_field_shift',[0.20],'G');0.215;
 defVar('F_Pump_Power',[1.2],'V');1.0;0.95;
 
-defVar('qgm_Raman1_power',0.4,'normalized');0.4;
+defVar('qgm_Raman1_power',1,'normalized');0.4;
 defVar('qgm_Raman2_power',1,'normalized');0.4;
 defVar('qgm_Raman1_shift',[-20],'kHz');-20;-40;
 defVar('qgm_Raman2_shift',0,'kHz');

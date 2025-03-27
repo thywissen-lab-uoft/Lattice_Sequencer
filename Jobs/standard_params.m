@@ -1,6 +1,9 @@
 function output = standard_params
-%STANDARD_PARAMS Summary of this function goes here
-%   Detailed explanation goes here
+% Author : CJ Fujiwara
+%
+% When running the experiment for long runs of fluorescence imaging, it is
+% useful to have commonly used experimental parameters on hand.  Also for
+% something that Skynet can optimize. (To be implemented perhaps later)
 
 output = struct;
 output.xdtB_evap_power                  = 0.054;

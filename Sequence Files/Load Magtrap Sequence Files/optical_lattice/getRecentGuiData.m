@@ -1,4 +1,4 @@
-    function old_data = getRecentGuiData(N)
+function old_data = getRecentGuiData(N)
 
 disp('Acquiring most recent GUI data');
 if nargin == 0

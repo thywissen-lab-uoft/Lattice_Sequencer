@@ -5,24 +5,14 @@ global seqdata
     doInitialFieldRamp    = 1;        % Auto specify ramps       
     doInitialFieldRamp2   = 0;        % Manually specify ramps 
 
-    %% Magnetic Field Settings
+%% Magnetic Field Settings
 % This sets the quantizing field along the fpump axis. It is assumed that
 % you are imaging along the FPUMP axis
     
-    B0 = 4;         % Quantization Field
-%     B0_shift_list = [0.21];0.23;[0.24];.21;
-%     
-%     % Quantization Field 
-%     B0_shift = getScanParameter(...
-%         B0_shift_list,seqdata.scancycle,seqdata.randcyclelist,...
-%         'qgm_field_shift','G');  
-%     
-    B0_shift = getVar('qgm_field_shift');
-    
-    
-    CenterField = B0 + B0_shift;
-    
-    addOutputParam('qgm_field',CenterField,'G');   
+B0 = 4;         % Quantization Field
+B0_shift = getVar('qgm_field_shift');   
+CenterField = B0 + B0_shift;    
+addOutputParam('qgm_field',CenterField,'G');   
     
 %% INITIAL MAGNETIC FIELD RAMP
 % Should probably move to a different subfunction

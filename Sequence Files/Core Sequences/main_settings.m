@@ -679,7 +679,7 @@ defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 % Offset of frequency in interger multiples of plane separation
 % Change N_PLANE if you want to try hopping to different planes, keep this
 % near 0 ideally to keep things simple
-defVar('qgm_planeShift_N',6,'plane');% ALWAYS AN INTERGER
+defVar('qgm_planeShift_N',5,'plane');% ALWAYS AN INTERGER
 defVar('qgm_planeShift_freqperplane',85,'kHz'); % kHz/Plane
 defVar('qgm_planeShift_voltperplane',-0.086,'V'); % V/Plane (sign convention is relative to freqperplane)
 % Optimized 2025/03/14 by CJF.
@@ -769,9 +769,8 @@ seqdata.flags.lattice_fluor                 = 1;    % Do Fluoresnce imaging
 
 % FL settings
 
-defVar('qgm_field_shift',[0.215],'G');0.21;
-
-defVar('F_Pump_Power',[1],'V');0.95;
+defVar('qgm_field_shift',[0.20],'G');0.215;
+defVar('F_Pump_Power',[1.2],'V');1.0;0.95;
 
 defVar('qgm_Raman1_power',0.4,'normalized');0.4;
 defVar('qgm_Raman2_power',1,'normalized');0.4;

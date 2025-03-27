@@ -188,10 +188,7 @@ if opts.EnableRaman && pulse_time > 0
     % Turn on beams
     setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 1',1);
     setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 2a',1); 
-end
-
-    
-    
+end       
     
 %% Wait for Pulse
     curtime = calctime(curtime,pulse_time);

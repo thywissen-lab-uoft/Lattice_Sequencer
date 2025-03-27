@@ -1,21 +1,6 @@
-function J = job_vertical_odt_scan(npt)
-% Creates a job for running a single plane.
+function J = job_vertical_odt_scan
+% Job function to optimize the ODT positions
 
-if nargin==0
-    npt = struct;
-end
-
-if ~isfield(npt,'xdtB_evap_power')
-    npt.xdt_B_evap_power = 0.0645;
-end
-
-if ~isfield(npt,'lattice_load_feshbach_field')
-    npt.lattice_load_feshbach_field = 195;
-end
-
-if ~isfield(npt,'NumCycles')
-   npt.NumCycles=20; 
-end
 
 %% Sequence Modifier Function
 

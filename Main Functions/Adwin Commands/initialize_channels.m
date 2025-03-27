@@ -655,7 +655,7 @@ end
 
     %Channel 41 (motorized waveplate for dipole/lattice power dist)
     seqdata.analogchannels(41).name = 'latticeWaveplate';
-    seqdata.analogchannels(41).minvoltage = 0;
+    seqdata.analogchannels(41).minvoltage = -.1;
     seqdata.analogchannels(41).maxvoltage = 5.5;
     %Voltage Functions - Calibrated as of Jan 2013
         %Specify the angle to move from the home position, in degrees:

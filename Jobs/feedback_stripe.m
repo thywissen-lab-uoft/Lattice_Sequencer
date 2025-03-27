@@ -24,7 +24,7 @@ end
 nCenter = [276,256]; 
 
 % Feedback bounds
-Lambda_Lim = [66 77];   % [px] Wavelength bounds for stripes
+Lambda_Lim = [70 80];   % [px] Wavelength bounds for stripes
 Theta_Lim = [-3 2];   % [deg] Angle bounds for stripes
 Time_max = 40;          % [min] maximum number of minutes to feedback on    
     
@@ -37,7 +37,7 @@ df_max = 20;
 % PID Gain Settings
 % Because we know the feedback slope, the gains gain be calculated exactly.
 % For this reason the sums of gains should equal to one.
-gain_P = 0.7;          
+gain_P = 0.6;          
 gain_I = 1 - gain_P;
         
 % Integral time constant [min.]
@@ -272,7 +272,7 @@ tDetails = uitab(hpTG,'Title','details','backgroundcolor','w');
 
 
 catch ME
-%             keyboard
+            
 end
 end
 

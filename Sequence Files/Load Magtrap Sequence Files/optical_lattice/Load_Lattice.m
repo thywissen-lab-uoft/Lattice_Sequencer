@@ -1056,18 +1056,6 @@ if seqdata.flags.do_plane_selection
     curtime = plane_selection(curtime);      
 end
 
-%% Second Waveplate Rotation
-% Rotate waveplate to distribute more power to the lattice
-
-if seqdata.flags.lattice_rotate_waveplate_2 
-    logNewSection('Rotate waveplate again',curtime)    
-  % Ramp waveplate to divert all power to lattices
-  wp_Trot2 = 150; 
-    P_RotWave_I = getVar('rotate_waveplate1_value');
-    curtime = AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-        wp_Trot2,wp_Trot2,P_RotWave_I,1,4);    
-end
 
 
 
@@ -1081,6 +1069,22 @@ end
 if seqdata.flags.lattice_fluor
     curtime = lattice_FL_fieldramp(curtime);
 end
+
+%% Second Waveplate Rotation
+% Rotate waveplate to distribute more power to the lattice
+
+if seqdata.flags.lattice_rotate_waveplate_2 
+    logNewSection('Rotate waveplate again',curtime)    
+    % Ramp waveplate to divert all power to lattices
+    wp_Trot2 = 500; % Time to rotate waveplate
+    t_dwell = 100;  % Wait time after rotation before lattice ramp on
+    
+    P_RotWave_I = getVar('rotate_waveplate1_value');
+    AnalogFunc(calctime(curtime,-(wp_Trot2+t_dwell)),'latticeWaveplate',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+        wp_Trot2,wp_Trot2,P_RotWave_I,1,4);    
+end
+
 %% Ramp lattice after spectroscopy/plane selection
 
 if seqdata.flags.lattice_fluor_ramp
@@ -1164,6 +1168,12 @@ if seqdata.flags.lattice_fluor%
 %     curtime = lattice_FL_fieldramp(curtime);
     curtime = lattice_FL(curtime);
     curtime = calctime(curtime,15);
+    try
+    AnalogFuncTo(calctime(curtime,100),'latticeWaveplate',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),1000,1000,0,1);
+    catch ME
+       warning('oh no cannot rotate'); 
+    end
 end
 
 %% Stripe imaging OBSOLETE

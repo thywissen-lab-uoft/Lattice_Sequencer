@@ -77,41 +77,34 @@ if fluor.IxonFrameTransferMode
     switch seqdata.flags.lattice_fluor_multi_mode
         case 0
             % Basic    : 1 Image
-            fluor.NumberOfImages       = 1;     
-            fluor.ExposureTime         = fluor.PulseTime;
+            fluor.NumberOfImages       = 1;    
+            fluor.StartTime            = 200;  
+            fluor.ExposureTime         = ...
+                (fluor.PulseTime-fluor.StartTime)/fluor.NumberOfImages*ones(1,fluor.NumberOfImages);
+            fluor.ObjectivePiezoShiftTime  = 100;
+            fluor.ObjectivePiezoShiftValue = [0];  
         case 1 
             % Fidelity : 2 Images with equal exposure time
             fluor.NumberOfImages       = 2;        
-            fluor.ExposureTime         = fluor.PulseTime*0.5*[1 1];  
-            fluor.ObjectivePiezoShiftTime  = zeros(1,fluor.NumberOfImages);
-            fluor.ObjectivePiezoShiftValue = zeros(1,fluor.NumberOfImages);    
+            fluor.StartTime            = 200;
+            fluor.ExposureTime         = ...
+                (fluor.PulseTime-fluor.StartTime)/fluor.NumberOfImages*ones(1,fluor.NumberOfImages);
+            fluor.ObjectivePiezoShiftTime  = 100;
+            fluor.ObjectivePiezoShiftValue = [0 0];    
         case 2
-            % Focusing : 4 Images with equal exposure time
-%             fluor.NumberOfImages           = 4;        
-%             fluor.ObjectivePiezoShiftTime  = 100; % in ms
-%             fluor.ObjectivePiezoShiftValue = [0 0.08 0.0 -0.08];    
-%             fluor.ExposureTime         = ones(1,fluor.NumberOfImages)*fluor.PulseTime/fluor.NumberOfImages-fluor.ObjectivePiezoShiftTime; 
-            
-            
-            % Focusing : 3 Images with unequal equal exposure time
-            % Fitting a parabola is too hard. Just do a +/- measurement
-%             fluor.NumberOfImages           = 3;        
-%             fluor.ObjectivePiezoShiftTime  = 100; % in ms
-%             fluor.ObjectivePiezoShiftValue = [0.08 0.08 -0.08];  
-%             % 10%, 40%, 40%; the first 10% is to let bad atoms die 
-%             fluor.ExposureTime         = [.1 .4 .4]*fluor.PulseTime-fluor.ObjectivePiezoShiftTime; 
-            
-            % Focusing : 4 Images with unequal exposure time
-            fluor.NumberOfImages            = 4;
+            % Focusing : 3 Images with unequal exposure time
+            fluor.NumberOfImages            = 3;
+            fluor.StartTime                 = 200;
+            fluor.ExposureTime              = ...
+                (fluor.PulseTime-fluor.StartTime)/fluor.NumberOfImages*ones(1,fluor.NumberOfImages);     
             fluor.ObjectivePiezoShiftTime   = 100; % in ms
-            fluor.ObjectivePiezoShiftValue  = [0 0 0.08 -0.08];  
-            % 10%, 30%, 30%, 30%; the first 10% is to let bad atoms die 
-            fluor.ExposureTime              = [0.1 0.3 0.3 0.3]*fluor.PulseTime-fluor.ObjectivePiezoShiftTime; 
-
+            fluor.ObjectivePiezoShiftValue  = [0 0.08 -0.08];   
         otherwise
             % Basic    : 1 Image
             fluor.NumberOfImages       = 1;     
-            fluor.ExposureTime         = fluor.PulseTime;
+            fluor.ExposureTime         = fluor.PulseTime*ones(1,fluor.NumberOfImages);
+            fluor.StartTime             = 200;
+
     end
 else
     fluor.NumberOfImages       = 1;     % Normal operation     
@@ -140,24 +133,25 @@ end
 
     if fluor.TriggerIxon 
         if fluor.IxonFrameTransferMode
-            logNewSection('Triggering iXon Frame Transfer Mode',curtime);
-            tpre=-50;
-            
-            % Initial trigger to start aqsuitision
-            DigitalPulse(calctime(curtime,tpre),'iXon Trigger',10,1)       
-            logText(['iXon Trigger : ' num2str(curtime2realtime(calctime(curtime,-tpre))) ' ms']);
+            logNewSection('Triggering iXon Frame Transfer Mode',curtime);            
 
+            %% Move the Piezo To its initial position
             seqdata.CameraControl.IxonMultiExposures(end+1) = NaN;
             seqdata.CameraControl.IxonMultiPiezos(end+1) = NaN;
-             V_piezo_init = getChannelValue(seqdata,'objective Piezo Z',1);  
-
-            defVar('objective_piezo_center',V_piezo_init,'V'); % piezo value that is NO CHANGE
-            if seqdata.flags.lattice_fluor_multi_mode== 2               
+             V_piezo_init = getChannelValue(seqdata,'objective Piezo Z',1); 
+             defVar('objective_piezo_center',V_piezo_init,'V'); % piezo value that is NO CHANGE
+            if seqdata.flags.lattice_fluor_multi_mode == 2               
                 dT_piezo = fluor.ObjectivePiezoShiftTime;                
-                AnalogFuncTo(calctime(curtime,-2*dT_piezo+tpre),'objective Piezo Z',...
+                AnalogFuncTo(calctime(curtime,-200),'objective Piezo Z',...
                     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
-                    dT_piezo,dT_piezo,V_piezo_init+fluor.ObjectivePiezoShiftValue(1));
+                    dT_piezo,dT_piezo,V_piezo_init+5*fluor.ObjectivePiezoShiftValue(1));
             end
+            %% Finish the wipe exposure, start exposure 1
+            % Initial trigger to start aqsuitision
+            DigitalPulse(calctime(curtime,fluor.StartTime),'iXon Trigger',10,1)       
+            logText(['iXon Trigger : ' num2str(curtime2realtime(calctime(curtime,fluor.StartTime))) ' ms']);
+
+            %% Send Camera Trigger Pulse Train
 
             % In frame transfer mode a trigger ends the exposure
             t0=0;
@@ -197,7 +191,6 @@ end
                  DigitalPulse(calctime(curtime,tlist(kk)),...
                        'iXon Trigger',fluor.IxonExposureTime,1);
                 seqdata.CameraControl.IxonMultiExposures(end+1) = fluor.IxonExposureTime;
-
             end            
         end 
     end      

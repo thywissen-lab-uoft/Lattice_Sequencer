@@ -861,9 +861,13 @@ setDigitalChannel(calctime(curtime,10),'Z shim bipolar relay',0);
 
 setAnalogChannel(curtime,'15/16 GS',0); 
 
- AnalogFuncTo(calctime(curtime,0),'latticeWaveplate',...
-        @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),2500,2500,0,1);
-    
+last_wp_value = getChannelValue(seqdata,'latticeWaveplate',1);  
+try    
+    if ~isequal(last_wp_value,0)
+        AnalogFuncTo(calctime(curtime,0),'latticeWaveplate',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),200,200,0,1);
+    end
+end 
 %% % Piezo Mirror to Original displacement
 
  AnalogFuncTo(calctime(curtime,0),'XDT1 V Piezo',...

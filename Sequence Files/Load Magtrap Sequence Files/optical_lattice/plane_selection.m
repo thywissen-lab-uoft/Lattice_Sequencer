@@ -7,7 +7,9 @@ curtime = timein;
 %% Flags
 opts = struct; 
 
-opts.ramp_field_CF  = 1;                    % New field ramps
+opts.ramp_field_CF_on  = 1;                    % New field ramps
+opts.ramp_field_CF_off  = 1;                    % New field ramps
+
 opts.dotilt = seqdata.flags.plane_selection_dotilt;
 opts.useFeedback = seqdata.flags.plane_selection_useFeedback;
 
@@ -87,7 +89,7 @@ curtime = calctime(curtime,30);
 ScopeTriggerPulse(curtime,'Plane Select');
 
 %% Magnetic Field Ramps 2
-if opts.ramp_field_CF
+if opts.ramp_field_CF_on
     
     % Transport Feedforward Settings
     defVar('qgm_pselect_FF',56.5,'V');56.5;
@@ -932,7 +934,7 @@ if opts.planeselect_again
 end
 
 %% Ramp off Field
-if opts.ramp_field_CF
+if opts.ramp_field_CF_off
      setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage',0); % stop PID
      setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage 2',0); %stop PID
      curtime= calctime(curtime,20);

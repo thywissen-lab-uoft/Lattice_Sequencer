@@ -174,7 +174,7 @@ seqdata.flags.image_F1_pulse                = 0; % (unused?) repump Rb F=1 befor
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',15,'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',25,'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[0.1],'ms');
@@ -425,7 +425,7 @@ seqdata.flags.xdtB_rf_mix                   = 1;
 
 % Evaporation
 seqdata.flags.xdtB_evap                     = 1;
-defVar('xdtB_evap_power',[0.080],'W');0.0655;.085;
+defVar('xdtB_evap_power',[0.065],'W');0.0655;.085;
 defVar('xdtB_evap_time',[5000],'ms');
 defVar('xdtB_evap_tau_fraction',3.5','arb');
 
@@ -464,12 +464,12 @@ defVar('xdtb_lattice_hold_pulse_time',[2],'ms');
 defVar('xdtb_lattice_pulse_equil_time',[100],'ms');
 
 % Feshbach
-seqdata.flags.xdtB_feshbach_off             = 0;
+seqdata.flags.xdtB_feshbach_off             = 1;
 defVar('xdtB_feshbach_off_field',20,'G');
 defVar('xdtB_feshbach_off_ramptime',100,'ms');100;
 
 % Unlevitate
-seqdata.flags.xdtB_levitate_off             = 0;
+seqdata.flags.xdtB_levitate_off             = 1;
 defVar('xdtB_levitate_off_ramptime',100,'ms');100;
 
 % piezo kick ODT2 for vertical trap frequency
@@ -510,7 +510,7 @@ defVar('rotate_waveplate1_value',0.3,'normalized power');.3; % Amount of power g
 %% Load the Optical Lattice
 
 % These are the lattice flags sorted roughly chronologically. 
-seqdata.flags.lattice_load            = 1;    
+seqdata.flags.lattice_load            = 0;    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Loading optical lattical
@@ -591,7 +591,7 @@ elseif seqdata.flags.conductivity_mod_direction == 2
 end    
 
 %% Optical Lattice
-seqdata.flags.lattice                       = 1; 
+seqdata.flags.lattice                       = 0; 
 if ~seqdata.flags.lattice_load;seqdata.flags.lattice  =0;end
 
 % AM parametric heating - could be useful for measuring trap frequencies
@@ -649,7 +649,7 @@ seqdata.flags.lattice_uWave_spec            = 0;
 
 %% Plane Selection
 
-seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
+seqdata.flags.do_plane_selection            = 0;    % Plane selection flag
 seqdata.flags.plane_selection_useBigShim    = 1;
 seqdata.flags.plane_selection_douWave       = 1; 
 seqdata.flags.plane_selection_doKill        = 1;
@@ -679,7 +679,7 @@ defVar('qgm_plane_selection_ring_duty_cycle',0.2);
 % Offset of frequency in interger multiples of plane separation
 % Change N_PLANE if you want to try hopping to different planes, keep this
 % near 0 ideally to keep things simple
-defVar('qgm_planeShift_N',5,'plane');% ALWAYS AN INTERGER
+defVar('qgm_planeShift_N',1,'plane');% ALWAYS AN INTERGER
 defVar('qgm_planeShift_freqperplane',85,'kHz'); % kHz/Plane
 defVar('qgm_planeShift_voltperplane',-0.086,'V'); % V/Plane (sign convention is relative to freqperplane)
 % Optimized 2025/03/14 by CJF.
@@ -765,7 +765,7 @@ seqdata.flags.Raman_transfers               = 0;
 % - uWave spectroscopy (to find two photon frequency/field)
 
 % New Standard Fluoresnce Image Flags
-seqdata.flags.lattice_fluor                 = 1;    % Do Fluoresnce imaging
+seqdata.flags.lattice_fluor                 = 0;    % Do Fluoresnce imaging
 
 % FL settings
 
@@ -833,7 +833,7 @@ if ~seqdata.flags.xdtB_feshbach
 end
 
 % BandMapping
-seqdata.flags.lattice_off_bandmap                   = 1;
+seqdata.flags.lattice_off_bandmap                   = 0;
 
 if seqdata.flags.lattice_fluor_ramp % WHY??
     defVar('lattice_bm_time',[5],'ms');

@@ -61,8 +61,8 @@ end
          data = getRecentGuiData(50);      
          doFeedback = 1;                  
          doExitPID = feedback_stripe(data,doFeedback);           
-%        Use this code to allow feedback to end itself
-         if doExitPID
+%        Use this code to allow feedback to end itself % 2025.04.02 minimum 3 shots
+         if doExitPID && (obj.CycleNow > 2)
             obj.CycleNow = obj.CycleEnd; 
          end
    end
@@ -78,8 +78,8 @@ end
         data = getRecentGuiData(50); 
         doFeedback = 1;
         doExitPID=feedback_focus(data,doFeedback);    
-        % Use this code to allow feedback to end itself
-         if doExitPID
+        % Use this code to allow feedback to end itself % 2025.04.02 minimum 2 shots
+         if doExitPID && (obj.CycleNow > 1)
             obj.CycleNow = obj.CycleEnd; 
          end
    end
@@ -87,7 +87,7 @@ end
 % This is terrible coding. CJF Will figure out a better way to structure
 % things
 
-plane_shift             = 5;
+plane_shift             = -1;
 field                   = 201.1;
 evap_depth_stripe       = 0.1;
 evap_depth_focus        = 0.055;
@@ -154,7 +154,7 @@ Jfidelity = sequencer_job(out_fidelity);
 
 J = Jstripe;
 J(end+1)=Jfocus;        % Uncomment line if you want to feedback focus
-J(end+1)=Jfidelity;     % Uncomment line if you want to feedback focus
+J(end+1)=Jfidelity;     % Uncomment line if you want to measure fidelity
 
 end
 

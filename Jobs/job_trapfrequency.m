@@ -1,6 +1,6 @@
 function J=job_trapfrequency
 %% Trap Frequency Measurement Sequence Modifier
- function curtime = trapfreq(curtime,ODT1_power,ODT2_power,field,evap_depth,mod_strength,mod_ramp_time,UX,UY,UZ,uwave_freq_amp,vert_disp)
+ function curtime = trapfreq(curtime,ODT1_power,ODT2_power,field,evap_depth,mod_strength,mod_ramp_time,UX,UY,UZ,uwave_freq_amp,vert_disp,mod_dir)
         global seqdata;        
         
         %Set the evap depth
@@ -23,7 +23,7 @@ function J=job_trapfrequency
         
         %Set plane shift
         seqdata.flags.qgm_doPlaneShift = 1;
-        defVar('qgm_planeShift_N',9,'plane');% ALWAYS AN INTERGER
+        defVar('qgm_planeShift_N',vert_disp,'plane');% ALWAYS AN INTERGER
         
         %Set the field
         seqdata.flags.lattice_load_feshbach_ramp  = 1;
@@ -34,7 +34,7 @@ function J=job_trapfrequency
         % Conductivity       
         seqdata.flags.conductivity_ODT1_mode            = 2; % 0:OFF, 1:SINE, 2:DC
         seqdata.flags.conductivity_ODT2_mode            = 2; % 0:OFF, 1:SINE, 2:DC
-        seqdata.flags.conductivity_mod_direction        = 2; % 1:X-direction 2:Y-direction 
+        seqdata.flags.conductivity_mod_direction        = mod_dir; % 1:X-direction 2:Y-direction 
         
         %Enable snap for trap frequency measurements
         seqdata.flags.conductivity_snap_and_hold        = 1; 
@@ -67,12 +67,12 @@ ODT1_power = 0.198;
 ODT2_power = 0.088;
 
 %Choose Lattice Depths
-depthX = 2.5;
-depthY = 2.5;
-depthZ = 2.5;
+depthX = -0.5;
+depthY = -0.5;
+depthZ = 3.5;
 
 % Optical Evaporation Power (W)
-evap_depth = 0.054;0.065;
+evap_depth = 0.0537;0.065;
 
 % Conductivity modulation ramp up time (ms)
 mod_ramp_time = 50; % 200 ms for force calibration
@@ -80,10 +80,14 @@ mod_ramp_time = 50; % 200 ms for force calibration
 %Modulation amplitude (V)
 mod_strength = [3]; %3 for XDT+lattice
 
+% Mod direction 
+% 1:X-direction 2:Y-direction 
+mod_dir = 1;
+
 %Choose the number of planes via uwave freq amplitude
 uwave_freq_amp = 120;
 
-vert_disp_list = [5];
+vert_disp_list = [-1];
 vert_disp_list = vert_disp_list(randperm(numel(vert_disp_list)));
 
 for ii = 1:length(vert_disp_list)
@@ -91,13 +95,13 @@ for ii = 1:length(vert_disp_list)
     out = struct;   
     out.SequenceFunctions   = {@main_settings,@(curtime) ...
         trapfreq(curtime,ODT1_power,ODT2_power,B,evap_depth,mod_strength,mod_ramp_time,...
-        depthX,depthY,depthZ,uwave_freq_amp,vert_disp),@main_sequence};
+        depthX,depthY,depthZ,uwave_freq_amp,vert_disp,mod_dir),@main_sequence};
     out.CycleEnd = 25;
     out.WaitMode = 2;
     out.WaitTime = 90;
-    out.JobName             = ['XDT and Lattice Y Trap Freq, ODTs (' num2str(ODT1_power*1e3) ',' num2str(ODT2_power*1e3) ') mW, (' ...
+    out.JobName             = ['XDT and Lattice X Trap Freq, ODTs (' num2str(ODT1_power*1e3) ',' num2str(ODT2_power*1e3) ') mW, (' ...
         num2str(depthX) ',' num2str(depthY) ',' num2str(depthZ), ') Er, ' num2str(B) ' G, ' num2str(1e3*evap_depth) ' mW, ' num2str(mod_strength) ' V amp, ' ...
-        num2str(mod_ramp_time) ' ms ramp'];
+        num2str(mod_ramp_time) ' ms ramp, plane shift' num2str(vert_disp)];
     out.SaveDir         = out.JobName;    
     J(ii) = sequencer_job(out);
 end

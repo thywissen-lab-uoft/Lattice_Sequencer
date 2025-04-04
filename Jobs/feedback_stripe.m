@@ -252,7 +252,7 @@ tDetails = uitab(hpTG,'Title','details','backgroundcolor','w');
             s3 = 'next fb on';
         
          % Allow exiting of PID if small phase error
-         if abs(error_P)<0.1 && abs(dfreq)<10
+        if abs(error_P)<0.1 && abs(dfreq)<10
             doExitPID=1;
         end
        

@@ -2,7 +2,7 @@ function J=job_conducivity_ac_shake
    
 %% AC Sequnece Modifier
 % THIS CODE IS UGLY AND CONFUSING, NEEDS TO BE FIXED
- function curtime = ac_conductivity(curtime,freq,field,evap_depth,pulse_depth,mod_strength,mod_ramp_time,Nplane_shift,vert_disp)
+ function curtime = ac_conductivity(curtime,freq,field,evap_depth,pulse_depth,mod_strength,mod_ramp_time,Nplane_shift,lattice_load_depth)
         global seqdata;        
         
         % Optical Evaporation        
@@ -26,7 +26,7 @@ function J=job_conducivity_ac_shake
         % Pulse lattice
         seqdata.flags.xdtB_pulse_lattice            = 1;
         defVar('xdtb_lattice_load_time',0.1,'ms');
-        defVar('xdtb_lattice_depth',[pulse_depth],'Er');pulse_depth;
+        defVar('xdtb_lattice_depth',pulse_depth,'Er');
         defVar('xdtb_lattice_hold_pulse_time',[2],'ms');
         defVar('xdtb_lattice_pulse_equil_time',[100],'ms');
         
@@ -42,13 +42,19 @@ function J=job_conducivity_ac_shake
         
         tvec = tvec(:);
         tvec = tvec';
-        defVar('conductivity_mod_time',[tvec],'ms');tvec;
+        defVar('conductivity_mod_time',tvec,'ms');200;
         
         % Plane Selection
         seqdata.flags.plane_selection_dotilt        = 0;
         d = load('f_offset.mat');
         f_offset = d.f_offset;% - 1*20;        
         defVar('f_offset',f_offset,'kHz'); 
+        
+        % % %     % Lattice Load Settings
+    defVar('lattice_load_time',[750],'ms');750;
+    defVar('lattice_load_depthX',lattice_load_depth,'Er');2.5;
+    defVar('lattice_load_depthY',lattice_load_depth,'Er');2.5;
+    defVar('lattice_load_depthZ',lattice_load_depth,'Er');2.5;      
  end
 %% AC Conductivity Job
 clear J
@@ -62,10 +68,10 @@ mod_ramp_time = 50;
 % Plane Selection Frequency amplitude (kHz);
 
 % Choose how many plane from center to shift by
-Nplane = [0]; 
+Nplane = [-1]; 
 
 % Modulation Frequencies
-freq_list = [20 30 40 45 50 52 55 57 60 62 65 67 70 75 80 90 100];[20 30 35 40 45 48 50 52 55 57 60 65 75 90 100];
+freq_list = [10:10:140];[20 30 40 45 50 52 54 56 58 60 62 64 68 70 75 80 90 100];[20 30 35 40 45 48 50 52 55 57 60 65 75 90 100];
 
 % Randomize the modulation frequencies
 freq_list = freq_list(randperm(numel(freq_list)));
@@ -78,53 +84,58 @@ rand_ind = [1];% Randomize the modulation frequencies
 % rand_ind = rand_ind(randperm(numel(rand_ind)));
 
 % Lattice pulse depth
-pulse_list = [3];[6 5.5];%tbd [6.5 6 5 5 5 4.5 4.5];
+pulse_list = [1];[6 5.5];%tbd [6.5 6 5 5 5 4.5 4.5];
 pulse_list = pulse_list([rand_ind]);
  
 % B field list
-field_list = [190];[190 195 199.4 200.4 200.65 200.9 201.1]; 
+field_list = [195];[190 195 199.4 200.4 200.65 200.9 201.1]; 
 field_list = field_list([rand_ind]);
 
-% Gamma guesses for T = 2.8t, n=.08/2, in s^-1 
-Gamma_list = [35];
+% Gamma guesses for T = 2t, nup_peak=.08, in s^-1 
+Gamma_list = [45];
 Gamma_list = Gamma_list([rand_ind]);
 
 % evaporation depths
-power_conductivity_list = [0.0537]; [0.0637];
+power_conductivity_list = [0.054]; [0.0637];
 
-vert_disp = [6];
+% lattice load depth
+lattice_load_depth = 3.5;
+
 
 loop = 1;
 for bb = 1:length(field_list)  
     B = field_list(bb);
     pulse_depth = pulse_list(bb);
     power_conductivity = power_conductivity_list(bb);
-    mod_strength_list = calc_drive(2,Gamma_list(bb),1.2,freq_list);
+    mod_strength_list = calc_drive(2,Gamma_list(bb),1,freq_list);
     
     for ii = 1:length(freq_list)
         % Get the current modulation frequency
         f = freq_list(ii);   
      
-
         mod_strength = mod_strength_list(ii);
         mod_strength = min([mod_strength 4]);
-%         mod_strength = 0.6;
+        mod_strength = 2;
 
         out = struct;   
         out.SequenceFunctions   = {@main_settings,@(curtime) ...
-            ac_conductivity(curtime,f,B,power_conductivity,pulse_depth,mod_strength,mod_ramp_time,Nplane,vert_disp),@main_sequence};
+            ac_conductivity(curtime,f,B,power_conductivity,pulse_depth,mod_strength,mod_ramp_time,Nplane,lattice_load_depth),@main_sequence};
     %     npt.CycleStartFcn       = @cycleStart;
     %     npt.CycleCompleteFcn    = @cycleComplete;
     %     npt.JobCompleteFcn      = @jobComplete;
 
         out.CycleEnd = 17;    
     %     out.CycleEnd = 30;
+%         out.CycleEnd = 1;
+
 
         out.WaitMode = 2;
         out.WaitTime = 90;
         out.JobName             = [num2str(ii) ' shake, Plane Shift ' num2str(Nplane) ', ' num2str(f) ' Hz, ' ...
-            num2str(B) 'G, ' num2str(1e3*power_conductivity) ' mW, ' num2str(pulse_depth) ' Er pulse, ' num2str(mod_strength) ' V, ' ...
+            num2str(B) 'G, ' num2str(1e3*power_conductivity) ' mW, ' num2str(lattice_load_depth) ' Er load, ' num2str(pulse_depth) ' Er pulse, ' num2str(mod_strength) ' V, ' ...
             num2str(mod_ramp_time) ' ms ramp'];
+%         out.JobName             = ['3.5 ER Joule heating, 201.1 G, evap 54 mW, 50 ms ramp, 200 ms, 1 V'];
+%         out.JobName             = ['3.5 ER Joule heating, FAKE DRIVE, 200 ms hold, 50 ms ramp, 195 G, evap 54 mW, 1 ER pulse'];
         out.SaveDir         = out.JobName;    
         J(loop) = sequencer_job(out);
         loop = loop+1;

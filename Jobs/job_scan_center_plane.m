@@ -29,7 +29,7 @@ function curtime = scan_center_plane(curtime,ODT1_onebeam,ODT2_onebeam,ODT1_vert
     
     seqdata.flags.qgm_doPlaneShift = 1;
     % CF : Who keeps on changnig this to spacings of 1; keep it at 2
-    defVar('qgm_planeShift_N',[-6:2:16],'plane'); 
+    defVar('qgm_planeShift_N',[-8:1:0],'plane'); 
 
 %   Turn off one of the dipole trap beams to measure its position
     seqdata.flags.xdtB_one_beam_ODT1 = ODT1_onebeam;
@@ -70,7 +70,7 @@ out.SequenceFunctions   = {...
     @(curtime) ...
     scan_center_plane(curtime,ODT1_onebeam,ODT2_onebeam,ODT1_vert_ramp,ODT2_vert_ramp,lattice_load_depth,lattice_load_time),...
     @main_sequence};
-out.CycleEnd   = 24;npt.NumCycles;
+out.CycleEnd   = 13;npt.NumCycles;
 out.WaitMode = 2;
 out.WaitTime = 90;
 out.JobName         = ['scan center plane ' 'Beams ' num2str([ODT1_onebeam ODT2_onebeam]) ', Ramps ' num2str([ODT1_vert_ramp ODT2_vert_ramp]) ', Lattice Load ' num2str(lattice_load_depth) 'ER, ' 'evap' num2str(1e3*0.0545) ' mW, '  num2str(201.1) ' G' ];

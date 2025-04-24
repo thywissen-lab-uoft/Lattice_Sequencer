@@ -59,7 +59,7 @@ if seqdata.flags.xdt_uwave_K_spec
     
     doRampFB = 1;
     tr = 100;
-    fesh = 124; % 124 G   
+    fesh = 132; % 124 G   
     
    logNewSection('XDT uWave K Spectroscopy',curtime);   
 
@@ -69,20 +69,20 @@ if seqdata.flags.xdt_uwave_K_spec
     % Frequency away from f0 (B=0 splitting)
     defVar('uWave_freq_shift',50,'MHz'); %50 
     
-    uWave_freq = defVar('uWave_freq',getVar('uWave_freq_shift')+f0,'MHz');   
-    uwave_delta_freq=defVar('uwave_delta_freq',0.2,'MHz');    
-    uwave_time=defVar('uWave_time',5,'ms');
-    uwave_power=defVar('uwave_power',5,'dBm');
+%     uWave_freq = defVar('uWave_freq',getVar('uWave_freq_shift')+f0,'MHz');   
+%     uwave_delta_freq=defVar('uwave_delta_freq',0.2,'MHz');    
+%     uwave_time=defVar('uWave_time',5,'ms');
+%     uwave_power=defVar('uwave_power',5,'dBm');
     
     if doRampFB                
         logNewSection('XDT uWave K Spectroscopy',curtime);  
         % MHz B=0 Gfield splitting
-        f0 = 1602.5;1571.5;1788.85; % 124 G 1602.5 MHz, 195 G 1788.85 MHz         
+        f0 = 1623.2; 1602.5;1571.5;1788.85; % 124 G 1602.5 MHz, 195 G 1788.85 MHz         
         % Frequency away from f0 (B=0 splitting)
         defVar('uWave_freq_shift',[-.033],'MHz'); %2024/10/03
         uWave_freq = defVar('uWave_freq',getVar('uWave_freq_shift')+f0,'MHz');   
         uwave_delta_freq=defVar('uwave_delta_freq',.05,'MHz'); % 0.2 MHz   
-        uwave_time=defVar('uWave_time',[0 .005 .15 .25 .35],'ms');
+        uwave_time=defVar('uWave_time',[1],'ms');
         uwave_power=defVar('uwave_power',5,'dBm');       
         
         % Define the ramp structure
@@ -100,15 +100,15 @@ if seqdata.flags.xdt_uwave_K_spec
     end
     
     % RF transfer
-    seqdata.flags.xdt_K_spinflip_end = 0;
+    seqdata.flags.xdt_K_spinflip_end = 1;
     if seqdata.flags.xdt_K_spinflip_end
         % NOTE THAT THIS FREQUENCY COUPLES TO THE RB FIELD SWEEP    
         logNewSection('RF K Sweep -9/2 --> -7/2',curtime);  
 
-        defVar('xdt_spin_xfer_K_end_freq',[31.0272],'MHz');1.52;
-        defVar('xdt_spin_xfer_K_end_freq_amp',1,'MHz');.15;
-        defVar('xdt_spin_xfer_K_end_gain',0,'V');0; % if you make this too high you will perturb Rb
-        defVar('xdt_spin_xfer_K_end_time',100,'ms');20;
+        defVar('xdt_spin_xfer_K_end_freq',[32.61],'MHz');1.52;
+        defVar('xdt_spin_xfer_K_end_freq_amp',-0.2,'MHz');.15;
+        defVar('xdt_spin_xfer_K_end_gain',-2,'V');0; % if you make this too high you will perturb Rb
+        defVar('xdt_spin_xfer_K_end_time',50,'ms');20;
 
         setDigitalChannel(calctime(curtime,-20),'RF Source',0);   % 0: RF, 1: uwave  
         setDigitalChannel(calctime(curtime,-20),'RF/uWave Transfer',0);   % 0: RF, 1: uwave   
@@ -176,8 +176,8 @@ if seqdata.flags.xdt_uwave_K_spec
     
     % For Rabi pulse
 
-    doSweep=1;
-    douWave = 1;
+    doSweep=0;
+    douWave = 0;
 
     if doSweep
         % For Sweep

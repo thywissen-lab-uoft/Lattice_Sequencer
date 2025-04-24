@@ -6773,10 +6773,13 @@ curtime = calctime(curtime,150);
 % setDigitalChannel(calctime(curtime,0),'XDT TTL',1); 
 % 
 % setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);  
+% 
+% setDigitalChannel(calctime(curtime,0),'Kill TTL',0)
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',0)
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0);
 
-setDigitalChannel(calctime(curtime,0),'Kill TTL',0)
-setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',0)
-setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0);
+setDigitalChannel(calctime(curtime,0),'Raman TTL 3a',1);
+setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);  
 
 timeout = curtime;
 

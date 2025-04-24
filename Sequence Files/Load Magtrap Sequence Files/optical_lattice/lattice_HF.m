@@ -17,14 +17,15 @@ curtime = timein;
     zshim = 0;
     
     % Get the calibrated magnetic field
-    Boff = 0.1238;
+%     Boff = 0.1238;
+    Boff = 0.107; % Measured @132 G 2025.04.21
     B = HF_FeshValue_Initial+ Boff+ 2.35*zshim;       
   
     %% Flags
 
     % Initialization of Field And Lattice
-    lattice_ramp_1                    = 0;       % Initial lattice ramp    
-    field_ramp_init                   = 0;       % Ramp field away from initial  
+    lattice_ramp_1                    = 1;       % Initial lattice ramp    
+    field_ramp_init                   = 1;       % Ramp field away from initial  
     
     % Initial Spectroscopy 
     do_raman_phantom                  = 0;       % Apply a phatom Raman pulse to kill atoms
@@ -54,7 +55,7 @@ curtime = timein;
     do_raman_spectroscopy_post_rf     = 0;        % Raman Spectroscopy
     
     % Feshbach field ramps
-    ramp_field_for_imaging_attractive = 1;       % Ramp field for imaging on attractive side
+    ramp_field_for_imaging_attractive = 0;       % Ramp field for imaging on attractive side
     ramp_field_for_imaging_repulsive  = 0;       % Ramp field for imaging on repulsive side
     
     % Other RF Manipulations
@@ -68,7 +69,7 @@ curtime = timein;
 % Ramp the lattices to their initial depth
     if lattice_ramp_1    
 %         Select the depth to ramp
-        HF_latt_depth_list = [100];
+        HF_latt_depth_list = [200];100;
         HF_latt_depth = getScanParameter(HF_latt_depth_list,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_latt_depth','Er');
         
@@ -102,7 +103,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
 
         
         % Feshbach Field ramp
-        HF_FeshValue_Initial_List = [197]; [197];
+        HF_FeshValue_Initial_List = [130]; [197];
         HF_FeshValue_Initial = getScanParameter(HF_FeshValue_Initial_List,...
             seqdata.scancycle,seqdata.randcyclelist,'HF_FeshValue_Initial_Lattice','G');
 %         
@@ -242,7 +243,7 @@ curtime = calctime(curtime, Raman_on_time+(raman_buffer_time)*2);
 
     if rf_97_flip_init
         clear('sweep');
-        Boff = 0.1238;
+%         Boff = 0.1238;
         B = HF_FeshValue_Initial+ Boff+ 2.35*zshim;
         rf_list =  [0.00] +...
             (BreitRabiK(B,9/2,-7/2) - BreitRabiK(B,9/2,-9/2))/6.6260755e-34/1E6;
@@ -340,7 +341,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
 
         Device_id = 7; %Rigol for D1 lock(Ch. 1) and Raman 3(Ch. 2). Do not change any Ch. 1 settings here. 
 
-        Boff = 0.11;
+%         Boff = 0.11;
         B = HF_FeshValue_Initial+ Boff+ 2.35*zshim;
         
 
@@ -349,7 +350,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
         end      
         
         
-        Raman_AOM3_freq_list =  [-75]*1e-3/2+(80+...   %-88 for 300Er, -76 for 200Er
+        Raman_AOM3_freq_list =  [76]*1e-3/2+(80+...   %-88 for 300Er, -76 for 200Er
             abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6))/2; %-0.14239
         Raman_AOM3_freq = getScanParameter(Raman_AOM3_freq_list,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM3_freq','MHz');
@@ -365,8 +366,8 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
         Raman_AOM3_pwr = getScanParameter(Raman_AOM3_pwr_list,...
         seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM3_pwr','MHz');
     
-%           RamanspecMode = 'sweep';
-        RamanspecMode = 'pulse';
+          RamanspecMode = 'sweep';
+%         RamanspecMode = 'pulse';
         
         % R3 beam settings
         switch RamanspecMode
@@ -455,7 +456,7 @@ curtime = AnalogFuncTo(calctime(curtime,T0),'zLattice',...
 
             end
 curtime = calctime(curtime, Raman_on_time+(raman_buffer_time)*2);
-    else
+        else
 
         %Raman spectroscopy AOM-shutter sequence
         %we have three TTLs to independatly control R1, R2 and R3
@@ -808,7 +809,7 @@ curtime = calctime(curtime,5);  %extra wait time
         clear('rabi');
         rabi=struct;          
 
-        Boff = 0.11;
+%         Boff = 0.11;
         B = HF_FeshValue_Initial+ Boff+ 2.35*zshim;            
         
 %         rf_list =  [15.15]*1e-3 +... 
@@ -906,7 +907,7 @@ end
         mF2=-5/2;   % Higher energy spin state
 
         % Get the center frequency
-        Boff = 0.11;
+%         Boff = 0.11;
         B = HF_FeshValue_Initial + Boff + 2.35*zshim; 
 %         
      

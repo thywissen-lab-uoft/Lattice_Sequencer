@@ -87,8 +87,8 @@ end
 % This is terrible coding. CJF Will figure out a better way to structure
 % things
 
-plane_shift             = -1;
-field                   = 201.1;
+plane_shift             = 1;
+field                   = 200.15; 201.1;
 evap_depth_stripe       = 0.1;
 evap_depth_focus        = 0.055;
 evap_depth_fidelity     = 0.055;

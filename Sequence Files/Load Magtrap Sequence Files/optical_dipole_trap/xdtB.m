@@ -107,6 +107,8 @@ if seqdata.flags.xdtB_feshbach_fine
 
     % Ramp FB with QP
 curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+
+curtime = calctime(curtime,getVar('xdtB_feshbach_fine_holdtime'));
 end
 % Wait time for troubleshooting
 % curtime = calctime(curtime,5000); %REMOVE ME
@@ -201,6 +203,7 @@ if seqdata.flags.xdtB_rf_mix
     
     curtime = calctime(curtime,15);
 end
+
 
 %% Turn on feshbach field
 
@@ -322,6 +325,7 @@ if seqdata.flags.xdtB_feshbach_fine2
 
     % Ramp FB with QP
 curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+curtime = calctime(curtime,getVar('xdtB_feshbach_fine2_holdtime'));
 end
 
 %% Levitation Adjustment
@@ -507,6 +511,56 @@ curtime = calctime(curtime,teq);
     
     
 end
+
+%% uWave Spectroscopy to Check field 
+ if seqdata.flags.xdtb_rf_spec
+     logNewSection('RF Spec',curtime);
+     
+    Bfb = getChannelValue(seqdata,'FB Current',1);    
+    Iz_shim = getChannelValue(seqdata,'Z Shim',1);    
+    Bz_shim = (Iz_shim-seqdata.params.shim_zero(3))*2.35;
+    Boff = 0.1238;
+
+    
+    Bguess = Bfb + Boff + Bz_shim;
+    
+    % Transition guess 
+    h = 6.6260755e-34;
+    Fi = 9/2; Ff = 9/2;
+    mFi = -9/2; mFf = -7/2;
+    rf0 = 1e-6*abs(BreitRabiK(Bguess,Fi,mFi) - BreitRabiK(Bguess,Ff,mFf))/h;
+
+    rf_shift_list =  -2*1e-3+1e-3*[-20 -30 20 30];   
+    
+    rf_list = rf_shift_list + rf0;
+    
+    defVar('xdtb_rf_freq',rf_list,'MHz');
+    defVar('xdtb_rf_power',-2,'arb');
+    defVar('xdtb_rf_delta',25,'kHz');
+    defVar('xdtb_rf_time',10,'ms');
+    
+    addOutputParam('xdtb_rf_freq_shift',...
+        1e3*(getVar('xdtb_rf_freq')-rf0),'kHz');
+
+    sweep = struct;
+    sweep.freq = getVar('xdtb_rf_freq');
+    sweep.power = getVar('xdtb_rf_power');
+    sweep.delta_freq = 1e-3*getVar('xdtb_rf_delta');
+    sweep.pulse_length = getVar('xdtb_rf_time');
+    
+    disp(sweep);
+    curtime = rf_uwave_spectroscopy(...
+        calctime(curtime,0),3,sweep);%3: sweeps, 4: pulse
+
+    % Display the sweep settings
+    disp(['RF Transfer Freq Center    (MHz) : [' num2str(sweep.freq) ']']);
+    if (sweep.freq < 1)
+        error('Incorrect RF frequency calculation!! MATLAB IS STUPID! >:(')
+    end    
+    curtime = calctime(curtime,10);   
+ end
+ 
+
 %% Turn off feshbach field
 
 if seqdata.flags.xdtB_feshbach_off   

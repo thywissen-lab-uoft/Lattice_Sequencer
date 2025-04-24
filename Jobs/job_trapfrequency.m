@@ -1,6 +1,6 @@
 function J=job_trapfrequency
 %% Trap Frequency Measurement Sequence Modifier
- function curtime = trapfreq(curtime,ODT1_power,ODT2_power,field,evap_depth,mod_strength,mod_ramp_time,UX,UY,UZ,uwave_freq_amp,vert_disp,mod_dir)
+ function curtime = trapfreq(curtime,ODT1_power,ODT2_power,field,evap_depth,mod_strength,mod_ramp_time,UX,UY,UZ,uwave_freq_amp,plane_shift,mod_dir)
         global seqdata;        
         
         %Set the evap depth
@@ -23,7 +23,7 @@ function J=job_trapfrequency
         
         %Set plane shift
         seqdata.flags.qgm_doPlaneShift = 1;
-        defVar('qgm_planeShift_N',vert_disp,'plane');% ALWAYS AN INTERGER
+        defVar('qgm_planeShift_N',plane_shift,'plane');% ALWAYS AN INTERGER
         
         %Set the field
         seqdata.flags.lattice_load_feshbach_ramp  = 1;
@@ -42,8 +42,8 @@ function J=job_trapfrequency
         defVar('piezo_diabat_ramp_time',4,'ms'); %How fast to snap back to zero displacement
         
         %Change to ODT1 if displacing along Y
-        defVar('conductivity_ODT1_mod_amp',mod_strength,'V');  % ODT1 Displacement
-%         defVar('conductivity_ODT2_mod_amp',mod_strength,'V');  % ODT2 Displacement
+%         defVar('conductivity_ODT1_mod_amp',mod_strength,'V');  % ODT1 Displacement
+        defVar('conductivity_ODT2_mod_amp',mod_strength,'V');  % ODT2 Displacement
         
         defVar('conductivity_mod_ramp_time',mod_ramp_time,'ms');  %How fast we initially displace the beams         
         defVar('conductivity_mod_time',50,'ms'); % 200 ms for force calibration
@@ -67,9 +67,9 @@ ODT1_power = 0.198;
 ODT2_power = 0.088;
 
 %Choose Lattice Depths
-depthX = -0.5;
-depthY = -0.5;
-depthZ = 3.5;
+depthX = 2.5;
+depthY = 2.5;
+depthZ = 2.5;
 
 % Optical Evaporation Power (W)
 evap_depth = 0.0537;0.065;
@@ -87,21 +87,21 @@ mod_dir = 1;
 %Choose the number of planes via uwave freq amplitude
 uwave_freq_amp = 120;
 
-vert_disp_list = [-1];
-vert_disp_list = vert_disp_list(randperm(numel(vert_disp_list)));
+plane_shift_list = [-2];
+plane_shift_list = plane_shift_list(randperm(numel(plane_shift_list)));
 
-for ii = 1:length(vert_disp_list)
-    vert_disp = vert_disp_list(ii);
+for ii = 1:length(plane_shift_list)
+    plane_shift = plane_shift_list(ii);
     out = struct;   
     out.SequenceFunctions   = {@main_settings,@(curtime) ...
         trapfreq(curtime,ODT1_power,ODT2_power,B,evap_depth,mod_strength,mod_ramp_time,...
-        depthX,depthY,depthZ,uwave_freq_amp,vert_disp,mod_dir),@main_sequence};
+        depthX,depthY,depthZ,uwave_freq_amp,plane_shift,mod_dir),@main_sequence};
     out.CycleEnd = 25;
     out.WaitMode = 2;
     out.WaitTime = 90;
     out.JobName             = ['XDT and Lattice X Trap Freq, ODTs (' num2str(ODT1_power*1e3) ',' num2str(ODT2_power*1e3) ') mW, (' ...
         num2str(depthX) ',' num2str(depthY) ',' num2str(depthZ), ') Er, ' num2str(B) ' G, ' num2str(1e3*evap_depth) ' mW, ' num2str(mod_strength) ' V amp, ' ...
-        num2str(mod_ramp_time) ' ms ramp, plane shift' num2str(vert_disp)];
+        num2str(mod_ramp_time) ' ms ramp, plane shift' num2str(plane_shift)];
     out.SaveDir         = out.JobName;    
     J(ii) = sequencer_job(out);
 end

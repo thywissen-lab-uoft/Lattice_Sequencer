@@ -175,8 +175,10 @@ setAnalogChannel(curtime,'Piezo mirror Z',CDT_piezo_Z,1);
 % displacements.
 
 % Control values 
-ctrl1 = 5;
-ctrl2 = 5;
+defVar('ODT1_V_Piezo_Set',5,'V');
+defVar('ODT2_V_Piezo_Set',5,'V');
+ctrl1 = getVar('ODT1_V_Piezo_Set');
+ctrl2 = getVar('ODT2_V_Piezo_Set');
 
 % Conversion functions for ODT2
 V_C = 5;

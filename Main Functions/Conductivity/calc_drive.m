@@ -13,16 +13,19 @@ function [displacement] = calc_drive(Tpred,Gpred,amp_desired,freq_list)
     
     %% Define the lookup tables for R and E
     global Rvalues;
-    Rvalues_unscaled = table2array(readtable('Lookup Tables/Rvalues_unscaled_66_8Hz_200.csv'));
+%     Rvalues_unscaled = table2array(readtable('Lookup Tables/Rvalues_unscaled_70_5Hz_200.csv'));
+    Rvalues_unscaled = table2array(readtable('Lookup Tables/Rvalues_unscaled_74_5Hz_3_5ER_200.csv'));
     Rvalues = -1j*(aLatt/pi)*Rvalues_unscaled;
     
     global energies;
-    energies_Hz = importdata('Lookup Tables/EnergyHz_66_8Hz_200.txt');
+%     energies_Hz = importdata('Lookup Tables/EnergyHz_70_5Hz_200.txt');
+    energies_Hz = importdata('EnergyHz_74_5Hz_3_5ER_200.txt');
     energies = h*(energies_Hz);
     
     %% Trap parameters
     wXDT = 2*pi*42.5; %2*pi*Hz
-    tunneling = 563.4109123332288;
+%     tunneling = 563.4109123332288;
+    tunneling = 435;
     
     %% Put Temp and Gamma guesses in units required for qfit functions
     T = Tpred*tunneling*h/kb; %K 4*tunneling*h/kb; %K

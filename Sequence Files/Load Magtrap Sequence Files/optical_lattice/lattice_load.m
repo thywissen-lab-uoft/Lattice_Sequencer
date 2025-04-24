@@ -70,6 +70,7 @@ AnalogFuncTo(calctime(curtime,0),'zLattice',...
 
 % Advance time
 curtime = calctime(curtime,tL);  
+
 %% Turn off XDTs
 % When analyzing the properties of the lattice, it is sometimes useful to
 % turn the XDT off.  This is typically not used in the experimental cycle.
@@ -120,6 +121,49 @@ if seqdata.flags.lattice_load_feshbach_ramp
     % Hold after ramping up FB
     tFBH = getVar('lattice_load_feshbach_holdtime');
     curtime=calctime(curtime,tFBH);
+end
+
+%% Ramp XDT powers
+% Change the power in the ODTs
+if seqdata.flags.lattice_load_xdt_ramp_power
+    logNewSection('Ramping XDT Power',curtime); 
+
+    Pr1 = getVar('lattice_load_xdt1_ramp_power');
+    Pr2 = getVar('lattice_load_xdt2_ramp_power');
+    tr = getVar('lattice_load_xdt_ramp_time');      
+    
+    % Ramp ODTs
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tr,tr,Pr1);
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tr,tr,Pr2);
+    curtime = calctime(curtime,tr);
+
+ 
+end
+
+%% Snap XDT powers
+% Change the power in the ODTs
+if seqdata.flags.lattice_load_xdt_snap_power
+    logNewSection('Snapping XDT Power Back Up',curtime); 
+
+    Pr1 = getVar('lattice_load_xdt1_snap_power');
+    Pr2 = getVar('lattice_load_xdt2_snap_power');
+    tr = getVar('lattice_load_xdt_snap_time');   
+    th = getVar('lattice_load_xdt_hold_time');   
+    
+    % Ramp ODTs
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tr,tr,Pr1);
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tr,tr,Pr2);
+    curtime = calctime(curtime,tr);
+    curtime = calctime(curtime,th);
+ 
 end
 
 %% Ramp lattices to science depth

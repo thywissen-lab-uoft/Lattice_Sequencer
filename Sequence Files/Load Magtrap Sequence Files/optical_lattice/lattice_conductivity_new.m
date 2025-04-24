@@ -229,6 +229,11 @@ setDigitalChannel(calctime(curtime,0),'QPD Monitor Trigger',0);
 % Stop Modulation - only affects AC modulation
 setDigitalChannel(curtime,'ODT Piezo Mod TTL',0);
 
+%% Cross-thermalization
+% Wait after modulating for cross thermalization measurement
+if seqdata.flags.conductivity_cross_thermalize == 1
+    curtime = calctime(curtime,getVar('conductivity_cross_thermalize_time'));
+end
 %% Snap off ODTs while modulating
 % This is useful for trap frequency measurements
 

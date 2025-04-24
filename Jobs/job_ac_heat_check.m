@@ -10,7 +10,7 @@ function J = job_ac_heat_check
         defVar('lattice_load_feshbach_field',field,'G'); 
         %Levitation voltage value during xdtB
                
-        seqdata.flags.lattice_conductivity_new      = 1;  
+        seqdata.flags.lattice_conductivity_new      = 0;  
         % Conductivity       
         seqdata.flags.conductivity_ODT1_mode            = 1; % 0:OFF, 1:SINE, 2:DC
         seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
@@ -26,6 +26,8 @@ function J = job_ac_heat_check
         defVar('xdtb_lattice_depth',4.5,'Er');
         defVar('xdtb_lattice_hold_pulse_time',[2],'ms');
         defVar('xdtb_lattice_pulse_equil_time',[100],'ms');
+        
+  
 
         
         

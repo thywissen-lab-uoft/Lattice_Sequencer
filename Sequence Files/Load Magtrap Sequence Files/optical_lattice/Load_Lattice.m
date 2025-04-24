@@ -996,45 +996,41 @@ curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
 end
     
 %% Field Ramps AFTER uWave/RF Spectroscopy
-if ( do_K_uwave_spectroscopy_old || ...
-        do_RF_spectroscopy || seqdata.flags.lattice_uWave_spec...
-        )
+if seqdata.flags.lattice_field_ramp_after_spec
     
     logNewSection('Ramping magnetic fields AFTER RF/uwave spectroscopy',curtime);
-    ramp_fields = 0; % do a field ramp for spectroscopy
-    
-    if ramp_fields
+  
 curtime = calctime(curtime,100);
         
-        clear('ramp');
-        ramp.shim_ramptime = 50;
-        ramp.shim_ramp_delay = -100; % ramp earlier than FB field if FB field is ramped to zero
-       
-        getChannelValue(seqdata,'X Shim',1,0);
-        getChannelValue(seqdata,'Y Shim',1,0);
-        getChannelValue(seqdata,'Z Shim',1,0);
-        
-        %Give ramp shim values if we want to do spectroscopy using the
-        %shims instead of FB coil. If nothing set here, then
-        %ramp_bias_fields just takes the getChannelValue (which is set to
-        %field zeroing values)
-        ramp.xshim_final = getChannelValue(seqdata,'X Shim',1,0);
-        ramp.yshim_final = getChannelValue(seqdata,'Y Shim',1,0);
-        ramp.zshim_final = getChannelValue(seqdata,'Z Shim',1,0);
-        
-        % FB coil settings for spectroscopy
-        ramp.fesh_ramptime = 50;
-        ramp.fesh_ramp_delay = 50;
-        ramp.fesh_final = 20;%before 2017-1-6 0.25*22.6; %18 %0.25
-        
-        % QP coil settings for spectroscopy
-        ramp.QP_ramptime = 50;
-        ramp.QP_ramp_delay = -0;
-        ramp.QP_final =  0; %18
-        ramp.settling_time = 200;
+    clear('ramp');
+    ramp.shim_ramptime = 50;
+    ramp.shim_ramp_delay = -100; % ramp earlier than FB field if FB field is ramped to zero
+
+    getChannelValue(seqdata,'X Shim',1,0);
+    getChannelValue(seqdata,'Y Shim',1,0);
+    getChannelValue(seqdata,'Z Shim',1,0);
+
+    %Give ramp shim values if we want to do spectroscopy using the
+    %shims instead of FB coil. If nothing set here, then
+    %ramp_bias_fields just takes the getChannelValue (which is set to
+    %field zeroing values)
+    ramp.xshim_final = getChannelValue(seqdata,'X Shim',1,0);
+    ramp.yshim_final = getChannelValue(seqdata,'Y Shim',1,0);
+    ramp.zshim_final = getChannelValue(seqdata,'Z Shim',1,0);
+
+    % FB coil settings for spectroscopy
+    ramp.fesh_ramptime = 50;
+    ramp.fesh_ramp_delay = 50;
+    ramp.fesh_final = 20;%before 2017-1-6 0.25*22.6; %18 %0.25
+
+    % QP coil settings for spectroscopy
+    ramp.QP_ramptime = 50;
+    ramp.QP_ramp_delay = -0;
+    ramp.QP_final =  0; %18
+    ramp.settling_time = 200;
       
 curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
-    end    
+  
 end
  
 %% Plane selection

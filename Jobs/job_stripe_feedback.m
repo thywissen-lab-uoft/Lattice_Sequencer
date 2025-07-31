@@ -89,7 +89,7 @@ end
 
 plane_shift             = 1;
 field                   = 200.15; 201.1;
-evap_depth_stripe       = 0.1;
+evap_depth_stripe       = 0.08;
 evap_depth_focus        = 0.055;
 evap_depth_fidelity     = 0.055;
 %% Overrides
@@ -106,7 +106,7 @@ str_focus = ['focus : plane=' num2str(plane_shift) ',' ...
     'evap2=' num2str(evap_depth_focus)];
 str_fidelity = ['fidelity : plane=' num2str(plane_shift) ',' ...
     'field=' num2str(field) ',' ...
-    'evap2=' num2str(evap_depth_fidelity)];
+    'evap2=' num2str(evap_de   pth_fidelity)];
 
 
 %% Create Job Object : STRIPE

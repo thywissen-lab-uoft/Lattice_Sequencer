@@ -14,8 +14,9 @@ function params = Load_Absorption_Image_Parameters()
     % |9/2,-9/2> and |9/2,-7/2> atoms
     params.detunings.K.X.negative.normal = 33.1; %(33.1) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
 %         params.detunings.K.X.negative.normal = defVar('img_K_X_NEG_NORMAL',33.1+[-3:1:3 ,'MHz'); %(33.1) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
-
-    params.detunings.K.X.negative.SG = 34.5;      % for mF stern gerlach
+    defVar('K_img_det_shift_SG',[36.5],'MHz');
+    k_SG_det_shift = getVar('K_img_det_shift_SG');
+    params.detunings.K.X.negative.SG = k_SG_det_shift;34.5;      % for mF stern gerlach
 %     params.detunings.K.X.negative.SG = 34.5+kdet_shift;      % for mF stern gerlach
 
     
@@ -111,7 +112,7 @@ function params = Load_Absorption_Image_Parameters()
     % mF Stern Gerlach For |9,-9> vs |9,-7> low field (15ms TOF K)
     if seqdata.flags.image_stern_gerlach_mF
         params.SG.SG_QP_val = SG_QP_val*1.78;
-        params.SG.SG_QP_pulsetime = 5;
+        params.SG.SG_QP_pulsetime = 7;5;
         params.SG.SG_QP_ramptime =2;
     end
     
@@ -123,7 +124,9 @@ function params = Load_Absorption_Image_Parameters()
     end
     
     % Stern Gerlach feed forward
+%     params.SG.SG_QP_FF = 23*(params.SG.SG_QP_val/30); % voltage FF on delta supplySS
     params.SG.SG_QP_FF = 23*(params.SG.SG_QP_val/30); % voltage FF on delta supplySS
+
 
     %% Other parameters
     params.others.RB_FF = 1.2;

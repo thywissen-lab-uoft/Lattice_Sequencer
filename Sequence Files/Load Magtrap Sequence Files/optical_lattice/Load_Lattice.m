@@ -845,6 +845,173 @@ curtime = rampMagneticFields(calctime(curtime,0), newramp);
 %     curtime = calctime(curtime,t_hold_OP);
 end
 
+%% Filter out singlon
+% Puts singlons into c+d states to distinguish in SG imaging
+% Steps:
+% 1) Ramp lattice to ___ Er
+% 2) Ramp field to ___ G
+% 3) Transfer singlon b-->c (doublons shielded by s-wave int. shift)
+% 4) Transfer singlon d-->c
+% 5) Flip a-->b
+% 6) Transfer singlon b--> c
+if seqdata.flags.lattice_filter_singlons
+    
+%%%%% Ramp lattice to 100 Er %%%%%
+    % Perform the rest of the lattice ramps
+   dT = getVar('lattice_filter_depth_ramptime');
+   Ux = getVar('lattice_filter_depth_X');
+   Uy = getVar('lattice_filter_depth_Y');
+   Uz = getVar('lattice_filter_depth_Z');
+   
+   % Define Ramp Ups
+    AnalogFuncTo(calctime(curtime,0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Ux); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Uy);
+    AnalogFuncTo(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Uz);    
+    
+% Wait for ramp to occur
+curtime = calctime(curtime,dT);    
+% Wait for ramp to settle
+curtime = calctime(curtime,5); 
+
+%%%%% Ramp to interacting field  %%%%%
+     tr = getVar('lattice_filter_feshbach_time');
+    fesh = getVar('lattice_filter_feshbach_field');
+
+    % Define the ramp structure
+    ramp=struct;
+    ramp.shim_ramptime      = tr;
+    ramp.shim_ramp_delay    = 0;
+    ramp.xshim_final        = seqdata.params.shim_zero(1); 
+    ramp.yshim_final        = seqdata.params.shim_zero(2);
+    ramp.zshim_final        = seqdata.params.shim_zero(3);
+    ramp.fesh_ramptime      = tr;
+    ramp.fesh_ramp_delay    = 0;
+    ramp.fesh_final         = fesh; %22.6
+    ramp.settling_time      = 20;    
+
+    % Ramp FB with QP
+curtime= ramp_bias_fields(calctime(curtime,0), ramp);  
+    
+    % Hold after ramping up FB
+    tFBH = getVar('lattice_filter_feshbach_holdtime');
+curtime=calctime(curtime,tFBH);
+
+%%%%% Transfer singlon a-->c with linear DDS sweep %%%%%
+     Bfb = getChannelValue(seqdata,'FB Current',1);    
+     Iz_shim = getChannelValue(seqdata,'Z Shim',1);    
+     Bz_shim = (Iz_shim-seqdata.params.shim_zero(3))*2.35;
+     Boff = 0.107; % 130 G April 2025
+     B = Bfb + Boff + Bz_shim;
+        
+    doLinear = 0;
+    if doLinear
+        %Do RF Sweep
+        clear('sweep');
+        
+%         Bfb = getChannelValue(seqdata,'FB Current',1);    
+%         Iz_shim = getChannelValue(seqdata,'Z Shim',1);    
+%         Bz_shim = (Iz_shim-seqdata.params.shim_zero(3))*2.35;
+%         Boff = 0.107; % 130 G April 2025
+%     
+%         B = Bfb + Boff + Bz_shim;
+        
+        defVar('lattice_ac_freq_shift',[-20 -10 10],'kHz');
+        
+        sweep_pars.freq =(BreitRabiK(B,9/2,-7/2) - BreitRabiK(B,9/2,-5/2))/6.6260755e-34/1E6 + getVar('lattice_ac_freq_shift')*1e-3; %Sweeps -9/2 to -5/2 at 198 G.
+        sweep_pars.power =0; %-7.7
+        sweep_pars.delta_freq = 20*1e-3; % end_frequency - start_frequency   0.01
+        sweep_pars.pulse_length = 1; % also is sweep length  0.5
+        sweep_pars.fake_pulse = 0;
+
+        addOutputParam('RF_Filter_Pulse_Length',sweep_pars.pulse_length);
+curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
+curtime = calctime(curtime, 0);
+
+    end
+    
+    delta_freq_DDS = 20*1e-3;
+    rf_pulse_length = 1;
+    
+    defVar('lattice_ac_freq_shift',[-50:10:10],'kHz');
+    rf_freq_HF =abs((BreitRabiK(B,9/2,-7/2) - BreitRabiK(B,9/2,-5/2))/6.6260755e-34/1E6 + getVar('lattice_ac_freq_shift')*1e-3);
+    
+    freq_list=rf_freq_HF+[...
+                    -0.5*delta_freq_DDS ...
+                    -0.5*delta_freq_DDS ...
+                    0.5*delta_freq_DDS ...
+                    0.5*delta_freq_DDS];            
+                pulse_list=[2 rf_pulse_length 2];
+
+                % Max rabi frequency in volts (uncalibrated for now)
+                off_voltage=-10;
+                
+                peak_voltage_list = 0;
+                peak_voltage = getScanParameter(peak_voltage_list,seqdata.scancycle,...
+            seqdata.randcyclelist,'DDS_RF_HFspec_gain', 'V');
+
+                % Display the sweep settings
+                disp([' Freq Center    (MHz) : [' num2str(rf_freq_HF) ']']);
+                disp([' Freq List    (MHz) : [' num2str(freq_list) ']']);
+                disp([' Time List     (ms) : [' num2str(pulse_list) ']']);
+                disp([' RF Gain Range  (V) : [' num2str(off_voltage) ' ' num2str(peak_voltage) ']']);
+
+
+                % Set RF gain to zero a little bit before
+                setAnalogChannel(calctime(curtime,-40),'RF Gain',off_voltage);   
+
+                % Turn on RF
+                setDigitalChannel(curtime,'RF TTL',1);   
+
+                % Set to RF
+                setDigitalChannel(curtime,'RF/uWave Transfer',0);   
+
+                do_ACync_rf = 0;
+                if do_ACync_rf
+                    ACync_start_time = calctime(curtime,-30);
+                    ACync_end_time = calctime(curtime,sum(pulse_list)+30);
+                    setDigitalChannel(calctime(ACync_start_time,0),'ACync Master',1);
+                    setDigitalChannel(calctime(ACync_end_time,0),'ACync Master',0);
+                end
+
+                % Trigger pulse duration
+                dTP=0.1;
+                DDS_ID=1;
+
+                % Initialize "Sweep", ramp up power        
+                sweep=[DDS_ID 1E6*freq_list(1) 1E6*freq_list(2) pulse_list(1)];
+                DigitalPulse(curtime,'DDS ADWIN Trigger',dTP,1);               
+                seqdata.numDDSsweeps=seqdata.numDDSsweeps+1;               
+                seqdata.DDSsweeps(seqdata.numDDSsweeps,:)=sweep;               
+                curtime=AnalogFuncTo(calctime(curtime,0),'RF Gain',...
+                    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+                    pulse_list(1),pulse_list(1),peak_voltage); 
+
+                % Primary Sweep, constant power            
+                sweep=[DDS_ID 1E6*freq_list(2) 1E6*freq_list(3) pulse_list(2)];
+                DigitalPulse(curtime,'DDS ADWIN Trigger',dTP,1);  
+                seqdata.numDDSsweeps=seqdata.numDDSsweeps+1;               
+                seqdata.DDSsweeps(seqdata.numDDSsweeps,:)=sweep;               
+                curtime=calctime(curtime,pulse_list(2));
+
+                % Final "Sweep", ramp down power
+                sweep=[DDS_ID 1E6*freq_list(3) 1E6*freq_list(4) pulse_list(3)];
+                DigitalPulse(curtime,'DDS ADWIN Trigger',dTP,1);               
+                seqdata.numDDSsweeps=seqdata.numDDSsweeps+1;               
+                seqdata.DDSsweeps(seqdata.numDDSsweeps,:)=sweep;               
+                curtime=AnalogFuncTo(calctime(curtime,0),'RF Gain',...
+                    @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+                    pulse_list(1),pulse_list(1),off_voltage); 
+
+                % Turn off RF
+                setDigitalChannel(curtime,'RF TTL',0);
+    
+    
+    
+    
+end
 %% Field Ramps BEFORE uWave/RF Spectroscopy
 % This code prepares the magnetic fields for uWave and RF spectroscopy
 
@@ -857,42 +1024,720 @@ end
 %RHYS - Spectroscopy sections for calibration. Comments about lack of code
 %generality from dipole_transfer apply here too: clean and generalize!
 
-if ( do_K_uwave_spectroscopy_old || ...
-        do_RF_spectroscopy || seqdata.flags.lattice_uWave_spec)
+if seqdata.flags.lattice_field_ramp_pre_spec
     logNewSection('Ramping magnetic fields BEFORE RF/uwave spectroscopy',curtime);
-    
-    ramp_fields = 1; % do a field ramp for spectroscopy
-    
-    if ramp_fields
-        clear('ramp');
-        
-%       %First, ramp on a quantizing shim.
-        ramp.shim_ramptime = 50;
-        ramp.shim_ramp_delay = -0;
-        
-        ramp.xshim_final = 0.1585; 
-        ramp.yshim_final = -0.0432;
-        ramp.zshim_final = -0.0865; 
-        addOutputParam('shim_value',ramp.zshim_final - getChannelValue(seqdata,'Z Shim',1,0))        
+%     
+%     clear('ramp');
+% 
+% %       %First, ramp on a quantizing shim.
+%     ramp.shim_ramptime = 50;
+%     ramp.shim_ramp_delay = -0;
+% 
+%     ramp.xshim_final = 0.1585; 
+%     ramp.yshim_final = -0.0432;
+%     ramp.zshim_final = -0.0865; 
+%     addOutputParam('shim_value',ramp.zshim_final - getChannelValue(seqdata,'Z Shim',1,0))        
+% 
+%     % FB coil settings for spectroscopy
+%     ramp.fesh_ramptime = 50;
+%     ramp.fesh_ramp_delay = -0;
+%     ramp.fesh_off_delay = 0;
+% 
+%     ramp.fesh_final = 20.98111;
+% 
+%     ramp.use_fesh_switch = 1; %Don't actually want to close the FB switch to avoid current spikes
+% 
+% % %         % QP coil settings for spectroscopy
+% %         ramp.QP_ramptime = 50;
+% %         ramp.QP_ramp_delay = -0;
+% %         ramp.QP_final =  0*1.78; %7
+%     ramp.settling_time = 200;200;     
+%     
+% curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
 
-        % FB coil settings for spectroscopy
-        ramp.fesh_ramptime = 50;
-        ramp.fesh_ramp_delay = -0;
-        ramp.fesh_off_delay = 0;
-        
-        ramp.fesh_final = 20.98111;
-        
-        ramp.use_fesh_switch = 1; %Don't actually want to close the FB switch to avoid current spikes
-        
-% %         % QP coil settings for spectroscopy
-%         ramp.QP_ramptime = 50;
-%         ramp.QP_ramp_delay = -0;
-%         ramp.QP_final =  0*1.78; %7
-        ramp.settling_time = 200;200;     
-curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
-    end
+     tr = getVar('lattice_pre_spec_feshbach_time');
+    fesh = getVar('lattice_pre_spec_feshbach_field');
+
+    % Define the ramp structure
+    ramp=struct;
+    ramp.shim_ramptime      = tr;
+    ramp.shim_ramp_delay    = 0;
+    ramp.xshim_final        = seqdata.params.shim_zero(1); 
+    ramp.yshim_final        = seqdata.params.shim_zero(2);
+    ramp.zshim_final        = seqdata.params.shim_zero(3);
+    ramp.fesh_ramptime      = tr;
+    ramp.fesh_ramp_delay    = 0;
+    ramp.fesh_final         = fesh; %22.6
+    ramp.settling_time      = 20;    
+
+    % Ramp FB with QP
+    curtime= ramp_bias_fields(calctime(curtime,0), ramp);  
+    
+    % Hold after ramping up FB
+    tFBH = getVar('lattice_pre_spec_feshbach_holdtime');
+    curtime=calctime(curtime,tFBH);
     
 end
+%% Ramp lattice before spectroscopy
+
+if seqdata.flags.lattice_spec_ramp
+    logNewSection('Lattice Ramp for Spectroscopy',curtime)    
+    ScopeTriggerPulse(curtime,'lattice_ramp_2');    
+   % Perform the rest of the lattice ramps
+   dT = getVar('lattice_spec_ramptime');
+   Ux = getVar('lattice_spec_depth_X');
+   Uy = getVar('lattice_spec_depth_Y');
+   Uz = getVar('lattice_spec_depth_Z');
+   % Define Ramp Ups
+    AnalogFuncTo(calctime(curtime,0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Ux); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Uy);
+    AnalogFuncTo(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Uz);    
+    
+    % Wait for ramp to occur
+    curtime = calctime(curtime,dT);    
+    % Wait for ramp to settle
+    curtime = calctime(curtime,5);          
+end
+
+%% Raman spectroscopy
+    
+    if seqdata.flags.lattice_raman_spec
+%         defVar('lattice_raman_lock_offset',[900],'MHz'); % not used, just for analysis purposes
+        
+        % Calculate energy of transition
+        mF1=-9/2;   % Lower energy spin state
+        mF2=-7/2;   % Higher energy spin state
+        
+        Bfb = getChannelValue(seqdata,'FB Current',1);    
+        Iz_shim = getChannelValue(seqdata,'Z Shim',1);    
+        Bz_shim = (Iz_shim-seqdata.params.shim_zero(3))*2.35;
+%         Boff = 0.1238; % 190+ G November 2024
+        Boff = 0.107; % 130 G April 2025
+    
+        Bguess = Bfb + Boff + Bz_shim;
+%         disp(Bguess);
+
+        if (abs((BreitRabiK(Bguess,9/2,mF2) - BreitRabiK(Bguess,9/2,mF1))/6.6260755e-34/1E6) < 1)
+             error('Incorrect RF frequency calculation!! MATLAB IS STUPID! >:(')
+        end      
+        
+        % AOM Settings
+        
+        % Double pass frequency should be
+        % Zeeman + lattice gap + single pass
+        % Lattice band gaps is 88 kHz for 300 Er, 76 kHz for 200 Er
+        defVar('Raman_DP_freq_shift',[55],'kHz'); 60;61;% 57 kHz 9n-->7n+1 100 Er -25 n--> n 
+        Raman_AOM3_freq_list =  getVar('Raman_DP_freq_shift')*1e-3/2+(80+...
+            abs((BreitRabiK(Bguess,9/2,mF2) - BreitRabiK(Bguess,9/2,mF1))/6.6260755e-34/1E6))/2;
+        
+        defVar('Raman_DP_freq',Raman_AOM3_freq_list,'MHz');
+        Raman_AOM3_freq = getVar('Raman_DP_freq');
+        
+        Raman_AOM3_pwr_list = 2;0.680; %0.740
+        defVar('Raman_DP_power',Raman_AOM3_pwr_list,'V');
+        Raman_AOM3_pwr = getVar('Raman_DP_power');
+    
+%           RamanspecMode = 'sweep';
+          RamanspecMode = 'pulse';
+        
+        % R3 DP beam settings
+        switch RamanspecMode
+            case 'sweep'
+                Sweep_Range_list = [5]/1000;[1 2 5:5:30]/1000;  %in MHz
+                Sweep_Range = getScanParameter(Sweep_Range_list,...
+                    seqdata.scancycle,seqdata.randcyclelist,'HF_Raman_sweep_range','MHz');
+                Sweep_Time_list = [1]; %1 in ms
+                Sweep_Time = getScanParameter(Sweep_Time_list,...
+                    seqdata.scancycle,seqdata.randcyclelist,'HF_Raman_sweep_time','ms');
+
+                str = sprintf('SOURce2:SWEep:STATe ON;SOURce2:SWEep:TRIGger:SOURce: EXTernal;SOURce2:SWEep:TIME %gMS;SOURce2:FREQuency:CENTer %gMHZ;SOURce2:FREQuency:SPAN %gMHZ;SOURce2:VOLT %g;', ...
+                    Sweep_Time, Raman_AOM3_freq, Sweep_Range, Raman_AOM3_pwr);
+                Raman_on_time = Sweep_Time;
+                Pulse_Time = Sweep_Time;
+
+            case 'pulse'
+                Pulse_Time_list = [0.25];[0.09];[0.08];[0.11];
+                Pulse_Time = getScanParameter(Pulse_Time_list,...
+                    seqdata.scancycle,seqdata.randcyclelist,'Pulse_Time','ms');
+                Raman_on_time = Pulse_Time; %ms
+                str = sprintf('SOURce2:SWEep:STATe OFF;SOURce2:MOD:STATe OFF; SOURce2:FREQuency %gMHZ;SOURce2:VOLT %gVPP;', ...
+                    Raman_AOM3_freq, Raman_AOM3_pwr);
+        end
+
+        Device_id = 7; %Rigol for D1 lock(Ch. 1) and Raman 3(Ch. 2). Do not change any Ch. 1 settings here. 
+        addVISACommand(Device_id, str);
+
+        % R2 beam settings
+        Device_id = 1;
+        Raman_AOM2_freq = 80*1E6;
+
+        Raman_AOM2_pwr_list = 1.5;0.490; %0.51
+        Raman_AOM2_pwr = getScanParameter(Raman_AOM2_pwr_list,...
+            seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM2_pwr','MHz');
+
+        Raman_AOM2_offset = 0;
+        str=sprintf(':SOUR2:APPL:SIN %f,%f,%f;',...
+            Raman_AOM2_freq,Raman_AOM2_pwr,Raman_AOM2_offset);
+
+        addVISACommand(Device_id, str);
+
+
+        raman_old= 1; 
+        if raman_old
+            %Raman spectroscopy AOM-shutter sequence
+            %we have three TTLs to independatly control R1, R2 and R3
+            raman_buffer_time = 10;
+            shutter_buffer_time = 5;
+
+            if Pulse_Time == 0
+                DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 2',...
+                    Raman_on_time+(raman_buffer_time)*2,0); %turn off R2 temporarily for shutter
+                DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 2a',...
+                    Raman_on_time+(raman_buffer_time)*2,0); %turn off R2 temporarily for shutter
+
+                DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3',...
+                    Raman_on_time+(raman_buffer_time)*2,0); %turn off R3 temporarily for shutter
+                DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3a',...
+                    Raman_on_time+(raman_buffer_time)*2,0); %turn off R3 temporarily for shutter
+
+                DigitalPulse(calctime(curtime,-shutter_buffer_time),'Raman Shutter',...
+                    Raman_on_time+shutter_buffer_time*2,1);% open shutter 100ms before and close 100ms after the sweep
+            else
+                setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman TTL 1',0); %turn off R1
+                DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 2',raman_buffer_time,0); %turn off R2 temporarily for shutter
+                DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 2a',raman_buffer_time,0); %turn off R2 temporarily for shutter
+
+                DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3',raman_buffer_time,0); %turn off R3 temporarily for shutter
+                DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3a',raman_buffer_time,0); %turn off R3 temporarily for shutter
+
+
+                DigitalPulse(calctime(curtime,-shutter_buffer_time),'Raman Shutter',...
+                    Raman_on_time+shutter_buffer_time*2,1);% open shutter 100ms before and close 100ms after the sweep
+
+                DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 2',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
+                DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 2a',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
+
+                DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 3',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
+                DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 3a',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
+
+                setDigitalChannel(calctime(curtime,Raman_on_time+ ...
+                    raman_buffer_time),'Raman TTL 1',1); %turn on R1 150ms after the sweep has ended
+
+            end
+curtime = calctime(curtime, Raman_on_time+(raman_buffer_time)*2);
+        else
+
+        %Raman spectroscopy AOM-shutter sequence
+        %we have three TTLs to independatly control R1, R2 and R3
+        raman_buffer_time = 10;
+        shutter_buffer_time = 5;
+
+        setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman TTL 1',0); %turn off R1 AOM
+        setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman TTL 2',0); %turn off R2 AOM
+        setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman TTL 2a',0); %turn off R2 AOM
+
+        setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman TTL 3',0); %turn off R3 AOM
+        setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman TTL 3a',0); %turn off R3 AOM
+
+        setDigitalChannel(calctime(curtime,-shutter_buffer_time),'Raman Shutter',1); %turn on shutter
+
+        setDigitalChannel(calctime(curtime,0),'Raman TTL 2',1); %turn on R2
+        setDigitalChannel(calctime(curtime,0),'Raman TTL 2a',1); %turn on R2
+
+        setDigitalChannel(calctime(curtime,0),'Raman TTL 3',1); %turn on R3
+        setDigitalChannel(calctime(curtime,0),'Raman TTL 3a',1); %turn on R3
+
+
+        setDigitalChannel(calctime(curtime,Raman_on_time),'Raman TTL 2',0); %turn off R2
+        setDigitalChannel(calctime(curtime,Raman_on_time),'Raman TTL 2a',0); %turn off R2
+
+        setDigitalChannel(calctime(curtime,Raman_on_time),'Raman TTL 3',0); %turn off R3 after pulse
+        setDigitalChannel(calctime(curtime,Raman_on_time),'Raman TTL 3a',0); %turn off R3 after pulse
+
+curtime = calctime(curtime, Raman_on_time);
+
+        end
+    
+    
+    end
+    
+    %% Ramp lattice post raman
+
+if seqdata.flags.lattice_ramp_post_raman
+    logNewSection('Lattice Ramp after Raman',curtime)    
+%     ScopeTriggerPulse(curtime,'lattice_ramp_2');    
+   % Perform the rest of the lattice ramps
+   
+   dT = getVar('lattice_post_raman_ramptime');
+   Ux = getVar('lattice_post_raman_depth_X');
+   Uy = getVar('lattice_post_raman_depth_Y');
+   Uz = getVar('lattice_post_raman_depth_Z');
+   % Define Ramp Ups
+    AnalogFuncTo(calctime(curtime,0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Ux); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Uy);
+    AnalogFuncTo(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Uz);    
+    
+    % Wait for ramp to occur
+    curtime = calctime(curtime,dT);    
+    % Wait for ramp to settle
+    curtime = calctime(curtime,5);          
+end
+
+%% K uWave Spectroscopy (OLD)
+% This code performs K uWave manipulations such as Rabi Oscillations,
+% Landau Zener Sweeps. It is hoped that this code is deprecated and will no
+% longer be used.
+            
+if do_K_uwave_spectroscopy_old
+   curtime = uwave_K_spec_lattice_old(curtime);
+end
+
+
+%% Field Ramps AFTER uWave/Raman Spectroscopy
+if seqdata.flags.lattice_field_ramp_post_raman
+    
+    logNewSection('Ramping magnetic fields AFTER Raman spectroscopy',curtime);
+
+    tr = getVar('lattice_post_raman_feshbach_time');
+    fesh = getVar('lattice_post_raman_feshbach_field');
+
+    % Define the ramp structure
+    ramp=struct;
+    ramp.shim_ramptime      = tr;
+    ramp.shim_ramp_delay    = 0;
+    ramp.xshim_final        = seqdata.params.shim_zero(1); 
+    ramp.yshim_final        = seqdata.params.shim_zero(2);
+    ramp.zshim_final        = seqdata.params.shim_zero(3);
+    ramp.fesh_ramptime      = tr;
+    ramp.fesh_ramp_delay    = 0;
+    ramp.fesh_final         = fesh; %22.6
+    ramp.settling_time      = 150;20;    
+
+    % Ramp FB with QP
+    curtime= ramp_bias_fields(calctime(curtime,0), ramp);  
+    
+    if seqdata.flags.lattice_rf_spec_PID
+        setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage',1);
+        curtime = calctime(curtime,100);
+    end
+    
+    % Hold after ramping up FB
+    tFBH = getVar('lattice_post_raman_feshbach_holdtime');
+    curtime=calctime(curtime,tFBH);
+end
+%% RF Spectroscopy
+
+if seqdata.flags.lattice_RF_spectroscopy
+        logNewSection('RF spectroscopy.',curtime);
+        
+        Bfb = getChannelValue(seqdata,'FB Current',1);    
+        Iz_shim = getChannelValue(seqdata,'Z Shim',1);    
+        Bz_shim = (Iz_shim-seqdata.params.shim_zero(3))*2.35;
+        Boff = 0.107; % 130 G April 2025
+    
+        B = Bfb + Boff + Bz_shim;
+        
+    doLinear = 0;
+    if doLinear
+        %Do RF Sweep
+        clear('sweep');
+        
+%         Bfb = getChannelValue(seqdata,'FB Current',1);    
+%         Iz_shim = getChannelValue(seqdata,'Z Shim',1);    
+%         Bz_shim = (Iz_shim-seqdata.params.shim_zero(3))*2.35;
+%         Boff = 0.107; % 130 G April 2025
+%     
+%         B = Bfb + Boff + Bz_shim;
+        
+        sweep_pars.freq =(BreitRabiK(B,9/2,-7/2) - BreitRabiK(B,9/2,-9/2))/6.6260755e-34/1E6 + getVar('lattice_RF_spec_frequency_offset')*1e-3; %Sweeps -9/2 to -7/2 at 207.6G.
+        sweep_pars.power = 5;2.7; %-7.7
+        sweep_pars.delta_freq = getVar('lattice_RF_spec_sweep_range')*1e-3; % end_frequency - start_frequency   0.01
+        sweep_pars.pulse_length = getVar('lattice_RF_spec_time'); % also is sweep length  0.5
+        sweep_pars.fake_pulse = 0;
+
+        addOutputParam('RF_Pulse_Length',sweep_pars.pulse_length);
+curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
+curtime = calctime(curtime, 10);
+
+extraextraholdtime = getVar('lattice_RF_spec_holdtime');
+curtime = calctime(curtime,extraextraholdtime);
+    end
+    
+        reverse_sweep = 0;
+        if reverse_sweep
+            clear('ramp')
+            % FB coil settings for spectroscopy
+            ramp.fesh_ramptime = 5;
+            ramp.fesh_ramp_delay = 5;
+            B_2 = 199.6;
+            ramp.fesh_final = (B_2-0.1)*1.08962;%0*(0.336/20)*22.6; %1.0077*2*22.6 for same transfer as plane selection
+            ramp.use_fesh_switch = 1; %Don't actually want to close the FB switch to avoid current spikes
+            ramp.settling_time = 5;
+
+curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
+            sweep_pars.freq = (BreitRabiK(B_2,9/2,-5/2) - BreitRabiK(B_2,9/2,-7/2))/6.6260755e-34/1E6; 
+            sweep_pars.delta_freq = -sweep_pars.delta_freq;
+curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
+        end
+        
+    doHS1 = 1;
+    use_ACync = seqdata.flags.lattice_rf_spec_ACync;
+    if doHS1
+        
+        rf_wait_time    = 0; 
+        extra_wait_time = 0;
+        rf_off_voltage  = -10;
+        
+        % Read in sweep params
+        freq_offset = getVar('lattice_RF_spec_frequency_offset');
+        freq_amp = getVar('lattice_RF_spec_sweep_range');      
+        sweep_time = getVar('lattice_RF_spec_time');   
+        power = getVar('lattice_RF_spec_power');
+        center_freq = (BreitRabiK(B,9/2,-7/2) - BreitRabiK(B,9/2,-9/2))/6.6260755e-34/1E6;
+        
+        % Configure the SRS
+        RF_opts=struct;
+        RF_opts.Address      = 29;                       % SRS GPIB Addr
+        RF_opts.Frequency    = center_freq+(freq_offset)*1E-3; % Frequency [MHz]
+        RF_opts.PowerBNC     = power;%15                    % Power [dBm]
+        RF_opts.EnableBNC    = 1;                        % Enable SRS output    
+        RF_opts.EnableSweep  = 1;                    
+        RF_opts.SweepRange   = 1e-3*freq_amp;         % Sweep Amplitude [MHz]
+        
+        env_amp     = 20;             % Relative amplitude of the sweep
+        beta        = asech(0.005);   % Beta defines sharpness of HS1
+        
+        addOutputParam('lattice_RF_spec_frequency',RF_opts.Frequency);            
+        addOutputParam('lattice_RF_spec_beta',beta);
+        addOutputParam('lattice_RF_spec_HS1_amp',env_amp);
+        
+        logText(['     Freq         : ' num2str(RF_opts.Frequency) ' MHz']);    
+        logText(['     Freq Offset  : ' num2str(freq_offset) ' kHz']);    
+        logText(['     Pulse Time   : ' num2str(sweep_time) ' ms']);
+        logText(['     Freq Amp     : ' num2str(freq_amp) ' kHz']);
+        
+        %%%% The Sweep Code Begins Here %%%% 
+        
+        % Set SRS Source post spec
+        setDigitalChannel(calctime(curtime,-5),'SRS Source post spec',1);
+
+        % Set SRS Source to the new one
+        setDigitalChannel(calctime(curtime,-5),'SRS Source',0);
+
+        % Set SRS Direction to RF
+        setDigitalChannel(calctime(curtime,-5),'K uWave Source',0);
+
+        % Set initial modulation
+        setAnalogChannel(calctime(curtime,-5),'uWave FM/AM',1);
+        
+        % Set RF power to low
+        setAnalogChannel(calctime(curtime,-5),'RF Gain',rf_off_voltage);
+
+        % Set RF Source to SRS
+        setDigitalChannel(calctime(curtime,-5),'RF Source',1);
+       
+        % Enable ACync
+        if use_ACync
+            setDigitalChannel(calctime(curtime,-30),'ACync Master',1);
+        end
+        
+        % Turn on the RF
+        setDigitalChannel(calctime(curtime,...
+            rf_wait_time + extra_wait_time),'RF TTL',1);
+        
+        % Ramp the SRS modulation using a TANH
+        % At +-1V input for +- full deviation
+        % The last argument means which votlage fucntion to use
+        AnalogFunc(calctime(curtime,...
+            rf_wait_time + extra_wait_time),'uWave FM/AM',...
+            @(t,T,beta) - tanh(2*beta*(t-0.5*sweep_time)/sweep_time),...
+            sweep_time,sweep_time,beta,1);
+
+        % Sweep the linear VVA
+        AnalogFunc(calctime(curtime,...
+            rf_wait_time  + extra_wait_time),'RF Gain',...
+            @(t,T,beta,A) -10 + ...
+            A*sech(2*beta*(t-0.5*sweep_time)/sweep_time),...
+            sweep_time,sweep_time,beta,env_amp);
+% 
+curtime = calctime(curtime,sweep_time);                     % Wait for sweep        
+        
+        % Turn off the uWave
+        setDigitalChannel(calctime(curtime,...
+            rf_wait_time  + extra_wait_time),'RF TTL',0); 
+
+        % Turn off VVA
+        setAnalogChannel(calctime(curtime,...
+            rf_wait_time  + extra_wait_time),'RF Gain',rf_off_voltage);
+
+        % Set RF Source to SRS
+        setDigitalChannel(calctime(curtime,...
+            rf_wait_time  + extra_wait_time+30),'RF Source',0);
+
+        setDigitalChannel(calctime(curtime,...
+             rf_wait_time + extra_wait_time+30),'SRS Source',1);
+        
+        setDigitalChannel(calctime(curtime,...
+              rf_wait_time + extra_wait_time+30),'SRS Source post spec',0);
+        
+        % Reset the ACync
+        if use_ACync
+            setDigitalChannel(calctime(curtime,30),'ACync Master',0);
+        end
+        
+        % Program the SRS
+        programSRS_BNC(RF_opts); 
+        params.isProgrammedSRS = 1;
+
+%         % Extra Wait Time
+% curtime = calctime(curtime,30);
+
+        if seqdata.flags.lattice_rf_spec_PID
+            setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage',0);
+
+        end
+
+        extraextraholdtime = getVar('lattice_RF_spec_holdtime');
+curtime = calctime(curtime,extraextraholdtime);
+    end
+    
+    doPulse = 0;
+    if doPulse
+       
+        rf_wait_time    = 0; 
+        extra_wait_time = 0;
+        rf_off_voltage  = -10;
+        
+        % Read in sweep params
+        freq_offset = getVar('lattice_RF_spec_frequency_offset');
+        freq_amp = getVar('lattice_RF_spec_sweep_range');      
+        sweep_time = getVar('lattice_RF_spec_time');   
+        power = getVar('lattice_RF_spec_power');
+        center_freq = (BreitRabiK(B,9/2,-7/2) - BreitRabiK(B,9/2,-9/2))/6.6260755e-34/1E6;
+        
+        % Configure the SRS
+        RF_opts=struct;
+        RF_opts.Address      = 29;                       % SRS GPIB Addr
+        RF_opts.Frequency    = center_freq+(freq_offset)*1E-3; % Frequency [MHz]
+        RF_opts.PowerBNC     = power;%15                    % Power [dBm]
+        RF_opts.EnableBNC    = 1;                        % Enable SRS output    
+        RF_opts.EnableSweep  = 0;                    
+        RF_opts.SweepRange   = 1e-3*freq_amp;         % Sweep Amplitude [MHz]
+        
+        env_amp     = 20;             % Relative amplitude of the sweep
+        beta        = asech(0.005);   % Beta defines sharpness of HS1
+        
+        addOutputParam('lattice_RF_spec_frequency',RF_opts.Frequency);            
+        addOutputParam('lattice_RF_spec_beta',beta);
+        addOutputParam('lattice_RF_spec_HS1_amp',env_amp);
+        
+        logText(['     Freq         : ' num2str(RF_opts.Frequency) ' MHz']);    
+        logText(['     Freq Offset  : ' num2str(freq_offset) ' kHz']);    
+        logText(['     Pulse Time   : ' num2str(sweep_time) ' ms']);
+        
+        %%%% The Sweep Code Begins Here %%%% 
+        
+        % Set SRS Source post spec
+        setDigitalChannel(calctime(curtime,-5),'SRS Source post spec',1);
+
+        % Set SRS Source to the new one
+        setDigitalChannel(calctime(curtime,-5),'SRS Source',0);
+
+        % Set SRS Direction to RF
+        setDigitalChannel(calctime(curtime,-5),'K uWave Source',0);
+
+        % Set initial modulation
+        setAnalogChannel(calctime(curtime,-5),'uWave FM/AM',1);
+        
+        % Set RF power to low
+        setAnalogChannel(calctime(curtime,-5),'RF Gain',rf_off_voltage);
+
+        % Set RF Source to SRS
+        setDigitalChannel(calctime(curtime,-5),'RF Source',1);
+       
+        % Enable ACync
+        if use_ACync
+            setDigitalChannel(calctime(curtime,-30),'ACync Master',1);
+        end
+        
+        % Turn on the RF
+        setDigitalChannel(calctime(curtime,...
+            rf_wait_time + extra_wait_time),'RF TTL',1);
+
+        % Set RF Gain high
+        setAnalogChannel(calctime(curtime,...
+            rf_wait_time  + extra_wait_time),'RF Gain',10);
+        
+
+curtime = calctime(curtime,sweep_time);                     % Wait for pulse   
+        
+        % Turn off the uWave
+        setDigitalChannel(calctime(curtime,...
+            rf_wait_time  + extra_wait_time),'RF TTL',0); 
+
+        % Turn off VVA
+        setAnalogChannel(calctime(curtime,...
+            rf_wait_time  + extra_wait_time),'RF Gain',rf_off_voltage);
+
+        % Set RF Source to SRS
+        setDigitalChannel(calctime(curtime,...
+            rf_wait_time  + extra_wait_time+30),'RF Source',0);
+
+        setDigitalChannel(calctime(curtime,...
+             rf_wait_time + extra_wait_time+30),'SRS Source',1);
+        
+        setDigitalChannel(calctime(curtime,...
+              rf_wait_time + extra_wait_time+30),'SRS Source post spec',0);
+        
+        % Reset the ACync
+        if use_ACync
+            setDigitalChannel(calctime(curtime,30),'ACync Master',0);
+        end
+        
+        % Program the SRS
+        programSRS_BNC(RF_opts); 
+        params.isProgrammedSRS = 1;
+
+        % Extra Wait Time
+curtime = calctime(curtime,30);
+
+        if seqdata.flags.lattice_rf_spec_PID
+            setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage',0);
+
+        end
+
+        extraextraholdtime = getVar('lattice_RF_spec_holdtime');
+curtime = calctime(curtime,extraextraholdtime);
+
+    end
+end
+
+%% Field Ramps AFTER uWave/RF Spectroscopy
+if seqdata.flags.lattice_field_ramp_post_spec
+    
+    logNewSection('Ramping magnetic fields AFTER RF/uwave spectroscopy',curtime);
+%   
+% curtime = calctime(curtime,100);
+%         
+%     clear('ramp');
+%     ramp.shim_ramptime = 50;
+%     ramp.shim_ramp_delay = -100; % ramp earlier than FB field if FB field is ramped to zero
+% 
+%     getChannelValue(seqdata,'X Shim',1,0);
+%     getChannelValue(seqdata,'Y Shim',1,0);
+%     getChannelValue(seqdata,'Z Shim',1,0);
+% 
+%     %Give ramp shim values if we want to do spectroscopy using the
+%     %shims instead of FB coil. If nothing set here, then
+%     %ramp_bias_fields just takes the getChannelValue (which is set to
+%     %field zeroing values)
+%     ramp.xshim_final = getChannelValue(seqdata,'X Shim',1,0);
+%     ramp.yshim_final = getChannelValue(seqdata,'Y Shim',1,0);
+%     ramp.zshim_final = getChannelValue(seqdata,'Z Shim',1,0);
+% 
+%     % FB coil settings for spectroscopy
+%     ramp.fesh_ramptime = 50;
+%     ramp.fesh_ramp_delay = 50;
+%     ramp.fesh_final = 20;%before 2017-1-6 0.25*22.6; %18 %0.25
+% 
+%     % QP coil settings for spectroscopy
+%     ramp.QP_ramptime = 50;
+%     ramp.QP_ramp_delay = -0;
+%     ramp.QP_final =  0; %18
+%     ramp.settling_time = 200;
+%       
+% curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
+%   
+
+    tr = getVar('lattice_post_spec_feshbach_time');
+    fesh = getVar('lattice_post_spec_feshbach_field');
+
+    % Define the ramp structure
+    ramp=struct;
+    ramp.shim_ramptime      = tr;
+    ramp.shim_ramp_delay    = 0;
+    ramp.xshim_final        = seqdata.params.shim_zero(1); 
+    ramp.yshim_final        = seqdata.params.shim_zero(2);
+    ramp.zshim_final        = seqdata.params.shim_zero(3);
+    ramp.fesh_ramptime      = tr;
+    ramp.fesh_ramp_delay    = 0;
+    ramp.fesh_final         = fesh; %22.6
+    ramp.settling_time      = 10;150;20;    
+
+    % Ramp FB with QP
+    curtime= ramp_bias_fields(calctime(curtime,0), ramp);  
+    
+    % Hold after ramping up FB
+    tFBH = getVar('lattice_post_spec_feshbach_holdtime');
+    curtime=calctime(curtime,tFBH);
+end
+
+%% More Field Ramps AFTER uWave/RF Spectroscopy
+if seqdata.flags.lattice_field_ramp_post_spec2
+    
+    logNewSection('Ramping magnetic fields AFTER RF/uwave spectroscopy 2',curtime);
+%   
+% curtime = calctime(curtime,100);
+%         
+%     clear('ramp');
+%     ramp.shim_ramptime = 50;
+%     ramp.shim_ramp_delay = -100; % ramp earlier than FB field if FB field is ramped to zero
+% 
+%     getChannelValue(seqdata,'X Shim',1,0);
+%     getChannelValue(seqdata,'Y Shim',1,0);
+%     getChannelValue(seqdata,'Z Shim',1,0);
+% 
+%     %Give ramp shim values if we want to do spectroscopy using the
+%     %shims instead of FB coil. If nothing set here, then
+%     %ramp_bias_fields just takes the getChannelValue (which is set to
+%     %field zeroing values)
+%     ramp.xshim_final = getChannelValue(seqdata,'X Shim',1,0);
+%     ramp.yshim_final = getChannelValue(seqdata,'Y Shim',1,0);
+%     ramp.zshim_final = getChannelValue(seqdata,'Z Shim',1,0);
+% 
+%     % FB coil settings for spectroscopy
+%     ramp.fesh_ramptime = 50;
+%     ramp.fesh_ramp_delay = 50;
+%     ramp.fesh_final = 20;%before 2017-1-6 0.25*22.6; %18 %0.25
+% 
+%     % QP coil settings for spectroscopy
+%     ramp.QP_ramptime = 50;
+%     ramp.QP_ramp_delay = -0;
+%     ramp.QP_final =  0; %18
+%     ramp.settling_time = 200;
+%       
+% curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
+%   
+
+    tr = getVar('lattice_post_spec_feshbach2_time');
+    fesh = getVar('lattice_post_spec_feshbach2_field');
+
+    % Define the ramp structure
+    ramp=struct;
+    ramp.shim_ramptime      = tr;
+    ramp.shim_ramp_delay    = 0;
+    ramp.xshim_final        = seqdata.params.shim_zero(1); 
+    ramp.yshim_final        = seqdata.params.shim_zero(2);
+    ramp.zshim_final        = seqdata.params.shim_zero(3);
+    ramp.fesh_ramptime      = tr;
+    ramp.fesh_ramp_delay    = 0;
+    ramp.fesh_final         = fesh; %22.6
+    ramp.settling_time      = 20;    
+
+    % Ramp FB with QP
+    curtime= ramp_bias_fields(calctime(curtime,0), ramp);  
+    
+    % Hold after ramping up FB
+    tFBH = getVar('lattice_post_spec_feshbach2_holdtime');
+    curtime=calctime(curtime,tFBH);
+end
+     
 
 %% K uWave Spectroscopy
 
@@ -901,9 +1746,10 @@ if seqdata.flags.lattice_uWave_spec
      logNewSection('uWave_K_Spectroscopy',curtime);
    
     % Frequency
-    freq_shift_list = [200];[15]; % Offset in kHz
-    f0 = 1338.345;          % MHz % Normal frequency
-    
+    freq_shift_list = [0];[-30];[15]; % Offset in kHz
+%     f0 = 1338.345;  
+    f0 = 1336.07;% MHz % Normal frequency
+%     f0 = 1623.8; % at 132.14 G
 
     uwave_freq_shift = getScanParameter(freq_shift_list,seqdata.scancycle,...
         seqdata.randcyclelist,'uWave_freq_shift','kHz');    
@@ -913,7 +1759,7 @@ if seqdata.flags.lattice_uWave_spec
     
     % Frequency Shift
     % Only used for sweep spectroscopy
-    uwave_delta_freq_list = 500;[200];
+    uwave_delta_freq_list = 500;20;500;[200];
     uwave_delta_freq=getScanParameter(uwave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'uwave_delta_freq','kHz');
         
@@ -923,7 +1769,7 @@ if seqdata.flags.lattice_uWave_spec
         seqdata.randcyclelist,'uWave_time','ms');    
     
     % Power
-    uwave_power_list = [15]; 15;
+    uwave_power_list = [5]; 15;
     uwave_power = getScanParameter(uwave_power_list,seqdata.scancycle,...
         seqdata.randcyclelist,'uWave_power','dBm');  
         
@@ -949,90 +1795,7 @@ if seqdata.flags.lattice_uWave_spec
     curtime = K_uWave_Spectroscopy(curtime,spec_pars);    
 end
 
-%% K uWave Spectroscopy (OLD)
-% This code performs K uWave manipulations such as Rabi Oscillations,
-% Landau Zener Sweeps. It is hoped that this code is deprecated and will no
-% longer be used.
-            
-if do_K_uwave_spectroscopy_old
-   curtime = uwave_K_spec_lattice_old(curtime);
-end
-    
-%% RF Spectroscopy
-
-if do_RF_spectroscopy
-        logNewSection('RF spectroscopy.',curtime);
-        
-        %Do RF Sweep
-        clear('sweep');
-        B = 5;
-        sweep_pars.freq = 1.5;-0.025 + (BreitRabiK(B,9/2,-5/2) - BreitRabiK(B,9/2,-7/2))/6.6260755e-34/1E6; %Sweeps -9/2 to -7/2 at 207.6G.
-        sweep_pars.power = 5;2.7; %-7.7
-        sweep_pars.delta_freq = -0.5;-0.3; % end_frequency - start_frequency   0.01
-        sweep_pars.pulse_length = 30; % also is sweep length  0.5
-        sweep_pars.fake_pulse = 0;
-
-        addOutputParam('RF_Pulse_Length',sweep_pars.pulse_length);
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
-curtime = calctime(curtime, 10);
-
-        reverse_sweep = 0;
-        if reverse_sweep
-            clear('ramp')
-            % FB coil settings for spectroscopy
-            ramp.fesh_ramptime = 5;
-            ramp.fesh_ramp_delay = 5;
-            B_2 = 199.6;
-            ramp.fesh_final = (B_2-0.1)*1.08962;%0*(0.336/20)*22.6; %1.0077*2*22.6 for same transfer as plane selection
-            ramp.use_fesh_switch = 1; %Don't actually want to close the FB switch to avoid current spikes
-            ramp.settling_time = 5;
-
-curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
-            sweep_pars.freq = (BreitRabiK(B_2,9/2,-5/2) - BreitRabiK(B_2,9/2,-7/2))/6.6260755e-34/1E6; 
-            sweep_pars.delta_freq = -sweep_pars.delta_freq;
-curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
-        end
-    
-end
-    
-%% Field Ramps AFTER uWave/RF Spectroscopy
-if seqdata.flags.lattice_field_ramp_after_spec
-    
-    logNewSection('Ramping magnetic fields AFTER RF/uwave spectroscopy',curtime);
-  
-curtime = calctime(curtime,100);
-        
-    clear('ramp');
-    ramp.shim_ramptime = 50;
-    ramp.shim_ramp_delay = -100; % ramp earlier than FB field if FB field is ramped to zero
-
-    getChannelValue(seqdata,'X Shim',1,0);
-    getChannelValue(seqdata,'Y Shim',1,0);
-    getChannelValue(seqdata,'Z Shim',1,0);
-
-    %Give ramp shim values if we want to do spectroscopy using the
-    %shims instead of FB coil. If nothing set here, then
-    %ramp_bias_fields just takes the getChannelValue (which is set to
-    %field zeroing values)
-    ramp.xshim_final = getChannelValue(seqdata,'X Shim',1,0);
-    ramp.yshim_final = getChannelValue(seqdata,'Y Shim',1,0);
-    ramp.zshim_final = getChannelValue(seqdata,'Z Shim',1,0);
-
-    % FB coil settings for spectroscopy
-    ramp.fesh_ramptime = 50;
-    ramp.fesh_ramp_delay = 50;
-    ramp.fesh_final = 20;%before 2017-1-6 0.25*22.6; %18 %0.25
-
-    % QP coil settings for spectroscopy
-    ramp.QP_ramptime = 50;
-    ramp.QP_ramp_delay = -0;
-    ramp.QP_final =  0; %18
-    ramp.settling_time = 200;
-      
-curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain
-  
-end
- 
+     
 %% Plane selection
 % After loading the optical lattice, we want to elminate all atoms not in
 % the desired plane. This is done by performing the following operations :

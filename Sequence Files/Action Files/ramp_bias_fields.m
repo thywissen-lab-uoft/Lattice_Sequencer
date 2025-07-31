@@ -51,7 +51,7 @@ curtime = timein;
     p.use_fesh_switch = 1;
         
     p.QP_ramp_delay = 0;
-    p.QP_ramptime = 50;
+    p.QP_ramptime = 10;
     p.QP_ramptotaltime = p.QP_ramptime;
     p.QP_ramp_type = 'Linear';
     p.QP_ramp_tau = 50;

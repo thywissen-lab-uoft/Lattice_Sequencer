@@ -530,13 +530,13 @@ end
     mFi = -9/2; mFf = -7/2;
     rf0 = 1e-6*abs(BreitRabiK(Bguess,Fi,mFi) - BreitRabiK(Bguess,Ff,mFf))/h;
 
-    rf_shift_list =  -2*1e-3+1e-3*[-20 -30 20 30];   
+    rf_shift_list =  -2*1e-3+1e-3*[-25 -5 0 -10];   
     
     rf_list = rf_shift_list + rf0;
     
     defVar('xdtb_rf_freq',rf_list,'MHz');
     defVar('xdtb_rf_power',-2,'arb');
-    defVar('xdtb_rf_delta',25,'kHz');
+    defVar('xdtb_rf_delta',2.5,'kHz');
     defVar('xdtb_rf_time',10,'ms');
     
     addOutputParam('xdtb_rf_freq_shift',...

@@ -30,11 +30,11 @@ global seqdata
     fluor.EnableUWave           = 0;        % Use uWave freq sweep for n-->n  (happens before cooling light turns on)  
     % Laser Beams
     fluor.EnableFPump           = 1;        % Use FPUMP beam DOESNT WORK ZIF LOW???
-    fluor.EnableEITProbe        = 1;        % Use EIT Probe beams
-    fluor.EnableRaman           = 1;        % Use Raman Beams    
+    fluor.EnableEITProbe        = 0;        % Use EIT Probe beams
+    fluor.EnableRaman           = 0;        % Use Raman Beams    
     
     % Sets the total time of radiation (optical or otherwise)
-    pulse_list = [4000]; %         
+    pulse_list = [1];[4000]; %         
     pulse_time = getScanParameter(...
         pulse_list,seqdata.scancycle,seqdata.randcyclelist,...
         'qgm_pulse_time','ms');      
@@ -49,7 +49,7 @@ global seqdata
 %% Ixon Camera Settings
 
 % Whether to trigger the ixon at all.
-fluor.TriggerIxon          = 1;         % Trigger the ixon?
+fluor.TriggerIxon          = 0;         % Trigger the ixon?
     
     
 % Frame Transfer Enabled, Trigger : External (mode 1)
@@ -198,15 +198,8 @@ end
 %% EIT FPUMP Settings
 % This code set the Fpump power regulation and the 4 pass frequency
 
-    % Power that the Fpump beam regulates to
-    F_Pump_List = [0.95];
-    
     % Frequency of the FPUMP single pass (MHz)
     fluor.F_Pump_Frequency = 80;
-    
-%     fluor.F_Pump_Power = getScanParameter(F_Pump_List,...
-%         seqdata.scancycle,seqdata.randcyclelist,'F_Pump_Power','V');  
-    
     
     fluor.F_Pump_Power = getVar('F_Pump_Power');
 

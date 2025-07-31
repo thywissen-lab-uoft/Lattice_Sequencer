@@ -19,10 +19,10 @@ end
 if doProgramDevices && ~seqdata.debugMode
 logText('programming DDS');
 % disp('DDS...');    
-    if seqdata.numDDSsweeps ~= 0    
+    if seqdata.numDDSsweeps ~= 0
         % Create TCP/IP object 't'. Specify server machine and port number. 
         t(1) = udp('192.168.1.155', 37829, 'LocalPort', 4629); % RF
-        t(2) = udp('192.168.1.156', 37829, 'LocalPort', 4630); % 4 Pass         
+        t(2) = udp('192.168.1.156', 37829, 'LocalPort', 4630); % 4 Pass         BROKEN/NOLONGER HERE
         t(3) = udp('192.168.1.157', 37829, 'LocalPort', 4631); % Rb Trap Offset Lock
         
 %                 t(4) = udp('192.168.1.154', 37829, 'LocalPort', 4628); % K Trap DDS Test
@@ -89,6 +89,8 @@ logText('programming DDS');
 else 
     logText('NOT programming DDS.');
 end
+
+
 %% Program GPIB devices
 
 if doProgramDevices && isfield(seqdata,'gpib') && ~seqdata.debugMode

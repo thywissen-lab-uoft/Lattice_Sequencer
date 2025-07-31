@@ -6498,15 +6498,15 @@ curtime = calctime(curtime,150);
 %     curtime=calctime(curtime,500);
 % %     setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);  
 % 
-% i0=124;
+% i0=205;
 % % i0=0;
 % 
 %   curtime=AnalogFunc(calctime(curtime,0),'FB Current',...
 %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
 %         Tr, Tr,0, i0,2); 
-%     setDigitalChannel(calctime(curtime,0),'ScopeTrigger',1); 
-%     curtime=calctime(curtime,5000);
-%     setDigitalChannel(calctime(curtime,0),'ScopeTrigger',0); 
+% %     setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage',1); 
+%     curtime=calctime(curtime,2000);
+% %     setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage',0); 
 % % 
 %       curtime=AnalogFunc(calctime(curtime,0),'FB Current',...
 %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
@@ -6776,10 +6776,67 @@ curtime = calctime(curtime,150);
 % 
 % setDigitalChannel(calctime(curtime,0),'Kill TTL',0)
 % setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',0)
-% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',0);
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',1);
 
-setDigitalChannel(calctime(curtime,0),'Raman TTL 3a',1);
-setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);  
+% setDigitalChannel(calctime(curtime,0),'Raman TTL 3a',1);
+% setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);  
+
+%% RF ACync testing
+
+% % Enable ACync
+% use_ACync = 0;
+% rf_wait_time = 0;
+% extra_wait_time = 0;
+% sweep_time = 10;
+% env_amp = 20;
+% beta        = asech(0.005); 
+% rf_off_voltage = -10;
+% 
+%         if use_ACync
+%             setDigitalChannel(calctime(curtime,-30),'ACync Master',1);
+%         end
+%         
+%         % Turn on the RF
+%         setDigitalChannel(calctime(curtime,...
+%             rf_wait_time + extra_wait_time),'RF TTL',1);
+%         
+%         % Ramp the SRS modulation using a TANH
+%         % At +-1V input for +- full deviation
+% %         The last argument means which votlage fucntion to use
+%         AnalogFunc(calctime(curtime,...
+%             rf_wait_time + extra_wait_time),'uWave FM/AM',...
+%             @(t,T,beta) - tanh(2*beta*(t-0.5*sweep_time)/sweep_time),...
+%             sweep_time,sweep_time,beta,1);
+% 
+%         % Sweep the linear VVA
+%         AnalogFunc(calctime(curtime,...
+%             rf_wait_time  + extra_wait_time),'RF Gain',...
+%             @(t,T,beta,A) -10 + ...
+%             A*sech(2*beta*(t-0.5*sweep_time)/sweep_time),...
+%             sweep_time,sweep_time,beta,env_amp);
+% % 
+% curtime = calctime(curtime,sweep_time);                     % Wait for sweep        
+%         
+%         % Turn off the uWave
+%         setDigitalChannel(calctime(curtime,...
+%             rf_wait_time  + extra_wait_time),'RF TTL',0); 
+% 
+%         % Turn off VVA
+%         setAnalogChannel(calctime(curtime,...
+%             rf_wait_time  + extra_wait_time),'RF Gain',rf_off_voltage);
+% 
+%         
+%         % Reset the ACync
+%         if use_ACync
+%             setDigitalChannel(calctime(curtime,30),'ACync Master',0);
+%         end
+% 
+
+%% 
+K_power = 0.14;
+setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',K_power); 
+setDigitalChannel(curtime,'K Probe/OP TTL',1);
+
 
 timeout = curtime;
 

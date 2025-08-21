@@ -14,7 +14,7 @@ function params = Load_Absorption_Image_Parameters()
     % |9/2,-9/2> and |9/2,-7/2> atoms
     params.detunings.K.X.negative.normal = 33.1; %(33.1) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
 %         params.detunings.K.X.negative.normal = defVar('img_K_X_NEG_NORMAL',33.1+[-3:1:3 ,'MHz'); %(33.1) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
-    defVar('K_img_det_shift_SG',[36.5],'MHz');
+    defVar('K_img_det_shift_SG',[37],'MHz');
     k_SG_det_shift = getVar('K_img_det_shift_SG');
     params.detunings.K.X.negative.SG = k_SG_det_shift;34.5;      % for mF stern gerlach
 %     params.detunings.K.X.negative.SG = 34.5+kdet_shift;      % for mF stern gerlach
@@ -80,7 +80,7 @@ function params = Load_Absorption_Image_Parameters()
     %% Probe beam powers
     K_probe_pwr_list = [0.14];[0.125];[0.11];%.15;%[0.5];
     K_probe_pwr = getScanParameter(K_probe_pwr_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'K_probe_pwr','V');
+        seqdata.randcyclelist,'K_probe_pwr','arb');
     
     params.powers.K.X = K_probe_pwr;0.12;0.09;
     params.powers.K.Y = 0.12;

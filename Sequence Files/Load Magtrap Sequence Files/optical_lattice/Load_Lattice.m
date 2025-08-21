@@ -1078,6 +1078,7 @@ if seqdata.flags.lattice_field_ramp_pre_spec
     curtime=calctime(curtime,tFBH);
     
 end
+
 %% Ramp lattice before spectroscopy
 
 if seqdata.flags.lattice_spec_ramp
@@ -1129,14 +1130,14 @@ end
         % Double pass frequency should be
         % Zeeman + lattice gap + single pass
         % Lattice band gaps is 88 kHz for 300 Er, 76 kHz for 200 Er
-        defVar('Raman_DP_freq_shift',[55],'kHz'); 60;61;% 57 kHz 9n-->7n+1 100 Er -25 n--> n 
+        defVar('Raman_DP_freq_shift',[-73],'kHz'); 60;61;% 100 Er: 57 kHz 9n-->7n+1 -25 n--> n, 7n-->9n+1-73 kHz 
         Raman_AOM3_freq_list =  getVar('Raman_DP_freq_shift')*1e-3/2+(80+...
             abs((BreitRabiK(Bguess,9/2,mF2) - BreitRabiK(Bguess,9/2,mF1))/6.6260755e-34/1E6))/2;
         
         defVar('Raman_DP_freq',Raman_AOM3_freq_list,'MHz');
         Raman_AOM3_freq = getVar('Raman_DP_freq');
         
-        Raman_AOM3_pwr_list = 2;0.680; %0.740
+        Raman_AOM3_pwr_list = 2.3;0.680; %0.740
         defVar('Raman_DP_power',Raman_AOM3_pwr_list,'V');
         Raman_AOM3_pwr = getVar('Raman_DP_power');
     
@@ -1174,7 +1175,7 @@ end
         Device_id = 1;
         Raman_AOM2_freq = 80*1E6;
 
-        Raman_AOM2_pwr_list = 1.5;0.490; %0.51
+        Raman_AOM2_pwr_list = 1.6;0.490; %0.51
         Raman_AOM2_pwr = getScanParameter(Raman_AOM2_pwr_list,...
             seqdata.scancycle,seqdata.randcyclelist,'Raman_AOM2_pwr','MHz');
 
@@ -1317,7 +1318,7 @@ if seqdata.flags.lattice_field_ramp_post_raman
     ramp.fesh_ramptime      = tr;
     ramp.fesh_ramp_delay    = 0;
     ramp.fesh_final         = fesh; %22.6
-    ramp.settling_time      = 150;20;    
+    ramp.settling_time      = 1;150;20;    
 
     % Ramp FB with QP
     curtime= ramp_bias_fields(calctime(curtime,0), ramp);  
@@ -1746,10 +1747,13 @@ if seqdata.flags.lattice_uWave_spec
      logNewSection('uWave_K_Spectroscopy',curtime);
    
     % Frequency
-    freq_shift_list = [0];[-30];[15]; % Offset in kHz
+    freq_shift_list = [205];[-17.5];[-17.5];[-30];[15]; % Offset in kHz
 %     f0 = 1338.345;  
     f0 = 1336.07;% MHz % Normal frequency
+
 %     f0 = 1623.8; % at 132.14 G
+%     f0 = 1585.8; % b to r at 130 G
+    f0 = 1552.225; % b to q at 130 G
 
     uwave_freq_shift = getScanParameter(freq_shift_list,seqdata.scancycle,...
         seqdata.randcyclelist,'uWave_freq_shift','kHz');    
@@ -1759,12 +1763,12 @@ if seqdata.flags.lattice_uWave_spec
     
     % Frequency Shift
     % Only used for sweep spectroscopy
-    uwave_delta_freq_list = 500;20;500;[200];
+    uwave_delta_freq_list = 25;2.5;20;500;[200];
     uwave_delta_freq=getScanParameter(uwave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'uwave_delta_freq','kHz');
         
     % Time
-    uwave_time_list = [40];
+    uwave_time_list = 1;[1];40;
     uwave_time = getScanParameter(uwave_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'uWave_time','ms');    
     
@@ -1795,6 +1799,16 @@ if seqdata.flags.lattice_uWave_spec
     curtime = K_uWave_Spectroscopy(curtime,spec_pars);    
 end
 
+%% Vortex Pulse
+if seqdata.flags.lattice_PA
+    curtime = PA_pulse(curtime);
+end
+
+%% Feshbach manipulation
+
+if seqdata.flags.lattice_FB_manipulation
+    curtime = lattice_FB(curtime);
+end
      
 %% Plane selection
 % After loading the optical lattice, we want to elminate all atoms not in
@@ -1816,12 +1830,6 @@ if seqdata.flags.do_plane_selection
 end
 
 
-
-
-%% Vortex Pulse
-if seqdata.flags.lattice_PA
-    curtime = PA_pulse(curtime);
-end
 
 %% Ramp magnetic field for fluorescnce imaging
 % Ramp the magnetic field for fluorescence imaging

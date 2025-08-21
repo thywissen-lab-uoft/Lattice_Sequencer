@@ -29,8 +29,8 @@ global seqdata
     % uWave
     fluor.EnableUWave           = 0;        % Use uWave freq sweep for n-->n  (happens before cooling light turns on)  
     % Laser Beams
-    fluor.EnableFPump           = 1;        % Use FPUMP beam DOESNT WORK ZIF LOW???
-    fluor.EnableEITProbe        = 0;        % Use EIT Probe beams
+    fluor.EnableFPump           = 0;        % Use FPUMP beam DOESNT WORK ZIF LOW???
+    fluor.EnableEITProbe        = 1;        % Use EIT Probe beams
     fluor.EnableRaman           = 0;        % Use Raman Beams    
     
     % Sets the total time of radiation (optical or otherwise)
@@ -211,7 +211,7 @@ end
     EIT1_max_voltage = 1.1;
     EIT2_max_voltage = .850;
     
-    defVar('qgm_EIT1_power',0.8,'normalized');0.8;
+    defVar('qgm_EIT1_power',0.2,'normalized');0.8;
     defVar('qgm_EIT2_power',0.8,'normalized');0.8;
 
     % Relative power choice (0 to 1)

@@ -6833,9 +6833,16 @@ curtime = calctime(curtime,150);
 % 
 
 %% 
-K_power = 0.14;
-setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',K_power); 
-setDigitalChannel(curtime,'K Probe/OP TTL',1);
+% K_power = 0.4;
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',K_power); 
+% setDigitalChannel(curtime,'K Probe/OP TTL',0);
+% 
+% setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',1);
+
+% Turn on F Pump
+setAnalogChannel(calctime(curtime,0),'F Pump',0.1);
+setDigitalChannel(calctime(curtime,0),'F Pump TTL',1);
+setDigitalChannel(calctime(curtime,0),'FPump Direct',1); 
 
 
 timeout = curtime;

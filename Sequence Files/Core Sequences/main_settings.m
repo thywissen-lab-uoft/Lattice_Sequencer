@@ -526,7 +526,7 @@ seqdata.flags.lattice_load            = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load the lattices
 defVar('lattice_load_time',[750],'ms');750;
-defVar('lattice_load_depth_all',[4],'Er');
+defVar('lattice_load_depth_all',[4.5],'Er');
 load_depth = getVar('lattice_load_depth_all');
 defVar('lattice_load_depthX',load_depth,'Er');2.5;
 defVar('lattice_load_depthY',load_depth,'Er');2.5;

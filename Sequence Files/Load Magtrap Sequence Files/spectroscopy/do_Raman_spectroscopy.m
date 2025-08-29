@@ -51,8 +51,10 @@ global seqdata;
         end
 
         Device_id = 7; %Rigol for D1 lock(Ch. 1) and Raman 3(Ch. 2). Do not change any Ch. 1 settings here. 
-        addVISACommand(Device_id, str);
-
+        if opts.doProgram
+            addVISACommand(Device_id, str);
+        end
+        
         % R2 beam settings
         Device_id = 1;
         Raman_AOM2_freq = 80*1E6;
@@ -60,16 +62,19 @@ global seqdata;
         Raman_AOM2_offset = 0;
         str=sprintf(':SOUR2:APPL:SIN %f,%f,%f;',...
             Raman_AOM2_freq,Raman_AOM2_pwr,Raman_AOM2_offset);
-
-        addVISACommand(Device_id, str);
+        if opts.doProgram
+            addVISACommand(Device_id, str);
+        end
         
         
 %% Do the pulse        
 
         %Raman spectroscopy AOM-shutter sequence
         %we have three TTLs to independatly control R1, R2 and R3
+%         defVar('Raman_buffer',[3 3.05 3.1 3.2 3.5 4 5],'ms');
         raman_buffer_time = 10;
-        shutter_buffer_time = 5;
+        %defVar('Raman_buffer',[3],'ms');
+        shutter_buffer_time = 3;%getVar('Raman_shutter_buffer');5;
 
         if Pulse_Time == 0
 %                 DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 1',...

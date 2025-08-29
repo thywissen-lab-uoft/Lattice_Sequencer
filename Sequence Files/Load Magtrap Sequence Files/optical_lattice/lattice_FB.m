@@ -44,19 +44,20 @@ defVar('lattice_FB_spec_depth_Z',[400],'Er');
 
 % do the Raman spec
 seqdata.flags.lattice_FB_raman_spec            = 1;
-defVar('lattice_FB_Raman_DP_freq_shift',[-73],'kHz'); 60;61;% 100 Er: 57 kHz 9n-->7n+1 -25 n--> n, 7n-->9n+1-73 kHz 
+defVar('lattice_FB_Raman_DP_freq_shift',[-73],'kHz');-73;60;61;% 100 Er: 57 kHz 9n-->7n+1 -25 n--> n, 7n-->9n+1 -73 kHz 
 defVar('lattice_FB_Raman_DP_power',2.3,'V');
 defVar('lattice_FB_Raman_sweep_range',5,'kHz');
-defVar('lattice_FB_Raman_time',0.25,'ms'); % 1 ms for sweep, 0.25 ms for pi pulse
+defVar('lattice_FB_Raman_time',[0.09],'ms');0.09; % 1 ms for sweep, 0.09 ms for pi pulse at -21.72 GHz cmdet
 defVar('lattice_FB_Raman_AOM2_power',1.6,'V');
 Raman_type = 'pulse';
 % Raman_type = 'sweep';
+defVar('lattice_Raman_common_mode_det',[-21.6],'GHz');
 
 %%%%%%% uWave spectroscopy %%%%%%%
 % transfer b -> q
-seqdata.flags.lattice_FB_uWave_spec            = 1;
-defVar('lattice_FB_uWave_frequency_offset',[205],'kHz');
-defVar('lattice_FB_uWave_amplitude',[25],'kHz');
+seqdata.flags.lattice_FB_uWave_spec            = 0;
+defVar('lattice_FB_uWave_frequency_offset',[195],'kHz');
+defVar('lattice_FB_uWave_range',[80],'kHz');25;
 defVar('lattice_FB_uWave_power',[5],'dBm');
 defVar('lattice_FB_uWave_time',[1],'ms');
 
@@ -92,14 +93,14 @@ defVar('lattice_FB_post_osc_feshbach_field',130,'G');
 defVar('lattice_FB_post_osc_feshbach_holdtime',0,'ms');
 
 % do the Raman spec for readout
-seqdata.flags.lattice_FB_post_osc_raman_spec            = 1;
-defVar('lattice_FB_Raman_post_osc_DP_freq_shift',[-110:5:-55],'kHz');73;60;61;% 100 Er: 57 kHz 9n-->7n+1 -25 n--> n, 7n-->9n+1-73 kHz 
+seqdata.flags.lattice_FB_post_osc_raman_spec            = 0;
+defVar('lattice_FB_Raman_post_osc_DP_freq_shift',[-85],'kHz');73;60;61;% 100 Er: 57 kHz 9n-->7n+1 -25 n--> n, 7n-->9n+1-73 kHz 
 defVar('lattice_FB_Raman_post_osc_DP_power',[2.3],'V');
 defVar('lattice_FB_Raman_post_osc_sweep_range',[5],'kHz');
-defVar('lattice_FB_Raman_post_osc_time',[1],'ms'); % 1 ms for sweep, 0.25 ms for pi pulse
+defVar('lattice_FB_Raman_post_osc_time',[0.09],'ms'); % 1 ms for sweep, 0.25 ms for pi pulse
 defVar('lattice_FB_Raman_post_osc_AOM2_power',[1.6],'V');
-% Raman_post_osc_type = 'pulse';
-Raman_post_osc_type = 'sweep';
+Raman_post_osc_type = 'pulse';
+% Raman_post_osc_type = 'sweep';
 
 %%%%%%% RF spectrscopy %%%%%%%
 % do the RF
@@ -366,6 +367,7 @@ if seqdata.flags.lattice_FB_raman_spec
     Raman_opts.Raman_AOM3_power     = getVar('lattice_FB_Raman_DP_power');
     Raman_opts.sweep_range          = getVar('lattice_FB_Raman_sweep_range');
     Raman_opts.time                 = getVar('lattice_FB_Raman_time');
+    Raman_opts.doProgram            = 1;
     
     curtime = do_Raman_spectroscopy(curtime,Raman_type,Raman_opts);
 end
@@ -377,7 +379,7 @@ if seqdata.flags.lattice_FB_uWave_spec
      
     % Read in settings
     freq_offset = getVar('lattice_FB_uWave_frequency_offset');
-    freq_range  = getVar('lattice_FB_uWave_amplitude');
+    freq_range  = getVar('lattice_FB_uWave_range');
     sweep_time  = getVar('lattice_FB_uWave_time');  
     power       = getVar('lattice_FB_uWave_power');
     
@@ -419,7 +421,9 @@ if seqdata.flags.lattice_FB_uWave_spec
     spec_pars.HoldTime = getVar('lattice_FB_uWave_sweep_back_hold_time');
         
     % Do spectroscopy
-    curtime = K_uWave_Spectroscopy(curtime,spec_pars);     
+    curtime = K_uWave_Spectroscopy(curtime,spec_pars);
+    
+    curtime = calctime(curtime,10);
 end
 
 %% Ramp lattice post raman
@@ -539,6 +543,7 @@ if seqdata.flags.lattice_FB_post_osc_raman_spec
     Raman_post_osc_opts.Raman_AOM3_power    = getVar('lattice_FB_Raman_post_osc_DP_power');
     Raman_post_osc_opts.sweep_range         = getVar('lattice_FB_Raman_post_osc_sweep_range');
     Raman_post_osc_opts.time                = getVar('lattice_FB_Raman_post_osc_time');
+    Raman_post_osc_opts.doProgram           = 0;
     
     curtime = do_Raman_spectroscopy(curtime,Raman_post_osc_type,Raman_post_osc_opts);
 end

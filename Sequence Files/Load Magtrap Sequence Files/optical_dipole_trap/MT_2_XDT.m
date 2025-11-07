@@ -3,6 +3,8 @@ curtime = timein;
 global seqdata;
 logNewSection('XDT Load Begin',curtime);
 
+ScopeTriggerPulse(curtime,'xdt_load');
+
 %% Flags and Parameters
 
 % XDT Beams 

@@ -28,7 +28,7 @@ devices = {'USB0::0x1AB1::0x0641::DG4E180900374::INSTR', ...
 % devices(01) DG4E180900374 is the Raman 1 (V) and Raman 2 (H1)
 % devices(02) DG4E160900481 is the Rigol for conductivity modulation
 % devices(03) 
-% devices(04) 
+% devices(04) DG4E191700649 Raman H2 DP Alternate frequency source
 % devices(05) DG4E221100174 is the Rigol for AM spec and Z lattice regulation
 % devices(06) DG4E221600305 is for two high field imaging beams
 % devices(07) DG4E221100173 is for D1 lock and Raman 3 (H2)

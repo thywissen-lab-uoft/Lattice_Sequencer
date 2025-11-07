@@ -113,7 +113,7 @@ end
 %% Initialize Voltage levels
 % CF: All of these should be put into some separate reset code
 setAnalogChannel(curtime,'15/16 GS',0); 
-setAnalogChannel(curtime,'Coil 15 Small',-0.002); %Set
+setAnalogChannel(curtime,'Coil 15 Small',-0.01); %Set -0.002;
 
 %Initialize modulation ramp to off.
 setAnalogChannel(calctime(curtime,0),'Modulation Ramp',-10,1);

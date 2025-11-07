@@ -542,6 +542,76 @@ if seqdata.flags.lattice_pulse_dimple
 
 end
 
+%% Feshbach manipulation
+
+if seqdata.flags.lattice_FB_manipulation
+    curtime = lattice_FB(curtime);
+end
+
+%% In-situ TOF
+
+% Do a TOF in the in-situ plane
+
+if seqdata.flags.lattice_insitu_tof
+    
+    ScopeTriggerPulse(curtime,'lattice_insitu_ramp');
+    
+    logNewSection('2D in-situ TOF',curtime);
+    Tr = getVar('lattice_TOF_ramp_time');
+    Zdepth = getVar('lattice_TOF_zdepth');
+    logText([' T ramp : ' num2str(Tr) ' ms']);
+    
+    Trxy = Tr;
+
+    % Ramp lattices
+    AnalogFuncTo(calctime(curtime,0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Trxy, Trxy, -0.5); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Trxy, Trxy, -0.5);     
+    AnalogFuncTo(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Tr, Tr, Zdepth);    
+    
+    % Ramp ODTs
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Tr,Tr,seqdata.params.ODT_zeros(1));
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        Tr,Tr,seqdata.params.ODT_zeros(2));
+
+    %Update curtime
+    curtime = calctime(curtime,Tr);  
+    
+    % Let atoms evolve in the plane
+    thold = getVar('lattice_insitu_TOF');
+    curtime = calctime(curtime,thold);  
+    
+    % pin again
+    logNewSection('Pinning optical lattice again',curtime);
+    U_pin = getVar('lattice_pin_depth');
+    T_pin = getVar('lattice_pin_time');
+    logText([' U pin : ' num2str(U_pin) ' Er']);
+    logText([' T pin : ' num2str(T_pin) ' ms']);
+
+    AnalogFuncTo(calctime(curtime,0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        T_pin, T_pin, U_pin); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        T_pin, T_pin, U_pin);     
+    AnalogFuncTo(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        T_pin, T_pin, U_pin);     
+    curtime = calctime(curtime,T_pin);    
+    % Wait a moment for PID to settle (just in case);
+    curtime = calctime(curtime,10);
+    
+    
+end
+     
 %% RF Spectroscopy before OP
 
 if seqdata.flags.lattice_RF_spec_pre_OP
@@ -752,7 +822,7 @@ if (seqdata.flags.lattice_do_optical_pumping == 2)
 curtime = rampMagneticFields(calctime(curtime,0), newramp); 
     end
     
-    defVar('lattice_op_time',[1],'ms');'latt_op_time';1;
+    defVar('lattice_op_time',[5],'ms');'latt_op_time';1;
     defVar('lattice_op_power',[1],'norm');%[0,1] 'latt_D1op_pwr';
     defVar('lattice_op_power_repump',[5],'V');% in V'latt_op_repump_pwr' ;
 %     defVar('lattice_D2_op_detuning', [21],'MHz');21;
@@ -1747,13 +1817,28 @@ if seqdata.flags.lattice_uWave_spec
      logNewSection('uWave_K_Spectroscopy',curtime);
    
     % Frequency
-    freq_shift_list = [205];[-17.5];[-17.5];[-30];[15]; % Offset in kHz
+    freq_shift_list = [0];[-17.5];[-17.5];[-30];[15]; % Offset in kHz
 %     f0 = 1338.345;  
     f0 = 1336.07;% MHz % Normal frequency
 
+%     % Calculate center frequency
+%     F1      = 7/2;
+%     mF1     = -7/2;
+%     F2      = 9/2;
+%     mF2     = -9/2;
+%     
+%     Bfb     = getChannelValue(seqdata,'FB Current',1);    
+%     Iz_shim = getChannelValue(seqdata,'Z Shim',1);    
+%     Bz_shim = (Iz_shim-seqdata.params.shim_zero(3))*2.35;
+% %     Boff    = 0.1238; % 190+ G November 2024
+%     Boff    = 0.107; % 130 G April 2025
+%     
+%     Bguess  = Bfb + Boff + Bz_shim;
+%     f0      = abs((BreitRabiK(Bguess,F1,mF1) - BreitRabiK(Bguess,F2,mF2))/6.6260755e-34/1E6);
+    
 %     f0 = 1623.8; % at 132.14 G
 %     f0 = 1585.8; % b to r at 130 G
-    f0 = 1552.225; % b to q at 130 G
+%     f0 = 1552.225; % b to q at 130 G
 
     uwave_freq_shift = getScanParameter(freq_shift_list,seqdata.scancycle,...
         seqdata.randcyclelist,'uWave_freq_shift','kHz');    
@@ -1763,12 +1848,12 @@ if seqdata.flags.lattice_uWave_spec
     
     % Frequency Shift
     % Only used for sweep spectroscopy
-    uwave_delta_freq_list = 25;2.5;20;500;[200];
+    uwave_delta_freq_list = [500];2.5;20;500;[200];
     uwave_delta_freq=getScanParameter(uwave_delta_freq_list,...
             seqdata.scancycle,seqdata.randcyclelist,'uwave_delta_freq','kHz');
         
     % Time
-    uwave_time_list = 1;[1];40;
+    uwave_time_list = 40;[1];40;
     uwave_time = getScanParameter(uwave_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'uWave_time','ms');    
     
@@ -1804,12 +1889,6 @@ if seqdata.flags.lattice_PA
     curtime = PA_pulse(curtime);
 end
 
-%% Feshbach manipulation
-
-if seqdata.flags.lattice_FB_manipulation
-    curtime = lattice_FB(curtime);
-end
-     
 %% Plane selection
 % After loading the optical lattice, we want to elminate all atoms not in
 % the desired plane. This is done by performing the following operations :
@@ -1847,9 +1926,10 @@ if seqdata.flags.lattice_rotate_waveplate_2
     t_dwell = 100;  % Wait time after rotation before lattice ramp on
     
     P_RotWave_I = getVar('rotate_waveplate1_value');
+    P_RotWave_F = getVar('rotate_waveplate2_value');
     AnalogFunc(calctime(curtime,-(wp_Trot2+t_dwell)),'latticeWaveplate',...
         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
-        wp_Trot2,wp_Trot2,P_RotWave_I,1,4);    
+        wp_Trot2,wp_Trot2,P_RotWave_I,P_RotWave_F,4);    
 end
 
 %% Ramp lattice after spectroscopy/plane selection

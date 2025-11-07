@@ -32,13 +32,14 @@ global seqdata
 % Rb uWave SRS Frequency Sweep
 seqdata.flags.xdt_spin_xfer_transfer_Rb_freq_sweep  = 1;
 defVar('Rb_uWave_freq0',6834.7,'MHz');f0 = 6834.7; % zero field splitting
-defVar('Rb_uWave_transfer_freq_shift',[10.34],'MHz');10.34;
+defVar('Rb_uWave_transfer_freq_shift',[10.32],'MHz');10.34;
 defVar('Rb_uWave_transfer_freq',...
     getVar('Rb_uWave_freq0')+getVar('Rb_uWave_transfer_freq_shift'),'MHz');
 defVar('Rb_uWave_transfer_power',[13],'dBm');%-10dBm to +13 dBm is VALID
 defVar('Rb_uWave_transfer_freq_amp',50,'kHz');50;%50kHz~24 mG
 defVar('Rb_uWave_transfer_time',[15],'ms');10;
 
+% get rid of left over F=2
 seqdata.flags.xdt_spin_xfer_Rb_2_kill               = 1;
 
 
@@ -55,10 +56,12 @@ defVar('xdt_spin_xfer_K_freq_amp',0.15,'MHz');.15;
 defVar('xdt_spin_xfer_K_gain',0,'V');0; % if you make this too high you will perturb Rb
 defVar('xdt_spin_xfer_K_time',20,'ms');20;
 
+% do D1 OP for K after the spin transfers
+seqdata.flags.xdt_d1op_start = 1;
+
 seqdata.flags.xdt_spin_xfer_hold_after = 0;
 defVar('xdt_hold_time',[0],'ms');
 
-seqdata.flags.xdt_d1op_start =1;
 %% Estimate Magnetic Field
 
  % Estimate the frequency shift based on the FB field (Gauss or Amps?)
@@ -303,6 +306,7 @@ curtime = calctime(curtime,optical_pump_time);
 curtime =  setDigitalChannel(calctime(curtime,10),'D1 OP TTL',1);    
 
 clear('ramp');     
+
 
         % Ramp the bias fields
 newramp = struct('ShimValues',seqdata.params.shim_zero,...

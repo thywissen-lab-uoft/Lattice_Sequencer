@@ -29,12 +29,12 @@ global seqdata
     % uWave
     fluor.EnableUWave           = 0;        % Use uWave freq sweep for n-->n  (happens before cooling light turns on)  
     % Laser Beams
-    fluor.EnableFPump           = 0;        % Use FPUMP beam DOESNT WORK ZIF LOW???
+    fluor.EnableFPump           = 1;        % Use FPUMP beam DOESNT WORK ZIF LOW???
     fluor.EnableEITProbe        = 1;        % Use EIT Probe beams
-    fluor.EnableRaman           = 0;        % Use Raman Beams    
+    fluor.EnableRaman           = 1;        % Use Raman Beams    
     
     % Sets the total time of radiation (optical or otherwise)
-    pulse_list = [1];[4000]; %         
+    pulse_list = [4000]; %4000         
     pulse_time = getScanParameter(...
         pulse_list,seqdata.scancycle,seqdata.randcyclelist,...
         'qgm_pulse_time','ms');      
@@ -43,13 +43,13 @@ global seqdata
     % 1 ms is typical for uWave spectroscopy
     % 2000-4000 ms is typical for fluoresence imaging    
     % FPUMP 1000Er, 83% transfer at 1 ms, 0.1 V
-    % EIT Probe 1 , 45% transfer at 0.1 ms, 0.05 rel power
-    % EIT Probe 2 , 80% transfer at 0.1 ms, 0.1 rel power
+    % EIT Probe 1 , 2025.09.09 55% transfer @ 1 ms, 0.4 rel power, 70 Er
+    % EIT Probe 2 , 2025.09.09 65% transfer @ 0.1ms, 0.2 rel power, 70 Er; old 80% transfer at 0.1 ms, 0.1 rel power
 
 %% Ixon Camera Settings
 
 % Whether to trigger the ixon at all.
-fluor.TriggerIxon          = 0;         % Trigger the ixon?
+fluor.TriggerIxon          = 1;         % Trigger the ixon?
     
     
 % Frame Transfer Enabled, Trigger : External (mode 1)
@@ -211,8 +211,8 @@ end
     EIT1_max_voltage = 1.1;
     EIT2_max_voltage = .850;
     
-    defVar('qgm_EIT1_power',0.2,'normalized');0.8;
-    defVar('qgm_EIT2_power',0.8,'normalized');0.8;
+    defVar('qgm_EIT1_power',1,'normalized');0.2;0.8;
+    defVar('qgm_EIT2_power',1,'normalized');0.8;
 
     % Relative power choice (0 to 1)
 %     EIT_probe_rel_pow_list =[.4:.05:1];

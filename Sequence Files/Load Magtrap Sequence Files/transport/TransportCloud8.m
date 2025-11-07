@@ -12,7 +12,7 @@ else
 end
 global seqdata;
 logNewSection('Transport',curtime);
-%% Votlage Fucntions
+%% Voltage Functions
 
 func_push = 2;
 func_MOT = 2;
@@ -224,7 +224,7 @@ defVar('transport_vert_v0',11,'V');16;
 defVar('transport_vert_va',13,'V');16;
  defVar('transport_vert_vb',14,'V');16;
  defVar('transport_vert_vc',15,'V');16;
- defVar('transport_vert_vd',15,'V');16;
+ defVar('transport_vert_vd',15,'V');15;
  defVar('transport_vert_ve',16,'V');16;
  
 v0 = getVar('transport_vert_v0');
@@ -352,7 +352,7 @@ curtime = calctime(curtime,tV);
 % be.
 
 I_RF1A_k=2.907;
-I_RF1A_16 = 31.91;
+I_RF1A_16 = 31.5;31.91;
 t_2RF1A = 300;
 defVar('RF1a_FF_V',[22.5],'V');22.5;
 RF1a_V = getVar('RF1a_FF_V');

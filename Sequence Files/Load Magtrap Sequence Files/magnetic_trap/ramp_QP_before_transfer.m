@@ -32,8 +32,10 @@ Feshval = I_fesh ;
 %     ramp_factor = 0.8; %0.7 DCM added 0.6 Aug 18
     
     QP_ramp_time = 500;500; %500
-    QP_curval = QP_value;
-    QP_value = QP_curval*ramp_factor; 
+%     QP_curval = QP_value;
+%     QP_value = QP_curval*ramp_factor;
+    QP_curval = getChannelValue(seqdata,'Coil 16',1);
+    QP_value = QP_value*ramp_factor; % final ramp value (hard coded in in a dumb way rn) 
     Kitten_value = (2/11)*QP_value*0;  
     
     vSet_ramp = 22.0*ramp_factor*1.2; %24 %DCM added 1.2 Aug 18

@@ -92,7 +92,7 @@ ScopeTriggerPulse(curtime,'Plane Select');
 if opts.ramp_field_CF_on
     
     % Transport Feedforward Settings
-    defVar('qgm_pselect_FF',56.5,'V');56.5;
+    defVar('qgm_pselect_FF',62,'V');56.5;
     defVar('qgm_pselect_FF_ramp_time',135,'ms');
 
     % Timings
@@ -101,7 +101,7 @@ if opts.ramp_field_CF_on
     
     % QP Coils Current Settings
 %     defVar('qgm_pselect_QP',38.9200,'A');
-    defVar('qgm_pselect_QP',78,'A');
+    defVar('qgm_pselect_QP',78,'A'); % this is 9.863 V with voltage func 2
     func_qp = 2; % voltage function
     
     % Feshbach Coil Current Settings
@@ -123,21 +123,30 @@ if opts.ramp_field_CF_on
     % Turn off Z shim (this is for using the big shim for Z)
     setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',0);
     if opts.dotilt           
-        defVar('qgm_plane_tilt_dIx',[-1.8],'A');-1.85;
-        defVar('qgm_plane_tilt_dIy',[3.9],'A');2;
-        defVar('qgm_plane_tilt_dIz',0.0,'A');0;      
+%         defVar('qgm_plane_tilt_dIx',[-1.6],'A');-1.8;
+%         defVar('qgm_plane_tilt_dIy',[3],'A');3.9;
+        defVar('qgm_plane_tilt_dIz',0.0,'A');0;   
+        
+        % 10/07/2025 calibration
+        x = [-1.6 -1.7]; % stripes along x lattice also (-1.8,5)
+        y = [3 4];
+        
+        defVar('qgm_plane_tilt_dIy',[3.5],'A'); 
+        defVar('qgm_plane_tilt_dIx',interp1(y,x,getVar('qgm_plane_tilt_dIy'),'linear','extrap'),'A'); 
+        
         Ix = seqdata.params.shim_zero(1) + getVar('qgm_plane_tilt_dIx');
         Iy = seqdata.params.shim_zero(2) + getVar('qgm_plane_tilt_dIy');
         Iz = seqdata.params.shim_zero(3) + getVar('qgm_plane_tilt_dIz');  
         logText('tilting');
     else
-        logText('no tilt');
-
-        % Sept 2024 calibration
-        defVar('qgm_plane_notilt_dIx',[-1.7],'A');        
-        x = [-3 -4.5];
-        y = [-0.5 -0.55];               
-        defVar('qgm_plane_notilt_dIy',interp1(x,y,getVar('qgm_plane_notilt_dIx'),'linear','extrap'),'A');   
+        logText('no tilt');    
+        
+        % 10/07/2025 calibration, stripes along x lattice also (-1.8,5)
+        x = [-1.6 -1.7]; % x shim
+        y = [3 4]; % y shim
+        
+        defVar('qgm_plane_notilt_dIy',[-0.4],'A'); 
+        defVar('qgm_plane_notilt_dIx',interp1(y,x,getVar('qgm_plane_notilt_dIy'),'linear','extrap'),'A');   
         
         defVar('qgm_plane_notilt_dIz',0.0,'A');0;      
         Ix = seqdata.params.shim_zero(1) + getVar('qgm_plane_notilt_dIx');
@@ -159,6 +168,12 @@ if opts.ramp_field_CF_on
     val_X = getChannelValue(seqdata,'X Shim',1);
     val_Y = getChannelValue(seqdata,'Y Shim',1);
     val_Z = getChannelValue(seqdata,'Z Shim',1);
+   
+
+    % check that QP reverse is closed
+    if getChannelValue(seqdata,'Reverse QP Switch',0)
+        error("QP reverse is open! Don't kill the CATS board >:-(");
+    end
 
     % Ramp up transport feedforward
     AnalogFuncTo(calctime(curtime,0),'Transport FF',...

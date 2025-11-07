@@ -122,7 +122,7 @@ seqdata.digchannels(69).name = 'HF freq source';    % (CF : obsolete?) 0: Rigol 
 seqdata.digchannels(69).resetvalue = 1;
 seqdata.digchannels(70).name = 'DMD shutter';       % 0 on 1 off
 seqdata.digchannels(70).resetvalue = 1;
-seqdata.digchannels(71).name = 'DMD PID holder';    % unused
+seqdata.digchannels(71).name = 'Raman 3 Source';    % 0 uses Raman H2 Rigol source, 1 uses Raman H2 Alt Rigol source 
 seqdata.digchannels(71).resetvalue = 0;
 
 seqdata.digchannels(72).name = 'Raman TTL 3a';      % Raman 3 (H2) ZASWA
@@ -188,7 +188,7 @@ end
     seqdata.analogchannels(1).name = 'Coil 16';
     seqdata.analogchannels(1).minvoltage = -1;
     seqdata.analogchannels(1).maxvoltage = 10;
-    seqdata.analogchannels(1).defaultvoltagefunc = 2;
+    seqdata.analogchannels(1).defaultvoltagefunc = 5;
 
     seqdata.analogchannels(1).voltagefunc{2} = @(a)(a*0.125+0.1125); %with FW Bell sensor %0.1125 instead of 0.1 July 06, 2018 %before transport fix in June 2023
 %     seqdata.analogchannels(1).voltagefunc{2} = @(a)(a*0.1301+0.0870); % June 29, 2023 actual calibration
@@ -196,7 +196,8 @@ end
     seqdata.analogchannels(1).voltagefunc{3} = @(A) (A/7.892)+0.09533; % current (in A) to voltage 2013/02/16; multimeter
     seqdata.analogchannels(1).voltagefunc{4} = @(G) seqdata.analogchannels(1).voltagefunc{3}(G/6.1913); % gradient (in G/cm) to V
     
-    seqdata.analogchannels(1).voltagefunc{5} = @(current)(current*0.1301+0.0870); % 2023/06/29
+%     seqdata.analogchannels(1).voltagefunc{5} = @(current)(current*0.1301+0.0870); % 2023/06/29
+    seqdata.analogchannels(1).voltagefunc{5} = @(current)(current*0.1274+0.116); % 2025/09/29
 
           
     %channel 2 Rb repump
@@ -216,7 +217,8 @@ end
     seqdata.analogchannels(3).defaultvoltagefunc = 2;
     seqdata.analogchannels(3).voltagefunc{2} = @(a)(a*0.11+0.25); %0.11*a+0.25 %FW Bell sensor %before transport fix in June 2023
     seqdata.analogchannels(3).voltagefunc{3} = @(current)(current*0.15+0.34); % June 29, 2023 (a*0.1286+0.318)
-    seqdata.analogchannels(3).voltagefunc{4}  = @(current)(current*0.1286+0.318);
+%     seqdata.analogchannels(3).voltagefunc{4}  = @(current)(current*0.1286+0.318); % 2023.07.04 (flawed measurement)
+    seqdata.analogchannels(3).voltagefunc{4}  = @(current)(current*0.1272+0.3346); % 2025.10.01 (flawed measurement)
     
     %channel 4 (Rb Trap AOM AM)
     seqdata.analogchannels(4).name = 'Rb Trap AM';
@@ -424,7 +426,7 @@ end
     seqdata.analogchannels(21).name = 'Coil 15';
     seqdata.analogchannels(21).minvoltage = -10;
     seqdata.analogchannels(21).maxvoltage = 10;
-    seqdata.analogchannels(21).defaultvoltagefunc = 2;
+    seqdata.analogchannels(21).defaultvoltagefunc = 5;
 
     seqdata.analogchannels(21).voltagefunc{2} =@(a)((a>0).*(a*0.1234+0.06)+(a<=0).*(a*0.10-0.10)); %0.06 %before transport fix in June 2023 a*0.1234+0.06
 %     seqdata.analogchannels(21).voltagefunc{2} =@(a)((a>0).*(a*0.1191+0.0790)+ (a<=0).*(a*0.10-0.10)); % dummy calibration to match old code
@@ -433,8 +435,9 @@ end
 %     seqdata.analogchannels(21).voltagefunc{5} =@(current) ( ...
 %         (current>0).*(current*0.1334+0.1247) + ...
 %         (current<=0).*(current*0.10-0.10)); % 2023/06/29
-    seqdata.analogchannels(21).voltagefunc{5} =@(current) ...
-        (current*0.1334+0.1247-.015);  % 2023/06/29; updated zero level 2024/05/31 empircaly
+%     seqdata.analogchannels(21).voltagefunc{5} =@(current) ...
+%         (current*0.1334+0.1247+0);  % 2023/06/29; updated zero level 2024/05/31 empircaly 0.1334i -0.015
+    seqdata.analogchannels(21).voltagefunc{5} =@(current) (current*0.1279+0.1247);%0.0092);  % 2025/09/29;
     
     %channel 22 (1st vert--12a)
     seqdata.analogchannels(22).name = 'Coil 12a';

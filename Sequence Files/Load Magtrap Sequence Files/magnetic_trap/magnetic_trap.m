@@ -14,7 +14,7 @@ if seqdata.flags.mt_compress_after_transport
     [curtime, I_QP, I_kitt, V_QP, I_fesh] = ramp_QP_after_trans(curtime, ...
         seqdata.flags.mt_compress_after_transport);
 else    
-    I_QP =    33;
+    I_QP =    33;%getChannelValue(seqdata,'Coil 16',1);33;
     I_kitt =    4.0200;
     V_QP =   getVar('RF1a_FF_V');24.8050;
     I_fesh =     0;

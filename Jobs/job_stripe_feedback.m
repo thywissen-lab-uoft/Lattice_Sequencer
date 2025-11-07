@@ -153,8 +153,8 @@ Jfidelity = sequencer_job(out_fidelity);
 %% Output
 
 J = Jstripe;
-J(end+1)=Jfocus;        % Uncomment line if you want to feedback focus
-J(end+1)=Jfidelity;     % Uncomment line if you want to measure fidelity
+% J(end+1)=Jfocus;        % Uncomment line if you want to feedback focus
+% J(end+1)=Jfidelity;     % Uncomment line if you want to measure fidelity
 
 end
 

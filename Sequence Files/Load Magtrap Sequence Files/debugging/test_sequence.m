@@ -6831,20 +6831,211 @@ curtime = calctime(curtime,150);
 %             setDigitalChannel(calctime(curtime,30),'ACync Master',0);
 %         end
 % 
-
-%% 
+%% Raman pulse testing       
+% curtime = calctime(curtime,100);
+% 
+%         double_test = 0;
+%         pulse_wait_time = 0.01;
+%        
+%         %Raman spectroscopy AOM-shutter sequence
+%         %we have three TTLs to independatly control R1, R2 and R3
+% %         defVar('Raman_buffer',[3 3.05 3.1 3.2 3.5 4 5],'ms');
+%         raman_buffer_time = 10;
+%         %defVar('Raman_buffer',[3],'ms');
+%         shutter_buffer_time = 3;%getVar('Raman_shutter_buffer');5; minimum 3 ms
+%         Pulse_Time = 0.05; 
+%         Raman_on_time = Pulse_Time;
+%         
+%         if Pulse_Time == 0
+% %                 DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 1',...
+% %                     Raman_on_time+(raman_buffer_time)*2,0); %turn off R1 temporarily for shutter
+% %                 DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 2',...
+% %                     Raman_on_time+(raman_buffer_time)*2,0); %turn off R2 temporarily for shutter
+% %                 DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 2a',...
+% %                     Raman_on_time+(raman_buffer_time)*2,0); %turn off R2 temporarily for shutter
+% % 
+% %                 DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3',...
+% %                     Raman_on_time+(raman_buffer_time)*2,0); %turn off R3 temporarily for shutter
+% %                 DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3a',...
+% %                     Raman_on_time+(raman_buffer_time)*2,0); %turn off R3 temporarily for shutter
+% % 
+% %                 DigitalPulse(calctime(curtime,-shutter_buffer_time),'Raman Shutter',...
+% %                     Raman_on_time+shutter_buffer_time*2,1);% open shutter 100ms before and close 100ms after the sweep
+% %                 
+%         elseif double_test && (Pulse_Time ~= 0)
+%             DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 1',raman_buffer_time,0); %turn off Raman V temporarily for shutter
+%             
+%             DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 2',raman_buffer_time,0); %turn off R2 temporarily for shutter
+%             DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 2a',raman_buffer_time,0); %turn off R2 temporarily for shutter
+% 
+%             DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3',raman_buffer_time,0); %turn off R3 temporarily for shutter
+%             DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3a',raman_buffer_time,0); %turn off R3 temporarily for shutter
+% 
+% 
+%             DigitalPulse(calctime(curtime,-shutter_buffer_time),'Raman Shutter',...
+%                 Raman_on_time+shutter_buffer_time+pulse_wait_time+Raman_on_time,1);% open shutter 100ms before and close when TTL closes (takes 3 ms)
+%             
+%             if pulse_wait_time ~= 0
+%                 %Turn off the Raman beams in between the two pulses
+%                 DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 2',pulse_wait_time,0); 
+%                 DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 2a',pulse_wait_time,0);
+% 
+%                 DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 3',pulse_wait_time,0); 
+%                 DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 3a',pulse_wait_time,0); 
+%             end
+%             
+%             %Turn off the Raman beams after the second pulse until shutter
+%             %closes
+%             DigitalPulse(calctime(curtime,2*Raman_on_time+pulse_wait_time),'Raman TTL 2',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
+%             DigitalPulse(calctime(curtime,2*Raman_on_time+pulse_wait_time),'Raman TTL 2a',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
+% 
+%             DigitalPulse(calctime(curtime,2*Raman_on_time+pulse_wait_time),'Raman TTL 3',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
+%             DigitalPulse(calctime(curtime,2*Raman_on_time+pulse_wait_time),'Raman TTL 3a',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
+% 
+%             setDigitalChannel(calctime(curtime,2*Raman_on_time+ ...
+%                 raman_buffer_time+pulse_wait_time),'Raman TTL 1',1); %turn on R1 150ms after the sweep has ended
+%         else
+%             DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 1',raman_buffer_time,0); %turn off R2 temporarily for shutter
+%             DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 2',raman_buffer_time,0); %turn off R2 temporarily for shutter
+%             DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 2a',raman_buffer_time,0); %turn off R2 temporarily for shutter
+% 
+%             DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3',raman_buffer_time,0); %turn off R3 temporarily for shutter
+%             DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3a',raman_buffer_time,0); %turn off R3 temporarily for shutter
+% 
+%             DigitalPulse(calctime(curtime,-shutter_buffer_time),'Raman Shutter',...
+%                 Raman_on_time+shutter_buffer_time,1);% open shutter 100ms before and close when TTL closes (takes 3 ms)
+% 
+%             DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 1',raman_buffer_time,0); %turn off Raman V after the sweep and turn on 150ms later
+% 
+%             DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 2',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
+%             DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 2a',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
+% 
+%             DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 3',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
+%             DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 3a',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
+% 
+%             setDigitalChannel(calctime(curtime,Raman_on_time+ ...
+%                 raman_buffer_time),'Raman TTL 1',1); %turn on R1 150ms after the sweep has ended
+%             
+%             % Trigger scope
+%             DigitalPulse(calctime(curtime,Raman_on_time),'ScopeTrigger',1,1);
+% 
+%         end
+%         
+% curtime = calctime(curtime, Raman_on_time+(raman_buffer_time)*2);
+% %% 
 % K_power = 0.4;
 % setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',K_power); 
-% setDigitalChannel(curtime,'K Probe/OP TTL',0);
+% % setDigitalChannel(curtime,'Raman TTL 1',1);
+% % 
+% % setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',1);
 % 
-% setDigitalChannel(calctime(curtime,0),'Rb Probe/OP TTL',1);
+% % Turn on F Pump
+% % setAnalogChannel(calctime(curtime,0),'F Pump',0.1);
+% % setDigitalChannel(calctime(curtime,0),'F Pump TTL',1);
+% % setDigitalChannel(calctime(curtime,0),'FPump Direct',1); 
 
-% Turn on F Pump
-setAnalogChannel(calctime(curtime,0),'F Pump',0.1);
-setDigitalChannel(calctime(curtime,0),'F Pump TTL',1);
-setDigitalChannel(calctime(curtime,0),'FPump Direct',1); 
+%% Coil 16 testing
 
+% 
+% curtime = calctime(curtime,100);
+% DigitalPulse(calctime(curtime,0),'ScopeTrigger',10,1);
+% %set voltage
+% curtime = setAnalogChannel(calctime(curtime,0),'Transport FF',10);
+% curtime = calctime(curtime,100);
+% %runtime = 1000;
+% 
+% %trigger
+% %DigitalPulse(curtime,12,0.1,1); %trigger
+% 
+%  I_16 = 5;
+% % 
+% % SG_time = -2;
+%  kitten_relay  = 1; %(0 = no current, 1 = current flows)
+%  kitten_analog = 5;
+% % 
+% % 
+% %Set initial currents
+% setAnalogChannel(curtime,'kitten',0); %kitten
+% setAnalogChannel(curtime,'Coil 16',0); %coil 16
+% setAnalogChannel(curtime,'Coil 15',-1); %coil 15
+% setAnalogChannel(curtime,'Coil 15 Small',0); %coil 15 small
+% setAnalogChannel(curtime,'15/16 GS',0); %15/16 GS
+% % setDigitalChannel(curtime,'Kitten Relay',0); %kitten relay (0 = no current, 1 = current flows)
+% %fast switch
+% setDigitalChannel(curtime,'Coil 16 TTL',1); %(0 = current flows , 1 = no current) 
+% 
+% T1516delay = 0;
+% T_1516_ON = 25;
+% V_GS_LOW  = 1;
+% V_GS_HIGH = 9;
+% 
+% Ireq = 36;
+% Ireqk = 38;
+% 
+% DigitalPulse(calctime(curtime,-200),'LabJack Trigger Transport',50,1);
+% 
+% QP_FFValue = 15; 
+% tFF = 100;
+% curtime=AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+%     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+%     tFF,tFF,QP_FFValue);
+% 
+% curtime = AnalogFunc(calctime(curtime,0),'15/16 GS', ...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     T_1516_ON, T_1516_ON,0,V_GS_HIGH,1);   
+% 
+% curtime = calctime(curtime,100);
+% setDigitalChannel(curtime,'Coil 16 TTL',0); %(0 = current flows , 1 = no current) 
+% setDigitalChannel(curtime,'Reverse QP Switch',0); % 1 is open
+% setDigitalChannel(curtime,'Kitten Relay',1); %kitten relay (0 = no current, 1 = current flows)
+% 
+% AnalogFunc(calctime(curtime,0),'Coil 16', ...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     250,250,0,Ireq,2); 
+% 
+% curtime = AnalogFunc(calctime(curtime,0),'kitten', ...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     250, 250,0,Ireqk,4);
+% 
+% curtime = calctime(curtime,1500);
+% 
+% % curtime = AnalogFunc(calctime(curtime,0),'15/16 GS', ...
+% %     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+% %     T_1516_ON, T_1516_ON,0,V_GS_HIGH,1);   
+% 
+% curtime = calctime(curtime,1500);
+% 
+%     AnalogFunc(calctime(curtime,0),'kitten', ...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     250, 250,Ireqk,0,4); 
+% 
+% curtime = AnalogFunc(calctime(curtime,0),'Coil 16', ...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     250,250,Ireq,0,2); 
+% 
+% curtime = AnalogFunc(calctime(curtime,0),'15/16 GS', ...
+%     @(t,tt,y1,y2) ramp_minjerk(t,tt,y1,y2), ...
+%     T_1516_ON, T_1516_ON,V_GS_HIGH,0,1); 
+% 
+% setDigitalChannel(curtime,'Coil 16 TTL',1); %(0 = current flows , 1 = no current) 
+% setDigitalChannel(curtime,'Reverse QP Switch',0); % 1 is open
+% setDigitalChannel(curtime,'Kitten Relay',0); %kitten relay (0 = no current, 1 = current flows)
+% 
+% curtime = calctime(curtime,100);
+% 
+% 
+% % set voltage
+% % setAnalogChannel(calctime(curtime,100),'Transport FF',10);
+% curtime=AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+%     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+%     tFF,tFF,10);
+% 
 
+% K_power = 0.4;
+setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',K_power); 
+setDigitalChannel(curtime,'Raman 3 Source',0);
+% 
+% curtime = calctime(curtime,100);
 timeout = curtime;
 
 

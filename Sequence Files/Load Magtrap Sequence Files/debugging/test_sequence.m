@@ -7031,9 +7031,11 @@ curtime = calctime(curtime,150);
 %     tFF,tFF,10);
 % 
 
-% K_power = 0.4;
+K_power = 0.4;
 setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',K_power); 
-setDigitalChannel(curtime,'Raman 3 Source',0);
+% setDigitalChannel(curtime,'Raman 3 Source',1);
+
+DigitalPulse(calctime(curtime,0),'Sci shim PSU DIO',10,1);
 % 
 % curtime = calctime(curtime,100);
 timeout = curtime;

@@ -163,7 +163,7 @@ seqdata.flags.image_atomtype                = 1; % 0:Rb,1:K,2:K+Rb (double shutt
 seqdata.flags.image_loc                     = 1; % 0: `+-+MOT cell, 1: science chamber    
 seqdata.flags.image_direction               = 1; % 1 = x direction (Sci) / MOT, 2 = y direction (Sci), %3 = vertical direction, 4 = x direction (has been altered ... use 1), 5 = fluorescence(not useful for iXon)
 seqdata.flags.image_stern_gerlach_F         = 0; % 1: Do a gradient pulse at the beginning of ToF
-seqdata.flags.image_stern_gerlach_mF        = 1; % 1: Do a gradient pulse at the beginning of ToF
+seqdata.flags.image_stern_gerlach_mF        = 0; % 1: Do a gradient pulse at the beginning of ToF
         
 seqdata.flags.image_levitate                = 0; % 2: apply a gradient during ToF to levitate atoms (not yet tested)
 seqdata.flags.image_iXon                    = 0; % (unused?) use iXon camera to take an absorption image (only vertical)
@@ -174,7 +174,7 @@ seqdata.flags.image_F1_pulse                = 0; % (unused?) repump Rb F=1 befor
 seqdata.flags.image_insitu                  = 0; % Does this flag work for QP/XDT? Or only QP?
 
 % Choose the time-of-flight time for absorption imaging 
-defVar('tof',15,'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
+defVar('tof',25,'ms'); %DFG 25ms ; RF1b Rb 15ms ; RF1b K 5ms; BM 15ms ; in-situ 0.25ms
 
 % For double shutter imaging, may delay imaging Rb after K
 defVar('tof_krb_diff',[0.1],'ms'); % RF1b 10, DFG 0.1
@@ -430,7 +430,7 @@ seqdata.flags.xdtB_rf_mix                   = 0;
 
 % Evaporation
 seqdata.flags.xdtB_evap                     = 1;
-defVar('xdtB_evap_power',[0.065],'W');0.09;0.0655;.085;0.058;
+defVar('xdtB_evap_power',[0.07],'W');0.09;0.0655;.085;0.058;
 defVar('xdtB_evap_time',[4000],'ms');3000;
 defVar('xdtB_evap_tau_fraction',[3.5],'arb');3.5;
 
@@ -442,26 +442,33 @@ defVar('xdtB_evap_end_ramp_power', [0.198],'W'); 0.195;
 defVar('xdtB_evap_end_ramp_power2', [0.088],'W'); 0.150;
 defVar('xdtB_evap_end_ramp_time',  [250],'ms');  
 
-% Feshbach
-seqdata.flags.xdtB_feshbach_fine2            = 0;
-defVar('xdtB_feshbach_fine2_field',207,'G');
-defVar('xdtB_feshbach_fine2_ramptime',20,'ms');
-defVar('xdtB_feshbach_fine2_holdtime',0,'ms');
-
-% Levitation Adjustment
-seqdata.flags.xdtB_levitate_fine2            = 0;
-defVar('xdtB_levitate_fine2_value',[.1475],'V');0.23;% 0.23 is value for levitation at 204 G
-defVar('xdtB_levitate_fine2_ramptime',100,'ms');
 
 %Mix spins again after high field evap
 seqdata.flags.xdtB_rf_mix_post_evap          = 0;
 
 % 97 RF Spin Flip
-seqdata.flags.xdtB_post_RF_97                = 1;
+seqdata.flags.xdtB_post_RF_97                = 0;
 
+% Sweep from -9/2 (or -9/2 -7/2 mixture) another spin state
+seqdata.flags.xdtB_post_RF_sweep             = 1;
+defVar('xdtB_post_RF_sweep_freq_shift',[0.25],'MHz'); %Shifted from -3/2 to -1/2 transition
+defVar('xdtB_post_RF_sweep_delta_freq',[20],'MHz'); %Total Range of sweep
+defVar('xdtB_post_RF_sweep_power',[0],'V');
+defVar('xdtB_post_RF_sweep_time',[100], 'ms');
 
-% Unhop Resonance
+% Unhop Resonance - lol this isn't written yet
 seqdata.flags.xdtB_feshbach_unhop           = 0;
+
+% Feshbach ramp after evaporation
+seqdata.flags.xdtB_feshbach_fine2            = 0;
+defVar('xdtB_feshbach_fine2_field',[140],'G');
+defVar('xdtB_feshbach_fine2_ramptime',20,'ms');
+defVar('xdtB_feshbach_fine2_holdtime',20,'ms');
+
+% Levitation Adjustment
+seqdata.flags.xdtB_levitate_fine2            = 0;
+defVar('xdtB_levitate_fine2_value',[.1475],'V');0.23;% 0.23 is value for levitation at 204 G
+defVar('xdtB_levitate_fine2_ramptime',100,'ms');
 
 % Pulse lattice
 seqdata.flags.xdtB_pulse_lattice            = 0;
@@ -520,7 +527,7 @@ defVar('rotate_waveplate1_value',0.3,'normalized power');.3; % Amount of power g
 %% Load the Optical Lattice
 
 % These are the lattice flags sorted roughly chronologically. 
-seqdata.flags.lattice_load            = 1;    
+seqdata.flags.lattice_load            = 0;    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Loading optical lattical
@@ -619,7 +626,7 @@ end
 
  
 %% Optical Lattice
-seqdata.flags.lattice                       = 1; 
+seqdata.flags.lattice                       = 0; 
 if ~seqdata.flags.lattice_load;seqdata.flags.lattice  =0;end
 
 % AM parametric heating - could be useful for measuring trap frequencies
@@ -746,7 +753,7 @@ defVar('lattice_TOF_zdepth',50,'Er'); % 10 Er 70 Hz
 
 %% Plane Selection
 
-seqdata.flags.do_plane_selection            = 1;    % Plane selection flag
+seqdata.flags.do_plane_selection            = 0;    % Plane selection flag
 seqdata.flags.plane_selection_useBigShim    = 1;
 seqdata.flags.plane_selection_douWave       = 1; 
 seqdata.flags.plane_selection_doKill        = 1;
@@ -935,7 +942,7 @@ seqdata.flags.lattice_off_bandmap                   = 1;
 if seqdata.flags.lattice_fluor_ramp % WHY??
     defVar('lattice_bm_time',[5],'ms');
 else
-    defVar('lattice_bm_time',[1],'ms');0.5;
+    defVar('lattice_bm_time',[0.5],'ms');1;0.5;
 end
 
 seqdata.flags.lattice_off_bandmap_xdt_off_simultaneous     = 0;         % Turn off XDT at same time as lattice?
@@ -979,7 +986,7 @@ seqdata.flags.lattice_pulse_z_for_alignment = 0;
 % seqdata.scope_trigger = 'Start Transport';
 % seqdata.scope_trigger = 'TOF';
 % seqdata.scope_trigger = 'xdtB_FBramp';
-seqdata.scope_trigger = 'xdt_load';
+% seqdata.scope_trigger = 'xdt_load';
 % seqdata.scope_trigger = 'Optical pumping';
 % seqdata.scope_trigger = 'MOT Trigger';
 % seqdata.scope_trigger = 'CMOT';
@@ -991,7 +998,7 @@ seqdata.scope_trigger = 'xdt_load';
 % seqdata.scope_trigger = 'Rampup ODT';
 % seqdata.scope_trigger = 'xdtb_pulse_lattice';
 % seqdata.scope_trigger = 'lattice_insitu_ramp';
-% seqdata.scope_trigger = 'Raman_spec';
+seqdata.scope_trigger = 'Raman_spec';
 
 %% Labjack trigger
 seqdata.labjack_trigger = 'Transport';

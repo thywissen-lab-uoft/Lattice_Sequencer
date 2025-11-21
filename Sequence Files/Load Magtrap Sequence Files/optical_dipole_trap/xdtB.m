@@ -302,45 +302,6 @@ if seqdata.flags.xdtB_ramp_power_end
 end
 
 
-
-%% Secondary Feshbach Ramp after evaporation
-
-if seqdata.flags.xdtB_feshbach_fine2   
-            logNewSection('feshbach fine 2',curtime); 
-
-    tr = getVar('xdtB_feshbach_fine2_ramptime');
-    fesh = getVar('xdtB_feshbach_fine2_field');
-
-    % Define the ramp structure
-    ramp=struct;
-    ramp.shim_ramptime      = tr;
-    ramp.shim_ramp_delay    = 0;
-    ramp.xshim_final        = seqdata.params.shim_zero(1); 
-    ramp.yshim_final        = seqdata.params.shim_zero(2);
-    ramp.zshim_final        = seqdata.params.shim_zero(3);
-    ramp.fesh_ramptime      = tr;
-    ramp.fesh_ramp_delay    = 0;
-    ramp.fesh_final         = fesh; %22.6
-    ramp.settling_time      = 100;    
-
-    % Ramp FB with QP
-curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
-curtime = calctime(curtime,getVar('xdtB_feshbach_fine2_holdtime'));
-end
-
-%% Levitation Adjustment
-
-if seqdata.flags.xdtB_levitate_fine2
-        logNewSection('levitate fine 2',curtime); 
-
-    HF_QP = getVar('xdtB_levitate_fine2_value');
-    tr = getVar('xdtB_levitate_fine2_ramptime');       
-
-    % Ramp Coil 15
-    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,HF_QP,1); 
-end
-
 %% Re-create a spin mixture after high-field evaporation
 if seqdata.flags.xdtB_rf_mix_post_evap
     
@@ -426,6 +387,39 @@ if seqdata.flags.xdtB_post_RF_97
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse 
 
 end
+%% RF Sweep at HF
+if seqdata.flags.xdtB_post_RF_sweep
+    
+    logNewSection('RF transfer -9/2 (-7/2) to higher spin states',curtime);
+    
+    % Get the Feshbach field
+    Bfesh   = getChannelValue(seqdata,'FB Current',1);   
+    % Get the shim field
+    Bzshim = (getChannelValue(seqdata,'Z Shim',1) - ...
+        seqdata.params.shim_zero(3))*2.35;
+    % Caclulate the total field
+    B = Bfesh + Bzshim + 0.11;
+    
+    % Calculate RF Frequency for desired transitions
+    mF1=-3/2;mF2=-1/2;   
+    rf_list =  getVar('xdtB_post_RF_sweep_freq_shift') +...
+        abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
+    sweep_pars.freq = rf_list;
+    
+    % Define the RF sweep parameters
+    sweep_pars.power =  getVar('xdtB_post_RF_sweep_power');
+    sweep_pars.delta_freq = getVar('xdtB_post_RF_sweep_delta_freq');
+    sweep_pars.pulse_length = getVar('xdtB_post_RF_sweep_time');
+    
+    logText([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
+    logText([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
+    logText([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
+    logText([' RF Power        (V) : ' num2str(sweep_pars.power)]);
+    
+        % Do the RF Sweep
+curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse 
+    
+end
 
 
 %% Unhop the feshbach resonance
@@ -433,6 +427,45 @@ end
 if seqdata.flags.xdtB_feshbach_unhop
     % NEEDS TO BE WRITTEN FROM OLD CODE
 end
+
+%% Secondary Feshbach Ramp after evaporation
+
+if seqdata.flags.xdtB_feshbach_fine2   
+            logNewSection('feshbach fine 2',curtime); 
+
+    tr = getVar('xdtB_feshbach_fine2_ramptime');
+    fesh = getVar('xdtB_feshbach_fine2_field');
+
+    % Define the ramp structure
+    ramp=struct;
+    ramp.shim_ramptime      = tr;
+    ramp.shim_ramp_delay    = 0;
+    ramp.xshim_final        = seqdata.params.shim_zero(1); 
+    ramp.yshim_final        = seqdata.params.shim_zero(2);
+    ramp.zshim_final        = seqdata.params.shim_zero(3);
+    ramp.fesh_ramptime      = tr;
+    ramp.fesh_ramp_delay    = 0;
+    ramp.fesh_final         = fesh; %22.6
+    ramp.settling_time      = 10;    
+
+    % Ramp FB with QP
+curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+curtime = calctime(curtime,getVar('xdtB_feshbach_fine2_holdtime'));
+end
+
+%% Levitation Adjustment
+
+if seqdata.flags.xdtB_levitate_fine2
+        logNewSection('levitate fine 2',curtime); 
+
+    HF_QP = getVar('xdtB_levitate_fine2_value');
+    tr = getVar('xdtB_levitate_fine2_ramptime');       
+
+    % Ramp Coil 15
+    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,HF_QP,1); 
+end
+
 
 %% Pulse on lattices
 % CJF : This is poorly named code and confused me for a while.
@@ -865,7 +898,62 @@ end
 %      
 % end
 
+%% Pulse Raman/Bragg beams
 
+%%%%%%%%% Raman Spectroscopy settings %%%%%%%%%%
+seqdata.flags.xdtB_raman_spec                   = 0;
+% first pulse settings
+defVar('xdtB_Raman_time',[1],'ms');0.074; % 1 ms for sweep, 0.09 ms for pi pulse at -21.72 GHz cmdet 86 us pi/2
+defVar('xdtB_Raman_AOM2_power',0.5,'V');0.5;1.6;
+seqdata.flags.Raman_Source1                     = 1; % 0 default, 1 alternate
+
+% default source settings
+defVar('xdtB_Raman_DP_freq_shift',[-64],'kHz');-92.5;-72.5;60;61;% 100 Er: 57 kHz 9n-->7n+1 -25 n--> n, 7n-->9n+1 -73 kHz 
+defVar('xdtB_Raman_DP_power',2.3,'V');2.3;
+defVar('xdtB_Raman_sweep_range',20,'kHz');
+seqdata.flags.Raman_type                        = 1; % 1 is pulse, 0 sweep
+
+% alternate source settings
+defVar('xdtB_Raman_DP_alt_freq_shift',[17],'kHz');
+defVar('xdtB_Raman_DP_power_alt',0.6,'V');0.6;2.3;
+defVar('xdtB_Raman_sweep_range_alt',[5],'kHz');
+seqdata.flags.Raman_type_alt                    = 1; % 1 is pulse, 0 sweep
+
+% defVar('xdtB_Raman_common_mode_det',[-21.6],'GHz');
+if seqdata.flags.xdtB_raman_spec
+    
+    Raman_opts.mF1                  = -9/2;
+    Raman_opts.mF2                  = -7/2;
+    Raman_opts.mF1_alt              = -9/2;
+    Raman_opts.mF2_alt              = -9/2;
+    Raman_opts.dF                   = getVar('xdtB_Raman_DP_freq_shift');
+    Raman_opts.dF2                  = getVar('xdtB_Raman_DP_alt_freq_shift');
+    Raman_opts.Raman_AOM2_power     = getVar('xdtB_Raman_AOM2_power');
+    Raman_opts.Raman_AOM3_power     = getVar('xdtB_Raman_DP_power');
+    Raman_opts.Raman_AOM3_power_alt = getVar('xdtB_Raman_DP_power_alt');
+    Raman_opts.sweep_range          = getVar('xdtB_Raman_sweep_range');
+    Raman_opts.sweep_range_alt      = getVar('xdtB_Raman_sweep_range_alt');
+    Raman_opts.time                 = getVar('xdtB_Raman_time');
+
+    Raman_opts.doProgram            = 1;
+    
+    % shutter timings if you're doing spin echo stuff
+    Raman_opts.doReversal           = 0;
+    Raman_opts.isForward            = 1; % this changes shutter timing in a complicated way... should improve
+    
+    Raman_opts.Source1              = 1; % 0 default, 1 alternate; % 0 is default
+%     Raman_opts.Source2              = seqdata.flags.Raman_Source2;
+%     Raman_opts.Source3              = seqdata.flags.Raman_Source3;
+   
+    Raman_opts.post_hold            = 0;
+    Raman_opts.Raman_type           = seqdata.flags.Raman_type; % 1 is pulse, 0 sweep
+    Raman_opts.Raman_type_alt       = seqdata.flags.Raman_type_alt;
+    
+    ScopeTriggerPulse(curtime,'Raman_spec'); 
+    
+    curtime = do_Raman_spectroscopy(curtime,Raman_opts);
+%     curtime = calctime(curtime,getVar('lattice_FB_post_Raman_holdtime'));
+end
 %% The End
 
 timeout = curtime;

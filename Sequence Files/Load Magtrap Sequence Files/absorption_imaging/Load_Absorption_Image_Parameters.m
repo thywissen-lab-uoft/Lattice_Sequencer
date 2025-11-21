@@ -13,10 +13,11 @@ function params = Load_Absorption_Image_Parameters()
     
     % |9/2,-9/2> and |9/2,-7/2> atoms
     params.detunings.K.X.negative.normal = 33.1; %(33.1) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
-%         params.detunings.K.X.negative.normal = defVar('img_K_X_NEG_NORMAL',33.1+[-3:1:3 ,'MHz'); %(33.1) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
-    defVar('K_img_det_shift_SG',[37],'MHz');
-    k_SG_det_shift = getVar('K_img_det_shift_SG');
-    params.detunings.K.X.negative.SG = k_SG_det_shift;34.5;      % for mF stern gerlach
+%     defVar('img_K_X_NEG_NORMAL',[32 34],'MHz');
+%     params.detunings.K.X.negative.normal = getVar('img_K_X_NEG_NORMAL'); %(33.1) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
+%     defVar('K_img_det_shift_SG',[37],'MHz');
+%     k_SG_det_shift = getVar('K_img_det_shift_SG');
+    params.detunings.K.X.negative.SG = 37;34.5;      % for mF stern gerlach
 %     params.detunings.K.X.negative.SG = 34.5+kdet_shift;      % for mF stern gerlach
 
     
@@ -25,6 +26,9 @@ function params = Load_Absorption_Image_Parameters()
     
     % Lattice F Stern Gerlach, TOF = 15 ms
 %     params.detunings.K.X.negative.SG = 35.5;
+
+    % imaging g atoms at lowfield
+    params.detuning.K.X.g.normal = 32.7; % 2025/11/21
 
     
     

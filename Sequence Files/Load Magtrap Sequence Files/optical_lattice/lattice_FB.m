@@ -38,44 +38,56 @@ defVar('lattice_FB_pre_spec_feshbach_holdtime',0,'ms');
 seqdata.flags.lattice_FB_spec_ramp             = 1;
 defVar('lattice_FB_spec_ramptime',10,'ms');  
 defVar('lattice_FB_spec_ramp_settling_time',5,'ms');
-defVar('lattice_FB_spec_depth_X',[40],'Er'); 100;
-defVar('lattice_FB_spec_depth_Y',[50],'Er'); 200;
-defVar('lattice_FB_spec_depth_Z',[400],'Er'); 400;
+defVar('lattice_FB_spec_depth_X',[100],'Er'); 100;
+defVar('lattice_FB_spec_depth_Y',[150],'Er'); 200;
+defVar('lattice_FB_spec_depth_Z',[200],'Er'); 400;
 
-% do the Raman spec
-seqdata.flags.lattice_FB_raman_spec            = 0;
-defVar('lattice_FB_Raman_DP_freq_shift',[-64],'kHz');-92.5;-72.5;60;61;% 100 Er: 57 kHz 9n-->7n+1 -25 n--> n, 7n-->9n+1 -73 kHz 
-defVar('lattice_FB_Raman_DP_power',2.3,'V');2.3;
-defVar('lattice_FB_Raman_AOM2_power',1.6,'V');1.6;
-
-defVar('lattice_FB_Raman_DP_alt_freq_shift',[0:5:35],'kHz');
-defVar('lattice_FB_Raman_DP_power_alt',1,'V');2.3;
-
-defVar('lattice_FB_Raman_sweep_range',5,'kHz');
-defVar('lattice_FB_Raman_time',[1],'ms');0.074; % 1 ms for sweep, 0.09 ms for pi pulse at -21.72 GHz cmdet 86 us pi/2
+%%%%%%%%% Raman Spectroscopy %%%%%%%%%%
+seqdata.flags.lattice_FB_raman_spec            = 1;
+% first pulse settings
+defVar('lattice_FB_Raman_time',[0.23],'ms');0.074; % 1 ms for sweep, 0.09 ms for pi pulse at -21.72 GHz cmdet 86 us pi/2
 defVar('lattice_FB_post_Raman_holdtime',[0],'ms'); %[0:0.005:0.05];
+defVar('lattice_FB_Raman_AOM2_power',[0.8],'V');1.6;
+seqdata.flags.Raman_Source1                    = 0; % 0 default, 1 alternate
+
+% default source settings
+defVar('lattice_FB_Raman_DP_freq_shift',[-99],'kHz');-92.5;-72.5;60;61;% 100 Er: 57 kHz 9n-->7n+1 -25 n--> n, 7n-->9n+1 -73 kHz 
+defVar('lattice_FB_Raman_DP_power',2.3,'V');2.3;
+defVar('lattice_FB_Raman_sweep_range',5,'kHz');
+seqdata.flags.Raman_type                       = 1; % 1 is pulse, 0 sweep
+
+% alternate source settings
+defVar('lattice_FB_Raman_DP_alt_freq_shift',[-15],'kHz');
+defVar('lattice_FB_Raman_DP_power_alt',[2.6],'V');0.6;2.3;
+defVar('lattice_FB_Raman_sweep_range_alt',[2],'kHz');
+seqdata.flags.Raman_type_alt                   = 1; % 1 is pulse, 0 sweep
 
 % Raman_type = 'pulse';
-Raman_type = 'sweep';
+% Raman_type = 'sweep';
 
 defVar('lattice_Raman_common_mode_det',[-21.6],'GHz');
 
+
 % do a second pulse with some wait time, can also ramp lattices in between
-seqdata.flags.lattice_FB_double_raman_spec             = 0;
+seqdata.flags.lattice_FB_double_raman_spec             = 1;
 seqdata.flags.lattice_FB_double_raman_lattice_ramp     = 0;
+% second pulse settings
+seqdata.flags.Raman_Source2                            = 1; % 0 default, 1 alternate
 defVar('lattice_FB_Raman_dp_depth_X',[100],'Er');
 defVar('lattice_FB_Raman_dp_depth_Y',[50],'Er');
-defVar('lattice_FB_Raman_dp_depth_Z',[400],'Er'); 
-defVar('lattice_FB_Raman_double_pulse_wait_time',[0.05],'ms');0.05; %used only with double raman spec, wait time between pulses, lattice ramp time if using
-defVar('lattice_FB_Raman_time2',[1],'ms');0.05; % 1 ms for sweep, 0.09 ms for pi pulse at -21.72 GHz cmdet
+defVar('lattice_FB_Raman_dp_depth_Z',[200],'Er'); 
+defVar('lattice_FB_Raman_double_pulse_wait_time',[0.1],'ms');0.05; %used only with double raman spec, wait time between pulses
+defVar('lattice_FB_Raman_double_pulse_lattice_time',[0.1],'ms') % lattice ramp time if using
+defVar('lattice_FB_Raman_time2',[0.09],'ms');0.715; 0.05; % 1 ms for sweep, 0.09 ms for pi pulse at -21.72 GHz cmdet
 
 % do a third pulse with some wait time, must have single and double on.
 % useful for spin echo measurement 
 %(needs to be reworked for the new Raman DP frequency source)
-seqdata.flags.lattice_FB_triple_raman_spec             = 0;
-echo_time = getVar('lattice_FB_Raman_double_pulse_wait_time'); % want these to be the same for spin echo measurement
-defVar('lattice_FB_Raman_triple_pulse_wait_time',[echo_time],'ms'); %used only with triple raman spec, wait time between pulses 2 and 3
-defVar('lattice_FB_Raman_time3',[0.01],'ms');0.05; % 1 ms for sweep, 0.09 ms for pi pulse at -21.72 GHz cmdet
+seqdata.flags.lattice_FB_triple_raman_spec             = 1;
+seqdata.flags.Raman_Source3                            = 1; % 0 default, 1 alternate
+% echo_time = getVar('lattice_FB_Raman_double_pulse_wait_time'); % want these to be the same for spin echo measurement
+defVar('lattice_FB_Raman_triple_pulse_wait_time',[0:0.1:1.5],'ms'); %used only with triple raman spec, wait time between pulses 2 and 3
+defVar('lattice_FB_Raman_time3',[0.09],'ms');0.05; % 1 ms for sweep, 0.09 ms for pi pulse at -21.72 GHz cmdet
 
 % do Raman reversal - takes Raman settings and does it again but in reverse
 % currently only set up for double pulse
@@ -91,11 +103,11 @@ defVar('lattice_FB_uWave_time',[1],'ms');
 
 % lattice depth ramp after Raman
 seqdata.flags.lattice_FB_ramp_post_raman       = 0;
-defVar('lattice_FB_post_raman_ramptime',[0.05],'ms');   
+defVar('lattice_FB_post_raman_ramptime',[0.1],'ms');   
 defVar('lattice_FB_post_raman_ramp_settling_time',[0.1],'ms');
 defVar('lattice_FB_post_raman_depth_X',[100],'Er');
 defVar('lattice_FB_post_raman_depth_Y',[100],'Er');
-defVar('lattice_FB_post_raman_depth_Z',[400],'Er');
+defVar('lattice_FB_post_raman_depth_Z',[100],'Er');
 defVar('lattice_FB_post_raman_lattice_ramp_holdtime',[0],'ms');
 
 % field ramp after Raman
@@ -110,9 +122,9 @@ defVar('lattice_FB_post_raman_feshbach_holdtime',[1000],'ms');
 seqdata.flags.lattice_FB_post_osc_ramp             = 0;
 defVar('lattice_FB_post_osc_ramptime',0.5,'ms');10; % 1  
 defVar('lattice_FB_post_osc_ramp_settling_time',1,'ms');
-defVar('lattice_FB_post_osc_depth_X',[250],'Er');
-defVar('lattice_FB_post_osc_depth_Y',[100],'Er');
-defVar('lattice_FB_post_osc_depth_Z',[400],'Er'); 
+defVar('lattice_FB_post_osc_depth_X',[50],'Er');
+defVar('lattice_FB_post_osc_depth_Y',[50],'Er');
+defVar('lattice_FB_post_osc_depth_Z',[50],'Er'); 
 
 % Ramp the field
 seqdata.flags.lattice_FB_post_osc_field_ramp   = 0;
@@ -399,25 +411,32 @@ if seqdata.flags.lattice_FB_raman_spec
     Raman_opts.Raman_AOM3_power     = getVar('lattice_FB_Raman_DP_power');
     Raman_opts.Raman_AOM3_power_alt = getVar('lattice_FB_Raman_DP_power_alt');
     Raman_opts.sweep_range          = getVar('lattice_FB_Raman_sweep_range');
+    Raman_opts.sweep_range_alt      = getVar('lattice_FB_Raman_sweep_range_alt');
     Raman_opts.time                 = getVar('lattice_FB_Raman_time');
     Raman_opts.time2                = getVar('lattice_FB_Raman_time2');
     Raman_opts.time3                = getVar('lattice_FB_Raman_time3');
     Raman_opts.pulse_wait           = getVar('lattice_FB_Raman_double_pulse_wait_time');
     Raman_opts.pulse_wait2          = getVar('lattice_FB_Raman_triple_pulse_wait_time');
+    Raman_opts.lattice_time         = getVar('lattice_FB_Raman_double_pulse_lattice_time');
     Raman_opts.Ux                   = getVar('lattice_FB_Raman_dp_depth_X');
     Raman_opts.Uy                   = getVar('lattice_FB_Raman_dp_depth_Y');
     Raman_opts.Uz                   = getVar('lattice_FB_Raman_dp_depth_Z');
     Raman_opts.doProgram            = 1;
     Raman_opts.doReversal           = seqdata.flags.lattice_FB_raman_reverse;
-    Raman_opts.Source1              = 0;
-    Raman_opts.Source2              = 1;
-    Raman_opts.Source3              = 0;
+    Raman_opts.Source1              = seqdata.flags.Raman_Source1; % 0 default, 1 alternate; % 0 is default
+    Raman_opts.Source2              = seqdata.flags.Raman_Source2;
+    Raman_opts.Source3              = seqdata.flags.Raman_Source3;
     Raman_opts.isForward            = 1; % this changes shutter timing in a complicated way... should improve
     Raman_opts.post_hold            = getVar('lattice_FB_post_Raman_holdtime');
+    Raman_opts.Raman_type           = seqdata.flags.Raman_type; % 1 is pulse, 0 sweep
+    Raman_opts.Raman_type_alt       = seqdata.flags.Raman_type_alt;
+    
+    Raman_opts.double_pulse         = seqdata.flags.lattice_FB_double_raman_spec;
+    Raman_opts.triple_pulse         = seqdata.flags.lattice_FB_triple_raman_spec;
     
 %     ScopeTriggerPulse(curtime,'Raman_spec'); 
     
-    curtime = do_Raman_spectroscopy(curtime,Raman_type,Raman_opts);
+    curtime = do_Raman_spectroscopy(curtime,Raman_opts);
 %     curtime = calctime(curtime,getVar('lattice_FB_post_Raman_holdtime'));
 end
 
@@ -431,6 +450,7 @@ if seqdata.flags.lattice_FB_raman_reverse
     Raman_opts.Raman_AOM2_power     = getVar('lattice_FB_Raman_AOM2_power');
     Raman_opts.Raman_AOM3_power     = getVar('lattice_FB_Raman_DP_power');
     Raman_opts.sweep_range          = getVar('lattice_FB_Raman_sweep_range');
+    Raman_opts.sweep_range_alt      = getVar('lattice_FB_Raman_sweep_range_alt');
     Raman_opts.time                 = getVar('lattice_FB_Raman_time2');
     Raman_opts.time2                = getVar('lattice_FB_Raman_time');
 %     Raman_opts.time3                = getVar('lattice_FB_Raman_time3');
@@ -449,7 +469,7 @@ if seqdata.flags.lattice_FB_raman_reverse
     
 %     ScopeTriggerPulse(curtime,'Raman_spec'); 
     
-    curtime = do_Raman_spectroscopy(curtime,Raman_type,Raman_opts);
+    curtime = do_Raman_spectroscopy(curtime,Raman_opts);
 %     curtime = calctime(curtime,getVar('lattice_FB_post_Raman_holdtime'));
 end
 

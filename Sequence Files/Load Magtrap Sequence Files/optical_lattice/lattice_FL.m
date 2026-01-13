@@ -42,7 +42,7 @@ global seqdata
     % 1 ms is typical for Raman spectroscopy
     % 1 ms is typical for uWave spectroscopy
     % 2000-4000 ms is typical for fluoresence imaging    
-    % FPUMP 1000Er, 83% transfer at 1 ms, 0.1 V
+    % FPUMP 1000Er, 94% transfer at 0.1 ms, 0.01 V
     % EIT Probe 1 , 2025.09.09 55% transfer @ 1 ms, 0.4 rel power, 70 Er
     % EIT Probe 2 , 2025.09.09 65% transfer @ 0.1ms, 0.2 rel power, 70 Er; old 80% transfer at 0.1 ms, 0.1 rel power
 

@@ -611,6 +611,47 @@ end
 if seqdata.flags.image_type == 0
 %     dispLineStr('Turning off coils and traps.',curtime);   
     logNewSection('Turning off coils and traps.',curtime);   
+    
+%     % Check for High Field condition by looking at FB channel value
+%     check_HF_Image();
+%     
+%     % ramp field to imaging value
+%     if isfield(seqdata.flags, 'HF_Imaging') && seqdata.flags.HF_Imaging
+%         
+%          % Set final feshbach value
+%         if seqdata.flags.HF_absorption_image.Attractive
+%             fesh = 207;
+%         else
+%             fesh = 195;
+%         end
+% 
+%         % Set ramp time
+%         defVar('HF_imaging_FB_ramp_time',[50],'ms');
+%         defVar('HF_imaging_FB_ramp_settle_time',[75],'ms');
+%         defVar('HF_imaging_Coil_15_small',0.15,'A');
+%         tr = getVar('HF_imaging_FB_ramp_time');
+%         ts = getVar('HF_imaging_FB_ramp_settle_time');
+%         HF_QP = getVar('HF_imaging_Coil_15_small');
+%         
+%         % Ramp Coil 15 (now uses current)
+%         AnalogFuncTo(calctime(curtime,0),'Coil 15 Small',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,HF_QP,2);
+% 
+%         % Define the ramp structure
+%         ramp=struct;
+%         ramp.shim_ramptime      = tr;
+%         ramp.shim_ramp_delay    = 0;
+%         ramp.xshim_final        = seqdata.params.shim_zero(1); 
+%         ramp.yshim_final        = seqdata.params.shim_zero(2);
+%         ramp.zshim_final        = seqdata.params.shim_zero(3);
+%         ramp.fesh_ramptime      = tr;
+%         ramp.fesh_ramp_delay    = 0;
+%         ramp.fesh_final         = fesh;
+%         ramp.settling_time      = ts; 
+% 
+%         curtime = ramp_bias_fields(calctime(curtime,0), ramp);
+% 
+%     end
 
     % Make sure RF is off
     setDigitalChannel(curtime,'RF TTL',0);% rf TTL
@@ -668,7 +709,7 @@ end
 %% Absorption Imaging
 
 % Check for High Field condition by looking at FB channel value
-check_HF_Image();
+    check_HF_Image();
 
 %Perform either HF or LF absorption imaging
 if isfield(seqdata.flags, 'HF_Imaging') && seqdata.flags.HF_Imaging
@@ -683,9 +724,11 @@ if isfield(seqdata.flags, 'HF_Imaging') && seqdata.flags.HF_Imaging
 else
     
     %Turn off QP Coils if not doing HF imaging
-    setAnalogChannel(calctime(curtime,0),'Coil 15',-1,1);     % C15
-    setAnalogChannel(calctime(curtime,0),'Coil 16',0,1);      % C16
-    setAnalogChannel(calctime(curtime,0),'kitten',-1,1);      % Kitten
+    setAnalogChannel(calctime(curtime,0),'Coil 15',-1,1);           % C15
+    setAnalogChannel(calctime(curtime,0),'Coil 16',0,1);            % C16
+    setAnalogChannel(calctime(curtime,0),'kitten',-1,1);            % Kitten
+    setAnalogChannel(calctime(curtime,0),'Coil 15 Small',-0.01,2);  % Reverse QP
+    setDigitalChannel(calctime(curtime,0), 'Reverse QP Switch',0);  % Reverse QP
     
     % MOT/QCoil TTL (separate switch for coil 15 (TTL) and 16 (analog))
     qp_switch1_delay_time = 0;
@@ -698,7 +741,7 @@ else
         %imaging direction!
     end
     
-    % Turn off 15/16 switch if doing SG imaging
+    % Turn off 15/16 switch if not doing SG imaging
     if ~seqdata.flags.image_stern_gerlach_F && ~seqdata.flags.image_stern_gerlach_mF
         setDigitalChannel(calctime(curtime,qp_switch1_delay_time),'15/16 Switch',0);
         setAnalogChannel(calctime(curtime,qp_switch1_delay_time),'15/16 GS',0);

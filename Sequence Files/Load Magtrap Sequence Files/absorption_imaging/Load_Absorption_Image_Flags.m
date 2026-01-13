@@ -43,6 +43,10 @@ function flags = Load_Absorption_Image_Flags()
         flags.condition = 'in_trap';
     end
     
+    if isfield(seqdata.flags,'xdt_spin_xfer_transfer_K') && seqdata.flags.xdt_spin_xfer_transfer_K
+        flags.negative_imaging_shim = 'negative';
+    end
+    
     %% Other flags
     
     %OP/repump flags.

@@ -1,7 +1,7 @@
 function J=job_main
 
 npt = struct;
-npt.lattice_load_feshbach_field = 200.15;
+npt.lattice_load_feshbach_field = 201.107;
 
 %% Flags
 %Make sure the ixon GUI is on auto camera config if swapping between

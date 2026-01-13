@@ -297,7 +297,7 @@ if seqdata.flags.xdtB_ramp_power_end
     curtime = calctime(curtime,tr);
   
     % Hold after ramping
-    th = getVar('xdt_evap_end_ramp_hold');
+    th = getVar('xdtB_evap_end_ramp_hold');
     curtime = calctime(curtime,th);
 end
 
@@ -346,6 +346,7 @@ if seqdata.flags.xdtB_rf_mix_post_evap
          curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
          curtime = calctime(curtime,2);
     end        
+   
     
 end
 
@@ -411,6 +412,9 @@ if seqdata.flags.xdtB_post_RF_sweep
     sweep_pars.delta_freq = getVar('xdtB_post_RF_sweep_delta_freq');
     sweep_pars.pulse_length = getVar('xdtB_post_RF_sweep_time');
     
+    % fake RF sweep?
+    sweep_pars.fake_pulse = 0;
+    
     logText([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
     logText([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
     logText([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
@@ -418,8 +422,37 @@ if seqdata.flags.xdtB_post_RF_sweep
     
         % Do the RF Sweep
 curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse 
-    
+
+% sweep back
+doReverse = 0;
+if doReverse
+    curtime = calctime(curtime,5);
+    sweep_pars.delta_freq = -1*getVar('xdtB_post_RF_sweep_delta_freq');
+    curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse 
 end
+end
+
+
+%% Ramp Power After Low field
+% One application is to measure the trap bottom at low field
+if seqdata.flags.xdtB_ramp_power_end2
+    logNewSection('Ramping XDT Power Back Up',curtime); 
+
+    Pr1 = getVar('xdtB_evap_end2_ramp_power');
+    Pr2 = getVar('xdtB_evap_end2_ramp_power2');
+    tr = getVar('xdtB_evap_end2_ramp_time');   
+    
+    % Ramp ODTs
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tr,tr,Pr1);
+    AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
+        tr,tr,Pr2);
+    curtime = calctime(curtime,tr);
+ 
+end
+
 
 
 %% Unhop the feshbach resonance
@@ -428,10 +461,26 @@ if seqdata.flags.xdtB_feshbach_unhop
     % NEEDS TO BE WRITTEN FROM OLD CODE
 end
 
+%% Levitation Adjustment
+
+if seqdata.flags.xdtB_levitate_fine2
+        logNewSection('levitate fine 2',curtime); 
+
+    HF_QP = getVar('xdtB_levitate_fine2_current'); % this is now current in A
+    tr = getVar('xdtB_levitate_fine2_ramptime');       
+
+    % Ramp Coil 15 (now uses current)
+    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15 Small',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,HF_QP,2); 
+    
+end
+
 %% Secondary Feshbach Ramp after evaporation
 
 if seqdata.flags.xdtB_feshbach_fine2   
             logNewSection('feshbach fine 2',curtime); 
+            
+            ScopeTriggerPulse(curtime,'xdtb_feshbach_fine2');
 
     tr = getVar('xdtB_feshbach_fine2_ramptime');
     fesh = getVar('xdtB_feshbach_fine2_field');
@@ -446,26 +495,67 @@ if seqdata.flags.xdtB_feshbach_fine2
     ramp.fesh_ramptime      = tr;
     ramp.fesh_ramp_delay    = 0;
     ramp.fesh_final         = fesh; %22.6
-    ramp.settling_time      = 10;    
+    ramp.settling_time      = 0;    
 
     % Ramp FB with QP
 curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
 curtime = calctime(curtime,getVar('xdtB_feshbach_fine2_holdtime'));
 end
 
-%% Levitation Adjustment
 
-if seqdata.flags.xdtB_levitate_fine2
-        logNewSection('levitate fine 2',curtime); 
+%% Re-create a spin mixture after high-field evaporation
+if seqdata.flags.xdtB_rf_mix2
+    
+    logNewSection('High Field K Mixing after RF sweep',curtime);  
+    
+    % Get the Feshbach field
+    Bfesh   = getChannelValue(seqdata,'FB Current',1);   
+    % Get the shim field
+    Bzshim = (getChannelValue(seqdata,'Z Shim',1) - ...
+        seqdata.params.shim_zero(3))*2.35;
+    % Caclulate the total field
+    B = Bfesh + Bzshim + 0.11;
+    
+    % Calculate RF Frequency for desired transitions
+    mF1=3/2;mF2=1/2;   
+%     rf_list =  [0] +...
+%         abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);
+%     defVar('xdtB_rf_mix2_freq_shift',rf_list,'MHz');
 
-    HF_QP = getVar('xdtB_levitate_fine2_value');
-    tr = getVar('xdtB_levitate_fine2_ramptime');       
+    defVar('xdtB_rf_mix2_freq_shift',[0],'MHz');0;
+    
+    sweep_pars = struct;
+    sweep_pars.freq = getVar('xdtB_rf_mix2_freq_shift')+...
+        abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);
+    
+    
+    defVar('xdtB_rf_mix2_power',[-9.2],'V');-9.2;
+    defVar('xdtB_rf_mix2_sweep_num',[15],'sweeps');15;
 
-    % Ramp Coil 15
-    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,HF_QP,1); 
+    % Define the RF sweep parameters
+    sweep_pars.power =  getVar('xdtB_rf_mix2_power');
+    delta_freq = 0.05;0.1;
+    sweep_pars.delta_freq = delta_freq;
+    rf_pulse_length_list = [0.65];.65;%2 ms for full transfer, 0.65 ms for 50/50
+    sweep_pars.pulse_length = getScanParameter(rf_pulse_length_list,...
+        seqdata.scancycle,seqdata.randcyclelist,'rf_pulse_length');  
+
+    logText([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
+    logText([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
+    logText([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
+    logText([' RF Power        (V) : ' num2str(sweep_pars.power)]);
+    
+    n_sweeps_mix=getVar('xdtB_rf_mix2_sweep_num');
+    % Perform any additional sweeps
+    for kk=1:n_sweeps_mix
+         curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);
+%          curtime = calctime(curtime,2);
+    end     
+    
+%     defVar('xdtb_spin_mix_hold',[0],'ms');
+%     curtime = calctime(curtime,getVar('xdtb_spin_mix_hold'));
+    
 end
-
 
 %% Pulse on lattices
 % CJF : This is poorly named code and confused me for a while.
@@ -563,7 +653,7 @@ end
     mFi = -9/2; mFf = -7/2;
     rf0 = 1e-6*abs(BreitRabiK(Bguess,Fi,mFi) - BreitRabiK(Bguess,Ff,mFf))/h;
 
-    rf_shift_list =  -2*1e-3+1e-3*[-25 -5 0 -10];   
+    rf_shift_list =  1e-3*[20];   
     
     rf_list = rf_shift_list + rf0;
     
@@ -594,7 +684,7 @@ end
  end
  
 
-%% Turn off feshbach field
+%% Turn off feshbach field and possibly leviation field
 
 if seqdata.flags.xdtB_feshbach_off   
         logNewSection('Turning off the feshbach',curtime); 
@@ -614,55 +704,45 @@ if seqdata.flags.xdtB_feshbach_off
     ramp.fesh_final         = fesh;
     ramp.settling_time      = 0; 
     
-    if seqdata.flags.xdtB_levitate_off  
-        trQP = getVar('xdtB_levitate_off_ramptime');
+     % check ramp_bias_fields to see what struct ramp may contain 
+    
+    if ~seqdata.flags.xdtB_levitate_off 
+        curtime = ramp_bias_fields(calctime(curtime,0), ramp);
+    else
+        ramp_bias_fields(calctime(curtime,0), ramp);
+    end
+    
+end 
+
+if seqdata.flags.xdtB_levitate_off  
+    trQP = getVar('xdtB_levitate_off_ramptime');
 %         AnalogFuncTo(calctime(curtime,0),'Coil 15',...
 %             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),trQP,trQP,0,1);
-        
-        AnalogFuncTo(calctime(curtime,0),'Coil 15 Small',...
-            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),trQP,trQP,0,2);
-        
-    end    
-    curtime = ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain 
-    
-    if seqdata.flags.xdtB_levitate_off       
-        curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
-             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-                 5,5,0); 
-        % Go back to "normal" configuration
-        curtime = calctime(curtime,10);
-        % Turn off reverse QP switch
-        setDigitalChannel(curtime,'Reverse QP Switch',0);
-        curtime = calctime(curtime,10);
-        % Turn on 15/16 switch
-        curtime = AnalogFuncTo(calctime(curtime,0),'15/16 GS',...
-             @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
-                 10,10,9,1);              
-        curtime = calctime(curtime,10); 
-    end
+
+    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15 Small',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),trQP,trQP,0,2);
+      
+    curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
+         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+             5,5,0); 
+    % Go back to "normal" configuration
+    curtime = calctime(curtime,10);
+    % Turn off reverse QP switch
+    setDigitalChannel(curtime,'Reverse QP Switch',0);
+    curtime = calctime(curtime,10);
+    % Turn on 15/16 switch
+    curtime = AnalogFuncTo(calctime(curtime,0),'15/16 GS',...
+         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
+             10,10,9,1);              
+    curtime = calctime(curtime,10); 
+end
+
+if seqdata.flags.xdtB_feshbach_off  
     curtime = calctime(curtime,50);
+    curtime = calctime(curtime,getVar('xdtB_feshbach_off_holdtime'));
 end
 
 
-
-%% Ramp Power After Low field
-% One application is to measure the trap bottom at low field
-if seqdata.flags.xdtB_ramp_power_end2
-    logNewSection('Ramping XDT Power Back Up',curtime); 
-
-    Pr = getVar('xdtB_evap_end2_ramp_power');
-    tr = getVar('xdtB_evap_end2_ramp_time');   
-    
-    % Ramp ODTs
-    AnalogFuncTo(calctime(curtime,0),'dipoleTrap1',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        tr,tr,Pr);
-    AnalogFuncTo(calctime(curtime,0),'dipoleTrap2',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
-        tr,tr,Pr);
-    curtime = calctime(curtime,tr);
- 
-end
 %% Piezo kick
 if seqdata.flags.xdtB_piezo_vert_kick
     logNewSection('Kicking the dipole trap',curtime);

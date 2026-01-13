@@ -303,13 +303,13 @@ end
     mFi = -9/2; mFf = -7/2;
     rf0 = 1e-6*abs(BreitRabiK(Bguess,Fi,mFi) - BreitRabiK(Bguess,Ff,mFf))/h;
 
-    rf_shift_list =  1e-3*[-100:10:100];   
+    rf_shift_list =  1e-3*[7];   
     
     rf_list = rf_shift_list + rf0;
     
     defVar('conductivity_rf_freq',rf_list,'MHz');
     defVar('conductivity_rf_power',-2,'arb');
-    defVar('conductivity_rf_delta',25,'kHz');
+    defVar('conductivity_rf_delta',10,'kHz');
     defVar('conductivity_rf_time',10,'ms');
     
     addOutputParam('conductivity_rf_freq_shift',...

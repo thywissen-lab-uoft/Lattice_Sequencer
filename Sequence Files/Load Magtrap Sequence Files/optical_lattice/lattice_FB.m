@@ -26,35 +26,36 @@ defVar('lattice_FB_filter_feshbach_time',10,'ms');
 defVar('lattice_FB_filter_feshbach_field',198.5,'G');
 defVar('lattice_FB_filter_feshbach_holdtime',0,'ms');
 
-%%%%%%% Raman preparation/spectroscopy %%%%%%%
-% Ramp the field
-seqdata.flags.lattice_FB_field_ramp_pre_spec   = 1;
-defVar('lattice_FB_pre_spec_feshbach_time',200,'ms');
-defVar('lattice_FB_pre_spec_feshbach_settling_time',20,'ms');
-defVar('lattice_FB_pre_spec_feshbach_field',130,'G');
-defVar('lattice_FB_pre_spec_feshbach_holdtime',0,'ms');
-
 % Ramp lattice depth
 seqdata.flags.lattice_FB_spec_ramp             = 1;
 defVar('lattice_FB_spec_ramptime',10,'ms');  
 defVar('lattice_FB_spec_ramp_settling_time',5,'ms');
 defVar('lattice_FB_spec_depth_X',[100],'Er'); 100;
-defVar('lattice_FB_spec_depth_Y',[150],'Er'); 200;
-defVar('lattice_FB_spec_depth_Z',[200],'Er'); 400;
+defVar('lattice_FB_spec_depth_Y',[100],'Er'); 200;
+defVar('lattice_FB_spec_depth_Z',[100],'Er'); 400;
+
+%%%%%%% Raman preparation/spectroscopy %%%%%%%
+% Ramp the field
+seqdata.flags.lattice_FB_field_ramp_pre_spec   = 1;
+defVar('lattice_FB_pre_spec_feshbach_time',100,'ms');200;
+defVar('lattice_FB_pre_spec_feshbach_settling_time',20,'ms');
+defVar('lattice_FB_pre_spec_feshbach_field',130,'G');130;
+defVar('lattice_FB_pre_spec_feshbach_holdtime',0,'ms');
+
 
 %%%%%%%%% Raman Spectroscopy %%%%%%%%%%
 seqdata.flags.lattice_FB_raman_spec            = 1;
 % first pulse settings
-defVar('lattice_FB_Raman_time',[0.23],'ms');0.074; % 1 ms for sweep, 0.09 ms for pi pulse at -21.72 GHz cmdet 86 us pi/2
+defVar('lattice_FB_Raman_time',[1],'ms');0.074; % 1 ms for sweep, 0.09 ms for pi pulse at -21.72 GHz cmdet 86 us pi/2
 defVar('lattice_FB_post_Raman_holdtime',[0],'ms'); %[0:0.005:0.05];
-defVar('lattice_FB_Raman_AOM2_power',[0.8],'V');1.6;
+defVar('lattice_FB_Raman_AOM2_power',[1.6],'V');1.6;
 seqdata.flags.Raman_Source1                    = 0; % 0 default, 1 alternate
 
 % default source settings
-defVar('lattice_FB_Raman_DP_freq_shift',[-99],'kHz');-92.5;-72.5;60;61;% 100 Er: 57 kHz 9n-->7n+1 -25 n--> n, 7n-->9n+1 -73 kHz 
-defVar('lattice_FB_Raman_DP_power',2.3,'V');2.3;
+defVar('lattice_FB_Raman_DP_freq_shift',[12.5:5:42.5],'kHz');-92.5;-72.5;60;61;% 100 Er: 57 kHz 9n-->7n+1 -25 n--> n, 7n-->9n+1 -73 kHz 
+defVar('lattice_FB_Raman_DP_power',2.5,'V');2.3;
 defVar('lattice_FB_Raman_sweep_range',5,'kHz');
-seqdata.flags.Raman_type                       = 1; % 1 is pulse, 0 sweep
+seqdata.flags.Raman_type                       = 0; % 1 is pulse, 0 sweep
 
 % alternate source settings
 defVar('lattice_FB_Raman_DP_alt_freq_shift',[-15],'kHz');
@@ -62,14 +63,12 @@ defVar('lattice_FB_Raman_DP_power_alt',[2.6],'V');0.6;2.3;
 defVar('lattice_FB_Raman_sweep_range_alt',[2],'kHz');
 seqdata.flags.Raman_type_alt                   = 1; % 1 is pulse, 0 sweep
 
-% Raman_type = 'pulse';
-% Raman_type = 'sweep';
 
 defVar('lattice_Raman_common_mode_det',[-21.6],'GHz');
 
 
 % do a second pulse with some wait time, can also ramp lattices in between
-seqdata.flags.lattice_FB_double_raman_spec             = 1;
+seqdata.flags.lattice_FB_double_raman_spec             = 0;
 seqdata.flags.lattice_FB_double_raman_lattice_ramp     = 0;
 % second pulse settings
 seqdata.flags.Raman_Source2                            = 1; % 0 default, 1 alternate
@@ -83,10 +82,10 @@ defVar('lattice_FB_Raman_time2',[0.09],'ms');0.715; 0.05; % 1 ms for sweep, 0.09
 % do a third pulse with some wait time, must have single and double on.
 % useful for spin echo measurement 
 %(needs to be reworked for the new Raman DP frequency source)
-seqdata.flags.lattice_FB_triple_raman_spec             = 1;
+seqdata.flags.lattice_FB_triple_raman_spec             = 0;
 seqdata.flags.Raman_Source3                            = 1; % 0 default, 1 alternate
 % echo_time = getVar('lattice_FB_Raman_double_pulse_wait_time'); % want these to be the same for spin echo measurement
-defVar('lattice_FB_Raman_triple_pulse_wait_time',[0:0.1:1.5],'ms'); %used only with triple raman spec, wait time between pulses 2 and 3
+defVar('lattice_FB_Raman_triple_pulse_wait_time',[0],'ms'); %used only with triple raman spec, wait time between pulses 2 and 3
 defVar('lattice_FB_Raman_time3',[0.09],'ms');0.05; % 1 ms for sweep, 0.09 ms for pi pulse at -21.72 GHz cmdet
 
 % do Raman reversal - takes Raman settings and does it again but in reverse
@@ -101,6 +100,13 @@ defVar('lattice_FB_uWave_range',[80],'kHz');25;
 defVar('lattice_FB_uWave_power',[5],'dBm');
 defVar('lattice_FB_uWave_time',[1],'ms');
 
+% transfer b -> g
+seqdata.flags.lattice_FB_rf_sweep              = 0;
+defVar('lattice_FB_RF_sweep_freq_shift',[1],'MHz');0.25; %Shifted from -3/2 to -1/2 transition
+defVar('lattice_FB_RF_sweep_delta_freq',[12],'MHz'); %Total Range of sweep
+defVar('lattice_FB_RF_sweep_power',[0],'V');
+defVar('lattice_FB_RF_sweep_time',[10], 'ms');
+
 % lattice depth ramp after Raman
 seqdata.flags.lattice_FB_ramp_post_raman       = 0;
 defVar('lattice_FB_post_raman_ramptime',[0.1],'ms');   
@@ -113,9 +119,9 @@ defVar('lattice_FB_post_raman_lattice_ramp_holdtime',[0],'ms');
 % field ramp after Raman
 seqdata.flags.lattice_FB_field_ramp_post_raman  = 0;
 defVar('lattice_FB_post_raman_feshbach_time',10,'ms');
-defVar('lattice_FB_post_raman_feshbach_settling_time',1,'ms')
-defVar('lattice_FB_post_raman_feshbach_field',[132.055],'G');132.009;20;
-defVar('lattice_FB_post_raman_feshbach_holdtime',[1000],'ms');
+defVar('lattice_FB_post_raman_feshbach_settling_time',0,'ms')
+defVar('lattice_FB_post_raman_feshbach_field',[141],'G');132.009;20;
+defVar('lattice_FB_post_raman_feshbach_holdtime',[500],'ms');
 
 %%%%%%% Raman preparation/spectroscopy after oscillations %%%%%%%
 % Ramp lattice depth (back to imbalance)
@@ -337,6 +343,33 @@ curtime = calctime(curtime, 0);
     
     
 end
+
+%% Ramp lattice before spectroscopy
+if seqdata.flags.lattice_FB_spec_ramp
+    logNewSection('Lattice Ramp for Spectroscopy',curtime)    
+    ScopeTriggerPulse(curtime,'lattice_ramp_2');   
+    
+   % Perform the rest of the lattice ramps
+   dT  = getVar('lattice_FB_spec_ramptime');
+   dTS = getVar('lattice_FB_spec_ramp_settling_time');
+   Ux  = getVar('lattice_FB_spec_depth_X');
+   Uy  = getVar('lattice_FB_spec_depth_Y');
+   Uz  = getVar('lattice_FB_spec_depth_Z');
+   
+   % Define Ramp Ups
+    AnalogFuncTo(calctime(curtime,0),'xLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Ux); 
+    AnalogFuncTo(calctime(curtime,0),'yLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Uy);
+    AnalogFuncTo(calctime(curtime,0),'zLattice',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Uz);    
+    
+    % Wait for ramp to occur
+    curtime = calctime(curtime,dT);    
+    % Wait for ramp to settle
+    curtime = calctime(curtime,dTS);          
+end
+
 %% Field Ramps BEFORE uWave/RF Spectroscopy
 % This code prepares the magnetic fields for uWave and RF spectroscopy
 
@@ -372,37 +405,14 @@ if seqdata.flags.lattice_FB_field_ramp_pre_spec
     
 end
 
-%% Ramp lattice before spectroscopy
-if seqdata.flags.lattice_FB_spec_ramp
-    logNewSection('Lattice Ramp for Spectroscopy',curtime)    
-    ScopeTriggerPulse(curtime,'lattice_ramp_2');   
-    
-   % Perform the rest of the lattice ramps
-   dT  = getVar('lattice_FB_spec_ramptime');
-   dTS = getVar('lattice_FB_spec_ramp_settling_time');
-   Ux  = getVar('lattice_FB_spec_depth_X');
-   Uy  = getVar('lattice_FB_spec_depth_Y');
-   Uz  = getVar('lattice_FB_spec_depth_Z');
-   
-   % Define Ramp Ups
-    AnalogFuncTo(calctime(curtime,0),'xLattice',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Ux); 
-    AnalogFuncTo(calctime(curtime,0),'yLattice',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Uy);
-    AnalogFuncTo(calctime(curtime,0),'zLattice',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),dT, dT, Uz);    
-    
-    % Wait for ramp to occur
-    curtime = calctime(curtime,dT);    
-    % Wait for ramp to settle
-    curtime = calctime(curtime,dTS);          
-end
 
 %% Raman spectroscopy
 if seqdata.flags.lattice_FB_raman_spec
     
     Raman_opts.mF1                  = -9/2;
     Raman_opts.mF2                  = -7/2;
+%     Raman_opts.mF1                  =  3/2;
+%     Raman_opts.mF2                  =  1/2;
     Raman_opts.mF1_alt              = -9/2;
     Raman_opts.mF2_alt              = -9/2;
     Raman_opts.dF                   = getVar('lattice_FB_Raman_DP_freq_shift');
@@ -527,6 +537,55 @@ if seqdata.flags.lattice_FB_uWave_spec
     curtime = K_uWave_Spectroscopy(curtime,spec_pars);
     
     curtime = calctime(curtime,10);
+end
+
+%% RF Sweep at HF
+if seqdata.flags.lattice_FB_rf_sweep   
+    
+    logNewSection('RF transfer -9/2 (-7/2) to higher spin states',curtime);
+    
+    % Get the Feshbach field
+    Bfesh   = getChannelValue(seqdata,'FB Current',1);   
+    % Get the shim field
+    Bzshim = (getChannelValue(seqdata,'Z Shim',1) - ...
+        seqdata.params.shim_zero(3))*2.35;
+    % Caclulate the total field
+    B = Bfesh + Bzshim + 0.11;
+    
+    % Calculate RF Frequency for desired transitions
+    mF1=-3/2;mF2=-1/2;   
+    rf_list =  getVar('lattice_FB_RF_sweep_freq_shift') +...
+        abs((BreitRabiK(B,9/2,mF2) - BreitRabiK(B,9/2,mF1))/6.6260755e-34/1E6);            
+    sweep_pars.freq = rf_list;
+    
+    % Define the RF sweep parameters
+    sweep_pars.power =  getVar('lattice_FB_RF_sweep_power');
+    sweep_pars.delta_freq = getVar('lattice_FB_RF_sweep_delta_freq');
+    sweep_pars.pulse_length = getVar('lattice_FB_RF_sweep_time');
+    
+    % fake RF sweep?
+    sweep_pars.fake_pulse = 0;
+    
+    logText([' Sweep Time    (ms)  : ' num2str(sweep_pars.pulse_length)]);
+    logText([' RF Freq       (MHz) : ' num2str(sweep_pars.freq)]);
+    logText([' Delta Freq    (MHz) : ' num2str(sweep_pars.delta_freq)]);
+    logText([' RF Power        (V) : ' num2str(sweep_pars.power)]);
+    
+        % Do the RF Sweep
+curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse 
+
+defVar('lattice_FB_RF_sweep_holdtime',[0]);
+curtime = calctime(curtime,getVar('lattice_FB_RF_sweep_holdtime'));
+
+
+% sweep back
+doReverse = 0;
+if doReverse
+    curtime = calctime(curtime,5);
+    sweep_pars.delta_freq = -1*getVar('lattice_FB_RF_sweep_delta_freq');
+    curtime = rf_uwave_spectroscopy(calctime(curtime,0),3,sweep_pars);%3: sweeps, 4: pulse 
+end
+
 end
 
 %% Ramp lattice post raman

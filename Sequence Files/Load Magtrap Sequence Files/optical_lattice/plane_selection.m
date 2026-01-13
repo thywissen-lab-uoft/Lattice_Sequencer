@@ -18,10 +18,13 @@ opts.planeselect_doVertKill = seqdata.flags.plane_selection_doKill;            %
 
 opts.douWave= seqdata.flags.plane_selection_douWave;
 
+opts.doLFKill = seqdata.flags.plane_selection_doLFKill;
+
 opts.fake_the_plane_selection_sweep = ~opts.douWave;    % Whether or not to apply uwaves
 opts.planeselect_doMicrowaveBack = 0;       % uwave transfer back to F=9/2 (uneeded?)
 opts.planeselect_doFinalRepumpPulse = 0;    % apply repump to kill leftover F=7/2 (uneeded?)
 opts.planeselect_again = 0;                 % Repeat plane selection (does this actually help?)
+
 
 
 
@@ -954,6 +957,20 @@ if opts.ramp_field_CF_off
      setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage 2',0); %stop PID
      curtime= calctime(curtime,20);
      setDigitalChannel(calctime(curtime,0),'Z shim bipolar relay',1);
+     
+     % adjust ramp value to 4 G if you're doing LF imaging
+     if opts.doLFKill
+         val_FB = 4;
+         
+         val_X = 0;
+         val_Y = -1;
+         val_Z = 0;
+         
+         val_FB = 0;
+         val_16 = 0;
+         
+
+     end
     
     % Ramp up QP Feedforward
     AnalogFuncTo(calctime(curtime,0),'Coil 16',...
@@ -981,6 +998,63 @@ if opts.ramp_field_CF_off
         Tff+20, Tff+20, val_FF); 
     curtime = calctime(curtime,Tr);
     curtime = calctime(curtime,Ts);     
+end
+
+%% Low field Kill Pulse
+% Apply a D2 beam resonant with the 9/2 manifold to 
+% remove any atoms not transfered to the F=7/2 manifold.
+
+if opts.doLFKill
+    logNewSection('Applying low field D2 Kill Pulse',curtime);
+
+    %Resonant light pulse to remove any untransferred atoms from
+    %F=9/2
+    
+
+    
+    kill_time = getVar('qgm_LF_kill_time');    
+    kill_detuning=getVar('qgm_LF_kill_detuning');
+    mod_amp =getVar('qgm_LF_kill_power');
+
+
+ % Display update about
+    logText(' D2 low field Kill pulse');
+    logText(['     Kill Time       (ms) : ' num2str(kill_time)]); 
+    logText(['     Kill Amp         (V) : ' num2str(mod_amp)]); 
+    logText(['     Kill Detuning  (MHz) : ' num2str(kill_detuning)]); 
+
+
+    if kill_time>0
+
+        %%%%%%%%%%%%%%%%%%%%
+
+        %%% Pulse settings %%%
+        % Set K probe FM
+        setAnalogChannel(calctime(curtime,-5),...
+            'K Probe/OP FM',180);
+
+        % Set K Trap FM 
+        setAnalogChannel(calctime(curtime,-5),...
+            'K Trap FM',kill_detuning);  
+
+        % Set K probe/OP power 
+        setAnalogChannel(calctime(curtime,-5),...
+          'K Probe/OP AM',mod_amp); 
+      
+      
+        % Pulse TTL
+        DigitalPulse(calctime(curtime,0),'K Probe/OP TTL',kill_time,1);
+
+        % Open and close shutter
+        setDigitalChannel(calctime(curtime, -5),'K Probe/OP shutter',1);
+        setDigitalChannel(calctime(curtime, kill_time+.5),'K Probe/OP shutter',0);
+        
+        % Turn AM power off
+        setAnalogChannel(calctime(curtime,kill_time+.5),'K Probe/OP AM',0,1);
+
+       
+    end
+    
 end
      
 end

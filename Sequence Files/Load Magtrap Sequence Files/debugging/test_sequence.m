@@ -7025,17 +7025,24 @@ curtime = calctime(curtime,150);
 % 
 % 
 % % set voltage
-% % setAnalogChannel(calctime(curtime,100),'Transport FF',10);
+setAnalogChannel(calctime(curtime,100),'Transport FF',10);
 % curtime=AnalogFuncTo(calctime(curtime,0),'Transport FF',...
 %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
 %     tFF,tFF,10);
 % 
-
+% 
 K_power = 0.4;
-setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',K_power); 
-% setDigitalChannel(curtime,'Raman 3 Source',1);
+% setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',K_power); 
+setDigitalChannel(curtime,'K High Field Probe',0);
+% setDigitalChannel(curtime,'High Field Shutter',0);
+% 
+% DigitalPulse(calctime(curtime,0),'Sci shim PSU DIO',10,1);
 
-DigitalPulse(calctime(curtime,0),'Sci shim PSU DIO',10,1);
+% P0 = 0.0158257; % power level at 0V (this is a bad way);
+% value = 1;
+% AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
+%     @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+%     5000,5000,value,P0,4); 
 % 
 % curtime = calctime(curtime,100);
 timeout = curtime;

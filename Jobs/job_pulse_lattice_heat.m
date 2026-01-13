@@ -5,10 +5,11 @@ function J = job_pulse_lattice_heat
         global seqdata;        
         
         % Optical Evaporation        
-        defVar('xdtB_evap_power',evap_depth,'W');
+        defVar('xdtB_evap_power',[0.0538],'W');evap_depth;
         % Magnetic Field in Lattice
         defVar('lattice_load_feshbach_field',field,'G'); 
-        %Levitation voltage value during xdtB
+        %Set Plane shift
+        defVar('qgm_planeShift_N',[-7],'plane');
                
         seqdata.flags.lattice_conductivity_new      = 1;  
         % Conductivity       
@@ -16,16 +17,16 @@ function J = job_pulse_lattice_heat
         seqdata.flags.conductivity_ODT2_mode            = 1; % 0:OFF, 1:SINE, 2:DC
         seqdata.flags.conductivity_mod_direction        = 1; % 1:X-direction 2:Y-direction 
         defVar('conductivity_mod_freq',freq,'Hz');
-        defVar('conductivity_ODT2_mod_amp',mod_strength,'V');  % ODT2 Mod Depth
+        defVar('conductivity_ODT2_mod_amp',0.92,'V');1.3;  % ODT2 Mod Depth
         defVar('conductivity_mod_ramp_time',mod_ramp_time,'ms');  
         defVar('lattice_load_feshbach_holdtime',[0],'ms');
 
         % Pulse lattice
-        seqdata.flags.xdtB_pulse_lattice            = 0;
+        seqdata.flags.xdtB_pulse_lattice            = 1;
         defVar('xdtb_lattice_load_time',0.1,'ms');
         defVar('xdtb_lattice_depth',[0],'Er');
         defVar('xdtb_lattice_hold_pulse_time',[2],'ms');
-        defVar('xdtb_lattice_pulse_equil_time',[500],'ms');
+        defVar('xdtb_lattice_pulse_equil_time',[100],'ms');
         
         % Modulation time
         t0 = 50;T = 1e3/freq; 
@@ -48,7 +49,7 @@ function J = job_pulse_lattice_heat
 clear J
 
 % Magnetic Field (G)
-B_conductivity = 201.1;
+B_conductivity = 201.107;
 % Optical Evaporation Power (W)
 power_conductivity = 0.066; 
 % Conductivity modulation ramp up time (ms)
@@ -56,9 +57,9 @@ mod_ramp_time = 50;
 % Plane Selection Frequency amplitude (kHz);
 uwave_freq_amp = 30;
 % Modulation Frequencies
-f = 54;
+f = 50;
 %Modulation strength
-mod_strength = 4;
+mod_strength = 0.92;
 
 out = struct;   
 out.SequenceFunctions   = {@main_settings,@(curtime) ...
@@ -66,7 +67,7 @@ out.SequenceFunctions   = {@main_settings,@(curtime) ...
 %     npt.CycleStartFcn       = @cycleStart;
 %     npt.CycleCompleteFcn    = @cycleComplete;
 %     npt.JobCompleteFcn      = @jobComplete;
-out.CycleEnd = 9;
+out.CycleEnd = 20;
 out.WaitMode = 2;
 out.WaitTime = 90;
 out.JobName             = [' pulse lattice heat ' num2str(f) ' Hz,' ...

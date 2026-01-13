@@ -11,13 +11,27 @@ function params = Load_Absorption_Image_Parameters()
     params.detunings.K.X.positive.SG = 24.5;
     params.detunings.K.X.positive.short_tof = 24.5;
     
-    % |9/2,-9/2> and |9/2,-7/2> atoms
-    params.detunings.K.X.negative.normal = 33.1; %(33.1) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
-%     defVar('img_K_X_NEG_NORMAL',[32 34],'MHz');
+    if seqdata.flags.xdtB_post_RF_sweep %|| seqdata.flags.lattice_FB_rf_sweep
+        % imaging g atoms at lowfield
+        params.detunings.K.X.negative.normal = 31.7; % 2025/11/21
+%         params.detunings.K.X.negative.normal = 33.1;
+    else
+        % |9/2,-9/2> and |9/2,-7/2> atoms
+        params.detunings.K.X.negative.normal = 33.1; %(33.1) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
+    end
+    
+    
+        %     defVar('img_K_X_NEG_NORMAL',[32 34],'MHz');
 %     params.detunings.K.X.negative.normal = getVar('img_K_X_NEG_NORMAL'); %(33.1) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
-%     defVar('K_img_det_shift_SG',[37],'MHz');
+%     defVar('K_img_det_shift_SG',[35.3],'MHz');37;
 %     k_SG_det_shift = getVar('K_img_det_shift_SG');
-    params.detunings.K.X.negative.SG = 37;34.5;      % for mF stern gerlach
+
+
+    if seqdata.flags.xdtB_post_RF_sweep
+        params.detunings.K.X.negative.SG = 31.0;
+    else
+        params.detunings.K.X.negative.SG = 35.3;37;34.5;      % for mF stern gerlach
+    end
 %     params.detunings.K.X.negative.SG = 34.5+kdet_shift;      % for mF stern gerlach
 
     

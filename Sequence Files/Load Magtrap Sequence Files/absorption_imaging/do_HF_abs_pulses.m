@@ -25,15 +25,19 @@ function params = do_HF_abs_pulses(curtime,params,flags,tD)
 
     if flags.Attractive
         if seqdata.flags.lattice
-            rf_tof_shift = params.HF_rf_shift.attractive_lattice;
+            rf_tof_shift      = params.HF_rf_shift.attractive_lattice;
+            rf_tof_delta_freq = params.HF_rf_width.attractive_lattice;
         else
-            rf_tof_shift = params.HF_rf_shift.attractive_xdt;
+            rf_tof_shift      = params.HF_rf_shift.attractive_xdt;
+            rf_tof_delta_freq = params.HF_rf_width.attractive_xdt;
         end
     else
         if seqdata.flags.lattice
-            rf_tof_shift = params.HF_rf_shift.repulsive_lattice;
+            rf_tof_shift      = params.HF_rf_shift.repulsive_lattice;
+            rf_tof_delta_freq = params.HF_rf_width.repulsive_lattice;
         else
-            rf_tof_shift = params.HF_rf_shift.repulsive_xdt;
+            rf_tof_shift      = params.HF_rf_shift.repulsive_xdt;
+            rf_tof_delta_freq = params.HF_rf_width.repulsive_xdt;
         end                      
 
     end
@@ -48,9 +52,12 @@ function params = do_HF_abs_pulses(curtime,params,flags,tD)
     end
 
     % RF Frequency Sweep
-    rf_tof_delta_freq_list = 40*1e-3; [40]*1e-3;[35]*1e-3;[20]*1e-3;[12]*1e-3;12; %20kHz for 15ms TOF
-    rf_tof_delta_freq = getScanParameter(rf_tof_delta_freq_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'rf_tof_delta_freq','MHz');
+%     rf_tof_delta_freq_list = [20]*1e-3; [40]*1e-3;[35]*1e-3;[20]*1e-3;[12]*1e-3;12; %20kHz for 15ms TOF
+%     rf_tof_delta_freq = getScanParameter(rf_tof_delta_freq_list,seqdata.scancycle,...
+%         seqdata.randcyclelist,'rf_tof_delta_freq','MHz');
+
+    % get tof delta_freq
+     addOutputParam('rf_tof_delta_freq',rf_tof_delta_freq,'MHz')
 
     % RF Pulse Time
     rf_tof_pulse_length_list = [1];[1];%1
@@ -66,7 +73,7 @@ function params = do_HF_abs_pulses(curtime,params,flags,tD)
     rf_off_voltage=-10;-9.9;
 
     %sweep_type = 'DDS';
-    %sweep_type = 'SRS_HS1';
+    %sweep_type = 'SRS_HS1'; %DO NOT USE: sequence not set up properly
     sweep_type = 'SRS_LINEAR';
     
 %     dispLineStr('Programming HF Imaging RF Sweep',curtime);
@@ -257,7 +264,7 @@ logNewSection('Programming HF Imaging RF Sweep',curtime);
                 sweep_time = rf_tof_pulse_length;
 
                 rf_srs_opts = struct;
-                rf_srs_opts.Address=29;                       
+                rf_srs_opts.Address=26;                       
                 rf_srs_opts.EnableBNC=1;                         % Enable SRS output 
                 rf_srs_opts.PowerBNC = rf_tof_srs_power;                           
                 rf_srs_opts.Frequency = rf_tof_freq;     
@@ -272,8 +279,8 @@ logNewSection('Programming HF Imaging RF Sweep',curtime);
                 % Set RF Source to SRS
                 setDigitalChannel(calctime(curtime,-5),'RF Source',1);
 
-                % Set RF Source to SRS 29
-                setDigitalChannel(calctime(curtime,-5),'SRS Source post spec',1);
+                % Set RF Source to SRS 26
+                setDigitalChannel(calctime(curtime,-5),'SRS Source post spec',0);
 
                 % Set RF Source to SRS
                 setDigitalChannel(calctime(curtime,-5),'SRS Source',0);                                
@@ -311,7 +318,7 @@ logNewSection('Programming HF Imaging RF Sweep',curtime);
                 setAnalogChannel(calctime(curtime,...
                     rf_wait_time + pulse_length + extra_wait_time+rf_tof_pulse_length),'RF Gain',rf_off_voltage);
 
-                % Set RF Source to SRS
+                % Set RF Source to back to DDS
                 setDigitalChannel(calctime(curtime,...
                     rf_wait_time + pulse_length + extra_wait_time+rf_tof_pulse_length+1),'RF Source',0);
 

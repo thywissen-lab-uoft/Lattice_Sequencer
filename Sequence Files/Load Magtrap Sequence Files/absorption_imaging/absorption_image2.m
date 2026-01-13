@@ -34,10 +34,6 @@ if (...
     seqdata.flags.absorption_image.negative_imaging_shim = 'negative'; % negative_imaging_shim is stupidly named
 end
 
-if isfield(seqdata.flags,'xdt_spin_xfer_transfer_K') && seqdata.flags.xdt_spin_xfer_transfer_K
-    seqdata.flags.absorption_image.negative_imaging_shim = 'negative';
-end
-
 %% Shorthand for certain parameters and flags
 
 %Shorthand for convenience

@@ -455,7 +455,7 @@ end
 if seqdata.flags.lattice_feshbach_off   
     tr = getVar('lattice_feshbach_off_ramptime');
     fesh = getVar('lattice_feshbach_off_field');        
-
+    
     % Define the ramp structure
     ramp=struct;
     ramp.shim_ramptime      = tr;
@@ -1853,7 +1853,7 @@ if seqdata.flags.lattice_uWave_spec
             seqdata.scancycle,seqdata.randcyclelist,'uwave_delta_freq','kHz');
         
     % Time
-    uwave_time_list = 40;[1];40;
+    uwave_time_list = 5;40;[1];40;
     uwave_time = getScanParameter(uwave_time_list,seqdata.scancycle,...
         seqdata.randcyclelist,'uWave_time','ms');    
     

@@ -24,7 +24,7 @@ end
 nCenter = [276,256]; 
 
 % Feedback bounds
-Lambda_Lim = [70 80];   % [px] Wavelength bounds for stripes
+Lambda_Lim = [75 85];   % [px] Wavelength bounds for stripes
 Theta_Lim = [-3 2];   % [deg] Angle bounds for stripes
 Time_max = 40;          % [min] maximum number of minutes to feedback on    
     

@@ -61,8 +61,9 @@ end
          data = getRecentGuiData(50);      
          doFeedback = 1;                  
          doExitPID = feedback_stripe(data,doFeedback);           
-%        Use this code to allow feedback to end itself % 2025.04.02 minimum 3 shots
-         if doExitPID && (obj.CycleNow > 2)
+%        Use this code to allow feedback to end itself % 2025.04.02 minimum
+%        3 shots, 2025.12.20 4 shots minimum
+         if doExitPID && (obj.CycleNow > 3)
             obj.CycleNow = obj.CycleEnd; 
          end
    end
@@ -87,10 +88,10 @@ end
 % This is terrible coding. CJF Will figure out a better way to structure
 % things
 
-plane_shift             = 1;
-field                   = 200.15; 201.1;
-evap_depth_stripe       = 0.08;
-evap_depth_focus        = 0.055;
+plane_shift             = -7;
+field                   = 201.107;
+evap_depth_stripe       = 0.07;
+evap_depth_focus        = 0.06;
 evap_depth_fidelity     = 0.055;
 %% Overrides
 if isfield(npt,'lattice_load_feshbach_field')
@@ -106,7 +107,7 @@ str_focus = ['focus : plane=' num2str(plane_shift) ',' ...
     'evap2=' num2str(evap_depth_focus)];
 str_fidelity = ['fidelity : plane=' num2str(plane_shift) ',' ...
     'field=' num2str(field) ',' ...
-    'evap2=' num2str(evap_de   pth_fidelity)];
+    'evap2=' num2str(evap_depth_fidelity)];
 
 
 %% Create Job Object : STRIPE
@@ -153,7 +154,7 @@ Jfidelity = sequencer_job(out_fidelity);
 %% Output
 
 J = Jstripe;
-% J(end+1)=Jfocus;        % Uncomment line if you want to feedback focus
+J(end+1)=Jfocus;        % Uncomment line if you want to feedback focus
 % J(end+1)=Jfidelity;     % Uncomment line if you want to measure fidelity
 
 end

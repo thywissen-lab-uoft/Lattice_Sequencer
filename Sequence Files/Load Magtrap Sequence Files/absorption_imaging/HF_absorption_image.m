@@ -17,7 +17,7 @@ seqdata.flags.HF_absorption_image.TakeDarkImage = 1;
 seqdata.params.HF_absorption_image = Load_HF_Absorption_Image_Parameters(); 
 
 %Set other Imaging parameters
-defVar('HF_probe_pwr',0.9,'V') %HF probe power 
+defVar('HF_probe_pwr',[1.4],'V');0.9; %HF probe power 
 
 seqdata.times.tof_end = calctime(curtime,seqdata.params.HF_absorption_image.timings.tof); %Also append the time that the image is actually taken to the time list
 
@@ -27,6 +27,33 @@ seqdata.times.tof_end = calctime(curtime,seqdata.params.HF_absorption_image.timi
 %Shorthand for convenience
 flags = seqdata.flags.HF_absorption_image;
 params = seqdata.params.HF_absorption_image;
+
+%% Ramp field to imaging value
+
+% % Set final feshbach value
+% if seqdata.flags.HF_absorption_image.Attractive
+%     fesh = 207;
+% else
+%     fesh = 195;
+% end
+% 
+%     % Set ramp time
+%     tr = 10;
+%     
+%     % Define the ramp structure
+%     ramp=struct;
+%     ramp.shim_ramptime      = tr;
+%     ramp.shim_ramp_delay    = 0;
+%     ramp.xshim_final        = seqdata.params.shim_zero(1); 
+%     ramp.yshim_final        = seqdata.params.shim_zero(2);
+%     ramp.zshim_final        = seqdata.params.shim_zero(3);
+%     ramp.fesh_ramptime      = tr;
+%     ramp.fesh_ramp_delay    = 0;
+%     ramp.fesh_final         = fesh;
+%     ramp.settling_time      = 0; 
+%     
+%     ramp_bias_fields(calctime(curtime,0), ramp);
+
 
 %% Prepare detunings
 
@@ -120,12 +147,15 @@ setAnalogChannel(calctime(curtime,-100),'X Shim',0,3);
 setAnalogChannel(calctime(curtime,-100),'Y Shim',0,4);
 setAnalogChannel(calctime(curtime,-100),'Z Shim',0,3);
 
-% Turn off feshbach sometime after the time of flight 
+% Turn off QP coils sometime after the time of flight 
 ramp_time = 100;
 AnalogFuncTo(calctime(curtime,-100),'Coil 16',...
     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),ramp_time,ramp_time,0,1);    
 AnalogFuncTo(calctime(curtime,-100),'Coil 15',...
-    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),ramp_time,ramp_time,0,1);  
+    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),ramp_time,ramp_time,0,1); 
+AnalogFuncTo(calctime(curtime,-100),'Coil 15 Small',...
+    @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),ramp_time,ramp_time,-0.01,2);
+setDigitalChannel(calctime(curtime,-100+ramp_time), 'Reverse QP Switch',0);
 
 %% Close HF probe shutter
 %Close shutter 50 ms before taking dark image

@@ -41,6 +41,7 @@ else
         setDigitalChannel(calctime(curtime,0.1),'RF TTL',1);
         curtime = DDS_sweep(calctime(curtime,1),1,freqs(i),freqs(i+1),sweep_times(i));
         curtime = setDigitalChannel(calctime(curtime,1.1),'RF TTL',0);
+       
     end
 
     %turn DDS (Rf) off:

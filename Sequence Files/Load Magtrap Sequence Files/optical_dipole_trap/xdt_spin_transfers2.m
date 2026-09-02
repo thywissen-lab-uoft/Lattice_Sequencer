@@ -32,18 +32,18 @@ global seqdata
 % Rb uWave SRS Frequency Sweep
 seqdata.flags.xdt_spin_xfer_transfer_Rb_freq_sweep  = 1;
 defVar('Rb_uWave_freq0',6834.7,'MHz');f0 = 6834.7; % zero field splitting
-defVar('Rb_uWave_transfer_freq_shift',[10.32],'MHz');10.34;
+defVar('Rb_uWave_transfer_freq_shift',[10.33],'MHz');10.32;
 defVar('Rb_uWave_transfer_freq',...
     getVar('Rb_uWave_freq0')+getVar('Rb_uWave_transfer_freq_shift'),'MHz');
 defVar('Rb_uWave_transfer_power',[13],'dBm');%-10dBm to +13 dBm is VALID
-defVar('Rb_uWave_transfer_freq_amp',50,'kHz');50;%50kHz~24 mG
-defVar('Rb_uWave_transfer_time',[15],'ms');10;
+defVar('Rb_uWave_transfer_freq_amp',[25],'kHz');50;%50kHz~24 mG
+defVar('Rb_uWave_transfer_time',[15],'ms');15;
 
 % get rid of left over F=2
 seqdata.flags.xdt_spin_xfer_Rb_2_kill               = 1;
 
 
-% Better spni purity, worse number
+% Better spin purity, worse number
 seqdata.flags.xdt_spin_xfer_transfer_K              = 1;
 defVar('xdt_spin_xfer_K_freq',[1.6],'MHz');1.52;
 defVar('xdt_spin_xfer_K_freq_amp',0.25,'MHz');.15;
@@ -51,10 +51,10 @@ defVar('xdt_spin_xfer_K_gain',-3,'V');0; % if you make this too high you will pe
 defVar('xdt_spin_xfer_K_time',50,'ms');20;
 
 % Worse Spin purity, but better number after evap
-defVar('xdt_spin_xfer_K_freq',[1.52],'MHz');1.52;
-defVar('xdt_spin_xfer_K_freq_amp',0.15,'MHz');.15;
-defVar('xdt_spin_xfer_K_gain',0,'V');0; % if you make this too high you will perturb Rb
-defVar('xdt_spin_xfer_K_time',20,'ms');20;
+defVar('xdt_spin_xfer_K_freq',[1.57],'MHz');1.52;
+defVar('xdt_spin_xfer_K_freq_amp',[0.15],'MHz');.15;
+defVar('xdt_spin_xfer_K_gain',[0],'V');0; % if you make this too high you will perturb Rb
+defVar('xdt_spin_xfer_K_time',[50],'ms');20;
 
 % do D1 OP for K after the spin transfers
 seqdata.flags.xdt_d1op_start = 1;
@@ -163,8 +163,10 @@ if seqdata.flags.xdt_spin_xfer_Rb_2_kill
 %     AnalogFuncTo(calctime(curtime,-15),35,@(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),5,5,1.2,1); % Ramp FF to Rb trap beat-lock 
     setDigitalChannel(calctime(curtime,-10),25,1); % open Rb probe shutter
     setDigitalChannel(calctime(curtime,-10),24,1); % disable AOM rf (TTL), just to be sure
-    RbF2_kill_time_list =[2]; 3;
-    pulse_time = getScanParameter(RbF2_kill_time_list,seqdata.scancycle,seqdata.randcyclelist,'RbF2_kill_time');
+%     RbF2_kill_time_list =[2]; 3;
+%     pulse_time = getScanParameter(RbF2_kill_time_list,seqdata.scancycle,seqdata.randcyclelist,'RbF2_kill_time');
+    defVar('RbF2_kill_time',[2],'ms');2;
+    pulse_time = getVar('RbF2_kill_time');
 curtime = DigitalPulse(calctime(curtime,0), 'Rb Probe/OP TTL',pulse_time,0); % pulse beam with TTL   15
     setDigitalChannel(calctime(curtime,0),'Rb Probe/OP shutter',0); % close shutter
 end
@@ -231,10 +233,10 @@ if (seqdata.flags.xdt_d1op_start==1)
     op_time_list = [5];
     optical_pump_time = getScanParameter(op_time_list, ...
     seqdata.scancycle, seqdata.randcyclelist, 'ODT_op_time1','ms'); %optical pumping pulse length
-    repump_power_list = [.2];
+    repump_power_list = [0.3];0.2;
     repump_power =getScanParameter(repump_power_list,...
         seqdata.scancycle, seqdata.randcyclelist, 'ODT_op_repump_pwr1','V'); %optical pumping repump power
-    D1op_pwr_list = [.5]; %min: 0, max:1
+    D1op_pwr_list = [1];0.5; %min: 0, max:1
     D1op_pwr = getScanParameter(D1op_pwr_list,...
         seqdata.scancycle, seqdata.randcyclelist, 'ODT_D1op_pwr1','V'); %optical power
 

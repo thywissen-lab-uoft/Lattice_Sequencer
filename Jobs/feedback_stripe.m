@@ -10,11 +10,11 @@ clear phi
 
 %% Engage Feedback
 % Engage Feedback?
-% doFeedback=1;
 
 if nargin==1
     doFeedback=0;
 end
+doFeedback=0;
 
 %% Feedback Settings
 

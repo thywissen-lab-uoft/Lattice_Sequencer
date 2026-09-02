@@ -102,6 +102,9 @@ curtime=calctime(curtime,tH);
 if seqdata.flags.lattice_load_feshbach_ramp   
     tr = getVar('lattice_load_feshbach_time');
     fesh = getVar('lattice_load_feshbach_field');
+    
+    % get initial Feshnach value
+    Bfesh   = getChannelValue(seqdata,'FB Current');
 
     % Define the ramp structure
     ramp=struct;
@@ -121,6 +124,15 @@ if seqdata.flags.lattice_load_feshbach_ramp
     % Hold after ramping up FB
     tFBH = getVar('lattice_load_feshbach_holdtime');
     curtime=calctime(curtime,tFBH);
+    
+    % Ramp back
+    doReverse = 0;
+    if doReverse
+        ramp.fesh_final = Bfesh;
+    % Ramp FB with QP
+curtime= ramp_bias_fields(calctime(curtime,0), ramp); 
+    end
+        
 end
 
 %% Ramp XDT powers

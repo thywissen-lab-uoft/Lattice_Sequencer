@@ -23,14 +23,14 @@ function params = Load_Absorption_Image_Parameters()
     
         %     defVar('img_K_X_NEG_NORMAL',[32 34],'MHz');
 %     params.detunings.K.X.negative.normal = getVar('img_K_X_NEG_NORMAL'); %(33.1) for DFG 07/20/2023, (34.9) is for the ODT loading %%%%%32.5-2.72 for XDT loading , 32.5-4.76 DFG?
-%     defVar('K_img_det_shift_SG',[35.3],'MHz');37;
+%     defVar('K_img_det_shift_SG',36,'MHz');37;
 %     k_SG_det_shift = getVar('K_img_det_shift_SG');
 
 
     if seqdata.flags.xdtB_post_RF_sweep
         params.detunings.K.X.negative.SG = 31.0;
     else
-        params.detunings.K.X.negative.SG = 35.3;37;34.5;      % for mF stern gerlach
+        params.detunings.K.X.negative.SG = 36;35.3;      % for mF stern gerlach
     end
 %     params.detunings.K.X.negative.SG = 34.5+kdet_shift;      % for mF stern gerlach
 

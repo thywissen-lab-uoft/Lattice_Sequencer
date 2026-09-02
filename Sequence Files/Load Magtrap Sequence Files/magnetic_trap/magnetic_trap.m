@@ -312,9 +312,11 @@ end
 %% Ramp Down Plug Power a little bit
 if seqdata.flags.mt_plug_ramp_end
     plug_ramp_time = 200;    
-    plug_ramp_power_list = [1500];
-    plug_ramp_power=getScanParameter(plug_ramp_power_list,...
-        seqdata.scancycle,seqdata.randcyclelist,'plug_ramp_power','mA');    
+%     plug_ramp_power_list = [1500];
+%     plug_ramp_power=getScanParameter(plug_ramp_power_list,...
+%         seqdata.scancycle,seqdata.randcyclelist,'plug_ramp_power','mA');
+    defVar('plug_ramp_power',[1500],'mA');1500;
+    plug_ramp_power = getVar('plug_ramp_power');
     curtime = AnalogFuncTo(calctime(curtime,0),'Plug',...
         @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
         plug_ramp_time,plug_ramp_time,plug_ramp_power,3);     
@@ -481,7 +483,7 @@ if seqdata.flags.mt_ramp_end
     logNewSection('Ramp down gradient',curtime);    
 
     tr1 = 100;
-    defVar('mt_qp_current_ramp',[20],'A');
+    defVar('mt_qp_current_ramp',[12],'A');
     i1 = getVar('mt_qp_current_ramp'); 
         
     % Ramp the QP Current

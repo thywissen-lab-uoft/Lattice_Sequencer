@@ -186,9 +186,9 @@ if seqdata.flags.MOT_Mol == 1
 
     %%%%%%%%%%%% Total Molasses Time %%%%%%%%%%%%
     % Total Molasses Time
-    molasses_time_list = [8];
-    molasses_time =getScanParameter(molasses_time_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'molasses_time'); 
+%     molasses_time_list = [8];
+%     molasses_time =getScanParameter(molasses_time_list,seqdata.scancycle,...
+%         seqdata.randcyclelist,'molasses_time'); 
     
     molasses_time = getVar('mol_kd1_time');
 

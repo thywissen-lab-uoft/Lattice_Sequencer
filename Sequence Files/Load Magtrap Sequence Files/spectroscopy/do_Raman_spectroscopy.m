@@ -2,6 +2,13 @@ function  timeout = do_Raman_spectroscopy(timein,opts)
 % This function does some form of Raman manipulation. Can do a pulse or
 % sweep, and change different parameters
 
+
+
+%%%%% OLD FUNCTION %%%%%
+% In April 2026 we added two new Raman beams and changed the naming
+% convention. AOM1 is now Raman V, AOM2 is Raman SP1/Raman 1, AOM3 is Raman
+% DP
+
 curtime = timein;
 global seqdata;
 
@@ -180,6 +187,18 @@ end
 %                     Raman_AOM3_freq2, Raman_AOM3_pwr_alt);
 %         end
 
+% Add second channel string
+ % Raman SP3
+
+        Raman_AOM2_freq = 80*1E6;
+        Raman_AOM2_pwr = 0.1;opts.Raman_SP3_power;
+        Raman_AOM2_offset = 0;
+        strSP3=sprintf(' :SOURce2:APPL:SIN %f,%f,%f;',...
+            Raman_AOM2_freq,Raman_AOM2_pwr,Raman_AOM2_offset);
+        
+        str2 = [str2,strSP3];
+
+
         Device_id = 7; %Rigol for D1 lock(Ch. 1) and Raman DP (labeled AOM3 in Matlab) (Ch. 2). Do not change any Ch. 1 settings here. 
         Device_id2 = 4; %Rigal for Raman H2 DP Alt Frequency Source (Ch.1)
         if opts.doProgram
@@ -197,6 +216,24 @@ end
         if opts.doProgram
             addVISACommand(Device_id, str);
         end
+        
+        % Raman SP2 + SP4
+        Device_id = 13;
+        Raman_AOM2_freq = 40*1E6;
+        Raman_AOM2_pwr = 0.1;opts.Raman_SP2_power;
+        Raman_AOM2_offset = 0;
+        str=sprintf(':SOUR1:APPL:SIN %f,%f,%f;',...
+            Raman_AOM2_freq,Raman_AOM2_pwr,Raman_AOM2_offset);
+        
+        Raman_AOM2_freq = 40.5*1E6;
+        Raman_AOM2_pwr = 0.1;opts.Raman_SP4_power;
+        Raman_AOM2_offset = 0;
+        str2=sprintf(' :SOURce2:APPL:SIN %f,%f,%f;',...
+            Raman_AOM2_freq,Raman_AOM2_pwr,Raman_AOM2_offset);
+        
+        str = [str,str2];
+        addVISACommand(Device_id, str);
+        
         
         
 %% Do the pulse        
@@ -216,7 +253,7 @@ end
 %                 DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 2a',...
 %                     Raman_on_time+(raman_buffer_time)*2,0); %turn off R2 temporarily for shutter
 % 
-%                 DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3',...
+%                 DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman DP Rigol',...
 %                     Raman_on_time+(raman_buffer_time)*2,0); %turn off R3 temporarily for shutter
 %                 DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3a',...
 %                     Raman_on_time+(raman_buffer_time)*2,0); %turn off R3 temporarily for shutter
@@ -228,29 +265,29 @@ end
         %%%% First pulse for double and triple pulse sequence %%%%%
         elseif opts.double_pulse && (Pulse_Time ~= 0)
             
-            if opts.Source1
-                        setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman 3 Source',1); %0 default, 1 alt
-                    else
-                        setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman 3 Source',0); %0 default, 1 alt
-            end
+%             if opts.Source1
+%                         setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman DP source',1); %0 default, 1 alt
+%                     else
+%                         setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman DP source',0); %0 default, 1 alt
+%             end
             
             ScopeTriggerPulse(calctime(curtime,Pulse_Time),'Raman_spec');
             
-            setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman TTL 1',0); %turn off R1
+            setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman V TTL',0); %turn off R1
             %%%%%%%%
-%             DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 1',raman_buffer_time,0); %turn off R2 temporarily for shutter
+%             DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman V TTL',raman_buffer_time,0); %turn off R2 temporarily for shutter
             
-            DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 2',raman_buffer_time,0); %turn off R2 temporarily for shutter
-            DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 2a',raman_buffer_time,0); %turn off R2 temporarily for shutter
+            DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman SP1 Rigol',raman_buffer_time,0); %turn off R2 temporarily for shutter
+            DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman SP1 switch',raman_buffer_time,0); %turn off R2 temporarily for shutter
             
             % Set the source for the pulse
             if opts.Source1
-                setDigitalChannel(calctime(curtime,0),'Raman 3 Source',1); %0 default, 1 alt
+                setDigitalChannel(calctime(curtime,0),'Raman DP source',1); %0 default, 1 alt
             else
-                setDigitalChannel(calctime(curtime,0),'Raman 3 Source',0); %0 default, 1 alt
+                setDigitalChannel(calctime(curtime,0),'Raman DP source',0); %0 default, 1 alt
             end
-            DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3',raman_buffer_time,0); %turn off R3 temporarily for shutter
-            DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3a',raman_buffer_time,0); %turn off R3 temporarily for shutter
+            DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman DP Rigol',raman_buffer_time,0); %turn off R3 temporarily for shutter
+%             DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3a',raman_buffer_time,0); %turn off R3 temporarily for shutter
 
             % Set the shutter timings
             if opts.doReversal && opts.isForward
@@ -259,7 +296,7 @@ end
             elseif opts.isForward
                 DigitalPulse(calctime(curtime,-shutter_buffer_time),'Raman Shutter',...
                     Raman_on_time+shutter_buffer_time,1);% open shutter 100ms before and close when TTL closes (takes 3 ms)
-                setDigitalChannel(calctime(curtime,Raman_on_time),'Raman 3 Source',0); %0 default, 1 alt
+                setDigitalChannel(calctime(curtime,Raman_on_time),'Raman DP source',0); %0 default, 1 alt
             end
             
             %%%% Second pulse for double pulse sequence %%%%%
@@ -270,22 +307,22 @@ end
                     if Pulse_Time2 == 0
                         
                         %turn off beams until shutter opens
-                        DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 2',pulse_wait_time+raman_buffer_time,0); 
-                        DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 2a',pulse_wait_time+raman_buffer_time,0);
+                        DigitalPulse(calctime(curtime,Pulse_Time),'Raman SP1 Rigol',pulse_wait_time+raman_buffer_time,0); 
+                        DigitalPulse(calctime(curtime,Pulse_Time),'Raman SP1 switch',pulse_wait_time+raman_buffer_time,0);
 
-                        DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 3',pulse_wait_time+raman_buffer_time,0); 
-                        DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 3a',pulse_wait_time+raman_buffer_time,0); 
+                        DigitalPulse(calctime(curtime,Pulse_Time),'Raman DP Rigol',pulse_wait_time+raman_buffer_time,0); 
+%                         DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 3a',pulse_wait_time+raman_buffer_time,0); 
                         
            
                     else         
                         %Turn off the Raman beams in between the two pulses
-    %                      DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 1',pulse_wait_time,0); 
+    %                      DigitalPulse(calctime(curtime,Pulse_Time),'Raman V TTL',pulse_wait_time,0); 
 
-                        DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 2',pulse_wait_time,0); 
-                        DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 2a',pulse_wait_time,0);
+                        DigitalPulse(calctime(curtime,Pulse_Time),'Raman SP1 Rigol',pulse_wait_time,0); 
+                        DigitalPulse(calctime(curtime,Pulse_Time),'Raman SP1 switch',pulse_wait_time,0);
 
-                        DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 3',pulse_wait_time,0); 
-                        DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 3a',pulse_wait_time,0); 
+                        DigitalPulse(calctime(curtime,Pulse_Time),'Raman DP Rigol',pulse_wait_time,0); 
+%                         DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 3a',pulse_wait_time,0); 
                     end
 
                     % If desired, ramp the lattices between the pulses
@@ -310,23 +347,23 @@ end
 
                     %Turn off the Raman beams after the second pulse until shutter
                     %closes
-    %                 DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman TTL 1',raman_buffer_time,0);
+    %                 DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman V TTL',raman_buffer_time,0);
 
-                    DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman TTL 2',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
-                    DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman TTL 2a',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
+                    DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman SP1 Rigol',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
+                    DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman SP1 switch',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
 
                     if opts.Source2
-                        setDigitalChannel(calctime(curtime,Pulse_Time+pulse_wait_time/2),'Raman 3 Source',1); %0 default, 1 alt
+                        setDigitalChannel(calctime(curtime,Pulse_Time+pulse_wait_time/2),'Raman DP source',1); %0 default, 1 alt
                     else
-                        setDigitalChannel(calctime(curtime,Pulse_Time+pulse_wait_time/2),'Raman 3 Source',0); %0 default, 1 alt
+                        setDigitalChannel(calctime(curtime,Pulse_Time+pulse_wait_time/2),'Raman DP source',0); %0 default, 1 alt
                     end
-                    DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman TTL 3',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
-                    DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman TTL 3a',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
+                    DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman DP Rigol',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
+%                     DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman TTL 3a',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
 
                 end
                 
                 setDigitalChannel(calctime(curtime,2*Raman_on_time+ ...
-                        raman_buffer_time+pulse_wait_time),'Raman TTL 1',1); %turn on R1 150ms after the sweep has ended
+                        raman_buffer_time+pulse_wait_time),'Raman V TTL',1); %turn on R1 150ms after the sweep has ended
                 
               
             else 
@@ -337,18 +374,18 @@ end
 
                     %Turn off the Raman beams in between the two pulses
                     %%%%%%%
-%                     DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 1',pulse_wait_time,0); 
+%                     DigitalPulse(calctime(curtime,Pulse_Time),'Raman V TTL',pulse_wait_time,0); 
                     
-                    DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 2',pulse_wait_time,0); 
-                    DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 2a',pulse_wait_time,0);
+                    DigitalPulse(calctime(curtime,Pulse_Time),'Raman SP1 Rigol',pulse_wait_time,0); 
+                    DigitalPulse(calctime(curtime,Pulse_Time),'Raman SP1 switch',pulse_wait_time,0);
 
-                    DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 3',pulse_wait_time,0); 
-                    DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 3a',pulse_wait_time,0); 
+                    DigitalPulse(calctime(curtime,Pulse_Time),'Raman DP Rigol',pulse_wait_time,0); 
+%                     DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 3a',pulse_wait_time,0); 
                     
                     if opts.Source2
-                        setDigitalChannel(calctime(curtime,Pulse_Time+pulse_wait_time/2),'Raman 3 Source',1); %0 default, 1 alt
+                        setDigitalChannel(calctime(curtime,Pulse_Time+pulse_wait_time/2),'Raman DP source',1); %0 default, 1 alt
                     else
-                        setDigitalChannel(calctime(curtime,Pulse_Time+pulse_wait_time/2),'Raman 3 Source',0); %0 default, 1 alt
+                        setDigitalChannel(calctime(curtime,Pulse_Time+pulse_wait_time/2),'Raman DP source',0); %0 default, 1 alt
                     end
 
                     if seqdata.flags.lattice_FB_double_raman_lattice_ramp
@@ -375,34 +412,34 @@ end
 
                     %Turn off the Raman beams in between the two pulses
                     %%%%%%%
-%                     DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman TTL 1',pulse_wait_time2,0); 
+%                     DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman V TTL',pulse_wait_time2,0); 
 
-                    DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman TTL 2',pulse_wait_time2,0); 
-                    DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman TTL 2a',pulse_wait_time2,0);
+                    DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman SP1 Rigol',pulse_wait_time2,0); 
+                    DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman SP1 switch',pulse_wait_time2,0);
 
-                    DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman TTL 3',pulse_wait_time2,0); 
-                    DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman TTL 3a',pulse_wait_time2,0); 
+                    DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman DP Rigol',pulse_wait_time2,0); 
+%                     DigitalPulse(calctime(curtime,Pulse_Time+Pulse_Time2+pulse_wait_time),'Raman TTL 3a',pulse_wait_time2,0); 
 
                 end
                 
                 if opts.Source3
-                        setDigitalChannel(calctime(curtime,Pulse_Time+pulse_wait_time+Pulse_Time2+pulse_wait_time2/2),'Raman 3 Source',1); %0 default, 1 alt
+                        setDigitalChannel(calctime(curtime,Pulse_Time+pulse_wait_time+Pulse_Time2+pulse_wait_time2/2),'Raman DP source',1); %0 default, 1 alt
                     else
-                        setDigitalChannel(calctime(curtime,Pulse_Time+pulse_wait_time+Pulse_Time2+pulse_wait_time2/2),'Raman 3 Source',0); %0 default, 1 alt
+                        setDigitalChannel(calctime(curtime,Pulse_Time+pulse_wait_time+Pulse_Time2+pulse_wait_time2/2),'Raman DP source',0); %0 default, 1 alt
                 end
 
                 %Turn off the Raman beams after the third pulse until shutter closes
                 %%%%%%%%
-%                 DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 1',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
+%                 DigitalPulse(calctime(curtime,Raman_on_time),'Raman V TTL',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
                 
-                DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 2',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
-                DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 2a',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
+                DigitalPulse(calctime(curtime,Raman_on_time),'Raman SP1 Rigol',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
+                DigitalPulse(calctime(curtime,Raman_on_time),'Raman SP1 switch',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
 
-                DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 3',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
-                DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 3a',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
+                DigitalPulse(calctime(curtime,Raman_on_time),'Raman DP Rigol',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
+%                 DigitalPulse(calctime(curtime,Raman_on_time),'Raman TTL 3a',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
 
                 setDigitalChannel(calctime(curtime,2*Raman_on_time+ ...
-                    raman_buffer_time),'Raman TTL 1',1); %turn on R1 150ms after the sweep has ended
+                    raman_buffer_time),'Raman V TTL',1); %turn on R1 150ms after the sweep has ended
             
             end
         
@@ -410,35 +447,35 @@ end
         else
             
             if opts.Source1
-                        setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman 3 Source',1); %0 default, 1 alt
+                        setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman DP source',1); %0 default, 1 alt
                     else
-                        setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman 3 Source',0); %0 default, 1 alt
+                        setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman DP source',0); %0 default, 1 alt
             end
             
             ScopeTriggerPulse(calctime(curtime,Pulse_Time),'Raman_spec');
             
-            setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman TTL 1',0); %turn off R1
-            DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 2',raman_buffer_time,0); %turn off R2 temporarily for shutter
-            DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 2a',raman_buffer_time,0); %turn off R2 temporarily for shutter
+            setDigitalChannel(calctime(curtime,-raman_buffer_time),'Raman V TTL',0); %turn off R1
+            DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman SP1 Rigol',raman_buffer_time,0); %turn off R2 temporarily for shutter
+            DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman SP1 switch',raman_buffer_time,0); %turn off R2 temporarily for shutter
 
 
-            DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3',raman_buffer_time,0); %turn off R3 temporarily for shutter
-            DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3a',raman_buffer_time,0); %turn off R3 temporarily for shutter
+            DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman DP Rigol',raman_buffer_time,0); %turn off R3 temporarily for shutter
+%             DigitalPulse(calctime(curtime,-raman_buffer_time),'Raman TTL 3a',raman_buffer_time,0); %turn off R3 temporarily for shutter
 
 
             DigitalPulse(calctime(curtime,-shutter_buffer_time),'Raman Shutter',...
                 Pulse_Time+shutter_buffer_time,1);% open shutter 100ms before and close when TTL closes (takes 3 ms)
 
-            DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 2',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
-            DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 2a',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
+            DigitalPulse(calctime(curtime,Pulse_Time),'Raman SP1 Rigol',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
+            DigitalPulse(calctime(curtime,Pulse_Time),'Raman SP1 switch',raman_buffer_time,0); %turn off R2 after the sweep and turn on 150ms later
             
-%             setDigitalChannel(calctime(curtime,-shutter_buffer_time),'Raman 3 Source',1); %0 default, 1 alt
-%             setDigitalChannel(calctime(curtime,Pulse_Time),'Raman 3 Source',0); %0 default, 1 alt
-            DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 3',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
-            DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 3a',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
+%             setDigitalChannel(calctime(curtime,-shutter_buffer_time),'Raman DP source',1); %0 default, 1 alt
+%             setDigitalChannel(calctime(curtime,Pulse_Time),'Raman DP source',0); %0 default, 1 alt
+            DigitalPulse(calctime(curtime,Pulse_Time),'Raman DP Rigol',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
+%             DigitalPulse(calctime(curtime,Pulse_Time),'Raman TTL 3a',raman_buffer_time,0); %turn off R3 after the sweep and turn on 150ms later
 
             setDigitalChannel(calctime(curtime,Pulse_Time+ ...
-                raman_buffer_time),'Raman TTL 1',1); %turn on R1 150ms after the sweep has ended
+                raman_buffer_time),'Raman V TTL',1); %turn on R1 150ms after the sweep has ended
 
         end
         

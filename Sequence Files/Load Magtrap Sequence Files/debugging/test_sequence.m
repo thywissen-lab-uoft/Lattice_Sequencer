@@ -6498,20 +6498,37 @@ curtime = calctime(curtime,150);
 %     curtime=calctime(curtime,500);
 % %     setAnalogChannel(calctime(curtime,50),'uWave FM/AM',-1);  
 % 
-% i0=205;
+% i0=132.065;
 % % i0=0;
 % 
 %   curtime=AnalogFunc(calctime(curtime,0),'FB Current',...
 %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
 %         Tr, Tr,0, i0,2); 
-% %     setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage',1); 
+%     
+%     % Use FL1-100 calibration to get PID setpoint for FB request
+%     V_cal   = big_shim_calibration(i0);
+% % 
+%     % Add a shift to the request: enter in mG (-10 mV/+1 mG +10.5 max -15.5 min)
+%     V_shift = [0]*-0.01;
+% % 
+%     V_set   = V_cal + V_shift;
+% %     defVar('lattice_FB_post_raman_big_shim_setpoint',V_set,'V');
+% % 
+%     % Set the voltage setpoint
+%     setAnalogChannel(calctime(curtime,0),'Big Shim PID setpoint',V_set,2);
+%     
+%     % Enable Big Shim field stabilization by setting 1 and 2 high
+%     setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage',1); 
+%     setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage 2',1); 
 %     curtime=calctime(curtime,2000);
-% %     setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage',0); 
+%     setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage',0); 
+%     setDigitalChannel(calctime(curtime,0),'Big Shim PID Engage 2',0); 
+% 
 % % 
 %       curtime=AnalogFunc(calctime(curtime,0),'FB Current',...
 %         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)), ...
 %         Tr, Tr,i0, 0,2); 
-%     
+    
 
 
 %%
@@ -7025,15 +7042,15 @@ curtime = calctime(curtime,150);
 % 
 % 
 % % set voltage
-setAnalogChannel(calctime(curtime,100),'Transport FF',10);
+% setAnalogChannel(calctime(curtime,100),'Transport FF',10);
 % curtime=AnalogFuncTo(calctime(curtime,0),'Transport FF',...
 %     @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...
 %     tFF,tFF,10);
 % 
 % 
-K_power = 0.4;
+% K_power = 0.14;
 % setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',K_power); 
-setDigitalChannel(curtime,'K High Field Probe',0);
+% setDigitalChannel(curtime,'Rb Probe/OP TTL',0);
 % setDigitalChannel(curtime,'High Field Shutter',0);
 % 
 % DigitalPulse(calctime(curtime,0),'Sci shim PSU DIO',10,1);
@@ -7045,6 +7062,53 @@ setDigitalChannel(curtime,'K High Field Probe',0);
 %     5000,5000,value,P0,4); 
 % 
 % curtime = calctime(curtime,100);
+% set uWave VVA to max
+% curtime = setAnalogChannel(calctime(curtime,500),'uWave VVA',0,1);
+
+% setDigitalChannel(calctime(curtime,0),'K Probe/OP TTL',1);   
+% curtime = setAnalogChannel(calctime(curtime,100),'K Probe/OP AM',0.1); 
+% curtime = setAnalogChannel(calctime(curtime,100),'uWave VVA',10,1);
+% setAnalogChannel(calctime(curtime,0),'Plug',2500); % Current in mA
+
+
+% setAnalogChannel(calctime(curtime,500),'uWave VVA',0,1);
+
+%% Misc testing
+
+% setDigitalChannel(calctime(curtime,0),'K High Field Probe',0); 
+% curtime = setAnalogChannel(calctime(curtime,100),'K Probe/OP AM',0.1); 
+
+% rotate waveplate to ODT configuration
+% curtime = AnalogFuncTo(calctime(curtime,0),'latticeWaveplate',...
+%             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),500,500,0,1);
+ 
+% P0 = 0.0158257;
+% curtime = AnalogFunc(calctime(curtime,0),'latticeWaveplate',...
+%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),...
+%         500,500,P0,1,4);
+
+curtime = calctime(curtime,0);
+
+K_power = 0.4;
+setAnalogChannel(calctime(curtime,0),'K Probe/OP AM',K_power); 
+
+setDigitalChannel(calctime(curtime,0),'NRFF waveplate 1 rel',0);
+setDigitalChannel(calctime(curtime,0),'NRFF waveplate 1 home',0);
+
+wait1   = 100;
+curtime = calctime(curtime,wait1);
+
+% setDigitalChannel(calctime(curtime,0),'NRFF waveplate 1 rel',1);
+DigitalPulse(calctime(curtime,0),'NRFF waveplate 1 rel',10,1);
+% DigitalPulse(calctime(curtime,0),'NRFF waveplate 1 home',10,1);
+% setDigitalChannel(calctime(curtime,0),'NRFF waveplate 1 home',0);
+
+wait2   = 100;
+curtime = calctime(curtime,wait2);
+
+setDigitalChannel(calctime(curtime,0),'NRFF waveplate 1 rel',0);
+setDigitalChannel(calctime(curtime,0),'NRFF waveplate 1 home',0);
+
 timeout = curtime;
 
 

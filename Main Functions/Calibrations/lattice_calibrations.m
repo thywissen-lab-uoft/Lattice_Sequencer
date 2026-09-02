@@ -5,17 +5,24 @@ global seqdata
 %% Zero optical power calibration
 % These voltages are the "zero" lattice levels.  Use these values when
 % ramping up the lattice from totally zero power to smooth out ramps.
-xLattice0_list = .01;-.1;
-xLattice0 = getScanParameter(xLattice0_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'xLatt0');
+% xLattice0_list = .01;-.1;
+% xLattice0 = getScanParameter(xLattice0_list,...
+%     seqdata.scancycle,seqdata.randcyclelist,'xLatt0');
+defVar('xLatt0',[0.01],'V');
+xLattice0 = getVar('xLatt0');
 
-yLattice0_list = -.25;-.4;
-yLattice0 = getScanParameter(yLattice0_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'yLatt0');
+% yLattice0_list = -.25;-.4;
+% yLattice0 = getScanParameter(yLattice0_list,...
+%     seqdata.scancycle,seqdata.randcyclelist,'yLatt0');
+defVar('yLatt0',[-0.25],'V');
+yLattice0 = getVar('yLatt0');
 
-zLattice0_list =-.5; -.59;
-zLattice0 = getScanParameter(zLattice0_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'zLatt0');  
+% zLattice0_list =[-0.7 -0.6 -0.4];-.5; -.59;
+% zLattice0 = getScanParameter(zLattice0_list,...
+%     seqdata.scancycle,seqdata.randcyclelist,'zLatt0'); 
+defVar('zLatt0',[-0.5],'V');
+zLattice0 = getVar('zLatt0');
+ 
 % These parameters could be super sensitive to cause spikes and kill atoms
 
 seqdata.params.lattice_zero = [xLattice0 yLattice0 zLattice0];

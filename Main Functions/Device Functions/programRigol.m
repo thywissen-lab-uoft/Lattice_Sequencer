@@ -274,7 +274,7 @@ function obj=visaConnect(DeviceName)
 
     catch ME
         warning([DeviceName]);
-%         disp(ME);
+        disp(ME);
         obj=[];
     end
 

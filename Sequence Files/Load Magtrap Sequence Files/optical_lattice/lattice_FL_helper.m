@@ -158,9 +158,12 @@ end
 if opts.EnableRaman && pulse_time > 0
     % Make sure Raman beams are off ahead of time
     % We have them on to keep them thermally stable
-    setDigitalChannel(calctime(curtime,-50),'Raman TTL 1',0); % (1: ON, 0:OFF) Raman 1 ZASWA + Rigol Trigger
-    setDigitalChannel(calctime(curtime,-50),'Raman TTL 2a',0);% (1: ON, 0:OFF) Raman 2 ZASWA
-    setDigitalChannel(calctime(curtime,-50),'Raman TTL 3a',0);% (1: ON, 0:OFF) Raman 3 ZASWA
+    setDigitalChannel(calctime(curtime,-50),'Raman V TTL',0); % (1: ON, 0:OFF) Raman 1 ZASWA + Rigol Trigger
+    setDigitalChannel(calctime(curtime,-50),'Raman SP1 switch',0);% (1: ON, 0:OFF) Raman 2 ZASWA
+    setDigitalChannel(calctime(curtime,-50),'Raman SP2 switch',0);% (1: ON, 0:OFF) Raman 2 ZASWA
+    setDigitalChannel(calctime(curtime,-50),'Raman SP3 switch',0);% (1: ON, 0:OFF) Raman 2 ZASWA
+    setDigitalChannel(calctime(curtime,-50),'Raman SP4 switch',0);% (1: ON, 0:OFF) Raman 2 ZASWA
+%     setDigitalChannel(calctime(curtime,-50),'Raman TTL 3a',0);% (1: ON, 0:OFF) Raman 3 ZASWA
     
     
     % Make sure Raman shutter is closed
@@ -168,26 +171,29 @@ if opts.EnableRaman && pulse_time > 0
     % Open Shutter (1: ON, 0: OFF)
     setDigitalChannel(calctime(curtime,-10),'Raman Shutter',1);
     % Turn on raman beam
-    setDigitalChannel(curtime,'Raman TTL 1',1);  % Vertical Raman (1: ON, 0:OFF)
-    setDigitalChannel(curtime,'Raman TTL 2a',1); % Horizontal Raman (1: ON, 0:OFF)
+    setDigitalChannel(curtime,'Raman V TTL',1);  % Vertical Raman (1: ON, 0:OFF)
+    setDigitalChannel(curtime,'Raman SP1 switch',1); % Horizontal Raman (1: ON, 0:OFF)
     
     if opts.Raman2_EnableSweep
-        setDigitalChannel(curtime,'Raman TTL 2',1); % Horizontal Raman Trigger (1: ON, 0:OFF)
+        setDigitalChannel(curtime,'Raman SP1 Rigol',1); % Horizontal Raman Trigger (1: ON, 0:OFF)
     end
     
     % Turn off beams
-    setDigitalChannel(calctime(curtime,pulse_time),'Raman TTL 1',0);
-    setDigitalChannel(calctime(curtime,pulse_time),'Raman TTL 2a',0);
+    setDigitalChannel(calctime(curtime,pulse_time),'Raman V TTL',0);
+    setDigitalChannel(calctime(curtime,pulse_time),'Raman SP1 switch',0);
     
     if opts.Raman2_EnableSweep
-        setDigitalChannel(calcime(curtime,pulse_time),'Raman TTL 2',0); % Horizontal Raman Trigger (1: ON, 0:OFF)
+        setDigitalChannel(calcime(curtime,pulse_time),'Raman SP1 Rigol',0); % Horizontal Raman Trigger (1: ON, 0:OFF)
     end
     
     % Close Shutter
     setDigitalChannel(calctime(curtime,pulse_time),'Raman Shutter',0);   
     % Turn on beams
-    setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 1',1);
-    setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman TTL 2a',1); 
+    setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman V TTL',1);
+    setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman SP1 switch',1);
+    setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman SP2 switch',1);
+    setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman SP3 switch',1);
+    setDigitalChannel(calctime(curtime,pulse_time+1000),'Raman SP4 switch',1);
 end       
     
 %% Wait for Pulse

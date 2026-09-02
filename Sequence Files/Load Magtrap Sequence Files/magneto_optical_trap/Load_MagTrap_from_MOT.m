@@ -9,7 +9,7 @@ curtime = timein;
 % There is an optimum gradient to do this in order to minimize hating.
 
 ramp_time1 = 1;
-hold_time1 = 10;
+hold_time1 = 100;
 
 gradient_value1_list=[90];
 gradient_value1= getScanParameter(gradient_value1_list,...

@@ -10,7 +10,7 @@ ScopeTriggerPulse(curtime,'xdt_load');
 % XDT Beams 
 seqdata.flags.mt_xdt_load2_xdt_on = 1;   
 defVar('xdt_load_start_time',[0],'ms');
-defVar('xdt_load_ramp_time',[50],'ms');
+defVar('xdt_load_ramp_time',[50],'ms');50;
 %defVar('xdt1_load_power',1.0,'W');  
 %defVar('xdt2_load_power',1.0,'W'); 
 
@@ -21,13 +21,13 @@ seqdata.flags.mt_xdt_load2_plug_ramp = 1;
 % defVar('xdt_load_plug_start_time',0); % Specify manually
 defVar('xdt_load_plug_start_time',getVar('xdt_load_start_time')+getVar('xdt_load_ramp_time'));
 defVar('xdt_load_plug_ramp_time',10);
-defVar('xdt_load_plug_ramp_value',800);        
+defVar('xdt_load_plug_ramp_value',800);800;        
 
 % QP Currents
 seqdata.flags.mt_xdt_load2_mt_ramp_1 = 1; 
 %defVar('xdt_load_qp_start_time',0); % specify manually
 defVar('xdt_load_qp_start_time',getVar('xdt_load_plug_ramp_time')+getVar('xdt_load_plug_start_time'));
-defVar('xdt_load_qp_ramp_time',[50]);
+defVar('xdt_load_qp_ramp_time',[50]);50;
 defVar('xdt_load_qp_ramp_value',0);     
 
 % Feshbach Current
@@ -35,7 +35,7 @@ seqdata.flags.mt_xdt_load2_fb_ramp_1 = 1;
 %defVar('xdt_load_fb_start_time',0); % specify manually
 defVar('xdt_load_fb_start_time',getVar('xdt_load_qp_start_time'));
 defVar('xdt_load_fb_ramp_time',getVar('xdt_load_qp_ramp_time'));
-defVar('xdt_load_fb_ramp_value',[5],'G?');   
+defVar('xdt_load_fb_ramp_value',[5],'G?');5;   20;
 
 % Total Time
 %defVar('xdt_load_total_time',200);% specify manually
@@ -177,7 +177,7 @@ if seqdata.flags.mt_xdt_load2_fb_ramp_1
     tr,tr,Ifb);              
 end
      
-%% Advannce time
+%% Advance time
 curtime = calctime(curtime,getVar('xdt_load_total_time'));
 
 % Close the Shutter once QP if off

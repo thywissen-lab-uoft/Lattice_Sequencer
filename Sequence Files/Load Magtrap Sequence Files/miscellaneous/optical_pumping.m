@@ -16,24 +16,33 @@ curtime = timein;
 
 %% Optical pumping parameters
 % tmax=15;
-optime_list = [3];[3.1];[2];
-optime = getScanParameter(optime_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'optime','ms');
+% optime_list = [3];[3.1];[2];
+% optime = getScanParameter(optime_list,...
+%     seqdata.scancycle,seqdata.randcyclelist,'optime','ms');
+defVar('optime',[3],'ms');3;
+optime = getVar('optime');
 
 % K
-k_op_am_list = [0.1];[0.4];[0.25]; %0.1:0.1:0.9
-k_op_am = getScanParameter(k_op_am_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'k_op_am','??');
+defVar('k_op_am',[0.1],'arb');0.1;
+% k_op_am_list = [0.1];[0.4];[0.25]; %0.1:0.1:0.9
+% k_op_am = getScanParameter(k_op_am_list,...
+%     seqdata.scancycle,seqdata.randcyclelist,'k_op_am','??');
+k_op_am = getVar('k_op_am');
 k_op_offset = 0.0;
 k_op_time = optime;
-k_op_detuning_list = [5];%3 
-k_op_detuning = getScanParameter(k_op_detuning_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'k_op_det');
+% k_op_detuning_list = [5];%3 
+% k_op_detuning = getScanParameter(k_op_detuning_list,...
+%     seqdata.scancycle,seqdata.randcyclelist,'k_op_det');
+defVar('k_op_det',[5],'MHz');
+k_op_detuning = getVar('k_op_det');
+
 
 % Rb
-rb_op_am_list = [1.1];[1];[0.8];[0.8];  %  (1) RF amplitude (V)       
-rb_op_am = getScanParameter(rb_op_am_list,...
-    seqdata.scancycle,seqdata.randcyclelist,'rb_op_am','V');
+% rb_op_am_list = [1.1];[1];[0.8];[0.8];  %  (1) RF amplitude (V)       
+% rb_op_am = getScanParameter(rb_op_am_list,...
+%     seqdata.scancycle,seqdata.randcyclelist,'rb_op_am','V');
+defVar('rb_op_am',[1.2],'V');1.2;
+rb_op_am = getVar('rb_op_am');
 rb_op_offset = 0.0;
 rb_op_time = optime;        % (1) optical pumping time
 
@@ -42,7 +51,7 @@ rb_op_detuning_set(2) = -3;     % for 2->3
 
 % rb_op_detuning = rb_op_detuning_set(seqdata.flags.Rb_Probe_Order);
 % 
-rb_op_detuning_list = [30];[50];-20;
+rb_op_detuning_list = [25];[30];[50];-20;
 rb_op_detuning = getScanParameter(rb_op_detuning_list,...
     seqdata.scancycle,seqdata.randcyclelist,'rb_op_detuning','MHz');
 

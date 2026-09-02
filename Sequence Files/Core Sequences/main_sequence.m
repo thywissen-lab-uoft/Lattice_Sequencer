@@ -224,12 +224,14 @@ setDigitalChannel(calctime(curtime,0),'D1 OP TTL',1);
 %     setDigitalChannel(calctime(curtime,5),'Raman Shutter',1);
 setDigitalChannel(calctime(curtime,5),'Raman Shutter',0); %2021/03/30 new shutter
 
-setDigitalChannel(calctime(curtime,0),'Raman TTL 1',1);
-setDigitalChannel(calctime(curtime,0),'Raman TTL 2',1);
-setDigitalChannel(calctime(curtime,0),'Raman TTL 2a',1);
+setDigitalChannel(calctime(curtime,0),'Raman V TTL',1);
+setDigitalChannel(calctime(curtime,0),'Raman SP1 Rigol',1);
+setDigitalChannel(calctime(curtime,0),'Raman SP1 switch',1);
 
-setDigitalChannel(calctime(curtime,0),'Raman TTL 3',1);
-setDigitalChannel(calctime(curtime,0),'Raman TTL 3a',1);
+setDigitalChannel(calctime(curtime,0),'Raman DP Rigol',1);
+setDigitalChannel(calctime(curtime,0),'Raman SP2 switch',1);
+setDigitalChannel(calctime(curtime,0),'Raman SP3 switch',1);
+setDigitalChannel(calctime(curtime,0),'Raman SP4 switch',1);
 
 %Set 'D1' Raman AOMs to open, shutter closed.
 setDigitalChannel(calctime(curtime,0),'EIT Probe TTL',1);
@@ -730,6 +732,7 @@ else
     setAnalogChannel(calctime(curtime,0),'Coil 15 Small',-0.01,2);  % Reverse QP
     setDigitalChannel(calctime(curtime,0), 'Reverse QP Switch',0);  % Reverse QP
     
+if ~seqdata.flags.image_type
     % MOT/QCoil TTL (separate switch for coil 15 (TTL) and 16 (analog))
     qp_switch1_delay_time = 0;
     if I_kitt == 0
@@ -740,13 +743,13 @@ else
         %Cannot use Coil 16 fast switch if atoms have not be transferred to
         %imaging direction!
     end
-    
+
     % Turn off 15/16 switch if not doing SG imaging
     if ~seqdata.flags.image_stern_gerlach_F && ~seqdata.flags.image_stern_gerlach_mF
         setDigitalChannel(calctime(curtime,qp_switch1_delay_time),'15/16 Switch',0);
         setAnalogChannel(calctime(curtime,qp_switch1_delay_time),'15/16 GS',0);
     end
-    
+end
     %Perform Low Field Absorption Imaging
     if seqdata.flags.image_type == 0    
         ScopeTriggerPulse(calctime(curtime,0),'TOF');    
@@ -785,8 +788,11 @@ setDigitalChannel(curtime,'Dimple Shutter',1);  % Dimple Shutter OFF
 setAnalogChannel(curtime,'Dimple',1,1);  % Dimple Power Request High to
 
 % Turn on raman beam
-setDigitalChannel(calctime(curtime,10),'Raman TTL 1',1);  % Vertical Raman (1: ON, 0:OFF)
-setDigitalChannel(calctime(curtime,10),'Raman TTL 2a',1); % Horizontal Raman (1: ON, 0:OFF)    
+setDigitalChannel(calctime(curtime,10),'Raman V TTL',1);  % Vertical Raman (1: ON, 0:OFF)
+setDigitalChannel(calctime(curtime,10),'Raman SP1 switch',1); % Horizontal Raman (1: ON, 0:OFF)
+setDigitalChannel(calctime(curtime,10),'Raman SP2 switch',1); % Horizontal Raman (1: ON, 0:OFF)  
+setDigitalChannel(calctime(curtime,10),'Raman SP3 switch',1); % Horizontal Raman (1: ON, 0:OFF)  
+setDigitalChannel(calctime(curtime,10),'Raman SP4 switch',1); % Horizontal Raman (1: ON, 0:OFF)  
 
 % Close Shutter
 setDigitalChannel(curtime,'Raman Shutter',0);   

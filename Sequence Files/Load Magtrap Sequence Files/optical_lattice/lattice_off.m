@@ -4,6 +4,57 @@ global seqdata;
 curtime = timein;
 %% Magnetic Field ramps for HF imaging
 
+%% Ramp Feshbach and levitation to HF imaging values
+
+if seqdata.flags.lattice_off_HF_img_ramp
+    
+    % get the field - sets HF imaging parameters based on current field
+    check_HF_Image();
+    
+    if isfield(seqdata.flags, 'HF_Imaging') && seqdata.flags.HF_Imaging
+        
+         % Set final feshbach value
+        if seqdata.flags.HF_absorption_image.Attractive
+            fesh = 207;
+        else
+            fesh = 195;
+        end
+    end
+    
+    defVar('lattice_HF_img_levitate_current',0.15','A');
+    defVar('lattice_HF_img_feshbach_field',fesh,'G');
+    defVar('lattice_HF_img_ramptime',50,'ms');
+    defVar('lattice_HF_img_holdtime',75,'ms');
+
+    HF_QP = getVar('lattice_HF_img_levitate_current'); % this is now current in A
+    tr = getVar('lattice_HF_img_ramptime');  
+    
+    % Turn on Reverse QP switch prior to ramping levitation
+    setDigitalChannel(curtime,'Reverse QP Switch',1);
+    curtime = calctime(curtime,10);
+    
+    % Ramp Coil 15 Small for levitation (now uses current)
+    AnalogFuncTo(calctime(curtime,0),'Coil 15 Small',...
+        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,HF_QP,2); 
+%     
+    % Define the ramp structure
+    ramp=struct;
+    ramp.shim_ramptime      = tr;
+    ramp.shim_ramp_delay    = 0;
+    ramp.xshim_final        = seqdata.params.shim_zero(1); 
+    ramp.yshim_final        = seqdata.params.shim_zero(2);
+    ramp.zshim_final        = seqdata.params.shim_zero(3);
+    ramp.fesh_ramptime      = tr;
+    ramp.fesh_ramp_delay    = 0;
+    ramp.fesh_final         = fesh; %22.6
+    ramp.settling_time      = 0;    
+
+    % Ramp FB with QP
+curtime= ramp_bias_fields(calctime(curtime,0), ramp); % check ramp_bias_fields to see what struct ramp may contain   
+curtime = calctime(curtime,getVar('lattice_HF_img_holdtime'));
+    
+end
+
 %% Magnetic Field Ramps for LF imaging
 
 %% Turn off feshbach field
@@ -29,8 +80,8 @@ end
 %%
 if seqdata.flags.lattice_off_levitate_off  
     tr = getVar('xdtB_levitate_off_ramptime');
-    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-        @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,0,1);               
+    curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15 Small',...
+            @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,0,2);         
 
 curtime = AnalogFuncTo(calctime(curtime,0),'Transport FF',...
              @(t,tt,y1,y2)(ramp_linear(t,tt,y1,y2)),...

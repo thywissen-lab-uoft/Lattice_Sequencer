@@ -22,21 +22,25 @@ devices = {'USB0::0x1AB1::0x0641::DG4E180900374::INSTR', ...
            'USB0::0x1AB1::0x0641::DG4E224101686::INSTR', ...
            'USB0::0x1AB1::0x0641::DG4E231700442::INSTR', ...
            'USB0::0x1AB1::0x0643::DG8A213702086::INSTR', ...
+           'USB0::0x1AB1::0x0641::DG4E271M00006::INSTR',...
+           'USB0::0x1AB1::0x099C::DSG8A26CM00117::INSTR'...
            'getVISADeviceName::AddNewDevice'};       
       
        
-% devices(01) DG4E180900374 is the Raman 1 (V) and Raman 2 (H1)
+% devices(01) DG4E180900374 is the Raman V and Raman 1
 % devices(02) DG4E160900481 is the Rigol for conductivity modulation
 % devices(03) 
-% devices(04) DG4E191700649 Raman H2 DP Alternate frequency source
+% devices(04) DG4E191700649 Raman DP Alt and Raman 3(2026/04/17);
 % devices(05) DG4E221100174 is the Rigol for AM spec and Z lattice regulation
 % devices(06) DG4E221600305 is for two high field imaging beams
-% devices(07) DG4E221100173 is for D1 lock and Raman 3 (H2)
+% devices(07) DG4E221100173 is for D1 lock and Raman DP
 % devices(08) DG4E221100169 is for upwards K kill beam
 % devices(09) DG4E225202524 is for X & Y lattice modulation(new, 02/02/2022)
 % devices(10) DG4E224101686 is FPUMP & EIT 2        (2023/04/18);
 % devices(11) DG4E231700442 is EIT 1 and K D1 OPP   (2023/04/18);
 % devices(12) DG8A213702086 is XDT Piezo Modulation   (2023/07/25);
+% devices(13) DG4E271M00006 is Raman 2 and Raman 4 (2026/04/17);
+% devices(14) DSG8A26CM00117 is Xbar 200 MHz AOM source (2026/08)
 
 out = '';
 

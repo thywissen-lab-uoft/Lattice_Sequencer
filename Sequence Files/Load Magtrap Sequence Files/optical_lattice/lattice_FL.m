@@ -31,7 +31,7 @@ global seqdata
     % Laser Beams
     fluor.EnableFPump           = 1;        % Use FPUMP beam DOESNT WORK ZIF LOW???
     fluor.EnableEITProbe        = 1;        % Use EIT Probe beams
-    fluor.EnableRaman           = 1;        % Use Raman Beams    
+    fluor.EnableRaman           = 0;        % Use Raman Beams    
     
     % Sets the total time of radiation (optical or otherwise)
     pulse_list = [4000]; %4000         
@@ -212,7 +212,7 @@ end
     EIT2_max_voltage = .850;
     
     defVar('qgm_EIT1_power',1,'normalized');0.2;0.8;
-    defVar('qgm_EIT2_power',1,'normalized');0.8;
+    defVar('qgm_EIT2_power',1,'normalized');1;0.8;
 
     % Relative power choice (0 to 1)
 %     EIT_probe_rel_pow_list =[.4:.05:1];

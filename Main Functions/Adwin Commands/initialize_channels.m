@@ -107,7 +107,7 @@ seqdata.digchannels(56).name = 'ACync Master';      % Master pulse for ACync Boa
 seqdata.digchannels(57).name = 'D1 OP TTL';         % AOM control 0: off; 1: on;
 seqdata.digchannels(58).name = 'Raman Shutter';     % 0: off, 1: on
 seqdata.digchannels(59).name = 'Kill TTL';          % 0:off, 1: on. 
-seqdata.digchannels(60).name = 'Raman TTL 1';       % Raman 1 (V) ZASWA(P2;1=on) + Rigol Trigger (CH1)
+seqdata.digchannels(60).name = 'Raman V TTL';       % Raman V ZASWA(P2;1=on) + Rigol Trigger (CH1)
 seqdata.digchannels(61).name = 'XDT TTL';           % 0: on, 1: off
 seqdata.digchannels(61).resetvalue = 1;
 seqdata.digchannels(62).name = 'DMD TTL';           % 0: on, 1:off
@@ -116,17 +116,17 @@ seqdata.digchannels(63).name = 'XDT Direct Control';% (CF : obsolete?) 0: off, 1
 seqdata.digchannels(64).name = 'K Sci Repump';      % K repump in science chamber 
 seqdata.digchannels(65).name = 'K D1 GM Shutter 2'; % Second D1 GM shutter
 seqdata.digchannels(66).name = 'LabJack Trigger Transport'; % Labjack trigger for magnetic transport
-seqdata.digchannels(67).name = 'Raman TTL 3';       % Raman H2 Rigol Trigger (CH2)
-seqdata.digchannels(68).name = 'Raman TTL 2';       % Raman H1 Rigol Trigger (CH2)
+seqdata.digchannels(67).name = 'Raman DP Rigol';    % Raman H2 Rigol Trigger (CH2)
+seqdata.digchannels(68).name = 'Raman SP1 Rigol';   % Raman SP1 Rigol Trigger (CH2)
 seqdata.digchannels(69).name = 'HF freq source';    % (CF : obsolete?) 0: Rigol Ch1, 1: Rigol Ch2
 seqdata.digchannels(69).resetvalue = 1;
 seqdata.digchannels(70).name = 'DMD shutter';       % 0 on 1 off
 seqdata.digchannels(70).resetvalue = 1;
-seqdata.digchannels(71).name = 'Raman 3 Source';    % 0 uses Raman H2 Rigol source, 1 uses Raman H2 Alt Rigol source 
+seqdata.digchannels(71).name = 'Raman DP Source';   % 0 uses Raman DP Rigol source, 1 uses Raman DP Alt Rigol source 
 seqdata.digchannels(71).resetvalue = 0;
 
-seqdata.digchannels(72).name = 'Raman TTL 3a';      % Raman 3 (H2) ZASWA
-seqdata.digchannels(73).name = 'Raman TTL 2a';      % Raman 2 (H1) ZASWA
+seqdata.digchannels(72).name = 'Raman SP2 switch';  % Raman SP2 ZASWA
+seqdata.digchannels(73).name = 'Raman SP1 switch';  % Raman SP1 ZASWA
 
 seqdata.digchannels(74).name = 'RF Source';         % 0 : DDS, 1 : SRS
 seqdata.digchannels(74).resetvalue = 0;
@@ -148,8 +148,8 @@ seqdata.digchannels(84).name = 'Sci shim PSU DIO';  % Digital I/O for Sci shim P
 seqdata.digchannels(85).name = 'Dimple TTL';        % Dimple ZASWA 0:ON, 1:OFF (RF1)
 seqdata.digchannels(86).name = 'Dimple Shutter';    % Dimple shutter 0: ON 1: OFF
 seqdata.digchannels(87).name = 'Rb uWave SRS TTL';        % Rb uWave SRS source 1: ON;  ZSWA63-DR+; V2
-seqdata.digchannels(88).name = 'Channel 88';        % unused
-seqdata.digchannels(89).name = 'Channel 89';        % unused
+seqdata.digchannels(88).name = 'Raman SP3 switch';  % TTL for Zaswa of second AOM on SP arm
+seqdata.digchannels(89).name = 'Raman SP4 switch';  % TTL for Zaswa of second AOM on DP arm
 seqdata.digchannels(90).name = 'Channel 90';        % unused
 seqdata.digchannels(91).name = 'Channel 91';        % unused
 seqdata.digchannels(92).name = 'Channel 92';        % unused
@@ -561,7 +561,7 @@ end
     % Channel 33 : ODT1 Piezo Horizontal+Vertical Channel 
     % 0 -->0 V, 10 V --> 150V   
     seqdata.analogchannels(33).name = 'ODT1 Piezo HV';
-    seqdata.analogchannels(33).minvoltage = 0;
+    seqdata.analogchannels(33).minvoltage = 0; 
     seqdata.analogchannels(33).maxvoltage = 10;
 %     seqdata.analogchannels(33).defaultvoltagefunc = 2; 
 %     seqdata.analogchannels(33).voltagefunc{2} = @(a)(a);%
@@ -870,12 +870,12 @@ end
     seqdata.analogchannels(57).defaultvoltagefunc = 1; 
     seqdata.analogchannels(57).voltagefunc{2} = @(a)(a);
 
-    %channel 58 (XDT2 Piezo Mirror Mod) %Disconnected
-    seqdata.analogchannels(58).name = '58';
-    seqdata.analogchannels(58).minvoltage = -10;
-    seqdata.analogchannels(58).maxvoltage = 10;
-    seqdata.analogchannels(58).defaultvoltagefunc = 2; 
-    seqdata.analogchannels(58).voltagefunc{2} = @(a)(a);
+    %channel 58 (Big Shim PID setpoint)
+    seqdata.analogchannels(58).name                 = 'Big Shim PID setpoint';
+    seqdata.analogchannels(58).minvoltage           = -10;
+    seqdata.analogchannels(58).maxvoltage           = 10;
+    seqdata.analogchannels(58).defaultvoltagefunc   = 2; 
+    seqdata.analogchannels(58).voltagefunc{2}       = @(a)(a+7.92)/0.015; % output setpoint in +/-10 V range
 
     %channel 59 (Not functional??)
     seqdata.analogchannels(59).name = 'DMD Power';

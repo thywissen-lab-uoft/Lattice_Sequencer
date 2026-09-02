@@ -1,4 +1,4 @@
-%------
+ %------
 %Author: Stefan ( Ctrl-C/Ctrl-V )
 %Created: Feb 2013
 %Summary:   Loading the lattice -- intentionally left without parameters.
@@ -473,8 +473,7 @@ end
 %% Turn off levitation field
 if seqdata.flags.lattice_levitate_off  
     tr = getVar('lattice_levitate_off_ramptime');
-%     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15',...
-%         @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,0,1);
+
     curtime = AnalogFuncTo(calctime(curtime,0),'Coil 15 Small',...
             @(t,tt,y1,y2)(ramp_minjerk(t,tt,y1,y2)),tr,tr,0,2);
 
@@ -1817,7 +1816,7 @@ if seqdata.flags.lattice_uWave_spec
      logNewSection('uWave_K_Spectroscopy',curtime);
    
     % Frequency
-    freq_shift_list = [0];[-17.5];[-17.5];[-30];[15]; % Offset in kHz
+    
 %     f0 = 1338.345;  
     f0 = 1336.07;% MHz % Normal frequency
 
@@ -1838,10 +1837,15 @@ if seqdata.flags.lattice_uWave_spec
     
 %     f0 = 1623.8; % at 132.14 G
 %     f0 = 1585.8; % b to r at 130 G
-%     f0 = 1552.225; % b to q at 130 G
-
-    uwave_freq_shift = getScanParameter(freq_shift_list,seqdata.scancycle,...
-        seqdata.randcyclelist,'uWave_freq_shift','kHz');    
+%     f0 = 1552.225; % b to q at 130 
+    
+%     freq_shift_list = [-2500:500:2500];[-17.5];[-17.5];[-30];[15]; % Offset in kHz
+%     uwave_freq_shift = getScanParameter(freq_shift_list,seqdata.scancycle,...
+%         seqdata.randcyclelist,'uWave_freq_shift','kHz');  
+    
+    defVar('uWave_freq_shift',[0],'kHz'); % Offset in kHz
+    uwave_freq_shift = getVar('uWave_freq_shift');
+    
     uwave_freq = uwave_freq_shift/1000 + f0;
     
     addOutputParam('uWave_freq',uwave_freq,'MHz');

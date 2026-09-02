@@ -70,26 +70,57 @@ global seqdata;
         DigitalPulse(calctime(curtime,dipole_on_time),'yLatticeOFF',dipole_on_time+pulse_time,0);
         
     elseif   tof_pulse == 1
+%         ScopeTriggerPulse(calctime(curtime,0),'pulse lattice');
+% 
+%         defVar('pulse_time',[0.01],'ms');
+%         lattice_pulse_time = getVar('pulse_time');
+%         
+%         defVar('pulse_depth',[1],'Er');
+%         lattice_pulse_depth = getVar('pulse_depth');
+%         
+%         setAnalogChannel(calctime(curtime,-1),'yLattice',lattice_pulse_depth,2);
+%         
+%         %turn off dipole beam
+%         setAnalogChannel(calctime(curtime,0),'dipoleTrap1',seqdata.params.ODT_zeros(1));
+%         setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));
+%         
+%         %pulse lattice
+% %         setDigitalChannel(calctime(curtime,pulse_delay-25),'Lattice Direct Control',0);
+%         DigitalPulse(calctime(curtime,pulse_delay),'yLatticeOFF',lattice_pulse_time,0);
+%         
+%         %Add 100us to account for any timing issues
+%         curtime = calctime(curtime,pulse_delay+lattice_pulse_time+0.1);
+%         setAnalogChannel(calctime(curtime,pulse_delay+lattice_pulse_time+0.1),'yLattice',-0.5,2);
+        
+        % re-write 02/05/2026 to avoid PID issues
         ScopeTriggerPulse(calctime(curtime,0),'pulse lattice');
 
-        pulse_times = [1000]/1000;
-        lattice_pulse_time = getScanParameter(pulse_times,...
-            seqdata.scancycle,seqdata.randcyclelist,'pulse_lengths');
+        % pulse time
+        defVar('pulse_time',[0.01]+0.03+0.03,'ms');
+        lattice_pulse_time = getVar('pulse_time');
         
-        addOutputParam('pulse_time',lattice_pulse_time)
-        setAnalogChannel(calctime(curtime,-1),'yLattice',5,2);
+        % pulse depth
+        defVar('pulse_depth',[4],'Er');
+        lattice_pulse_depth = getVar('pulse_depth');
         
-        %turn off dipole beam
+        % pulse delay after tof
+        defVar('pulse_delay',[-0.05],'ms');
+        lattice_pulse_delay = getVar('pulse_delay');
+        
+%         %turn off dipole beam
         setAnalogChannel(calctime(curtime,0),'dipoleTrap1',seqdata.params.ODT_zeros(1));
         setAnalogChannel(calctime(curtime,0),'dipoleTrap2',seqdata.params.ODT_zeros(2));
         
-        %pulse lattice
-%         setDigitalChannel(calctime(curtime,pulse_delay-25),'Lattice Direct Control',0);
-        DigitalPulse(calctime(curtime,pulse_delay),'yLatticeOFF',lattice_pulse_time,0);
+        % turn on the lattice
+        setDigitalChannel(calctime(curtime,-1),'yLatticeOFF',0);
+        setAnalogChannel(calctime(curtime,lattice_pulse_delay),'yLattice',lattice_pulse_depth,2);
         
-        %Add 100us to account for any timing issues
-        curtime = calctime(curtime,pulse_delay+lattice_pulse_time+0.1);
-        setAnalogChannel(calctime(curtime,pulse_delay+lattice_pulse_time+0.1),'yLattice',-0.12-1,2);
+        % use digital channel to turn off
+        setDigitalChannel(calctime(curtime,lattice_pulse_time),'yLatticeOFF',1);
+        
+        % set analog depth to low a bit after
+        setAnalogChannel(calctime(curtime,lattice_pulse_time+0.1),'yLattice',-0.5,2);
+        
         
     elseif   tof_pulse == 4
             %Special Pulse for Z Lattice (need Dig Channel 50 plugged in)
